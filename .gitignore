@@ -1,0 +1,29 @@
+# Gradle
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+/local.properties
+
+# Build artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Signing
+*.keystore
+*.jks
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/

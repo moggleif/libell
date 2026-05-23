@@ -1,0 +1,14 @@
+# Normalize all text files to LF
+* text=auto eol=lf
+
+# Shell wrapper must stay LF even on Windows checkouts
+gradlew text eol=lf
+*.bat text eol=crlf
+
+# Binary assets
+*.jar binary
+*.png binary
+*.webp binary
+*.jpg binary
+*.keystore binary
+*.jks binary

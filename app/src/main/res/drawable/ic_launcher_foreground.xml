@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Spirit-level vial -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,48 h48 a6,6 0 0 1 6,6 v0 a6,6 0 0 1 -6,6 h-48 a6,6 0 0 1 -6,-6 v0 a6,6 0 0 1 6,-6 z" />
+    <!-- Centering marks -->
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M48,46 h2 v18 h-2 z M58,46 h2 v18 h-2 z" />
+    <!-- Bubble -->
+    <path
+        android:fillColor="#8BC34A"
+        android:pathData="M54,54 m-5,0 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0" />
+</vector>
