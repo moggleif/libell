@@ -1,5 +1,7 @@
 :root {
   --surface: #101418;
+  --surface-raised: #1a2027;
+  --outline: #2d333b;
   --on-surface: #e6edf3;
   --on-surface-muted: #8b949e;
   --level: #3fb950;
@@ -87,4 +89,202 @@ body {
 .app__hint {
   margin: 0;
   color: var(--on-surface-muted);
+}
+
+.app--level {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.app__start {
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--level);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 48px;
+  cursor: pointer;
+}
+
+/* ---- RV diagram (hero) ---- */
+
+.rv-diagram {
+  margin: 0;
+  width: min(72vw, 46vh, 340px);
+}
+
+.rv-diagram svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.rv-diagram__arrow {
+  fill: var(--level);
+}
+
+.rv-diagram__front-label {
+  fill: var(--on-surface);
+  font-size: 15px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.rv-diagram__body {
+  fill: var(--surface-raised);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.rv-diagram__windshield {
+  fill: var(--outline);
+}
+
+.rv-diagram__wheel {
+  fill: var(--surface-raised);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.rv-diagram__wheel--small {
+  fill: var(--lift-small);
+  stroke: var(--lift-small);
+}
+
+.rv-diagram__wheel--large {
+  fill: var(--lift-large);
+  stroke: var(--lift-large);
+}
+
+.rv-diagram__lift-label {
+  fill: var(--on-surface);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rv-diagram__caption {
+  margin-top: 4px;
+  color: var(--on-surface-muted);
+  font-size: 0.85rem;
+}
+
+/* ---- Per-wheel list / level confirmation ---- */
+
+.wheel-list__level {
+  margin: 0;
+  color: var(--level);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.wheel-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 24px;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+/* ---- Bubble level (secondary) + tilt readout ---- */
+
+.app__secondary {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.bubble-level {
+  width: 96px;
+}
+
+.bubble-level svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.bubble-level__dial {
+  fill: var(--surface-raised);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.bubble-level__ring {
+  fill: none;
+  stroke: var(--on-surface-muted);
+  stroke-width: 1.5;
+}
+
+.bubble-level__bubble {
+  fill: var(--on-surface-muted);
+}
+
+.bubble-level__bubble--level {
+  fill: var(--level);
+}
+
+.tilt-readout {
+  margin: 0;
+  color: var(--on-surface-muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+
+/* ---- Settings ---- */
+
+.settings {
+  width: min(100%, 340px);
+  background: var(--surface-raised);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.settings__summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.settings__form {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.settings__field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.settings__field input {
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  width: 6.5em;
+  padding: 6px 8px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+}
+
+.settings__save {
+  font: inherit;
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--level);
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 0;
+  cursor: pointer;
 }
