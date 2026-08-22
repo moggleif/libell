@@ -54,6 +54,19 @@ Then:
 CI (`.github/workflows/ci.yml`) regenerates the wrapper automatically before running
 tests, lint, and the debug build.
 
+## Installing on a phone without a local toolchain
+
+Every CI run uploads the debug APK as a build artifact, so you can install LevelMate
+without Android Studio or Gradle on your machine:
+
+1. Open the repository's **Actions** tab and pick the latest green run for your branch.
+2. Download the **`levelmate-debug-<sha>`** artifact (a zip containing `app-debug.apk`).
+3. Unzip it and open the APK on the phone — Android asks you to allow installing from
+   this source the first time.
+
+Requires Android 7.0 or later (`minSdk 24`). Debug builds are signed with the shared
+debug key, so they cannot be installed over a release build of the same package.
+
 ## Development
 
 See `docs/01-CONTRIBUTING.md` for the workflow and `CLAUDE.md` for architecture rules.
