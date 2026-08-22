@@ -2,31 +2,33 @@
 
 ## Stack
 
-- Kotlin + Jetpack Compose (Material 3)
-- Gradle Kotlin DSL, version catalog in `gradle/libs.versions.toml`
-- `minSdk 24`, `targetSdk`/`compileSdk 35`, JVM target 17
-- Package `com.moggleif.levelmate`
+- TypeScript (strict) + Vite, no UI framework — plain DOM and inline SVG
+- Vitest (unit tests), Prettier (formatting)
+- `vite-plugin-pwa` / Workbox — web app manifest + offline service worker
+- Static site on GitHub Pages, base path `/levelmate/` (override with `BASE_PATH`)
 
 ## Layers
 
 ```
-com.moggleif.levelmate
-├── MainActivity.kt   # single activity; FLAG_KEEP_SCREEN_ON; portrait; hosts Compose
-├── domain/           # PURE Kotlin (no android.* imports) — unit-testable
-│   ├── LevelingCalculator.kt
-│   └── Settings.kt   # LevelSettings (wheelbase, track width, block height, tolerance)
-├── data/             # SettingsRepository — Jetpack DataStore (Preferences)
-├── sensor/           # OrientationSensor — gravity vector as a Flow
-└── ui/               # LevelViewModel (StateFlow), screens, components, theme
+src/
+├── main.ts        # entry point; requests wake lock; wires sensor → state → render
+├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
+│   ├── leveling.ts   # computeLeveling(gravity, settings) -> LevelingResult
+│   └── settings.ts   # LevelSettings (wheelbase, track width, block height, tolerance)
+├── data/          # settingsStore.ts — localStorage read/write + defaults
+├── sensor/        # orientation.ts — gravity vector as a subscription
+└── ui/            # render functions, SVG components, styles.css
 ```
 
-Rule: `domain/` never imports Android. All sensor/IO/Compose concerns live outside it, so
-the leveling math is trivially testable on the JVM.
+Rule: `domain/` never touches `window`, `document`, `navigator` or `localStorage`. All
+sensor, storage and DOM concerns live outside it, so the leveling math is trivially
+testable in a plain Node environment.
 
-## Leveling math (`domain/LevelingCalculator.kt`)
+## Leveling math (`src/domain/leveling.ts`)
 
 Input: gravity vector `(gx, gy, gz)` in device coordinates (x = right, y = up-screen =
-toward front, z = out of screen) and `LevelSettings`. All lengths in **centimetres**.
+toward the front of the vehicle, z = out of the screen) and `LevelSettings`. All lengths
+in **centimetres**.
 
 ```
 roll  = atan2(gx, gz)        # side/side
@@ -45,29 +47,66 @@ isLevel = |roll| < tolerance && |pitch| < tolerance     # degrees, default 0.5
 The highest wheel is always the reference (no calibration). Output: per-wheel
 `{position, liftCm, blocks}`, plus `rollDeg`, `pitchDeg`, `isLevel`.
 
-## Sensor (`sensor/OrientationSensor.kt`)
+## Sensor (`src/sensor/orientation.ts`)
 
-Prefer `Sensor.TYPE_GRAVITY`. If unavailable, use `TYPE_ACCELEROMETER` with a low-pass
-filter to isolate gravity. Either way, exponentially smooth the output to reduce jitter.
-Exposed as a `Flow` (e.g. `callbackFlow` registering/unregistering the `SensorEventListener`).
+Prefer `DeviceMotionEvent` and read `accelerationIncludingGravity` — this is the gravity
+vector, the direct equivalent of Android's `TYPE_GRAVITY`. Fall back to
+`DeviceOrientationEvent`, where `beta` is the front/back angle and `gamma` the side/side
+angle, converting back into an equivalent gravity vector. Either way, apply an exponential
+moving average to suppress jitter.
 
-## State (`ui/LevelViewModel.kt`)
+### Permission model
 
-`LevelViewModel` combines the sensor flow with the settings flow and emits a
-`StateFlow<LevelUiState>` computed via `LevelingCalculator`. The UI collects it with
-`collectAsStateWithLifecycle`.
+| Platform                | Behavior                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Android (Chrome, HTTPS) | Events fire after `addEventListener`, no prompt                                                              |
+| iOS 13+ (Safari, HTTPS) | `DeviceMotionEvent.requestPermission()` **must** be called from a user gesture; returns `granted` / `denied` |
+| Insecure origin         | Events never fire — the app must say so rather than showing a frozen level                                   |
 
-## Settings (`data/SettingsRepository.kt`)
+The sensor module exposes an explicit state (`unsupported`, `needs-permission`, `granted`,
+`denied`) so the UI can render a "Start" button on iOS and an explanation elsewhere.
 
-Jetpack DataStore (Preferences). Defaults: wheelbase 400 cm, track width 180 cm, block
-height 4 cm, tolerance 0.5°.
+## Screen wake
+
+`navigator.wakeLock.request('screen')` keeps the display on while leveling (Chrome on
+Android, Safari on iOS 16.4+). The lock is released automatically when the page is hidden
+and must be re-acquired on `visibilitychange`. Where the API is missing, the app degrades
+silently.
+
+## Orientation
+
+`screen.orientation.lock('portrait')` only works in fullscreen on Chrome for Android and is
+unsupported in iOS Safari, so it is treated as a best-effort nicety. The layout is
+responsive and must stay usable in landscape rather than relying on a hard lock.
+
+## State (`src/main.ts`)
+
+The entry point subscribes to the sensor, reads settings from the store, runs
+`computeLeveling`, and hands the resulting `LevelingResult` to the render functions in
+`ui/`. Rendering is driven by `requestAnimationFrame` so sensor events do not force a
+layout on every tick.
+
+## Settings (`src/data/settingsStore.ts`)
+
+`localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
+outdated value falls back to defaults. Defaults: wheelbase 400 cm, track width 180 cm,
+block height 4 cm, tolerance 0.5°.
+
+## Offline
+
+Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`), so once the app
+has been opened with a connection it works with no signal at all. `registerType:
+'autoUpdate'` means a new deployment is picked up on the next launch.
 
 ## UI
 
-RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6); the bubble
-level is secondary. All user-facing strings are English in `res/values/strings.xml`.
+The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6); the
+bubble level is secondary. Both are inline SVG, sized in viewport units so the diagram
+stays legible on a phone lying on a table. All user-facing strings are English.
 
 ## Build / CI notes
 
-`gradle/wrapper/gradle-wrapper.jar`, `gradlew`, `gradlew.bat` are not committed (binary).
-CI regenerates the wrapper, then runs `./gradlew test lintDebug assembleDebug`.
+The repository is text-only: PWA icons are rendered from `public/icons/icon.svg` by
+`scripts/generate-icons.mjs` during `npm run build` and are gitignored. CI runs
+`format:check`, `typecheck`, `test` and `build` on every branch; pushes to `main` deploy
+`dist/` to GitHub Pages.

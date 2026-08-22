@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="LevelMate">
+  <rect width="512" height="512" fill="#101418"/>
+  <!-- spirit-level vial -->
+  <rect x="76" y="212" width="360" height="88" rx="44" fill="none" stroke="#e6edf3" stroke-width="16"/>
+  <!-- centre marks -->
+  <line x1="222" y1="228" x2="222" y2="284" stroke="#e6edf3" stroke-width="12" stroke-linecap="round"/>
+  <line x1="290" y1="228" x2="290" y2="284" stroke="#e6edf3" stroke-width="12" stroke-linecap="round"/>
+  <!-- bubble, centred = level -->
+  <circle cx="256" cy="256" r="30" fill="#3fb950"/>
+</svg>

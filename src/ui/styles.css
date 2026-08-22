@@ -1,0 +1,50 @@
+:root {
+  --surface: #101418;
+  --on-surface: #e6edf3;
+  --on-surface-muted: #8b949e;
+  --level: #3fb950;
+  --lift-small: #d29922;
+  --lift-large: #f85149;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  /* The phone lies flat and is read at arm's length, so nothing should be small. */
+  font-size: 18px;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app {
+  min-height: 100%;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.app__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
