@@ -1,12 +1,18 @@
 import './ui/styles.css';
+import { setupInstallButton } from './ui/install';
 
-// Placeholder entry point. Real screens are built per the GitHub issue backlog
+const installButton = document.querySelector<HTMLButtonElement>('#install-button');
+const installHint = document.querySelector<HTMLElement>('#install-hint');
+if (installButton && installHint) {
+  setupInstallButton(installButton, installHint);
+}
+
+// Placeholder content. Real screens are built per the GitHub issue backlog
 // (see docs/02-REQUIREMENTS.md).
 const app = document.querySelector<HTMLElement>('#app');
-
 if (app) {
-  const title = document.createElement('h1');
-  title.className = 'app__title';
-  title.textContent = 'LevelMate';
-  app.append(title);
+  const note = document.createElement('p');
+  note.className = 'app__hint';
+  note.textContent = 'Lay your phone flat inside your RV, top edge toward the front.';
+  app.append(note);
 }

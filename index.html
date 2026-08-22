@@ -10,6 +10,14 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
   </head>
   <body>
+    <header class="topbar">
+      <img class="topbar__icon" src="icons/icon.svg" alt="" width="28" height="28" />
+      <h1 class="topbar__title">LevelMate</h1>
+      <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
+    </header>
+    <p id="install-hint" class="install-hint" hidden>
+      Tap <strong>Share</strong>, then <strong>“Add to Home Screen”</strong>.
+    </p>
     <main id="app" class="app"></main>
     <script type="module" src="/src/main.ts"></script>
   </body>
