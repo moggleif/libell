@@ -11,33 +11,37 @@ permissions:
 
 jobs:
   build:
-    name: Lint, Test & Build
+    name: Check, Test & Build
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          distribution: temurin
-          java-version: '17'
+          node-version: '22'
+          cache: npm
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Generate Gradle wrapper if missing
-        run: |
-          if [ ! -f gradlew ]; then
-            echo "Wrapper not committed (binary jar); generating it."
-            gradle wrapper --gradle-version 8.11.1
-          fi
+      - name: Format check
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Unit tests
-        run: ./gradlew test
+        run: npm run test
 
-      - name: Android lint
-        run: ./gradlew lintDebug
+      - name: Build
+        run: npm run build
 
-      - name: Assemble debug APK
-        run: ./gradlew assembleDebug
+      - name: Upload built site
+        uses: actions/upload-artifact@v4
+        with:
+          name: levelmate-site-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30

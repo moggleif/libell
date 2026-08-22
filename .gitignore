@@ -1,25 +1,21 @@
-# Gradle
-.gradle/
-build/
-captures/
-.externalNativeBuild/
-.cxx/
+# Build output
+dist/
+dev-dist/
 
-# Android Studio / IntelliJ
-*.iml
+# Generated PWA icons (rendered from public/icons/icon.svg at build time)
+public/icons/icon-*.png
+
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+*.log
+
+# Editors
 .idea/
-/local.properties
-
-# Build artifacts
-*.apk
-*.aab
-*.ap_
-*.dex
-*.class
-
-# Signing
-*.keystore
-*.jks
+*.iml
+.vscode/
 
 # OS files
 .DS_Store
