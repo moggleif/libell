@@ -28,6 +28,33 @@
   }
 }
 
+/* Explicit theme choice from Settings: the data-theme attribute (higher
+ * specificity than the bare :root rules) overrides the system scheme in
+ * both directions. No attribute = follow the phone. */
+:root[data-theme='dark'] {
+  --surface: #101418;
+  --surface-raised: #1a2027;
+  --outline: #2d333b;
+  --on-surface: #e6edf3;
+  --on-surface-muted: #8b949e;
+  --level: #3fb950;
+  --lift-small: #d29922;
+  --lift-large: #f85149;
+  --warning: #d29922;
+}
+
+:root[data-theme='light'] {
+  --surface: #f6f8fa;
+  --surface-raised: #ffffff;
+  --outline: #d0d7de;
+  --on-surface: #1f2328;
+  --on-surface-muted: #57606a;
+  --level: #1a7f37;
+  --lift-small: #9a6700;
+  --lift-large: #cf222e;
+  --warning: #9a6700;
+}
+
 * {
   box-sizing: border-box;
 }

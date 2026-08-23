@@ -41,6 +41,10 @@ export const MESSAGES = {
     'settings.steps.remove': 'Remove {value}',
     'settings.steps.presets': 'Common ramps:',
     'settings.unit': 'Show lengths in',
+    'settings.theme': 'Theme',
+    'theme.system': 'Follow the phone',
+    'theme.light': 'Light',
+    'theme.dark': 'Dark',
     'settings.sound': 'Chime when level',
     'settings.save': 'Save',
 
@@ -168,6 +172,10 @@ export const MESSAGES = {
     'settings.steps.remove': 'Ta bort {value}',
     'settings.steps.presets': 'Vanliga ramper:',
     'settings.unit': 'Visa längder i',
+    'settings.theme': 'Tema',
+    'theme.system': 'Följ telefonen',
+    'theme.light': 'Ljust',
+    'theme.dark': 'Mörkt',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.save': 'Spara',
 
