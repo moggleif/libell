@@ -4,7 +4,7 @@
  * Inline SVG: an RV outline seen from above with a "Front ↑" arrow and one
  * marker per wheel. Wheels are green when they need no lift; wheels that
  * need raising are orange (a step reaches) or red (beyond the tallest
- * step). Below each wheel the required lift in whole cm; above it the ramp
+ * step). Below each wheel the required lift in whole mm; above it the ramp
  * step height to drive up onto. The bubble level sits in the middle of the
  * vehicle, like a spirit level lying on the floor.
  */
@@ -135,14 +135,14 @@ export function createRvDiagram(): RvDiagram {
       for (const id of WHEEL_IDS) {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
-        const { displayCm, stepMm, severity } = result.wheels[id];
+        const { displayMm, stepMm, severity } = result.wheels[id];
         const { marker, stepLabel, liftLabel } = wheels[id];
         marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         if (severity === 'none') {
           stepLabel.textContent = '';
           liftLabel.textContent = '';
         } else {
-          liftLabel.textContent = `${displayCm} cm`;
+          liftLabel.textContent = `${displayMm} mm`;
           stepLabel.textContent = stepMm > 0 ? `↑ ${stepMm} mm` : '';
         }
       }

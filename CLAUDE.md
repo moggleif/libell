@@ -55,8 +55,8 @@ From the gravity vector `(gx, gy, gz)`:
 
 - `roll = atan2(gx, gz)`, `pitch = atan2(gy, gz)`
 
-Wheel positions in the vehicle plane (`x` = right, `y` = front), wheelbase `L`, front
-track width `Wf`, rear track width `Wr` (axles may differ):
+Wheel positions in the vehicle plane (`x` = right, `y` = front; all lengths in **mm**),
+wheelbase `L`, front track width `Wf`, rear track width `Wr` (axles may differ):
 
 - Front-left `(−Wf/2, +L/2)`, Front-right `(+Wf/2, +L/2)`,
   Rear-left `(−Wr/2, −L/2)`, Rear-right `(+Wr/2, −L/2)`
@@ -68,7 +68,7 @@ ramp step height (from the user's configured list, in **mm**) closest to the lif
 default 20)** below the highest wheel — height-based, so wheelbase and track width are
 inherent. Wheel colors answer "is it worth driving up?": green within tolerance, orange
 when a step brings the wheel within tolerance, red when even the best step cannot.
-All lengths are in centimetres unless noted mm.
+**All lengths are in millimetres** — model, math, settings and display alike.
 
 ## 4. Sensors on the web
 

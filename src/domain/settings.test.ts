@@ -9,9 +9,9 @@ import {
 describe('parseSettings', () => {
   it('returns valid stored settings unchanged', () => {
     const stored = {
-      wheelbaseCm: 350,
-      trackWidthFrontCm: 200,
-      trackWidthRearCm: 170,
+      wheelbaseMm: 3500,
+      trackWidthFrontMm: 2000,
+      trackWidthRearMm: 1700,
       rampStepHeightsMm: [20, 50, 80],
       toleranceMm: 15,
       stabilityMm: 5,
@@ -19,10 +19,14 @@ describe('parseSettings', () => {
     expect(parseSettings(stored)).toEqual(stored);
   });
 
-  it('migrates a legacy single trackWidthCm to both axles', () => {
+  it('migrates legacy cm values (wheelbase, track widths) to mm', () => {
     const result = parseSettings({ wheelbaseCm: 350, trackWidthCm: 200 });
-    expect(result.trackWidthFrontCm).toBe(200);
-    expect(result.trackWidthRearCm).toBe(200);
+    expect(result.wheelbaseMm).toBe(3500);
+    expect(result.trackWidthFrontMm).toBe(2000);
+    expect(result.trackWidthRearMm).toBe(2000);
+    const perAxle = parseSettings({ trackWidthFrontCm: 190, trackWidthRearCm: 165 });
+    expect(perAxle.trackWidthFrontMm).toBe(1900);
+    expect(perAxle.trackWidthRearMm).toBe(1650);
   });
 
   it('migrates legacy cm step heights to mm', () => {
@@ -43,16 +47,16 @@ describe('parseSettings', () => {
 
   it('replaces corrupt fields individually and keeps the valid ones', () => {
     const result = parseSettings({
-      wheelbaseCm: -10,
-      trackWidthFrontCm: 'wide',
-      trackWidthRearCm: 170,
+      wheelbaseMm: -10,
+      trackWidthFrontMm: 'wide',
+      trackWidthRearMm: 1700,
       rampStepHeightsMm: [60],
       toleranceMm: NaN,
     });
     expect(result).toEqual({
-      wheelbaseCm: DEFAULT_SETTINGS.wheelbaseCm,
-      trackWidthFrontCm: DEFAULT_SETTINGS.trackWidthFrontCm,
-      trackWidthRearCm: 170,
+      wheelbaseMm: DEFAULT_SETTINGS.wheelbaseMm,
+      trackWidthFrontMm: DEFAULT_SETTINGS.trackWidthFrontMm,
+      trackWidthRearMm: 1700,
       rampStepHeightsMm: [60],
       toleranceMm: DEFAULT_SETTINGS.toleranceMm,
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,

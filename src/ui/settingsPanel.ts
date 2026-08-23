@@ -13,12 +13,12 @@ import {
 import { saveSettings } from '../data/settingsStore';
 
 type NumberKey =
-  'wheelbaseCm' | 'trackWidthFrontCm' | 'trackWidthRearCm' | 'toleranceMm' | 'stabilityMm';
+  'wheelbaseMm' | 'trackWidthFrontMm' | 'trackWidthRearMm' | 'toleranceMm' | 'stabilityMm';
 
 const NUMBER_FIELDS: { key: NumberKey; label: string; step: string; min?: string }[] = [
-  { key: 'wheelbaseCm', label: 'Wheelbase (cm)', step: '1' },
-  { key: 'trackWidthFrontCm', label: 'Track width front (cm)', step: '1' },
-  { key: 'trackWidthRearCm', label: 'Track width rear (cm)', step: '1' },
+  { key: 'wheelbaseMm', label: 'Wheelbase (mm)', step: '10' },
+  { key: 'trackWidthFrontMm', label: 'Track width front (mm)', step: '10' },
+  { key: 'trackWidthRearMm', label: 'Track width rear (mm)', step: '10' },
   { key: 'toleranceMm', label: 'Tolerance (mm)', step: '1' },
   { key: 'stabilityMm', label: 'Stability (mm)', step: '0.5', min: '0' },
 ];
@@ -67,20 +67,34 @@ export function createSettingsForm(
   save.type = 'submit';
   save.className = 'menu__action';
   save.textContent = 'Save';
+  save.disabled = true;
   form.append(save);
 
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
+  // parseSettings guards against empty/invalid fields the same way it
+  // guards against corrupt storage.
+  const currentSettings = (): LevelSettings => {
     const raw: Record<string, unknown> = {
       rampStepHeightsMm: parseStepHeightsList(heightsInput.value),
     };
     for (const [key, input] of inputs) raw[key] = input.valueAsNumber;
-    // parseSettings guards against empty/invalid fields the same way it
-    // guards against corrupt storage.
-    const settings = parseSettings(raw);
+    return parseSettings(raw);
+  };
+
+  // Save is grayed out until the form actually differs from what is saved.
+  let saved = initial;
+  const updateDirty = () => {
+    save.disabled = JSON.stringify(currentSettings()) === JSON.stringify(saved);
+  };
+  form.addEventListener('input', updateDirty);
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const settings = currentSettings();
     for (const [key, input] of inputs) input.value = String(settings[key]);
     heightsInput.value = formatStepHeightsList(settings.rampStepHeightsMm);
     saveSettings(settings);
+    saved = settings;
+    updateDirty();
     onSave(settings);
   });
 

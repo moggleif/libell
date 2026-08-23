@@ -7,7 +7,7 @@ phone.
 
 Lay the phone flat inside the vehicle (for example on the table) with the **top edge of
 the phone pointing toward the front**. Libell shows a top-down view of the RV: green
-wheels are fine, orange wheels show which ramp step to drive up onto and how many cm they
+wheels are fine, orange wheels show which ramp step to drive up onto and how many mm they
 are missing, and red means even your tallest step is not enough — reposition instead. A
 bubble level sits in the middle of the diagram, and a big "Your RV is level!" confirms
 when you are done. Everything works offline once loaded; there is no account.
@@ -24,8 +24,8 @@ It then launches standalone, like any other app, and keeps working with no signa
 First-time setup lives under the **☰ menu** (yellow warning lamps in the top bar remind
 you until it is done):
 
-1. **Settings** — wheelbase, front/rear track width, your leveling ramps' step heights in
-   mm (e.g. `20; 40; 60`), tolerance and display stability.
+1. **Settings** — wheelbase and front/rear track width (mm), your leveling ramps' step
+   heights in mm (e.g. `20; 40; 60`), tolerance and display stability.
 2. **Calibration** — put the phone on a known-level surface and tap _Calibrate now_ to
    cancel phone/case bias.
 
@@ -44,12 +44,13 @@ roll  = atan2(gx, gz)   // side/side
 pitch = atan2(gy, gz)   // front/back
 ```
 
-Wheel positions in the vehicle plane (`x` = right, `y` = front), wheelbase `L`, front
+Wheel positions in the vehicle plane (`x` = right, `y` = front; all lengths in mm),
+wheelbase `L`, front
 track width `Wf`, rear track width `Wr`: FL `(-Wf/2,+L/2)`, FR `(+Wf/2,+L/2)`,
 RL `(-Wr/2,-L/2)`, RR `(+Wr/2,-L/2)`. Each wheel's height is
 `z_i = x_i·tan(roll) + y_i·tan(pitch)`. Blocks go only _under_ wheels, so the highest
-wheel is the reference: `lift_i = max(z) − z_i ≥ 0`, shown in whole cm together with the
-configured ramp step height (mm) closest to the lift. The vehicle is **level when no
+wheel is the reference: `lift_i = max(z) − z_i ≥ 0`, shown in whole mm together with the
+configured ramp step height closest to the lift. The vehicle is **level when no
 wheel sits more than the tolerance (mm, default 20) below the highest wheel** — height
 based, so wheelbase and track width are inherently accounted for. An optional stored
 calibration is subtracted from every reading, and a hysteresis stage keeps the display
