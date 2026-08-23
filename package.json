@@ -18,7 +18,7 @@
     "screenshots": "node scripts/generate-screenshots.mjs"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
+    "@types/node": "^26.2.0",
     "prettier": "^3.3.3",
     "sharp": "^0.33.5",
     "typescript": "^5.6.3",
