@@ -17,7 +17,7 @@ describe('settingsStore', () => {
       wheelbaseCm: 320,
       trackWidthFrontCm: 190,
       trackWidthRearCm: 165,
-      blockHeightCm: 3,
+      blockHeightsCm: [3, 6],
       toleranceDeg: 0.8,
     };
     saveSettings(settings, storage);

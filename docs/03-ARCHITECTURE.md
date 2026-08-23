@@ -14,7 +14,7 @@ src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings) -> LevelingResult
-│   └── settings.ts   # LevelSettings (wheelbase, front/rear track width, block height, tolerance)
+│   └── settings.ts   # LevelSettings (wheelbase, front/rear track width, ramp step heights, tolerance)
 ├── data/          # settingsStore.ts — localStorage read/write + defaults
 ├── sensor/        # orientation.ts — gravity vector as a subscription
 └── ui/            # render functions, SVG components, styles.css
@@ -41,7 +41,7 @@ RL(-Wr/2, -L/2)  RR(+Wr/2, -L/2)
 
 z_i    = x_i*tan(roll) + y_i*tan(pitch)
 lift_i = max(z) - z_i          # >= 0, because blocks only go under wheels
-blocks = round(lift_i / blockHeight)
+step_i = the configured ramp step height closest to lift_i (0 = no step)
 isLevel = |roll| < tolerance && |pitch| < tolerance     # degrees, default 0.5
 ```
 
@@ -91,8 +91,9 @@ layout on every tick.
 
 `localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
 outdated value falls back to defaults. Defaults: wheelbase 400 cm, front and rear track
-width 180 cm, block height 4 cm, tolerance 0.5°. A legacy single `trackWidthCm` value
-seeds both axles on read.
+width 180 cm, one 4 cm ramp step, tolerance 0.5°. Legacy values migrate on read: a
+single `trackWidthCm` seeds both axles, a single `blockHeightCm` becomes a one-step
+list.
 
 ## Offline
 

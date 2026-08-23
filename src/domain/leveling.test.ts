@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { computeLeveling, liftSeverity, WHEEL_IDS, type GravityVector } from './leveling';
+import {
+  computeLeveling,
+  liftSeverity,
+  recommendStep,
+  WHEEL_IDS,
+  type GravityVector,
+} from './leveling';
 import { DEFAULT_SETTINGS } from './settings';
 
 const G = 9.81;
@@ -21,7 +27,7 @@ describe('computeLeveling', () => {
     expect(result.pitchDeg).toBeCloseTo(0);
     for (const id of WHEEL_IDS) {
       expect(result.wheels[id].liftCm).toBeCloseTo(0);
-      expect(result.wheels[id].blocks).toBe(0);
+      expect(result.wheels[id].stepCm).toBe(0);
     }
   });
 
@@ -70,12 +76,13 @@ describe('computeLeveling', () => {
     expect(result.wheels.frontRight.liftCm).toBeCloseTo(max);
   });
 
-  it('rounds blocks to the nearest whole block', () => {
-    const settings = { ...DEFAULT_SETTINGS, blockHeightCm: 4 };
+  it('recommends the available ramp step closest to the lift', () => {
+    const settings = { ...DEFAULT_SETTINGS, blockHeightsCm: [2, 4, 6, 9] };
+    // Roll of −2° over a 180 cm track lifts the right side ≈ 6.3 cm.
     const result = computeLeveling(gravityFor(-2, 0), settings);
-    const lift = result.wheels.frontRight.liftCm;
-    expect(result.wheels.frontRight.blocks).toBe(Math.round(lift / 4));
-    expect(result.wheels.frontRight.blocks).toBeGreaterThan(0);
+    expect(result.wheels.frontRight.liftCm).toBeCloseTo(6.29, 1);
+    expect(result.wheels.frontRight.stepCm).toBe(6);
+    expect(result.wheels.frontLeft.stepCm).toBe(0);
   });
 
   it('treats tilt within the tolerance as level', () => {
@@ -86,12 +93,24 @@ describe('computeLeveling', () => {
   });
 });
 
+describe('recommendStep', () => {
+  it('picks the nearest step, with "no step" as a candidate', () => {
+    const steps = [2, 4, 6, 9];
+    expect(recommendStep(0.5, steps)).toBe(0);
+    expect(recommendStep(1.2, steps)).toBe(2);
+    expect(recommendStep(4.8, steps)).toBe(4);
+    expect(recommendStep(7.8, steps)).toBe(9);
+    expect(recommendStep(20, steps)).toBe(9);
+  });
+});
+
 describe('liftSeverity', () => {
-  it('classifies lifts relative to the block height', () => {
-    expect(liftSeverity(0, DEFAULT_SETTINGS)).toBe('none');
-    expect(liftSeverity(1, DEFAULT_SETTINGS)).toBe('none');
-    expect(liftSeverity(4, DEFAULT_SETTINGS)).toBe('small');
-    expect(liftSeverity(8, DEFAULT_SETTINGS)).toBe('large');
-    expect(liftSeverity(20, DEFAULT_SETTINGS)).toBe('large');
+  it('classifies lifts relative to the available step heights', () => {
+    const settings = { ...DEFAULT_SETTINGS, blockHeightsCm: [2, 4, 6] };
+    expect(liftSeverity(0, settings)).toBe('none');
+    expect(liftSeverity(0.9, settings)).toBe('none');
+    expect(liftSeverity(3, settings)).toBe('small');
+    expect(liftSeverity(6, settings)).toBe('small');
+    expect(liftSeverity(6.5, settings)).toBe('large');
   });
 });
