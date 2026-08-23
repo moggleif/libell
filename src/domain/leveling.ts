@@ -116,8 +116,17 @@ export type LiftSeverity = 'none' | 'small' | 'large';
  * Classify a lift for the diagram colors: green (none) when no step is
  * needed, red (large) when even the tallest available step cannot reach
  * the required lift, orange (small) in between.
+ *
+ * The tolerance gates everything: when the vehicle as a whole is level,
+ * every wheel is green — the diagram must never color wheels while the
+ * app simultaneously says "Your RV is level!".
  */
-export function liftSeverity(liftCm: number, settings: LevelSettings): LiftSeverity {
+export function liftSeverity(
+  liftCm: number,
+  settings: LevelSettings,
+  isLevel = false,
+): LiftSeverity {
+  if (isLevel) return 'none';
   const stepsMm = settings.rampStepHeightsMm;
   const minMm = stepsMm[0] ?? Infinity;
   const maxMm = stepsMm[stepsMm.length - 1] ?? Infinity;

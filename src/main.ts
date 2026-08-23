@@ -2,6 +2,7 @@ import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling } from './domain/leveling';
+import { createDisplayStabilizer } from './domain/stability';
 import type { Calibration, LevelSettings } from './domain/settings';
 import {
   clearCalibration,
@@ -111,12 +112,13 @@ function bootstrap(root: HTMLElement): void {
 
     root.append(diagram.element, levelMessage, tilt.element, waiting);
 
+    const stabilize = createDisplayStabilizer();
     const frame = () => {
       const gravity = sensor.getGravity();
       if (gravity) {
         waiting.hidden = true;
-        const result = computeLeveling(gravity, settings, calibration);
-        diagram.update(result, settings);
+        const result = stabilize(computeLeveling(gravity, settings, calibration), settings);
+        diagram.update(result);
         levelMessage.textContent = result.isLevel ? 'Your RV is level!' : '';
         tilt.update(result);
       }

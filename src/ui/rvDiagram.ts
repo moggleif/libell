@@ -8,8 +8,8 @@
  * step height to drive up onto. The bubble level sits in the middle of the
  * vehicle, like a spirit level lying on the floor.
  */
-import { liftSeverity, WHEEL_IDS, type LevelingResult, type WheelId } from '../domain/leveling';
-import type { LevelSettings } from '../domain/settings';
+import { WHEEL_IDS, type WheelId } from '../domain/leveling';
+import type { DisplayResult } from '../domain/stability';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -21,7 +21,7 @@ interface WheelRefs {
 
 export interface RvDiagram {
   element: HTMLElement;
-  update(result: LevelingResult, settings: LevelSettings): void;
+  update(result: DisplayResult): void;
 }
 
 const WHEEL_POS: Record<WheelId, { x: number; y: number }> = {
@@ -131,18 +131,18 @@ export function createRvDiagram(): RvDiagram {
 
   return {
     element: container,
-    update(result, settings) {
+    update(result) {
       for (const id of WHEEL_IDS) {
-        const { liftCm, stepMm } = result.wheels[id];
-        const severity = liftSeverity(liftCm, settings);
+        // Values arrive hysteresis-stabilized — a still phone shows a
+        // still diagram.
+        const { displayCm, stepMm, severity } = result.wheels[id];
         const { marker, stepLabel, liftLabel } = wheels[id];
         marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         if (severity === 'none') {
           stepLabel.textContent = '';
           liftLabel.textContent = '';
         } else {
-          // Whole centimetres — a still phone should show a still number.
-          liftLabel.textContent = `${Math.round(liftCm)} cm`;
+          liftLabel.textContent = `${displayCm} cm`;
           stepLabel.textContent = stepMm > 0 ? `↑ ${stepMm} mm` : '';
         }
       }
