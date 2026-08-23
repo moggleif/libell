@@ -7,6 +7,7 @@
  * the form differs from the saved settings.
  */
 import {
+  DEFAULT_SETTINGS,
   formatLength,
   parseSettings,
   type LevelSettings,
@@ -231,11 +232,24 @@ export function createSettingsForm(
   soundField.append(soundCaption, soundInput);
   form.append(soundField);
 
+  // Save persists; Undo returns to the last saved values; Reset fills
+  // the form with the factory defaults (still needs Save to persist,
+  // and Undo can take it back).
+  const actions = document.createElement('div');
+  actions.className = 'settings__actions';
   const save = document.createElement('button');
   save.type = 'submit';
   save.className = 'menu__action';
   save.disabled = true;
-  form.append(save);
+  const undo = document.createElement('button');
+  undo.type = 'button';
+  undo.className = 'menu__action menu__action--secondary';
+  undo.disabled = true;
+  const reset = document.createElement('button');
+  reset.type = 'button';
+  reset.className = 'menu__action menu__action--secondary';
+  actions.append(save, undo, reset);
+  form.append(actions);
 
   function applyUnitEverywhere(): void {
     for (const apply of unitAppliers) apply();
@@ -249,6 +263,8 @@ export function createSettingsForm(
     for (const [option, label] of themeOptions) option.textContent = t(label);
     soundCaption.textContent = t('settings.sound');
     save.textContent = t('settings.save');
+    undo.textContent = t('settings.undo');
+    reset.textContent = t('settings.reset');
   }
   applyUnitEverywhere();
   renderChips();
@@ -266,12 +282,31 @@ export function createSettingsForm(
     return parseSettings(raw);
   };
 
-  // Save is grayed out until the form actually differs from what is saved.
+  // Save and Undo are grayed out until the form differs from what is saved.
   let saved = initial;
   const notifyChanged = () => {
-    save.disabled = JSON.stringify(currentSettings()) === JSON.stringify(saved);
+    const clean = JSON.stringify(currentSettings()) === JSON.stringify(saved);
+    save.disabled = clean;
+    undo.disabled = clean;
   };
   form.addEventListener('input', notifyChanged);
+
+  /** Fill every field from the given settings, with live theme preview. */
+  const populate = (settings: LevelSettings): void => {
+    unit = settings.displayUnit;
+    unitSelect.value = unit;
+    applyUnitEverywhere();
+    for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
+    steps = [...settings.rampStepHeightsMm];
+    renderChips();
+    themeSelect.value = settings.theme;
+    applyTheme(settings.theme);
+    soundInput.checked = settings.soundOnLevel;
+    notifyChanged();
+  };
+
+  undo.addEventListener('click', () => populate(saved));
+  reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();

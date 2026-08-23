@@ -25,6 +25,15 @@ export function showOnboarding(options: OnboardingOptions): void {
   card.className = 'onboarding__card';
   overlay.append(card);
 
+  // Always escapable: ✕ closes the wizard from any step. It can be
+  // reopened from the menu ("Show introduction") at any time.
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'onboarding__close';
+  close.setAttribute('aria-label', t('onboard.close'));
+  close.textContent = '✕';
+  close.addEventListener('click', () => finish());
+
   const steps: { title: string; build: () => Element[]; skipLabel?: string }[] = [
     {
       title: t('onboard.step1.h'),
@@ -65,9 +74,12 @@ export function showOnboarding(options: OnboardingOptions): void {
     }
     card.replaceChildren();
 
+    const header = document.createElement('div');
+    header.className = 'onboarding__header';
     const progress = document.createElement('p');
     progress.className = 'onboarding__progress';
     progress.textContent = `${index + 1} / ${steps.length}`;
+    header.append(progress, close);
 
     const heading = document.createElement('h2');
     heading.className = 'onboarding__title';
@@ -101,7 +113,7 @@ export function showOnboarding(options: OnboardingOptions): void {
     });
     nav.append(next);
 
-    card.append(progress, heading, body, nav);
+    card.append(header, heading, body, nav);
     heading.focus();
   }
 

@@ -610,6 +610,20 @@ body {
   gap: 4px;
 }
 
+/* Save / Undo / Reset row at the bottom of the settings form. */
+.settings__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings__actions .menu__action {
+  display: inline-block;
+  width: auto;
+  flex: 1 1 auto;
+  padding: 10px 14px;
+}
+
 .steps__ramp .settings__select {
   width: 100%;
 }
@@ -802,10 +816,28 @@ body {
   text-align: left;
 }
 
+.onboarding__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .onboarding__progress {
   margin: 0;
   color: var(--on-surface-muted);
   font-size: 0.8rem;
+}
+
+.onboarding__close {
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--on-surface-muted);
+  background: none;
+  border: 0;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
 }
 
 .onboarding__title {

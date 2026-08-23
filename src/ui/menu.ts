@@ -164,18 +164,19 @@ export function createMenu(options: MenuOptions): Menu {
     if (event.target === backdrop) goBack();
   });
 
-  // --- Settings ---
-  const settingsBody = document.createElement('div');
-  settingsBody.append(createSettingsForm(options.initialSettings, options.onSettingsSaved));
-  addSection('settings', t('menu.settings'), settingsBody);
+  // Order: everyday tools first (calibration is the recurring task at
+  // each new pitch, settings mostly once), then help, then the meta
+  // items (introduction, feedback) at the bottom.
 
   // --- Calibration (one-shot + flip) ---
   const calibrationSection = createCalibrationSection(options);
   const refreshCalibration = calibrationSection.refresh;
   addSection('calibration', t('menu.calibration'), calibrationSection.element);
 
-  // --- Feedback ---
-  addSection('feedback', t('menu.feedback'), createFeedbackSection());
+  // --- Settings ---
+  const settingsBody = document.createElement('div');
+  settingsBody.append(createSettingsForm(options.initialSettings, options.onSettingsSaved));
+  addSection('settings', t('menu.settings'), settingsBody);
 
   // --- Help: illustration-first, short captions (#54) ---
   const HELP: {
@@ -214,6 +215,9 @@ export function createMenu(options: MenuOptions): Menu {
     options.openOnboarding();
   });
   drawer.append(introItem);
+
+  // --- Feedback (bottom — reached rarely) ---
+  addSection('feedback', t('menu.feedback'), createFeedbackSection());
 
   return {
     element: container,

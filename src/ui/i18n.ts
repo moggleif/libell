@@ -27,6 +27,7 @@ export const MESSAGES = {
 
     'onboard.step1.h': 'Place the phone like this',
     'onboard.next': 'Next',
+    'onboard.close': 'Close the introduction',
     'onboard.done': 'Done',
     'onboard.skipStep': 'Skip',
     'onboard.skipDefaults': 'Skip — use defaults',
@@ -48,6 +49,8 @@ export const MESSAGES = {
     'theme.dark': 'Dark',
     'settings.sound': 'Chime when level',
     'settings.save': 'Save',
+    'settings.undo': 'Undo changes',
+    'settings.reset': 'Reset to defaults',
 
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
@@ -159,6 +162,7 @@ export const MESSAGES = {
 
     'onboard.step1.h': 'Lägg telefonen så här',
     'onboard.next': 'Nästa',
+    'onboard.close': 'Stäng introduktionen',
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
@@ -180,6 +184,8 @@ export const MESSAGES = {
     'theme.dark': 'Mörkt',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.save': 'Spara',
+    'settings.undo': 'Ångra ändringar',
+    'settings.reset': 'Återställ standard',
 
     'status.almost': 'Nästan i våg — {left} kvar',
     'status.one': '1 hjul att höja',
