@@ -271,6 +271,12 @@ body {
   align-items: flex-start;
 }
 
+/* `display: flex` above would otherwise override the browser's default
+ * [hidden] handling and leave the drawer permanently open. */
+.menu[hidden] {
+  display: none;
+}
+
 .menu__drawer {
   width: min(88vw, 360px);
   max-height: 100%;
