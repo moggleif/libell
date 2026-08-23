@@ -1,8 +1,8 @@
 /**
- * Settings panel (issue #9): wheelbase, per-axle track widths, the
- * available ramp step heights and tolerance, persisted via the settings
- * store. Saving applies immediately to the calculation through the
- * `onChange` callback.
+ * Settings form: wheelbase, per-axle track widths, the available ramp
+ * step heights and tolerance, persisted via the settings store. Saving
+ * applies immediately to the calculation through the `onSave` callback.
+ * Rendered inside the app menu.
  */
 import {
   formatStepHeightsList,
@@ -11,10 +11,6 @@ import {
   type LevelSettings,
 } from '../domain/settings';
 import { saveSettings } from '../data/settingsStore';
-
-export interface SettingsPanel {
-  element: HTMLElement;
-}
 
 type NumberKey = 'wheelbaseCm' | 'trackWidthFrontCm' | 'trackWidthRearCm' | 'toleranceDeg';
 
@@ -25,17 +21,10 @@ const NUMBER_FIELDS: { key: NumberKey; label: string; step: string }[] = [
   { key: 'toleranceDeg', label: 'Tolerance (°)', step: '0.1' },
 ];
 
-export function createSettingsPanel(
+export function createSettingsForm(
   initial: LevelSettings,
-  onChange: (settings: LevelSettings) => void,
-): SettingsPanel {
-  const details = document.createElement('details');
-  details.className = 'settings';
-
-  const summary = document.createElement('summary');
-  summary.className = 'settings__summary';
-  summary.textContent = 'Settings';
-
+  onSave: (settings: LevelSettings) => void,
+): HTMLFormElement {
   const form = document.createElement('form');
   form.className = 'settings__form';
 
@@ -74,7 +63,7 @@ export function createSettingsPanel(
 
   const save = document.createElement('button');
   save.type = 'submit';
-  save.className = 'settings__save';
+  save.className = 'menu__action';
   save.textContent = 'Save';
   form.append(save);
 
@@ -90,10 +79,8 @@ export function createSettingsPanel(
     for (const [key, input] of inputs) input.value = String(settings[key]);
     heightsInput.value = formatStepHeightsList(settings.rampStepHeightsMm);
     saveSettings(settings);
-    onChange(settings);
-    details.open = false;
+    onSave(settings);
   });
 
-  details.append(summary, form);
-  return { element: details };
+  return form;
 }

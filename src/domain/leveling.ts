@@ -7,7 +7,7 @@
  * and pitch follow, and per wheel the height difference to the highest
  * wheel — which is the reference, because blocks only go under wheels.
  */
-import type { LevelSettings } from './settings';
+import type { Calibration, LevelSettings } from './settings';
 
 export interface GravityVector {
   x: number;
@@ -62,9 +62,15 @@ function wheelPositions(settings: LevelSettings): Record<WheelId, { x: number; y
   };
 }
 
-export function computeLeveling(gravity: GravityVector, settings: LevelSettings): LevelingResult {
-  const roll = Math.atan2(gravity.x, gravity.z);
-  const pitch = Math.atan2(gravity.y, gravity.z);
+export function computeLeveling(
+  gravity: GravityVector,
+  settings: LevelSettings,
+  calibration: Calibration | null = null,
+): LevelingResult {
+  const roll =
+    Math.atan2(gravity.x, gravity.z) - (calibration ? calibration.rollDeg / RAD_TO_DEG : 0);
+  const pitch =
+    Math.atan2(gravity.y, gravity.z) - (calibration ? calibration.pitchDeg / RAD_TO_DEG : 0);
 
   const positions = wheelPositions(settings);
   const heights = WHEEL_IDS.map((id) => {

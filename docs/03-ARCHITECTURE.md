@@ -45,7 +45,8 @@ step_i = the configured ramp step height (mm) closest to lift_i (0 = no step)
 isLevel = |roll| < tolerance && |pitch| < tolerance     # degrees, default 0.5
 ```
 
-The highest wheel is always the reference (no calibration). Output: per-wheel
+The highest wheel is always the reference. An optional stored calibration (roll/pitch
+captured on a known-level surface) is subtracted from the reading. Output: per-wheel
 `{position, liftCm, blocks}`, plus `rollDeg`, `pitchDeg`, `isLevel`.
 
 ## Sensor (`src/sensor/orientation.ts`)

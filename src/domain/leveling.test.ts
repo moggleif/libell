@@ -85,6 +85,21 @@ describe('computeLeveling', () => {
     expect(result.wheels.frontLeft.stepMm).toBe(0);
   });
 
+  it('subtracts the phone calibration from the reading', () => {
+    // The phone itself reads 1°/−0.5° on a level surface; with that
+    // stored as calibration the same reading is level again.
+    const biased = gravityFor(1, -0.5);
+    const uncalibrated = computeLeveling(biased, DEFAULT_SETTINGS);
+    expect(uncalibrated.isLevel).toBe(false);
+    const calibrated = computeLeveling(biased, DEFAULT_SETTINGS, { rollDeg: 1, pitchDeg: -0.5 });
+    expect(calibrated.isLevel).toBe(true);
+    expect(calibrated.rollDeg).toBeCloseTo(0);
+    expect(calibrated.pitchDeg).toBeCloseTo(0);
+    for (const id of WHEEL_IDS) {
+      expect(calibrated.wheels[id].liftCm).toBeCloseTo(0);
+    }
+  });
+
   it('treats tilt within the tolerance as level', () => {
     const result = computeLeveling(gravityFor(0.3, -0.4), DEFAULT_SETTINGS);
     expect(result.isLevel).toBe(true);

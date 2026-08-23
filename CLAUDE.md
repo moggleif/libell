@@ -15,7 +15,7 @@ cleverness.
 - Vitest for unit tests, Prettier for formatting
 - `vite-plugin-pwa` (Workbox) for the manifest and the offline service worker
 - Deployed as a static site to GitHub Pages; base path `/levelmate/`
-- No build-time backend, no accounts, no calibration
+- No build-time backend, no accounts
 
 ## 1. Directory layout (target)
 
@@ -45,7 +45,9 @@ see `docs/02-REQUIREMENTS.md` for the behaviors and the tracking issue for order
 - The app must work fully **offline** — a campsite often has no signal. Everything is
   precached by the service worker.
 - Sensor access requires a **secure context** (HTTPS or `localhost`).
-- No calibration feature. The reference is always the highest wheel.
+- The reference is always the highest wheel. An optional phone calibration (capture the
+  tilt on a known-level surface, stored in `localStorage`) is subtracted from every
+  reading to cancel phone/case bias.
 
 ## 3. Leveling math (see `src/domain/leveling.ts`)
 

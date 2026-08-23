@@ -2,8 +2,14 @@ import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling } from './domain/leveling';
-import type { LevelSettings } from './domain/settings';
-import { loadSettings } from './data/settingsStore';
+import type { Calibration, LevelSettings } from './domain/settings';
+import {
+  clearCalibration,
+  hasStoredSettings,
+  loadCalibration,
+  loadSettings,
+  saveCalibration,
+} from './data/settingsStore';
 import {
   createOrientationSensor,
   isSensorSupported,
@@ -11,10 +17,9 @@ import {
   type SensorState,
 } from './sensor/orientation';
 import { createRvDiagram } from './ui/rvDiagram';
-import { createWheelList } from './ui/wheelList';
-import { createBubbleLevel } from './ui/bubbleLevel';
 import { createTiltReadout } from './ui/tiltReadout';
-import { createSettingsPanel } from './ui/settingsPanel';
+import { createMenu } from './ui/menu';
+import { createIndicators } from './ui/indicators';
 
 const installButton = document.querySelector<HTMLButtonElement>('#install-button');
 const installHint = document.querySelector<HTMLElement>('#install-hint');
@@ -27,11 +32,55 @@ if (app) {
   bootstrap(app);
 }
 
+const RAD_TO_DEG = 180 / Math.PI;
+const MAX_CALIBRATION_DEG = 15;
+
 function bootstrap(root: HTMLElement): void {
   keepScreenAwake();
 
   let settings: LevelSettings = loadSettings();
+  let calibration: Calibration | null = loadCalibration();
   const sensor = createOrientationSensor();
+
+  // Menu (hamburger) with Settings / Calibration / Help.
+  const menu = createMenu({
+    initialSettings: settings,
+    onSettingsSaved(next) {
+      settings = next;
+      updateIndicators();
+    },
+    getCalibration: () => calibration,
+    calibrate() {
+      const gravity = sensor.getGravity();
+      if (!gravity) {
+        return 'The tilt sensor is not running yet — tap Start on the main screen first.';
+      }
+      const rollDeg = Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG;
+      const pitchDeg = Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG;
+      if (Math.abs(rollDeg) > MAX_CALIBRATION_DEG || Math.abs(pitchDeg) > MAX_CALIBRATION_DEG) {
+        return 'The phone does not look flat — place it on a level surface and try again.';
+      }
+      calibration = { rollDeg, pitchDeg };
+      saveCalibration(calibration);
+      updateIndicators();
+      return null;
+    },
+    clearCalibration() {
+      calibration = null;
+      clearCalibration();
+      updateIndicators();
+    },
+  });
+  document.body.append(menu.element);
+  const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
+  if (menuButton) menu.attach(menuButton);
+
+  // Dashboard-style warning lamps.
+  const indicators = createIndicators((section) => menu.open(section));
+  const updateIndicators = () =>
+    indicators.update({ settingsSaved: hasStoredSettings(), calibrated: calibration !== null });
+  document.querySelector('#indicators')?.append(indicators.element);
+  updateIndicators();
 
   const showMessage = (text: string) => {
     root.replaceChildren();
@@ -46,30 +95,24 @@ function bootstrap(root: HTMLElement): void {
     root.classList.add('app--level');
 
     const diagram = createRvDiagram();
-    const wheelList = createWheelList();
-    const bubble = createBubbleLevel();
+    const levelMessage = document.createElement('p');
+    levelMessage.className = 'level-message';
+    levelMessage.setAttribute('aria-live', 'polite');
     const tilt = createTiltReadout();
-    const secondary = document.createElement('div');
-    secondary.className = 'app__secondary';
-    secondary.append(bubble.element, tilt.element);
-    const settingsPanel = createSettingsPanel(settings, (next) => {
-      settings = next;
-    });
 
     const waiting = document.createElement('p');
     waiting.className = 'app__hint';
     waiting.textContent = 'Waiting for the tilt sensor…';
 
-    root.append(diagram.element, wheelList.element, secondary, settingsPanel.element, waiting);
+    root.append(diagram.element, levelMessage, tilt.element, waiting);
 
     const frame = () => {
       const gravity = sensor.getGravity();
       if (gravity) {
         waiting.hidden = true;
-        const result = computeLeveling(gravity, settings);
+        const result = computeLeveling(gravity, settings, calibration);
         diagram.update(result, settings);
-        wheelList.update(result);
-        bubble.update(result);
+        levelMessage.textContent = result.isLevel ? 'Your RV is level!' : '';
         tilt.update(result);
       }
       requestAnimationFrame(frame);
