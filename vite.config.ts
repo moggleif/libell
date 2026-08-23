@@ -18,7 +18,7 @@ const base = process.env.BASE_PATH ?? '/libell/';
 function resolveVersionString(): string | null {
   if (process.env.BUILD_VERSION) return process.env.BUILD_VERSION;
   if (process.env.GITHUB_ACTIONS) return null;
-  const versionPath = join(__dirname, 'VERSION');
+  const versionPath = join(import.meta.dirname, 'VERSION');
   const baseVersion = existsSync(versionPath) ? readFileSync(versionPath, 'utf8').trim() : '0.0';
   let latest = `${baseVersion}.0`;
   try {
