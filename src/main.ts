@@ -8,6 +8,7 @@ import {
   clearCalibration,
   hasStoredSettings,
   loadCalibration,
+  loadLanguage,
   loadSettings,
   saveCalibration,
 } from './data/settingsStore';
@@ -21,12 +22,20 @@ import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
 import { createIndicators } from './ui/indicators';
+import { resolveLanguage, setLanguage, t } from './ui/i18n';
+
+setLanguage(resolveLanguage(loadLanguage()));
 
 const installButton = document.querySelector<HTMLButtonElement>('#install-button');
 const installHint = document.querySelector<HTMLElement>('#install-hint');
 if (installButton && installHint) {
   setupInstallButton(installButton, installHint);
 }
+
+if (installButton) installButton.textContent = t('topbar.install');
+const menuButtonEl = document.querySelector<HTMLButtonElement>('#menu-button');
+if (menuButtonEl) menuButtonEl.setAttribute('aria-label', t('topbar.menu'));
+if (installHint) installHint.textContent = t('install.hint');
 
 const versionFooter = document.querySelector<HTMLElement>('#app-version');
 if (versionFooter && __APP_VERSION__) {
@@ -59,12 +68,12 @@ function bootstrap(root: HTMLElement): void {
     calibrate() {
       const gravity = sensor.getGravity();
       if (!gravity) {
-        return 'The tilt sensor is not running yet — tap Start on the main screen first.';
+        return t('calibration.err.notRunning');
       }
       const rollDeg = Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG;
       const pitchDeg = Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG;
       if (Math.abs(rollDeg) > MAX_CALIBRATION_DEG || Math.abs(pitchDeg) > MAX_CALIBRATION_DEG) {
-        return 'The phone does not look flat — place it on a level surface and try again.';
+        return t('calibration.err.notFlat');
       }
       calibration = { rollDeg, pitchDeg };
       saveCalibration(calibration);
@@ -108,7 +117,7 @@ function bootstrap(root: HTMLElement): void {
 
     const waiting = document.createElement('p');
     waiting.className = 'app__hint';
-    waiting.textContent = 'Waiting for the tilt sensor…';
+    waiting.textContent = t('main.waiting');
 
     root.append(diagram.element, levelMessage, tilt.element, waiting);
 
@@ -119,7 +128,7 @@ function bootstrap(root: HTMLElement): void {
         waiting.hidden = true;
         const result = stabilize(computeLeveling(gravity, settings, calibration), settings);
         diagram.update(result);
-        levelMessage.textContent = result.isLevel ? 'Your RV is level!' : '';
+        levelMessage.textContent = result.isLevel ? t('main.level') : '';
         tilt.update(result);
       }
       requestAnimationFrame(frame);
@@ -133,18 +142,10 @@ function bootstrap(root: HTMLElement): void {
         showLevelScreen();
         break;
       case 'denied':
-        showMessage(
-          'Motion access was denied, so Libell cannot read the tilt. ' +
-            'Allow motion & orientation access for this site and reload.',
-        );
+        showMessage(t('main.denied'));
         break;
       default:
-        showMessage(
-          window.isSecureContext
-            ? 'This device does not expose motion sensors, so Libell cannot read the tilt.'
-            : 'Libell needs a secure connection (HTTPS) to read the tilt sensors. ' +
-                'Open the app over HTTPS and try again.',
-        );
+        showMessage(window.isSecureContext ? t('main.noSensors') : t('main.https'));
     }
   };
 
@@ -158,11 +159,11 @@ function bootstrap(root: HTMLElement): void {
     root.replaceChildren();
     const hint = document.createElement('p');
     hint.className = 'app__hint';
-    hint.textContent = 'Lay your phone flat inside your RV, top edge toward the front.';
+    hint.textContent = t('main.hint');
     const start = document.createElement('button');
     start.type = 'button';
     start.className = 'app__start';
-    start.textContent = 'Start';
+    start.textContent = t('main.start');
     start.addEventListener('click', () => {
       void sensor.start().then(handleState);
     });

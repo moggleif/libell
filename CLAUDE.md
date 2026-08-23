@@ -39,7 +39,9 @@ Behaviors are specified in `docs/02-REQUIREMENTS.md`; design in
 - `domain/` must stay pure: **no `window`, `document`, `navigator` or `localStorage`**, so
   the leveling math is trivially testable in a plain Node environment. All sensor, storage
   and DOM concerns live outside `domain/`.
-- All user-facing strings are **English**.
+- All user-facing strings go through `src/ui/i18n.ts` (`t()`), with **Swedish and
+  English** dictionaries; `navigator.language` picks the language (optional stored
+  override). Never hardcode UI text in components.
 - Colors come from the CSS custom properties in `src/ui/styles.css`. Don't hardcode hex
   values in components.
 - The app must work fully **offline** — a campsite often has no signal. Everything is

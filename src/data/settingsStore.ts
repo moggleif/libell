@@ -13,6 +13,7 @@ import {
 
 const STORAGE_KEY = 'libell.settings';
 const CALIBRATION_KEY = 'libell.calibration';
+const LANGUAGE_KEY = 'libell.language';
 
 /** The subset of `Storage` the store needs; injectable for tests. */
 export interface KeyValueStorage {
@@ -81,6 +82,25 @@ export function saveCalibration(
     storage?.setItem(CALIBRATION_KEY, JSON.stringify(calibration));
   } catch {
     // Same graceful degradation as saveSettings.
+  }
+}
+
+export function loadLanguage(storage: KeyValueStorage | null = defaultStorage()): unknown {
+  try {
+    return storage?.getItem(LANGUAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveLanguage(
+  lang: string,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    storage?.setItem(LANGUAGE_KEY, lang);
+  } catch {
+    // Non-fatal — auto-detection covers the next start.
   }
 }
 

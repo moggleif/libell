@@ -11,16 +11,17 @@ import {
   type LevelSettings,
 } from '../domain/settings';
 import { saveSettings } from '../data/settingsStore';
+import { t, type MessageKey } from './i18n';
 
 type NumberKey =
   'wheelbaseMm' | 'trackWidthFrontMm' | 'trackWidthRearMm' | 'toleranceMm' | 'stabilityMm';
 
-const NUMBER_FIELDS: { key: NumberKey; label: string; step: string; min?: string }[] = [
-  { key: 'wheelbaseMm', label: 'Wheelbase (mm)', step: '10' },
-  { key: 'trackWidthFrontMm', label: 'Track width front (mm)', step: '10' },
-  { key: 'trackWidthRearMm', label: 'Track width rear (mm)', step: '10' },
-  { key: 'toleranceMm', label: 'Tolerance (mm)', step: '1' },
-  { key: 'stabilityMm', label: 'Stability (mm)', step: '0.5', min: '0' },
+const NUMBER_FIELDS: { key: NumberKey; label: MessageKey; step: string; min?: string }[] = [
+  { key: 'wheelbaseMm', label: 'settings.wheelbase', step: '10' },
+  { key: 'trackWidthFrontMm', label: 'settings.trackFront', step: '10' },
+  { key: 'trackWidthRearMm', label: 'settings.trackRear', step: '10' },
+  { key: 'toleranceMm', label: 'settings.tolerance', step: '1' },
+  { key: 'stabilityMm', label: 'settings.stability', step: '0.5', min: '0' },
 ];
 
 export function createSettingsForm(
@@ -35,7 +36,7 @@ export function createSettingsForm(
     const field = document.createElement('label');
     field.className = 'settings__field';
     const caption = document.createElement('span');
-    caption.textContent = label;
+    caption.textContent = t(label);
     const input = document.createElement('input');
     input.type = 'number';
     input.inputMode = 'decimal';
@@ -53,12 +54,12 @@ export function createSettingsForm(
   const heightsField = document.createElement('label');
   heightsField.className = 'settings__field settings__field--wide';
   const heightsCaption = document.createElement('span');
-  heightsCaption.textContent = 'Ramp step heights (mm, separated by ;)';
+  heightsCaption.textContent = t('settings.steps');
   const heightsInput = document.createElement('input');
   heightsInput.type = 'text';
   heightsInput.inputMode = 'decimal';
   heightsInput.name = 'rampStepHeightsMm';
-  heightsInput.placeholder = 'e.g. 20; 40; 60';
+  heightsInput.placeholder = t('settings.steps.placeholder');
   heightsInput.value = formatStepHeightsList(initial.rampStepHeightsMm);
   heightsField.append(heightsCaption, heightsInput);
   form.append(heightsField);
@@ -66,7 +67,7 @@ export function createSettingsForm(
   const save = document.createElement('button');
   save.type = 'submit';
   save.className = 'menu__action';
-  save.textContent = 'Save';
+  save.textContent = t('settings.save');
   save.disabled = true;
   form.append(save);
 

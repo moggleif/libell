@@ -112,7 +112,7 @@ the bubble level embedded at its center; per-wheel readouts sit directly at the 
 (step above, whole cm below). Everything is inline SVG, sized in viewport units so the
 diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
 in the full-width hamburger menu; amber warning lamps in the top bar point to unsaved
-settings or a missing calibration. All user-facing strings are English.
+settings or a missing calibration. All user-facing strings go through the i18n dictionaries (sv/en) in `src/ui/i18n.ts`.
 
 ## Build / CI notes
 

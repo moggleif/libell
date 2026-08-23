@@ -7,12 +7,14 @@
  * ever ships in the client.
  */
 
+import { t, type MessageKey } from './i18n';
+
 const REPO_ISSUES_URL = 'https://github.com/moggleif/libell/issues/new';
 
-const CATEGORIES: { id: string; label: string }[] = [
-  { id: 'bug', label: 'Bug' },
-  { id: 'suggestion', label: 'Suggestion' },
-  { id: 'other', label: 'Other' },
+const CATEGORIES: { id: string; label: MessageKey }[] = [
+  { id: 'bug', label: 'feedback.cat.bug' },
+  { id: 'suggestion', label: 'feedback.cat.suggestion' },
+  { id: 'other', label: 'feedback.cat.other' },
 ];
 
 const MAX_TITLE = 200;
@@ -23,10 +25,7 @@ export function createFeedbackSection(): HTMLElement {
 
   const intro = document.createElement('p');
   intro.className = 'menu__text';
-  intro.textContent =
-    'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
-    'a ready-made report on GitHub where you post it (a free GitHub account is ' +
-    'needed, created in a minute).';
+  intro.textContent = t('feedback.intro');
 
   const form = document.createElement('form');
   form.className = 'settings__form';
@@ -36,9 +35,9 @@ export function createFeedbackSection(): HTMLElement {
   categoryRow.className = 'feedback__categories';
   const legend = document.createElement('legend');
   legend.className = 'menu__text';
-  legend.textContent = 'What is it about?';
+  legend.textContent = t('feedback.category');
   categoryRow.append(legend);
-  let category = CATEGORIES[0] ?? { id: 'other', label: 'Other' };
+  let category = CATEGORIES[0] ?? { id: 'other', label: 'feedback.cat.other' as MessageKey };
   for (const cat of CATEGORIES) {
     const label = document.createElement('label');
     label.className = 'feedback__category';
@@ -50,7 +49,7 @@ export function createFeedbackSection(): HTMLElement {
     radio.addEventListener('change', () => {
       if (radio.checked) category = cat;
     });
-    label.append(radio, document.createTextNode(` ${cat.label}`));
+    label.append(radio, document.createTextNode(` ${t(cat.label)}`));
     categoryRow.append(label);
   }
 
@@ -58,7 +57,7 @@ export function createFeedbackSection(): HTMLElement {
   const titleField = document.createElement('label');
   titleField.className = 'settings__field settings__field--wide';
   const titleCaption = document.createElement('span');
-  titleCaption.textContent = 'Short title';
+  titleCaption.textContent = t('feedback.title');
   const titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.maxLength = MAX_TITLE;
@@ -67,7 +66,7 @@ export function createFeedbackSection(): HTMLElement {
   const descField = document.createElement('label');
   descField.className = 'settings__field settings__field--wide';
   const descCaption = document.createElement('span');
-  descCaption.textContent = 'What happened, or what do you wish for?';
+  descCaption.textContent = t('feedback.desc');
   const descInput = document.createElement('textarea');
   descInput.rows = 4;
   descInput.maxLength = MAX_DESCRIPTION;
@@ -77,7 +76,7 @@ export function createFeedbackSection(): HTMLElement {
   const submit = document.createElement('button');
   submit.type = 'submit';
   submit.className = 'menu__action';
-  submit.textContent = 'Open the report on GitHub';
+  submit.textContent = t('feedback.submit');
   submit.disabled = true;
 
   // Active only when pressing it does something (title + description filled).
@@ -88,7 +87,7 @@ export function createFeedbackSection(): HTMLElement {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const issueTitle = `[Feedback] ${category.label}: ${titleInput.value.trim()}`;
+    const issueTitle = `[Feedback] ${t(category.label)}: ${titleInput.value.trim()}`;
     const metadata = [
       '',
       '---',

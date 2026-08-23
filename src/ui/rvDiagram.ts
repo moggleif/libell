@@ -10,6 +10,7 @@
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
+import { t } from './i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -52,7 +53,7 @@ export function createRvDiagram(): RvDiagram {
   const svg = svgEl('svg', {
     viewBox: '0 0 240 310',
     role: 'img',
-    'aria-label': 'Top-down view of your RV showing which wheels need raising',
+    'aria-label': t('diagram.aria'),
   });
 
   // Front arrow.
@@ -61,7 +62,7 @@ export function createRvDiagram(): RvDiagram {
     class: 'rv-diagram__arrow',
   });
   const arrowLabel = svgEl('text', { x: '120', y: '58', class: 'rv-diagram__front-label' });
-  arrowLabel.textContent = 'Front ↑';
+  arrowLabel.textContent = t('diagram.front');
 
   // RV body: rounded outline with a windshield hint at the front.
   const body = svgEl('rect', {
