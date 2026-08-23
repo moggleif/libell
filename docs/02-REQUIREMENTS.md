@@ -104,8 +104,8 @@ URL and must keep working with no signal.
   still count as level), or Stability (display hysteresis dead band in mm; 0 disables
   it) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
-  the calculation. Defaults: wheelbase 4000 mm, front and rear track width 1800 mm, one
-  40 mm step, tolerance 20 mm.
+  the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
+  `docs/03-ARCHITECTURE.md` § Settings).
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 

@@ -37,24 +37,13 @@ Two platform notes:
 
 ## How leveling works
 
-From the device gravity vector `(gx, gy, gz)`:
-
-```
-roll  = atan2(gx, gz)   // side/side
-pitch = atan2(gy, gz)   // front/back
-```
-
-Wheel positions in the vehicle plane (`x` = right, `y` = front; all lengths in mm),
-wheelbase `L`, front
-track width `Wf`, rear track width `Wr`: FL `(-Wf/2,+L/2)`, FR `(+Wf/2,+L/2)`,
-RL `(-Wr/2,-L/2)`, RR `(+Wr/2,-L/2)`. Each wheel's height is
-`z_i = x_i·tan(roll) + y_i·tan(pitch)`. Blocks go only _under_ wheels, so the highest
-wheel is the reference: `lift_i = max(z) − z_i ≥ 0`, shown in whole mm together with the
-configured ramp step height closest to the lift. The vehicle is **level when no
-wheel sits more than the tolerance (mm, default 20) below the highest wheel** — height
-based, so wheelbase and track width are inherently accounted for. An optional stored
-calibration is subtracted from every reading, and a hysteresis stage keeps the display
-still while the phone lies still. Full spec in `docs/03-ARCHITECTURE.md`.
+The phone's gravity vector gives the vehicle's roll and pitch; from your wheelbase and
+track widths the app computes each wheel's height, takes the **highest wheel as the
+reference** (blocks only go _under_ wheels), and recommends the configured ramp step
+closest to each wheel's missing height. The vehicle counts as level when no wheel sits
+more than the tolerance below the highest one. The full math, defaults and display
+pipeline are specified in `docs/03-ARCHITECTURE.md` — that document is the single
+source for the formulas.
 
 ## Tech
 
@@ -82,10 +71,11 @@ Pushes to `main` build and publish `dist/` to GitHub Pages via
 `.github/workflows/deploy.yml`. This requires **Settings → Pages → Source: GitHub
 Actions** to be enabled once for the repository.
 
-The `VERSION` file holds the current **major.minor**; each deploy is tagged
-`vMAJOR.MINOR.PR` (the merged pull request's number), the version is shown in the app's
-footer, and the first deploy of a new major.minor creates a GitHub Release. Release texts
-live in `docs/releases/<tag>.md` and are applied automatically on push.
+The `VERSION` file holds the current **major.minor**. The first deploy of a new
+major.minor is the release — `vX.Y.0`, tagged and published as a GitHub Release; every
+later merge on the same minor is a QA/candidate build tagged `vX.Y.CR<PR>` after the
+merged pull request. The version is shown in the app's footer. Release texts live in
+`docs/releases/<tag>.md` and are applied automatically on push.
 
 Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a branch
 can be previewed before it is merged.
