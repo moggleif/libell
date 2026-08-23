@@ -4,14 +4,21 @@
  * `parseSettings`, so an outdated or hand-edited value can never break
  * startup.
  */
-import { parseSettings, type LevelSettings } from '../domain/settings';
+import {
+  parseCalibration,
+  parseSettings,
+  type Calibration,
+  type LevelSettings,
+} from '../domain/settings';
 
 const STORAGE_KEY = 'levelmate.settings';
+const CALIBRATION_KEY = 'levelmate.calibration';
 
 /** The subset of `Storage` the store needs; injectable for tests. */
 export interface KeyValueStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem(key: string): void;
 }
 
 function defaultStorage(): KeyValueStorage | null {
@@ -43,5 +50,44 @@ export function saveSettings(
   } catch {
     // Storage full or unavailable — the app keeps working with the
     // in-memory value; it just won't survive a restart.
+  }
+}
+
+/** True once the user has saved vehicle settings at least once. */
+export function hasStoredSettings(storage: KeyValueStorage | null = defaultStorage()): boolean {
+  try {
+    return storage?.getItem(STORAGE_KEY) != null;
+  } catch {
+    return false;
+  }
+}
+
+export function loadCalibration(
+  storage: KeyValueStorage | null = defaultStorage(),
+): Calibration | null {
+  try {
+    const raw = storage?.getItem(CALIBRATION_KEY);
+    return raw === null || raw === undefined ? null : parseCalibration(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+export function saveCalibration(
+  calibration: Calibration,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    storage?.setItem(CALIBRATION_KEY, JSON.stringify(calibration));
+  } catch {
+    // Same graceful degradation as saveSettings.
+  }
+}
+
+export function clearCalibration(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    storage?.removeItem(CALIBRATION_KEY);
+  } catch {
+    // Nothing to do — the in-memory state is cleared by the caller.
   }
 }

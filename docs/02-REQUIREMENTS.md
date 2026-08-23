@@ -9,7 +9,8 @@ criteria. Each maps to a GitHub issue. They describe how the finished system wor
 LevelMate helps a motorhome/RV owner level their vehicle on a pitch. The user lays the
 phone flat inside the RV (on a table or floor) with the **top edge of the phone pointing
 toward the front of the vehicle**. The app tells them which wheels to raise and by how
-much, and shows a live level. There is **no calibration step** and **no account**.
+much, and shows a live level. There is **no account**. An optional phone calibration
+cancels phone/case bias; without it the raw sensor is used.
 
 LevelMate is an installable web app (PWA), so it runs on any modern phone from a single
 URL and must keep working with no signal.
@@ -70,19 +71,20 @@ URL and must keep working with no signal.
   large one) and shows its required lift in cm at its position; wheels that are fine are
   shown neutral.
 
-## R6 — A per-wheel list and a clear "level" confirmation
+## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
 - **Given** the RV is not level
-- **Then** a list shows each wheel as e.g. "Front left: 4.2 cm (≈3 blocks)", or "Front
-  left: OK" when that wheel needs no lift.
+- **Then** each wheel needing a lift shows, on the diagram itself, the missing height in
+  whole cm below the wheel and the ramp step to drive up onto above it; wheels within
+  tolerance are green and unlabeled.
 - **Given** all wheels are within tolerance
-- **Then** a large green "Your RV is level!" message is shown instead of the list.
+- **Then** a large green "Your RV is level!" message is shown under the diagram.
 
 ## R7 — A live bubble level (secondary)
 
 - **Given** I am on the main screen
-- **Then** a round bubble level moves in real time with the tilt; it reads centered/green
-  when within tolerance. It is secondary to the RV diagram.
+- **Then** a round bubble level in the middle of the RV diagram moves in real time with
+  the tilt; it reads centered/green when within tolerance.
 
 ## R8 — The current tilt in degrees is visible
 
@@ -91,7 +93,8 @@ URL and must keep working with no signal.
 
 ## R9 — Vehicle parameters are configurable and persist
 
-- **Given** I open Settings
+- **Given** I open Settings from the hamburger menu (which also holds Calibration and
+  Help)
 - **When** I edit Wheelbase, Track width front, Track width rear, Ramp step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
   is listed, e.g. "20; 40; 60"), or Tolerance and save
@@ -110,3 +113,15 @@ URL and must keep working with no signal.
 - **When** I choose "Add to Home Screen" / "Install"
 - **Then** it installs with its own LevelMate icon and opens standalone, without browser
   chrome.
+
+## R11 — Phone calibration and dashboard warning lamps
+
+- **Given** my phone or its case is not perfectly flat
+- **When** I place the phone on a surface I know is level and tap "Calibrate now" in the
+  menu
+- **Then** the current tilt is stored (`localStorage`) as the zero point and subtracted
+  from every reading; "Clear calibration" returns to the raw sensor. A reading that does
+  not look flat (>15°) is rejected with an explanation.
+- **Given** I have never saved vehicle settings, or never calibrated
+- **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
+  tapping it opens the matching menu section, and it disappears once handled.

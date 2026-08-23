@@ -1,12 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
-import { loadSettings, saveSettings, type KeyValueStorage } from './settingsStore';
+import {
+  clearCalibration,
+  hasStoredSettings,
+  loadCalibration,
+  loadSettings,
+  saveCalibration,
+  saveSettings,
+  type KeyValueStorage,
+} from './settingsStore';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {
   const data = new Map(Object.entries(initial));
   return {
     getItem: (key) => data.get(key) ?? null,
     setItem: (key, value) => void data.set(key, value),
+    removeItem: (key) => void data.delete(key),
   };
 }
 
@@ -36,5 +45,30 @@ describe('settingsStore', () => {
   it('falls back to defaults when storage is unavailable', () => {
     expect(loadSettings(null)).toEqual(DEFAULT_SETTINGS);
     expect(() => saveSettings(DEFAULT_SETTINGS, null)).not.toThrow();
+  });
+
+  it('reports whether settings were ever saved', () => {
+    const storage = memoryStorage();
+    expect(hasStoredSettings(storage)).toBe(false);
+    saveSettings(DEFAULT_SETTINGS, storage);
+    expect(hasStoredSettings(storage)).toBe(true);
+  });
+});
+
+describe('calibration store', () => {
+  it('round-trips a calibration and clears it', () => {
+    const storage = memoryStorage();
+    expect(loadCalibration(storage)).toBeNull();
+    saveCalibration({ rollDeg: 0.8, pitchDeg: -0.4 }, storage);
+    expect(loadCalibration(storage)).toEqual({ rollDeg: 0.8, pitchDeg: -0.4 });
+    clearCalibration(storage);
+    expect(loadCalibration(storage)).toBeNull();
+  });
+
+  it('rejects corrupt or implausible stored calibrations', () => {
+    const storage = memoryStorage({ 'levelmate.calibration': '{not json' });
+    expect(loadCalibration(storage)).toBeNull();
+    saveCalibration({ rollDeg: 60, pitchDeg: 0 }, storage);
+    expect(loadCalibration(storage)).toBeNull();
   });
 });
