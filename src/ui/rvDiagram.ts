@@ -4,9 +4,10 @@
  * Inline SVG: an RV outline seen from above with a "Front ↑" arrow and one
  * marker per wheel. Wheels are green when they need no lift; wheels that
  * need raising are orange (a step reaches) or red (beyond the tallest
- * step). Below each wheel the required lift in whole mm; above it the ramp
- * step height to drive up onto. The bubble level sits in the middle of the
- * vehicle, like a spirit level lying on the floor.
+ * step). Above each wheel which ramp step to drive up onto ("Step 2"),
+ * with its height parenthesized and small; below, the required lift the
+ * same way. The bubble level sits in the middle of the vehicle, like a
+ * spirit level lying on the floor.
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
@@ -18,7 +19,8 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 interface WheelRefs {
   marker: SVGRectElement;
   glyph: SVGTextElement;
-  stepLabel: SVGTextElement;
+  stepName: SVGTSpanElement;
+  stepHeight: SVGTSpanElement;
   liftLabel: SVGTextElement;
 }
 
@@ -27,7 +29,7 @@ const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕' } as const;
 
 export interface RvDiagram {
   element: HTMLElement;
-  update(result: DisplayResult, unit: 'mm' | 'cm'): void;
+  update(result: DisplayResult, unit: 'mm' | 'cm', stepHeightsMm: number[]): void;
 }
 
 const WHEEL_POS: Record<WheelId, { x: number; y: number }> = {
@@ -96,13 +98,19 @@ export function createRvDiagram(): RvDiagram {
       rx: '9',
       class: 'rv-diagram__wheel',
     });
-    // Above the wheel: the ramp step to drive up onto. Below: the lift.
+    // Above the wheel, two lines: which ramp step to drive up onto, then
+    // its height parenthesized and small. Below the wheel: the lift.
     const stepLabel = svgEl('text', {
-      x: String(x),
-      y: String(y - 32),
       'text-anchor': 'middle',
       class: 'rv-diagram__step-label',
     });
+    const stepName = svgEl('tspan', { x: String(x), y: String(y - 48) });
+    const stepHeight = svgEl('tspan', {
+      x: String(x),
+      y: String(y - 32),
+      class: 'rv-diagram__mm',
+    });
+    stepLabel.append(stepName, stepHeight);
     const liftLabel = svgEl('text', {
       x: String(x),
       y: String(y + 42),
@@ -115,7 +123,7 @@ export function createRvDiagram(): RvDiagram {
       class: 'rv-diagram__wheel-glyph',
     });
     svg.append(marker, glyph, stepLabel, liftLabel);
-    wheels[id] = { marker, glyph, stepLabel, liftLabel };
+    wheels[id] = { marker, glyph, stepName, stepHeight, liftLabel };
   }
 
   // Bubble level in the middle of the vehicle.
@@ -142,21 +150,28 @@ export function createRvDiagram(): RvDiagram {
 
   return {
     element: container,
-    update(result, unit) {
+    update(result, unit, stepHeightsMm) {
       for (const id of WHEEL_IDS) {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
         const { displayMm, stepMm, severity } = result.wheels[id];
-        const { marker, glyph, stepLabel, liftLabel } = wheels[id];
+        const { marker, glyph, stepName, stepHeight, liftLabel } = wheels[id];
         marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         glyph.textContent = SEVERITY_GLYPH[severity];
-        if (severity === 'none') {
-          stepLabel.textContent = '';
-          liftLabel.textContent = '';
+        if (severity === 'none' || stepMm <= 0) {
+          stepName.textContent = '';
+          stepHeight.textContent = '';
         } else {
-          liftLabel.textContent = formatLength(displayMm, unit);
-          stepLabel.textContent = stepMm > 0 ? `↑ ${formatLength(stepMm, unit)}` : '';
+          // "Step 2" — the position in the user's configured ramp — with
+          // the height parenthesized and small on the line below.
+          const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
+          stepName.textContent =
+            stepNumber > 0
+              ? t('diagram.step', { n: stepNumber })
+              : `↑ ${formatLength(stepMm, unit)}`;
+          stepHeight.textContent = stepNumber > 0 ? `(${formatLength(stepMm, unit)})` : '';
         }
+        liftLabel.textContent = severity === 'none' ? '' : `(${formatLength(displayMm, unit)})`;
       }
 
       // The bubble floats toward the high side.

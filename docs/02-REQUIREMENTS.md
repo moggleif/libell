@@ -75,8 +75,9 @@ URL and must keep working with no signal.
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
 - **Given** the RV is not level
-- **Then** each wheel needing a lift shows, on the diagram itself, the missing height in
-  whole mm below the wheel and the ramp step to drive up onto above it; wheels within
+- **Then** each wheel needing a lift shows, on the diagram itself, which ramp step to
+  drive up onto above the wheel ("Step 2"), and the mm figures — the step's height
+  above, the missing lift below — parenthesized and smaller; wheels within
   tolerance are green and unlabeled.
 - **Given** all wheels are within tolerance
 - **Then** a large green "Your RV is level!" message is shown under the diagram.

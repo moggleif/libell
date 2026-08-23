@@ -137,6 +137,7 @@ export const MESSAGES = {
 
     'diagram.aria': 'Top-down view of your motorhome showing which wheels need raising',
     'diagram.front': 'Front ↑',
+    'diagram.step': 'Step {n}',
 
     'tilt.frontBack': 'Front/back',
     'tilt.sideSide': 'Side/side',
@@ -275,6 +276,7 @@ export const MESSAGES = {
 
     'diagram.aria': 'Din husbil ovanifrån, med hjulen som behöver höjas markerade',
     'diagram.front': 'Fram ↑',
+    'diagram.step': 'Steg {n}',
 
     'tilt.frontBack': 'Längsled',
     'tilt.sideSide': 'Sidled',
