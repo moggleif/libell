@@ -8,6 +8,15 @@ import {
 } from './leveling';
 import { DEFAULT_SETTINGS } from './settings';
 
+// Symmetric reference geometry: expected lifts stay easy to derive by
+// hand, independent of the app's (vehicle-specific) default values.
+const SETTINGS = {
+  ...DEFAULT_SETTINGS,
+  wheelbaseMm: 4000,
+  trackWidthFrontMm: 1800,
+  trackWidthRearMm: 1800,
+};
+
 const G = 9.81;
 
 /** Gravity vector for a device rolled/pitched by the given angles (degrees). */
@@ -21,7 +30,7 @@ function gravityFor(rollDeg: number, pitchDeg: number): GravityVector {
 
 describe('computeLeveling', () => {
   it('reports level with zero lifts when flat', () => {
-    const result = computeLeveling({ x: 0, y: 0, z: G }, DEFAULT_SETTINGS);
+    const result = computeLeveling({ x: 0, y: 0, z: G }, SETTINGS);
     expect(result.isLevel).toBe(true);
     expect(result.rollDeg).toBeCloseTo(0);
     expect(result.pitchDeg).toBeCloseTo(0);
@@ -33,11 +42,11 @@ describe('computeLeveling', () => {
 
   it('pure roll: lifts the low side, the high side is the reference', () => {
     // Negative roll = right side low, so right wheels need lifting.
-    const result = computeLeveling(gravityFor(-2, 0), DEFAULT_SETTINGS);
+    const result = computeLeveling(gravityFor(-2, 0), SETTINGS);
     expect(result.isLevel).toBe(false);
     expect(result.wheels.frontLeft.liftMm).toBeCloseTo(0);
     expect(result.wheels.rearLeft.liftMm).toBeCloseTo(0);
-    const expected = DEFAULT_SETTINGS.trackWidthFrontMm * Math.tan((2 * Math.PI) / 180);
+    const expected = SETTINGS.trackWidthFrontMm * Math.tan((2 * Math.PI) / 180);
     expect(result.wheels.frontRight.liftMm).toBeCloseTo(expected);
     expect(result.wheels.rearRight.liftMm).toBeCloseTo(expected);
   });
@@ -45,7 +54,7 @@ describe('computeLeveling', () => {
   it('uses each axle’s own track width when they differ', () => {
     // Wider front axle: under pure roll the front-left wheel sits furthest
     // out and highest, so even the rear-left wheel needs a small lift.
-    const settings = { ...DEFAULT_SETTINGS, trackWidthFrontMm: 2000, trackWidthRearMm: 1600 };
+    const settings = { ...SETTINGS, trackWidthFrontMm: 2000, trackWidthRearMm: 1600 };
     const result = computeLeveling(gravityFor(-2, 0), settings);
     const t = Math.tan((2 * Math.PI) / 180);
     expect(result.wheels.frontLeft.liftMm).toBeCloseTo(0);
@@ -56,18 +65,18 @@ describe('computeLeveling', () => {
 
   it('pure pitch: lifts the low end, the high end is the reference', () => {
     // Negative pitch = front low, so front wheels need lifting.
-    const result = computeLeveling(gravityFor(0, -1.5), DEFAULT_SETTINGS);
+    const result = computeLeveling(gravityFor(0, -1.5), SETTINGS);
     expect(result.isLevel).toBe(false);
     expect(result.wheels.rearLeft.liftMm).toBeCloseTo(0);
     expect(result.wheels.rearRight.liftMm).toBeCloseTo(0);
-    const expected = DEFAULT_SETTINGS.wheelbaseMm * Math.tan((1.5 * Math.PI) / 180);
+    const expected = SETTINGS.wheelbaseMm * Math.tan((1.5 * Math.PI) / 180);
     expect(result.wheels.frontLeft.liftMm).toBeCloseTo(expected);
     expect(result.wheels.frontRight.liftMm).toBeCloseTo(expected);
   });
 
   it('combined roll + pitch: exactly three wheels need lifting', () => {
     // Right side low and front low → rear left is the single highest corner.
-    const result = computeLeveling(gravityFor(-2, -1), DEFAULT_SETTINGS);
+    const result = computeLeveling(gravityFor(-2, -1), SETTINGS);
     const lifts = WHEEL_IDS.map((id) => result.wheels[id].liftMm);
     expect(lifts.filter((lift) => lift > 0.1)).toHaveLength(3);
     expect(result.wheels.rearLeft.liftMm).toBeCloseTo(0);
@@ -77,7 +86,7 @@ describe('computeLeveling', () => {
   });
 
   it('recommends the available ramp step closest to the lift', () => {
-    const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60, 90] };
+    const settings = { ...SETTINGS, rampStepHeightsMm: [20, 40, 60, 90] };
     // Roll of −2° over a 1800 mm track lifts the right side ≈ 63 mm.
     const result = computeLeveling(gravityFor(-2, 0), settings);
     expect(result.wheels.frontRight.liftMm).toBeCloseTo(62.9, 0);
@@ -89,9 +98,9 @@ describe('computeLeveling', () => {
     // The phone itself reads 1°/−0.5° on a level surface; with that
     // stored as calibration the same reading is level again.
     const biased = gravityFor(1, -0.5);
-    const uncalibrated = computeLeveling(biased, DEFAULT_SETTINGS);
+    const uncalibrated = computeLeveling(biased, SETTINGS);
     expect(uncalibrated.isLevel).toBe(false);
-    const calibrated = computeLeveling(biased, DEFAULT_SETTINGS, { rollDeg: 1, pitchDeg: -0.5 });
+    const calibrated = computeLeveling(biased, SETTINGS, { rollDeg: 1, pitchDeg: -0.5 });
     expect(calibrated.isLevel).toBe(true);
     expect(calibrated.rollDeg).toBeCloseTo(0);
     expect(calibrated.pitchDeg).toBeCloseTo(0);
@@ -103,10 +112,10 @@ describe('computeLeveling', () => {
   it('is level when no wheel sits more than the mm tolerance below the highest', () => {
     // Height-based: geometry is inherent in the lifts. Default tolerance
     // 20 mm — a pitch lifting the front 15 mm is level, 28 mm is not.
-    const small = computeLeveling(gravityFor(0, -0.21), DEFAULT_SETTINGS);
+    const small = computeLeveling(gravityFor(0, -0.21), SETTINGS);
     expect(small.wheels.frontLeft.liftMm).toBeLessThan(20);
     expect(small.isLevel).toBe(true);
-    const beyond = computeLeveling(gravityFor(0, -0.4), DEFAULT_SETTINGS);
+    const beyond = computeLeveling(gravityFor(0, -0.4), SETTINGS);
     expect(beyond.wheels.frontLeft.liftMm).toBeGreaterThan(20);
     expect(beyond.isLevel).toBe(false);
   });
@@ -125,7 +134,7 @@ describe('recommendStep', () => {
 
 describe('liftSeverity', () => {
   it('answers "is it worth driving up?" against tolerance and steps', () => {
-    const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60], toleranceMm: 20 };
+    const settings = { ...SETTINGS, rampStepHeightsMm: [20, 40, 60], toleranceMm: 20 };
     // Within tolerance → green, nothing to do.
     expect(liftSeverity(0, settings)).toBe('none');
     expect(liftSeverity(19, settings)).toBe('none');

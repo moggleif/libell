@@ -39,9 +39,9 @@ export interface LevelSettings {
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
 export const DEFAULT_SETTINGS: LevelSettings = {
-  wheelbaseMm: 4000,
-  trackWidthFrontMm: 1800,
-  trackWidthRearMm: 1800,
+  wheelbaseMm: 3800,
+  trackWidthFrontMm: 1810,
+  trackWidthRearMm: 1980,
   // Thule Levelers — the most common ready-made ramp in the catalog.
   rampStepHeightsMm: [44, 78, 112],
   toleranceMm: 20,

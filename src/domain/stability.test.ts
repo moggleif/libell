@@ -16,7 +16,14 @@ function rollForLift(liftMm: number, trackMm: number): number {
   return (-Math.atan(liftMm / trackMm) * 180) / Math.PI;
 }
 
-const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60] };
+// Symmetric reference geometry, independent of the app's defaults.
+const settings = {
+  ...DEFAULT_SETTINGS,
+  wheelbaseMm: 4000,
+  trackWidthFrontMm: 1800,
+  trackWidthRearMm: 1800,
+  rampStepHeightsMm: [20, 40, 60],
+};
 
 /**
  * Frame-by-frame harness: each reading advances a fake clock, long enough
