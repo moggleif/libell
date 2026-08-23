@@ -3,13 +3,16 @@ import { setupInstallButton } from './ui/install';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, WHEEL_IDS } from './domain/leveling';
 import { createDisplayStabilizer } from './domain/stability';
+import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
 import {
   clearCalibration,
+  hasSeenOnboarding,
   hasStoredSettings,
   loadCalibration,
   loadLanguage,
   loadSettings,
+  markOnboardingSeen,
   saveCalibration,
 } from './data/settingsStore';
 import {
@@ -22,6 +25,7 @@ import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
 import { createIndicators } from './ui/indicators';
+import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 
 setLanguage(resolveLanguage(loadLanguage()));
@@ -49,6 +53,17 @@ if (app) {
 
 const RAD_TO_DEG = 180 / Math.PI;
 const MAX_CALIBRATION_DEG = 15;
+
+/** Fixed synthetic tilt for ?demo mode and screenshots. */
+function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const gravity = { x: 9.81 * Math.tan(rad(-1.2)), y: 9.81 * Math.tan(rad(-0.35)), z: 9.81 };
+  return {
+    start: () => Promise.resolve('granted' as const),
+    getState: () => 'granted' as const,
+    getGravity: () => gravity,
+  };
+}
 
 // Short two-tone chime via WebAudio — no asset needed. The context is
 // created lazily on the save gesture that enables the sound, which also
@@ -82,11 +97,44 @@ function bootstrap(root: HTMLElement): void {
 
   let settings: LevelSettings = loadSettings();
   let calibration: Calibration | null = loadCalibration();
-  const sensor = createOrientationSensor();
+  // ?demo replaces the sensor with a fixed synthetic tilt — used by the
+  // build-time screenshot generator and handy for trying the app on a
+  // desktop without sensors.
+  const demo = new URLSearchParams(location.search).has('demo');
+  const sensor = demo ? createDemoSensor() : createOrientationSensor();
+
+  // First-run wizard: placement, measurements, calibration. Skippable —
+  // the warning lamps stay lit for whatever was skipped (#43).
+  const openOnboarding = () =>
+    showOnboarding({
+      initialSettings: settings,
+      onSettingsSaved(next) {
+        settings = next;
+        updateIndicators();
+      },
+      getCalibration: () => calibration,
+      calibrate: () => calibrateNow(),
+      readTilt: () => readTiltNow(),
+      applyCalibration(next) {
+        calibration = next;
+        saveCalibration(next);
+        updateIndicators();
+      },
+      clearCalibration() {
+        calibration = null;
+        clearCalibration();
+        updateIndicators();
+      },
+      onFinished() {
+        markOnboardingSeen();
+        updateIndicators();
+      },
+    });
 
   // Menu (hamburger) with Settings / Calibration / Help.
   const menu = createMenu({
     initialSettings: settings,
+    openOnboarding,
     onSettingsSaved(next) {
       settings = next;
       // The save click is a user gesture — the right moment to unlock
@@ -95,20 +143,12 @@ function bootstrap(root: HTMLElement): void {
       updateIndicators();
     },
     getCalibration: () => calibration,
-    calibrate() {
-      const gravity = sensor.getGravity();
-      if (!gravity) {
-        return t('calibration.err.notRunning');
-      }
-      const rollDeg = Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG;
-      const pitchDeg = Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG;
-      if (Math.abs(rollDeg) > MAX_CALIBRATION_DEG || Math.abs(pitchDeg) > MAX_CALIBRATION_DEG) {
-        return t('calibration.err.notFlat');
-      }
-      calibration = { rollDeg, pitchDeg };
-      saveCalibration(calibration);
+    calibrate: () => calibrateNow(),
+    readTilt: () => readTiltNow(),
+    applyCalibration(next) {
+      calibration = next;
+      saveCalibration(next);
       updateIndicators();
-      return null;
     },
     clearCalibration() {
       calibration = null;
@@ -126,6 +166,36 @@ function bootstrap(root: HTMLElement): void {
     indicators.update({ settingsSaved: hasStoredSettings(), calibrated: calibration !== null });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
+
+  // Shared by the menu and the onboarding wizard. Starting the sensor on
+  // demand makes calibration work from the wizard before the main screen
+  // (the tap itself is the iOS permission gesture).
+  function readTiltNow(): Calibration | string {
+    const gravity = sensor.getGravity();
+    if (!gravity) {
+      void sensor.start();
+      return t('calibration.err.notRunning');
+    }
+    return {
+      rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
+      pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
+    };
+  }
+
+  function calibrateNow(): string | null {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    if (
+      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
+      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
+    ) {
+      return t('calibration.err.notFlat');
+    }
+    calibration = reading;
+    saveCalibration(calibration);
+    updateIndicators();
+    return null;
+  }
 
   const showMessage = (text: string) => {
     root.replaceChildren();
@@ -166,12 +236,34 @@ function bootstrap(root: HTMLElement): void {
 
     root.append(diagram.element, status, tilt.element, waiting);
 
+    // Pose guard: wrong-pose overlay instead of wrong guidance (#51).
+    const poseOverlay = document.createElement('div');
+    poseOverlay.className = 'pose-overlay';
+    poseOverlay.hidden = true;
+    const poseText = document.createElement('p');
+    poseText.className = 'pose-overlay__text';
+    poseOverlay.append(poseText);
+    document.body.append(poseOverlay);
+    const detectPose = createPoseDetector();
+    const landscape = window.matchMedia('(orientation: landscape)');
+
     const stabilize = createDisplayStabilizer();
     let wasLevel = false;
     let overlayTimer = 0;
+    // Celebration guards (field feedback): only after the vehicle was
+    // clearly un-level for a while, and never in rapid succession —
+    // boundary jitter must not turn into strobe + chaos vibration.
+    let unlevelSince = performance.now();
+    let lastCelebrate = -Infinity;
+    const MIN_UNLEVEL_MS = 3000;
+    const CELEBRATE_COOLDOWN_MS = 20000;
 
     const celebrate = () => {
       if (document.visibilityState !== 'visible') return;
+      const now = performance.now();
+      if (now - unlevelSince < MIN_UNLEVEL_MS) return;
+      if (now - lastCelebrate < CELEBRATE_COOLDOWN_MS) return;
+      lastCelebrate = now;
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
       if (settings.soundOnLevel) playChime();
       overlay.hidden = false;
@@ -197,12 +289,25 @@ function bootstrap(root: HTMLElement): void {
       const gravity = sensor.getGravity();
       if (gravity) {
         waiting.hidden = true;
+        // Invalid pose: pause the guidance and say what to do instead.
+        const badPose = detectPose(gravity) === 'not-flat';
+        if (badPose || landscape.matches) {
+          poseText.textContent = badPose ? t('pose.layFlat') : t('pose.portrait');
+          poseOverlay.hidden = false;
+          overlay.hidden = true;
+          requestAnimationFrame(frame);
+          return;
+        }
+        poseOverlay.hidden = true;
         const result = stabilize(computeLeveling(gravity, settings, calibration), settings);
         diagram.update(result, settings.displayUnit);
         status.textContent = statusText(result);
         status.classList.toggle('status-line--level', result.isLevel);
         if (result.isLevel && !wasLevel) celebrate();
-        if (!result.isLevel) overlay.hidden = true;
+        if (!result.isLevel) {
+          overlay.hidden = true;
+          if (wasLevel) unlevelSince = performance.now();
+        }
         wasLevel = result.isLevel;
         tilt.update(result);
       }
@@ -223,6 +328,13 @@ function bootstrap(root: HTMLElement): void {
         showMessage(window.isSecureContext ? t('main.noSensors') : t('main.https'));
     }
   };
+
+  if (!demo && !hasSeenOnboarding()) openOnboarding();
+
+  if (demo) {
+    showLevelScreen();
+    return;
+  }
 
   if (!isSensorSupported()) {
     handleState('unsupported');

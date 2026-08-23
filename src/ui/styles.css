@@ -606,3 +606,198 @@ body {
   height: 22px;
   accent-color: var(--level);
 }
+
+/* Wrong-pose overlay: shown while the phone is not flat / rotated. */
+.pose-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.pose-overlay[hidden] {
+  display: none;
+}
+
+.pose-overlay__text {
+  margin: 0;
+  color: var(--on-surface);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* ---- Full-screen menu pages ---- */
+
+.menu-page {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: calc(6px + env(safe-area-inset-top)) 16px 24px;
+}
+
+.menu-page[hidden] {
+  display: none;
+}
+
+.menu-page__header {
+  width: min(100%, 420px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menu-page__back {
+  font: inherit;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--on-surface);
+  background: none;
+  border: 0;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.menu-page__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.menu-page__body {
+  width: min(100%, 420px);
+  padding: 8px 4px 16px;
+}
+
+/* ---- Help illustrations ---- */
+
+.illu {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  margin: 4px auto 8px;
+}
+
+.illu__body {
+  fill: var(--surface-raised);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.illu__phone {
+  fill: var(--surface-raised);
+  stroke: var(--on-surface-muted);
+  stroke-width: 2;
+}
+
+.illu__screen {
+  fill: var(--outline);
+}
+
+.illu__accent {
+  fill: var(--level);
+}
+
+.illu__wheel {
+  fill: var(--surface-raised);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.illu__wheel--ok {
+  fill: var(--level);
+  stroke: var(--level);
+}
+
+.illu__wheel--up {
+  fill: var(--lift-small);
+  stroke: var(--lift-small);
+}
+
+.illu__wheel--no {
+  fill: var(--lift-large);
+  stroke: var(--lift-large);
+}
+
+.illu__glyph {
+  fill: var(--surface);
+  font-size: 22px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.illu__measure {
+  stroke: var(--level);
+  stroke-width: 2;
+}
+
+.illu__measure--dash {
+  stroke-dasharray: 5 4;
+}
+
+.illu__rotate {
+  fill: none;
+  stroke: var(--level);
+  stroke-width: 3;
+}
+
+.illu__label {
+  fill: var(--on-surface);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ---- Onboarding wizard ---- */
+
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--surface);
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 24px;
+}
+
+.onboarding__card {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.onboarding__progress {
+  margin: 0;
+  color: var(--on-surface-muted);
+  font-size: 0.8rem;
+}
+
+.onboarding__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.onboarding__body {
+  flex: 1;
+}
+
+.onboarding__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

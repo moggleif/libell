@@ -65,6 +65,21 @@ describe('createDisplayStabilizer', () => {
     expect(display.wheels.frontLeft.severity).toBe('none');
   });
 
+  it('never flaps at boundary jitter (field regression: strobe + vibration)', () => {
+    // Readings hovering right at the tolerance (20 mm) with ±2 mm jitter
+    // must not toggle the level state even once.
+    const stabilize = createDisplayStabilizer();
+    const at = (liftMm: number) =>
+      stabilize(computeLeveling(gravityFor(rollForLift(liftMm, 1800), 0), settings), settings)
+        .isLevel;
+    expect(at(30)).toBe(false); // start clearly un-level
+    const states = [19, 21, 18.5, 21.5, 19.5, 22, 18, 20.5].map(at);
+    expect(new Set(states).size).toBe(1); // no flip inside the band
+    expect(at(14)).toBe(true); // clearly below tol - deadband -> level
+    const stillLevel = [21, 19, 22.5, 18].map(at);
+    expect(stillLevel.every(Boolean)).toBe(true);
+  });
+
   it('holds "level" through jitter just past the tolerance', () => {
     // Tolerance 20 mm, dead band 3 mm → leaves level only above 23 mm.
     const stabilize = createDisplayStabilizer();
