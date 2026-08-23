@@ -15,10 +15,12 @@
     "icons": "node scripts/generate-icons.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "screenshots": "node scripts/generate-screenshots.mjs"
+    "screenshots": "node scripts/generate-screenshots.mjs",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
+    "happy-dom": "^20.11.6",
     "playwright": "^1.48.0",
     "prettier": "^3.3.3",
     "sharp": "^0.35.3",

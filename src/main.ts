@@ -330,7 +330,7 @@ function bootstrap(root: HTMLElement): void {
         poseOverlay.hidden = true;
         const now = performance.now();
         const result = stabilize(computeLeveling(gravity, settings, calibration), settings, now);
-        diagram.update(result, settings.displayUnit);
+        diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
         status.textContent = statusText(result);
         status.classList.toggle('status-line--level', result.isLevel);
         if (result.isLevel && !wasLevel) celebrate();

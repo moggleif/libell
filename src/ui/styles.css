@@ -289,8 +289,12 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.rv-diagram__step-label {
+/* The step's height is secondary — parenthesized and smaller than the
+ * step name above it. */
+.rv-diagram__mm {
   fill: var(--on-surface-muted);
+  font-size: 8px;
+  font-weight: 400;
 }
 
 /* State glyph inside each wheel: shape carries the meaning too, so the

@@ -59,10 +59,14 @@ git config core.hookspath .githooks
 - **Test first.** For testable logic (e.g. the leveling math), write the failing test from
   the issue's acceptance criteria, then implement until green.
 - **Small commits**, one increment at a time; reference the issue in the commit message.
-- Develop on `claude/progress-check-bnbuog`. Don't open a pull request unless asked.
+- Develop on a feature branch, never directly on `main`. Don't open a pull request
+  unless asked.
+- When a change alters behavior, update `docs/02-REQUIREMENTS.md` in the same PR; an
+  architecturally significant change also gets an ADR in `docs/adr/` (see its README).
 
 ## Code rules
 
 See `CLAUDE.md`. Key points: the `domain/` layer stays pure (no `window`, `document`,
 `navigator` or `localStorage`) so it is unit-testable in plain Node; all user-facing
-strings are English; colors come from the CSS custom properties in `src/ui/styles.css`.
+strings go through `t()` in `src/ui/i18n.ts` with Swedish and English coverage; colors
+come from the CSS custom properties in `src/ui/styles.css`.

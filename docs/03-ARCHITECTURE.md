@@ -94,8 +94,10 @@ layout on every tick.
 ## Settings (`src/data/settingsStore.ts`)
 
 `localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
-outdated value falls back to defaults. Defaults: wheelbase 4000 mm, front and rear track
-width 1800 mm, one 40 mm ramp step, tolerance 20 mm, stability 3 mm. Legacy cm values
+outdated value falls back to defaults. The default values live in one place —
+`DEFAULT_SETTINGS` in `src/domain/settings.ts` (wheelbase 3800 mm, track width
+1810/1980 mm front/rear, the Thule Levelers steps 44/78/112 mm, tolerance 20 mm,
+stability 3 mm); update that constant, not prose copies of it. Legacy cm values
 migrate on read (×10): wheelbase, track widths (including a single `trackWidthCm` for
 both axles) and step heights.
 
@@ -109,7 +111,7 @@ has been opened with a connection it works with no signal at all. `registerType:
 
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
 the bubble level embedded at its center; per-wheel readouts sit directly at the wheels
-(step above, whole cm below). Everything is inline SVG, sized in viewport units so the
+(step name above with its height parenthesized small, lift in whole mm below). Everything is inline SVG, sized in viewport units so the
 diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
 in the full-width hamburger menu; amber warning lamps in the top bar point to unsaved
 settings or a missing calibration. All user-facing strings go through the i18n dictionaries (sv/en) in `src/ui/i18n.ts`.

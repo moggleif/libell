@@ -1,120 +1,85 @@
 # CLAUDE.md – Libell (PWA)
 
 Libell is an installable web app (PWA) that helps level a motorhome / RV. The user lays
-the phone flat inside the vehicle (the top edge of the phone pointing toward the front) and
-the app shows which wheels need to be raised and by how much, plus a live bubble level.
+the phone flat inside the vehicle (top edge toward the front) and the app shows which
+wheels need to be raised and by how much, plus a live bubble level.
 
-This document defines the architecture rules and quality requirements. Clarity over
-cleverness.
+This is the standing guide for anyone — human or AI agent — working in this repository.
+It contains only durable rules: nothing session-specific, and no facts that live in
+code or in another document. When this guide and the code disagree, the code is right
+and this guide has a bug — fix the guide in the same change. Clarity over cleverness.
 
----
+## Canonical sources — who owns which truth
 
-## 0. Tech stack
+| Truth                                       | Owner                                          |
+| ------------------------------------------- | ---------------------------------------------- |
+| What the app does (behaviors, G/W/T)        | `docs/02-REQUIREMENTS.md`                      |
+| How it is built (layers, math, sensors, CI) | `docs/03-ARCHITECTURE.md`                      |
+| Why it is built that way (decisions)        | `docs/adr/`                                    |
+| How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                      |
+| Security model and reporting                | `SECURITY.md`                                  |
+| Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts` |
+| User-facing strings                         | `src/ui/i18n.ts` (sv + en)                     |
+| Colors                                      | CSS custom properties in `src/ui/styles.css`   |
 
-- TypeScript (strict) + Vite, no UI framework — plain DOM and inline SVG
-- Vitest for unit tests, Prettier for formatting
-- `vite-plugin-pwa` (Workbox) for the manifest and the offline service worker
-- Deployed as a static site to GitHub Pages; base path `/libell/`
-- No build-time backend, no accounts
+Never restate another document's facts — link to them. A fact written twice is a bug
+waiting to drift.
 
-## 1. Directory layout
+## Directory layout
 
 ```
 src/
 ├── main.ts        # entry point: wires sensor → state → render
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
-│   ├── leveling.ts   # per-wheel lift math, step recommendation, severity
-│   ├── stability.ts  # display hysteresis (a still phone shows a still screen)
-│   └── settings.ts   # LevelSettings + Calibration, validation, migrations
 ├── data/          # settingsStore.ts (localStorage: settings + calibration)
 ├── sensor/        # orientation.ts (DeviceMotion / DeviceOrientation)
-└── ui/            # DOM + SVG components, hamburger menu, styles
+└── ui/            # DOM + SVG components, hamburger menu, i18n, styles
 ```
 
-Behaviors are specified in `docs/02-REQUIREMENTS.md`; design in
-`docs/03-ARCHITECTURE.md`.
+## Non-negotiable code rules
 
-## 2. Core principles
+- `domain/` must stay pure: **no `window`, `document`, `navigator` or `localStorage`**
+  (ADR 0002). All sensor, storage and DOM concerns live outside it.
+- All user-facing strings go through `t()` with **both Swedish and English** entries.
+  Never hardcode UI text in components; the parity unit test must stay green.
+- Colors come from the CSS custom properties in `src/ui/styles.css` — no hex values in
+  components. Both light and dark palettes must work.
+- No UI framework, no `innerHTML` — DOM is built with `createElement`/`textContent`
+  (ADR 0001; this is also the XSS guard, see `SECURITY.md`).
+- **All lengths are millimetres** — model, math, settings and storage alike (ADR 0003);
+  only the display layer formats cm.
+- The app must work fully **offline** and inside a static-host CSP (ADR 0005): no CDNs,
+  no remote requests, no new external resources.
+- The repository stays **text-only** (ADR 0004): new artwork is SVG plus a generator
+  change, never a committed binary.
 
-- `domain/` must stay pure: **no `window`, `document`, `navigator` or `localStorage`**, so
-  the leveling math is trivially testable in a plain Node environment. All sensor, storage
-  and DOM concerns live outside `domain/`.
-- All user-facing strings go through `src/ui/i18n.ts` (`t()`), with **Swedish and
-  English** dictionaries; `navigator.language` picks the language (optional stored
-  override). Never hardcode UI text in components.
-- Colors come from the CSS custom properties in `src/ui/styles.css`. Don't hardcode hex
-  values in components.
-- The app must work fully **offline** — a campsite often has no signal. Everything is
-  precached by the service worker.
-- Sensor access requires a **secure context** (HTTPS or `localhost`).
-- The reference is always the highest wheel. An optional phone calibration (capture the
-  tilt on a known-level surface, stored in `localStorage`) is subtracted from every
-  reading to cancel phone/case bias.
+## Definition of done — walk this list for every increment
 
-## 3. Leveling math (see `src/domain/leveling.ts`)
+1. **Anchor it.** The change traces to a GitHub issue with Given/When/Then acceptance
+   criteria; behavior changes update `docs/02-REQUIREMENTS.md` **in the same change**,
+   and an architecturally significant decision gets a new ADR (see `docs/adr/README.md`).
+2. **Test first.** Where the logic is testable (domain, parsing, stores), write the
+   failing test from the acceptance criteria, then implement until green. Never weaken
+   or delete an existing test to get green — field-regression tests encode real bugs.
+3. **Verify visually.** For UI changes, run the app with `?demo` (fixed synthetic tilt,
+   works without sensors — also used by the screenshot generator) and check both
+   languages and both themes when they are affected.
+4. **All checks green before committing:**
+   `npm run format:check && npm run typecheck && npm run test`
+   (the shared hooks run these — enable once with `git config core.hookspath .githooks`).
+5. **Commit small.** One issue per increment, the issue referenced in the message,
+   descriptive subject; new commits rather than amending pushed work.
+6. **Branch, don't push to `main`.** Work on a feature branch; every merge to `main`
+   deploys (ADR 0007), so `main` must always be releasable. Do not open a pull request
+   unless asked.
 
-From the gravity vector `(gx, gy, gz)`:
+## Conventions worth knowing (so you don't rediscover them)
 
-- `roll = atan2(gx, gz)`, `pitch = atan2(gy, gz)`
-
-Wheel positions in the vehicle plane (`x` = right, `y` = front; all lengths in **mm**),
-wheelbase `L`, front track width `Wf`, rear track width `Wr` (axles may differ):
-
-- Front-left `(−Wf/2, +L/2)`, Front-right `(+Wf/2, +L/2)`,
-  Rear-left `(−Wr/2, −L/2)`, Rear-right `(+Wr/2, −L/2)`
-
-Per-wheel height: `z_i = x_i·tan(roll) + y_i·tan(pitch)`. Blocks only go _under_ wheels, so
-the reference is the highest wheel: `lift_i = max(z) − z_i ≥ 0`. Display cm and the
-ramp step height (from the user's configured list, in **mm**) closest to the lift, with
-"no step" as a candidate. "Level" when no wheel sits more than the **tolerance (mm,
-default 20)** below the highest wheel — height-based, so wheelbase and track width are
-inherent. Wheel colors answer "is it worth driving up?": green within tolerance, orange
-when a step brings the wheel within tolerance, red when even the best step cannot.
-**All lengths are in millimetres** — model, math, settings and display alike.
-
-## 4. Sensors on the web
-
-- Prefer `DeviceMotionEvent.accelerationIncludingGravity` — it is the gravity vector, the
-  direct equivalent of Android's `TYPE_GRAVITY`.
-- Fall back to `DeviceOrientationEvent` (`beta` = pitch, `gamma` = roll) where motion data
-  is unavailable.
-- **iOS 13+ requires a user gesture**: call `DeviceMotionEvent.requestPermission()` from a
-  tap handler. Android Chrome grants access without a prompt on HTTPS. The UI must handle
-  the `granted` / `denied` / `unsupported` states explicitly.
-- Smooth the reading (exponential moving average) so the display does not jitter.
-
-## 5. Quality requirements
-
-- Run before committing: `npm run format:check && npm run typecheck && npm run test`
-- Work is **behavior-driven and issue-driven**: each feature has a GitHub issue with
-  Given/When/Then acceptance criteria (sourced from `docs/02-REQUIREMENTS.md`). Write the
-  test first, then the implementation, then make it pass.
-- The leveling math will be covered by `src/domain/leveling.test.ts`. Any change to the
-  math must keep those tests green and add cases for new behavior.
-
-## 6. Git workflow
-
-- Develop on the feature branch `claude/progress-check-bnbuog`.
-- One issue per increment; small, reviewable commits. Reference the issue in the commit.
-- Descriptive commit messages; create new commits rather than amending pushed work.
-- Do not open a pull request unless explicitly asked.
-- Enable the shared hooks once: `git config core.hookspath .githooks`.
-
-## 7. Releases & versioning
-
-- The `VERSION` file holds the current **major.minor** (bump it manually for a new
-  minor). GitHub Pages doubles as the QA server: the **first** deploy of a new
-  major.minor is the release — version `X.Y.0`, tagged, published as a GitHub Release
-  (with the checked-in notes `docs/releases/vX.Y.0.md` when present). Every **later**
-  merge on the same minor is a QA/candidate build versioned `X.Y.CR<PR>` after the
-  merged pull request, so the footer tells at a glance whether the deployed build is
-  the release or a candidate.
-- The build embeds the version (Vite `define` → `__APP_VERSION__`) and the app shows it
-  in the footer. Local dev shows "X.Y.Z – local <timestamp>"; a CI build without
-  `BUILD_VERSION` shows nothing rather than something wrong.
-
-## 8. Binary assets
-
-The repository is kept **text-only**. The PWA icons are rendered from
-`public/icons/icon.svg` into PNGs by `scripts/generate-icons.mjs` at build time
-(`npm run build`), and the generated PNGs are gitignored.
+- **`?demo` query flag**: replaces the sensor with a fixed tilt — the way to run,
+  screenshot or test the app on any sensorless machine.
+- **Versioning**: `VERSION` holds major.minor; first deploy of a minor is the release
+  (`vX.Y.0`), later merges deploy as QA candidates (`vX.Y.CR<PR>`). Details in ADR 0007.
+- **Secure context**: sensors need HTTPS or `localhost`; iOS additionally needs a user
+  gesture. Real-phone testing options are in `docs/01-CONTRIBUTING.md`.
+- **Sensor preference**: `DeviceMotionEvent.accelerationIncludingGravity` first,
+  `DeviceOrientationEvent` fallback, smoothed — specified in `docs/03-ARCHITECTURE.md`.
