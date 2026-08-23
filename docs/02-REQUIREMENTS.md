@@ -101,8 +101,8 @@ URL and must keep working with no signal.
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
   is listed, e.g. "20; 40; 60"), Tolerance (mm a wheel may sit below the highest and
-  still count as level), or Stability (display hysteresis dead band in mm; 0 disables
-  it) and save
+  still count as level), Stability (display hysteresis dead band in mm; 0 disables
+  it), display unit (R14), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
   `docs/03-ARCHITECTURE.md` § Settings).
@@ -141,4 +141,79 @@ URL and must keep working with no signal.
   size, timestamp, user agent), and I post it under my own GitHub account.
 - The submit button is disabled until both title and description are filled.
 - Modeled on sbsommar's feedback feature (its 02-§73), adapted to a static site: no
-  server, so no GitHub token ever ships in the client.
+  server, so no GitHub token ever ships in the client (ADR 0006).
+
+## R13 — The app speaks Swedish and English
+
+- **Given** my phone's language is any `sv*` locale
+- **When** I open Libell
+- **Then** every user-facing string is Swedish; any other locale gets English. A stored
+  override (from settings) wins over auto-detection; an invalid stored value falls back
+  to auto-detection.
+- All strings go through `t()` in `src/ui/i18n.ts`; both dictionaries cover the same
+  keys (enforced by a unit test).
+
+## R14 — Lengths display in mm or cm
+
+- **Given** I switch "Show lengths in" between mm and cm in Settings
+- **Then** every displayed length (wheel lifts, step heights, settings chips) uses that
+  unit — whole mm, or cm with at most one decimal — while storage and math stay mm.
+
+## R15 — Theme follows the phone, or is forced
+
+- **Given** the theme setting "Follow the phone" (default)
+- **When** the phone switches between light and dark — even while the app is open
+- **Then** the app follows, and the browser-chrome `theme-color` matches the palette in
+  effect. Choosing Light or Dark forces that palette regardless of the phone.
+
+## R16 — Reaching level is celebrated exactly once
+
+- **Given** the vehicle becomes level while I watch the screen
+- **Then** a brief full-screen ✓ overlay is shown and the phone vibrates; a chime
+  sounds only if the opt-in "Chime when level" setting is on (audio is unlocked by the
+  save gesture, satisfying autoplay policies).
+- **Given** the vehicle then jitters around the tolerance boundary
+- **Then** no further celebration fires: the trigger re-arms only after the vehicle has
+  been clearly un-level (well past the tolerance, sustained for seconds) and a cooldown
+  has passed, and never while the menu or the wizard is open or the page is hidden.
+
+## R17 — Wrong phone pose pauses the guidance instead of misleading
+
+- **Given** the phone is not lying flat (total tilt past ~25°) or is held in landscape
+- **When** I look at the screen
+- **Then** an overlay says what to do ("lay the phone flat" / "turn to portrait")
+  instead of showing wrong wheel guidance; the overlay clears with hysteresis (only
+  once clearly flat again) so it cannot flicker at the boundary.
+
+## R18 — A first-run introduction, skippable and reopenable
+
+- **Given** I open Libell for the very first time
+- **Then** a three-step wizard runs: how to place the phone, vehicle measurements
+  (skippable — "use defaults"), calibration (skippable). It can be closed with ✕ at any
+  point, warning lamps (R11) stay lit for whatever was skipped, and ☰ → "Show
+  introduction" reopens it any time.
+
+## R19 — Share the app
+
+- **Given** I tap the share button in the top bar
+- **Then** the phone's native share sheet opens with the app's address (Web Share
+  API); where the API is missing the address is copied to the clipboard and a toast
+  confirms; without a clipboard the address itself is shown.
+
+## R20 — Install affordance matching the platform
+
+- **Given** the browser offers a real install prompt (Chromium's
+  `beforeinstallprompt`)
+- **Then** an "Install" button appears in the top bar and replays the deferred prompt
+  when tapped. On iOS, which has no install API, the button toggles a hint describing
+  Share → "Add to Home Screen". When the app already runs standalone, no install UI
+  appears.
+
+## R21 — Ready-made ramps by name
+
+- **Given** the Settings form's "Ready-made ramp" picker
+- **When** I choose a model sold in camping shops (Thule, Fiamma, Milenco, Froli,
+  Biltema, …)
+- **Then** its step heights fill in; editing the heights afterwards switches the picker
+  to "Custom set". A set matching a catalog model shows the model's name regardless of
+  entry order, preferring the already-selected model when two share the same steps.
