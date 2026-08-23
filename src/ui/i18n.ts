@@ -10,6 +10,9 @@ export const MESSAGES = {
   en: {
     'topbar.install': 'Install',
     'topbar.menu': 'Menu',
+    'topbar.share': 'Share Libell',
+    'share.text': 'Level your motorhome with your phone.',
+    'share.copied': 'Link copied!',
     'install.hint': 'Tap Share, then "Add to Home Screen".',
 
     'lamp.setup': '⚠ Setup',
@@ -144,6 +147,9 @@ export const MESSAGES = {
   sv: {
     'topbar.install': 'Installera',
     'topbar.menu': 'Meny',
+    'topbar.share': 'Dela Libell',
+    'share.text': 'Få husbilen i våg med telefonen.',
+    'share.copied': 'Länken kopierad!',
     'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',
 
     'lamp.setup': '⚠ Mått',
