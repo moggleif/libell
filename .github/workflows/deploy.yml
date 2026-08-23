@@ -49,6 +49,9 @@ jobs:
           fi
           if [ -z "$(git tag --list "v${BASE}.*")" ]; then
             IS_NEW_MINOR=true
+            # The first release of a new major.minor is always X.Y.0;
+            # later deploys go back to patch = PR number.
+            PATCH=0
           else
             IS_NEW_MINOR=false
           fi
