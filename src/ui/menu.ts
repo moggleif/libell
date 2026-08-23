@@ -39,7 +39,9 @@ const HELP_TEXT: [string, string][] = [
       'distance between the left and right wheels — front and rear can differ. Ramp ' +
       'step heights are the heights of your leveling ramp steps in mm, separated by ' +
       'semicolons (e.g. 20; 40; 60). Tolerance is how many degrees of tilt still ' +
-      'count as level.',
+      'count as level. Stability is how much a reading must change (in mm) before ' +
+      'the display updates — raise it if numbers or colors flicker, set 0 to turn ' +
+      'it off.',
   ],
   [
     'Calibration',

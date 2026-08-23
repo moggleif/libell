@@ -12,13 +12,15 @@ import {
 } from '../domain/settings';
 import { saveSettings } from '../data/settingsStore';
 
-type NumberKey = 'wheelbaseCm' | 'trackWidthFrontCm' | 'trackWidthRearCm' | 'toleranceDeg';
+type NumberKey =
+  'wheelbaseCm' | 'trackWidthFrontCm' | 'trackWidthRearCm' | 'toleranceDeg' | 'stabilityMm';
 
-const NUMBER_FIELDS: { key: NumberKey; label: string; step: string }[] = [
+const NUMBER_FIELDS: { key: NumberKey; label: string; step: string; min?: string }[] = [
   { key: 'wheelbaseCm', label: 'Wheelbase (cm)', step: '1' },
   { key: 'trackWidthFrontCm', label: 'Track width front (cm)', step: '1' },
   { key: 'trackWidthRearCm', label: 'Track width rear (cm)', step: '1' },
   { key: 'toleranceDeg', label: 'Tolerance (°)', step: '0.1' },
+  { key: 'stabilityMm', label: 'Stability (mm)', step: '0.5', min: '0' },
 ];
 
 export function createSettingsForm(
@@ -29,7 +31,7 @@ export function createSettingsForm(
   form.className = 'settings__form';
 
   const inputs = new Map<NumberKey, HTMLInputElement>();
-  for (const { key, label, step } of NUMBER_FIELDS) {
+  for (const { key, label, step, min } of NUMBER_FIELDS) {
     const field = document.createElement('label');
     field.className = 'settings__field';
     const caption = document.createElement('span');
@@ -37,7 +39,7 @@ export function createSettingsForm(
     const input = document.createElement('input');
     input.type = 'number';
     input.inputMode = 'decimal';
-    input.min = step;
+    input.min = min ?? step;
     input.step = step;
     input.name = key;
     input.value = String(initial[key]);

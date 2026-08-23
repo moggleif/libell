@@ -12,10 +12,8 @@ import type { LevelingResult, LiftSeverity, WheelId } from './leveling';
 import { liftSeverity, recommendStep, WHEEL_IDS } from './leveling';
 import type { LevelSettings } from './settings';
 
-/** Extra margin (mm) a reading must move past a boundary to change the display. */
-const DEADBAND_MM = 3;
-/** Extra degrees beyond the tolerance before "level" is taken away again. */
-const LEVEL_EXIT_MARGIN_DEG = 0.15;
+/** Degrees of extra "level" margin per mm of configured stability. */
+const LEVEL_EXIT_MARGIN_DEG_PER_MM = 0.05;
 
 export interface DisplayWheel {
   /** Lift rounded to whole cm, changed only past the dead band. */
@@ -46,6 +44,10 @@ export function createDisplayStabilizer(): (
   let level = false;
 
   return (result, settings) => {
+    // The dead band is the user-facing "Stability" setting.
+    const deadbandMm = settings.stabilityMm;
+    const levelExitMarginDeg = deadbandMm * LEVEL_EXIT_MARGIN_DEG_PER_MM;
+
     // Level status first: it gates the wheel colors below. Enter at the
     // tolerance, leave only past it by a margin, so the "Your RV is
     // level!" message does not blink.
@@ -53,7 +55,7 @@ export function createDisplayStabilizer(): (
     if (!initialized) {
       level = result.isLevel;
     } else if (level) {
-      level = maxTilt < settings.toleranceDeg + LEVEL_EXIT_MARGIN_DEG;
+      level = maxTilt < settings.toleranceDeg + levelExitMarginDeg;
     } else {
       level = result.isLevel;
     }
@@ -74,21 +76,19 @@ export function createDisplayStabilizer(): (
       // Whole-cm figure: keep the shown value while the reading stays
       // within half a cm plus the dead band of it.
       const displayCm =
-        Math.abs(liftMm - prev.displayCm * 10) <= 5 + DEADBAND_MM
-          ? prev.displayCm
-          : fresh.displayCm;
+        Math.abs(liftMm - prev.displayCm * 10) <= 5 + deadbandMm ? prev.displayCm : fresh.displayCm;
 
       // Ramp step: switch only when the candidate is clearly closer than
       // the currently shown step (0 = "no step" competes too).
       const stepMm =
-        Math.abs(liftMm - fresh.stepMm) + DEADBAND_MM < Math.abs(liftMm - prev.stepMm)
+        Math.abs(liftMm - fresh.stepMm) + deadbandMm < Math.abs(liftMm - prev.stepMm)
           ? fresh.stepMm
           : prev.stepMm;
 
       // Severity: change color only once the reading is past the boundary
       // by the dead band; liftSeverity at (lift ∓ dead band) agreeing with
       // the fresh value means we are clearly on the new side.
-      const towardPrev = fresh.severity !== prev.severity ? DEADBAND_MM : 0;
+      const towardPrev = fresh.severity !== prev.severity ? deadbandMm : 0;
       const severity =
         liftSeverity((liftMm - towardPrev) / 10, settings, level) === fresh.severity &&
         liftSeverity((liftMm + towardPrev) / 10, settings, level) === fresh.severity
