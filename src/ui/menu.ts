@@ -164,6 +164,10 @@ export function createMenu(options: MenuOptions): Menu {
     if (event.target === backdrop) goBack();
   });
 
+  // Order mirrors the setup flow (and the warning lamps): measurements,
+  // then the one-time phone calibration, then help, with the meta items
+  // (introduction, feedback) at the bottom.
+
   // --- Settings ---
   const settingsBody = document.createElement('div');
   settingsBody.append(createSettingsForm(options.initialSettings, options.onSettingsSaved));
@@ -173,9 +177,6 @@ export function createMenu(options: MenuOptions): Menu {
   const calibrationSection = createCalibrationSection(options);
   const refreshCalibration = calibrationSection.refresh;
   addSection('calibration', t('menu.calibration'), calibrationSection.element);
-
-  // --- Feedback ---
-  addSection('feedback', t('menu.feedback'), createFeedbackSection());
 
   // --- Help: illustration-first, short captions (#54) ---
   const HELP: {
@@ -214,6 +215,9 @@ export function createMenu(options: MenuOptions): Menu {
     options.openOnboarding();
   });
   drawer.append(introItem);
+
+  // --- Feedback (bottom — reached rarely) ---
+  addSection('feedback', t('menu.feedback'), createFeedbackSection());
 
   return {
     element: container,
