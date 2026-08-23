@@ -11,6 +11,12 @@ function input(form: HTMLFormElement, name: string): HTMLInputElement {
 }
 
 describe('settings form', () => {
+  it('tells the user where to find the measurements', () => {
+    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn());
+    const hint = form.querySelector('.settings__hint');
+    expect(hint?.textContent).toContain('registration');
+  });
+
   it('round-trips an edited field through save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(DEFAULT_SETTINGS, onSave);

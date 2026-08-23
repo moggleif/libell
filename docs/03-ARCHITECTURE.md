@@ -119,6 +119,9 @@ settings or a missing calibration. All user-facing strings go through the i18n d
 ## Build / CI notes
 
 The repository is text-only: PWA icons are rendered from `public/icons/icon.svg` by
-`scripts/generate-icons.mjs` during `npm run build` and are gitignored. CI runs
+`scripts/generate-icons.mjs` during `npm run build` and are gitignored. The `?demo`
+flag replaces the sensor with a fixed tilt **and presents the app as configured** (no
+warning lamps, in memory only), so screenshots and demos show the product rather than
+the first-run state. CI runs
 `format:check`, `typecheck`, `test` and `build` on every branch; pushes to `main` deploy
 `dist/` to GitHub Pages.

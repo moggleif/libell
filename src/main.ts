@@ -30,6 +30,19 @@ import { createIndicators } from './ui/indicators';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 
+// Clickjacking guard (#67): GitHub Pages cannot send response headers and
+// browsers ignore `frame-ancestors` in a <meta>-delivered CSP (ADR 0005),
+// so the app refuses to run framed — blank the page, then walk the top
+// window to the real address (allowed cross-origin for navigation).
+if (window.top !== window.self) {
+  document.body.replaceChildren();
+  try {
+    window.top!.location.href = location.href;
+  } catch {
+    // Sandboxed frame without top-navigation: stay blank.
+  }
+}
+
 setLanguage(resolveLanguage(loadLanguage()));
 
 const installButton = document.querySelector<HTMLButtonElement>('#install-button');
@@ -177,10 +190,15 @@ function bootstrap(root: HTMLElement): void {
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
   if (menuButton) menu.attach(menuButton);
 
-  // Dashboard-style warning lamps.
+  // Dashboard-style warning lamps. Demo mode presents as a configured
+  // app (in memory only — nothing is written), so screenshots and demos
+  // show the product, not the first-run warnings (#70).
   const indicators = createIndicators((section) => menu.open(section));
   const updateIndicators = () =>
-    indicators.update({ settingsSaved: hasStoredSettings(), calibrated: calibration !== null });
+    indicators.update({
+      settingsSaved: demo || hasStoredSettings(),
+      calibrated: demo || calibration !== null,
+    });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
 

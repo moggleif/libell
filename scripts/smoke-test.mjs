@@ -46,6 +46,8 @@ try {
   assert(wheels === 4, `expected 4 wheel markers, got ${wheels}`);
   const glyphs = (await page.locator('.rv-diagram__wheel-glyph').allTextContents()).join('');
   assert(glyphs.length > 0, 'wheel glyphs are empty');
+  const lamps = await page.locator('.indicators__lamp:visible').count();
+  assert(lamps === 0, `demo mode shows ${lamps} warning lamp(s) — it should present as configured`);
   assert(pageErrors.length === 0, `page errors: ${pageErrors.join('; ')}`);
 
   console.log(`smoke test passed — status: "${status}", glyphs: ${glyphs}`);

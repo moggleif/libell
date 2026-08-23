@@ -8,7 +8,11 @@
 import type { LevelSettings } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
-import { measuresIllustration, placementIllustration } from './helpIllustrations';
+import {
+  legendIllustration,
+  measuresIllustration,
+  placementIllustration,
+} from './helpIllustrations';
 import { t } from './i18n';
 
 export interface OnboardingOptions extends CalibrationOptions {
@@ -41,7 +45,17 @@ export function showOnboarding(options: OnboardingOptions): void {
         const text = document.createElement('p');
         text.className = 'menu__text';
         text.textContent = t('help.what.t');
-        return [placementIllustration(t('onboard.step1.h')), text];
+        // How to read the answer (#71): the same legend and caption as
+        // the Help section — colors, glyphs and the bubble.
+        const legendText = document.createElement('p');
+        legendText.className = 'menu__text';
+        legendText.textContent = t('help.screen.t');
+        return [
+          placementIllustration(t('onboard.step1.h')),
+          text,
+          legendIllustration(t('help.screen.h')),
+          legendText,
+        ];
       },
     },
     {
