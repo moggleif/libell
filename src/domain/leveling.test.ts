@@ -26,7 +26,7 @@ describe('computeLeveling', () => {
     expect(result.rollDeg).toBeCloseTo(0);
     expect(result.pitchDeg).toBeCloseTo(0);
     for (const id of WHEEL_IDS) {
-      expect(result.wheels[id].liftCm).toBeCloseTo(0);
+      expect(result.wheels[id].liftMm).toBeCloseTo(0);
       expect(result.wheels[id].stepMm).toBe(0);
     }
   });
@@ -35,52 +35,52 @@ describe('computeLeveling', () => {
     // Negative roll = right side low, so right wheels need lifting.
     const result = computeLeveling(gravityFor(-2, 0), DEFAULT_SETTINGS);
     expect(result.isLevel).toBe(false);
-    expect(result.wheels.frontLeft.liftCm).toBeCloseTo(0);
-    expect(result.wheels.rearLeft.liftCm).toBeCloseTo(0);
-    const expected = DEFAULT_SETTINGS.trackWidthFrontCm * Math.tan((2 * Math.PI) / 180);
-    expect(result.wheels.frontRight.liftCm).toBeCloseTo(expected);
-    expect(result.wheels.rearRight.liftCm).toBeCloseTo(expected);
+    expect(result.wheels.frontLeft.liftMm).toBeCloseTo(0);
+    expect(result.wheels.rearLeft.liftMm).toBeCloseTo(0);
+    const expected = DEFAULT_SETTINGS.trackWidthFrontMm * Math.tan((2 * Math.PI) / 180);
+    expect(result.wheels.frontRight.liftMm).toBeCloseTo(expected);
+    expect(result.wheels.rearRight.liftMm).toBeCloseTo(expected);
   });
 
   it('uses each axle’s own track width when they differ', () => {
     // Wider front axle: under pure roll the front-left wheel sits furthest
     // out and highest, so even the rear-left wheel needs a small lift.
-    const settings = { ...DEFAULT_SETTINGS, trackWidthFrontCm: 200, trackWidthRearCm: 160 };
+    const settings = { ...DEFAULT_SETTINGS, trackWidthFrontMm: 2000, trackWidthRearMm: 1600 };
     const result = computeLeveling(gravityFor(-2, 0), settings);
     const t = Math.tan((2 * Math.PI) / 180);
-    expect(result.wheels.frontLeft.liftCm).toBeCloseTo(0);
-    expect(result.wheels.rearLeft.liftCm).toBeCloseTo(((200 - 160) / 2) * t);
-    expect(result.wheels.frontRight.liftCm).toBeCloseTo(200 * t);
-    expect(result.wheels.rearRight.liftCm).toBeCloseTo(((200 + 160) / 2) * t);
+    expect(result.wheels.frontLeft.liftMm).toBeCloseTo(0);
+    expect(result.wheels.rearLeft.liftMm).toBeCloseTo(((2000 - 1600) / 2) * t);
+    expect(result.wheels.frontRight.liftMm).toBeCloseTo(2000 * t);
+    expect(result.wheels.rearRight.liftMm).toBeCloseTo(((2000 + 1600) / 2) * t);
   });
 
   it('pure pitch: lifts the low end, the high end is the reference', () => {
     // Negative pitch = front low, so front wheels need lifting.
     const result = computeLeveling(gravityFor(0, -1.5), DEFAULT_SETTINGS);
     expect(result.isLevel).toBe(false);
-    expect(result.wheels.rearLeft.liftCm).toBeCloseTo(0);
-    expect(result.wheels.rearRight.liftCm).toBeCloseTo(0);
-    const expected = DEFAULT_SETTINGS.wheelbaseCm * Math.tan((1.5 * Math.PI) / 180);
-    expect(result.wheels.frontLeft.liftCm).toBeCloseTo(expected);
-    expect(result.wheels.frontRight.liftCm).toBeCloseTo(expected);
+    expect(result.wheels.rearLeft.liftMm).toBeCloseTo(0);
+    expect(result.wheels.rearRight.liftMm).toBeCloseTo(0);
+    const expected = DEFAULT_SETTINGS.wheelbaseMm * Math.tan((1.5 * Math.PI) / 180);
+    expect(result.wheels.frontLeft.liftMm).toBeCloseTo(expected);
+    expect(result.wheels.frontRight.liftMm).toBeCloseTo(expected);
   });
 
   it('combined roll + pitch: exactly three wheels need lifting', () => {
     // Right side low and front low → rear left is the single highest corner.
     const result = computeLeveling(gravityFor(-2, -1), DEFAULT_SETTINGS);
-    const lifts = WHEEL_IDS.map((id) => result.wheels[id].liftCm);
-    expect(lifts.filter((lift) => lift > 0.01)).toHaveLength(3);
-    expect(result.wheels.rearLeft.liftCm).toBeCloseTo(0);
+    const lifts = WHEEL_IDS.map((id) => result.wheels[id].liftMm);
+    expect(lifts.filter((lift) => lift > 0.1)).toHaveLength(3);
+    expect(result.wheels.rearLeft.liftMm).toBeCloseTo(0);
     // The opposite corner is lowest, so it needs the most lift.
     const max = Math.max(...lifts);
-    expect(result.wheels.frontRight.liftCm).toBeCloseTo(max);
+    expect(result.wheels.frontRight.liftMm).toBeCloseTo(max);
   });
 
   it('recommends the available ramp step closest to the lift', () => {
     const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60, 90] };
-    // Roll of −2° over a 180 cm track lifts the right side ≈ 6.3 cm.
+    // Roll of −2° over a 1800 mm track lifts the right side ≈ 63 mm.
     const result = computeLeveling(gravityFor(-2, 0), settings);
-    expect(result.wheels.frontRight.liftCm).toBeCloseTo(6.29, 1);
+    expect(result.wheels.frontRight.liftMm).toBeCloseTo(62.9, 0);
     expect(result.wheels.frontRight.stepMm).toBe(60);
     expect(result.wheels.frontLeft.stepMm).toBe(0);
   });
@@ -96,7 +96,7 @@ describe('computeLeveling', () => {
     expect(calibrated.rollDeg).toBeCloseTo(0);
     expect(calibrated.pitchDeg).toBeCloseTo(0);
     for (const id of WHEEL_IDS) {
-      expect(calibrated.wheels[id].liftCm).toBeCloseTo(0);
+      expect(calibrated.wheels[id].liftMm).toBeCloseTo(0);
     }
   });
 
@@ -104,10 +104,10 @@ describe('computeLeveling', () => {
     // Height-based: geometry is inherent in the lifts. Default tolerance
     // 20 mm — a pitch lifting the front 15 mm is level, 28 mm is not.
     const small = computeLeveling(gravityFor(0, -0.21), DEFAULT_SETTINGS);
-    expect(small.wheels.frontLeft.liftCm * 10).toBeLessThan(20);
+    expect(small.wheels.frontLeft.liftMm).toBeLessThan(20);
     expect(small.isLevel).toBe(true);
     const beyond = computeLeveling(gravityFor(0, -0.4), DEFAULT_SETTINGS);
-    expect(beyond.wheels.frontLeft.liftCm * 10).toBeGreaterThan(20);
+    expect(beyond.wheels.frontLeft.liftMm).toBeGreaterThan(20);
     expect(beyond.isLevel).toBe(false);
   });
 });
@@ -128,12 +128,12 @@ describe('liftSeverity', () => {
     const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60], toleranceMm: 20 };
     // Within tolerance → green, nothing to do.
     expect(liftSeverity(0, settings)).toBe('none');
-    expect(liftSeverity(1.9, settings)).toBe('none');
+    expect(liftSeverity(19, settings)).toBe('none');
     // A step brings the wheel within tolerance → orange.
-    expect(liftSeverity(3, settings)).toBe('small'); // 30 mm → 20 or 40 mm step
-    expect(liftSeverity(7.5, settings)).toBe('small'); // 75 mm → 60 mm step, 15 left
+    expect(liftSeverity(30, settings)).toBe('small'); // → 20 or 40 mm step
+    expect(liftSeverity(75, settings)).toBe('small'); // → 60 mm step, 15 left
     // Even the best step leaves it outside tolerance → red: not worth it.
-    expect(liftSeverity(9, settings)).toBe('large'); // 90 mm → 60 leaves 30
-    expect(liftSeverity(20, settings)).toBe('large');
+    expect(liftSeverity(90, settings)).toBe('large'); // 60 leaves 30
+    expect(liftSeverity(200, settings)).toBe('large');
   });
 });

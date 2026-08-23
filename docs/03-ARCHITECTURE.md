@@ -29,7 +29,7 @@ testable in a plain Node environment.
 
 Input: gravity vector `(gx, gy, gz)` in device coordinates (x = right, y = up-screen =
 toward the front of the vehicle, z = out of the screen) and `LevelSettings`. All lengths
-in **centimetres**.
+in **millimetres**.
 
 ```
 roll  = atan2(gx, gz)        # side/side
@@ -48,9 +48,9 @@ isLevel = max(lift) <= toleranceMm                      # height-based, default 
 
 The highest wheel is always the reference. An optional stored calibration (roll/pitch
 captured on a known-level surface) is subtracted from the reading. Output: per-wheel
-`{liftCm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
+`{liftMm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
 display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
-band ("Stability") to the shown cm figure, step, wheel color and level status.
+band ("Stability") to the shown mm figure, step, wheel color and level status.
 
 ## Sensor (`src/sensor/orientation.ts`)
 
@@ -94,10 +94,10 @@ layout on every tick.
 ## Settings (`src/data/settingsStore.ts`)
 
 `localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
-outdated value falls back to defaults. Defaults: wheelbase 400 cm, front and rear track
-width 180 cm, one 40 mm ramp step, tolerance 0.5°. Legacy values migrate on read: a
-single `trackWidthCm` seeds both axles, and cm step heights (`blockHeightsCm` or a
-single `blockHeightCm`) convert to mm.
+outdated value falls back to defaults. Defaults: wheelbase 4000 mm, front and rear track
+width 1800 mm, one 40 mm ramp step, tolerance 20 mm, stability 3 mm. Legacy cm values
+migrate on read (×10): wheelbase, track widths (including a single `trackWidthCm` for
+both axles) and step heights.
 
 ## Offline
 

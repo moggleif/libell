@@ -27,8 +27,8 @@ export const WHEEL_LABELS: Record<WheelId, string> = {
 };
 
 export interface WheelLift {
-  /** How much this wheel must be raised, in cm (≥ 0). */
-  liftCm: number;
+  /** How much this wheel must be raised, in mm (≥ 0). */
+  liftMm: number;
   /**
    * The ramp step closest to the required lift, in mm — 0 when driving
    * onto even the smallest step would overshoot more than staying off.
@@ -48,12 +48,12 @@ export interface LevelingResult {
 
 const RAD_TO_DEG = 180 / Math.PI;
 
-/** Wheel positions in the vehicle plane: x = right, y = front. Each axle
- * has its own track width — many RVs are narrower over one axle. */
+/** Wheel positions in the vehicle plane (mm): x = right, y = front. Each
+ * axle has its own track width — many RVs are narrower over one axle. */
 function wheelPositions(settings: LevelSettings): Record<WheelId, { x: number; y: number }> {
-  const halfFront = settings.trackWidthFrontCm / 2;
-  const halfRear = settings.trackWidthRearCm / 2;
-  const halfBase = settings.wheelbaseCm / 2;
+  const halfFront = settings.trackWidthFrontMm / 2;
+  const halfRear = settings.trackWidthRearMm / 2;
+  const halfBase = settings.wheelbaseMm / 2;
   return {
     frontLeft: { x: -halfFront, y: halfBase },
     frontRight: { x: halfFront, y: halfBase },
@@ -82,9 +82,9 @@ export function computeLeveling(
   const wheels = {} as Record<WheelId, WheelLift>;
   let maxLiftMm = 0;
   for (const { id, z } of heights) {
-    const liftCm = highest - z;
-    maxLiftMm = Math.max(maxLiftMm, liftCm * 10);
-    wheels[id] = { liftCm, stepMm: recommendStep(liftCm * 10, settings.rampStepHeightsMm) };
+    const liftMm = highest - z;
+    maxLiftMm = Math.max(maxLiftMm, liftMm);
+    wheels[id] = { liftMm, stepMm: recommendStep(liftMm, settings.rampStepHeightsMm) };
   }
 
   return {
@@ -121,8 +121,7 @@ export type LiftSeverity = 'none' | 'small' | 'large';
  * the best available step leaves it outside — not worth driving up with
  * the ramps you have.
  */
-export function liftSeverity(liftCm: number, settings: LevelSettings): LiftSeverity {
-  const liftMm = liftCm * 10;
+export function liftSeverity(liftMm: number, settings: LevelSettings): LiftSeverity {
   if (liftMm <= settings.toleranceMm) return 'none';
   const best = recommendStep(liftMm, settings.rampStepHeightsMm);
   return Math.abs(liftMm - best) <= settings.toleranceMm ? 'small' : 'large';

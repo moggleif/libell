@@ -38,11 +38,11 @@ URL and must keep working with no signal.
 
 ## R3 — The app computes how much to raise each wheel
 
-- **Given** a known wheelbase, front and rear track width and the available ramp step
-  heights
+- **Given** a known wheelbase, front and rear track width (mm) and the available ramp
+  step heights (mm)
 - **When** the vehicle is tilted by roll and pitch
 - **Then** each wheel's required lift is `max(z) − z_i` (≥ 0) where
-  `z_i = x_i·tan(roll) + y_i·tan(pitch)`, expressed in cm together with the available
+  `z_i = x_i·tan(roll) + y_i·tan(pitch)`, expressed in mm together with the available
   ramp step height closest to the lift ("no step" is a candidate too).
 - Acceptance cases (these become unit tests):
   - **Flat** (gravity straight down) → every wheel lift is 0 and the RV is reported level.
@@ -70,13 +70,13 @@ URL and must keep working with no signal.
 - **Then** each wheel is colored by "is it worth driving up?": green within the
   tolerance, orange when some ramp step brings it within tolerance, red when even the
   best step cannot — move the vehicle instead. Colored wheels show their required lift
-  in whole cm.
+  in whole mm.
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
 - **Given** the RV is not level
 - **Then** each wheel needing a lift shows, on the diagram itself, the missing height in
-  whole cm below the wheel and the ramp step to drive up onto above it; wheels within
+  whole mm below the wheel and the ramp step to drive up onto above it; wheels within
   tolerance are green and unlabeled.
 - **Given** all wheels are within tolerance
 - **Then** a large green "Your RV is level!" message is shown under the diagram.
@@ -96,14 +96,15 @@ URL and must keep working with no signal.
 
 - **Given** I open Settings from the hamburger menu (which also holds Calibration and
   Help)
-- **When** I edit Wheelbase, Track width front, Track width rear, Ramp step heights
+- **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
+  step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
   is listed, e.g. "20; 40; 60"), Tolerance (mm a wheel may sit below the highest and
   still count as level), or Stability (display hysteresis dead band in mm; 0 disables
   it) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
-  the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, one
-  40 mm step, tolerance 0.5°.
+  the calculation. Defaults: wheelbase 4000 mm, front and rear track width 1800 mm, one
+  40 mm step, tolerance 20 mm.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 

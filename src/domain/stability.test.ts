@@ -11,53 +11,53 @@ function gravityFor(rollDeg: number, pitchDeg: number): GravityVector {
   return { x: G * Math.tan(roll), y: G * Math.tan(pitch), z: G };
 }
 
-/** Roll angle (deg) that produces the given front-right lift in cm. */
-function rollForLift(liftCm: number, trackCm: number): number {
-  return (-Math.atan(liftCm / trackCm) * 180) / Math.PI;
+/** Roll angle (deg) that produces the given front-right lift in mm. */
+function rollForLift(liftMm: number, trackMm: number): number {
+  return (-Math.atan(liftMm / trackMm) * 180) / Math.PI;
 }
 
 const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60] };
 
-function displayFor(stabilize: ReturnType<typeof createDisplayStabilizer>, liftCm: number) {
-  const result = computeLeveling(gravityFor(rollForLift(liftCm, 180), 0), settings);
+function displayFor(stabilize: ReturnType<typeof createDisplayStabilizer>, liftMm: number) {
+  const result = computeLeveling(gravityFor(rollForLift(liftMm, 1800), 0), settings);
   return stabilize(result, settings).wheels.frontRight;
 }
 
 describe('createDisplayStabilizer', () => {
-  it('keeps the whole-cm figure steady across rounding-edge jitter', () => {
+  it('keeps the whole-mm figure steady across rounding-edge jitter', () => {
     const stabilize = createDisplayStabilizer();
-    expect(displayFor(stabilize, 4.4).displayCm).toBe(4);
-    // Jitter around the 4/5 rounding edge stays at 4…
-    expect(displayFor(stabilize, 4.55).displayCm).toBe(4);
-    expect(displayFor(stabilize, 4.45).displayCm).toBe(4);
+    expect(displayFor(stabilize, 44).displayMm).toBe(44);
+    // Jitter within the dead band keeps the shown value…
+    expect(displayFor(stabilize, 45.5).displayMm).toBe(44);
+    expect(displayFor(stabilize, 44.5).displayMm).toBe(44);
     // …until the reading clearly moves on.
-    expect(displayFor(stabilize, 5.4).displayCm).toBe(5);
+    expect(displayFor(stabilize, 54).displayMm).toBe(54);
   });
 
   it('does not flap between two ramp steps at their midpoint', () => {
     const stabilize = createDisplayStabilizer();
-    expect(displayFor(stabilize, 4.4).stepMm).toBe(40);
-    // 5.05 cm is a hair past the 40/60 midpoint — not clearly better, keep 40.
-    expect(displayFor(stabilize, 5.05).stepMm).toBe(40);
-    expect(displayFor(stabilize, 4.95).stepMm).toBe(40);
+    expect(displayFor(stabilize, 44).stepMm).toBe(40);
+    // 50.5 mm is a hair past the 40/60 midpoint — not clearly better, keep 40.
+    expect(displayFor(stabilize, 50.5).stepMm).toBe(40);
+    expect(displayFor(stabilize, 49.5).stepMm).toBe(40);
     // A clear move switches.
-    expect(displayFor(stabilize, 5.8).stepMm).toBe(60);
+    expect(displayFor(stabilize, 58).stepMm).toBe(60);
   });
 
   it('changes severity color only past the boundary dead band', () => {
     // Green/orange boundary sits at the tolerance (20 mm), dead band 3 mm.
     const stabilize = createDisplayStabilizer();
-    expect(displayFor(stabilize, 1.8).severity).toBe('none');
-    expect(displayFor(stabilize, 2.05).severity).toBe('none');
-    expect(displayFor(stabilize, 1.95).severity).toBe('none');
-    expect(displayFor(stabilize, 2.5).severity).toBe('small');
+    expect(displayFor(stabilize, 18).severity).toBe('none');
+    expect(displayFor(stabilize, 20.5).severity).toBe('none');
+    expect(displayFor(stabilize, 19.5).severity).toBe('none');
+    expect(displayFor(stabilize, 25).severity).toBe('small');
     // And it does not fall straight back at boundary jitter.
-    expect(displayFor(stabilize, 2.05).severity).toBe('small');
+    expect(displayFor(stabilize, 20.5).severity).toBe('small');
   });
 
   it('shows every wheel green while the vehicle is level', () => {
     const stabilize = createDisplayStabilizer();
-    const result = computeLeveling(gravityFor(rollForLift(1.5, 180), 0), settings);
+    const result = computeLeveling(gravityFor(rollForLift(15, 1800), 0), settings);
     expect(result.isLevel).toBe(true);
     const display = stabilize(result, settings);
     expect(display.isLevel).toBe(true);
@@ -68,12 +68,12 @@ describe('createDisplayStabilizer', () => {
   it('holds "level" through jitter just past the tolerance', () => {
     // Tolerance 20 mm, dead band 3 mm → leaves level only above 23 mm.
     const stabilize = createDisplayStabilizer();
-    const at = (liftCm: number) =>
-      stabilize(computeLeveling(gravityFor(rollForLift(liftCm, 180), 0), settings), settings);
-    expect(at(1.5).isLevel).toBe(true);
-    expect(at(2.2).isLevel).toBe(true); // within the dead band — still level
-    expect(at(2.6).isLevel).toBe(false); // clearly out
-    expect(at(2.2).isLevel).toBe(false); // must come back inside to re-enter
-    expect(at(1.5).isLevel).toBe(true);
+    const at = (liftMm: number) =>
+      stabilize(computeLeveling(gravityFor(rollForLift(liftMm, 1800), 0), settings), settings);
+    expect(at(15).isLevel).toBe(true);
+    expect(at(22).isLevel).toBe(true); // within the dead band — still level
+    expect(at(26).isLevel).toBe(false); // clearly out
+    expect(at(22).isLevel).toBe(false); // must come back inside to re-enter
+    expect(at(15).isLevel).toBe(true);
   });
 });

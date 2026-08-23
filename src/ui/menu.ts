@@ -53,9 +53,9 @@ const HELP_TEXT: [string, string][] = [
   ],
   [
     'The settings, one by one',
-    'Wheelbase: the distance from the front wheels to the rear wheels, in cm. ' +
+    'Wheelbase: the distance from the front wheels to the rear wheels, in mm. ' +
       'Track width front / rear: the distance between the left and right wheel on ' +
-      'each axle, in cm — they may differ, so there is one field for each. ' +
+      'each axle, in mm — they may differ, so there is one field for each. ' +
       'Ramp step heights: your leveling ramps are like small staircases; write the ' +
       'height of every step in mm with semicolons between, for example 20; 40; 60. ' +
       'Tolerance: how many mm lower a wheel may stand than the highest wheel and ' +
@@ -164,7 +164,8 @@ export function createMenu(options: MenuOptions): Menu {
     } else {
       calibrationStatus.textContent = 'Not calibrated — using the raw sensor.';
     }
-    clearButton.hidden = !calibration;
+    // Grayed out when there is nothing to clear.
+    clearButton.disabled = !calibration;
   }
   calibrateButton.addEventListener('click', () => {
     renderCalibrationStatus(options.calibrate() ?? undefined);

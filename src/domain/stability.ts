@@ -13,8 +13,8 @@ import { liftSeverity, recommendStep, WHEEL_IDS } from './leveling';
 import type { LevelSettings } from './settings';
 
 export interface DisplayWheel {
-  /** Lift rounded to whole cm, changed only past the dead band. */
-  displayCm: number;
+  /** Lift rounded to whole mm, changed only past the dead band. */
+  displayMm: number;
   /** Recommended ramp step (mm, 0 = none), changed only when clearly better. */
   stepMm: number;
   severity: LiftSeverity;
@@ -46,7 +46,7 @@ export function createDisplayStabilizer(): (
 
     // Level status: enter at the tolerance, leave only once some wheel is
     // past it by the dead band, so "Your RV is level!" does not blink.
-    const maxLiftMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].liftCm * 10));
+    const maxLiftMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].liftMm));
     if (!initialized) {
       level = result.isLevel;
     } else if (level) {
@@ -56,11 +56,11 @@ export function createDisplayStabilizer(): (
     }
 
     for (const id of WHEEL_IDS) {
-      const liftMm = result.wheels[id].liftCm * 10;
+      const liftMm = result.wheels[id].liftMm;
       const fresh: DisplayWheel = {
-        displayCm: Math.round(liftMm / 10),
+        displayMm: Math.round(liftMm),
         stepMm: recommendStep(liftMm, settings.rampStepHeightsMm),
-        severity: liftSeverity(liftMm / 10, settings),
+        severity: liftSeverity(liftMm, settings),
       };
       if (!initialized) {
         wheels[id] = fresh;
@@ -68,10 +68,10 @@ export function createDisplayStabilizer(): (
       }
       const prev = wheels[id];
 
-      // Whole-cm figure: keep the shown value while the reading stays
-      // within half a cm plus the dead band of it.
-      const displayCm =
-        Math.abs(liftMm - prev.displayCm * 10) <= 5 + deadbandMm ? prev.displayCm : fresh.displayCm;
+      // Whole-mm figure: keep the shown value while the reading stays
+      // within half a mm plus the dead band of it.
+      const displayMm =
+        Math.abs(liftMm - prev.displayMm) <= 0.5 + deadbandMm ? prev.displayMm : fresh.displayMm;
 
       // Ramp step: switch only when the candidate is clearly closer than
       // the currently shown step (0 = "no step" competes too).
@@ -85,12 +85,12 @@ export function createDisplayStabilizer(): (
       // the fresh value means we are clearly on the new side.
       const towardPrev = fresh.severity !== prev.severity ? deadbandMm : 0;
       const severity =
-        liftSeverity((liftMm - towardPrev) / 10, settings) === fresh.severity &&
-        liftSeverity((liftMm + towardPrev) / 10, settings) === fresh.severity
+        liftSeverity(liftMm - towardPrev, settings) === fresh.severity &&
+        liftSeverity(liftMm + towardPrev, settings) === fresh.severity
           ? fresh.severity
           : prev.severity;
 
-      wheels[id] = { displayCm, stepMm, severity };
+      wheels[id] = { displayMm, stepMm, severity };
     }
 
     initialized = true;

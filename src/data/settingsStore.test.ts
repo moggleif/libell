@@ -23,9 +23,9 @@ describe('settingsStore', () => {
   it('round-trips settings through storage', () => {
     const storage = memoryStorage();
     const settings = {
-      wheelbaseCm: 320,
-      trackWidthFrontCm: 190,
-      trackWidthRearCm: 165,
+      wheelbaseMm: 3200,
+      trackWidthFrontMm: 1900,
+      trackWidthRearMm: 1650,
       rampStepHeightsMm: [30, 60],
       toleranceMm: 25,
       stabilityMm: 2,

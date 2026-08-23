@@ -376,6 +376,11 @@ body {
   border: 1px solid var(--outline);
 }
 
+.menu__action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* ---- Settings form ---- */
 
 .settings__form {
