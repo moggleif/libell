@@ -164,19 +164,19 @@ export function createMenu(options: MenuOptions): Menu {
     if (event.target === backdrop) goBack();
   });
 
-  // Order: everyday tools first (calibration is the recurring task at
-  // each new pitch, settings mostly once), then help, then the meta
-  // items (introduction, feedback) at the bottom.
-
-  // --- Calibration (one-shot + flip) ---
-  const calibrationSection = createCalibrationSection(options);
-  const refreshCalibration = calibrationSection.refresh;
-  addSection('calibration', t('menu.calibration'), calibrationSection.element);
+  // Order mirrors the setup flow (and the warning lamps): measurements,
+  // then the one-time phone calibration, then help, with the meta items
+  // (introduction, feedback) at the bottom.
 
   // --- Settings ---
   const settingsBody = document.createElement('div');
   settingsBody.append(createSettingsForm(options.initialSettings, options.onSettingsSaved));
   addSection('settings', t('menu.settings'), settingsBody);
+
+  // --- Calibration (one-shot + flip) ---
+  const calibrationSection = createCalibrationSection(options);
+  const refreshCalibration = calibrationSection.refresh;
+  addSection('calibration', t('menu.calibration'), calibrationSection.element);
 
   // --- Help: illustration-first, short captions (#54) ---
   const HELP: {
