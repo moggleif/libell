@@ -11,8 +11,8 @@ import {
   type LevelSettings,
 } from '../domain/settings';
 
-const STORAGE_KEY = 'levelmate.settings';
-const CALIBRATION_KEY = 'levelmate.calibration';
+const STORAGE_KEY = 'libell.settings';
+const CALIBRATION_KEY = 'libell.calibration';
 
 /** The subset of `Storage` the store needs; injectable for tests. */
 export interface KeyValueStorage {

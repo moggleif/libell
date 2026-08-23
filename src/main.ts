@@ -134,15 +134,15 @@ function bootstrap(root: HTMLElement): void {
         break;
       case 'denied':
         showMessage(
-          'Motion access was denied, so LevelMate cannot read the tilt. ' +
+          'Motion access was denied, so Libell cannot read the tilt. ' +
             'Allow motion & orientation access for this site and reload.',
         );
         break;
       default:
         showMessage(
           window.isSecureContext
-            ? 'This device does not expose motion sensors, so LevelMate cannot read the tilt.'
-            : 'LevelMate needs a secure connection (HTTPS) to read the tilt sensors. ' +
+            ? 'This device does not expose motion sensors, so Libell cannot read the tilt.'
+            : 'Libell needs a secure connection (HTTPS) to read the tilt sensors. ' +
                 'Open the app over HTTPS and try again.',
         );
     }

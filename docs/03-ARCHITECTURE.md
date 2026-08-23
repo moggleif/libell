@@ -5,7 +5,7 @@
 - TypeScript (strict) + Vite, no UI framework — plain DOM and inline SVG
 - Vitest (unit tests), Prettier (formatting)
 - `vite-plugin-pwa` / Workbox — web app manifest + offline service worker
-- Static site on GitHub Pages, base path `/levelmate/` (override with `BASE_PATH`)
+- Static site on GitHub Pages, base path `/libell/` (override with `BASE_PATH`)
 
 ## Layers
 

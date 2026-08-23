@@ -1,6 +1,6 @@
-# CLAUDE.md – LevelMate (PWA)
+# CLAUDE.md – Libell (PWA)
 
-LevelMate is an installable web app (PWA) that helps level a motorhome / RV. The user lays
+Libell is an installable web app (PWA) that helps level a motorhome / RV. The user lays
 the phone flat inside the vehicle (the top edge of the phone pointing toward the front) and
 the app shows which wheels need to be raised and by how much, plus a live bubble level.
 
@@ -14,7 +14,7 @@ cleverness.
 - TypeScript (strict) + Vite, no UI framework — plain DOM and inline SVG
 - Vitest for unit tests, Prettier for formatting
 - `vite-plugin-pwa` (Workbox) for the manifest and the offline service worker
-- Deployed as a static site to GitHub Pages; base path `/levelmate/`
+- Deployed as a static site to GitHub Pages; base path `/libell/`
 - No build-time backend, no accounts
 
 ## 1. Directory layout (target)

@@ -39,7 +39,7 @@ describe('settingsStore', () => {
   });
 
   it('falls back to defaults when the stored JSON is corrupt', () => {
-    const storage = memoryStorage({ 'levelmate.settings': '{not json' });
+    const storage = memoryStorage({ 'libell.settings': '{not json' });
     expect(loadSettings(storage)).toEqual(DEFAULT_SETTINGS);
   });
 
@@ -67,7 +67,7 @@ describe('calibration store', () => {
   });
 
   it('rejects corrupt or implausible stored calibrations', () => {
-    const storage = memoryStorage({ 'levelmate.calibration': '{not json' });
+    const storage = memoryStorage({ 'libell.calibration': '{not json' });
     expect(loadCalibration(storage)).toBeNull();
     saveCalibration({ rollDeg: 60, pitchDeg: 0 }, storage);
     expect(loadCalibration(storage)).toBeNull();

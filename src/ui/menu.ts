@@ -26,7 +26,7 @@ export interface Menu {
 
 const HELP_TEXT: [string, string][] = [
   [
-    'What LevelMate does',
+    'What Libell does',
     'Lay your phone flat inside the RV with the top edge pointing toward the front. ' +
       'The diagram shows your RV from above: green wheels are fine, orange wheels need ' +
       'raising, and red means no ramp step you have gets that wheel level — not ' +

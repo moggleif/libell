@@ -6,20 +6,20 @@ criteria. Each maps to a GitHub issue. They describe how the finished system wor
 
 ## Audience & purpose
 
-LevelMate helps a motorhome/RV owner level their vehicle on a pitch. The user lays the
+Libell helps a motorhome/RV owner level their vehicle on a pitch. The user lays the
 phone flat inside the RV (on a table or floor) with the **top edge of the phone pointing
 toward the front of the vehicle**. The app tells them which wheels to raise and by how
 much, and shows a live level. There is **no account**. An optional phone calibration
 cancels phone/case bias; without it the raw sensor is used.
 
-LevelMate is an installable web app (PWA), so it runs on any modern phone from a single
+Libell is an installable web app (PWA), so it runs on any modern phone from a single
 URL and must keep working with no signal.
 
 ## R1 — The app is ready to use the moment it opens
 
-- **Given** I open LevelMate
+- **Given** I open Libell
 - **When** the page loads
-- **Then** the title "LevelMate" is shown, the layout is usable with the phone lying flat,
+- **Then** the title "Libell" is shown, the layout is usable with the phone lying flat,
   and the screen is kept awake via the Screen Wake Lock API while the app is in front.
 - **Given** I am on iOS, where motion access requires a user gesture
 - **When** the app opens
@@ -109,12 +109,12 @@ URL and must keep working with no signal.
 
 ## R10 — The app installs to the home screen and works offline
 
-- **Given** I have opened LevelMate once with a connection
+- **Given** I have opened Libell once with a connection
 - **When** I later open it on a pitch with no signal
 - **Then** the app loads and works fully offline.
-- **Given** I am browsing LevelMate
+- **Given** I am browsing Libell
 - **When** I choose "Add to Home Screen" / "Install"
-- **Then** it installs with its own LevelMate icon and opens standalone, without browser
+- **Then** it installs with its own Libell icon and opens standalone, without browser
   chrome.
 
 ## R11 — Phone calibration and dashboard warning lamps

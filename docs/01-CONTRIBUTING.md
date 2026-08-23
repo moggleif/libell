@@ -9,7 +9,7 @@
 
 ```sh
 npm install
-npm run dev      # dev server on http://localhost:5173/levelmate/
+npm run dev      # dev server on http://localhost:5173/libell/
 ```
 
 ## Build & test

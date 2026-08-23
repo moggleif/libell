@@ -1,9 +1,9 @@
-# LevelMate
+# Libell
 
-LevelMate is an installable web app (PWA) that helps you level a motorhome / RV.
+Libell is an installable web app (PWA) that helps you level a motorhome / RV.
 
 Lay your phone flat inside the vehicle (for example on the table) with the **top edge of
-the phone pointing toward the front**. LevelMate then shows a top-down view of the RV with
+the phone pointing toward the front**. Libell then shows a top-down view of the RV with
 the wheels that need raising (in cm and number of leveling blocks) plus a live bubble
 level. No calibration, no account, and it works offline once loaded.
 
@@ -53,13 +53,13 @@ the highest wheel is the reference: `lift_i = max(z) − z_i ≥ 0`, shown as cm
 
 ```sh
 npm install
-npm run dev           # http://localhost:5173/levelmate/
+npm run dev           # http://localhost:5173/libell/
 npm run test          # unit tests
 npm run typecheck     # tsc --noEmit
 npm run build         # production build into dist/
 ```
 
-The base path defaults to `/levelmate/` for GitHub Pages project hosting. Override it with
+The base path defaults to `/libell/` for GitHub Pages project hosting. Override it with
 `BASE_PATH=/ npm run build` for a custom domain or root-level hosting.
 
 ## Deployment
@@ -68,7 +68,7 @@ Pushes to `main` build and publish `dist/` to GitHub Pages via
 `.github/workflows/deploy.yml`. This requires **Settings → Pages → Source: GitHub Actions**
 to be enabled once for the repository.
 
-Every CI run also uploads the built site as a `levelmate-site-<sha>` artifact, so a branch
+Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a branch
 can be previewed before it is merged.
 
 ## Development docs

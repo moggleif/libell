@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 // GitHub Pages serves a project site from /<repo>/. Override with BASE_PATH
 // (e.g. BASE_PATH=/ for a custom domain or local static hosting).
-const base = process.env.BASE_PATH ?? '/levelmate/';
+const base = process.env.BASE_PATH ?? '/libell/';
 
 // ── Version string for the footer ──────────────────────────────────────────
 // Release handling mirrors sbsommar: the VERSION file holds major.minor, the
@@ -53,8 +53,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg'],
       manifest: {
-        name: 'LevelMate',
-        short_name: 'LevelMate',
+        name: 'Libell',
+        short_name: 'Libell',
         description: 'Level your motorhome / RV with your phone.',
         lang: 'en',
         start_url: base,
