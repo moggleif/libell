@@ -281,21 +281,19 @@ body {
   stroke: var(--lift-large);
 }
 
-.rv-diagram__step-label {
+.rv-diagram__step-label,
+.rv-diagram__lift-label {
   fill: var(--on-surface);
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-/* The mm figures are secondary — parenthesized and smaller than the
- * step name, both above (step height) and below (lift) the wheel. */
-.rv-diagram__lift-label,
+/* The step's height is secondary — parenthesized and smaller than the
+ * step name above it. */
 .rv-diagram__mm {
   fill: var(--on-surface-muted);
   font-size: 12px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }
 
 /* State glyph inside each wheel: shape carries the meaning too, so the

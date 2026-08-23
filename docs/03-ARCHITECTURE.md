@@ -109,7 +109,7 @@ has been opened with a connection it works with no signal at all. `registerType:
 
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
 the bubble level embedded at its center; per-wheel readouts sit directly at the wheels
-(step name above, parenthesized mm figures small). Everything is inline SVG, sized in viewport units so the
+(step name above with its height parenthesized small, lift in whole mm below). Everything is inline SVG, sized in viewport units so the
 diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
 in the full-width hamburger menu; amber warning lamps in the top bar point to unsaved
 settings or a missing calibration. All user-facing strings go through the i18n dictionaries (sv/en) in `src/ui/i18n.ts`.

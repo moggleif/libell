@@ -5,9 +5,9 @@
  * marker per wheel. Wheels are green when they need no lift; wheels that
  * need raising are orange (a step reaches) or red (beyond the tallest
  * step). Above each wheel which ramp step to drive up onto ("Step 2"),
- * with its height parenthesized and small; below, the required lift the
- * same way. The bubble level sits in the middle of the vehicle, like a
- * spirit level lying on the floor.
+ * with its height parenthesized and small; below the wheel the required
+ * lift in whole mm. The bubble level sits in the middle of the vehicle,
+ * like a spirit level lying on the floor.
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
@@ -171,7 +171,7 @@ export function createRvDiagram(): RvDiagram {
               : `↑ ${formatLength(stepMm, unit)}`;
           stepHeight.textContent = stepNumber > 0 ? `(${formatLength(stepMm, unit)})` : '';
         }
-        liftLabel.textContent = severity === 'none' ? '' : `(${formatLength(displayMm, unit)})`;
+        liftLabel.textContent = severity === 'none' ? '' : formatLength(displayMm, unit);
       }
 
       // The bubble floats toward the high side.
