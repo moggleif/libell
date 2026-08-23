@@ -192,8 +192,9 @@ URL and must keep working with no signal.
 ## R18 — A first-run introduction, skippable and reopenable
 
 - **Given** I open Libell for the very first time
-- **Then** a three-step wizard runs: how to place the phone, vehicle measurements
-  (skippable — "use defaults"), calibration (skippable). It can be closed with ✕ at any
+- **Then** a three-step wizard runs: how to place the phone and how to read the answer
+  (the wheel-state legend and the bubble), vehicle measurements (skippable — "use
+  defaults"), calibration (skippable). It can be closed with ✕ at any
   point, warning lamps (R11) stay lit for whatever was skipped, and ☰ → "Show
   introduction" reopens it any time.
 
