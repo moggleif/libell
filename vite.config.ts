@@ -39,6 +39,17 @@ function resolveVersionString(): string | null {
   return `${latest} – local ${stamp}`;
 }
 
+// GitHub Pages cannot set response headers, so the strictest available
+// hardening is a CSP <meta> tag. Injected only into production builds —
+// the dev server inlines styles/scripts and would break under it. The
+// app is fully self-contained (no CDNs, no analytics, no remote calls),
+// so 'self' covers everything; anything injected from elsewhere is
+// refused by the browser.
+const CSP =
+  "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; " +
+  "font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; " +
+  "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+
 export default defineConfig({
   base,
   define: {
@@ -49,6 +60,24 @@ export default defineConfig({
     sourcemap: true,
   },
   plugins: [
+    {
+      name: 'security-meta-tags',
+      apply: 'build',
+      transformIndexHtml() {
+        return [
+          {
+            tag: 'meta',
+            attrs: { 'http-equiv': 'Content-Security-Policy', content: CSP },
+            injectTo: 'head-prepend',
+          },
+          {
+            tag: 'meta',
+            attrs: { name: 'referrer', content: 'no-referrer' },
+            injectTo: 'head-prepend',
+          },
+        ];
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg'],
