@@ -78,53 +78,32 @@ export const MESSAGES = {
 
     'help.what.h': 'What Libell does',
     'help.what.t':
-      'Libell helps you park your motorhome level, using nothing but your phone. ' +
-      'Lay the phone flat inside the vehicle — on the table or the floor — with the ' +
-      'top of the phone pointing toward the front of the vehicle. The screen then ' +
-      'shows your motorhome from above, and each wheel tells you what to do.',
+      'Lay the phone flat inside the motorhome with the top toward the front. ' +
+      'The screen shows your vehicle from above, and each wheel tells you what to do.',
     'help.first.h': 'Before the first use',
     'help.first.t':
-      'Two things, both under the ☰ menu, and the app reminds you with yellow warning ' +
-      'signs in the top bar until they are done. 1) Open Settings and fill in your ' +
-      "vehicle's measurements and the step heights of your leveling ramps — the " +
-      'numbers are usually in the vehicle papers, or measure with a tape measure. ' +
-      '2) Calibrate the phone (see below). You only do this once; everything is ' +
-      'remembered.',
+      'Fill in Settings and calibrate once — the yellow signs in the top bar remind ' +
+      'you until both are done. Everything is remembered.',
     'help.screen.h': 'Reading the screen',
     'help.screen.t':
-      'Green wheel: leave it alone, it is fine. Orange wheel: drive that wheel up on ' +
-      'a ramp — the text above the wheel says which step to stop on (for example ' +
-      '"↑ 40 mm"), and the number below says how much the wheel is missing. Red ' +
-      'wheel: even your highest ramp step is not enough — do not bother driving up; ' +
-      'move the vehicle to a flatter spot instead. The round bubble in the middle ' +
-      'works like an ordinary spirit level: when the dot rests in the middle and ' +
-      'everything is green, the app says "Your motorhome is level!" — then you are done.',
-    'help.settings.h': 'The settings, one by one',
+      'Green ✓: done. Orange ↑: drive that wheel up on the step shown above it. ' +
+      'Red ✕: not even your highest step is enough — move to a flatter spot. ' +
+      'When the bubble rests in the middle, you are level.',
+    'help.settings.h': 'The measurements',
     'help.settings.t':
-      'Wheelbase: the distance from the front wheels to the rear wheels, in mm. ' +
-      'Track width front / rear: the distance between the left and right wheel on ' +
-      'each axle, in mm — they may differ, so there is one field for each. ' +
-      'Ramp step heights: your leveling ramps are like small staircases; add the ' +
-      'height of every step with the + button, or pick one of the common presets. ' +
-      'Tolerance: how many mm lower a wheel may stand than the highest wheel and ' +
-      'still count as level — smaller number, stricter leveling. ' +
-      'Stability: keeps the numbers calm when the phone lies still; raise it if ' +
-      'anything flickers. The defaults are fine to start with.',
+      'L is the wheelbase, W the track width (front and rear can differ) — usually in ' +
+      'the vehicle papers, or use a tape measure. Add your ramp steps with the + ' +
+      'button or pick a preset. Tolerance = how strict "level" is; Stability keeps ' +
+      'the numbers calm.',
     'help.calibration.h': 'Calibration',
     'help.calibration.t':
-      'No phone is perfectly flat — the case, a screen protector or the phone itself ' +
-      'adds a small tilt. To cancel it: put the phone on a surface you know is ' +
-      'level (check with a spirit level if unsure), open ☰ → Calibration and tap ' +
-      '"Calibrate now". From then on that position counts as perfectly flat. ' +
-      '"Clear calibration" undoes it.',
+      'Put the phone on a level surface and tap Calibrate now — or, with no level ' +
+      'surface around, capture, turn the phone 180° and capture again.',
     'help.notes.h': 'Good to know',
     'help.notes.t':
-      'The app works completely without internet once it has been opened — a campsite ' +
-      'without signal is no problem. Add it to your home screen to use it like an ' +
-      'ordinary app: on iPhone via Share → "Add to Home Screen", on Android via the ' +
-      'Install button. On iPhone you also tap "Start" each time you open the app — ' +
-      'Apple requires that before the phone shares its tilt sensors. The version ' +
-      'number at the bottom of the screen is useful if you ever report a problem.',
+      'Works fully offline once opened — add it to your home screen like an app. ' +
+      'On iPhone, tap Start each time; the version number at the bottom helps when ' +
+      'reporting problems.',
 
     'main.hint': 'Lay your phone flat inside your motorhome, top edge toward the front.',
     'main.start': 'Start',
@@ -219,51 +198,32 @@ export const MESSAGES = {
 
     'help.what.h': 'Vad Libell gör',
     'help.what.t':
-      'Libell hjälper dig att ställa husbilen i våg — med bara din telefon. ' +
-      'Lägg telefonen plant inne i fordonet, på bordet eller golvet, med telefonens ' +
-      'ovansida pekande mot fronten. Skärmen visar då din husbil ovanifrån, och ' +
-      'varje hjul talar om vad du ska göra.',
+      'Lägg telefonen plant i husbilen med ovansidan mot fronten. Skärmen visar ' +
+      'fordonet ovanifrån, och varje hjul talar om vad du ska göra.',
     'help.first.h': 'Före första användningen',
     'help.first.t':
-      'Två saker, båda under ☰-menyn — appen påminner med gula varningsskyltar i ' +
-      'listen tills de är gjorda. 1) Öppna Inställningar och fyll i fordonets mått ' +
-      'och rampens steghöjder — siffrorna finns oftast i fordonspapperen, eller mät ' +
-      'med tumstock. 2) Kalibrera telefonen (se nedan). Det görs bara en gång; allt ' +
-      'sparas.',
+      'Fyll i Inställningar och kalibrera en gång — de gula skyltarna i listen ' +
+      'påminner tills båda är gjorda. Allt sparas.',
     'help.screen.h': 'Så läser du skärmen',
     'help.screen.t':
-      'Grönt hjul: låt det vara, det är bra. Orange hjul: kör upp det hjulet på en ' +
-      'ramp — texten ovanför hjulet visar vilket steg du ska stanna på (till exempel ' +
-      '"↑ 40 mm"), och siffran under visar hur mycket hjulet saknar. Rött hjul: inte ' +
-      'ens ditt högsta rampsteg räcker — flytta bilen till ett planare ställe i ' +
-      'stället. Den runda bubblan i mitten fungerar som ett vanligt vattenpass: när ' +
-      'pricken vilar i mitten och allt är grönt säger appen "Din husbil står i våg!" ' +
-      '— då är du klar.',
-    'help.settings.h': 'Inställningarna, en i taget',
+      'Grönt ✓: klart. Orange ↑: kör upp hjulet på steget som visas ovanför. ' +
+      'Rött ✕: inte ens ditt högsta steg räcker — flytta till ett planare ställe. ' +
+      'När bubblan vilar i mitten står du i våg.',
+    'help.settings.h': 'Måtten',
     'help.settings.t':
-      'Hjulbas: avståndet från framhjulen till bakhjulen, i mm. Spårvidd fram/bak: ' +
-      'avståndet mellan vänster och höger hjul på respektive axel, i mm — de kan ' +
-      'skilja sig, därför ett fält för varje. Rampens steghöjder: dina ramper är som ' +
-      'små trappor; lägg till höjden på varje steg med plusknappen, eller välj en ' +
-      'av de vanliga ramperna. Tolerans: hur många mm lägre ett hjul får stå än det ' +
-      'högsta hjulet och ändå räknas som i våg — lägre siffra, noggrannare. ' +
-      'Stabilitet: håller siffrorna lugna när telefonen ligger still; höj den om ' +
-      'något fladdrar. Standardvärdena fungerar bra att börja med.',
+      'L är hjulbasen, W spårvidden (fram och bak kan skilja sig) — står oftast i ' +
+      'fordonspapperen, annars tumstock. Lägg till rampens steg med plusknappen ' +
+      'eller välj en färdig ramp. Tolerans = hur strikt "i våg" är; Stabilitet ' +
+      'håller siffrorna lugna.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
-      'Ingen telefon är helt plan — skalet, skärmskyddet eller telefonen själv ger ' +
-      'en liten lutning. Så tar du bort den: lägg telefonen på en yta du vet är plan ' +
-      '(kolla med vattenpass om du är osäker), öppna ☰ → Kalibrering och tryck på ' +
-      '"Kalibrera nu". Från och med då räknas det läget som helt plant. "Rensa ' +
-      'kalibrering" ångrar.',
+      'Lägg telefonen på en plan yta och tryck Kalibrera nu — eller, utan plan yta: ' +
+      'fånga, vrid telefonen 180° och fånga igen.',
     'help.notes.h': 'Bra att veta',
     'help.notes.t':
-      'Appen fungerar helt utan internet när den väl har öppnats — en campingplats ' +
-      'utan täckning är inget problem. Lägg den på hemskärmen så funkar den som en ' +
-      'vanlig app: på iPhone via Dela → "Lägg till på hemskärmen", på Android via ' +
-      'Installera-knappen. På iPhone trycker du också på "Start" varje gång appen ' +
-      'öppnas — det kräver Apple innan telefonen delar sina lutningssensorer. ' +
-      'Versionsnumret längst ner på skärmen är bra att ha om du rapporterar ett fel.',
+      'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen som ' +
+      'en app. På iPhone trycker du Start varje gång; versionsnumret längst ner är ' +
+      'bra vid felanmälan.',
 
     'main.hint': 'Lägg telefonen plant i husbilen, med ovansidan mot fronten.',
     'main.start': 'Start',
