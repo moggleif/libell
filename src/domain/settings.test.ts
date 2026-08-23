@@ -18,6 +18,7 @@ describe('parseSettings', () => {
       stabilityMm: 5,
       displayUnit: 'cm' as const,
       soundOnLevel: true,
+      theme: 'light' as const,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -65,6 +66,7 @@ describe('parseSettings', () => {
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
       displayUnit: 'mm',
       soundOnLevel: false,
+      theme: 'system',
     });
   });
 
@@ -82,6 +84,13 @@ describe('parseSettings', () => {
     expect(parseSettings({ displayUnit: 'inches' }).displayUnit).toBe('mm');
     expect(parseSettings({ soundOnLevel: true }).soundOnLevel).toBe(true);
     expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(false);
+  });
+
+  it('validates the theme choice, defaulting to following the phone', () => {
+    expect(parseSettings({}).theme).toBe('system');
+    expect(parseSettings({ theme: 'light' }).theme).toBe('light');
+    expect(parseSettings({ theme: 'dark' }).theme).toBe('dark');
+    expect(parseSettings({ theme: 'sepia' }).theme).toBe('system');
   });
 });
 

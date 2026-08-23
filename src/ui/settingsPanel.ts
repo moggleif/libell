@@ -5,8 +5,14 @@
  * in the chosen unit; storage and math stay mm. Save is disabled until
  * the form differs from the saved settings.
  */
-import { formatLength, parseSettings, type LevelSettings } from '../domain/settings';
+import {
+  formatLength,
+  parseSettings,
+  type LevelSettings,
+  type ThemeSetting,
+} from '../domain/settings';
 import { saveSettings } from '../data/settingsStore';
+import { applyTheme } from './theme';
 import { t, type MessageKey } from './i18n';
 
 type NumberKey =
@@ -177,6 +183,33 @@ export function createSettingsForm(
   unitField.append(unitCaption, unitSelect);
   form.append(unitField);
 
+  // --- Theme ---
+  const themeField = document.createElement('label');
+  themeField.className = 'settings__field';
+  const themeCaption = document.createElement('span');
+  const themeSelect = document.createElement('select');
+  themeSelect.className = 'settings__select';
+  const THEMES: { value: ThemeSetting; label: MessageKey }[] = [
+    { value: 'system', label: 'theme.system' },
+    { value: 'light', label: 'theme.light' },
+    { value: 'dark', label: 'theme.dark' },
+  ];
+  const themeOptions: [HTMLOptionElement, MessageKey][] = [];
+  for (const { value, label } of THEMES) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.selected = value === initial.theme;
+    themeSelect.append(option);
+    themeOptions.push([option, label]);
+  }
+  // Live preview — the choice still only persists on Save.
+  themeSelect.addEventListener('change', () => {
+    applyTheme(themeSelect.value as ThemeSetting);
+    notifyChanged();
+  });
+  themeField.append(themeCaption, themeSelect);
+  form.append(themeField);
+
   // --- Level chime ---
   const soundField = document.createElement('label');
   soundField.className = 'settings__field';
@@ -204,6 +237,8 @@ export function createSettingsForm(
       button.textContent = preset.map((mm) => formatLength(mm, unit)).join(' / ');
     }
     unitCaption.textContent = t('settings.unit');
+    themeCaption.textContent = t('settings.theme');
+    for (const [option, label] of themeOptions) option.textContent = t(label);
     soundCaption.textContent = t('settings.sound');
     save.textContent = t('settings.save');
   }
@@ -217,6 +252,7 @@ export function createSettingsForm(
       rampStepHeightsMm: [...steps],
       displayUnit: unit,
       soundOnLevel: soundInput.checked,
+      theme: themeSelect.value,
     };
     for (const [key, input] of inputs) raw[key] = fromUnit(input.valueAsNumber);
     return parseSettings(raw);

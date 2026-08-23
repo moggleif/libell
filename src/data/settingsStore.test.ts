@@ -31,6 +31,7 @@ describe('settingsStore', () => {
       stabilityMm: 2,
       displayUnit: 'mm' as const,
       soundOnLevel: false,
+      theme: 'dark' as const,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);

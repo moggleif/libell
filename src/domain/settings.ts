@@ -32,7 +32,11 @@ export interface LevelSettings {
   displayUnit: 'mm' | 'cm';
   /** Play a chime when the vehicle reaches level (opt-in). */
   soundOnLevel: boolean;
+  /** Color theme: follow the phone, or force light/dark. */
+  theme: ThemeSetting;
 }
+
+export type ThemeSetting = 'system' | 'light' | 'dark';
 
 export const DEFAULT_SETTINGS: LevelSettings = {
   wheelbaseMm: 4000,
@@ -43,6 +47,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   stabilityMm: 3,
   displayUnit: 'mm',
   soundOnLevel: false,
+  theme: 'system',
 };
 
 /**
@@ -164,6 +169,7 @@ export function parseSettings(value: unknown): LevelSettings {
     stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
     soundOnLevel: raw.soundOnLevel === true,
+    theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
   };
 }
 
