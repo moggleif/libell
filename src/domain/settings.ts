@@ -28,6 +28,10 @@ export interface LevelSettings {
    * a boundary before the shown value changes. 0 disables it.
    */
   stabilityMm: number;
+  /** Unit used for displayed lengths; storage and math stay mm. */
+  displayUnit: 'mm' | 'cm';
+  /** Play a chime when the vehicle reaches level (opt-in). */
+  soundOnLevel: boolean;
 }
 
 export const DEFAULT_SETTINGS: LevelSettings = {
@@ -37,6 +41,8 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   rampStepHeightsMm: [40],
   toleranceMm: 20,
   stabilityMm: 3,
+  displayUnit: 'mm',
+  soundOnLevel: false,
 };
 
 /**
@@ -156,5 +162,16 @@ export function parseSettings(value: unknown): LevelSettings {
     // it falls back to the default.
     toleranceMm: positiveNumber(raw.toleranceMm, DEFAULT_SETTINGS.toleranceMm),
     stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
+    displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
+    soundOnLevel: raw.soundOnLevel === true,
   };
+}
+
+/** Format a length in the chosen display unit ("63 mm" / "6.3 cm"). */
+export function formatLength(mm: number, unit: 'mm' | 'cm'): string {
+  if (unit === 'cm') {
+    const cm = mm / 10;
+    return `${Number.isInteger(cm) ? cm : cm.toFixed(1)} cm`;
+  }
+  return `${Math.round(mm)} mm`;
 }

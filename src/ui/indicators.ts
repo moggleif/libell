@@ -5,6 +5,7 @@
  * disappear once handled — like a car that has nothing to warn about.
  */
 import type { MenuSection } from './menu';
+import { t } from './i18n';
 
 export interface Indicators {
   element: HTMLElement;
@@ -21,22 +22,14 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
     button.className = 'indicators__lamp';
     button.title = title;
     button.setAttribute('aria-label', title);
-    button.textContent = `⚠ ${label}`;
+    button.textContent = label;
     button.addEventListener('click', () => openMenu(section));
     container.append(button);
     return button;
   }
 
-  const settingsLamp = lamp(
-    'Setup',
-    'settings',
-    'Vehicle settings have never been saved — tap to open Settings',
-  );
-  const calibrationLamp = lamp(
-    'Calibrate',
-    'calibration',
-    'The phone is not calibrated — tap to open Calibration',
-  );
+  const settingsLamp = lamp(t('lamp.setup'), 'settings', t('lamp.setup.title'));
+  const calibrationLamp = lamp(t('lamp.calibrate'), 'calibration', t('lamp.calibrate.title'));
 
   return {
     element: container,

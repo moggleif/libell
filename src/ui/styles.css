@@ -3,11 +3,29 @@
   --surface-raised: #1a2027;
   --outline: #2d333b;
   --on-surface: #e6edf3;
-  --on-surface-muted: #8b949e;
+  --on-surface-muted: #8b949e; /* 6.3:1 on --surface */
   --level: #3fb950;
   --lift-small: #d29922;
   --lift-large: #f85149;
   --warning: #d29922;
+}
+
+/* Light theme for sunlight readability. Components consume only tokens,
+ * so swapping the palette is the whole switch. Contrast (WCAG AA):
+ * on-surface 15.7:1, on-surface-muted 5.9:1 on --surface; wheel glyphs
+ * use --surface on the wheel fills (>= 3:1 in both themes). */
+@media (prefers-color-scheme: light) {
+  :root {
+    --surface: #f6f8fa;
+    --surface-raised: #ffffff;
+    --outline: #d0d7de;
+    --on-surface: #1f2328;
+    --on-surface-muted: #57606a;
+    --level: #1a7f37;
+    --lift-small: #9a6700;
+    --lift-large: #cf222e;
+    --warning: #9a6700;
+  }
 }
 
 * {
@@ -64,6 +82,7 @@ body {
   background: var(--level);
   border: 0;
   border-radius: 999px;
+  min-height: 44px;
   padding: 8px 18px;
   cursor: pointer;
 }
@@ -75,6 +94,9 @@ body {
   color: var(--on-surface);
   background: none;
   border: 0;
+  /* WCAG 2.5.8 / Apple HIG: at least 44x44 px hit area. */
+  min-width: 44px;
+  min-height: 44px;
   padding: 4px 6px;
   cursor: pointer;
 }
@@ -103,7 +125,8 @@ body {
   background: none;
   border: 1.5px solid var(--warning);
   border-radius: 8px;
-  padding: 4px 8px;
+  min-height: 44px;
+  padding: 4px 10px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -206,6 +229,15 @@ body {
   fill: var(--on-surface-muted);
 }
 
+/* State glyph inside each wheel: shape carries the meaning too, so the
+ * status never relies on color alone. */
+.rv-diagram__wheel-glyph {
+  fill: var(--surface);
+  font-size: 20px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
 .rv-diagram__bubble-dial {
   fill: var(--surface);
   stroke: var(--outline);
@@ -228,10 +260,49 @@ body {
 
 /* ---- Level confirmation + tilt readout ---- */
 
-.level-message {
+.status-line {
   margin: 0;
-  min-height: 1.4em;
+  /* Fixed height: the text changes, the layout never does. */
+  height: 2.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-muted);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.status-line--level {
   color: var(--level);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Brief full-screen confirmation when the vehicle reaches level. */
+.level-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: var(--level);
+  color: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.level-overlay[hidden] {
+  display: none;
+}
+
+.level-overlay__mark {
+  font-size: 6rem;
+  line-height: 1;
+}
+
+.level-overlay__text {
+  margin: 0;
   font-size: 1.6rem;
   font-weight: 700;
 }
@@ -315,6 +386,8 @@ body {
   color: var(--on-surface);
   background: none;
   border: 0;
+  min-width: 44px;
+  min-height: 44px;
   padding: 4px 8px;
   cursor: pointer;
 }
@@ -444,4 +517,92 @@ body {
   border: 1px solid var(--outline);
   border-radius: 8px;
   resize: vertical;
+}
+
+/* ---- Ramp step editor ---- */
+
+.steps__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.steps__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.steps__chip-remove {
+  font: inherit;
+  font-weight: 700;
+  color: var(--lift-large);
+  background: none;
+  border: 0;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.steps__add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.steps__add input {
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  width: 6em;
+  padding: 6px 8px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+}
+
+.steps__add-btn {
+  margin-top: 0;
+  width: auto;
+  padding: 8px 14px;
+}
+
+.steps__presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps__preset {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.settings__select {
+  font: inherit;
+  padding: 6px 8px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+}
+
+.settings__checkbox {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--level);
 }

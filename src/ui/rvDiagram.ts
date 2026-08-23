@@ -10,18 +10,24 @@
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
+import { formatLength } from '../domain/settings';
+import { t } from './i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 interface WheelRefs {
   marker: SVGRectElement;
+  glyph: SVGTextElement;
   stepLabel: SVGTextElement;
   liftLabel: SVGTextElement;
 }
 
+/** Shape per state so color is never the only signal (WCAG 1.4.1). */
+const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕' } as const;
+
 export interface RvDiagram {
   element: HTMLElement;
-  update(result: DisplayResult): void;
+  update(result: DisplayResult, unit: 'mm' | 'cm'): void;
 }
 
 const WHEEL_POS: Record<WheelId, { x: number; y: number }> = {
@@ -52,7 +58,7 @@ export function createRvDiagram(): RvDiagram {
   const svg = svgEl('svg', {
     viewBox: '0 0 240 310',
     role: 'img',
-    'aria-label': 'Top-down view of your RV showing which wheels need raising',
+    'aria-label': t('diagram.aria'),
   });
 
   // Front arrow.
@@ -61,7 +67,7 @@ export function createRvDiagram(): RvDiagram {
     class: 'rv-diagram__arrow',
   });
   const arrowLabel = svgEl('text', { x: '120', y: '58', class: 'rv-diagram__front-label' });
-  arrowLabel.textContent = 'Front ↑';
+  arrowLabel.textContent = t('diagram.front');
 
   // RV body: rounded outline with a windshield hint at the front.
   const body = svgEl('rect', {
@@ -103,8 +109,13 @@ export function createRvDiagram(): RvDiagram {
       'text-anchor': 'middle',
       class: 'rv-diagram__lift-label',
     });
-    svg.append(marker, stepLabel, liftLabel);
-    wheels[id] = { marker, stepLabel, liftLabel };
+    const glyph = svgEl('text', {
+      x: String(x),
+      y: String(y + 7),
+      class: 'rv-diagram__wheel-glyph',
+    });
+    svg.append(marker, glyph, stepLabel, liftLabel);
+    wheels[id] = { marker, glyph, stepLabel, liftLabel };
   }
 
   // Bubble level in the middle of the vehicle.
@@ -131,19 +142,20 @@ export function createRvDiagram(): RvDiagram {
 
   return {
     element: container,
-    update(result) {
+    update(result, unit) {
       for (const id of WHEEL_IDS) {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
         const { displayMm, stepMm, severity } = result.wheels[id];
-        const { marker, stepLabel, liftLabel } = wheels[id];
+        const { marker, glyph, stepLabel, liftLabel } = wheels[id];
         marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
+        glyph.textContent = SEVERITY_GLYPH[severity];
         if (severity === 'none') {
           stepLabel.textContent = '';
           liftLabel.textContent = '';
         } else {
-          liftLabel.textContent = `${displayMm} mm`;
-          stepLabel.textContent = stepMm > 0 ? `↑ ${stepMm} mm` : '';
+          liftLabel.textContent = formatLength(displayMm, unit);
+          stepLabel.textContent = stepMm > 0 ? `↑ ${formatLength(stepMm, unit)}` : '';
         }
       }
 

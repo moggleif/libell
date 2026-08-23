@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
+  formatLength,
   formatStepHeightsList,
   parseStepHeightsList,
   parseSettings,
@@ -15,6 +16,8 @@ describe('parseSettings', () => {
       rampStepHeightsMm: [20, 50, 80],
       toleranceMm: 15,
       stabilityMm: 5,
+      displayUnit: 'cm' as const,
+      soundOnLevel: true,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -60,6 +63,8 @@ describe('parseSettings', () => {
       rampStepHeightsMm: [60],
       toleranceMm: DEFAULT_SETTINGS.toleranceMm,
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
+      displayUnit: 'mm',
+      soundOnLevel: false,
     });
   });
 
@@ -70,6 +75,21 @@ describe('parseSettings', () => {
   it('accepts stability 0 (hysteresis off) but not negative values', () => {
     expect(parseSettings({ stabilityMm: 0 }).stabilityMm).toBe(0);
     expect(parseSettings({ stabilityMm: -2 }).stabilityMm).toBe(DEFAULT_SETTINGS.stabilityMm);
+  });
+
+  it('validates display unit and sound preference', () => {
+    expect(parseSettings({ displayUnit: 'cm' }).displayUnit).toBe('cm');
+    expect(parseSettings({ displayUnit: 'inches' }).displayUnit).toBe('mm');
+    expect(parseSettings({ soundOnLevel: true }).soundOnLevel).toBe(true);
+    expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(false);
+  });
+});
+
+describe('formatLength', () => {
+  it('formats mm and cm with sensible precision', () => {
+    expect(formatLength(63, 'mm')).toBe('63 mm');
+    expect(formatLength(63, 'cm')).toBe('6.3 cm');
+    expect(formatLength(40, 'cm')).toBe('4 cm');
   });
 });
 

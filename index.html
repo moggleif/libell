@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#101418" />
+    <meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f8fa" media="(prefers-color-scheme: light)" />
     <meta name="description" content="Level your motorhome / RV with your phone." />
     <title>Libell</title>
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
@@ -17,9 +18,7 @@
       <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
       <button id="menu-button" class="topbar__menu" type="button" aria-label="Menu">☰</button>
     </header>
-    <p id="install-hint" class="install-hint" hidden>
-      Tap <strong>Share</strong>, then <strong>“Add to Home Screen”</strong>.
-    </p>
+    <p id="install-hint" class="install-hint" hidden></p>
     <main id="app" class="app"></main>
     <footer class="site-footer">
       <p id="app-version" class="site-footer__version"></p>
