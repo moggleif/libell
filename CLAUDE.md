@@ -17,22 +17,22 @@ cleverness.
 - Deployed as a static site to GitHub Pages; base path `/libell/`
 - No build-time backend, no accounts
 
-## 1. Directory layout (target)
+## 1. Directory layout
 
 ```
 src/
 ├── main.ts        # entry point: wires sensor → state → render
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
-│   ├── leveling.ts
-│   └── settings.ts
-├── data/          # settingsStore.ts (localStorage)
+│   ├── leveling.ts   # per-wheel lift math, step recommendation, severity
+│   ├── stability.ts  # display hysteresis (a still phone shows a still screen)
+│   └── settings.ts   # LevelSettings + Calibration, validation, migrations
+├── data/          # settingsStore.ts (localStorage: settings + calibration)
 ├── sensor/        # orientation.ts (DeviceMotion / DeviceOrientation)
-└── ui/            # DOM + SVG components, styles
+└── ui/            # DOM + SVG components, hamburger menu, styles
 ```
 
-The repo currently holds a buildable **skeleton** (placeholder `main.ts`, styles, PWA
-shell, one smoke test). Each feature is built incrementally via the GitHub issue backlog —
-see `docs/02-REQUIREMENTS.md` for the behaviors and the tracking issue for order.
+Behaviors are specified in `docs/02-REQUIREMENTS.md`; design in
+`docs/03-ARCHITECTURE.md`.
 
 ## 2. Core principles
 

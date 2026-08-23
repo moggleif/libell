@@ -13,9 +13,10 @@
 src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
-│   ├── leveling.ts   # computeLeveling(gravity, settings) -> LevelingResult
-│   └── settings.ts   # LevelSettings (wheelbase, front/rear track width, ramp step heights, tolerance)
-├── data/          # settingsStore.ts — localStorage read/write + defaults
+│   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
+│   ├── stability.ts  # display hysteresis: values change only past a dead band
+│   └── settings.ts   # LevelSettings + Calibration (validation, legacy migrations)
+├── data/          # settingsStore.ts — localStorage read/write for settings + calibration
 ├── sensor/        # orientation.ts — gravity vector as a subscription
 └── ui/            # render functions, SVG components, styles.css
 ```
@@ -47,7 +48,9 @@ isLevel = max(lift) <= toleranceMm                      # height-based, default 
 
 The highest wheel is always the reference. An optional stored calibration (roll/pitch
 captured on a known-level surface) is subtracted from the reading. Output: per-wheel
-`{position, liftCm, blocks}`, plus `rollDeg`, `pitchDeg`, `isLevel`.
+`{liftCm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
+display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
+band ("Stability") to the shown cm figure, step, wheel color and level status.
 
 ## Sensor (`src/sensor/orientation.ts`)
 
@@ -104,9 +107,12 @@ has been opened with a connection it works with no signal at all. `registerType:
 
 ## UI
 
-The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6); the
-bubble level is secondary. Both are inline SVG, sized in viewport units so the diagram
-stays legible on a phone lying on a table. All user-facing strings are English.
+The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
+the bubble level embedded at its center; per-wheel readouts sit directly at the wheels
+(step above, whole cm below). Everything is inline SVG, sized in viewport units so the
+diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
+in the full-width hamburger menu; amber warning lamps in the top bar point to unsaved
+settings or a missing calibration. All user-facing strings are English.
 
 ## Build / CI notes
 

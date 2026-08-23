@@ -27,29 +27,58 @@ export interface Menu {
 const HELP_TEXT: [string, string][] = [
   [
     'What Libell does',
-    'Lay your phone flat inside the RV with the top edge pointing toward the front. ' +
-      'The diagram shows your RV from above: green wheels are fine, orange wheels need ' +
-      'raising, and red means no ramp step you have gets that wheel level — not ' +
-      'worth driving up; move the vehicle instead. Above each ' +
-      'wheel you see the ramp step to drive up onto; below it the height it is missing. ' +
-      'The bubble in the middle works like a spirit level — center it and you are done.',
+    'Libell helps you park your motorhome level, using nothing but your phone. ' +
+      'Lay the phone flat inside the vehicle — on the table or the floor — with the ' +
+      'top of the phone pointing toward the front of the vehicle. The screen then ' +
+      'shows your motorhome from above, and each wheel tells you what to do.',
   ],
   [
-    'Settings',
-    'Wheelbase is the distance between the front and rear axle. Track width is the ' +
-      'distance between the left and right wheels — front and rear can differ. Ramp ' +
-      'step heights are the heights of your leveling ramp steps in mm, separated by ' +
-      'semicolons (e.g. 20; 40; 60). Tolerance is how many mm a wheel may sit below ' +
-      'the highest wheel and still count as level — wheelbase and track width are ' +
-      'already accounted for. Stability is how much a reading must change (in mm) before ' +
-      'the display updates — raise it if numbers or colors flicker, set 0 to turn ' +
-      'it off.',
+    'Before the first use',
+    'Two things, both under the ☰ menu, and the app reminds you with yellow warning ' +
+      'signs in the top bar until they are done. 1) Open Settings and fill in your ' +
+      "vehicle's measurements and the step heights of your leveling ramps — the " +
+      'numbers are usually in the vehicle papers, or measure with a tape measure. ' +
+      '2) Calibrate the phone (see below). You only do this once; everything is ' +
+      'remembered.',
+  ],
+  [
+    'Reading the screen',
+    'Green wheel: leave it alone, it is fine. Orange wheel: drive that wheel up on ' +
+      'a ramp — the text above the wheel says which step to stop on (for example ' +
+      '"↑ 40 mm"), and the number below says how much the wheel is missing. Red ' +
+      'wheel: even your highest ramp step is not enough — do not bother driving up; ' +
+      'move the vehicle to a flatter spot instead. The round bubble in the middle ' +
+      'works like an ordinary spirit level: when the dot rests in the middle and ' +
+      'everything is green, the app says "Your RV is level!" — then you are done.',
+  ],
+  [
+    'The settings, one by one',
+    'Wheelbase: the distance from the front wheels to the rear wheels, in cm. ' +
+      'Track width front / rear: the distance between the left and right wheel on ' +
+      'each axle, in cm — they may differ, so there is one field for each. ' +
+      'Ramp step heights: your leveling ramps are like small staircases; write the ' +
+      'height of every step in mm with semicolons between, for example 20; 40; 60. ' +
+      'Tolerance: how many mm lower a wheel may stand than the highest wheel and ' +
+      'still count as level — smaller number, stricter leveling. ' +
+      'Stability: keeps the numbers calm when the phone lies still; raise it if ' +
+      'anything flickers. The defaults are fine to start with.',
   ],
   [
     'Calibration',
-    'Phones and cases are rarely perfectly flat. Put the phone on a surface you know ' +
-      'is level and tap "Calibrate now" — that tilt becomes the zero point for all ' +
-      'measurements. Clear it to go back to the raw sensor.',
+    'No phone is perfectly flat — the case, a screen protector or the phone itself ' +
+      'adds a small tilt. To cancel it: put the phone on a surface you know is ' +
+      'level (check with a spirit level if unsure), open ☰ → Calibration and tap ' +
+      '"Calibrate now". From then on that position counts as perfectly flat. ' +
+      '"Clear calibration" undoes it.',
+  ],
+  [
+    'Good to know',
+    'The app works completely without internet once it has been opened — a campsite ' +
+      'without signal is no problem. Add it to your home screen to use it like an ' +
+      'ordinary app: on iPhone via Share → "Add to Home Screen", on Android via the ' +
+      'Install button. On iPhone you also tap "Start" each time you open the app — ' +
+      'Apple requires that before the phone shares its tilt sensors. The version ' +
+      'number at the bottom of the screen is useful if you ever report a problem.',
   ],
 ];
 
