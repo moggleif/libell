@@ -604,23 +604,14 @@ body {
   padding: 8px 14px;
 }
 
-.steps__presets {
+.steps__ramp {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.steps__preset {
-  font: inherit;
-  font-size: 0.85rem;
-  color: var(--on-surface);
-  background: var(--surface);
-  border: 1px solid var(--outline);
-  border-radius: 999px;
-  min-height: 40px;
-  padding: 4px 12px;
-  cursor: pointer;
+.steps__ramp .settings__select {
+  width: 100%;
 }
 
 .settings__select {

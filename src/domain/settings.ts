@@ -42,7 +42,8 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   wheelbaseMm: 4000,
   trackWidthFrontMm: 1800,
   trackWidthRearMm: 1800,
-  rampStepHeightsMm: [40],
+  // Thule Levelers — the most common ready-made ramp in the catalog.
+  rampStepHeightsMm: [44, 78, 112],
   toleranceMm: 20,
   stabilityMm: 3,
   displayUnit: 'mm',

@@ -1,6 +1,7 @@
 /**
- * Settings form: vehicle geometry, the ramp step editor (a visual +/−
- * list with presets — no separator syntax to learn), display unit,
+ * Settings form: vehicle geometry, the ramp step editor (a ready-made
+ * ramp picker plus a visual +/− list — no separator syntax to learn),
+ * display unit,
  * tolerance/stability and the level chime. Values are entered and shown
  * in the chosen unit; storage and math stay mm. Save is disabled until
  * the form differs from the saved settings.
@@ -11,6 +12,7 @@ import {
   type LevelSettings,
   type ThemeSetting,
 } from '../domain/settings';
+import { matchRampModel, rampLabel, RAMP_MODELS } from '../domain/ramps';
 import { saveSettings } from '../data/settingsStore';
 import { applyTheme } from './theme';
 import { t, type MessageKey } from './i18n';
@@ -24,12 +26,6 @@ const NUMBER_FIELDS: { key: NumberKey; label: MessageKey; stepMm: number; min?: 
   { key: 'trackWidthRearMm', label: 'settings.trackRear', stepMm: 10 },
   { key: 'toleranceMm', label: 'settings.tolerance', stepMm: 1 },
   { key: 'stabilityMm', label: 'settings.stability', stepMm: 0.5, min: 0 },
-];
-
-/** Common leveling wedges, as step-height lists in mm. */
-const PRESETS: number[][] = [
-  [40, 80],
-  [30, 60, 90],
 ];
 
 export function createSettingsForm(
@@ -91,24 +87,37 @@ export function createSettingsForm(
   addButton.disabled = true;
   addRow.append(addInput, addButton);
 
-  const presetRow = document.createElement('div');
-  presetRow.className = 'steps__presets';
-  const presetCaption = document.createElement('span');
-  presetCaption.className = 'menu__text';
-  presetRow.append(presetCaption);
-  const presetButtons: [HTMLButtonElement, number[]][] = [];
-  for (const preset of PRESETS) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'steps__preset';
-    button.addEventListener('click', () => {
-      steps = [...preset];
-      renderChips();
-      notifyChanged();
-    });
-    presetRow.append(button);
-    presetButtons.push([button, preset]);
+  // Ready-made ramp picker: choosing a catalog model fills the step
+  // list; editing the chips afterwards flips the picker back to
+  // "custom". Labels carry the mm figures, so they are not unit-aware.
+  const rampRow = document.createElement('div');
+  rampRow.className = 'steps__ramp';
+  const rampCaption = document.createElement('span');
+  rampCaption.className = 'menu__text';
+  const rampSelect = document.createElement('select');
+  rampSelect.className = 'settings__select';
+  const customOption = document.createElement('option');
+  customOption.value = '';
+  rampSelect.append(customOption);
+  for (const model of RAMP_MODELS) {
+    const option = document.createElement('option');
+    option.value = model.name;
+    option.textContent = rampLabel(model);
+    rampSelect.append(option);
   }
+  const syncRampSelect = () => {
+    rampSelect.value = matchRampModel(steps, rampSelect.value)?.name ?? '';
+  };
+  rampSelect.addEventListener('change', () => {
+    const model = RAMP_MODELS.find((m) => m.name === rampSelect.value);
+    if (model) {
+      steps = [...model.stepsMm];
+      renderChips();
+    }
+    syncRampSelect();
+    notifyChanged();
+  });
+  rampRow.append(rampCaption, rampSelect);
 
   function renderChips(): void {
     chipList.replaceChildren();
@@ -133,6 +142,7 @@ export function createSettingsForm(
       chip.append(label, remove);
       chipList.append(chip);
     }
+    syncRampSelect();
   }
 
   addInput.addEventListener('input', () => {
@@ -150,7 +160,7 @@ export function createSettingsForm(
     notifyChanged();
   });
 
-  stepsField.append(stepsCaption, chipList, addRow, presetRow);
+  stepsField.append(stepsCaption, rampRow, chipList, addRow);
   form.append(stepsField);
 
   // --- Unit choice ---
@@ -232,10 +242,8 @@ export function createSettingsForm(
     stepsCaption.textContent = `${t('settings.steps')} (${unit})`;
     addInput.placeholder = unit === 'cm' ? '4' : '40';
     addButton.textContent = `+ ${t('settings.steps.add')}`;
-    presetCaption.textContent = t('settings.steps.presets');
-    for (const [button, preset] of presetButtons) {
-      button.textContent = preset.map((mm) => formatLength(mm, unit)).join(' / ');
-    }
+    rampCaption.textContent = t('settings.ramp');
+    customOption.textContent = t('settings.ramp.custom');
     unitCaption.textContent = t('settings.unit');
     themeCaption.textContent = t('settings.theme');
     for (const [option, label] of themeOptions) option.textContent = t(label);
