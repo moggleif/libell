@@ -44,7 +44,9 @@ function resolveVersionString(): string | null {
 // the dev server inlines styles/scripts and would break under it. The
 // app is fully self-contained (no CDNs, no analytics, no remote calls),
 // so 'self' covers everything; anything injected from elsewhere is
-// refused by the browser.
+// refused by the browser. Browsers ignore `frame-ancestors` in a meta
+// CSP — it is kept for header-capable hosts, and the framing guard in
+// main.ts covers clickjacking on Pages (#67, ADR 0005).
 const CSP =
   "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; " +
   "font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; " +

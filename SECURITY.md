@@ -19,6 +19,9 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
   policy, so injected external script/style is refused by the browser.
 - **No HTML injection surface.** The DOM is built exclusively with `createElement` /
   `textContent`; `innerHTML` and friends are not used.
+- **Framing is refused.** Pages cannot send headers and browsers ignore
+  `frame-ancestors` in a meta CSP, so `main.ts` blanks the page and breaks out of any
+  hostile iframe instead (clickjacking guard).
 - **Untrusted storage is validated.** Everything read from `localStorage` passes
   validation with per-field fallback, so hand-edited or corrupt values cannot break
   or subvert startup.
