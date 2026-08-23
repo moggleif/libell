@@ -42,7 +42,7 @@ export interface LevelingResult {
   /** Front/back tilt in degrees; negative = front low. */
   pitchDeg: number;
   wheels: Record<WheelId, WheelLift>;
-  /** True when |roll| and |pitch| are both within the tolerance. */
+  /** True when no wheel sits more than the tolerance (mm) below the highest. */
   isLevel: boolean;
 }
 
@@ -80,19 +80,21 @@ export function computeLeveling(
   const highest = Math.max(...heights.map((h) => h.z));
 
   const wheels = {} as Record<WheelId, WheelLift>;
+  let maxLiftMm = 0;
   for (const { id, z } of heights) {
     const liftCm = highest - z;
+    maxLiftMm = Math.max(maxLiftMm, liftCm * 10);
     wheels[id] = { liftCm, stepMm: recommendStep(liftCm * 10, settings.rampStepHeightsMm) };
   }
 
-  const rollDeg = roll * RAD_TO_DEG;
-  const pitchDeg = pitch * RAD_TO_DEG;
   return {
-    rollDeg,
-    pitchDeg,
+    rollDeg: roll * RAD_TO_DEG,
+    pitchDeg: pitch * RAD_TO_DEG,
     wheels,
-    isLevel:
-      Math.abs(rollDeg) < settings.toleranceDeg && Math.abs(pitchDeg) < settings.toleranceDeg,
+    // Height-based: level when no wheel sits more than the tolerance below
+    // the highest one. Wheelbase and track width are inherent in the lifts,
+    // so the same tolerance means the same thing on every vehicle.
+    isLevel: maxLiftMm <= settings.toleranceMm,
   };
 }
 
@@ -113,24 +115,15 @@ export function recommendStep(liftMm: number, stepsMm: number[]): number {
 export type LiftSeverity = 'none' | 'small' | 'large';
 
 /**
- * Classify a lift for the diagram colors: green (none) when no step is
- * needed, red (large) when even the tallest available step cannot reach
- * the required lift, orange (small) in between.
- *
- * The tolerance gates everything: when the vehicle as a whole is level,
- * every wheel is green — the diagram must never color wheels while the
- * app simultaneously says "Your RV is level!".
+ * Classify a lift for the diagram colors — "is it worth driving up?":
+ * green (none) when the wheel is within the tolerance, orange (small)
+ * when some ramp step brings it within tolerance, red (large) when even
+ * the best available step leaves it outside — not worth driving up with
+ * the ramps you have.
  */
-export function liftSeverity(
-  liftCm: number,
-  settings: LevelSettings,
-  isLevel = false,
-): LiftSeverity {
-  if (isLevel) return 'none';
-  const stepsMm = settings.rampStepHeightsMm;
-  const minMm = stepsMm[0] ?? Infinity;
-  const maxMm = stepsMm[stepsMm.length - 1] ?? Infinity;
+export function liftSeverity(liftCm: number, settings: LevelSettings): LiftSeverity {
   const liftMm = liftCm * 10;
-  if (liftMm < minMm / 2) return 'none';
-  return liftMm <= maxMm ? 'small' : 'large';
+  if (liftMm <= settings.toleranceMm) return 'none';
+  const best = recommendStep(liftMm, settings.rampStepHeightsMm);
+  return Math.abs(liftMm - best) <= settings.toleranceMm ? 'small' : 'large';
 }

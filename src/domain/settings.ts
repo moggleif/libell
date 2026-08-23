@@ -17,8 +17,12 @@ export interface LevelSettings {
    * recommends the step closest to the required lift.
    */
   rampStepHeightsMm: number[];
-  /** Max |roll| and |pitch| still considered level, in degrees. */
-  toleranceDeg: number;
+  /**
+   * Max height a wheel may sit below the highest wheel and still count
+   * as level, in mm. Height-based, so wheelbase and track width are
+   * inherently accounted for.
+   */
+  toleranceMm: number;
   /**
    * Display hysteresis dead band in mm: how far a reading must move past
    * a boundary before the shown value changes. 0 disables it.
@@ -31,7 +35,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   trackWidthFrontCm: 180,
   trackWidthRearCm: 180,
   rampStepHeightsMm: [40],
-  toleranceDeg: 0.5,
+  toleranceMm: 20,
   stabilityMm: 3,
 };
 
@@ -142,7 +146,9 @@ export function parseSettings(value: unknown): LevelSettings {
       trackFallback ?? DEFAULT_SETTINGS.trackWidthRearCm,
     ),
     rampStepHeightsMm: heights,
-    toleranceDeg: positiveNumber(raw.toleranceDeg, DEFAULT_SETTINGS.toleranceDeg),
+    // A legacy toleranceDeg (degrees) has no unambiguous mm equivalent —
+    // it falls back to the default.
+    toleranceMm: positiveNumber(raw.toleranceMm, DEFAULT_SETTINGS.toleranceMm),
     stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
   };
 }

@@ -67,9 +67,10 @@ URL and must keep working with no signal.
 
 - **Given** the RV is not level
 - **When** I look at the RV diagram
-- **Then** each wheel that needs raising is colored (orange for a small lift, red for a
-  large one) and shows its required lift in cm at its position; wheels that are fine are
-  shown neutral.
+- **Then** each wheel is colored by "is it worth driving up?": green within the
+  tolerance, orange when some ramp step brings it within tolerance, red when even the
+  best step cannot — move the vehicle instead. Colored wheels show their required lift
+  in whole cm.
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
@@ -97,8 +98,9 @@ URL and must keep working with no signal.
   Help)
 - **When** I edit Wheelbase, Track width front, Track width rear, Ramp step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
-  is listed, e.g. "20; 40; 60"), Tolerance, or Stability (display hysteresis dead band
-  in mm; 0 disables it) and save
+  is listed, e.g. "20; 40; 60"), Tolerance (mm a wheel may sit below the highest and
+  still count as level), or Stability (display hysteresis dead band in mm; 0 disables
+  it) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, one
   40 mm step, tolerance 0.5°.

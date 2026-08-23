@@ -45,44 +45,35 @@ describe('createDisplayStabilizer', () => {
   });
 
   it('changes severity color only past the boundary dead band', () => {
-    // Tight tolerance so the vehicle counts as un-level and the color is
-    // governed by the step boundary alone: min step 20 mm → none/small
-    // boundary at 10 mm.
-    const tight = { ...settings, toleranceDeg: 0.1 };
+    // Green/orange boundary sits at the tolerance (20 mm), dead band 3 mm.
     const stabilize = createDisplayStabilizer();
-    const sev = (liftCm: number) => {
-      const result = computeLeveling(gravityFor(rollForLift(liftCm, 180), 0), tight);
-      return stabilize(result, tight).wheels.frontRight.severity;
-    };
-    expect(sev(0.8)).toBe('none');
-    expect(sev(1.05)).toBe('none');
-    expect(sev(0.95)).toBe('none');
-    expect(sev(1.5)).toBe('small');
+    expect(displayFor(stabilize, 1.8).severity).toBe('none');
+    expect(displayFor(stabilize, 2.05).severity).toBe('none');
+    expect(displayFor(stabilize, 1.95).severity).toBe('none');
+    expect(displayFor(stabilize, 2.5).severity).toBe('small');
     // And it does not fall straight back at boundary jitter.
-    expect(sev(1.05)).toBe('small');
+    expect(displayFor(stabilize, 2.05).severity).toBe('small');
   });
 
-  it('shows every wheel green while the vehicle is level, whatever the lifts', () => {
-    // A long wheelbase turns even a within-tolerance pitch into a couple
-    // of cm of lift; the tolerance must gate the colors too, so the app
-    // never colors wheels while saying "Your RV is level!".
+  it('shows every wheel green while the vehicle is level', () => {
     const stabilize = createDisplayStabilizer();
-    const result = computeLeveling(gravityFor(0, -0.4), settings);
+    const result = computeLeveling(gravityFor(rollForLift(1.5, 180), 0), settings);
     expect(result.isLevel).toBe(true);
-    expect(result.wheels.frontLeft.liftCm).toBeGreaterThan(2);
     const display = stabilize(result, settings);
     expect(display.isLevel).toBe(true);
-    expect(display.wheels.frontLeft.severity).toBe('none');
     expect(display.wheels.frontRight.severity).toBe('none');
+    expect(display.wheels.frontLeft.severity).toBe('none');
   });
 
   it('holds "level" through jitter just past the tolerance', () => {
+    // Tolerance 20 mm, dead band 3 mm → leaves level only above 23 mm.
     const stabilize = createDisplayStabilizer();
-    const at = (deg: number) => stabilize(computeLeveling(gravityFor(deg, 0), settings), settings);
-    expect(at(0.2).isLevel).toBe(true);
-    expect(at(0.55).isLevel).toBe(true); // within exit margin — still level
-    expect(at(0.8).isLevel).toBe(false); // clearly out
-    expect(at(0.55).isLevel).toBe(false); // must come back inside to re-enter
-    expect(at(0.3).isLevel).toBe(true);
+    const at = (liftCm: number) =>
+      stabilize(computeLeveling(gravityFor(rollForLift(liftCm, 180), 0), settings), settings);
+    expect(at(1.5).isLevel).toBe(true);
+    expect(at(2.2).isLevel).toBe(true); // within the dead band — still level
+    expect(at(2.6).isLevel).toBe(false); // clearly out
+    expect(at(2.2).isLevel).toBe(false); // must come back inside to re-enter
+    expect(at(1.5).isLevel).toBe(true);
   });
 });

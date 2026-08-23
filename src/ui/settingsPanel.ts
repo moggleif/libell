@@ -13,13 +13,13 @@ import {
 import { saveSettings } from '../data/settingsStore';
 
 type NumberKey =
-  'wheelbaseCm' | 'trackWidthFrontCm' | 'trackWidthRearCm' | 'toleranceDeg' | 'stabilityMm';
+  'wheelbaseCm' | 'trackWidthFrontCm' | 'trackWidthRearCm' | 'toleranceMm' | 'stabilityMm';
 
 const NUMBER_FIELDS: { key: NumberKey; label: string; step: string; min?: string }[] = [
   { key: 'wheelbaseCm', label: 'Wheelbase (cm)', step: '1' },
   { key: 'trackWidthFrontCm', label: 'Track width front (cm)', step: '1' },
   { key: 'trackWidthRearCm', label: 'Track width rear (cm)', step: '1' },
-  { key: 'toleranceDeg', label: 'Tolerance (°)', step: '0.1' },
+  { key: 'toleranceMm', label: 'Tolerance (mm)', step: '1' },
   { key: 'stabilityMm', label: 'Stability (mm)', step: '0.5', min: '0' },
 ];
 

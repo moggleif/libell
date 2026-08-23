@@ -27,7 +27,7 @@ describe('settingsStore', () => {
       trackWidthFrontCm: 190,
       trackWidthRearCm: 165,
       rampStepHeightsMm: [30, 60],
-      toleranceDeg: 0.8,
+      toleranceMm: 25,
       stabilityMm: 2,
     };
     saveSettings(settings, storage);
