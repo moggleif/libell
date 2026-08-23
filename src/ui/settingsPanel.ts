@@ -68,6 +68,13 @@ export function createSettingsForm(
     unitAppliers.push(applyUnit);
   }
 
+  // Where to find the numbers — the biggest data-entry hurdle for new
+  // users is not typing, it's knowing (#69).
+  const measureHint = document.createElement('p');
+  measureHint.className = 'settings__hint';
+  measureHint.textContent = t('settings.measureHint');
+  form.append(measureHint);
+
   // --- Ramp steps: visual chip list + add + presets ---
   let steps = [...initial.rampStepHeightsMm];
 

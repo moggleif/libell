@@ -108,6 +108,10 @@ URL and must keep working with no signal.
   `docs/03-ARCHITECTURE.md` § Settings).
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
+- **Given** the measurement fields (also in the wizard's measurements step, which
+  reuses the same form)
+- **Then** a short muted hint says where the numbers are found (registration document /
+  handbook, or a tape measure — a few cm of error hardly matters).
 
 ## R10 — The app installs to the home screen and works offline
 

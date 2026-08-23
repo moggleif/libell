@@ -40,6 +40,9 @@ export const MESSAGES = {
     'settings.trackRear': 'Track width rear',
     'settings.tolerance': 'Tolerance',
     'settings.stability': 'Stability',
+    'settings.measureHint':
+      'Wheelbase and track widths are in the registration document or the handbook — ' +
+      'a tape measure works too; a few cm of error hardly matters.',
     'settings.steps': 'Ramp step heights',
     'settings.steps.add': 'Add step',
     'settings.steps.remove': 'Remove {value}',
@@ -179,6 +182,9 @@ export const MESSAGES = {
     'settings.trackRear': 'Spårvidd bak',
     'settings.tolerance': 'Tolerans',
     'settings.stability': 'Stabilitet',
+    'settings.measureHint':
+      'Hjulbas och spårvidd står i registreringsbeviset eller handboken — tumstock ' +
+      'funkar också; några centimeters fel spelar knappast någon roll.',
     'settings.steps': 'Rampens steghöjder',
     'settings.steps.add': 'Lägg till steg',
     'settings.steps.remove': 'Ta bort {value}',
