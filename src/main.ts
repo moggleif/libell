@@ -54,6 +54,17 @@ if (app) {
 const RAD_TO_DEG = 180 / Math.PI;
 const MAX_CALIBRATION_DEG = 15;
 
+/** Fixed synthetic tilt for ?demo mode and screenshots. */
+function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const gravity = { x: 9.81 * Math.tan(rad(-1.2)), y: 9.81 * Math.tan(rad(-0.35)), z: 9.81 };
+  return {
+    start: () => Promise.resolve('granted' as const),
+    getState: () => 'granted' as const,
+    getGravity: () => gravity,
+  };
+}
+
 // Short two-tone chime via WebAudio — no asset needed. The context is
 // created lazily on the save gesture that enables the sound, which also
 // satisfies autoplay policies.
@@ -86,7 +97,11 @@ function bootstrap(root: HTMLElement): void {
 
   let settings: LevelSettings = loadSettings();
   let calibration: Calibration | null = loadCalibration();
-  const sensor = createOrientationSensor();
+  // ?demo replaces the sensor with a fixed synthetic tilt — used by the
+  // build-time screenshot generator and handy for trying the app on a
+  // desktop without sensors.
+  const demo = new URLSearchParams(location.search).has('demo');
+  const sensor = demo ? createDemoSensor() : createOrientationSensor();
 
   // First-run wizard: placement, measurements, calibration. Skippable —
   // the warning lamps stay lit for whatever was skipped (#43).
@@ -314,7 +329,12 @@ function bootstrap(root: HTMLElement): void {
     }
   };
 
-  if (!hasSeenOnboarding()) openOnboarding();
+  if (!demo && !hasSeenOnboarding()) openOnboarding();
+
+  if (demo) {
+    showLevelScreen();
+    return;
+  }
 
   if (!isSensorSupported()) {
     handleState('unsupported');

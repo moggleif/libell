@@ -90,6 +90,15 @@ export default defineConfig({
         scope: base,
         display: 'standalone',
         orientation: 'portrait',
+        categories: ['utilities', 'travel'],
+        screenshots: [
+          {
+            src: 'screenshots/narrow.png',
+            sizes: '540x960',
+            type: 'image/png',
+            form_factor: 'narrow',
+          },
+        ],
         background_color: '#101418',
         theme_color: '#101418',
         icons: [
