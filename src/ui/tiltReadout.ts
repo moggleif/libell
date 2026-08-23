@@ -2,11 +2,9 @@
  * Current tilt in degrees (issue #8): small gray text, front/back and
  * side/side. Tabular figures so the digits don't jitter as values change.
  */
-import type { LevelingResult } from '../domain/leveling';
-
 export interface TiltReadout {
   element: HTMLElement;
-  update(result: LevelingResult): void;
+  update(result: { rollDeg: number; pitchDeg: number }): void;
 }
 
 export function createTiltReadout(): TiltReadout {
