@@ -103,9 +103,15 @@ function bootstrap(root: HTMLElement): void {
   const demo = new URLSearchParams(location.search).has('demo');
   const sensor = demo ? createDemoSensor() : createOrientationSensor();
 
+  // While the menu or the wizard is open the user is reading, phone in
+  // hand — pause the guidance loop so the pose guard and the level
+  // celebration cannot nag over the page.
+  let onboardingOpen = false;
+
   // First-run wizard: placement, measurements, calibration. Skippable —
   // the warning lamps stay lit for whatever was skipped (#43).
-  const openOnboarding = () =>
+  const openOnboarding = () => {
+    onboardingOpen = true;
     showOnboarding({
       initialSettings: settings,
       onSettingsSaved(next) {
@@ -126,10 +132,12 @@ function bootstrap(root: HTMLElement): void {
         updateIndicators();
       },
       onFinished() {
+        onboardingOpen = false;
         markOnboardingSeen();
         updateIndicators();
       },
     });
+  };
 
   // Menu (hamburger) with Settings / Calibration / Help.
   const menu = createMenu({
@@ -250,19 +258,23 @@ function bootstrap(root: HTMLElement): void {
     const stabilize = createDisplayStabilizer();
     let wasLevel = false;
     let overlayTimer = 0;
-    // Celebration guards (field feedback): only after the vehicle was
-    // clearly un-level for a while, and never in rapid succession —
-    // boundary jitter must not turn into strobe + chaos vibration.
-    let unlevelSince = performance.now();
+    // Celebration arming (field feedback, twice): the vibration + overlay
+    // fire once per actual leveling. The trigger re-arms only after the
+    // vehicle has been CLEARLY un-level — well past the tolerance, and
+    // sustained — so jitter at the boundary can never celebrate again,
+    // no matter how long the vehicle parks right on the edge.
+    let celebrateArmed = false;
+    let clearlyUnlevelSince: number | null = null;
     let lastCelebrate = -Infinity;
-    const MIN_UNLEVEL_MS = 3000;
+    const REARM_MARGIN_MM = 15;
+    const REARM_SUSTAIN_MS = 3000;
     const CELEBRATE_COOLDOWN_MS = 20000;
 
     const celebrate = () => {
-      if (document.visibilityState !== 'visible') return;
+      if (!celebrateArmed || document.visibilityState !== 'visible') return;
       const now = performance.now();
-      if (now - unlevelSince < MIN_UNLEVEL_MS) return;
       if (now - lastCelebrate < CELEBRATE_COOLDOWN_MS) return;
+      celebrateArmed = false;
       lastCelebrate = now;
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
       if (settings.soundOnLevel) playChime();
@@ -286,6 +298,14 @@ function bootstrap(root: HTMLElement): void {
     };
 
     const frame = () => {
+      // Menu or wizard open: the user is reading, phone in hand — no
+      // pose nagging, no overlays, no celebration until they are back.
+      if (menu.isOpen() || onboardingOpen) {
+        poseOverlay.hidden = true;
+        overlay.hidden = true;
+        requestAnimationFrame(frame);
+        return;
+      }
       const gravity = sensor.getGravity();
       if (gravity) {
         waiting.hidden = true;
@@ -299,16 +319,22 @@ function bootstrap(root: HTMLElement): void {
           return;
         }
         poseOverlay.hidden = true;
-        const result = stabilize(computeLeveling(gravity, settings, calibration), settings);
+        const now = performance.now();
+        const result = stabilize(computeLeveling(gravity, settings, calibration), settings, now);
         diagram.update(result, settings.displayUnit);
         status.textContent = statusText(result);
         status.classList.toggle('status-line--level', result.isLevel);
         if (result.isLevel && !wasLevel) celebrate();
-        if (!result.isLevel) {
-          overlay.hidden = true;
-          if (wasLevel) unlevelSince = performance.now();
-        }
+        if (!result.isLevel) overlay.hidden = true;
         wasLevel = result.isLevel;
+        // Re-arm the celebration only once clearly un-level, sustained.
+        const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
+        if (!result.isLevel && maxMm > settings.toleranceMm + REARM_MARGIN_MM) {
+          clearlyUnlevelSince ??= now;
+          if (now - clearlyUnlevelSince >= REARM_SUSTAIN_MS) celebrateArmed = true;
+        } else {
+          clearlyUnlevelSince = null;
+        }
         tilt.update(result);
       }
       requestAnimationFrame(frame);
