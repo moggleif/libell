@@ -24,14 +24,22 @@ export const MESSAGES = {
     'menu.feedback': 'Feedback',
     'menu.help': 'Help',
 
-    'settings.wheelbase': 'Wheelbase (mm)',
-    'settings.trackFront': 'Track width front (mm)',
-    'settings.trackRear': 'Track width rear (mm)',
-    'settings.tolerance': 'Tolerance (mm)',
-    'settings.stability': 'Stability (mm)',
-    'settings.steps': 'Ramp step heights (mm, separated by ;)',
-    'settings.steps.placeholder': 'e.g. 20; 40; 60',
+    'settings.wheelbase': 'Wheelbase',
+    'settings.trackFront': 'Track width front',
+    'settings.trackRear': 'Track width rear',
+    'settings.tolerance': 'Tolerance',
+    'settings.stability': 'Stability',
+    'settings.steps': 'Ramp step heights',
+    'settings.steps.add': 'Add step',
+    'settings.steps.remove': 'Remove {value}',
+    'settings.steps.presets': 'Common ramps:',
+    'settings.unit': 'Show lengths in',
+    'settings.sound': 'Chime when level',
     'settings.save': 'Save',
+
+    'status.almost': 'Almost level — {left} left',
+    'status.one': '1 wheel to raise',
+    'status.many': '{n} wheels to raise',
 
     'calibration.intro':
       'Put the phone on a surface you know is level, then tap Calibrate now. ' +
@@ -85,8 +93,8 @@ export const MESSAGES = {
       'Wheelbase: the distance from the front wheels to the rear wheels, in mm. ' +
       'Track width front / rear: the distance between the left and right wheel on ' +
       'each axle, in mm — they may differ, so there is one field for each. ' +
-      'Ramp step heights: your leveling ramps are like small staircases; write the ' +
-      'height of every step in mm with semicolons between, for example 20; 40; 60. ' +
+      'Ramp step heights: your leveling ramps are like small staircases; add the ' +
+      'height of every step with the + button, or pick one of the common presets. ' +
       'Tolerance: how many mm lower a wheel may stand than the highest wheel and ' +
       'still count as level — smaller number, stricter leveling. ' +
       'Stability: keeps the numbers calm when the phone lies still; raise it if ' +
@@ -143,14 +151,22 @@ export const MESSAGES = {
     'menu.feedback': 'Feedback',
     'menu.help': 'Hjälp',
 
-    'settings.wheelbase': 'Hjulbas (mm)',
-    'settings.trackFront': 'Spårvidd fram (mm)',
-    'settings.trackRear': 'Spårvidd bak (mm)',
-    'settings.tolerance': 'Tolerans (mm)',
-    'settings.stability': 'Stabilitet (mm)',
-    'settings.steps': 'Rampens steghöjder (mm, åtskilda med ;)',
-    'settings.steps.placeholder': 't.ex. 20; 40; 60',
+    'settings.wheelbase': 'Hjulbas',
+    'settings.trackFront': 'Spårvidd fram',
+    'settings.trackRear': 'Spårvidd bak',
+    'settings.tolerance': 'Tolerans',
+    'settings.stability': 'Stabilitet',
+    'settings.steps': 'Rampens steghöjder',
+    'settings.steps.add': 'Lägg till steg',
+    'settings.steps.remove': 'Ta bort {value}',
+    'settings.steps.presets': 'Vanliga ramper:',
+    'settings.unit': 'Visa längder i',
+    'settings.sound': 'Ljudsignal när det är i våg',
     'settings.save': 'Spara',
+
+    'status.almost': 'Nästan i våg — {left} kvar',
+    'status.one': '1 hjul att höja',
+    'status.many': '{n} hjul att höja',
 
     'calibration.intro':
       'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +
@@ -203,8 +219,8 @@ export const MESSAGES = {
       'Hjulbas: avståndet från framhjulen till bakhjulen, i mm. Spårvidd fram/bak: ' +
       'avståndet mellan vänster och höger hjul på respektive axel, i mm — de kan ' +
       'skilja sig, därför ett fält för varje. Rampens steghöjder: dina ramper är som ' +
-      'små trappor; skriv höjden på varje steg i mm med semikolon emellan, till ' +
-      'exempel 20; 40; 60. Tolerans: hur många mm lägre ett hjul får stå än det ' +
+      'små trappor; lägg till höjden på varje steg med plusknappen, eller välj en ' +
+      'av de vanliga ramperna. Tolerans: hur många mm lägre ett hjul får stå än det ' +
       'högsta hjulet och ändå räknas som i våg — lägre siffra, noggrannare. ' +
       'Stabilitet: håller siffrorna lugna när telefonen ligger still; höj den om ' +
       'något fladdrar. Standardvärdena fungerar bra att börja med.',

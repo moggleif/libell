@@ -10,6 +10,7 @@
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
+import { formatLength } from '../domain/settings';
 import { t } from './i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -26,7 +27,7 @@ const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕' } as const;
 
 export interface RvDiagram {
   element: HTMLElement;
-  update(result: DisplayResult): void;
+  update(result: DisplayResult, unit: 'mm' | 'cm'): void;
 }
 
 const WHEEL_POS: Record<WheelId, { x: number; y: number }> = {
@@ -141,7 +142,7 @@ export function createRvDiagram(): RvDiagram {
 
   return {
     element: container,
-    update(result) {
+    update(result, unit) {
       for (const id of WHEEL_IDS) {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
@@ -153,8 +154,8 @@ export function createRvDiagram(): RvDiagram {
           stepLabel.textContent = '';
           liftLabel.textContent = '';
         } else {
-          liftLabel.textContent = `${displayMm} mm`;
-          stepLabel.textContent = stepMm > 0 ? `↑ ${stepMm} mm` : '';
+          liftLabel.textContent = formatLength(displayMm, unit);
+          stepLabel.textContent = stepMm > 0 ? `↑ ${formatLength(stepMm, unit)}` : '';
         }
       }
 

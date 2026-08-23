@@ -29,6 +29,8 @@ describe('settingsStore', () => {
       rampStepHeightsMm: [30, 60],
       toleranceMm: 25,
       stabilityMm: 2,
+      displayUnit: 'mm' as const,
+      soundOnLevel: false,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
