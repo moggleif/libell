@@ -5,8 +5,9 @@
  */
 import type { Calibration, LevelSettings } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
+import { createFeedbackSection } from './feedback';
 
-export type MenuSection = 'settings' | 'calibration' | 'help';
+export type MenuSection = 'settings' | 'calibration' | 'feedback' | 'help';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -177,6 +178,9 @@ export function createMenu(options: MenuOptions): Menu {
   renderCalibrationStatus();
   calibrationBody.append(calibrationIntro, calibrationStatus, calibrateButton, clearButton);
   addSection('calibration', 'Calibration', calibrationBody);
+
+  // --- Feedback ---
+  addSection('feedback', 'Feedback', createFeedbackSection());
 
   // --- Help ---
   const helpBody = document.createElement('div');

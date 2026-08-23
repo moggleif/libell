@@ -416,3 +416,32 @@ body {
 .settings__field--wide input {
   width: 100%;
 }
+
+/* ---- Feedback form ---- */
+
+.feedback__categories {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.feedback__category {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feedback__description {
+  font: inherit;
+  width: 100%;
+  padding: 6px 8px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  resize: vertical;
+}

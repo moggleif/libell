@@ -129,3 +129,15 @@ URL and must keep working with no signal.
 - **Given** I have never saved vehicle settings, or never calibrated
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
   tapping it opens the matching menu section, and it disappears once handled.
+
+## R12 — Feedback without a backend
+
+- **Given** I want to report a bug or suggest something
+- **When** I open ☰ → Feedback, pick a category (Bug / Suggestion / Other), write a
+  title and a description, and tap the button
+- **Then** GitHub's new-issue page opens in a new tab, pre-filled with
+  `[Feedback] {category}: {title}`, my description and app metadata (version, screen
+  size, timestamp, user agent), and I post it under my own GitHub account.
+- The submit button is disabled until both title and description are filled.
+- Modeled on sbsommar's feedback feature (its 02-§73), adapted to a static site: no
+  server, so no GitHub token ever ships in the client.
