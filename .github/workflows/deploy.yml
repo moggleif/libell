@@ -18,10 +18,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Release handling: the VERSION file holds major.minor, and the third
-  # component is the merged PR's number, so every deployed version maps
-  # straight to its pull request. Each deploy is tagged; the first deploy
-  # of a new major.minor also gets a GitHub Release.
+  # Release handling: the VERSION file holds major.minor. The first
+  # deploy of a new major.minor is the release — version X.Y.0, tagged
+  # and published as a GitHub Release. Every later merge on the same
+  # minor is a QA build (Pages doubles as the QA server): versioned
+  # X.Y.CR<PR> after the merged pull request, so the footer tells at a
+  # glance whether the deployed build is the release or a candidate.
   compute-version:
     name: Compute version
     runs-on: ubuntu-latest
@@ -48,12 +50,16 @@ jobs:
             echo "No PR number in '$MSG' — falling back to run number ${PATCH}"
           fi
           if [ -z "$(git tag --list "v${BASE}.*")" ]; then
+            # First deploy of this major.minor: the release, X.Y.0.
             IS_NEW_MINOR=true
+            VERSION_STRING="${BASE}.0"
           else
+            # Already released: this is a QA/candidate build, X.Y.CR<PR>.
             IS_NEW_MINOR=false
+            VERSION_STRING="${BASE}.CR${PATCH}"
           fi
-          TAG="v${BASE}.${PATCH}"
-          echo "version_string=${BASE}.${PATCH}" >> $GITHUB_OUTPUT
+          TAG="v${VERSION_STRING}"
+          echo "version_string=${VERSION_STRING}" >> $GITHUB_OUTPUT
           echo "tag_name=${TAG}" >> $GITHUB_OUTPUT
           echo "is_new_minor=${IS_NEW_MINOR}" >> $GITHUB_OUTPUT
           echo "Computed version: ${TAG} (is_new_minor=${IS_NEW_MINOR})"
@@ -135,6 +141,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.compute-version.outputs.tag_name }}
         run: |
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes
+          # Prefer the checked-in notes file: the release-notes workflow
+          # runs on the same push and would find no release to update yet.
+          if [ -f "docs/releases/${TAG}.md" ]; then
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file "docs/releases/${TAG}.md"
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --generate-notes
+          fi

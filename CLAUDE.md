@@ -103,9 +103,12 @@ when a step brings the wheel within tolerance, red when even the best step canno
 ## 7. Releases & versioning
 
 - The `VERSION` file holds the current **major.minor** (bump it manually for a new
-  minor). On every deploy to Pages the workflow computes the next patch from existing
-  `v{major.minor}.*` git tags, builds with `BUILD_VERSION`, tags the commit
-  `vX.Y.Z`, and creates a GitHub Release when the major.minor is new.
+  minor). GitHub Pages doubles as the QA server: the **first** deploy of a new
+  major.minor is the release — version `X.Y.0`, tagged, published as a GitHub Release
+  (with the checked-in notes `docs/releases/vX.Y.0.md` when present). Every **later**
+  merge on the same minor is a QA/candidate build versioned `X.Y.CR<PR>` after the
+  merged pull request, so the footer tells at a glance whether the deployed build is
+  the release or a candidate.
 - The build embeds the version (Vite `define` → `__APP_VERSION__`) and the app shows it
   in the footer. Local dev shows "X.Y.Z – local <timestamp>"; a CI build without
   `BUILD_VERSION` shows nothing rather than something wrong.
