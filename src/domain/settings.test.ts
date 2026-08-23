@@ -14,6 +14,7 @@ describe('parseSettings', () => {
       trackWidthRearCm: 170,
       rampStepHeightsMm: [20, 50, 80],
       toleranceDeg: 1,
+      stabilityMm: 5,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -54,7 +55,13 @@ describe('parseSettings', () => {
       trackWidthRearCm: 170,
       rampStepHeightsMm: [60],
       toleranceDeg: DEFAULT_SETTINGS.toleranceDeg,
+      stabilityMm: DEFAULT_SETTINGS.stabilityMm,
     });
+  });
+
+  it('accepts stability 0 (hysteresis off) but not negative values', () => {
+    expect(parseSettings({ stabilityMm: 0 }).stabilityMm).toBe(0);
+    expect(parseSettings({ stabilityMm: -2 }).stabilityMm).toBe(DEFAULT_SETTINGS.stabilityMm);
   });
 });
 

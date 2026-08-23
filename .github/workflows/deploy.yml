@@ -18,9 +18,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Release handling (mirrors sbsommar): the VERSION file holds major.minor,
-  # the next patch number comes from existing "v{base}.*" git tags. Each
-  # deploy is tagged; a new major.minor also gets a GitHub Release.
+  # Release handling: the VERSION file holds major.minor, and the third
+  # component is the merged PR's number, so every deployed version maps
+  # straight to its pull request. Each deploy is tagged; the first deploy
+  # of a new major.minor also gets a GitHub Release.
   compute-version:
     name: Compute version
     runs-on: ubuntu-latest
@@ -33,17 +34,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Compute next patch version
+      - name: Compute version from VERSION file and PR number
         id: version
         run: |
           BASE=$(cat VERSION | tr -d '[:space:]')
-          LATEST=$(git tag --list "v${BASE}.*" --sort=-version:refname | head -1)
-          if [ -z "$LATEST" ]; then
-            PATCH=0
+          # Merge and squash commits both carry "#<PR>" in the subject.
+          # Direct pushes and manual dispatches have none — fall back to
+          # the workflow run number so the tag stays unique.
+          MSG=$(git log -1 --pretty=%s)
+          PATCH=$(echo "$MSG" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+          if [ -z "$PATCH" ]; then
+            PATCH="${GITHUB_RUN_NUMBER}"
+            echo "No PR number in '$MSG' — falling back to run number ${PATCH}"
+          fi
+          if [ -z "$(git tag --list "v${BASE}.*")" ]; then
             IS_NEW_MINOR=true
           else
-            PREV_PATCH=$(echo "$LATEST" | grep -oE '[0-9]+$')
-            PATCH=$((PREV_PATCH + 1))
             IS_NEW_MINOR=false
           fi
           TAG="v${BASE}.${PATCH}"

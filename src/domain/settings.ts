@@ -19,6 +19,11 @@ export interface LevelSettings {
   rampStepHeightsMm: number[];
   /** Max |roll| and |pitch| still considered level, in degrees. */
   toleranceDeg: number;
+  /**
+   * Display hysteresis dead band in mm: how far a reading must move past
+   * a boundary before the shown value changes. 0 disables it.
+   */
+  stabilityMm: number;
 }
 
 export const DEFAULT_SETTINGS: LevelSettings = {
@@ -27,6 +32,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   trackWidthRearCm: 180,
   rampStepHeightsMm: [40],
   toleranceDeg: 0.5,
+  stabilityMm: 3,
 };
 
 /**
@@ -63,6 +69,10 @@ export function parseCalibration(value: unknown): Calibration | null {
 
 function positiveNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function nonNegativeNumber(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
 function normalizeHeights(values: number[]): number[] {
@@ -133,5 +143,6 @@ export function parseSettings(value: unknown): LevelSettings {
     ),
     rampStepHeightsMm: heights,
     toleranceDeg: positiveNumber(raw.toleranceDeg, DEFAULT_SETTINGS.toleranceDeg),
+    stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
   };
 }

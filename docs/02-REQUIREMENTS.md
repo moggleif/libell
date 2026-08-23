@@ -97,7 +97,8 @@ URL and must keep working with no signal.
   Help)
 - **When** I edit Wheelbase, Track width front, Track width rear, Ramp step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
-  is listed, e.g. "20; 40; 60"), or Tolerance and save
+  is listed, e.g. "20; 40; 60"), Tolerance, or Stability (display hysteresis dead band
+  in mm; 0 disables it) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, one
   40 mm step, tolerance 0.5°.

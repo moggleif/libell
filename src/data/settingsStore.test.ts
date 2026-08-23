@@ -28,6 +28,7 @@ describe('settingsStore', () => {
       trackWidthRearCm: 165,
       rampStepHeightsMm: [30, 60],
       toleranceDeg: 0.8,
+      stabilityMm: 2,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
