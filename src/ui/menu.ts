@@ -38,6 +38,8 @@ export interface Menu {
   element: HTMLElement;
   open(section: MenuSection): void;
   attach(button: HTMLButtonElement): void;
+  /** True while the drawer or a page is showing — the app pauses guidance. */
+  isOpen(): boolean;
 }
 
 export function createMenu(options: MenuOptions): Menu {
@@ -217,6 +219,9 @@ export function createMenu(options: MenuOptions): Menu {
     element: container,
     open(section) {
       showPage(section);
+    },
+    isOpen() {
+      return depth > 0;
     },
     attach(button) {
       button.addEventListener('click', () => {
