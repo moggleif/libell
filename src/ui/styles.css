@@ -244,6 +244,21 @@ body {
   white-space: pre;
 }
 
+/* ---- Footer ---- */
+
+.site-footer {
+  padding: 4px 16px max(8px, env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.site-footer__version {
+  margin: 0;
+  color: var(--on-surface-muted);
+  font-size: 0.75rem;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---- Hamburger menu ---- */
 
 .menu {

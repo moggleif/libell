@@ -27,6 +27,11 @@ if (installButton && installHint) {
   setupInstallButton(installButton, installHint);
 }
 
+const versionFooter = document.querySelector<HTMLElement>('#app-version');
+if (versionFooter && __APP_VERSION__) {
+  versionFooter.textContent = `v${__APP_VERSION__}`;
+}
+
 const app = document.querySelector<HTMLElement>('#app');
 if (app) {
   bootstrap(app);

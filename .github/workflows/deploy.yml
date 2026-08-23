@@ -18,8 +18,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Release handling (mirrors sbsommar): the VERSION file holds major.minor,
+  # the next patch number comes from existing "v{base}.*" git tags. Each
+  # deploy is tagged; a new major.minor also gets a GitHub Release.
+  compute-version:
+    name: Compute version
+    runs-on: ubuntu-latest
+    outputs:
+      version_string: ${{ steps.version.outputs.version_string }}
+      tag_name: ${{ steps.version.outputs.tag_name }}
+      is_new_minor: ${{ steps.version.outputs.is_new_minor }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute next patch version
+        id: version
+        run: |
+          BASE=$(cat VERSION | tr -d '[:space:]')
+          LATEST=$(git tag --list "v${BASE}.*" --sort=-version:refname | head -1)
+          if [ -z "$LATEST" ]; then
+            PATCH=0
+            IS_NEW_MINOR=true
+          else
+            PREV_PATCH=$(echo "$LATEST" | grep -oE '[0-9]+$')
+            PATCH=$((PREV_PATCH + 1))
+            IS_NEW_MINOR=false
+          fi
+          TAG="v${BASE}.${PATCH}"
+          echo "version_string=${BASE}.${PATCH}" >> $GITHUB_OUTPUT
+          echo "tag_name=${TAG}" >> $GITHUB_OUTPUT
+          echo "is_new_minor=${IS_NEW_MINOR}" >> $GITHUB_OUTPUT
+          echo "Computed version: ${TAG} (is_new_minor=${IS_NEW_MINOR})"
+
   deploy:
     name: Build & Deploy
+    needs: compute-version
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -39,6 +74,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          BUILD_VERSION: ${{ needs.compute-version.outputs.version_string }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -55,3 +92,37 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+  tag:
+    name: Tag release
+    needs: [compute-version, deploy]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create annotated git tag
+        run: |
+          TAG="${{ needs.compute-version.outputs.tag_name }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+            echo "Tag ${TAG} already exists — skipping"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "Production deploy $TAG"
+            git push origin "$TAG"
+            echo "Created and pushed tag ${TAG}"
+          fi
+
+      - name: Create GitHub Release (new major.minor only)
+        if: needs.compute-version.outputs.is_new_minor == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ needs.compute-version.outputs.tag_name }}"
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes

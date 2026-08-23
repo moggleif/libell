@@ -95,7 +95,17 @@ ramp step height (from the user's configured list, in **mm**) closest to the lif
 - Do not open a pull request unless explicitly asked.
 - Enable the shared hooks once: `git config core.hookspath .githooks`.
 
-## 7. Binary assets
+## 7. Releases & versioning
+
+- The `VERSION` file holds the current **major.minor** (bump it manually for a new
+  minor). On every deploy to Pages the workflow computes the next patch from existing
+  `v{major.minor}.*` git tags, builds with `BUILD_VERSION`, tags the commit
+  `vX.Y.Z`, and creates a GitHub Release when the major.minor is new.
+- The build embeds the version (Vite `define` → `__APP_VERSION__`) and the app shows it
+  in the footer. Local dev shows "X.Y.Z – local <timestamp>"; a CI build without
+  `BUILD_VERSION` shows nothing rather than something wrong.
+
+## 8. Binary assets
 
 The repository is kept **text-only**. The PWA icons are rendered from
 `public/icons/icon.svg` into PNGs by `scripts/generate-icons.mjs` at build time
