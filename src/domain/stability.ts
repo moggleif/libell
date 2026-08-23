@@ -44,15 +44,17 @@ export function createDisplayStabilizer(): (
     // The dead band is the user-facing "Stability" setting.
     const deadbandMm = settings.stabilityMm;
 
-    // Level status: enter at the tolerance, leave only once some wheel is
-    // past it by the dead band, so "Your RV is level!" does not blink.
+    // Level status: a symmetric Schmitt band around the tolerance. Enter
+    // level only clearly below it, leave only clearly above it — jitter
+    // sitting exactly on the boundary can never flip the state (and with
+    // it the message, the overlay and the vibration).
     const maxLiftMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].liftMm));
     if (!initialized) {
       level = result.isLevel;
     } else if (level) {
       level = maxLiftMm <= settings.toleranceMm + deadbandMm;
-    } else {
-      level = result.isLevel;
+    } else if (maxLiftMm <= Math.max(0, settings.toleranceMm - deadbandMm)) {
+      level = true;
     }
 
     for (const id of WHEEL_IDS) {

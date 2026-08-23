@@ -23,6 +23,13 @@ export const MESSAGES = {
     'menu.calibration': 'Calibration',
     'menu.feedback': 'Feedback',
     'menu.help': 'Help',
+    'menu.intro': 'Show introduction',
+
+    'onboard.step1.h': 'Place the phone like this',
+    'onboard.next': 'Next',
+    'onboard.done': 'Done',
+    'onboard.skipStep': 'Skip',
+    'onboard.skipDefaults': 'Skip — use defaults',
 
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
@@ -143,6 +150,13 @@ export const MESSAGES = {
     'menu.calibration': 'Kalibrering',
     'menu.feedback': 'Feedback',
     'menu.help': 'Hjälp',
+    'menu.intro': 'Visa introduktionen',
+
+    'onboard.step1.h': 'Lägg telefonen så här',
+    'onboard.next': 'Nästa',
+    'onboard.done': 'Klart',
+    'onboard.skipStep': 'Hoppa över',
+    'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',

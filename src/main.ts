@@ -7,10 +7,12 @@ import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
 import {
   clearCalibration,
+  hasSeenOnboarding,
   hasStoredSettings,
   loadCalibration,
   loadLanguage,
   loadSettings,
+  markOnboardingSeen,
   saveCalibration,
 } from './data/settingsStore';
 import {
@@ -23,6 +25,7 @@ import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
 import { createIndicators } from './ui/indicators';
+import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 
 setLanguage(resolveLanguage(loadLanguage()));
@@ -85,9 +88,38 @@ function bootstrap(root: HTMLElement): void {
   let calibration: Calibration | null = loadCalibration();
   const sensor = createOrientationSensor();
 
+  // First-run wizard: placement, measurements, calibration. Skippable —
+  // the warning lamps stay lit for whatever was skipped (#43).
+  const openOnboarding = () =>
+    showOnboarding({
+      initialSettings: settings,
+      onSettingsSaved(next) {
+        settings = next;
+        updateIndicators();
+      },
+      getCalibration: () => calibration,
+      calibrate: () => calibrateNow(),
+      readTilt: () => readTiltNow(),
+      applyCalibration(next) {
+        calibration = next;
+        saveCalibration(next);
+        updateIndicators();
+      },
+      clearCalibration() {
+        calibration = null;
+        clearCalibration();
+        updateIndicators();
+      },
+      onFinished() {
+        markOnboardingSeen();
+        updateIndicators();
+      },
+    });
+
   // Menu (hamburger) with Settings / Calibration / Help.
   const menu = createMenu({
     initialSettings: settings,
+    openOnboarding,
     onSettingsSaved(next) {
       settings = next;
       // The save click is a user gesture — the right moment to unlock
@@ -96,29 +128,8 @@ function bootstrap(root: HTMLElement): void {
       updateIndicators();
     },
     getCalibration: () => calibration,
-    calibrate() {
-      const gravity = sensor.getGravity();
-      if (!gravity) {
-        return t('calibration.err.notRunning');
-      }
-      const rollDeg = Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG;
-      const pitchDeg = Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG;
-      if (Math.abs(rollDeg) > MAX_CALIBRATION_DEG || Math.abs(pitchDeg) > MAX_CALIBRATION_DEG) {
-        return t('calibration.err.notFlat');
-      }
-      calibration = { rollDeg, pitchDeg };
-      saveCalibration(calibration);
-      updateIndicators();
-      return null;
-    },
-    readTilt() {
-      const gravity = sensor.getGravity();
-      if (!gravity) return t('calibration.err.notRunning');
-      return {
-        rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
-        pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
-      };
-    },
+    calibrate: () => calibrateNow(),
+    readTilt: () => readTiltNow(),
     applyCalibration(next) {
       calibration = next;
       saveCalibration(next);
@@ -140,6 +151,36 @@ function bootstrap(root: HTMLElement): void {
     indicators.update({ settingsSaved: hasStoredSettings(), calibrated: calibration !== null });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
+
+  // Shared by the menu and the onboarding wizard. Starting the sensor on
+  // demand makes calibration work from the wizard before the main screen
+  // (the tap itself is the iOS permission gesture).
+  function readTiltNow(): Calibration | string {
+    const gravity = sensor.getGravity();
+    if (!gravity) {
+      void sensor.start();
+      return t('calibration.err.notRunning');
+    }
+    return {
+      rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
+      pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
+    };
+  }
+
+  function calibrateNow(): string | null {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    if (
+      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
+      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
+    ) {
+      return t('calibration.err.notFlat');
+    }
+    calibration = reading;
+    saveCalibration(calibration);
+    updateIndicators();
+    return null;
+  }
 
   const showMessage = (text: string) => {
     root.replaceChildren();
@@ -194,9 +235,20 @@ function bootstrap(root: HTMLElement): void {
     const stabilize = createDisplayStabilizer();
     let wasLevel = false;
     let overlayTimer = 0;
+    // Celebration guards (field feedback): only after the vehicle was
+    // clearly un-level for a while, and never in rapid succession —
+    // boundary jitter must not turn into strobe + chaos vibration.
+    let unlevelSince = performance.now();
+    let lastCelebrate = -Infinity;
+    const MIN_UNLEVEL_MS = 3000;
+    const CELEBRATE_COOLDOWN_MS = 20000;
 
     const celebrate = () => {
       if (document.visibilityState !== 'visible') return;
+      const now = performance.now();
+      if (now - unlevelSince < MIN_UNLEVEL_MS) return;
+      if (now - lastCelebrate < CELEBRATE_COOLDOWN_MS) return;
+      lastCelebrate = now;
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
       if (settings.soundOnLevel) playChime();
       overlay.hidden = false;
@@ -237,7 +289,10 @@ function bootstrap(root: HTMLElement): void {
         status.textContent = statusText(result);
         status.classList.toggle('status-line--level', result.isLevel);
         if (result.isLevel && !wasLevel) celebrate();
-        if (!result.isLevel) overlay.hidden = true;
+        if (!result.isLevel) {
+          overlay.hidden = true;
+          if (wasLevel) unlevelSince = performance.now();
+        }
         wasLevel = result.isLevel;
         tilt.update(result);
       }
@@ -258,6 +313,8 @@ function bootstrap(root: HTMLElement): void {
         showMessage(window.isSecureContext ? t('main.noSensors') : t('main.https'));
     }
   };
+
+  if (!hasSeenOnboarding()) openOnboarding();
 
   if (!isSensorSupported()) {
     handleState('unsupported');

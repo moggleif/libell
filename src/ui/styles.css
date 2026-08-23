@@ -757,3 +757,47 @@ body {
   font-size: 15px;
   font-weight: 700;
 }
+
+/* ---- Onboarding wizard ---- */
+
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--surface);
+  display: flex;
+  justify-content: center;
+  overflow-y: auto;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 24px;
+}
+
+.onboarding__card {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.onboarding__progress {
+  margin: 0;
+  color: var(--on-surface-muted);
+  font-size: 0.8rem;
+}
+
+.onboarding__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.onboarding__body {
+  flex: 1;
+}
+
+.onboarding__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

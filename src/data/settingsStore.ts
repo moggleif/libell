@@ -14,6 +14,7 @@ import {
 const STORAGE_KEY = 'libell.settings';
 const CALIBRATION_KEY = 'libell.calibration';
 const LANGUAGE_KEY = 'libell.language';
+const ONBOARDED_KEY = 'libell.onboarded';
 
 /** The subset of `Storage` the store needs; injectable for tests. */
 export interface KeyValueStorage {
@@ -101,6 +102,22 @@ export function saveLanguage(
     storage?.setItem(LANGUAGE_KEY, lang);
   } catch {
     // Non-fatal — auto-detection covers the next start.
+  }
+}
+
+export function hasSeenOnboarding(storage: KeyValueStorage | null = defaultStorage()): boolean {
+  try {
+    return storage?.getItem(ONBOARDED_KEY) === '1';
+  } catch {
+    return true; // Storage unavailable — do not loop the wizard forever.
+  }
+}
+
+export function markOnboardingSeen(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    storage?.setItem(ONBOARDED_KEY, '1');
+  } catch {
+    // Non-fatal.
   }
 }
 
