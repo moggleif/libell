@@ -1,0 +1,35 @@
+name: Update release notes
+
+# Rewrites a GitHub Release's body from the checked-in notes file
+# docs/releases/<tag>.md, so release texts are version-controlled and
+# reviewable like everything else.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.0); notes come from docs/releases/<tag>.md'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Update release notes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update release body from notes file
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          FILE="docs/releases/${TAG}.md"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::No notes file at ${FILE}"
+            exit 1
+          fi
+          gh release edit "$TAG" --notes-file "$FILE"
+          echo "Updated release ${TAG} from ${FILE}"
