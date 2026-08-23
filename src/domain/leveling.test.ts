@@ -27,7 +27,7 @@ describe('computeLeveling', () => {
     expect(result.pitchDeg).toBeCloseTo(0);
     for (const id of WHEEL_IDS) {
       expect(result.wheels[id].liftCm).toBeCloseTo(0);
-      expect(result.wheels[id].stepCm).toBe(0);
+      expect(result.wheels[id].stepMm).toBe(0);
     }
   });
 
@@ -77,12 +77,12 @@ describe('computeLeveling', () => {
   });
 
   it('recommends the available ramp step closest to the lift', () => {
-    const settings = { ...DEFAULT_SETTINGS, blockHeightsCm: [2, 4, 6, 9] };
+    const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60, 90] };
     // Roll of −2° over a 180 cm track lifts the right side ≈ 6.3 cm.
     const result = computeLeveling(gravityFor(-2, 0), settings);
     expect(result.wheels.frontRight.liftCm).toBeCloseTo(6.29, 1);
-    expect(result.wheels.frontRight.stepCm).toBe(6);
-    expect(result.wheels.frontLeft.stepCm).toBe(0);
+    expect(result.wheels.frontRight.stepMm).toBe(60);
+    expect(result.wheels.frontLeft.stepMm).toBe(0);
   });
 
   it('treats tilt within the tolerance as level', () => {
@@ -94,19 +94,19 @@ describe('computeLeveling', () => {
 });
 
 describe('recommendStep', () => {
-  it('picks the nearest step, with "no step" as a candidate', () => {
-    const steps = [2, 4, 6, 9];
-    expect(recommendStep(0.5, steps)).toBe(0);
-    expect(recommendStep(1.2, steps)).toBe(2);
-    expect(recommendStep(4.8, steps)).toBe(4);
-    expect(recommendStep(7.8, steps)).toBe(9);
-    expect(recommendStep(20, steps)).toBe(9);
+  it('picks the nearest step in mm, with "no step" as a candidate', () => {
+    const steps = [20, 40, 60, 90];
+    expect(recommendStep(5, steps)).toBe(0);
+    expect(recommendStep(12, steps)).toBe(20);
+    expect(recommendStep(48, steps)).toBe(40);
+    expect(recommendStep(78, steps)).toBe(90);
+    expect(recommendStep(200, steps)).toBe(90);
   });
 });
 
 describe('liftSeverity', () => {
-  it('classifies lifts relative to the available step heights', () => {
-    const settings = { ...DEFAULT_SETTINGS, blockHeightsCm: [2, 4, 6] };
+  it('classifies lifts (cm) relative to the available step heights (mm)', () => {
+    const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60] };
     expect(liftSeverity(0, settings)).toBe('none');
     expect(liftSeverity(0.9, settings)).toBe('none');
     expect(liftSeverity(3, settings)).toBe('small');

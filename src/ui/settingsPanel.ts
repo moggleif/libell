@@ -5,8 +5,8 @@
  * `onChange` callback.
  */
 import {
-  formatBlockHeightsList,
-  parseBlockHeightsList,
+  formatStepHeightsList,
+  parseStepHeightsList,
   parseSettings,
   type LevelSettings,
 } from '../domain/settings';
@@ -57,18 +57,18 @@ export function createSettingsPanel(
     inputs.set(key, input);
   }
 
-  // The ramp is a staircase: list every step height you have, in cm,
+  // The ramp is a staircase: list every step height you have, in mm,
   // separated by semicolons.
   const heightsField = document.createElement('label');
   heightsField.className = 'settings__field settings__field--wide';
   const heightsCaption = document.createElement('span');
-  heightsCaption.textContent = 'Ramp step heights (cm, separated by ;)';
+  heightsCaption.textContent = 'Ramp step heights (mm, separated by ;)';
   const heightsInput = document.createElement('input');
   heightsInput.type = 'text';
   heightsInput.inputMode = 'decimal';
-  heightsInput.name = 'blockHeightsCm';
-  heightsInput.placeholder = 'e.g. 2; 4; 6';
-  heightsInput.value = formatBlockHeightsList(initial.blockHeightsCm);
+  heightsInput.name = 'rampStepHeightsMm';
+  heightsInput.placeholder = 'e.g. 20; 40; 60';
+  heightsInput.value = formatStepHeightsList(initial.rampStepHeightsMm);
   heightsField.append(heightsCaption, heightsInput);
   form.append(heightsField);
 
@@ -81,14 +81,14 @@ export function createSettingsPanel(
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const raw: Record<string, unknown> = {
-      blockHeightsCm: parseBlockHeightsList(heightsInput.value),
+      rampStepHeightsMm: parseStepHeightsList(heightsInput.value),
     };
     for (const [key, input] of inputs) raw[key] = input.valueAsNumber;
     // parseSettings guards against empty/invalid fields the same way it
     // guards against corrupt storage.
     const settings = parseSettings(raw);
     for (const [key, input] of inputs) input.value = String(settings[key]);
-    heightsInput.value = formatBlockHeightsList(settings.blockHeightsCm);
+    heightsInput.value = formatStepHeightsList(settings.rampStepHeightsMm);
     saveSettings(settings);
     onChange(settings);
     details.open = false;

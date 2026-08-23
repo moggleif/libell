@@ -93,11 +93,11 @@ URL and must keep working with no signal.
 
 - **Given** I open Settings
 - **When** I edit Wheelbase, Track width front, Track width rear, Ramp step heights
-  (cm, semicolon-separated — a leveling ramp is a staircase, so every available height
-  is listed, e.g. "2; 4; 6"), or Tolerance and save
+  (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
+  is listed, e.g. "20; 40; 60"), or Tolerance and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, one
-  4 cm step, tolerance 0.5°.
+  40 mm step, tolerance 0.5°.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 

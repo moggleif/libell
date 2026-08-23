@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
-  formatBlockHeightsList,
-  parseBlockHeightsList,
+  formatStepHeightsList,
+  parseStepHeightsList,
   parseSettings,
 } from './settings';
 
@@ -12,7 +12,7 @@ describe('parseSettings', () => {
       wheelbaseCm: 350,
       trackWidthFrontCm: 200,
       trackWidthRearCm: 170,
-      blockHeightsCm: [2, 5, 8],
+      rampStepHeightsMm: [20, 50, 80],
       toleranceDeg: 1,
     };
     expect(parseSettings(stored)).toEqual(stored);
@@ -24,13 +24,14 @@ describe('parseSettings', () => {
     expect(result.trackWidthRearCm).toBe(200);
   });
 
-  it('migrates a legacy single blockHeightCm to a one-step list', () => {
-    expect(parseSettings({ blockHeightCm: 5 }).blockHeightsCm).toEqual([5]);
+  it('migrates legacy cm step heights to mm', () => {
+    expect(parseSettings({ blockHeightCm: 5 }).rampStepHeightsMm).toEqual([50]);
+    expect(parseSettings({ blockHeightsCm: [2, 4, 6] }).rampStepHeightsMm).toEqual([20, 40, 60]);
   });
 
   it('sorts, dedupes and cleans the step height list', () => {
-    const result = parseSettings({ blockHeightsCm: [6, 2, 2, -1, NaN, 4] });
-    expect(result.blockHeightsCm).toEqual([2, 4, 6]);
+    const result = parseSettings({ rampStepHeightsMm: [60, 20, 20, -1, NaN, 40] });
+    expect(result.rampStepHeightsMm).toEqual([20, 40, 60]);
   });
 
   it('falls back to defaults for missing input', () => {
@@ -44,30 +45,30 @@ describe('parseSettings', () => {
       wheelbaseCm: -10,
       trackWidthFrontCm: 'wide',
       trackWidthRearCm: 170,
-      blockHeightsCm: [6],
+      rampStepHeightsMm: [60],
       toleranceDeg: NaN,
     });
     expect(result).toEqual({
       wheelbaseCm: DEFAULT_SETTINGS.wheelbaseCm,
       trackWidthFrontCm: DEFAULT_SETTINGS.trackWidthFrontCm,
       trackWidthRearCm: 170,
-      blockHeightsCm: [6],
+      rampStepHeightsMm: [60],
       toleranceDeg: DEFAULT_SETTINGS.toleranceDeg,
     });
   });
 });
 
-describe('parseBlockHeightsList', () => {
-  it('parses semicolon-separated cm values', () => {
-    expect(parseBlockHeightsList('2; 4; 6')).toEqual([2, 4, 6]);
+describe('parseStepHeightsList', () => {
+  it('parses semicolon-separated mm values', () => {
+    expect(parseStepHeightsList('20; 40; 60')).toEqual([20, 40, 60]);
   });
 
   it('accepts decimal commas and drops invalid entries', () => {
-    expect(parseBlockHeightsList(' 4,5 ; junk; -2; 2 ')).toEqual([2, 4.5]);
-    expect(parseBlockHeightsList('')).toEqual([]);
+    expect(parseStepHeightsList(' 45,5 ; junk; -2; 20 ')).toEqual([20, 45.5]);
+    expect(parseStepHeightsList('')).toEqual([]);
   });
 
   it('round-trips through the display format', () => {
-    expect(formatBlockHeightsList(parseBlockHeightsList('6;2;4'))).toBe('2; 4; 6');
+    expect(formatStepHeightsList(parseStepHeightsList('60;20;40'))).toBe('20; 40; 60');
   });
 });
