@@ -45,15 +45,17 @@ export interface LevelingResult {
 
 const RAD_TO_DEG = 180 / Math.PI;
 
-/** Wheel positions in the vehicle plane: x = right, y = front. */
+/** Wheel positions in the vehicle plane: x = right, y = front. Each axle
+ * has its own track width — many RVs are narrower over one axle. */
 function wheelPositions(settings: LevelSettings): Record<WheelId, { x: number; y: number }> {
-  const halfTrack = settings.trackWidthCm / 2;
+  const halfFront = settings.trackWidthFrontCm / 2;
+  const halfRear = settings.trackWidthRearCm / 2;
   const halfBase = settings.wheelbaseCm / 2;
   return {
-    frontLeft: { x: -halfTrack, y: halfBase },
-    frontRight: { x: halfTrack, y: halfBase },
-    rearLeft: { x: -halfTrack, y: -halfBase },
-    rearRight: { x: halfTrack, y: -halfBase },
+    frontLeft: { x: -halfFront, y: halfBase },
+    frontRight: { x: halfFront, y: halfBase },
+    rearLeft: { x: -halfRear, y: -halfBase },
+    rearRight: { x: halfRear, y: -halfBase },
   };
 }
 

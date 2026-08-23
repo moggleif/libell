@@ -53,11 +53,11 @@ From the gravity vector `(gx, gy, gz)`:
 
 - `roll = atan2(gx, gz)`, `pitch = atan2(gy, gz)`
 
-Wheel positions in the vehicle plane (`x` = right, `y` = front), wheelbase `L`, track
-width `W`:
+Wheel positions in the vehicle plane (`x` = right, `y` = front), wheelbase `L`, front
+track width `Wf`, rear track width `Wr` (axles may differ):
 
-- Front-left `(−W/2, +L/2)`, Front-right `(+W/2, +L/2)`,
-  Rear-left `(−W/2, −L/2)`, Rear-right `(+W/2, −L/2)`
+- Front-left `(−Wf/2, +L/2)`, Front-right `(+Wf/2, +L/2)`,
+  Rear-left `(−Wr/2, −L/2)`, Rear-right `(+Wr/2, −L/2)`
 
 Per-wheel height: `z_i = x_i·tan(roll) + y_i·tan(pitch)`. Blocks only go _under_ wheels, so
 the reference is the highest wheel: `lift_i = max(z) − z_i ≥ 0`. Display cm and

@@ -14,7 +14,7 @@ src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings) -> LevelingResult
-│   └── settings.ts   # LevelSettings (wheelbase, track width, block height, tolerance)
+│   └── settings.ts   # LevelSettings (wheelbase, front/rear track width, block height, tolerance)
 ├── data/          # settingsStore.ts — localStorage read/write + defaults
 ├── sensor/        # orientation.ts — gravity vector as a subscription
 └── ui/            # render functions, SVG components, styles.css
@@ -34,9 +34,10 @@ in **centimetres**.
 roll  = atan2(gx, gz)        # side/side
 pitch = atan2(gy, gz)        # front/back
 
-# wheel positions (x = right, y = front), L = wheelbase, W = track width
-FL(-W/2, +L/2)  FR(+W/2, +L/2)
-RL(-W/2, -L/2)  RR(+W/2, -L/2)
+# wheel positions (x = right, y = front), L = wheelbase,
+# Wf/Wr = front/rear track width (axles may differ)
+FL(-Wf/2, +L/2)  FR(+Wf/2, +L/2)
+RL(-Wr/2, -L/2)  RR(+Wr/2, -L/2)
 
 z_i    = x_i*tan(roll) + y_i*tan(pitch)
 lift_i = max(z) - z_i          # >= 0, because blocks only go under wheels
@@ -89,8 +90,9 @@ layout on every tick.
 ## Settings (`src/data/settingsStore.ts`)
 
 `localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
-outdated value falls back to defaults. Defaults: wheelbase 400 cm, track width 180 cm,
-block height 4 cm, tolerance 0.5°.
+outdated value falls back to defaults. Defaults: wheelbase 400 cm, front and rear track
+width 180 cm, block height 4 cm, tolerance 0.5°. A legacy single `trackWidthCm` value
+seeds both axles on read.
 
 ## Offline
 

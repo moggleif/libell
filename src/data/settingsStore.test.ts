@@ -13,7 +13,13 @@ function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {
 describe('settingsStore', () => {
   it('round-trips settings through storage', () => {
     const storage = memoryStorage();
-    const settings = { wheelbaseCm: 320, trackWidthCm: 190, blockHeightCm: 3, toleranceDeg: 0.8 };
+    const settings = {
+      wheelbaseCm: 320,
+      trackWidthFrontCm: 190,
+      trackWidthRearCm: 165,
+      blockHeightCm: 3,
+      toleranceDeg: 0.8,
+    };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
   });
