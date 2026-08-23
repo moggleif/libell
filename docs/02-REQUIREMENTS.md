@@ -37,11 +37,12 @@ URL and must keep working with no signal.
 
 ## R3 — The app computes how much to raise each wheel
 
-- **Given** a known wheelbase, front and rear track width and block height
+- **Given** a known wheelbase, front and rear track width and the available ramp step
+  heights
 - **When** the vehicle is tilted by roll and pitch
 - **Then** each wheel's required lift is `max(z) − z_i` (≥ 0) where
-  `z_i = x_i·tan(roll) + y_i·tan(pitch)`, expressed in cm and in
-  `round(lift / blockHeight)` blocks.
+  `z_i = x_i·tan(roll) + y_i·tan(pitch)`, expressed in cm together with the available
+  ramp step height closest to the lift ("no step" is a candidate too).
 - Acceptance cases (these become unit tests):
   - **Flat** (gravity straight down) → every wheel lift is 0 and the RV is reported level.
   - **Pure roll** (tilted side to side) → the wheels on the lower side need lifting; the
@@ -50,7 +51,8 @@ URL and must keep working with no signal.
     higher end is the reference (lift 0).
   - **Combined roll + pitch** → exactly three wheels need lifting; the single highest
     corner is the reference (lift 0).
-  - **Block rounding** → blocks = the lift divided by block height, rounded to nearest.
+  - **Step recommendation** → the recommended step is the configured height closest to
+    the lift; a lift below half the smallest step recommends no step.
 
 ## R4 — A top-down RV view orients the user (UI hero)
 
@@ -90,11 +92,12 @@ URL and must keep working with no signal.
 ## R9 — Vehicle parameters are configurable and persist
 
 - **Given** I open Settings
-- **When** I edit Wheelbase, Track width front, Track width rear, Block height, or
-  Tolerance and save
+- **When** I edit Wheelbase, Track width front, Track width rear, Ramp step heights
+  (cm, semicolon-separated — a leveling ramp is a staircase, so every available height
+  is listed, e.g. "2; 4; 6"), or Tolerance and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
-  the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, block
-  height 4 cm, tolerance 0.5°.
+  the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, one
+  4 cm step, tolerance 0.5°.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 

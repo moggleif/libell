@@ -82,11 +82,13 @@ export function createRvDiagram(): RvDiagram {
       rx: '9',
       class: 'rv-diagram__wheel',
     });
-    const isLeft = x < 120;
+    // The lift figure sits in front of the front wheels and behind the
+    // rear wheels, so each number is unambiguously "its" wheel.
+    const isFront = y < 170;
     const label = svgEl('text', {
-      x: String(isLeft ? x - 22 : x + 22),
-      y: String(y + 5),
-      'text-anchor': isLeft ? 'end' : 'start',
+      x: String(x),
+      y: String(isFront ? y - 32 : y + 42),
+      'text-anchor': 'middle',
       class: 'rv-diagram__lift-label',
     });
     svg.append(marker, label);
