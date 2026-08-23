@@ -30,10 +30,10 @@ export interface WheelLift {
   /** How much this wheel must be raised, in cm (≥ 0). */
   liftCm: number;
   /**
-   * The ramp step closest to the required lift, in cm — 0 when driving
+   * The ramp step closest to the required lift, in mm — 0 when driving
    * onto even the smallest step would overshoot more than staying off.
    */
-  stepCm: number;
+  stepMm: number;
 }
 
 export interface LevelingResult {
@@ -76,7 +76,7 @@ export function computeLeveling(gravity: GravityVector, settings: LevelSettings)
   const wheels = {} as Record<WheelId, WheelLift>;
   for (const { id, z } of heights) {
     const liftCm = highest - z;
-    wheels[id] = { liftCm, stepCm: recommendStep(liftCm, settings.blockHeightsCm) };
+    wheels[id] = { liftCm, stepMm: recommendStep(liftCm * 10, settings.rampStepHeightsMm) };
   }
 
   const rollDeg = roll * RAD_TO_DEG;
@@ -91,15 +91,15 @@ export function computeLeveling(gravity: GravityVector, settings: LevelSettings)
 }
 
 /**
- * Pick the available ramp step closest to the required lift. "No step"
- * (0) is a candidate too, so a lift smaller than half the lowest step
- * recommends staying off the ramp — the generalization of the old
- * round-to-nearest-block behavior. Ties go to the lower step.
+ * Pick the available ramp step (mm) closest to the required lift (mm).
+ * "No step" (0) is a candidate too, so a lift smaller than half the
+ * lowest step recommends staying off the ramp — the generalization of the
+ * old round-to-nearest-block behavior. Ties go to the lower step.
  */
-export function recommendStep(liftCm: number, stepsCm: number[]): number {
+export function recommendStep(liftMm: number, stepsMm: number[]): number {
   let best = 0;
-  for (const step of stepsCm) {
-    if (Math.abs(liftCm - step) < Math.abs(liftCm - best)) best = step;
+  for (const step of stepsMm) {
+    if (Math.abs(liftMm - step) < Math.abs(liftMm - best)) best = step;
   }
   return best;
 }
@@ -112,9 +112,10 @@ export type LiftSeverity = 'none' | 'small' | 'large';
  * the required lift, orange (small) in between.
  */
 export function liftSeverity(liftCm: number, settings: LevelSettings): LiftSeverity {
-  const steps = settings.blockHeightsCm;
-  const min = steps[0] ?? Infinity;
-  const max = steps[steps.length - 1] ?? Infinity;
-  if (liftCm < min / 2) return 'none';
-  return liftCm <= max ? 'small' : 'large';
+  const stepsMm = settings.rampStepHeightsMm;
+  const minMm = stepsMm[0] ?? Infinity;
+  const maxMm = stepsMm[stepsMm.length - 1] ?? Infinity;
+  const liftMm = liftCm * 10;
+  if (liftMm < minMm / 2) return 'none';
+  return liftMm <= maxMm ? 'small' : 'large';
 }

@@ -12,11 +12,11 @@ export interface LevelSettings {
   /** Distance between the rear wheels, in cm — may differ from the front. */
   trackWidthRearCm: number;
   /**
-   * The step heights of the leveling ramp, in cm, sorted ascending. A ramp
+   * The step heights of the leveling ramp, in mm, sorted ascending. A ramp
    * is a staircase — the wheel rests on one of these heights, so the app
    * recommends the step closest to the required lift.
    */
-  blockHeightsCm: number[];
+  rampStepHeightsMm: number[];
   /** Max |roll| and |pitch| still considered level, in degrees. */
   toleranceDeg: number;
 }
@@ -25,7 +25,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   wheelbaseCm: 400,
   trackWidthFrontCm: 180,
   trackWidthRearCm: 180,
-  blockHeightsCm: [4],
+  rampStepHeightsMm: [40],
   toleranceDeg: 0.5,
 };
 
@@ -39,11 +39,11 @@ function normalizeHeights(values: number[]): number[] {
 }
 
 /**
- * Parse the settings-form text for available step heights: cm values
+ * Parse the settings-form text for available step heights: mm values
  * separated by semicolons (commas tolerated as a decimal or list
- * separator), e.g. "2; 4,5; 6". Invalid entries are dropped.
+ * separator), e.g. "20; 45; 60". Invalid entries are dropped.
  */
-export function parseBlockHeightsList(text: string): number[] {
+export function parseStepHeightsList(text: string): number[] {
   const items = text.split(';').flatMap((part) => {
     const trimmed = part.trim();
     if (trimmed === '') return [];
@@ -56,8 +56,8 @@ export function parseBlockHeightsList(text: string): number[] {
   return normalizeHeights(items);
 }
 
-/** Format the step heights back into the form's "2; 4; 6" notation. */
-export function formatBlockHeightsList(heights: number[]): string {
+/** Format the step heights back into the form's "20; 40; 60" notation. */
+export function formatStepHeightsList(heights: number[]): string {
   return heights.join('; ');
 }
 
@@ -65,20 +65,28 @@ export function formatBlockHeightsList(heights: number[]): string {
  * Turn untrusted input (localStorage JSON, hand-edited or from an older
  * version) into a usable `LevelSettings`. Each field falls back to its
  * default independently, so one bad value never breaks startup. Legacy
- * values are migrated: a single `trackWidthCm` seeds both axles and a
- * single `blockHeightCm` becomes a one-step list.
+ * values are migrated: a single `trackWidthCm` seeds both axles, and step
+ * heights stored in cm (`blockHeightsCm` list or single `blockHeightCm`)
+ * are converted to mm.
  */
 export function parseSettings(value: unknown): LevelSettings {
   const raw = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>;
   const legacyTrack = positiveNumber(raw.trackWidthCm, NaN);
   const trackFallback = Number.isNaN(legacyTrack) ? undefined : legacyTrack;
 
-  let heights = Array.isArray(raw.blockHeightsCm)
-    ? normalizeHeights(raw.blockHeightsCm.filter((v): v is number => typeof v === 'number'))
+  let heights = Array.isArray(raw.rampStepHeightsMm)
+    ? normalizeHeights(raw.rampStepHeightsMm.filter((v): v is number => typeof v === 'number'))
     : [];
+  if (heights.length === 0 && Array.isArray(raw.blockHeightsCm)) {
+    heights = normalizeHeights(
+      raw.blockHeightsCm.filter((v): v is number => typeof v === 'number').map((v) => v * 10),
+    );
+  }
   if (heights.length === 0) {
-    const legacyBlock = positiveNumber(raw.blockHeightCm, NaN);
-    heights = Number.isNaN(legacyBlock) ? DEFAULT_SETTINGS.blockHeightsCm : [legacyBlock];
+    const legacyBlockCm = positiveNumber(raw.blockHeightCm, NaN);
+    heights = Number.isNaN(legacyBlockCm)
+      ? DEFAULT_SETTINGS.rampStepHeightsMm
+      : [legacyBlockCm * 10];
   }
 
   return {
@@ -91,7 +99,7 @@ export function parseSettings(value: unknown): LevelSettings {
       raw.trackWidthRearCm,
       trackFallback ?? DEFAULT_SETTINGS.trackWidthRearCm,
     ),
-    blockHeightsCm: heights,
+    rampStepHeightsMm: heights,
     toleranceDeg: positiveNumber(raw.toleranceDeg, DEFAULT_SETTINGS.toleranceDeg),
   };
 }

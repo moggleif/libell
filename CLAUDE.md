@@ -61,8 +61,8 @@ track width `Wf`, rear track width `Wr` (axles may differ):
 
 Per-wheel height: `z_i = x_i·tan(roll) + y_i·tan(pitch)`. Blocks only go _under_ wheels, so
 the reference is the highest wheel: `lift_i = max(z) − z_i ≥ 0`. Display cm and the
-ramp step height (from the user's configured list) closest to the lift, with "no step"
-as a candidate. "Level" when `|roll| < tolerance` and
+ramp step height (from the user's configured list, in **mm**) closest to the lift, with
+"no step" as a candidate. "Level" when `|roll| < tolerance` and
 `|pitch| < tolerance` (default 0.5°). All lengths are in centimetres.
 
 ## 4. Sensors on the web

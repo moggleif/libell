@@ -42,12 +42,12 @@ export function createWheelList(): WheelList {
       list.hidden = result.isLevel;
       if (result.isLevel) return;
       for (const id of WHEEL_IDS) {
-        const { liftCm, stepCm } = result.wheels[id];
+        const { liftCm, stepMm } = result.wheels[id];
         let text: string;
         if (liftCm < 0.05) {
           text = `${WHEEL_LABELS[id]}: OK`;
-        } else if (stepCm > 0) {
-          text = `${WHEEL_LABELS[id]}: ${liftCm.toFixed(1)} cm (use the ${stepCm} cm step)`;
+        } else if (stepMm > 0) {
+          text = `${WHEEL_LABELS[id]}: ${liftCm.toFixed(1)} cm (use the ${stepMm} mm step)`;
         } else {
           text = `${WHEEL_LABELS[id]}: ${liftCm.toFixed(1)} cm (less than one step)`;
         }
