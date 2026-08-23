@@ -230,7 +230,9 @@ body {
 /* ---- RV diagram (hero) ---- */
 
 .rv-diagram {
-  width: min(80vw, 62vh, 380px);
+  /* Read outdoors at arm's length: use the screen. The vh term keeps the
+   * status line and tilt readout on screen below the diagram (#68). */
+  width: min(92vw, 58vh, 560px);
 }
 
 .rv-diagram svg {
@@ -336,13 +338,13 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--on-surface-muted);
-  font-size: 1.15rem;
+  font-size: clamp(1.15rem, 4.2vw, 1.45rem);
   font-weight: 600;
 }
 
 .status-line--level {
   color: var(--level);
-  font-size: 1.5rem;
+  font-size: clamp(1.5rem, 5.5vw, 1.9rem);
   font-weight: 700;
 }
 
@@ -379,7 +381,7 @@ body {
 .tilt-readout {
   margin: 0;
   color: var(--on-surface-muted);
-  font-size: 0.85rem;
+  font-size: clamp(0.85rem, 3vw, 1rem);
   font-variant-numeric: tabular-nums;
   white-space: pre;
 }
