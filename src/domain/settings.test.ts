@@ -13,7 +13,7 @@ describe('parseSettings', () => {
       trackWidthFrontCm: 200,
       trackWidthRearCm: 170,
       rampStepHeightsMm: [20, 50, 80],
-      toleranceDeg: 1,
+      toleranceMm: 15,
       stabilityMm: 5,
     };
     expect(parseSettings(stored)).toEqual(stored);
@@ -47,16 +47,20 @@ describe('parseSettings', () => {
       trackWidthFrontCm: 'wide',
       trackWidthRearCm: 170,
       rampStepHeightsMm: [60],
-      toleranceDeg: NaN,
+      toleranceMm: NaN,
     });
     expect(result).toEqual({
       wheelbaseCm: DEFAULT_SETTINGS.wheelbaseCm,
       trackWidthFrontCm: DEFAULT_SETTINGS.trackWidthFrontCm,
       trackWidthRearCm: 170,
       rampStepHeightsMm: [60],
-      toleranceDeg: DEFAULT_SETTINGS.toleranceDeg,
+      toleranceMm: DEFAULT_SETTINGS.toleranceMm,
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
     });
+  });
+
+  it('drops a legacy degree-based tolerance in favor of the mm default', () => {
+    expect(parseSettings({ toleranceDeg: 0.5 }).toleranceMm).toBe(DEFAULT_SETTINGS.toleranceMm);
   });
 
   it('accepts stability 0 (hysteresis off) but not negative values', () => {

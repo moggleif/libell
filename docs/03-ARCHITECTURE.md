@@ -42,7 +42,7 @@ RL(-Wr/2, -L/2)  RR(+Wr/2, -L/2)
 z_i    = x_i*tan(roll) + y_i*tan(pitch)
 lift_i = max(z) - z_i          # >= 0, because blocks only go under wheels
 step_i = the configured ramp step height (mm) closest to lift_i (0 = no step)
-isLevel = |roll| < tolerance && |pitch| < tolerance     # degrees, default 0.5
+isLevel = max(lift) <= toleranceMm                      # height-based, default 20 mm
 ```
 
 The highest wheel is always the reference. An optional stored calibration (roll/pitch

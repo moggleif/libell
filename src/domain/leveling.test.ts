@@ -100,10 +100,14 @@ describe('computeLeveling', () => {
     }
   });
 
-  it('treats tilt within the tolerance as level', () => {
-    const result = computeLeveling(gravityFor(0.3, -0.4), DEFAULT_SETTINGS);
-    expect(result.isLevel).toBe(true);
-    const beyond = computeLeveling(gravityFor(0.6, 0), DEFAULT_SETTINGS);
+  it('is level when no wheel sits more than the mm tolerance below the highest', () => {
+    // Height-based: geometry is inherent in the lifts. Default tolerance
+    // 20 mm — a pitch lifting the front 15 mm is level, 28 mm is not.
+    const small = computeLeveling(gravityFor(0, -0.21), DEFAULT_SETTINGS);
+    expect(small.wheels.frontLeft.liftCm * 10).toBeLessThan(20);
+    expect(small.isLevel).toBe(true);
+    const beyond = computeLeveling(gravityFor(0, -0.4), DEFAULT_SETTINGS);
+    expect(beyond.wheels.frontLeft.liftCm * 10).toBeGreaterThan(20);
     expect(beyond.isLevel).toBe(false);
   });
 });
@@ -120,12 +124,16 @@ describe('recommendStep', () => {
 });
 
 describe('liftSeverity', () => {
-  it('classifies lifts (cm) relative to the available step heights (mm)', () => {
-    const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60] };
+  it('answers "is it worth driving up?" against tolerance and steps', () => {
+    const settings = { ...DEFAULT_SETTINGS, rampStepHeightsMm: [20, 40, 60], toleranceMm: 20 };
+    // Within tolerance → green, nothing to do.
     expect(liftSeverity(0, settings)).toBe('none');
-    expect(liftSeverity(0.9, settings)).toBe('none');
-    expect(liftSeverity(3, settings)).toBe('small');
-    expect(liftSeverity(6, settings)).toBe('small');
-    expect(liftSeverity(6.5, settings)).toBe('large');
+    expect(liftSeverity(1.9, settings)).toBe('none');
+    // A step brings the wheel within tolerance → orange.
+    expect(liftSeverity(3, settings)).toBe('small'); // 30 mm → 20 or 40 mm step
+    expect(liftSeverity(7.5, settings)).toBe('small'); // 75 mm → 60 mm step, 15 left
+    // Even the best step leaves it outside tolerance → red: not worth it.
+    expect(liftSeverity(9, settings)).toBe('large'); // 90 mm → 60 leaves 30
+    expect(liftSeverity(20, settings)).toBe('large');
   });
 });

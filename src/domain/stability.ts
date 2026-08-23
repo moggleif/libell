@@ -12,9 +12,6 @@ import type { LevelingResult, LiftSeverity, WheelId } from './leveling';
 import { liftSeverity, recommendStep, WHEEL_IDS } from './leveling';
 import type { LevelSettings } from './settings';
 
-/** Degrees of extra "level" margin per mm of configured stability. */
-const LEVEL_EXIT_MARGIN_DEG_PER_MM = 0.05;
-
 export interface DisplayWheel {
   /** Lift rounded to whole cm, changed only past the dead band. */
   displayCm: number;
@@ -46,16 +43,14 @@ export function createDisplayStabilizer(): (
   return (result, settings) => {
     // The dead band is the user-facing "Stability" setting.
     const deadbandMm = settings.stabilityMm;
-    const levelExitMarginDeg = deadbandMm * LEVEL_EXIT_MARGIN_DEG_PER_MM;
 
-    // Level status first: it gates the wheel colors below. Enter at the
-    // tolerance, leave only past it by a margin, so the "Your RV is
-    // level!" message does not blink.
-    const maxTilt = Math.max(Math.abs(result.rollDeg), Math.abs(result.pitchDeg));
+    // Level status: enter at the tolerance, leave only once some wheel is
+    // past it by the dead band, so "Your RV is level!" does not blink.
+    const maxLiftMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].liftCm * 10));
     if (!initialized) {
       level = result.isLevel;
     } else if (level) {
-      level = maxTilt < settings.toleranceDeg + levelExitMarginDeg;
+      level = maxLiftMm <= settings.toleranceMm + deadbandMm;
     } else {
       level = result.isLevel;
     }
@@ -65,7 +60,7 @@ export function createDisplayStabilizer(): (
       const fresh: DisplayWheel = {
         displayCm: Math.round(liftMm / 10),
         stepMm: recommendStep(liftMm, settings.rampStepHeightsMm),
-        severity: liftSeverity(liftMm / 10, settings, level),
+        severity: liftSeverity(liftMm / 10, settings),
       };
       if (!initialized) {
         wheels[id] = fresh;
@@ -90,8 +85,8 @@ export function createDisplayStabilizer(): (
       // the fresh value means we are clearly on the new side.
       const towardPrev = fresh.severity !== prev.severity ? deadbandMm : 0;
       const severity =
-        liftSeverity((liftMm - towardPrev) / 10, settings, level) === fresh.severity &&
-        liftSeverity((liftMm + towardPrev) / 10, settings, level) === fresh.severity
+        liftSeverity((liftMm - towardPrev) / 10, settings) === fresh.severity &&
+        liftSeverity((liftMm + towardPrev) / 10, settings) === fresh.severity
           ? fresh.severity
           : prev.severity;
 

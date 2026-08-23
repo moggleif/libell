@@ -29,7 +29,8 @@ const HELP_TEXT: [string, string][] = [
     'What LevelMate does',
     'Lay your phone flat inside the RV with the top edge pointing toward the front. ' +
       'The diagram shows your RV from above: green wheels are fine, orange wheels need ' +
-      'raising, and red means even your tallest ramp step is not enough. Above each ' +
+      'raising, and red means no ramp step you have gets that wheel level — not ' +
+      'worth driving up; move the vehicle instead. Above each ' +
       'wheel you see the ramp step to drive up onto; below it the height it is missing. ' +
       'The bubble in the middle works like a spirit level — center it and you are done.',
   ],
@@ -38,8 +39,9 @@ const HELP_TEXT: [string, string][] = [
     'Wheelbase is the distance between the front and rear axle. Track width is the ' +
       'distance between the left and right wheels — front and rear can differ. Ramp ' +
       'step heights are the heights of your leveling ramp steps in mm, separated by ' +
-      'semicolons (e.g. 20; 40; 60). Tolerance is how many degrees of tilt still ' +
-      'count as level. Stability is how much a reading must change (in mm) before ' +
+      'semicolons (e.g. 20; 40; 60). Tolerance is how many mm a wheel may sit below ' +
+      'the highest wheel and still count as level — wheelbase and track width are ' +
+      'already accounted for. Stability is how much a reading must change (in mm) before ' +
       'the display updates — raise it if numbers or colors flicker, set 0 to turn ' +
       'it off.',
   ],
