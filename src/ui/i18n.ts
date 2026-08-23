@@ -52,6 +52,17 @@ export const MESSAGES = {
       'The tilt sensor is not running yet — tap Start on the main screen first.',
     'calibration.err.notFlat':
       'The phone does not look flat — place it on a level surface and try again.',
+    'calibration.flip.intro':
+      'No level surface around? Use flip calibration: put the phone down anywhere ' +
+      'reasonably flat, capture, rotate the phone half a turn (180°) on the same ' +
+      'spot, capture again — the surface tilt cancels itself out.',
+    'calibration.flip.start': 'Calibrate by flipping',
+    'calibration.flip.rotate':
+      'Now rotate the phone half a turn (180°) on the same spot, then tap Capture.',
+    'calibration.flip.capture': 'Capture',
+    'calibration.flip.done': 'Done! Your surface leans {surface}° — cancelled out.',
+    'calibration.flip.err.moved':
+      'The two captures do not match — did the phone move? Try again from the start.',
 
     'feedback.intro':
       'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
@@ -132,6 +143,9 @@ export const MESSAGES = {
 
     'tilt.frontBack': 'Front/back',
     'tilt.sideSide': 'Side/side',
+
+    'pose.layFlat': 'Lay the phone flat to measure',
+    'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
   },
   sv: {
     'topbar.install': 'Installera',
@@ -179,6 +193,17 @@ export const MESSAGES = {
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
     'calibration.err.notFlat':
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
+    'calibration.flip.intro':
+      'Ingen plan yta i närheten? Använd vändkalibrering: lägg telefonen på något ' +
+      'någorlunda plant, fånga, vrid telefonen ett halvt varv (180°) på samma ' +
+      'ställe, fånga igen — ytans lutning tar ut sig själv.',
+    'calibration.flip.start': 'Kalibrera genom att vända',
+    'calibration.flip.rotate':
+      'Vrid nu telefonen ett halvt varv (180°) på samma ställe och tryck sedan på Fånga.',
+    'calibration.flip.capture': 'Fånga',
+    'calibration.flip.done': 'Klart! Din yta lutar {surface}° — borträknat.',
+    'calibration.flip.err.moved':
+      'De två mätningarna stämmer inte överens — flyttades telefonen? Börja om.',
 
     'feedback.intro':
       'Har du hittat ett problem eller har en idé? Fyll i det här och tryck på ' +
@@ -257,6 +282,9 @@ export const MESSAGES = {
 
     'tilt.frontBack': 'Längsled',
     'tilt.sideSide': 'Sidled',
+
+    'pose.layFlat': 'Lägg telefonen plant för att mäta',
+    'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
   },
 } as const;
 

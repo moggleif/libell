@@ -7,6 +7,7 @@ import type { Calibration, LevelSettings } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createFeedbackSection } from './feedback';
 import { t, type MessageKey } from './i18n';
+import { flipCalibration } from '../domain/calibration';
 
 export type MenuSection = 'settings' | 'calibration' | 'feedback' | 'help';
 
@@ -16,6 +17,9 @@ export interface MenuOptions {
   getCalibration(): Calibration | null;
   /** Capture the current tilt as the phone's zero point. Returns an error text, or null on success. */
   calibrate(): string | null;
+  /** Raw (uncalibrated) tilt reading for the flip flow, or an error text. */
+  readTilt(): Calibration | string;
+  applyCalibration(calibration: Calibration): void;
   clearCalibration(): void;
 }
 
@@ -126,8 +130,62 @@ export function createMenu(options: MenuOptions): Menu {
     options.clearCalibration();
     renderCalibrationStatus();
   });
+  // Flip calibration: two captures with a 180° turn in between — works
+  // on any reasonably flat spot, no known-level surface needed (#50).
+  const flipIntro = document.createElement('p');
+  flipIntro.className = 'menu__text';
+  flipIntro.textContent = t('calibration.flip.intro');
+  const flipStatus = document.createElement('p');
+  flipStatus.className = 'menu__text menu__text--status';
+  const flipButton = document.createElement('button');
+  flipButton.type = 'button';
+  flipButton.className = 'menu__action menu__action--secondary';
+  let flipFirst: Calibration | null = null;
+
+  function resetFlip(): void {
+    flipFirst = null;
+    flipButton.textContent = t('calibration.flip.start');
+    flipStatus.textContent = '';
+  }
+  flipButton.addEventListener('click', () => {
+    const reading = options.readTilt();
+    if (typeof reading === 'string') {
+      flipStatus.textContent = reading;
+      return;
+    }
+    if (!flipFirst) {
+      flipFirst = reading;
+      flipButton.textContent = t('calibration.flip.capture');
+      flipStatus.textContent = t('calibration.flip.rotate');
+      return;
+    }
+    const result = flipCalibration(flipFirst, reading);
+    if (!result.consistent) {
+      resetFlip();
+      flipStatus.textContent = t('calibration.flip.err.moved');
+      return;
+    }
+    options.applyCalibration(result.bias);
+    resetFlip();
+    const surfaceMax = Math.max(
+      Math.abs(result.surface.rollDeg),
+      Math.abs(result.surface.pitchDeg),
+    );
+    flipStatus.textContent = t('calibration.flip.done', { surface: surfaceMax.toFixed(1) });
+    renderCalibrationStatus();
+  });
+  resetFlip();
+
   renderCalibrationStatus();
-  calibrationBody.append(calibrationIntro, calibrationStatus, calibrateButton, clearButton);
+  calibrationBody.append(
+    calibrationIntro,
+    calibrationStatus,
+    calibrateButton,
+    flipIntro,
+    flipButton,
+    flipStatus,
+    clearButton,
+  );
   addSection('calibration', t('menu.calibration'), calibrationBody);
 
   // --- Feedback ---

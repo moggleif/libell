@@ -3,6 +3,7 @@ import { setupInstallButton } from './ui/install';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, WHEEL_IDS } from './domain/leveling';
 import { createDisplayStabilizer } from './domain/stability';
+import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
 import {
   clearCalibration,
@@ -110,6 +111,19 @@ function bootstrap(root: HTMLElement): void {
       updateIndicators();
       return null;
     },
+    readTilt() {
+      const gravity = sensor.getGravity();
+      if (!gravity) return t('calibration.err.notRunning');
+      return {
+        rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
+        pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
+      };
+    },
+    applyCalibration(next) {
+      calibration = next;
+      saveCalibration(next);
+      updateIndicators();
+    },
     clearCalibration() {
       calibration = null;
       clearCalibration();
@@ -166,6 +180,17 @@ function bootstrap(root: HTMLElement): void {
 
     root.append(diagram.element, status, tilt.element, waiting);
 
+    // Pose guard: wrong-pose overlay instead of wrong guidance (#51).
+    const poseOverlay = document.createElement('div');
+    poseOverlay.className = 'pose-overlay';
+    poseOverlay.hidden = true;
+    const poseText = document.createElement('p');
+    poseText.className = 'pose-overlay__text';
+    poseOverlay.append(poseText);
+    document.body.append(poseOverlay);
+    const detectPose = createPoseDetector();
+    const landscape = window.matchMedia('(orientation: landscape)');
+
     const stabilize = createDisplayStabilizer();
     let wasLevel = false;
     let overlayTimer = 0;
@@ -197,6 +222,16 @@ function bootstrap(root: HTMLElement): void {
       const gravity = sensor.getGravity();
       if (gravity) {
         waiting.hidden = true;
+        // Invalid pose: pause the guidance and say what to do instead.
+        const badPose = detectPose(gravity) === 'not-flat';
+        if (badPose || landscape.matches) {
+          poseText.textContent = badPose ? t('pose.layFlat') : t('pose.portrait');
+          poseOverlay.hidden = false;
+          overlay.hidden = true;
+          requestAnimationFrame(frame);
+          return;
+        }
+        poseOverlay.hidden = true;
         const result = stabilize(computeLeveling(gravity, settings, calibration), settings);
         diagram.update(result, settings.displayUnit);
         status.textContent = statusText(result);
