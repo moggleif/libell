@@ -1,5 +1,6 @@
 import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
+import { setupShareButton } from './ui/share';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, WHEEL_IDS } from './domain/leveling';
 import { createDisplayStabilizer } from './domain/stability';
@@ -36,6 +37,9 @@ const installHint = document.querySelector<HTMLElement>('#install-hint');
 if (installButton && installHint) {
   setupInstallButton(installButton, installHint);
 }
+
+const shareButton = document.querySelector<HTMLButtonElement>('#share-button');
+if (shareButton) setupShareButton(shareButton);
 
 if (installButton) installButton.textContent = t('topbar.install');
 const menuButtonEl = document.querySelector<HTMLButtonElement>('#menu-button');
