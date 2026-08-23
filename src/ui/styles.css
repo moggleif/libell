@@ -293,7 +293,8 @@ body {
  * step name above it. */
 .rv-diagram__mm {
   fill: var(--on-surface-muted);
-  font-size: 12px;
+  font-size: 8px;
+  font-weight: 400;
 }
 
 /* State glyph inside each wheel: shape carries the meaning too, so the
