@@ -18,7 +18,8 @@ interface FieldSpec {
 
 const FIELDS: FieldSpec[] = [
   { key: 'wheelbaseCm', label: 'Wheelbase (cm)', step: '1' },
-  { key: 'trackWidthCm', label: 'Track width (cm)', step: '1' },
+  { key: 'trackWidthFrontCm', label: 'Track width front (cm)', step: '1' },
+  { key: 'trackWidthRearCm', label: 'Track width rear (cm)', step: '1' },
   { key: 'blockHeightCm', label: 'Block height (cm)', step: '0.5' },
   { key: 'toleranceDeg', label: 'Tolerance (°)', step: '0.1' },
 ];

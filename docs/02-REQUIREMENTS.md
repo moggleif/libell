@@ -37,7 +37,7 @@ URL and must keep working with no signal.
 
 ## R3 — The app computes how much to raise each wheel
 
-- **Given** a known wheelbase, track width and block height
+- **Given** a known wheelbase, front and rear track width and block height
 - **When** the vehicle is tilted by roll and pitch
 - **Then** each wheel's required lift is `max(z) − z_i` (≥ 0) where
   `z_i = x_i·tan(roll) + y_i·tan(pitch)`, expressed in cm and in
@@ -90,10 +90,11 @@ URL and must keep working with no signal.
 ## R9 — Vehicle parameters are configurable and persist
 
 - **Given** I open Settings
-- **When** I edit Wheelbase, Track width, Block height, or Tolerance and save
+- **When** I edit Wheelbase, Track width front, Track width rear, Block height, or
+  Tolerance and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
-  the calculation. Defaults: wheelbase 400 cm, track width 180 cm, block height 4 cm,
-  tolerance 0.5°.
+  the calculation. Defaults: wheelbase 400 cm, front and rear track width 180 cm, block
+  height 4 cm, tolerance 0.5°.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 

@@ -31,9 +31,21 @@ describe('computeLeveling', () => {
     expect(result.isLevel).toBe(false);
     expect(result.wheels.frontLeft.liftCm).toBeCloseTo(0);
     expect(result.wheels.rearLeft.liftCm).toBeCloseTo(0);
-    const expected = DEFAULT_SETTINGS.trackWidthCm * Math.tan((2 * Math.PI) / 180);
+    const expected = DEFAULT_SETTINGS.trackWidthFrontCm * Math.tan((2 * Math.PI) / 180);
     expect(result.wheels.frontRight.liftCm).toBeCloseTo(expected);
     expect(result.wheels.rearRight.liftCm).toBeCloseTo(expected);
+  });
+
+  it('uses each axle’s own track width when they differ', () => {
+    // Wider front axle: under pure roll the front-left wheel sits furthest
+    // out and highest, so even the rear-left wheel needs a small lift.
+    const settings = { ...DEFAULT_SETTINGS, trackWidthFrontCm: 200, trackWidthRearCm: 160 };
+    const result = computeLeveling(gravityFor(-2, 0), settings);
+    const t = Math.tan((2 * Math.PI) / 180);
+    expect(result.wheels.frontLeft.liftCm).toBeCloseTo(0);
+    expect(result.wheels.rearLeft.liftCm).toBeCloseTo(((200 - 160) / 2) * t);
+    expect(result.wheels.frontRight.liftCm).toBeCloseTo(200 * t);
+    expect(result.wheels.rearRight.liftCm).toBeCloseTo(((200 + 160) / 2) * t);
   });
 
   it('pure pitch: lifts the low end, the high end is the reference', () => {
