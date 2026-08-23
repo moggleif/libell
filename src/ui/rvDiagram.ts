@@ -16,9 +16,13 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 interface WheelRefs {
   marker: SVGRectElement;
+  glyph: SVGTextElement;
   stepLabel: SVGTextElement;
   liftLabel: SVGTextElement;
 }
+
+/** Shape per state so color is never the only signal (WCAG 1.4.1). */
+const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕' } as const;
 
 export interface RvDiagram {
   element: HTMLElement;
@@ -104,8 +108,13 @@ export function createRvDiagram(): RvDiagram {
       'text-anchor': 'middle',
       class: 'rv-diagram__lift-label',
     });
-    svg.append(marker, stepLabel, liftLabel);
-    wheels[id] = { marker, stepLabel, liftLabel };
+    const glyph = svgEl('text', {
+      x: String(x),
+      y: String(y + 7),
+      class: 'rv-diagram__wheel-glyph',
+    });
+    svg.append(marker, glyph, stepLabel, liftLabel);
+    wheels[id] = { marker, glyph, stepLabel, liftLabel };
   }
 
   // Bubble level in the middle of the vehicle.
@@ -137,8 +146,9 @@ export function createRvDiagram(): RvDiagram {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
         const { displayMm, stepMm, severity } = result.wheels[id];
-        const { marker, stepLabel, liftLabel } = wheels[id];
+        const { marker, glyph, stepLabel, liftLabel } = wheels[id];
         marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
+        glyph.textContent = SEVERITY_GLYPH[severity];
         if (severity === 'none') {
           stepLabel.textContent = '';
           liftLabel.textContent = '';
