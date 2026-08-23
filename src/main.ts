@@ -240,7 +240,7 @@ function bootstrap(root: HTMLElement): void {
     overlayText.className = 'level-overlay__text';
     overlayText.textContent = t('main.level');
     overlay.append(overlayMark, overlayText);
-    document.body.append(overlay);
+    root.append(overlay);
 
     root.append(diagram.element, status, tilt.element, waiting);
 
@@ -251,7 +251,7 @@ function bootstrap(root: HTMLElement): void {
     const poseText = document.createElement('p');
     poseText.className = 'pose-overlay__text';
     poseOverlay.append(poseText);
-    document.body.append(poseOverlay);
+    root.append(poseOverlay);
     const detectPose = createPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
 
