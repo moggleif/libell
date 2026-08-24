@@ -47,6 +47,9 @@ export const MESSAGES = {
     'onboard.done': 'Done',
     'onboard.skipStep': 'Skip',
     'onboard.skipDefaults': 'Skip — use defaults',
+    'onboard.legend.ok': 'Green ✓ — that wheel is level.',
+    'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
+    'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
 
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
@@ -270,6 +273,9 @@ export const MESSAGES = {
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
+    'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
+    'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
+    'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',

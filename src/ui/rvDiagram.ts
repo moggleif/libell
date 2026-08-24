@@ -22,8 +22,10 @@ import { t, type MessageKey } from './i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/** Shape per state so color is never the only signal (WCAG 1.4.1). */
-const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
+/** Shape per state so color is never the only signal (WCAG 1.4.1).
+ * Exported: onboarding's Modern legend (#110) reuses it instead of
+ * duplicating the glyph set. */
+export const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
 
 const WHEEL_LABEL: Record<WheelId, MessageKey> = {
   frontLeft: 'diagram.wheel.frontLeft',
