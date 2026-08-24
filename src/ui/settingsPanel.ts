@@ -173,11 +173,17 @@ export function createSettingsForm(
     option.textContent = rampLabel(model);
     rampSelect.append(option);
   }
+  // An explicitly chosen "Custom set" must hold even while the steps
+  // still match a catalog model — without this the sync below snapped
+  // the choice straight back and "nothing happened" (#91). Auto-matching
+  // resumes once a model is picked again.
+  let customChosen = matchRampModel(initial.rampStepHeightsMm) === null;
   const syncRampSelect = () => {
-    rampSelect.value = matchRampModel(steps, rampSelect.value)?.name ?? '';
+    rampSelect.value = customChosen ? '' : (matchRampModel(steps, rampSelect.value)?.name ?? '');
   };
   rampSelect.addEventListener('change', () => {
     const model = RAMP_MODELS.find((m) => m.name === rampSelect.value);
+    customChosen = !model;
     if (model) {
       steps = [...model.stepsMm];
       renderChips();
@@ -379,6 +385,7 @@ export function createSettingsForm(
     applyUnitEverywhere();
     for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
     steps = [...settings.rampStepHeightsMm];
+    customChosen = matchRampModel(steps) === null;
     renderChips();
     themeSelect.value = settings.theme;
     applyTheme(settings.theme);

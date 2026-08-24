@@ -35,6 +35,26 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
   });
 
+  it('choosing "Custom set" sticks instead of snapping back to the matching model (#91)', () => {
+    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn());
+    // The default steps match Thule Levelers, so the picker shows it.
+    const rampSelect = form.querySelectorAll('select')[2] as HTMLSelectElement;
+    expect(rampSelect.value).not.toBe('');
+    // Explicitly choosing the custom option must hold, even though the
+    // steps still match a catalog model.
+    rampSelect.value = '';
+    rampSelect.dispatchEvent(new Event('change'));
+    expect(rampSelect.value).toBe('');
+    // Editing the steps keeps the explicit custom choice.
+    const removeFirst = form.querySelector<HTMLButtonElement>('.steps__chip-remove')!;
+    removeFirst.click();
+    expect(rampSelect.value).toBe('');
+    // Picking a model again fills its steps and shows the model.
+    rampSelect.value = 'Thule Levelers';
+    rampSelect.dispatchEvent(new Event('change'));
+    expect(rampSelect.value).toBe('Thule Levelers');
+  });
+
   it('round-trips the axle configuration (#81)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
