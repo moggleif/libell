@@ -8,8 +8,8 @@
  * onto which step, so the vehicle ends as close to level as the set
  * allows. Preference order: reach the tolerance at all, then use as few
  * ramps as possible, then leave the waste-water drain side lowest (so
- * the grey tank empties), then be as level as possible, then climb as
- * little as possible.
+ * sink and shower water keeps running toward the outlet), then be as
+ * level as possible, then climb as little as possible.
  */
 import { liftSeverity, WHEEL_IDS, type LiftSeverity, type WheelId } from './leveling';
 import type { DrainPosition, LevelSettings } from './settings';

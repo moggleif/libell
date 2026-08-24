@@ -253,7 +253,8 @@ export function createSettingsForm(
   rampCountField.append(rampCountCaption, rampCountSelect);
 
   // --- Drain position (#93): where the waste-water outlet sits. Within
-  // the tolerance the plan leaves this side lowest so the tank empties.
+  // the tolerance the plan leaves this side lowest so the drains keep
+  // working — sink and shower water must run toward the outlet.
   const drainField = document.createElement('label');
   drainField.className = 'settings__field';
   const drainCaption = document.createElement('span');

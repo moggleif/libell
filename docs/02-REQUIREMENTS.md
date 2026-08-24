@@ -329,8 +329,9 @@ URL and must keep working with no signal.
 - **Given** the Settings choice "Waste-water drain" (none / left / right / front /
   rear; default none)
 - **When** several placements of my ramps level the vehicle within the tolerance
-- **Then** the app prefers the one leaving the drain side lowest, so the grey tank
-  empties — never choosing a worse-than-tolerance solution or extra ramps just for
+- **Then** the app prefers the one leaving the drain side lowest, so the drains keep
+  working — sink and shower water runs toward the outlet instead of pooling — never
+  choosing a worse-than-tolerance solution or extra ramps just for
   drainage.
 - The per-wheel required lifts (R3) are unchanged — the plan only decides which steps
   are recommended. Caravan mode is unaffected (one axle wheel is ever ramped, R22);

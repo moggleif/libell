@@ -41,7 +41,8 @@ export interface LevelSettings {
   /**
    * Where the waste-water drain sits, seen from the driver's seat. When
    * several ramp placements level the vehicle within the tolerance, the
-   * plan prefers the one leaving this side lowest so the tank empties;
+   * plan prefers the one leaving this side lowest so the drains keep
+   * working — sink and shower water must run toward the outlet;
    * 'none' disables the preference.
    */
   drainPosition: DrainPosition;

@@ -8,8 +8,9 @@ Issue #93: ramps are sold in pairs and most owners carry exactly two, yet a comb
 roll + pitch tilt leaves three wheels below the highest corner — the per-wheel
 "closest step" advice (R3) then asks for three ramps, which is physically impossible.
 The app must choose _which_ wheels get the ramps. And when a residual tilt within the
-tolerance necessarily remains, owners care where it points: a grey-water tank drains
-only if its outlet side stays low.
+tolerance necessarily remains, owners care where it points: the sink and shower keep
+draining only while their water runs toward the waste outlet — lean the wrong way and
+it pools in the piping.
 
 ## Decision
 

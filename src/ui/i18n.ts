@@ -62,7 +62,7 @@ export const MESSAGES = {
     'settings.drain': 'Drain side',
     'settings.rampHint':
       'The app picks where your ramps do the most good — and, within the ' +
-      'tolerance, leaves the drain side lowest so the tank empties.',
+      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
     'settings.section.vehicle': 'Vehicle & measurements',
     'settings.section.ramps': 'Ramps',
     'settings.section.display': 'Level & display',
@@ -256,7 +256,7 @@ export const MESSAGES = {
     'settings.drain': 'Avloppssida',
     'settings.rampHint':
       'Appen väljer var ramperna gör mest nytta — och lämnar avloppssidan ' +
-      'lägst inom toleransen, så att tanken töms.',
+      'lägst inom toleransen, så att disk- och duschvattnet rinner undan.',
     'settings.section.vehicle': 'Fordon och mått',
     'settings.section.ramps': 'Ramper',
     'settings.section.display': 'Nivå och visning',
