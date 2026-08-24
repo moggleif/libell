@@ -1,6 +1,7 @@
 /**
- * About page (issue #95): what Libell is, the running version, that it
- * works offline, the privacy promise, and where the source lives. Static
+ * About page (issue #95): what Libell is, that it works offline, the
+ * privacy promise, where the source lives, and — small and last, like
+ * the footer on the main screen — the running version. Static
  * translated text; the single link opens GitHub in a new tab with
  * `noopener` — the page itself loads nothing remote (ADR 0005).
  */
@@ -16,14 +17,6 @@ export function createAboutSection(): HTMLElement {
   what.className = 'menu__text';
   what.textContent = t('about.text');
   body.append(what);
-
-  // A CI build without a version shows none — better none than a wrong one.
-  if (__APP_VERSION__) {
-    const version = document.createElement('p');
-    version.className = 'menu__text menu__text--status';
-    version.textContent = t('about.version', { v: __APP_VERSION__ });
-    body.append(version);
-  }
 
   const offline = document.createElement('p');
   offline.className = 'menu__text';
@@ -44,5 +37,15 @@ export function createAboutSection(): HTMLElement {
   source.append(document.createTextNode(`${t('about.source')} `), link);
 
   body.append(offline, privacy, source);
+
+  // Last and small — reference material, not something to read first. A CI
+  // build without a version shows none: better none than a wrong one.
+  if (__APP_VERSION__) {
+    const version = document.createElement('p');
+    version.className = 'menu__text about__version';
+    version.textContent = t('about.version', { v: __APP_VERSION__ });
+    body.append(version);
+  }
+
   return body;
 }

@@ -13,11 +13,13 @@ describe('about section', () => {
     expect(section.textContent).toContain(t('about.privacy'));
   });
 
-  it('shows the app version when the build provides one', () => {
+  it('shows the app version last and small', () => {
     // __APP_VERSION__ is defined for tests via vite.config.ts `define`
     // (local dev resolution), so the version line must be present.
     const section = createAboutSection();
-    expect(section.textContent).toContain(t('about.version', { v: __APP_VERSION__ ?? '' }));
+    const last = section.lastElementChild!;
+    expect(last.textContent).toBe(t('about.version', { v: __APP_VERSION__ ?? '' }));
+    expect(last.classList.contains('about__version')).toBe(true);
   });
 
   it('links to the source repository safely (new tab, noopener)', () => {

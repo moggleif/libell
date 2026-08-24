@@ -317,8 +317,9 @@ URL and must keep working with no signal.
   caption and gets the same breaks.
 - **Given** the menu item "About" / "Om Libell"
 - **When** I open it
-- **Then** I see, in my language: what Libell is, the app version (omitted when the
-  build has none), that it works fully offline and only uses the network to fetch
-  updates of the app itself (R10), that all data stays on the phone, and a link to
-  the source code and license (MIT) on GitHub — opened in a new tab with `noopener`,
-  loading nothing remote.
+- **Then** I see, in my language: what Libell is, that it works fully offline and
+  only uses the network to fetch updates of the app itself (R10), that all data
+  stays on the phone, and a link to the source code and license (MIT) on GitHub —
+  opened in a new tab with `noopener`, loading nothing remote. The app version comes
+  last, in small muted type like the footer on the main screen, and is omitted when
+  the build has none.

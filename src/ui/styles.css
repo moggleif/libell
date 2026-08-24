@@ -517,6 +517,15 @@ body {
   text-decoration: underline;
 }
 
+/* The About page's version line — same quiet treatment as the footer
+ * version on the main screen (#95). */
+.about__version {
+  margin-top: 20px;
+  font-size: 0.75rem;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
 .menu__text--status {
   color: var(--on-surface);
 }
