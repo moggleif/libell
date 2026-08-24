@@ -68,6 +68,7 @@ export const MESSAGES = {
     'settings.undo': 'Undo changes',
     'settings.reset': 'Reset to defaults',
 
+    'status.measuring': 'Measuring…',
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
     'status.many': '{n} wheels to raise',
@@ -241,6 +242,7 @@ export const MESSAGES = {
     'settings.undo': 'Ångra ändringar',
     'settings.reset': 'Återställ standard',
 
+    'status.measuring': 'Mäter…',
     'status.almost': 'Nästan i våg — {left} kvar',
     'status.one': '1 hjul att höja',
     'status.many': '{n} hjul att höja',

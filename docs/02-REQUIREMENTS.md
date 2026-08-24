@@ -274,3 +274,15 @@ URL and must keep working with no signal.
   placement tilt (ADR 0010).
 - The amber calibration lamp (R11) clears when at least one of the two calibrations
   exists; the Calibration section shows each one's status with its own clear button.
+
+## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
+
+- **Given** the readings vary more than a small threshold within a short window
+  (people walking around inside, the vehicle being positioned, the phone handled)
+- **When** I look at the main screen
+- **Then** the status line reads "Measuring…", the diagram is dimmed, and the level
+  celebration cannot fire — momentary advice is suppressed rather than flickered.
+- **Given** the reading has been calm for about 1.5 seconds
+- **Then** normal guidance returns. The detector is pure domain code
+  (`src/domain/stillness.ts`, peak-to-peak over a rolling window on the smoothed
+  signal) and starts stable, so a calm app shows guidance immediately.

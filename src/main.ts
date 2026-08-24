@@ -2,9 +2,10 @@ import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
 import { setupShareButton } from './ui/share';
 import { keepScreenAwake } from './ui/wakeLock';
-import { computeLeveling, WHEEL_IDS, type GravityVector } from './domain/leveling';
+import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
+import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
@@ -403,6 +404,9 @@ function bootstrap(root: HTMLElement): void {
     root.append(poseOverlay);
     const detectPose = createPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
+    // Rocking vehicle (people moving around): dim the guidance and show
+    // "Measuring…" until the reading has been calm for a moment (#86).
+    const isStill = createStillnessDetector();
 
     let wasLevel = false;
     let overlayTimer = 0;
@@ -458,8 +462,17 @@ function bootstrap(root: HTMLElement): void {
         }
         poseOverlay.hidden = true;
         const now = performance.now();
+        const tilt = tiltFromGravity(gravity, null);
+        const still = isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, now);
         const { isLevel, maxCorrectionMm } = engineTick(gravity, now);
-        if (isLevel && !wasLevel) celebrate();
+        engineElement.classList.toggle('rv-diagram--measuring', !still);
+        if (!still) {
+          // Momentary readings are meaningless while the vehicle rocks —
+          // say so instead of flickering advice, and never celebrate.
+          status.textContent = t('status.measuring');
+          status.classList.remove('status-line--level');
+        }
+        if (still && isLevel && !wasLevel) celebrate();
         if (!isLevel) overlay.hidden = true;
         wasLevel = isLevel;
         // Re-arm the celebration only once clearly un-level, sustained.
