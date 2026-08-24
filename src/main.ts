@@ -7,6 +7,7 @@ import { computeCaravanLeveling, createCaravanStabilizer } from './domain/carava
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
+import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
@@ -119,6 +120,28 @@ function playChime(): void {
   }
 }
 
+// Continuous audio guidance pulse (#121) — a short, soft tone at the pitch
+// the domain layer computed from the stabilized distance, with a brief
+// glide up (improving) or down (worsening) that reads as directional
+// without being alarming. Deliberately quieter and shorter than the
+// two-tone completion chime above so the two never get confused.
+function playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const durationS = 0.09;
+  const glide = direction === 'improving' ? 1.15 : direction === 'worsening' ? 1 / 1.15 : 1;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.setValueAtTime(pitchHz, now);
+  osc.frequency.linearRampToValueAtTime(pitchHz * glide, now + durationS);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durationS);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + durationS + 0.02);
+}
+
 function bootstrap(root: HTMLElement): void {
   keepScreenAwake();
 
@@ -207,8 +230,8 @@ function bootstrap(root: HTMLElement): void {
       applyTheme(settings.theme);
       applyAppearance(settings.appearance);
       // The save click is a user gesture — the right moment to unlock
-      // audio for the opt-in level chime.
-      if (settings.soundOnLevel) unlockAudio();
+      // audio for the opt-in level chime and/or continuous guidance.
+      if (settings.soundOnLevel || settings.soundGuidance) unlockAudio();
       updateIndicators();
       maybeRebuildScreen();
     },
@@ -485,6 +508,14 @@ function bootstrap(root: HTMLElement): void {
     const REARM_SUSTAIN_MS = 3000;
     const CELEBRATE_COOLDOWN_MS = 20000;
 
+    // Continuous audio guidance (#121, opt-in): pulse rate/pitch track the
+    // STABILIZED maxCorrectionMm the engine already produces — never a raw
+    // reading. The guidance state is still fed every frame (so its own
+    // direction hysteresis keeps working smoothly), but a pulse is only
+    // actually scheduled while still (R25) and the setting is on.
+    const guideAudio = createAudioGuidance();
+    let lastGuidancePulseAt = -Infinity;
+
     const celebrate = () => {
       if (!celebrateArmed || document.visibilityState !== 'visible') return;
       const now = performance.now();
@@ -537,6 +568,17 @@ function bootstrap(root: HTMLElement): void {
         if (still && isLevel && !wasLevel) celebrate();
         if (!isLevel) overlay.hidden = true;
         wasLevel = isLevel;
+        const guidance = guideAudio(maxCorrectionMm, isLevel, settings, now);
+        if (
+          settings.soundGuidance &&
+          still &&
+          guidance.pulseIntervalMs !== null &&
+          guidance.pitchHz !== null &&
+          now - lastGuidancePulseAt >= guidance.pulseIntervalMs
+        ) {
+          playGuidancePulse(guidance.pitchHz, guidance.direction);
+          lastGuidancePulseAt = now;
+        }
         // Re-arm the celebration only once clearly un-level, sustained.
         if (!isLevel && maxCorrectionMm > settings.toleranceMm + REARM_MARGIN_MM) {
           clearlyUnlevelSince ??= now;

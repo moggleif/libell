@@ -380,3 +380,28 @@ URL and must keep working with no signal.
   in effect when the wizard opened is what it keeps for that run, even if Modern is
   turned on or off from the embedded Settings step meanwhile; the next time the
   wizard opens it picks up the current preset.
+
+## R30 — Continuous audio leveling guidance (opt-in)
+
+- **Given** the opt-in "Continuous audio guidance" setting is on, alongside and
+  independent of "Chime when level" (R16)
+- **When** the vehicle is not yet level
+- **Then** a short pulse repeats, speeding up and rising in pitch the closer the
+  STABILIZED distance from level gets — the same stabilized figure the diagram
+  itself shows (`src/domain/stability.ts`'s `DisplayResult`, never a raw sensor
+  reading) — so the audio can never chatter faster than the display changes.
+- **Given** the vehicle's stabilized distance is clearly and sustainedly getting
+  closer to level, or clearly and sustainedly getting further away
+- **Then** the pulse carries a distinct, non-alarming "improving" or "worsening"
+  glide; a reading that has not sustainedly cleared the Stability dead band (R25,
+  R27) keeps the previous direction — raw jitter or a momentary stabilizer bounce
+  can never flip it.
+- **Given** the setting is off (the default), the vehicle is moving or being
+  positioned (R25's stillness detector says so), or the vehicle has just reached
+  level
+- **Then** no guidance pulse plays — reaching level is announced once by the
+  existing R16 chime/vibration/overlay instead, with its own re-arm/cooldown, and
+  the next departure from level starts direction tracking fresh.
+- **Given** iOS's autoplay restrictions
+- **Then** guidance audio reuses the same `unlockAudio()` gesture-unlock as the
+  R16 chime — the same Settings-save gesture that unlocks one unlocks both.
