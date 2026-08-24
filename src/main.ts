@@ -340,6 +340,10 @@ function bootstrap(root: HTMLElement): void {
       s.rampCount,
       s.drainPosition,
       s.toleranceMm,
+      // Modern's silhouette/wheel-card markup differs structurally from
+      // Classic's on-diagram text (#106) — a saved appearance change
+      // needs the same rebuild axle/vehicle-type changes already get.
+      s.appearance,
     ]);
   let screenGeneration = 0;
   let screenKey: string | null = null;
@@ -413,7 +417,7 @@ function bootstrap(root: HTMLElement): void {
         return { isLevel: result.isLevel, maxCorrectionMm: Math.max(maxAxleMm, jockeyMm) };
       };
     } else {
-      const diagram = createRvDiagram(settings.rearAxle);
+      const diagram = createRvDiagram(settings.rearAxle, settings.appearance);
       const stabilize = createDisplayStabilizer();
       const statusText = (result: ReturnType<typeof stabilize>): string => {
         if (result.isLevel) return t('main.level');

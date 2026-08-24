@@ -4,6 +4,9 @@
   /* No sunken UI in Classic (#104 adds tabs/cards that need it in
    * Modern) — recesses to the base surface, a safe neutral default. */
   --surface-sunken: #101418;
+  /* No inset UI in Classic either (#106's roof-panel detail is
+   * Modern-only) — same safe fallback as --surface-sunken above. */
+  --surface-inset: var(--surface-raised);
   --outline: #2d333b;
   --on-surface: #e6edf3;
   --on-surface-muted: #8b949e; /* 6.3:1 on --surface */
@@ -23,6 +26,7 @@
     --surface: #f6f8fa;
     --surface-raised: #ffffff;
     --surface-sunken: #f6f8fa;
+    --surface-inset: var(--surface-raised);
     --outline: #d0d7de;
     --on-surface: #1f2328;
     --on-surface-muted: #57606a;
@@ -41,6 +45,7 @@
   --surface: #101418;
   --surface-raised: #1a2027;
   --surface-sunken: #101418;
+  --surface-inset: var(--surface-raised);
   --outline: #2d333b;
   --on-surface: #e6edf3;
   --on-surface-muted: #8b949e;
@@ -55,6 +60,7 @@
   --surface: #f6f8fa;
   --surface-raised: #ffffff;
   --surface-sunken: #f6f8fa;
+  --surface-inset: var(--surface-raised);
   --outline: #d0d7de;
   --on-surface: #1f2328;
   --on-surface-muted: #57606a;
@@ -77,6 +83,10 @@
   --surface: #0c1310;
   --surface-raised: #16211b;
   --surface-sunken: #1d2c24;
+  /* A fifth, distinct tone (#106): the RV diagram's inset roof panel
+   * needs to read as lighter than the body against it, which sunken
+   * alone can't give in dark mode (sunken IS the body's own color). */
+  --surface-inset: #22342a;
   --outline: #2c4437;
   --on-surface: #e9f1ec;
   --on-surface-muted: #93a89b;
@@ -87,6 +97,7 @@
     --surface: #eef2ee;
     --surface-raised: #ffffff;
     --surface-sunken: #e4eae4;
+    --surface-inset: #ffffff;
     --outline: #c6d2c7;
     --on-surface: #12211a;
     --on-surface-muted: #55665c;
@@ -97,6 +108,7 @@
   --surface: #0c1310;
   --surface-raised: #16211b;
   --surface-sunken: #1d2c24;
+  --surface-inset: #22342a;
   --outline: #2c4437;
   --on-surface: #e9f1ec;
   --on-surface-muted: #93a89b;
@@ -106,6 +118,7 @@
   --surface: #eef2ee;
   --surface-raised: #ffffff;
   --surface-sunken: #e4eae4;
+  --surface-inset: #ffffff;
   --outline: #c6d2c7;
   --on-surface: #12211a;
   --on-surface-muted: #55665c;
@@ -277,6 +290,17 @@ body {
   transform: scale(1);
 }
 
+/* Modern (#106): filled pills instead of an outline chip — color-mix()
+ * derives the fill/border tint from --warning so it stays correct for
+ * whichever theme is active without a second set of literal colors. */
+:root[data-appearance='modern'] .indicators__lamp {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  border-radius: 9px;
+  border-color: color-mix(in srgb, var(--warning) 50%, transparent);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+}
+
 .app {
   flex: 1;
   /* Anchor for the pose/level overlays: they cover the app area only,
@@ -432,6 +456,151 @@ body {
   fill: var(--level);
 }
 
+/* ---- Modern diagram silhouette (#106) — cab/roof, trim, hatches,
+ * crosshair. Only rv-diagram--modern builds these SVG parts, so no
+ * data-appearance guard is needed here; the color tokens already
+ * resolve to the right palette. */
+
+.rv-diagram__roof {
+  fill: var(--surface-inset);
+}
+
+.rv-diagram__trim {
+  fill: var(--outline);
+}
+
+.rv-diagram__hatch {
+  fill: var(--surface-raised);
+  stroke: var(--outline);
+  stroke-width: 1.5;
+}
+
+.rv-diagram__crosshair {
+  stroke: var(--outline);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+.rv-diagram__wheel-glyph--modern {
+  font-size: 22px;
+}
+
+.rv-diagram--modern .rv-diagram__body {
+  fill: var(--surface-sunken);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+/* ---- Modern wheel cards (#106) — the step/lift text lives here
+ * instead of on the SVG; the SVG wheel keeps only its glyph. */
+
+.rv-diagram__stage {
+  position: relative;
+}
+
+.wheel-card-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.wheel-card {
+  position: absolute;
+  transform: translateY(-50%);
+  width: 126px;
+  display: flex;
+  background: var(--surface-raised);
+  border: 1px solid var(--outline);
+  border-radius: 14px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.wheel-card--left {
+  left: 4px;
+  flex-direction: row-reverse;
+}
+
+.wheel-card--right {
+  right: 4px;
+}
+
+.wheel-card__marker {
+  flex-shrink: 0;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--surface);
+  background: var(--on-surface-muted);
+}
+
+.wheel-card--none .wheel-card__marker {
+  background: var(--level);
+}
+
+.wheel-card--small .wheel-card__marker {
+  background: var(--lift-small);
+}
+
+.wheel-card--large .wheel-card__marker {
+  background: var(--lift-large);
+}
+
+.wheel-card--unserved .wheel-card__marker {
+  background: var(--lift-unserved);
+}
+
+.wheel-card__text {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wheel-card__label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--on-surface-muted);
+}
+
+.wheel-card__step {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--on-surface-muted);
+  min-height: 1.2em;
+}
+
+.wheel-card--none .wheel-card__step {
+  color: var(--level);
+}
+
+.wheel-card--small .wheel-card__step {
+  color: var(--lift-small);
+}
+
+.wheel-card--large .wheel-card__step {
+  color: var(--lift-large);
+}
+
+.wheel-card--unserved .wheel-card__step {
+  color: var(--lift-unserved);
+}
+
+.wheel-card__mm {
+  font-size: 11px;
+  color: var(--on-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wheel-card__mm--dim {
+  opacity: 0.7;
+}
+
 /* ---- Level confirmation + tilt readout ---- */
 
 .status-line {
@@ -450,6 +619,14 @@ body {
   color: var(--level);
   font-size: clamp(1.5rem, 5.5vw, 1.9rem);
   font-weight: 700;
+}
+
+/* Modern (#106): the status row is always the bold, 22px "headline"
+ * weight — classic reserves that emphasis for the level state alone. */
+:root[data-appearance='modern'] .status-line {
+  font-size: clamp(1.3rem, 4.6vw, 1.45rem);
+  font-weight: 700;
+  color: var(--on-surface);
 }
 
 /* Brief confirmation when the vehicle reaches level. Covers the app
