@@ -11,6 +11,8 @@ import {
   clearVehicleCalibration,
   loadVehicleCalibration,
   saveVehicleCalibration,
+  loadCalibrationInfo,
+  loadVehicleCalibrationInfo,
 } from './settingsStore';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {
@@ -97,5 +99,28 @@ describe('vehicle calibration store (#83)', () => {
     expect(loadVehicleCalibration(storage)).toBeNull();
     storage.setItem('libell.vehicleCalibration', JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
     expect(loadVehicleCalibration(storage)).toBeNull();
+  });
+});
+
+describe('calibration timestamps (#87)', () => {
+  it('stores when a calibration was captured and reads it back', () => {
+    const storage = memoryStorage();
+    saveCalibration({ rollDeg: 1, pitchDeg: 0 }, storage, 1700000000000);
+    expect(loadCalibrationInfo(storage)).toEqual({
+      value: { rollDeg: 1, pitchDeg: 0 },
+      capturedAt: 1700000000000,
+    });
+    saveVehicleCalibration({ rollDeg: 0.4, pitchDeg: 0 }, storage, 1700000000001);
+    expect(loadVehicleCalibrationInfo(storage)?.capturedAt).toBe(1700000000001);
+  });
+
+  it('keeps legacy calibrations without a timestamp valid, age unknown', () => {
+    const storage = memoryStorage();
+    storage.setItem('libell.calibration', JSON.stringify({ rollDeg: 1, pitchDeg: -0.5 }));
+    expect(loadCalibrationInfo(storage)).toEqual({
+      value: { rollDeg: 1, pitchDeg: -0.5 },
+      capturedAt: null,
+    });
+    expect(loadCalibration(storage)).toEqual({ rollDeg: 1, pitchDeg: -0.5 });
   });
 });

@@ -15,10 +15,10 @@ import {
   clearVehicleCalibration,
   hasSeenOnboarding,
   hasStoredSettings,
-  loadCalibration,
+  loadCalibrationInfo,
   loadLanguage,
   loadSettings,
-  loadVehicleCalibration,
+  loadVehicleCalibrationInfo,
   markOnboardingSeen,
   saveCalibration,
   saveVehicleCalibration,
@@ -78,6 +78,8 @@ if (app) {
 
 const RAD_TO_DEG = 180 / Math.PI;
 const MAX_CALIBRATION_DEG = 15;
+/** A check reading within this of zero counts as "still good" (#87). */
+const CALIBRATION_CHECK_GOOD_DEG = 0.3;
 
 /** Fixed synthetic tilt for ?demo mode and screenshots. */
 function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
@@ -121,10 +123,14 @@ function bootstrap(root: HTMLElement): void {
   keepScreenAwake();
 
   let settings: LevelSettings = loadSettings();
-  let calibration: Calibration | null = loadCalibration();
+  const storedSensor = loadCalibrationInfo();
+  let calibration: Calibration | null = storedSensor?.value ?? null;
+  let calibrationCapturedAt: number | null = storedSensor?.capturedAt ?? null;
   // The vehicle zero (#83): the phone spot's own tilt, applied on top of
   // the sensor calibration — the leveling math subtracts their sum.
-  let vehicleCalibration: Calibration | null = loadVehicleCalibration();
+  const storedVehicle = loadVehicleCalibrationInfo();
+  let vehicleCalibration: Calibration | null = storedVehicle?.value ?? null;
+  let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
   const effectiveCalibration = () => combineCalibrations(calibration, vehicleCalibration);
   applyTheme(settings.theme);
   followSystemTheme(() => settings.theme);
@@ -156,18 +162,26 @@ function bootstrap(root: HTMLElement): void {
       readTilt: () => readTiltNow(),
       applyCalibration(next) {
         calibration = next;
-        saveCalibration(next);
+        calibrationCapturedAt = Date.now();
+        saveCalibration(next, undefined, calibrationCapturedAt);
         updateIndicators();
       },
       clearCalibration() {
         calibration = null;
+        calibrationCapturedAt = null;
         clearCalibration();
         updateIndicators();
       },
       getVehicleCalibration: () => vehicleCalibration,
+      getCalibrationCapturedAt: () => calibrationCapturedAt,
+      getVehicleCalibrationCapturedAt: () => vehicleCalibrationCapturedAt,
+      checkCalibration: () => checkAgainst(calibration),
+      checkVehicleCalibration: () =>
+        checkAgainst(combineCalibrations(calibration, vehicleCalibration)),
       calibrateVehicle: () => calibrateVehicleNow(),
       clearVehicleCalibration() {
         vehicleCalibration = null;
+        vehicleCalibrationCapturedAt = null;
         clearVehicleCalibration();
         updateIndicators();
       },
@@ -197,18 +211,26 @@ function bootstrap(root: HTMLElement): void {
     readTilt: () => readTiltNow(),
     applyCalibration(next) {
       calibration = next;
-      saveCalibration(next);
+      calibrationCapturedAt = Date.now();
+      saveCalibration(next, undefined, calibrationCapturedAt);
       updateIndicators();
     },
     clearCalibration() {
       calibration = null;
+      calibrationCapturedAt = null;
       clearCalibration();
       updateIndicators();
     },
     getVehicleCalibration: () => vehicleCalibration,
+    getCalibrationCapturedAt: () => calibrationCapturedAt,
+    getVehicleCalibrationCapturedAt: () => vehicleCalibrationCapturedAt,
+    checkCalibration: () => checkAgainst(calibration),
+    checkVehicleCalibration: () =>
+      checkAgainst(combineCalibrations(calibration, vehicleCalibration)),
     calibrateVehicle: () => calibrateVehicleNow(),
     clearVehicleCalibration() {
       vehicleCalibration = null;
+      vehicleCalibrationCapturedAt = null;
       clearVehicleCalibration();
       updateIndicators();
     },
@@ -254,9 +276,24 @@ function bootstrap(root: HTMLElement): void {
       return t('calibration.err.notFlat');
     }
     calibration = reading;
-    saveCalibration(calibration);
+    calibrationCapturedAt = Date.now();
+    saveCalibration(calibration, undefined, calibrationCapturedAt);
     updateIndicators();
     return null;
+  }
+
+  /** How far off (degrees) the current reading is from a calibration's
+   * promise of zero — the "check calibration" verdict text (#87). */
+  function checkAgainst(offset: Calibration | null): string {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    const off = Math.max(
+      Math.abs(reading.rollDeg - (offset?.rollDeg ?? 0)),
+      Math.abs(reading.pitchDeg - (offset?.pitchDeg ?? 0)),
+    );
+    return off <= CALIBRATION_CHECK_GOOD_DEG
+      ? t('calibration.check.good', { off: off.toFixed(1) })
+      : t('calibration.check.off', { off: off.toFixed(1) });
   }
 
   function calibrateVehicleNow(): string | null {
@@ -271,7 +308,8 @@ function bootstrap(root: HTMLElement): void {
     // Stored sensor-corrected: pure placement tilt, so it survives a
     // later sensor recalibration (ADR 0010).
     vehicleCalibration = vehicleZeroFromReading(reading, calibration);
-    saveVehicleCalibration(vehicleCalibration);
+    vehicleCalibrationCapturedAt = Date.now();
+    saveVehicleCalibration(vehicleCalibration, undefined, vehicleCalibrationCapturedAt);
     updateIndicators();
     return null;
   }

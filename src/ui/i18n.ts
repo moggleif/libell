@@ -97,6 +97,11 @@ export const MESSAGES = {
     'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
     'calibration.vehicle.err.notFlat':
       'That looks like more than placement tilt (>15°) — is the vehicle really level?',
+    'calibration.age.today': '(today)',
+    'calibration.age.days': '({n} days ago)',
+    'calibration.check': 'Check',
+    'calibration.check.good': 'Still good — off by {off}°.',
+    'calibration.check.off': 'Off by {off}° — consider recalibrating.',
     'calibration.flip.intro':
       'No level surface around? Use flip calibration: put the phone down anywhere ' +
       'reasonably flat, capture, rotate the phone half a turn (180°) on the same ' +
@@ -271,6 +276,11 @@ export const MESSAGES = {
     'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
     'calibration.vehicle.err.notFlat':
       'Det ser ut som mer än platslutning (>15°) — står fordonet verkligen plant?',
+    'calibration.age.today': '(idag)',
+    'calibration.age.days': '(för {n} dagar sedan)',
+    'calibration.check': 'Kontrollera',
+    'calibration.check.good': 'Fortfarande bra — avviker {off}°.',
+    'calibration.check.off': 'Avviker {off}° — överväg att kalibrera om.',
     'calibration.flip.intro':
       'Ingen plan yta i närheten? Använd vändkalibrering: lägg telefonen på något ' +
       'någorlunda plant, fånga, vrid telefonen ett halvt varv (180°) på samma ' +

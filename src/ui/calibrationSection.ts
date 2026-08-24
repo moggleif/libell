@@ -19,6 +19,12 @@ export interface CalibrationOptions {
   getVehicleCalibration(): Calibration | null;
   /** Capture the current position as level. Returns an error text, or null on success. */
   calibrateVehicle(): string | null;
+  /** When each calibration was captured (#87) — null when unknown. */
+  getCalibrationCapturedAt(): number | null;
+  getVehicleCalibrationCapturedAt(): number | null;
+  /** Compare the current reading against a calibration's promise of zero — returns a verdict text. */
+  checkCalibration(): string;
+  checkVehicleCalibration(): string;
   clearVehicleCalibration(): void;
 }
 
@@ -65,20 +71,40 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   vehicleClearButton.className = 'menu__action menu__action--secondary';
   vehicleClearButton.textContent = t('calibration.vehicle.clear');
 
+  // Check buttons (#87): compare the current reading against the stored
+  // zero and answer plainly — grayed out while nothing is stored.
+  const checkButton = document.createElement('button');
+  checkButton.type = 'button';
+  checkButton.className = 'menu__action menu__action--secondary';
+  checkButton.textContent = t('calibration.check');
+  const vehicleCheckButton = document.createElement('button');
+  vehicleCheckButton.type = 'button';
+  vehicleCheckButton.className = 'menu__action menu__action--secondary';
+  vehicleCheckButton.textContent = t('calibration.check');
+
+  /** "(14 days ago)" from a capture timestamp — empty when unknown (#87). */
+  function ageText(capturedAt: number | null): string {
+    if (capturedAt === null) return '';
+    const days = Math.max(0, Math.floor((Date.now() - capturedAt) / 86_400_000));
+    return ' ' + (days === 0 ? t('calibration.age.today') : t('calibration.age.days', { n: days }));
+  }
+
   function refreshCalibration(error?: string): void {
     const calibration = options.getCalibration();
     if (error) {
       calibrationStatus.textContent = error;
     } else if (calibration) {
-      calibrationStatus.textContent = t('calibration.status', {
-        roll: calibration.rollDeg.toFixed(1),
-        pitch: calibration.pitchDeg.toFixed(1),
-      });
+      calibrationStatus.textContent =
+        t('calibration.status', {
+          roll: calibration.rollDeg.toFixed(1),
+          pitch: calibration.pitchDeg.toFixed(1),
+        }) + ageText(options.getCalibrationCapturedAt());
     } else {
       calibrationStatus.textContent = t('calibration.status.none');
     }
-    // Grayed out when there is nothing to clear.
+    // Grayed out when there is nothing to clear or check.
     clearButton.disabled = !calibration;
+    checkButton.disabled = !calibration;
     refreshVehicle();
   }
 
@@ -87,14 +113,16 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     if (error) {
       vehicleStatus.textContent = error;
     } else if (vehicle) {
-      vehicleStatus.textContent = t('calibration.vehicle.status', {
-        roll: vehicle.rollDeg.toFixed(1),
-        pitch: vehicle.pitchDeg.toFixed(1),
-      });
+      vehicleStatus.textContent =
+        t('calibration.vehicle.status', {
+          roll: vehicle.rollDeg.toFixed(1),
+          pitch: vehicle.pitchDeg.toFixed(1),
+        }) + ageText(options.getVehicleCalibrationCapturedAt());
     } else {
       vehicleStatus.textContent = t('calibration.vehicle.status.none');
     }
     vehicleClearButton.disabled = !vehicle;
+    vehicleCheckButton.disabled = !vehicle;
   }
   vehicleButton.addEventListener('click', () => {
     refreshVehicle(options.calibrateVehicle() ?? undefined);
@@ -102,6 +130,12 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   vehicleClearButton.addEventListener('click', () => {
     options.clearVehicleCalibration();
     refreshVehicle();
+  });
+  checkButton.addEventListener('click', () => {
+    refreshCalibration(options.checkCalibration());
+  });
+  vehicleCheckButton.addEventListener('click', () => {
+    refreshVehicle(options.checkVehicleCalibration());
   });
   calibrateButton.addEventListener('click', () => {
     refreshCalibration(options.calibrate() ?? undefined);
@@ -165,11 +199,13 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     flipIntro,
     flipButton,
     flipStatus,
+    checkButton,
     clearButton,
     vehicleHeading,
     vehicleIntro,
     vehicleStatus,
     vehicleButton,
+    vehicleCheckButton,
     vehicleClearButton,
   );
   return { element: calibrationBody, refresh: refreshCalibration };

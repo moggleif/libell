@@ -286,3 +286,17 @@ URL and must keep working with no signal.
 - **Then** normal guidance returns. The detector is pure domain code
   (`src/domain/stillness.ts`, peak-to-peak over a rolling window on the smoothed
   signal) and starts stable, so a calm app shows guidance immediately.
+
+## R26 — Calibration age and check
+
+- **Given** a stored sensor calibration or vehicle zero
+- **Then** its status line shows how old it is ("(14 days ago)" / "(för 14 dagar
+  sedan)"), from a capture timestamp stored with the offsets; calibrations saved
+  before timestamps existed stay valid and show no age.
+- **Given** the Check button next to a stored calibration
+- **When** the phone lies on a level surface (sensor) or in its normal spot with the
+  vehicle verifiably level (vehicle zero)
+- **Then** the app compares the current reading against the calibration's promise of
+  zero and answers plainly: "Still good — off by 0.1°." or "Off by 0.8° — consider
+  recalibrating." (threshold 0.3°); the recalibrate buttons are right there.
+- The timestamp never leaves the device.

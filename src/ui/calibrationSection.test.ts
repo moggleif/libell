@@ -16,6 +16,10 @@ function makeOptions(overrides: Partial<CalibrationOptions> = {}): CalibrationOp
     getVehicleCalibration: () => null,
     calibrateVehicle: () => null,
     clearVehicleCalibration: () => {},
+    getCalibrationCapturedAt: () => null,
+    getVehicleCalibrationCapturedAt: () => null,
+    checkCalibration: () => 'checked',
+    checkVehicleCalibration: () => 'checked',
     ...overrides,
   };
 }
@@ -59,6 +63,29 @@ describe('calibration section (#83)', () => {
         (s) => s.textContent === 'not level enough',
       ),
     ).toBe(true);
+  });
+
+  it('shows each calibration age and runs the check flow (#87)', () => {
+    const twoWeeksAgo = Date.now() - 14 * 86_400_000;
+    const checkCalibration = vi.fn<() => string>(() => 'Still good — off by 0.1°.');
+    const section = createCalibrationSection(
+      makeOptions({
+        getCalibration: () => ({ rollDeg: 1.0, pitchDeg: -0.5 }),
+        getCalibrationCapturedAt: () => twoWeeksAgo,
+        checkCalibration,
+      }),
+    );
+    const statuses = () =>
+      [...section.element.querySelectorAll('.menu__text--status')].map((s) => s.textContent);
+    expect(statuses().some((s) => s?.includes('(14 days ago)'))).toBe(true);
+    const check = [...section.element.querySelectorAll('button')].filter(
+      (b) => b.textContent === 'Check',
+    );
+    expect(check).toHaveLength(2);
+    expect(check[1]!.disabled).toBe(true); // no vehicle zero stored
+    check[0]!.click();
+    expect(checkCalibration).toHaveBeenCalledTimes(1);
+    expect(statuses().some((s) => s === 'Still good — off by 0.1°.')).toBe(true);
   });
 
   it('clears the vehicle zero via the host callback', () => {
