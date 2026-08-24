@@ -52,6 +52,14 @@ captured on a known-level surface) is subtracted from the reading. Output: per-w
 display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
 band ("Stability") to the shown mm figure, step, wheel color and level status.
 
+Caravan mode (`vehicleType: 'caravan'`, ADR 0008) uses `src/domain/caravan.ts`
+instead: the single axle (track = `trackWidthRearMm`) is the reference plane, roll
+drives the ramp recommendation for the low axle wheel, and pitch drives a signed
+jockey-wheel correction over the `wheelbaseMm` axle-to-jockey distance — positive =
+crank up. The shared `stabilizeLift` core provides the same hysteresis; `main.ts`
+selects the compute → stabilize → render pipeline per vehicle type and rebuilds the
+level screen when it changes.
+
 ## Sensor (`src/sensor/orientation.ts`)
 
 Prefer `DeviceMotionEvent` and read `accelerationIncludingGravity` — this is the gravity

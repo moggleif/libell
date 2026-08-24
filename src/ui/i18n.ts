@@ -40,6 +40,10 @@ export const MESSAGES = {
     'settings.trackRear': 'Track width rear',
     'settings.tolerance': 'Tolerance',
     'settings.stability': 'Stability',
+    'settings.vehicle': 'Vehicle',
+    'vehicle.motorhome': 'Motorhome',
+    'vehicle.caravan': 'Caravan',
+    'settings.axleToJockey': 'Axle to jockey wheel',
     'settings.measureHint':
       'Wheelbase and track widths are in the registration document or the handbook — ' +
       'a tape measure works too; a few cm of error hardly matters.',
@@ -139,8 +143,15 @@ export const MESSAGES = {
       'Open the app over HTTPS and try again.',
 
     'diagram.aria': 'Top-down view of your motorhome showing which wheels need raising',
+    'diagram.caravan.aria':
+      'Top-down view of your caravan showing the axle wheels and the jockey wheel',
     'diagram.front': 'Front ↑',
     'diagram.step': 'Step {n}',
+    'caravan.crankUp': 'Crank up',
+    'caravan.crankDown': 'Crank down',
+    'status.crank.up': 'Crank the jockey wheel up',
+    'status.crank.down': 'Crank the jockey wheel down',
+    'status.caravan.both': 'Ramp the wheel, then crank the jockey wheel',
 
     'tilt.frontBack': 'Front/back',
     'tilt.sideSide': 'Side/side',
@@ -182,6 +193,10 @@ export const MESSAGES = {
     'settings.trackRear': 'Spårvidd bak',
     'settings.tolerance': 'Tolerans',
     'settings.stability': 'Stabilitet',
+    'settings.vehicle': 'Fordon',
+    'vehicle.motorhome': 'Husbil',
+    'vehicle.caravan': 'Husvagn',
+    'settings.axleToJockey': 'Axel till stödhjul',
     'settings.measureHint':
       'Hjulbas och spårvidd står i registreringsbeviset eller handboken — tumstock ' +
       'funkar också; några centimeters fel spelar knappast någon roll.',
@@ -281,8 +296,14 @@ export const MESSAGES = {
       'Öppna appen via HTTPS och försök igen.',
 
     'diagram.aria': 'Din husbil ovanifrån, med hjulen som behöver höjas markerade',
+    'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',
     'diagram.front': 'Fram ↑',
     'diagram.step': 'Steg {n}',
+    'caravan.crankUp': 'Veva upp',
+    'caravan.crankDown': 'Veva ner',
+    'status.crank.up': 'Veva upp stödhjulet',
+    'status.crank.down': 'Veva ner stödhjulet',
+    'status.caravan.both': 'Rampa hjulet, veva sedan stödhjulet',
 
     'tilt.frontBack': 'Längsled',
     'tilt.sideSide': 'Sidled',

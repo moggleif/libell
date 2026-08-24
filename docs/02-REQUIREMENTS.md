@@ -222,3 +222,21 @@ URL and must keep working with no signal.
 - **Then** its step heights fill in; editing the heights afterwards switches the picker
   to "Custom set". A set matching a catalog model shows the model's name regardless of
   entry order, preferring the already-selected model when two share the same steps.
+
+## R22 — Caravan mode: single axle + jockey wheel
+
+- **Given** the Settings form's Vehicle choice is "Caravan" (default: Motorhome)
+- **When** I look at the main screen
+- **Then** the diagram shows a caravan from above — drawbar and jockey wheel at the
+  front, one axle pair — and the guidance splits by mechanism: roll drives a ramp
+  recommendation for the low axle wheel (step name, height, lift — as for the
+  motorhome), while pitch drives a signed jockey correction ("Crank up"/"Crank down"
+  with the amount in mm). The jockey is never red — any amount is crankable.
+- **Given** the caravan's measurements
+- **Then** the wheelbase field reads "Axle to jockey wheel", the front track width is
+  hidden (one axle), and the axle uses the rear track width; switching vehicle type
+  rebuilds the level screen on save.
+- **Given** tolerance and stability settings
+- **Then** they apply to both corrections: level when the axle lift and the jockey
+  correction are both within tolerance, with the same hysteresis behavior as the
+  motorhome display. Decision record: ADR 0008.
