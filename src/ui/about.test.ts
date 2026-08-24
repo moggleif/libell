@@ -14,12 +14,16 @@ describe('about section', () => {
   });
 
   it('shows the app version last and small', () => {
-    // __APP_VERSION__ is defined for tests via vite.config.ts `define`
-    // (local dev resolution), so the version line must be present.
-    const section = createAboutSection();
-    const last = section.lastElementChild!;
-    expect(last.textContent).toBe(t('about.version', { v: __APP_VERSION__ ?? '' }));
+    const last = createAboutSection('1.0.0 – CR93').lastElementChild!;
+    expect(last.textContent).toBe(t('about.version', { v: '1.0.0 – CR93' }));
     expect(last.classList.contains('about__version')).toBe(true);
+  });
+
+  it('omits the version entirely when the build has none', () => {
+    // A CI build without BUILD_VERSION: better no version than a wrong one.
+    const section = createAboutSection(null);
+    expect(section.querySelector('.about__version')).toBeNull();
+    expect(section.textContent).not.toContain('Version');
   });
 
   it('links to the source repository safely (new tab, noopener)', () => {

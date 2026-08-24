@@ -10,7 +10,12 @@ import { t } from './i18n';
 
 const REPO_URL = 'https://github.com/moggleif/libell';
 
-export function createAboutSection(): HTMLElement {
+/**
+ * @param version the build's version string, or null when it has none —
+ *   a CI build without `BUILD_VERSION` shows no version at all. Injected
+ *   so both cases are testable wherever the tests run.
+ */
+export function createAboutSection(version: string | null = __APP_VERSION__): HTMLElement {
   const body = document.createElement('div');
 
   const what = document.createElement('p');
@@ -40,11 +45,11 @@ export function createAboutSection(): HTMLElement {
 
   // Last and small — reference material, not something to read first. A CI
   // build without a version shows none: better none than a wrong one.
-  if (__APP_VERSION__) {
-    const version = document.createElement('p');
-    version.className = 'menu__text about__version';
-    version.textContent = t('about.version', { v: __APP_VERSION__ });
-    body.append(version);
+  if (version) {
+    const line = document.createElement('p');
+    line.className = 'menu__text about__version';
+    line.textContent = t('about.version', { v: version });
+    body.append(line);
   }
 
   return body;
