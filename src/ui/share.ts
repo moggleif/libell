@@ -10,13 +10,27 @@ function appUrl(): string {
   return new URL(import.meta.env.BASE_URL, location.origin).href;
 }
 
+/** Fades/slides the toast in and out (#105) instead of appearing and
+ * vanishing instantly; skipped under `prefers-reduced-motion`. */
 function showToast(text: string): void {
   const toast = document.createElement('p');
   toast.className = 'toast';
   toast.setAttribute('role', 'status');
   toast.textContent = text;
   document.body.append(toast);
-  window.setTimeout(() => toast.remove(), 2500);
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    window.setTimeout(() => toast.remove(), 2500);
+    return;
+  }
+  requestAnimationFrame(() => toast.classList.add('is-visible'));
+  window.setTimeout(() => {
+    toast.classList.remove('is-visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+    // Fallback in case the transition never fires.
+    window.setTimeout(() => toast.remove(), 400);
+  }, 2500);
 }
 
 export function setupShareButton(button: HTMLButtonElement): void {

@@ -6,6 +6,7 @@
  */
 import type { MenuSection } from './menu';
 import { t } from './i18n';
+import { setVisible } from './motion';
 
 export interface Indicators {
   element: HTMLElement;
@@ -30,12 +31,17 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
 
   const settingsLamp = lamp(t('lamp.setup'), 'settings', t('lamp.setup.title'));
   const calibrationLamp = lamp(t('lamp.calibrate'), 'calibration', t('lamp.calibrate.title'));
+  // Both lamps start in the DOM as visible (see `lamp()`), so their
+  // transition state starts "visible" too — the first `update()` call
+  // (reflecting real state on load) does not animate a change.
+  settingsLamp.classList.add('is-visible');
+  calibrationLamp.classList.add('is-visible');
 
   return {
     element: container,
     update({ settingsSaved, calibrated }) {
-      settingsLamp.hidden = settingsSaved;
-      calibrationLamp.hidden = calibrated;
+      setVisible(settingsLamp, !settingsSaved);
+      setVisible(calibrationLamp, !calibrated);
     },
   };
 }

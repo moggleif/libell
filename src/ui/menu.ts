@@ -11,6 +11,7 @@ import { createFeedbackSection } from './feedback';
 import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
 import { t, type MessageKey } from './i18n';
+import { setVisible } from './motion';
 import {
   calibrationIllustration,
   legendIllustration,
@@ -123,8 +124,8 @@ export function createMenu(options: MenuOptions): Menu {
   let depth = 0;
 
   function render(section?: MenuSection): void {
-    backdrop.hidden = depth === 0;
-    page.hidden = depth < 2;
+    setVisible(backdrop, depth > 0);
+    setVisible(page, depth === 2);
     if (depth === 2 && section) {
       const entry = sections.get(section);
       if (entry) {
