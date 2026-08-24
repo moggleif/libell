@@ -31,15 +31,24 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
 
   const settingsLamp = lamp(t('lamp.setup'), 'settings', t('lamp.setup.title'));
   const calibrationLamp = lamp(t('lamp.calibrate'), 'calibration', t('lamp.calibrate.title'));
-  // Both lamps start in the DOM as visible (see `lamp()`), so their
-  // transition state starts "visible" too — the first `update()` call
-  // (reflecting real state on load) does not animate a change.
-  settingsLamp.classList.add('is-visible');
-  calibrationLamp.classList.add('is-visible');
+
+  // The very first update() call reflects state that was already true
+  // before the app ever painted (e.g. demo mode's pre-configured
+  // settings) — it must apply instantly, not animate a "change" that
+  // never visually happened. Only later, user-triggered changes fade.
+  let first = true;
 
   return {
     element: container,
     update({ settingsSaved, calibrated }) {
+      if (first) {
+        first = false;
+        settingsLamp.hidden = settingsSaved;
+        calibrationLamp.hidden = calibrated;
+        if (!settingsSaved) settingsLamp.classList.add('is-visible');
+        if (!calibrated) calibrationLamp.classList.add('is-visible');
+        return;
+      }
       setVisible(settingsLamp, !settingsSaved);
       setVisible(calibrationLamp, !calibrated);
     },
