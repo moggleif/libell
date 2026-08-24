@@ -48,6 +48,20 @@ export interface LevelingResult {
 
 const RAD_TO_DEG = 180 / Math.PI;
 
+/**
+ * Roll/pitch (radians) from the gravity vector, with an optional stored
+ * calibration subtracted — shared by the motorhome and caravan math.
+ */
+export function tiltFromGravity(
+  gravity: GravityVector,
+  calibration: Calibration | null,
+): { roll: number; pitch: number } {
+  return {
+    roll: Math.atan2(gravity.x, gravity.z) - (calibration ? calibration.rollDeg / RAD_TO_DEG : 0),
+    pitch: Math.atan2(gravity.y, gravity.z) - (calibration ? calibration.pitchDeg / RAD_TO_DEG : 0),
+  };
+}
+
 /** Wheel positions in the vehicle plane (mm): x = right, y = front. Each
  * axle has its own track width — many RVs are narrower over one axle. */
 function wheelPositions(settings: LevelSettings): Record<WheelId, { x: number; y: number }> {
@@ -67,10 +81,7 @@ export function computeLeveling(
   settings: LevelSettings,
   calibration: Calibration | null = null,
 ): LevelingResult {
-  const roll =
-    Math.atan2(gravity.x, gravity.z) - (calibration ? calibration.rollDeg / RAD_TO_DEG : 0);
-  const pitch =
-    Math.atan2(gravity.y, gravity.z) - (calibration ? calibration.pitchDeg / RAD_TO_DEG : 0);
+  const { roll, pitch } = tiltFromGravity(gravity, calibration);
 
   const positions = wheelPositions(settings);
   const heights = WHEEL_IDS.map((id) => {

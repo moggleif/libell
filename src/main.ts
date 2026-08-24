@@ -2,8 +2,10 @@ import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
 import { setupShareButton } from './ui/share';
 import { keepScreenAwake } from './ui/wakeLock';
-import { computeLeveling, WHEEL_IDS } from './domain/leveling';
+import { computeLeveling, WHEEL_IDS, type GravityVector } from './domain/leveling';
+import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
 import { createDisplayStabilizer } from './domain/stability';
+import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
 import {
@@ -138,6 +140,7 @@ function bootstrap(root: HTMLElement): void {
         settings = next;
         applyTheme(settings.theme);
         updateIndicators();
+        maybeRebuildScreen();
       },
       getCalibration: () => calibration,
       calibrate: () => calibrateNow(),
@@ -171,6 +174,7 @@ function bootstrap(root: HTMLElement): void {
       // audio for the opt-in level chime.
       if (settings.soundOnLevel) unlockAudio();
       updateIndicators();
+      maybeRebuildScreen();
     },
     getCalibration: () => calibration,
     calibrate: () => calibrateNow(),
@@ -240,11 +244,20 @@ function bootstrap(root: HTMLElement): void {
     root.append(message);
   };
 
-  const showLevelScreen = () => {
+  // A settings save can switch the vehicle type; the level screen is then
+  // rebuilt, and the generation counter stops the superseded frame loop.
+  let screenGeneration = 0;
+  let screenVehicle: LevelSettings['vehicleType'] | null = null;
+  const maybeRebuildScreen = () => {
+    if (screenVehicle !== null && screenVehicle !== settings.vehicleType) showLevelScreen();
+  };
+
+  function showLevelScreen(): void {
+    const generation = ++screenGeneration;
+    screenVehicle = settings.vehicleType;
     root.replaceChildren();
     root.classList.add('app--level');
 
-    const diagram = createRvDiagram();
     // Always-visible status row: never empty, fixed height, so nothing
     // pops in and out while the user is watching the wheels.
     const status = document.createElement('p');
@@ -269,7 +282,68 @@ function bootstrap(root: HTMLElement): void {
     overlay.append(overlayMark, overlayText);
     root.append(overlay);
 
-    root.append(diagram.element, status, tilt.element, waiting);
+    // Vehicle engine (#72): compute → stabilize → render for the chosen
+    // vehicle type, reporting what the celebration/re-arm logic needs.
+    interface EngineTick {
+      isLevel: boolean;
+      maxCorrectionMm: number;
+    }
+    let engineElement: HTMLElement;
+    let engineTick: (gravity: GravityVector, nowMs: number) => EngineTick;
+    if (settings.vehicleType === 'caravan') {
+      const diagram = createCaravanDiagram();
+      const stabilize = createCaravanStabilizer();
+      const caravanStatusText = (result: ReturnType<typeof stabilize>): string => {
+        if (result.isLevel) return t('main.level');
+        const ramp = result.axle.left.severity !== 'none' || result.axle.right.severity !== 'none';
+        const crank = result.jockey.direction !== 'ok';
+        if (ramp && crank) return t('status.caravan.both');
+        if (crank)
+          return t(result.jockey.direction === 'up' ? 'status.crank.up' : 'status.crank.down');
+        return t('status.one');
+      };
+      engineElement = diagram.element;
+      engineTick = (gravity, nowMs) => {
+        const result = stabilize(
+          computeCaravanLeveling(gravity, settings, calibration),
+          settings,
+          nowMs,
+        );
+        diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
+        status.textContent = caravanStatusText(result);
+        status.classList.toggle('status-line--level', result.isLevel);
+        tilt.update(result);
+        const maxAxleMm = Math.max(result.axle.left.displayMm, result.axle.right.displayMm);
+        const jockeyMm = result.jockey.direction === 'ok' ? 0 : result.jockey.displayMm;
+        return { isLevel: result.isLevel, maxCorrectionMm: Math.max(maxAxleMm, jockeyMm) };
+      };
+    } else {
+      const diagram = createRvDiagram();
+      const stabilize = createDisplayStabilizer();
+      const statusText = (result: ReturnType<typeof stabilize>): string => {
+        if (result.isLevel) return t('main.level');
+        const toRaise = WHEEL_IDS.filter((id) => result.wheels[id].severity !== 'none').length;
+        const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
+        if (maxMm <= settings.toleranceMm + 10) {
+          return t('status.almost', {
+            left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
+          });
+        }
+        return toRaise === 1 ? t('status.one') : t('status.many', { n: toRaise });
+      };
+      engineElement = diagram.element;
+      engineTick = (gravity, nowMs) => {
+        const result = stabilize(computeLeveling(gravity, settings, calibration), settings, nowMs);
+        diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
+        status.textContent = statusText(result);
+        status.classList.toggle('status-line--level', result.isLevel);
+        tilt.update(result);
+        const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
+        return { isLevel: result.isLevel, maxCorrectionMm: maxMm };
+      };
+    }
+
+    root.append(engineElement, status, tilt.element, waiting);
 
     // Pose guard: wrong-pose overlay instead of wrong guidance (#51).
     const poseOverlay = document.createElement('div');
@@ -282,7 +356,6 @@ function bootstrap(root: HTMLElement): void {
     const detectPose = createPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
 
-    const stabilize = createDisplayStabilizer();
     let wasLevel = false;
     let overlayTimer = 0;
     // Celebration arming (field feedback, twice): the vibration + overlay
@@ -312,19 +385,9 @@ function bootstrap(root: HTMLElement): void {
       }, 2500);
     };
 
-    const statusText = (result: ReturnType<typeof stabilize>): string => {
-      if (result.isLevel) return t('main.level');
-      const toRaise = WHEEL_IDS.filter((id) => result.wheels[id].severity !== 'none').length;
-      const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
-      if (maxMm <= settings.toleranceMm + 10) {
-        return t('status.almost', {
-          left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
-        });
-      }
-      return toRaise === 1 ? t('status.one') : t('status.many', { n: toRaise });
-    };
-
     const frame = () => {
+      // A rebuilt screen (vehicle type change) owns the loop from here.
+      if (generation !== screenGeneration) return;
       // Menu or wizard open: the user is reading, phone in hand — no
       // pose nagging, no overlays, no celebration until they are back.
       if (menu.isOpen() || onboardingOpen) {
@@ -347,27 +410,22 @@ function bootstrap(root: HTMLElement): void {
         }
         poseOverlay.hidden = true;
         const now = performance.now();
-        const result = stabilize(computeLeveling(gravity, settings, calibration), settings, now);
-        diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
-        status.textContent = statusText(result);
-        status.classList.toggle('status-line--level', result.isLevel);
-        if (result.isLevel && !wasLevel) celebrate();
-        if (!result.isLevel) overlay.hidden = true;
-        wasLevel = result.isLevel;
+        const { isLevel, maxCorrectionMm } = engineTick(gravity, now);
+        if (isLevel && !wasLevel) celebrate();
+        if (!isLevel) overlay.hidden = true;
+        wasLevel = isLevel;
         // Re-arm the celebration only once clearly un-level, sustained.
-        const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
-        if (!result.isLevel && maxMm > settings.toleranceMm + REARM_MARGIN_MM) {
+        if (!isLevel && maxCorrectionMm > settings.toleranceMm + REARM_MARGIN_MM) {
           clearlyUnlevelSince ??= now;
           if (now - clearlyUnlevelSince >= REARM_SUSTAIN_MS) celebrateArmed = true;
         } else {
           clearlyUnlevelSince = null;
         }
-        tilt.update(result);
       }
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
-  };
+  }
 
   const handleState = (state: SensorState) => {
     switch (state) {

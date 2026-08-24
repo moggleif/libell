@@ -5,6 +5,13 @@
  */
 
 export interface LevelSettings {
+  /**
+   * What is being leveled: a motorhome (four wheels) or a caravan
+   * (single axle + jockey wheel — ADR 0008). The caravan reuses
+   * `trackWidthRearMm` as its axle track and `wheelbaseMm` as the
+   * axle-to-jockey-wheel distance.
+   */
+  vehicleType: VehicleType;
   /** Distance between front and rear axle, in mm. */
   wheelbaseMm: number;
   /** Distance between the front wheels, in mm. */
@@ -38,7 +45,10 @@ export interface LevelSettings {
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
+export type VehicleType = 'motorhome' | 'caravan';
+
 export const DEFAULT_SETTINGS: LevelSettings = {
+  vehicleType: 'motorhome',
   wheelbaseMm: 3800,
   trackWidthFrontMm: 1810,
   trackWidthRearMm: 1980,
@@ -151,6 +161,7 @@ export function parseSettings(value: unknown): LevelSettings {
   }
 
   return {
+    vehicleType: raw.vehicleType === 'caravan' ? 'caravan' : 'motorhome',
     wheelbaseMm: positiveNumber(
       raw.wheelbaseMm,
       cm(raw.wheelbaseCm) ?? DEFAULT_SETTINGS.wheelbaseMm,

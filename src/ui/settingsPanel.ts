@@ -12,6 +12,7 @@ import {
   parseSettings,
   type LevelSettings,
   type ThemeSetting,
+  type VehicleType,
 } from '../domain/settings';
 import { matchRampModel, rampLabel, RAMP_MODELS } from '../domain/ramps';
 import { saveSettings } from '../data/settingsStore';
@@ -43,9 +44,30 @@ export function createSettingsForm(
   /** Re-appliers run whenever the unit (and thus every label) changes. */
   const unitAppliers: (() => void)[] = [];
 
+  // --- Vehicle type (#72): motorhome (four wheels) or caravan (single
+  // axle + jockey wheel). The caravan hides the front track width and
+  // relabels the wheelbase as the axle-to-jockey distance.
+  let vehicle: VehicleType = initial.vehicleType;
+  const vehicleField = document.createElement('label');
+  vehicleField.className = 'settings__field';
+  const vehicleCaption = document.createElement('span');
+  const vehicleSelect = document.createElement('select');
+  vehicleSelect.className = 'settings__select';
+  const vehicleOptions: [HTMLOptionElement, MessageKey][] = [];
+  for (const value of ['motorhome', 'caravan'] as const) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.selected = value === vehicle;
+    vehicleSelect.append(option);
+    vehicleOptions.push([option, `vehicle.${value}` as MessageKey]);
+  }
+  vehicleField.append(vehicleCaption, vehicleSelect);
+  form.append(vehicleField);
+
   // --- Numeric fields (shown in the chosen unit) ---
   const inputs = new Map<NumberKey, HTMLInputElement>();
   const captions = new Map<NumberKey, HTMLSpanElement>();
+  const fieldEls = new Map<NumberKey, HTMLLabelElement>();
   for (const { key, label, stepMm, min } of NUMBER_FIELDS) {
     const field = document.createElement('label');
     field.className = 'settings__field';
@@ -58,8 +80,11 @@ export function createSettingsForm(
     form.append(field);
     inputs.set(key, input);
     captions.set(key, caption);
+    fieldEls.set(key, field);
     const applyUnit = () => {
-      caption.textContent = `${t(label)} (${unit})`;
+      const labelKey: MessageKey =
+        key === 'wheelbaseMm' && vehicle === 'caravan' ? 'settings.axleToJockey' : label;
+      caption.textContent = `${t(labelKey)} (${unit})`;
       input.step = String(toUnit(stepMm));
       input.min = String(min ?? toUnit(stepMm));
     };
@@ -67,6 +92,12 @@ export function createSettingsForm(
     input.value = String(toUnit(initial[key]));
     unitAppliers.push(applyUnit);
   }
+
+  vehicleSelect.addEventListener('change', () => {
+    vehicle = vehicleSelect.value === 'caravan' ? 'caravan' : 'motorhome';
+    applyUnitEverywhere();
+    notifyChanged();
+  });
 
   // Where to find the numbers — the biggest data-entry hurdle for new
   // users is not typing, it's knowing (#69).
@@ -260,6 +291,10 @@ export function createSettingsForm(
 
   function applyUnitEverywhere(): void {
     for (const apply of unitAppliers) apply();
+    vehicleCaption.textContent = t('settings.vehicle');
+    for (const [option, label] of vehicleOptions) option.textContent = t(label);
+    // A caravan has one axle — the front track width does not apply.
+    fieldEls.get('trackWidthFrontMm')!.hidden = vehicle === 'caravan';
     stepsCaption.textContent = `${t('settings.steps')} (${unit})`;
     addInput.placeholder = unit === 'cm' ? '4' : '40';
     addButton.textContent = `+ ${t('settings.steps.add')}`;
@@ -280,6 +315,7 @@ export function createSettingsForm(
   // guards against corrupt storage.
   const currentSettings = (): LevelSettings => {
     const raw: Record<string, unknown> = {
+      vehicleType: vehicle,
       rampStepHeightsMm: [...steps],
       displayUnit: unit,
       soundOnLevel: soundInput.checked,
@@ -302,6 +338,8 @@ export function createSettingsForm(
   const populate = (settings: LevelSettings): void => {
     unit = settings.displayUnit;
     unitSelect.value = unit;
+    vehicle = settings.vehicleType;
+    vehicleSelect.value = vehicle;
     applyUnitEverywhere();
     for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
     steps = [...settings.rampStepHeightsMm];
