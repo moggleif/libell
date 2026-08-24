@@ -9,7 +9,31 @@
  * `is-visible` class (opacity/transform, see styles.css); this module
  * knows nothing about *how* something animates, only *when*.
  */
+/**
+ * A hide call in flight arms a `transitionend` listener plus a fallback
+ * timer (below) that forcibly sets `hidden` once. Tracked per element so
+ * a later call — hide-when-already-hidden, or a show that interrupts an
+ * in-flight hide — can cancel it; otherwise that stale timer fires on its
+ * own schedule and can force the element hidden again after it was
+ * legitimately re-shown (#108 field bug: opening a menu page straight
+ * from closed armed a no-op hide call for the still-hidden page, then
+ * closed the page a moment after it opened).
+ */
+const pendingHide = new WeakMap<
+  HTMLElement,
+  { timeoutId: ReturnType<typeof setTimeout>; onEnd: (event: TransitionEvent) => void }
+>();
+
+function cancelPendingHide(el: HTMLElement): void {
+  const pending = pendingHide.get(el);
+  if (!pending) return;
+  window.clearTimeout(pending.timeoutId);
+  el.removeEventListener('transitionend', pending.onEnd);
+  pendingHide.delete(el);
+}
+
 export function setVisible(el: HTMLElement, visible: boolean, visibleClass = 'is-visible'): void {
+  cancelPendingHide(el);
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (visible) {
@@ -27,18 +51,18 @@ export function setVisible(el: HTMLElement, visible: boolean, visibleClass = 'is
     return;
   }
 
+  el.classList.remove(visibleClass);
+  // Nothing to transition — and nothing to schedule — if it was already
+  // hidden; a redundant hide call must stay a true no-op.
+  if (el.hidden) return;
+
   if (reduceMotion) {
-    el.classList.remove(visibleClass);
     el.hidden = true;
     return;
   }
-  el.classList.remove(visibleClass);
-  let settled = false;
   const finish = () => {
-    if (settled) return;
-    settled = true;
     el.hidden = true;
-    el.removeEventListener('transitionend', onEnd);
+    cancelPendingHide(el);
   };
   const onEnd = (event: TransitionEvent) => {
     if (event.target === el) finish();
@@ -46,5 +70,6 @@ export function setVisible(el: HTMLElement, visible: boolean, visibleClass = 'is
   el.addEventListener('transitionend', onEnd);
   // Fallback in case no transition actually runs (e.g. the element has
   // no matching transition-property) — never leave it un-hidden.
-  window.setTimeout(finish, 400);
+  const timeoutId = window.setTimeout(finish, 400);
+  pendingHide.set(el, { timeoutId, onEnd });
 }

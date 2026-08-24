@@ -150,8 +150,19 @@ export function createMenu(options: MenuOptions): Menu {
     render();
   }
 
+  // Opening a page straight from closed (depth 0 -> 2) advances depth in
+  // one step and calls render() exactly once at the final depth — not via
+  // showDrawer() then again here. setVisible (#105) arms a ~400ms fallback
+  // timer on every hide call; calling render() at the intermediate depth 1
+  // would hide-then-immediately-reshow `page` in the same tick, leaving
+  // that stale timer armed to forcibly close the page a moment after it
+  // opened. Two pushState calls still land (0->1->2), so back/gesture
+  // behavior is unchanged.
   function showPage(section: MenuSection): void {
-    if (depth === 0) showDrawer();
+    if (depth === 0) {
+      history.pushState({ libellMenu: 1 }, '');
+      depth = 1;
+    }
     if (depth === 1) {
       history.pushState({ libellMenu: 2 }, '');
       depth = 2;
