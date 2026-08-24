@@ -223,6 +223,10 @@ URL and must keep working with no signal.
 - **Then** its step heights fill in; editing the heights afterwards switches the picker
   to "Custom set". A set matching a catalog model shows the model's name regardless of
   entry order, preferring the already-selected model when two share the same steps.
+- **Given** I explicitly choose "Custom set" in the picker
+- **Then** the choice holds — even while the steps still match a catalog model — so I
+  can start from a preset and edit freely; auto-matching resumes once a model is
+  picked again (or the form is repopulated).
 
 ## R22 — Caravan mode: single axle + jockey wheel
 
