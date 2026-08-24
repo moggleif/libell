@@ -68,10 +68,10 @@ URL and must keep working with no signal.
 
 - **Given** the RV is not level
 - **When** I look at the RV diagram
-- **Then** each wheel is colored by "is it worth driving up?": green within the
-  tolerance, orange when some ramp step brings it within tolerance, red when even the
-  best step cannot — move the vehicle instead. Colored wheels show their required lift
-  in whole mm.
+- **Then** each wheel is colored by what the ramp plan (R27) says about it: green when
+  it ends within the tolerance with no ramp, orange when driving up its planned step
+  brings it within tolerance, red when the owned ramps cannot fix it — move the
+  vehicle instead. Colored wheels show their required lift in whole mm.
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
@@ -101,7 +101,8 @@ URL and must keep working with no signal.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
-  is listed, e.g. "20; 40; 60"), Tolerance (mm a wheel may sit below the highest and
+  is listed, e.g. "20; 40; 60"), Number of ramps (R27), Waste-water drain (R27),
+  Tolerance (mm a wheel may sit below the highest and
   still count as level), Stability (display hysteresis dead band in mm; 0 disables
   it), display unit (R14), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
@@ -305,3 +306,29 @@ URL and must keep working with no signal.
   zero and answers plainly: "Still good — off by 0.1°." or "Off by 0.8° — consider
   recalibrating." (threshold 0.3°); the recalibrate buttons are right there.
 - The timestamp never leaves the device.
+
+## R27 — Only as many ramps as you own, placed where they help most
+
+- **Given** the Settings choice "Number of ramps" (1–4; default 2 — ramps are sold in
+  pairs), motorhome mode
+- **When** a combined roll + pitch tilt leaves more wheels below the highest corner
+  than I have ramps
+- **Then** the diagram never asks me to ramp more wheels than that: the plan picks the
+  combination of wheels and steps that leaves the vehicle closest to level (smallest
+  remaining height deficit, ADR 0011), a low wheel that gets no ramp shows red ✕, and
+  the status line counts only the wheels the plan asks me to drive up — or says the
+  ramps are not enough when no placement helps at all. A boggie pair consumes two
+  ramps (both wheels of the pair drive up, R23).
+- **Given** every wheel can be brought within the tolerance
+- **Then** the plan uses as few ramps as possible and the vehicle reports level once
+  I have driven up.
+- **Given** the Settings choice "Waste-water drain" (none / left / right / front /
+  rear; default none)
+- **When** several placements of my ramps level the vehicle within the tolerance
+- **Then** the app prefers the one leaving the drain side lowest, so the grey tank
+  empties — never choosing a worse-than-tolerance solution or extra ramps just for
+  drainage.
+- The per-wheel required lifts (R3) are unchanged — the plan only decides which steps
+  are recommended. Caravan mode is unaffected (one axle wheel is ever ramped, R22);
+  its form hides both fields. Display hysteresis (R25's calm-display rules and the
+  Stability dead band) applies to the plan too: it may not flap at boundaries.

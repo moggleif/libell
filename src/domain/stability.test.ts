@@ -150,3 +150,43 @@ describe('createDisplayStabilizer', () => {
     expect(settled.wheels.frontRight.displayMm).toBe(40);
   });
 });
+
+describe('two-ramp plan display (#93)', () => {
+  const planSettings = { ...settings, rampStepHeightsMm: [40, 80, 120] };
+
+  /** Hand-built LevelingResult: the stabilizer only reads the lifts. */
+  function resultFor(fl: number, fr: number, rl: number, rr: number) {
+    const wheel = (liftMm: number) => ({ liftMm, stepMm: 0 });
+    return {
+      rollDeg: 0,
+      pitchDeg: 0,
+      isLevel: false,
+      wheels: {
+        frontLeft: wheel(fl),
+        frontRight: wheel(fr),
+        rearLeft: wheel(rl),
+        rearRight: wheel(rr),
+      },
+    };
+  }
+
+  it('steps go only to the planned wheels; an unservable wheel shows red', () => {
+    // Three wheels below the highest corner, two ramps: the plan serves
+    // the rear pair; the front right cannot be fixed with this set.
+    const display = createDisplayStabilizer()(resultFor(0, 30, 50, 80), planSettings, 0);
+    expect(display.wheels.rearLeft.stepMm).toBe(40);
+    expect(display.wheels.rearRight.stepMm).toBe(80);
+    expect(display.wheels.frontRight.stepMm).toBe(0);
+    expect(display.wheels.frontRight.severity).toBe('large');
+    expect(display.wheels.frontLeft.severity).toBe('none');
+    expect(display.isLevel).toBe(false);
+  });
+
+  it('with four ramps the same tilt gets a full plan', () => {
+    const four = { ...planSettings, rampCount: 4 };
+    const display = createDisplayStabilizer()(resultFor(0, 30, 50, 80), four, 0);
+    const stepped = WHEEL_IDS.filter((id) => display.wheels[id].stepMm > 0);
+    expect(stepped).toHaveLength(3);
+    expect(WHEEL_IDS.every((id) => display.wheels[id].severity !== 'large')).toBe(true);
+  });
+});

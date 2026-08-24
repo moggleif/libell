@@ -58,6 +58,17 @@ export const MESSAGES = {
     'settings.steps.remove': 'Remove {value}',
     'settings.ramp': 'Ready-made ramp',
     'settings.ramp.custom': 'Custom set',
+    'settings.rampCount': 'Number of ramps',
+    'settings.drain': 'Waste-water drain',
+    'settings.rampHint':
+      'The app never asks you to ramp more wheels than you have ramps for — it picks ' +
+      'the placement that gets closest to level and, within the tolerance, leaves ' +
+      'the drain side lowest so the tank empties.',
+    'drain.none': 'None / does not matter',
+    'drain.left': 'Left side',
+    'drain.right': 'Right side',
+    'drain.front': 'Front',
+    'drain.rear': 'Rear',
     'settings.unit': 'Show lengths in',
     'settings.theme': 'Theme',
     'theme.system': 'Follow the phone',
@@ -72,6 +83,7 @@ export const MESSAGES = {
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
     'status.many': '{n} wheels to raise',
+    'status.cantLevel': 'Your ramps are not enough here — move the vehicle',
 
     'calibration.intro':
       'Put the phone on a surface you know is level, then tap Calibrate now. ' +
@@ -237,6 +249,17 @@ export const MESSAGES = {
     'settings.steps.remove': 'Ta bort {value}',
     'settings.ramp': 'Färdig ramp',
     'settings.ramp.custom': 'Egen uppsättning',
+    'settings.rampCount': 'Antal ramper',
+    'settings.drain': 'Avlopp (gråvatten)',
+    'settings.rampHint':
+      'Appen ber dig aldrig rampa fler hjul än du har ramper till — den väljer den ' +
+      'placering som kommer närmast våg och lämnar, inom toleransen, avloppssidan ' +
+      'lägst så att tanken töms.',
+    'drain.none': 'Inget / spelar ingen roll',
+    'drain.left': 'Vänster sida',
+    'drain.right': 'Höger sida',
+    'drain.front': 'Fram',
+    'drain.rear': 'Bak',
     'settings.unit': 'Visa längder i',
     'settings.theme': 'Tema',
     'theme.system': 'Följ telefonen',
@@ -251,6 +274,7 @@ export const MESSAGES = {
     'status.almost': 'Nästan i våg — {left} kvar',
     'status.one': '1 hjul att höja',
     'status.many': '{n} hjul att höja',
+    'status.cantLevel': 'Ramperna räcker inte här — flytta fordonet',
 
     'calibration.intro':
       'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +

@@ -8,7 +8,9 @@
  */
 import {
   DEFAULT_SETTINGS,
+  DRAIN_POSITIONS,
   formatLength,
+  MAX_RAMP_COUNT,
   parseSettings,
   type AxleConfig,
   type LevelSettings,
@@ -237,6 +239,48 @@ export function createSettingsForm(
   stepsField.append(stepsCaption, rampRow, chipList, addRow);
   form.append(stepsField);
 
+  // --- Ramp count (#93): how many ramps the user actually owns. Sold in
+  // pairs, so 2 is the default; a few carry 3 or 4. The plan never asks
+  // for more wheels than this. A caravan ramps one wheel — field hidden.
+  const rampCountField = document.createElement('label');
+  rampCountField.className = 'settings__field';
+  const rampCountCaption = document.createElement('span');
+  const rampCountSelect = document.createElement('select');
+  rampCountSelect.className = 'settings__select';
+  for (let n = 1; n <= MAX_RAMP_COUNT; n += 1) {
+    const option = document.createElement('option');
+    option.value = String(n);
+    option.textContent = String(n);
+    option.selected = n === initial.rampCount;
+    rampCountSelect.append(option);
+  }
+  rampCountSelect.addEventListener('change', () => notifyChanged());
+  rampCountField.append(rampCountCaption, rampCountSelect);
+  form.append(rampCountField);
+
+  // --- Drain position (#93): where the waste-water outlet sits. Within
+  // the tolerance the plan leaves this side lowest so the tank empties.
+  const drainField = document.createElement('label');
+  drainField.className = 'settings__field';
+  const drainCaption = document.createElement('span');
+  const drainSelect = document.createElement('select');
+  drainSelect.className = 'settings__select';
+  const drainOptions: [HTMLOptionElement, MessageKey][] = [];
+  for (const value of DRAIN_POSITIONS) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.selected = value === initial.drainPosition;
+    drainSelect.append(option);
+    drainOptions.push([option, `drain.${value}` as MessageKey]);
+  }
+  drainSelect.addEventListener('change', () => notifyChanged());
+  drainField.append(drainCaption, drainSelect);
+  form.append(drainField);
+
+  const rampHint = document.createElement('p');
+  rampHint.className = 'settings__hint';
+  form.append(rampHint);
+
   // --- Unit choice ---
   const unitField = document.createElement('label');
   unitField.className = 'settings__field';
@@ -339,6 +383,14 @@ export function createSettingsForm(
     addButton.textContent = `+ ${t('settings.steps.add')}`;
     rampCaption.textContent = t('settings.ramp');
     customOption.textContent = t('settings.ramp.custom');
+    // Ramp planning applies to the motorhome; a caravan ramps one wheel.
+    rampCountField.hidden = vehicle === 'caravan';
+    drainField.hidden = vehicle === 'caravan';
+    rampHint.hidden = vehicle === 'caravan';
+    rampCountCaption.textContent = t('settings.rampCount');
+    drainCaption.textContent = t('settings.drain');
+    for (const [option, label] of drainOptions) option.textContent = t(label);
+    rampHint.textContent = t('settings.rampHint');
     unitCaption.textContent = t('settings.unit');
     themeCaption.textContent = t('settings.theme');
     for (const [option, label] of themeOptions) option.textContent = t(label);
@@ -357,6 +409,8 @@ export function createSettingsForm(
       vehicleType: vehicle,
       rearAxle: axle,
       rampStepHeightsMm: [...steps],
+      rampCount: Number(rampCountSelect.value),
+      drainPosition: drainSelect.value,
       displayUnit: unit,
       soundOnLevel: soundInput.checked,
       theme: themeSelect.value,
@@ -387,6 +441,8 @@ export function createSettingsForm(
     steps = [...settings.rampStepHeightsMm];
     customChosen = matchRampModel(steps) === null;
     renderChips();
+    rampCountSelect.value = String(settings.rampCount);
+    drainSelect.value = settings.drainPosition;
     themeSelect.value = settings.theme;
     applyTheme(settings.theme);
     soundInput.checked = settings.soundOnLevel;

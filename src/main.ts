@@ -322,22 +322,31 @@ function bootstrap(root: HTMLElement): void {
     root.append(message);
   };
 
-  // A settings save can switch the vehicle type; the level screen is then
-  // rebuilt, and the generation counter stops the superseded frame loop.
+  // A settings save can switch the vehicle type or change what the ramp
+  // plan is computed from; the level screen is then rebuilt (dropping the
+  // stabilizer's history so the new plan applies at once), and the
+  // generation counter stops the superseded frame loop.
+  const levelScreenKey = (s: LevelSettings) =>
+    JSON.stringify([
+      s.vehicleType,
+      s.rearAxle,
+      s.wheelbaseMm,
+      s.trackWidthFrontMm,
+      s.trackWidthRearMm,
+      s.rampStepHeightsMm,
+      s.rampCount,
+      s.drainPosition,
+      s.toleranceMm,
+    ]);
   let screenGeneration = 0;
-  let screenVehicle: LevelSettings['vehicleType'] | null = null;
-  let screenAxle: LevelSettings['rearAxle'] | null = null;
+  let screenKey: string | null = null;
   const maybeRebuildScreen = () => {
-    if (screenVehicle === null) return;
-    if (screenVehicle !== settings.vehicleType || screenAxle !== settings.rearAxle) {
-      showLevelScreen();
-    }
+    if (screenKey !== null && screenKey !== levelScreenKey(settings)) showLevelScreen();
   };
 
   function showLevelScreen(): void {
     const generation = ++screenGeneration;
-    screenVehicle = settings.vehicleType;
-    screenAxle = settings.rearAxle;
+    screenKey = levelScreenKey(settings);
     root.replaceChildren();
     root.classList.add('app--level');
 
@@ -405,13 +414,18 @@ function bootstrap(root: HTMLElement): void {
       const stabilize = createDisplayStabilizer();
       const statusText = (result: ReturnType<typeof stabilize>): string => {
         if (result.isLevel) return t('main.level');
-        const toRaise = WHEEL_IDS.filter((id) => result.wheels[id].severity !== 'none').length;
+        // Wheels the plan actually asks to drive up (#93) — a red wheel
+        // without a step is one the owned ramps cannot serve.
+        const toRaise = WHEEL_IDS.filter(
+          (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
+        ).length;
         const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
         if (maxMm <= settings.toleranceMm + 10) {
           return t('status.almost', {
             left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
           });
         }
+        if (toRaise === 0) return t('status.cantLevel');
         return toRaise === 1 ? t('status.one') : t('status.many', { n: toRaise });
       };
       engineElement = diagram.element;
