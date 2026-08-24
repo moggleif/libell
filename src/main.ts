@@ -32,7 +32,7 @@ import {
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
-import { applyTheme, followSystemTheme } from './ui/theme';
+import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
@@ -133,6 +133,7 @@ function bootstrap(root: HTMLElement): void {
   let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
   const effectiveCalibration = () => combineCalibrations(calibration, vehicleCalibration);
   applyTheme(settings.theme);
+  applyAppearance(settings.appearance);
   followSystemTheme(() => settings.theme);
   // ?demo replaces the sensor with a fixed synthetic tilt — used by the
   // build-time screenshot generator and handy for trying the app on a
@@ -154,6 +155,7 @@ function bootstrap(root: HTMLElement): void {
       onSettingsSaved(next) {
         settings = next;
         applyTheme(settings.theme);
+        applyAppearance(settings.appearance);
         updateIndicators();
         maybeRebuildScreen();
       },
@@ -200,6 +202,7 @@ function bootstrap(root: HTMLElement): void {
     onSettingsSaved(next) {
       settings = next;
       applyTheme(settings.theme);
+      applyAppearance(settings.appearance);
       // The save click is a user gesture — the right moment to unlock
       // audio for the opt-in level chime.
       if (settings.soundOnLevel) unlockAudio();

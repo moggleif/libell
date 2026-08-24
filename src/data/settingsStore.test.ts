@@ -41,6 +41,7 @@ describe('settingsStore', () => {
       displayUnit: 'mm' as const,
       soundOnLevel: false,
       theme: 'dark' as const,
+      appearance: 'modern' as const,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
