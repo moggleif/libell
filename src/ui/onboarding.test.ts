@@ -11,8 +11,13 @@ afterEach(() => {
 });
 
 function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOptions {
+  const initialSettings = overrides.initialSettings ?? DEFAULT_SETTINGS;
   return {
-    initialSettings: DEFAULT_SETTINGS,
+    initialSettings,
+    // Real callers (main.ts) always derive both from the same
+    // `settings` object — keep the fixture honest about that instead
+    // of letting the two drift apart in tests.
+    appearance: initialSettings.appearance,
     onSettingsSaved: () => {},
     onFinished: () => {},
     getCalibration: () => null,
