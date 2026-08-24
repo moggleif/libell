@@ -239,13 +239,6 @@ body {
   width: min(92vw, 58vh, 560px);
 }
 
-/* While the vehicle rocks the guidance is momentarily meaningless —
- * dimmed rather than flickering (#86). */
-.rv-diagram--measuring {
-  opacity: 0.45;
-  transition: opacity 0.3s;
-}
-
 .rv-diagram svg {
   width: 100%;
   height: auto;

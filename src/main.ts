@@ -456,8 +456,9 @@ function bootstrap(root: HTMLElement): void {
     root.append(poseOverlay);
     const detectPose = createPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
-    // Rocking vehicle (people moving around): dim the guidance and show
-    // "Measuring…" until the reading has been calm for a moment (#86).
+    // Rocking vehicle (people moving around): show "Measuring…" until the
+    // reading has been calm for a moment (#86); the diagram itself stays
+    // at full opacity — the status text is enough (#96).
     const isStill = createStillnessDetector();
 
     let wasLevel = false;
@@ -517,7 +518,6 @@ function bootstrap(root: HTMLElement): void {
         const tilt = tiltFromGravity(gravity, null);
         const still = isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, now);
         const { isLevel, maxCorrectionMm } = engineTick(gravity, now);
-        engineElement.classList.toggle('rv-diagram--measuring', !still);
         if (!still) {
           // Momentary readings are meaningless while the vehicle rocks —
           // say so instead of flickering advice, and never celebrate.

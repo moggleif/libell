@@ -289,8 +289,9 @@ URL and must keep working with no signal.
 - **Given** the readings vary more than a small threshold within a short window
   (people walking around inside, the vehicle being positioned, the phone handled)
 - **When** I look at the main screen
-- **Then** the status line reads "Measuring…", the diagram is dimmed, and the level
-  celebration cannot fire — momentary advice is suppressed rather than flickered.
+- **Then** the status line reads "Measuring…" and the level celebration cannot fire —
+  momentary advice is suppressed rather than flickered. The wheel diagram stays at
+  full opacity; dimming it on top of the status text was itself distracting (#96).
 - **Given** the reading has been calm for about 1.5 seconds
 - **Then** normal guidance returns. The detector is pure domain code
   (`src/domain/stillness.ts`, peak-to-peak over a rolling window on the smoothed
