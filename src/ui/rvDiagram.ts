@@ -11,17 +11,36 @@
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
-import { formatLength } from '../domain/settings';
+import { formatLength, type AxleConfig } from '../domain/settings';
 import { t } from './i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 interface WheelRefs {
-  marker: SVGRectElement;
+  /** One rect for a single wheel, two for a boggie pair (ADR 0009). */
+  markers: SVGRectElement[];
   glyph: SVGTextElement;
   stepName: SVGTSpanElement;
   stepHeight: SVGTSpanElement;
   liftLabel: SVGTextElement;
+}
+
+/**
+ * Wheel marker(s) within the same 28×48 footprint: a single wheel is one
+ * rect; a boggie pair is two shorter rects with a gap — same outer
+ * bounds, so glyphs and labels keep their positions.
+ */
+export function wheelMarkers(x: number, y: number, pair: boolean): SVGRectElement[] {
+  const rect = (top: number, height: number) =>
+    svgEl('rect', {
+      x: String(x - 14),
+      y: String(top),
+      width: '28',
+      height: String(height),
+      rx: '9',
+      class: 'rv-diagram__wheel',
+    });
+  return pair ? [rect(y - 24, 22), rect(y + 2, 22)] : [rect(y - 24, 48)];
 }
 
 /** Shape per state so color is never the only signal (WCAG 1.4.1). */
@@ -53,7 +72,7 @@ function svgEl<K extends keyof SVGElementTagNameMap>(
   return el;
 }
 
-export function createRvDiagram(): RvDiagram {
+export function createRvDiagram(rearAxle: AxleConfig = 'single'): RvDiagram {
   const container = document.createElement('div');
   container.className = 'rv-diagram';
 
@@ -90,14 +109,7 @@ export function createRvDiagram(): RvDiagram {
   const wheels = {} as Record<WheelId, WheelRefs>;
   for (const id of WHEEL_IDS) {
     const { x, y } = WHEEL_POS[id];
-    const marker = svgEl('rect', {
-      x: String(x - 14),
-      y: String(y - 24),
-      width: '28',
-      height: '48',
-      rx: '9',
-      class: 'rv-diagram__wheel',
-    });
+    const markers = wheelMarkers(x, y, rearAxle === 'boggie' && id.startsWith('rear'));
     // Above the wheel, two lines: which ramp step to drive up onto, then
     // its height parenthesized and small. Below the wheel: the lift.
     const stepLabel = svgEl('text', {
@@ -122,8 +134,8 @@ export function createRvDiagram(): RvDiagram {
       y: String(y + 7),
       class: 'rv-diagram__wheel-glyph',
     });
-    svg.append(marker, glyph, stepLabel, liftLabel);
-    wheels[id] = { marker, glyph, stepName, stepHeight, liftLabel };
+    svg.append(...markers, glyph, stepLabel, liftLabel);
+    wheels[id] = { markers, glyph, stepName, stepHeight, liftLabel };
   }
 
   // Bubble level in the middle of the vehicle.
@@ -155,8 +167,10 @@ export function createRvDiagram(): RvDiagram {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
         const { displayMm, stepMm, severity } = result.wheels[id];
-        const { marker, glyph, stepName, stepHeight, liftLabel } = wheels[id];
-        marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
+        const { markers, glyph, stepName, stepHeight, liftLabel } = wheels[id];
+        // A boggie pair shares one severity — both wheels get equal steps.
+        for (const marker of markers)
+          marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         glyph.textContent = SEVERITY_GLYPH[severity];
         if (severity === 'none' || stepMm <= 0) {
           stepName.textContent = '';

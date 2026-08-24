@@ -106,6 +106,27 @@ describe('rvDiagram wheel labels', () => {
     expect(l.lift(0)).toBe('6.3 cm');
   });
 
+  it('draws rear wheel pairs sharing one severity for a boggie (#81)', () => {
+    const diagram = createRvDiagram('boggie');
+    diagram.update(
+      result({ rearLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
+      'mm',
+      STEPS,
+    );
+    // Front 2×1 + rear 2×2 markers.
+    const markers = [...diagram.element.querySelectorAll('.rv-diagram__wheel')];
+    expect(markers).toHaveLength(6);
+    const orange = markers.filter((m) =>
+      m.getAttribute('class')?.includes('rv-diagram__wheel--small'),
+    );
+    expect(orange).toHaveLength(2); // both wheels of the rear-left pair
+    // Still one glyph and one label set per side.
+    expect(diagram.element.querySelectorAll('.rv-diagram__wheel-glyph')).toHaveLength(4);
+    const l = labelsOf(diagram.element);
+    expect(l.stepName(2)).toBe('Step 2');
+    expect(l.lift(2)).toBe('63 mm');
+  });
+
   it('clears the labels again when a wheel turns green', () => {
     const diagram = createRvDiagram();
     diagram.update(

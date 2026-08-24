@@ -35,6 +35,16 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
   });
 
+  it('round-trips the axle configuration (#81)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const axleSelect = form.querySelectorAll('select')[1] as HTMLSelectElement;
+    axleSelect.value = 'boggie';
+    axleSelect.dispatchEvent(new Event('change'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].rearAxle).toBe('boggie');
+  });
+
   it('keeps math in mm while displaying cm', () => {
     const cmSettings: LevelSettings = { ...DEFAULT_SETTINGS, displayUnit: 'cm' };
     const onSave = vi.fn<(s: LevelSettings) => void>();

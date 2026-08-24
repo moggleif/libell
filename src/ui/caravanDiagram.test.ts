@@ -49,6 +49,22 @@ describe('caravanDiagram', () => {
     expect(glyphs[0]?.textContent).toBe('↑');
   });
 
+  it('draws axle wheel pairs for a tandem axle (#81)', () => {
+    const diagram = createCaravanDiagram('boggie');
+    diagram.update(
+      result({ axle: { left: GREEN, right: { displayMm: 63, stepMm: 78, severity: 'small' } } }),
+      'mm',
+      STEPS,
+    );
+    // Jockey 1 + axle 2×2 markers.
+    const markers = [...diagram.element.querySelectorAll('.rv-diagram__wheel')];
+    expect(markers).toHaveLength(5);
+    const orange = markers.filter((m) =>
+      m.getAttribute('class')?.includes('rv-diagram__wheel--small'),
+    );
+    expect(orange).toHaveLength(2);
+  });
+
   it('marks the jockey orange while cranking is needed, green when ok', () => {
     const diagram = createCaravanDiagram();
     diagram.update(result({ jockey: { displayMm: 20, direction: 'down' } }), 'mm', STEPS);

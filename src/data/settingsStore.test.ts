@@ -24,6 +24,7 @@ describe('settingsStore', () => {
     const storage = memoryStorage();
     const settings = {
       vehicleType: 'caravan' as const,
+      rearAxle: 'boggie' as const,
       wheelbaseMm: 3200,
       trackWidthFrontMm: 1900,
       trackWidthRearMm: 1650,
