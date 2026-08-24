@@ -4,19 +4,23 @@ import { setupShareButton } from './ui/share';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from './domain/leveling';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
+import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createDisplayStabilizer } from './domain/stability';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
 import {
   clearCalibration,
+  clearVehicleCalibration,
   hasSeenOnboarding,
   hasStoredSettings,
   loadCalibration,
   loadLanguage,
   loadSettings,
+  loadVehicleCalibration,
   markOnboardingSeen,
   saveCalibration,
+  saveVehicleCalibration,
 } from './data/settingsStore';
 import {
   createOrientationSensor,
@@ -117,6 +121,10 @@ function bootstrap(root: HTMLElement): void {
 
   let settings: LevelSettings = loadSettings();
   let calibration: Calibration | null = loadCalibration();
+  // The vehicle zero (#83): the phone spot's own tilt, applied on top of
+  // the sensor calibration — the leveling math subtracts their sum.
+  let vehicleCalibration: Calibration | null = loadVehicleCalibration();
+  const effectiveCalibration = () => combineCalibrations(calibration, vehicleCalibration);
   applyTheme(settings.theme);
   followSystemTheme(() => settings.theme);
   // ?demo replaces the sensor with a fixed synthetic tilt — used by the
@@ -155,6 +163,13 @@ function bootstrap(root: HTMLElement): void {
         clearCalibration();
         updateIndicators();
       },
+      getVehicleCalibration: () => vehicleCalibration,
+      calibrateVehicle: () => calibrateVehicleNow(),
+      clearVehicleCalibration() {
+        vehicleCalibration = null;
+        clearVehicleCalibration();
+        updateIndicators();
+      },
       onFinished() {
         onboardingOpen = false;
         markOnboardingSeen();
@@ -189,6 +204,13 @@ function bootstrap(root: HTMLElement): void {
       clearCalibration();
       updateIndicators();
     },
+    getVehicleCalibration: () => vehicleCalibration,
+    calibrateVehicle: () => calibrateVehicleNow(),
+    clearVehicleCalibration() {
+      vehicleCalibration = null;
+      clearVehicleCalibration();
+      updateIndicators();
+    },
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
@@ -201,7 +223,7 @@ function bootstrap(root: HTMLElement): void {
   const updateIndicators = () =>
     indicators.update({
       settingsSaved: demo || hasStoredSettings(),
-      calibrated: demo || calibration !== null,
+      calibrated: demo || calibration !== null || vehicleCalibration !== null,
     });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
@@ -232,6 +254,23 @@ function bootstrap(root: HTMLElement): void {
     }
     calibration = reading;
     saveCalibration(calibration);
+    updateIndicators();
+    return null;
+  }
+
+  function calibrateVehicleNow(): string | null {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    if (
+      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
+      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
+    ) {
+      return t('calibration.vehicle.err.notFlat');
+    }
+    // Stored sensor-corrected: pure placement tilt, so it survives a
+    // later sensor recalibration (ADR 0010).
+    vehicleCalibration = vehicleZeroFromReading(reading, calibration);
+    saveVehicleCalibration(vehicleCalibration);
     updateIndicators();
     return null;
   }
@@ -310,7 +349,7 @@ function bootstrap(root: HTMLElement): void {
       engineElement = diagram.element;
       engineTick = (gravity, nowMs) => {
         const result = stabilize(
-          computeCaravanLeveling(gravity, settings, calibration),
+          computeCaravanLeveling(gravity, settings, effectiveCalibration()),
           settings,
           nowMs,
         );
@@ -338,7 +377,11 @@ function bootstrap(root: HTMLElement): void {
       };
       engineElement = diagram.element;
       engineTick = (gravity, nowMs) => {
-        const result = stabilize(computeLeveling(gravity, settings, calibration), settings, nowMs);
+        const result = stabilize(
+          computeLeveling(gravity, settings, effectiveCalibration()),
+          settings,
+          nowMs,
+        );
         diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
         status.textContent = statusText(result);
         status.classList.toggle('status-line--level', result.isLevel);

@@ -83,6 +83,19 @@ export const MESSAGES = {
       'The tilt sensor is not running yet — tap Start on the main screen first.',
     'calibration.err.notFlat':
       'The phone does not look flat — place it on a level surface and try again.',
+    'calibration.sensor.h': 'Phone sensor',
+    'calibration.vehicle.h': 'Vehicle zero position',
+    'calibration.vehicle.intro':
+      'The sensor calibration zeroes the phone — not the spot where it lies. If the ' +
+      'table tilts slightly, the app would always show that tilt. Level the vehicle ' +
+      'verifiably once (spirit level, or after leveling with your ramps), put the ' +
+      'phone in its normal place, and set that as level.',
+    'calibration.vehicle.now': 'Set current position as level',
+    'calibration.vehicle.clear': 'Clear vehicle zero',
+    'calibration.vehicle.status': 'Vehicle zero: side/side {roll}°, front/back {pitch}°.',
+    'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
+    'calibration.vehicle.err.notFlat':
+      'That looks like more than placement tilt (>15°) — is the vehicle really level?',
     'calibration.flip.intro':
       'No level surface around? Use flip calibration: put the phone down anywhere ' +
       'reasonably flat, capture, rotate the phone half a turn (180°) on the same ' +
@@ -128,8 +141,9 @@ export const MESSAGES = {
       'the numbers calm.',
     'help.calibration.h': 'Calibration',
     'help.calibration.t':
-      'Put the phone on a level surface and tap Calibrate now — or, with no level ' +
-      'surface around, capture, turn the phone 180° and capture again.',
+      'Two layers: calibrate the phone once on a level surface (or with the 180° ' +
+      "flip), and — with the vehicle verifiably level — set the phone's normal spot " +
+      'as the vehicle zero, so a slightly tilting table is cancelled out too.',
     'help.notes.h': 'Good to know',
     'help.notes.t':
       'Works fully offline once opened — add it to your home screen like an app. ' +
@@ -242,6 +256,19 @@ export const MESSAGES = {
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
     'calibration.err.notFlat':
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
+    'calibration.sensor.h': 'Telefonens sensor',
+    'calibration.vehicle.h': 'Fordonets nolläge',
+    'calibration.vehicle.intro':
+      'Sensorkalibreringen nollar telefonen — inte platsen där den ligger. Lutar ' +
+      'bordet lite visar appen alltid den lutningen. Ställ fordonet verifierat ' +
+      'plant en gång (vattenpass, eller efter nivellering med ramperna), lägg ' +
+      'telefonen på sin vanliga plats och sätt det som plant.',
+    'calibration.vehicle.now': 'Sätt nuvarande läge som plant',
+    'calibration.vehicle.clear': 'Rensa nolläget',
+    'calibration.vehicle.status': 'Fordonets nolläge: sidled {roll}°, längsled {pitch}°.',
+    'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
+    'calibration.vehicle.err.notFlat':
+      'Det ser ut som mer än platslutning (>15°) — står fordonet verkligen plant?',
     'calibration.flip.intro':
       'Ingen plan yta i närheten? Använd vändkalibrering: lägg telefonen på något ' +
       'någorlunda plant, fånga, vrid telefonen ett halvt varv (180°) på samma ' +
@@ -287,8 +314,9 @@ export const MESSAGES = {
       'håller siffrorna lugna.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
-      'Lägg telefonen på en plan yta och tryck Kalibrera nu — eller, utan plan yta: ' +
-      'fånga, vrid telefonen 180° och fånga igen.',
+      'Två lager: kalibrera telefonen en gång på en plan yta (eller med 180°-' +
+      'vändningen), och — när fordonet står verifierat plant — sätt telefonens ' +
+      'vanliga plats som fordonets nolläge, så räknas även ett lutande bord bort.',
     'help.notes.h': 'Bra att veta',
     'help.notes.t':
       'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen som ' +

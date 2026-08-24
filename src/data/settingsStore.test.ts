@@ -8,6 +8,9 @@ import {
   saveCalibration,
   saveSettings,
   type KeyValueStorage,
+  clearVehicleCalibration,
+  loadVehicleCalibration,
+  saveVehicleCalibration,
 } from './settingsStore';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {
@@ -76,5 +79,23 @@ describe('calibration store', () => {
     expect(loadCalibration(storage)).toBeNull();
     saveCalibration({ rollDeg: 60, pitchDeg: 0 }, storage);
     expect(loadCalibration(storage)).toBeNull();
+  });
+});
+
+describe('vehicle calibration store (#83)', () => {
+  it('round-trips the vehicle zero and clears it', () => {
+    const storage = memoryStorage();
+    saveVehicleCalibration({ rollDeg: 0.4, pitchDeg: -0.2 }, storage);
+    expect(loadVehicleCalibration(storage)).toEqual({ rollDeg: 0.4, pitchDeg: -0.2 });
+    clearVehicleCalibration(storage);
+    expect(loadVehicleCalibration(storage)).toBeNull();
+  });
+
+  it('rejects corrupt or implausible stored vehicle zeros', () => {
+    const storage = memoryStorage();
+    storage.setItem('libell.vehicleCalibration', 'not json');
+    expect(loadVehicleCalibration(storage)).toBeNull();
+    storage.setItem('libell.vehicleCalibration', JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
+    expect(loadVehicleCalibration(storage)).toBeNull();
   });
 });

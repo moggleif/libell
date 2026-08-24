@@ -13,6 +13,7 @@ import {
 
 const STORAGE_KEY = 'libell.settings';
 const CALIBRATION_KEY = 'libell.calibration';
+const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
 
@@ -83,6 +84,38 @@ export function saveCalibration(
     storage?.setItem(CALIBRATION_KEY, JSON.stringify(calibration));
   } catch {
     // Same graceful degradation as saveSettings.
+  }
+}
+
+/** The vehicle zero (#83): the phone's normal spot, validated like the
+ * sensor calibration — corrupt or implausible values read as null. */
+export function loadVehicleCalibration(
+  storage: KeyValueStorage | null = defaultStorage(),
+): Calibration | null {
+  try {
+    const raw = storage?.getItem(VEHICLE_CALIBRATION_KEY);
+    return raw === null || raw === undefined ? null : parseCalibration(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+export function saveVehicleCalibration(
+  calibration: Calibration,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    storage?.setItem(VEHICLE_CALIBRATION_KEY, JSON.stringify(calibration));
+  } catch {
+    // Same graceful degradation as saveSettings.
+  }
+}
+
+export function clearVehicleCalibration(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    storage?.removeItem(VEHICLE_CALIBRATION_KEY);
+  } catch {
+    // Nothing to do — the in-memory state is cleared by the caller.
   }
 }
 

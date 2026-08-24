@@ -31,6 +31,10 @@ export interface MenuOptions {
   readTilt(): Calibration | string;
   applyCalibration(calibration: Calibration): void;
   clearCalibration(): void;
+  /** The vehicle zero (#83) — see CalibrationOptions. */
+  getVehicleCalibration(): Calibration | null;
+  calibrateVehicle(): string | null;
+  clearVehicleCalibration(): void;
 }
 
 export interface Menu {

@@ -256,3 +256,21 @@ URL and must keep working with no signal.
   position, no setting.
 - The caravan's track width field is labeled plain "Track width" (no "rear" on a
   single-axle vehicle); stored settings from older versions parse with axle Single.
+
+## R24 — Vehicle zero position: calibrate the phone's spot, not just the phone
+
+- **Given** the sensor calibration (R11) zeroes the phone/case but not the spot where
+  the phone lies (a table tilting 0.4° in a level vehicle reads as a tilted vehicle)
+- **When** the vehicle stands verifiably level (spirit level, or after leveling with
+  the ramps) and the phone lies in its normal place
+- **Then** "Set current position as level" in the Calibration section stores that
+  placement's roll/pitch as the vehicle zero, and every reading is corrected by the
+  **sum** of the sensor offset and the vehicle zero — back in its spot, the phone
+  shows level even on a tilting table.
+- **Given** the capture looks like more than placement tilt (>15°)
+- **Then** it is rejected with an explanation, like the sensor calibration.
+- **Given** a later sensor recalibration or clear
+- **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
+  placement tilt (ADR 0010).
+- The amber calibration lamp (R11) clears when at least one of the two calibrations
+  exists; the Calibration section shows each one's status with its own clear button.
