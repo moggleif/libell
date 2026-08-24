@@ -8,6 +8,7 @@
 import type { Calibration, LevelSettings } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createFeedbackSection } from './feedback';
+import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
 import { t, type MessageKey } from './i18n';
 import {
@@ -17,7 +18,7 @@ import {
   placementIllustration,
 } from './helpIllustrations';
 
-export type MenuSection = 'settings' | 'calibration' | 'feedback' | 'help';
+export type MenuSection = 'settings' | 'calibration' | 'feedback' | 'help' | 'about';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -176,7 +177,7 @@ export function createMenu(options: MenuOptions): Menu {
 
   // Order mirrors the setup flow (and the warning lamps): measurements,
   // then the one-time phone calibration, then help, with the meta items
-  // (introduction, feedback) at the bottom.
+  // (introduction, feedback, about) at the bottom.
 
   // --- Settings ---
   const settingsBody = document.createElement('div');
@@ -226,8 +227,9 @@ export function createMenu(options: MenuOptions): Menu {
   });
   drawer.append(introItem);
 
-  // --- Feedback (bottom — reached rarely) ---
+  // --- Feedback and About (bottom — reached rarely) ---
   addSection('feedback', t('menu.feedback'), createFeedbackSection());
+  addSection('about', t('menu.about'), createAboutSection());
 
   return {
     element: container,

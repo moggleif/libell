@@ -305,3 +305,19 @@ URL and must keep working with no signal.
   zero and answers plainly: "Still good — off by 0.1°." or "Off by 0.8° — consider
   recalibrating." (threshold 0.3°); the recalibrate buttons are right there.
 - The timestamp never leaves the device.
+
+## R27 — Help reads one fact per line, and an About page
+
+- **Given** a Help section whose text is a list of facts (the screen indicators, the
+  measurements, the calibration layers, good to know)
+- **Then** each fact starts on its own line — the three indicator colors in
+  "Reading the screen" (green ✓ / orange ↑ / red ✕) are never one running
+  paragraph. The breaks live in the i18n strings and render as real line breaks
+  (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same
+  caption and gets the same breaks.
+- **Given** the menu item "About" / "Om Libell"
+- **When** I open it
+- **Then** I see, in my language: what Libell is, the app version (omitted when the
+  build has none), that all data stays on the phone, and a link to the source code
+  and license (MIT) on GitHub — opened in a new tab with `noopener`, loading
+  nothing remote.

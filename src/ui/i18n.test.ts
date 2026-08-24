@@ -14,6 +14,21 @@ describe('i18n dictionaries', () => {
     }
   });
 
+  it('lists each screen indicator on its own line (#95)', () => {
+    for (const lang of ['en', 'sv'] as const) {
+      const lines = MESSAGES[lang]['help.screen.t'].split('\n');
+      const glyphLines = lines.filter((line) => /[✓↑✕]/.test(line));
+      // Three colors, one line each — never a running paragraph.
+      expect(glyphLines.length, `${lang}: one line per indicator`).toBe(3);
+      for (const glyph of ['✓', '↑', '✕']) {
+        expect(
+          lines.some((line) => line.includes(glyph)),
+          `${lang}: a line for ${glyph}`,
+        ).toBe(true);
+      }
+    }
+  });
+
   it('validates a stored language override', () => {
     expect(resolveLanguage('sv')).toBe('sv');
     expect(resolveLanguage('en')).toBe('en');
