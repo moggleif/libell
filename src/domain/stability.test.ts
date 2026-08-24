@@ -170,14 +170,14 @@ describe('two-ramp plan display (#93)', () => {
     };
   }
 
-  it('steps go only to the planned wheels; an unservable wheel shows red', () => {
+  it('steps go only to the planned wheels; an unserved wheel is toned down', () => {
     // Three wheels below the highest corner, two ramps: the plan serves
-    // the rear pair; the front right cannot be fixed with this set.
+    // the rear pair; the front right gets no ramp — dimmed, not alarmed.
     const display = createDisplayStabilizer()(resultFor(0, 30, 50, 80), planSettings, 0);
     expect(display.wheels.rearLeft.stepMm).toBe(40);
     expect(display.wheels.rearRight.stepMm).toBe(80);
     expect(display.wheels.frontRight.stepMm).toBe(0);
-    expect(display.wheels.frontRight.severity).toBe('large');
+    expect(display.wheels.frontRight.severity).toBe('unserved');
     expect(display.wheels.frontLeft.severity).toBe('none');
     expect(display.isLevel).toBe(false);
   });
@@ -187,6 +187,7 @@ describe('two-ramp plan display (#93)', () => {
     const display = createDisplayStabilizer()(resultFor(0, 30, 50, 80), four, 0);
     const stepped = WHEEL_IDS.filter((id) => display.wheels[id].stepMm > 0);
     expect(stepped).toHaveLength(3);
-    expect(WHEEL_IDS.every((id) => display.wheels[id].severity !== 'large')).toBe(true);
+    const severities = WHEEL_IDS.map((id) => display.wheels[id].severity);
+    expect(severities.every((s) => s === 'none' || s === 'small')).toBe(true);
   });
 });

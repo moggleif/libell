@@ -63,9 +63,9 @@ describe('planRamps', () => {
     expect(plan.steps.rearRight).toBe(80);
     expect(plan.steps.rearLeft).toBe(40);
     expect(plan.maxDeficitMm).toBeCloseTo(30);
-    // The unserved wheel stays below tolerance — shown red.
+    // The unserved wheel stays below tolerance — toned down, no action.
     expect(plan.steps.frontRight).toBe(0);
-    expect(plannedSeverity(0, plan.deficits.frontRight, SETTINGS)).toBe('large');
+    expect(plannedSeverity(0, plan.deficits.frontRight, 30, SETTINGS)).toBe('unserved');
   });
 
   it('with more ramps the same tilt levels fully', () => {
@@ -135,10 +135,19 @@ describe('evaluateSteps', () => {
 });
 
 describe('plannedSeverity', () => {
-  it('is green within tolerance, orange for a planned step, red beyond help', () => {
-    expect(plannedSeverity(0, 5, SETTINGS)).toBe('none');
-    expect(plannedSeverity(40, 4, SETTINGS)).toBe('small');
-    expect(plannedSeverity(0, 30, SETTINGS)).toBe('large');
-    expect(plannedSeverity(120, 30, SETTINGS)).toBe('large');
+  it('green within tolerance, orange for a step, red only beyond every step, gray when unserved', () => {
+    expect(plannedSeverity(0, 5, 5, SETTINGS)).toBe('none');
+    expect(plannedSeverity(40, 4, 44, SETTINGS)).toBe('small');
+    // Not even the highest step (120) fixes a 200 mm lift — move instead.
+    expect(plannedSeverity(120, 80, 200, SETTINGS)).toBe('large');
+    expect(plannedSeverity(0, 30, 30, SETTINGS)).toBe('unserved');
+  });
+
+  it('a wheel a step could fix is never red, even when the plan leaves it short', () => {
+    // Field feedback: a 63 mm wheel got the 40 step (the global optimum —
+    // more would hoist the reference and hurt an unserved wheel), leaving
+    // it 23 mm short. The 80 step could fix it alone, so red would read
+    // as a bug; it stays orange ("drive up on the shown step").
+    expect(plannedSeverity(40, 23, 63, SETTINGS)).toBe('small');
   });
 });

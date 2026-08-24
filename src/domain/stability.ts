@@ -164,19 +164,23 @@ export function createDisplayStabilizer(): (
     // by the dead band toward/away from level (the reference wheel stays
     // the reference) — the severity boundary guard.
     const fresh = planRamps(lifts, settings);
-    const shiftedPlan = (deltaMm: number): RampPlan => {
+    const shiftedPlan = (deltaMm: number): { plan: RampPlan; lifts: Record<WheelId, number> } => {
       const shifted = {} as Record<WheelId, number>;
       for (const id of WHEEL_IDS)
         shifted[id] = lifts[id] > 0 ? Math.max(0, lifts[id] + deltaMm) : 0;
-      return planRamps(shifted, settings);
+      return { plan: planRamps(shifted, settings), lifts: shifted };
     };
+    const severityOf = (
+      { plan, lifts: at }: { plan: RampPlan; lifts: Record<WheelId, number> },
+      id: WheelId,
+    ) => plannedSeverity(plan.steps[id], plan.deficits[id], at[id], settings);
 
     if (!initialized) {
       initialized = true;
       shownSteps = { ...fresh.steps };
       for (const id of WHEEL_IDS) {
         displayMm[id] = Math.round(lifts[id]);
-        severity[id] = plannedSeverity(fresh.steps[id], fresh.deficits[id], settings);
+        severity[id] = severityOf({ plan: fresh, lifts }, id);
         mmSince[id] = null;
         severitySince[id] = null;
       }
@@ -224,11 +228,11 @@ export function createDisplayStabilizer(): (
 
         // Color: what the fresh plan says about this wheel — but only
         // when a dead band's worth of tilt either way says the same.
-        const candidate = plannedSeverity(fresh.steps[id], fresh.deficits[id], settings);
+        const candidate = severityOf({ plan: fresh, lifts }, id);
         const wantsSeverity =
           candidate !== severity[id] &&
-          plannedSeverity(lo.steps[id], lo.deficits[id], settings) === candidate &&
-          plannedSeverity(hi.steps[id], hi.deficits[id], settings) === candidate;
+          severityOf(lo, id) === candidate &&
+          severityOf(hi, id) === candidate;
         if (!wantsSeverity) {
           severitySince[id] = null;
         } else {

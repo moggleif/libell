@@ -11,7 +11,7 @@
  * the grey tank empties), then be as level as possible, then climb as
  * little as possible.
  */
-import { WHEEL_IDS, type LiftSeverity, type WheelId } from './leveling';
+import { liftSeverity, WHEEL_IDS, type LiftSeverity, type WheelId } from './leveling';
 import type { DrainPosition, LevelSettings } from './settings';
 
 export interface RampPlan {
@@ -134,15 +134,25 @@ export function planRamps(lifts: Record<WheelId, number>, settings: LevelSetting
 /**
  * Wheel color under a plan — "what should I do with this wheel?":
  * green (none) when it ends within the tolerance with no ramp, orange
- * (small) when driving up its planned step brings it within, red (large)
- * when even the best plan leaves it outside — the owned ramps cannot fix
- * it; move the vehicle instead.
+ * (small) when the plan says to drive it up, red (large) only when not
+ * even the highest step could fix that wheel by itself — move the
+ * vehicle — and toned-down gray (unserved) when it is low but gets no
+ * ramp: the owned set does not stretch to it, nothing to do there.
+ *
+ * A wheel whose planned step leaves it short only because the *global*
+ * optimum held the step down (raising it would hoist the reference and
+ * hurt an unserved wheel more) stays orange: red must never appear on a
+ * wheel a step could fix — that reads as a bug, not as advice.
  */
 export function plannedSeverity(
   stepMm: number,
   deficitMm: number,
+  liftMm: number,
   settings: LevelSettings,
 ): LiftSeverity {
-  if (deficitMm > settings.toleranceMm) return 'large';
+  if (deficitMm > settings.toleranceMm) {
+    if (stepMm === 0) return 'unserved';
+    return liftSeverity(liftMm, settings) === 'large' ? 'large' : 'small';
+  }
   return stepMm > 0 ? 'small' : 'none';
 }

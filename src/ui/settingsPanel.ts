@@ -65,7 +65,6 @@ export function createSettingsForm(
     vehicleOptions.push([option, `vehicle.${value}` as MessageKey]);
   }
   vehicleField.append(vehicleCaption, vehicleSelect);
-  form.append(vehicleField);
 
   // --- Axle configuration (#81): single or boggie (tandem) pair. An
   // independent dimension, not more vehicle types — the boggie is one
@@ -90,7 +89,6 @@ export function createSettingsForm(
     notifyChanged();
   });
   axleField.append(axleCaption, axleSelect);
-  form.append(axleField);
 
   // --- Numeric fields (shown in the chosen unit) ---
   const inputs = new Map<NumberKey, HTMLInputElement>();
@@ -105,7 +103,6 @@ export function createSettingsForm(
     input.inputMode = 'decimal';
     input.name = key;
     field.append(caption, input);
-    form.append(field);
     inputs.set(key, input);
     captions.set(key, caption);
     fieldEls.set(key, field);
@@ -135,7 +132,6 @@ export function createSettingsForm(
   const measureHint = document.createElement('p');
   measureHint.className = 'settings__hint';
   measureHint.textContent = t('settings.measureHint');
-  form.append(measureHint);
 
   // --- Ramp steps: visual chip list + add + presets ---
   let steps = [...initial.rampStepHeightsMm];
@@ -237,7 +233,6 @@ export function createSettingsForm(
   });
 
   stepsField.append(stepsCaption, rampRow, chipList, addRow);
-  form.append(stepsField);
 
   // --- Ramp count (#93): how many ramps the user actually owns. Sold in
   // pairs, so 2 is the default; a few carry 3 or 4. The plan never asks
@@ -256,7 +251,6 @@ export function createSettingsForm(
   }
   rampCountSelect.addEventListener('change', () => notifyChanged());
   rampCountField.append(rampCountCaption, rampCountSelect);
-  form.append(rampCountField);
 
   // --- Drain position (#93): where the waste-water outlet sits. Within
   // the tolerance the plan leaves this side lowest so the tank empties.
@@ -275,11 +269,9 @@ export function createSettingsForm(
   }
   drainSelect.addEventListener('change', () => notifyChanged());
   drainField.append(drainCaption, drainSelect);
-  form.append(drainField);
 
   const rampHint = document.createElement('p');
   rampHint.className = 'settings__hint';
-  form.append(rampHint);
 
   // --- Unit choice ---
   const unitField = document.createElement('label');
@@ -309,7 +301,6 @@ export function createSettingsForm(
     notifyChanged();
   });
   unitField.append(unitCaption, unitSelect);
-  form.append(unitField);
 
   // --- Theme ---
   const themeField = document.createElement('label');
@@ -336,7 +327,6 @@ export function createSettingsForm(
     notifyChanged();
   });
   themeField.append(themeCaption, themeSelect);
-  form.append(themeField);
 
   // --- Level chime ---
   const soundField = document.createElement('label');
@@ -347,7 +337,6 @@ export function createSettingsForm(
   soundInput.className = 'settings__checkbox';
   soundInput.checked = initial.soundOnLevel;
   soundField.append(soundCaption, soundInput);
-  form.append(soundField);
 
   // Save persists; Undo returns to the last saved values; Reset fills
   // the form with the factory defaults (still needs Save to persist,
@@ -366,7 +355,38 @@ export function createSettingsForm(
   reset.type = 'button';
   reset.className = 'menu__action menu__action--secondary';
   actions.append(save, undo, reset);
-  form.append(actions);
+
+  // Three labeled sections keep the long form readable: vehicle &
+  // measurements, ramps, level & display.
+  const sectionHeading = (): HTMLParagraphElement => {
+    const heading = document.createElement('p');
+    heading.className = 'settings__section';
+    return heading;
+  };
+  const vehicleHeading = sectionHeading();
+  const rampsHeading = sectionHeading();
+  const displayHeading = sectionHeading();
+  form.append(
+    vehicleHeading,
+    vehicleField,
+    axleField,
+    fieldEls.get('wheelbaseMm')!,
+    fieldEls.get('trackWidthFrontMm')!,
+    fieldEls.get('trackWidthRearMm')!,
+    measureHint,
+    rampsHeading,
+    stepsField,
+    rampCountField,
+    drainField,
+    rampHint,
+    displayHeading,
+    fieldEls.get('toleranceMm')!,
+    fieldEls.get('stabilityMm')!,
+    unitField,
+    themeField,
+    soundField,
+    actions,
+  );
 
   function applyUnitEverywhere(): void {
     for (const apply of unitAppliers) apply();
@@ -395,6 +415,9 @@ export function createSettingsForm(
     themeCaption.textContent = t('settings.theme');
     for (const [option, label] of themeOptions) option.textContent = t(label);
     soundCaption.textContent = t('settings.sound');
+    vehicleHeading.textContent = t('settings.section.vehicle');
+    rampsHeading.textContent = t('settings.section.ramps');
+    displayHeading.textContent = t('settings.section.display');
     save.textContent = t('settings.save');
     undo.textContent = t('settings.undo');
     reset.textContent = t('settings.reset');

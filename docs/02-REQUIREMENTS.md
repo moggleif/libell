@@ -69,9 +69,12 @@ URL and must keep working with no signal.
 - **Given** the RV is not level
 - **When** I look at the RV diagram
 - **Then** each wheel is colored by what the ramp plan (R27) says about it: green when
-  it ends within the tolerance with no ramp, orange when driving up its planned step
-  brings it within tolerance, red when the owned ramps cannot fix it — move the
-  vehicle instead. Colored wheels show their required lift in whole mm.
+  it ends within the tolerance with no ramp, orange when the plan says to drive it up
+  on the shown step, red only when not even the highest step could fix that wheel by
+  itself — move the vehicle instead — and toned-down gray (–) when it is low but gets
+  no ramp: fewer ramps than low wheels, nothing to do at that wheel. A wheel a step
+  could fix is never red, even while the global plan leaves it short. Colored wheels
+  show their required lift in whole mm (muted for the gray state).
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
@@ -315,8 +318,9 @@ URL and must keep working with no signal.
   than I have ramps
 - **Then** the diagram never asks me to ramp more wheels than that: the plan picks the
   combination of wheels and steps that leaves the vehicle closest to level (smallest
-  remaining height deficit, ADR 0011), a low wheel that gets no ramp shows red ✕, and
-  the status line counts only the wheels the plan asks me to drive up — or says the
+  remaining height deficit, ADR 0011), a low wheel that gets no ramp is toned down
+  (gray –, R5) rather than alarmed — there is nothing to do at it — and the status
+  line counts only the wheels the plan asks me to drive up — or says the
   ramps are not enough when no placement helps at all. A boggie pair consumes two
   ramps (both wheels of the pair drive up, R23).
 - **Given** every wheel can be brought within the tolerance

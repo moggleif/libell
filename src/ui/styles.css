@@ -7,6 +7,7 @@
   --level: #3fb950;
   --lift-small: #d29922;
   --lift-large: #f85149;
+  --lift-unserved: #6e7681;
   --warning: #d29922;
 }
 
@@ -24,6 +25,7 @@
     --level: #1a7f37;
     --lift-small: #9a6700;
     --lift-large: #cf222e;
+    --lift-unserved: #8c959f;
     --warning: #9a6700;
   }
 }
@@ -40,6 +42,7 @@
   --level: #3fb950;
   --lift-small: #d29922;
   --lift-large: #f85149;
+  --lift-unserved: #6e7681;
   --warning: #d29922;
 }
 
@@ -52,6 +55,7 @@
   --level: #1a7f37;
   --lift-small: #9a6700;
   --lift-large: #cf222e;
+  --lift-unserved: #8c959f;
   --warning: #9a6700;
 }
 
@@ -297,12 +301,24 @@ body {
   stroke: var(--lift-large);
 }
 
+/* Low wheel the ramp plan has no ramp left for (ADR 0011): toned down —
+ * it asks for no action, so it must not compete with the orange ones. */
+.rv-diagram__wheel--unserved {
+  fill: var(--lift-unserved);
+  stroke: var(--lift-unserved);
+}
+
 .rv-diagram__step-label,
 .rv-diagram__lift-label {
   fill: var(--on-surface);
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.rv-diagram__lift-label--dim {
+  fill: var(--on-surface-muted);
+  font-weight: 400;
 }
 
 /* The step's height is secondary — parenthesized and smaller than the
@@ -549,6 +565,16 @@ body {
 /* display: flex would override the hidden attribute's display: none. */
 .settings__field[hidden] {
   display: none;
+}
+
+/* Section headings break the long settings form into readable groups. */
+.settings__section {
+  margin: 14px 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
 }
 
 .settings__field {
@@ -830,6 +856,11 @@ body {
 .illu__wheel--no {
   fill: var(--lift-large);
   stroke: var(--lift-large);
+}
+
+.illu__wheel--dim {
+  fill: var(--lift-unserved);
+  stroke: var(--lift-unserved);
 }
 
 .illu__glyph {

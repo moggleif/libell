@@ -123,7 +123,12 @@ export function recommendStep(liftMm: number, stepsMm: number[]): number {
   return best;
 }
 
-export type LiftSeverity = 'none' | 'small' | 'large';
+/**
+ * Wheel display states. 'unserved' — low, but the ramp plan has no ramp
+ * left for it (ADR 0011) — is produced only by `plannedSeverity` in
+ * `rampPlan.ts`; the per-wheel `liftSeverity` below never returns it.
+ */
+export type LiftSeverity = 'none' | 'small' | 'large' | 'unserved';
 
 /**
  * Classify a lift for the diagram colors — "is it worth driving up?":

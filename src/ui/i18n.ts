@@ -59,11 +59,13 @@ export const MESSAGES = {
     'settings.ramp': 'Ready-made ramp',
     'settings.ramp.custom': 'Custom set',
     'settings.rampCount': 'Number of ramps',
-    'settings.drain': 'Waste-water drain',
+    'settings.drain': 'Drain side',
     'settings.rampHint':
-      'The app never asks you to ramp more wheels than you have ramps for — it picks ' +
-      'the placement that gets closest to level and, within the tolerance, leaves ' +
-      'the drain side lowest so the tank empties.',
+      'The app picks where your ramps do the most good — and, within the ' +
+      'tolerance, leaves the drain side lowest so the tank empties.',
+    'settings.section.vehicle': 'Vehicle & measurements',
+    'settings.section.ramps': 'Ramps',
+    'settings.section.display': 'Level & display',
     'drain.none': 'None / does not matter',
     'drain.left': 'Left side',
     'drain.right': 'Right side',
@@ -150,6 +152,7 @@ export const MESSAGES = {
     'help.screen.t':
       'Green ✓: done. Orange ↑: drive that wheel up on the step shown above it. ' +
       'Red ✕: not even your highest step is enough — move to a flatter spot. ' +
+      'Gray –: a low wheel your ramps do not stretch to. ' +
       'When the bubble rests in the middle, you are level.',
     'help.settings.h': 'The measurements',
     'help.settings.t':
@@ -250,11 +253,13 @@ export const MESSAGES = {
     'settings.ramp': 'Färdig ramp',
     'settings.ramp.custom': 'Egen uppsättning',
     'settings.rampCount': 'Antal ramper',
-    'settings.drain': 'Avlopp (gråvatten)',
+    'settings.drain': 'Avloppssida',
     'settings.rampHint':
-      'Appen ber dig aldrig rampa fler hjul än du har ramper till — den väljer den ' +
-      'placering som kommer närmast våg och lämnar, inom toleransen, avloppssidan ' +
-      'lägst så att tanken töms.',
+      'Appen väljer var ramperna gör mest nytta — och lämnar avloppssidan ' +
+      'lägst inom toleransen, så att tanken töms.',
+    'settings.section.vehicle': 'Fordon och mått',
+    'settings.section.ramps': 'Ramper',
+    'settings.section.display': 'Nivå och visning',
     'drain.none': 'Inget / spelar ingen roll',
     'drain.left': 'Vänster sida',
     'drain.right': 'Höger sida',
@@ -341,6 +346,7 @@ export const MESSAGES = {
     'help.screen.t':
       'Grönt ✓: klart. Orange ↑: kör upp hjulet på steget som visas ovanför. ' +
       'Rött ✕: inte ens ditt högsta steg räcker — flytta till ett planare ställe. ' +
+      'Grått –: ett lågt hjul som ramperna inte räcker till. ' +
       'När bubblan vilar i mitten står du i våg.',
     'help.settings.h': 'Måtten',
     'help.settings.t':
