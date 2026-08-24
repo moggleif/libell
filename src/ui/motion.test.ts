@@ -53,6 +53,39 @@ describe('setVisible', () => {
     vi.useRealTimers();
   });
 
+  it('a no-op hide on an already-hidden element must not arm a timer that force-closes a later show (field bug)', () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    const el = document.createElement('div');
+    el.hidden = true; // already hidden — e.g. menu.ts's render() calling
+    // setVisible(page, false) while depth passes through 1 on its way to 2.
+    document.body.append(el);
+
+    setVisible(el, false); // a redundant hide call — must be a true no-op
+    setVisible(el, true); // a real, immediately-following show
+
+    expect(el.hidden).toBe(false);
+    vi.advanceTimersByTime(400); // the stale hide's fallback timer, if armed
+    expect(el.hidden).toBe(false); // must still be open — this is the bug
+    vi.useRealTimers();
+  });
+
+  it('a show cancels a hide that is still mid-transition, so its fallback timer cannot fire later', () => {
+    vi.useFakeTimers();
+    stubReducedMotion(false);
+    const el = document.createElement('div');
+    el.classList.add('is-visible');
+    document.body.append(el);
+
+    setVisible(el, false); // starts closing — hidden stays false, timer armed
+    expect(el.hidden).toBe(false);
+    setVisible(el, true); // re-opened before the close transition settled
+
+    vi.advanceTimersByTime(400); // the interrupted hide's fallback timer
+    expect(el.hidden).toBe(false); // must not have been forced shut
+    vi.useRealTimers();
+  });
+
   it('skips the transition entirely under prefers-reduced-motion', () => {
     stubReducedMotion(true);
     const el = document.createElement('div');
