@@ -201,6 +201,7 @@ function bootstrap(root: HTMLElement): void {
     initialSettings: settings,
     appearance: settings.appearance,
     openOnboarding,
+    hasSavedSettings: () => demo || hasStoredSettings(),
     onSettingsSaved(next) {
       settings = next;
       applyTheme(settings.theme);
