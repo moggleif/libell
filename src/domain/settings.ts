@@ -102,7 +102,9 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   displayUnit: 'mm',
   soundOnLevel: false,
   theme: 'system',
-  appearance: 'classic',
+  // Modern is the default preset (#136); Classic remains a full,
+  // permanently-supported choice for anyone who picks it.
+  appearance: 'modern',
 };
 
 /**
@@ -234,7 +236,10 @@ export function parseSettings(value: unknown): LevelSettings {
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
     soundOnLevel: raw.soundOnLevel === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
-    appearance: raw.appearance === 'modern' ? 'modern' : 'classic',
+    appearance:
+      raw.appearance === 'classic' || raw.appearance === 'modern'
+        ? raw.appearance
+        : DEFAULT_SETTINGS.appearance,
   };
 }
 

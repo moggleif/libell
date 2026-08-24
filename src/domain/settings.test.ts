@@ -76,7 +76,7 @@ describe('parseSettings', () => {
       displayUnit: 'mm',
       soundOnLevel: false,
       theme: 'system',
-      appearance: 'classic',
+      appearance: DEFAULT_SETTINGS.appearance,
     });
   });
 
@@ -132,10 +132,14 @@ describe('parseSettings', () => {
     expect(parseSettings({ theme: 'sepia' }).theme).toBe('system');
   });
 
-  it('validates the appearance preset, defaulting to classic (#104)', () => {
-    expect(parseSettings({}).appearance).toBe('classic');
+  it('validates the appearance preset, defaulting to modern (#136)', () => {
+    expect(DEFAULT_SETTINGS.appearance).toBe('modern');
+    expect(parseSettings({}).appearance).toBe('modern');
     expect(parseSettings({ appearance: 'modern' }).appearance).toBe('modern');
-    expect(parseSettings({ appearance: 'retro' }).appearance).toBe('classic');
+    // An explicit Classic choice — including settings saved from before
+    // #136, when Classic was the default — is never overridden.
+    expect(parseSettings({ appearance: 'classic' }).appearance).toBe('classic');
+    expect(parseSettings({ appearance: 'retro' }).appearance).toBe('modern');
   });
 });
 
