@@ -32,6 +32,15 @@ without `BUILD_VERSION` shows nothing rather than something wrong.
 - `main` is therefore always deployed — merges must keep the app usable.
 - The unusual `CR` scheme needs explaining exactly once (here and in CLAUDE.md).
 
+## Note (2026-08-24) — the candidate keeps its release number
+
+The candidate format above put `CR<PR>` where the patch belongs, so the footer read
+`1.0.CR93` — not placeable as a version, and silent about which release it was built
+on. Candidates now keep the full release version and add the marker after it:
+`1.0.0 – CR93` in the footer, tagged `v1.0.0-CR93` (a tag takes no spaces, so
+`compute-version` builds the two separately). Release builds and the release/candidate
+rule are unchanged, and old `vX.Y.CR<PR>` tags still match the check below.
+
 ## Note (2026-08-24)
 
 The tag namespace is the version source of truth: `compute-version` decides
