@@ -1,7 +1,7 @@
 /**
  * Top-down RV diagram — the hero of the screen.
  *
- * Inline SVG: an RV outline seen from above with a "Front ↑" arrow and one
+ * Inline SVG: an RV outline seen from above with a "Front" arrow and one
  * marker per wheel. Wheels are green when they need no lift; wheels that
  * need raising are orange (a step reaches) or red (beyond the tallest
  * step). Above each wheel which ramp step to drive up onto ("Step 2"),

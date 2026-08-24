@@ -34,6 +34,12 @@ export interface MenuOptions {
   /** The vehicle zero (#83) — see CalibrationOptions. */
   getVehicleCalibration(): Calibration | null;
   calibrateVehicle(): string | null;
+  /** When each calibration was captured (#87) — null when unknown. */
+  getCalibrationCapturedAt(): number | null;
+  getVehicleCalibrationCapturedAt(): number | null;
+  /** Compare the current reading against a calibration's promise of zero — returns a verdict text. */
+  checkCalibration(): string;
+  checkVehicleCalibration(): string;
   clearVehicleCalibration(): void;
 }
 

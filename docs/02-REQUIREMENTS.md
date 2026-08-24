@@ -59,9 +59,10 @@ URL and must keep working with no signal.
 
 - **Given** I am on the main screen
 - **When** I look at the RV diagram
-- **Then** I see a top-down outline of the RV with a "Front ↑ – point the top of your phone
-  here" arrow, so I know how to place the phone. The RV diagram is the focal element of the
-  screen.
+- **Then** I see a top-down outline of the RV with a big arrow labeled "Front", so I
+  know how to place the phone (the arrow graphic alone carries the direction — the
+  label has no arrow character of its own). The RV diagram is the focal element of
+  the screen.
 
 ## R5 — Wheels that need raising are highlighted on the diagram
 
@@ -274,3 +275,29 @@ URL and must keep working with no signal.
   placement tilt (ADR 0010).
 - The amber calibration lamp (R11) clears when at least one of the two calibrations
   exists; the Calibration section shows each one's status with its own clear button.
+
+## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
+
+- **Given** the readings vary more than a small threshold within a short window
+  (people walking around inside, the vehicle being positioned, the phone handled)
+- **When** I look at the main screen
+- **Then** the status line reads "Measuring…", the diagram is dimmed, and the level
+  celebration cannot fire — momentary advice is suppressed rather than flickered.
+- **Given** the reading has been calm for about 1.5 seconds
+- **Then** normal guidance returns. The detector is pure domain code
+  (`src/domain/stillness.ts`, peak-to-peak over a rolling window on the smoothed
+  signal) and starts stable, so a calm app shows guidance immediately.
+
+## R26 — Calibration age and check
+
+- **Given** a stored sensor calibration or vehicle zero
+- **Then** its status line shows how old it is ("(14 days ago)" / "(för 14 dagar
+  sedan)"), from a capture timestamp stored with the offsets; calibrations saved
+  before timestamps existed stay valid and show no age.
+- **Given** the Check button next to a stored calibration
+- **When** the phone lies on a level surface (sensor) or in its normal spot with the
+  vehicle verifiably level (vehicle zero)
+- **Then** the app compares the current reading against the calibration's promise of
+  zero and answers plainly: "Still good — off by 0.1°." or "Off by 0.8° — consider
+  recalibrating." (threshold 0.3°); the recalibrate buttons are right there.
+- The timestamp never leaves the device.

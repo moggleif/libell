@@ -92,7 +92,7 @@ export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): Caravan
     class: 'rv-diagram__wheel-glyph',
   });
   // Action and amount sit to the right of the jockey wheel — the area
-  // beside the drawbar is empty, and above collides with "Front ↑".
+  // beside the drawbar is empty, and above collides with the front arrow.
   const jockeyAction = svgEl('text', {
     x: String(JOCKEY.x + 20),
     y: String(JOCKEY.y - 3),

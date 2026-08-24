@@ -65,26 +65,59 @@ export function hasStoredSettings(storage: KeyValueStorage | null = defaultStora
   }
 }
 
-export function loadCalibration(
-  storage: KeyValueStorage | null = defaultStorage(),
-): Calibration | null {
+/** A stored calibration plus when it was captured (#87) — null for
+ * values saved before timestamps existed; they stay valid. */
+export interface StoredCalibration {
+  value: Calibration;
+  capturedAt: number | null;
+}
+
+function readCalibration(key: string, storage: KeyValueStorage | null): StoredCalibration | null {
   try {
-    const raw = storage?.getItem(CALIBRATION_KEY);
-    return raw === null || raw === undefined ? null : parseCalibration(JSON.parse(raw));
+    const raw = storage?.getItem(key);
+    if (raw === null || raw === undefined) return null;
+    const parsed: unknown = JSON.parse(raw);
+    const value = parseCalibration(parsed);
+    if (!value) return null;
+    const at = (parsed as Record<string, unknown>).capturedAt;
+    const capturedAt = typeof at === 'number' && Number.isFinite(at) && at > 0 ? at : null;
+    return { value, capturedAt };
   } catch {
     return null;
   }
 }
 
-export function saveCalibration(
+function writeCalibration(
+  key: string,
   calibration: Calibration,
-  storage: KeyValueStorage | null = defaultStorage(),
+  capturedAt: number,
+  storage: KeyValueStorage | null,
 ): void {
   try {
-    storage?.setItem(CALIBRATION_KEY, JSON.stringify(calibration));
+    storage?.setItem(key, JSON.stringify({ ...calibration, capturedAt }));
   } catch {
     // Same graceful degradation as saveSettings.
   }
+}
+
+export function loadCalibration(
+  storage: KeyValueStorage | null = defaultStorage(),
+): Calibration | null {
+  return readCalibration(CALIBRATION_KEY, storage)?.value ?? null;
+}
+
+export function loadCalibrationInfo(
+  storage: KeyValueStorage | null = defaultStorage(),
+): StoredCalibration | null {
+  return readCalibration(CALIBRATION_KEY, storage);
+}
+
+export function saveCalibration(
+  calibration: Calibration,
+  storage: KeyValueStorage | null = defaultStorage(),
+  capturedAt: number = Date.now(),
+): void {
+  writeCalibration(CALIBRATION_KEY, calibration, capturedAt, storage);
 }
 
 /** The vehicle zero (#83): the phone's normal spot, validated like the
@@ -92,23 +125,21 @@ export function saveCalibration(
 export function loadVehicleCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
-  try {
-    const raw = storage?.getItem(VEHICLE_CALIBRATION_KEY);
-    return raw === null || raw === undefined ? null : parseCalibration(JSON.parse(raw));
-  } catch {
-    return null;
-  }
+  return readCalibration(VEHICLE_CALIBRATION_KEY, storage)?.value ?? null;
+}
+
+export function loadVehicleCalibrationInfo(
+  storage: KeyValueStorage | null = defaultStorage(),
+): StoredCalibration | null {
+  return readCalibration(VEHICLE_CALIBRATION_KEY, storage);
 }
 
 export function saveVehicleCalibration(
   calibration: Calibration,
   storage: KeyValueStorage | null = defaultStorage(),
+  capturedAt: number = Date.now(),
 ): void {
-  try {
-    storage?.setItem(VEHICLE_CALIBRATION_KEY, JSON.stringify(calibration));
-  } catch {
-    // Same graceful degradation as saveSettings.
-  }
+  writeCalibration(VEHICLE_CALIBRATION_KEY, calibration, capturedAt, storage);
 }
 
 export function clearVehicleCalibration(storage: KeyValueStorage | null = defaultStorage()): void {

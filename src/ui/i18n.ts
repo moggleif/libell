@@ -68,6 +68,7 @@ export const MESSAGES = {
     'settings.undo': 'Undo changes',
     'settings.reset': 'Reset to defaults',
 
+    'status.measuring': 'Measuring…',
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
     'status.many': '{n} wheels to raise',
@@ -96,6 +97,11 @@ export const MESSAGES = {
     'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
     'calibration.vehicle.err.notFlat':
       'That looks like more than placement tilt (>15°) — is the vehicle really level?',
+    'calibration.age.today': '(today)',
+    'calibration.age.days': '({n} days ago)',
+    'calibration.check': 'Check',
+    'calibration.check.good': 'Still good — off by {off}°.',
+    'calibration.check.off': 'Off by {off}° — consider recalibrating.',
     'calibration.flip.intro':
       'No level surface around? Use flip calibration: put the phone down anywhere ' +
       'reasonably flat, capture, rotate the phone half a turn (180°) on the same ' +
@@ -165,7 +171,7 @@ export const MESSAGES = {
     'diagram.aria': 'Top-down view of your motorhome showing which wheels need raising',
     'diagram.caravan.aria':
       'Top-down view of your caravan showing the axle wheels and the jockey wheel',
-    'diagram.front': 'Front ↑',
+    'diagram.front': 'Front',
     'diagram.step': 'Step {n}',
     'caravan.crankUp': 'Crank up',
     'caravan.crankDown': 'Crank down',
@@ -241,6 +247,7 @@ export const MESSAGES = {
     'settings.undo': 'Ångra ändringar',
     'settings.reset': 'Återställ standard',
 
+    'status.measuring': 'Mäter…',
     'status.almost': 'Nästan i våg — {left} kvar',
     'status.one': '1 hjul att höja',
     'status.many': '{n} hjul att höja',
@@ -269,6 +276,11 @@ export const MESSAGES = {
     'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
     'calibration.vehicle.err.notFlat':
       'Det ser ut som mer än platslutning (>15°) — står fordonet verkligen plant?',
+    'calibration.age.today': '(idag)',
+    'calibration.age.days': '(för {n} dagar sedan)',
+    'calibration.check': 'Kontrollera',
+    'calibration.check.good': 'Fortfarande bra — avviker {off}°.',
+    'calibration.check.off': 'Avviker {off}° — överväg att kalibrera om.',
     'calibration.flip.intro':
       'Ingen plan yta i närheten? Använd vändkalibrering: lägg telefonen på något ' +
       'någorlunda plant, fånga, vrid telefonen ett halvt varv (180°) på samma ' +
@@ -337,7 +349,7 @@ export const MESSAGES = {
 
     'diagram.aria': 'Din husbil ovanifrån, med hjulen som behöver höjas markerade',
     'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',
-    'diagram.front': 'Fram ↑',
+    'diagram.front': 'Fram',
     'diagram.step': 'Steg {n}',
     'caravan.crankUp': 'Veva upp',
     'caravan.crankDown': 'Veva ner',
