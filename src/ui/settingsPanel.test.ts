@@ -68,7 +68,7 @@ describe('settings form', () => {
   it('round-trips the ramp count and drain position (#93)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
-    // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme.
+    // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme, appearance.
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     const drainSelect = form.querySelectorAll('select')[4] as HTMLSelectElement;
     expect(rampCountSelect.value).toBe('2'); // ramps are sold in pairs
@@ -87,6 +87,21 @@ describe('settings form', () => {
     const form = createSettingsForm(caravan, vi.fn());
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     expect((rampCountSelect.closest('label') as HTMLLabelElement).hidden).toBe(true);
+  });
+
+  it('round-trips the appearance preset, independent of theme (#104)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const selects = form.querySelectorAll('select');
+    const themeSelect = selects[6] as HTMLSelectElement;
+    const appearanceSelect = selects[7] as HTMLSelectElement;
+    expect(appearanceSelect.value).toBe('classic');
+    appearanceSelect.value = 'modern';
+    appearanceSelect.dispatchEvent(new Event('change'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].appearance).toBe('modern');
+    // theme (light/dark) is untouched by the appearance choice.
+    expect(onSave.mock.calls[0]![0].theme).toBe(themeSelect.value);
   });
 
   it('keeps math in mm while displaying cm', () => {

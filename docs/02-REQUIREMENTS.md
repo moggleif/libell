@@ -356,3 +356,16 @@ URL and must keep working with no signal.
   opened in a new tab with `noopener`, loading nothing remote. The app version comes
   last, in small muted type like the footer on the main screen, and is omitted when
   the build has none.
+
+## R29 — Appearance preset, independent of light/dark theme
+
+- **Given** the Settings form
+- **When** I open the Appearance field
+- **Then** I can choose "Classic" (default — today's look) or "Modern" (the
+  redesigned surfaces and screens, ADR 0012), combined freely with the Theme field
+  (R15) — choosing Modern does not change whether the app follows the phone's
+  light/dark scheme or a forced choice, and vice versa.
+- **Given** Modern is chosen and saved
+- **Then** the choice persists like every other setting and is restored on next
+  launch; a fresh install with no stored preference defaults to Classic, unchanged
+  from before this preset existed.
