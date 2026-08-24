@@ -251,6 +251,7 @@ describe('settings form — Modern tabs (#108)', () => {
   it('embeds a working calibration section in the Kalibrering tab (#109)', () => {
     const calibrate = vi.fn(() => null);
     const form = createSettingsForm(modern, vi.fn(), {
+      appearance: modern.appearance,
       getCalibration: () => null,
       calibrate,
       readTilt: () => 'no sensor',

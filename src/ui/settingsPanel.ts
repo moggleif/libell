@@ -55,6 +55,9 @@ const NUMBER_FIELDS: { key: NumberKey; label: MessageKey; stepMm: number; min?: 
  */
 function inertCalibrationOptions(): CalibrationOptions {
   return {
+    // Only ever used from the Modern Kalibrering tab (below) — the
+    // embedded calibration section it feeds is Modern-only structure.
+    appearance: 'modern',
     getCalibration: () => null,
     calibrate: () => t('calibration.err.notRunning'),
     readTilt: () => t('calibration.err.notRunning'),
