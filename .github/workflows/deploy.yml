@@ -21,9 +21,11 @@ jobs:
   # Release handling: the VERSION file holds major.minor. The first
   # deploy of a new major.minor is the release — version X.Y.0, tagged
   # and published as a GitHub Release. Every later merge on the same
-  # minor is a QA build (Pages doubles as the QA server): versioned
-  # X.Y.CR<PR> after the merged pull request, so the footer tells at a
-  # glance whether the deployed build is the release or a candidate.
+  # minor is a QA build (Pages doubles as the QA server): the release it
+  # builds on, plus the merged PR number — shown as "X.Y.0 – CR<PR>" and
+  # tagged "vX.Y.0-CR<PR>" (tag names take no spaces), so the footer
+  # tells at a glance whether the build is the release or a candidate,
+  # and which release it came from (ADR 0007).
   compute-version:
     name: Compute version
     runs-on: ubuntu-latest
@@ -53,12 +55,15 @@ jobs:
             # First deploy of this major.minor: the release, X.Y.0.
             IS_NEW_MINOR=true
             VERSION_STRING="${BASE}.0"
+            TAG="v${VERSION_STRING}"
           else
-            # Already released: this is a QA/candidate build, X.Y.CR<PR>.
+            # Already released: a QA/candidate build on top of that
+            # release. The footer shows "X.Y.0 – CR<PR>"; the tag drops
+            # the spaces to stay a valid ref.
             IS_NEW_MINOR=false
-            VERSION_STRING="${BASE}.CR${PATCH}"
+            VERSION_STRING="${BASE}.0 – CR${PATCH}"
+            TAG="v${BASE}.0-CR${PATCH}"
           fi
-          TAG="v${VERSION_STRING}"
           echo "version_string=${VERSION_STRING}" >> $GITHUB_OUTPUT
           echo "tag_name=${TAG}" >> $GITHUB_OUTPUT
           echo "is_new_minor=${IS_NEW_MINOR}" >> $GITHUB_OUTPUT

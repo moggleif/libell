@@ -73,9 +73,10 @@ Actions** to be enabled once for the repository.
 
 The `VERSION` file holds the current **major.minor**. The first deploy of a new
 major.minor is the release — `vX.Y.0`, tagged and published as a GitHub Release; every
-later merge on the same minor is a QA/candidate build tagged `vX.Y.CR<PR>` after the
-merged pull request. The version is shown in the app's footer. Release texts live in
-`docs/releases/<tag>.md` and are applied automatically on push.
+later merge on the same minor is a QA/candidate build named after the release it builds
+on plus the merged pull request: shown as `X.Y.0 – CR<PR>` in the app's footer and
+tagged `vX.Y.0-CR<PR>`. Release texts live in `docs/releases/<tag>.md` and are applied
+automatically on push.
 
 Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a branch
 can be previewed before it is merged.
