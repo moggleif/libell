@@ -59,9 +59,10 @@ URL and must keep working with no signal.
 
 - **Given** I am on the main screen
 - **When** I look at the RV diagram
-- **Then** I see a top-down outline of the RV with a "Front ↑ – point the top of your phone
-  here" arrow, so I know how to place the phone. The RV diagram is the focal element of the
-  screen.
+- **Then** I see a top-down outline of the RV with a big arrow labeled "Front", so I
+  know how to place the phone (the arrow graphic alone carries the direction — the
+  label has no arrow character of its own). The RV diagram is the focal element of
+  the screen.
 
 ## R5 — Wheels that need raising are highlighted on the diagram
 

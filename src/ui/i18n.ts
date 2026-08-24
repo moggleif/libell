@@ -171,7 +171,7 @@ export const MESSAGES = {
     'diagram.aria': 'Top-down view of your motorhome showing which wheels need raising',
     'diagram.caravan.aria':
       'Top-down view of your caravan showing the axle wheels and the jockey wheel',
-    'diagram.front': 'Front ↑',
+    'diagram.front': 'Front',
     'diagram.step': 'Step {n}',
     'caravan.crankUp': 'Crank up',
     'caravan.crankDown': 'Crank down',
@@ -349,7 +349,7 @@ export const MESSAGES = {
 
     'diagram.aria': 'Din husbil ovanifrån, med hjulen som behöver höjas markerade',
     'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',
-    'diagram.front': 'Fram ↑',
+    'diagram.front': 'Fram',
     'diagram.step': 'Steg {n}',
     'caravan.crankUp': 'Veva upp',
     'caravan.crankDown': 'Veva ner',
