@@ -8,6 +8,7 @@ setLanguage('en');
 
 function makeOptions(overrides: Partial<CalibrationOptions> = {}): CalibrationOptions {
   return {
+    appearance: 'classic',
     getCalibration: () => null,
     calibrate: () => null,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
@@ -102,5 +103,122 @@ describe('calibration section (#83)', () => {
     expect(clear.disabled).toBe(false);
     clear.click();
     expect(clear.disabled).toBe(true);
+  });
+});
+
+describe('calibration section — Modern two-card layout (#109)', () => {
+  it('renders two cards, each with its own status pill', () => {
+    const section = createCalibrationSection(makeOptions({ appearance: 'modern' }));
+    const cards = section.element.querySelectorAll('.calibration-card');
+    expect(section.element.className).toBe('calibration-cards');
+    expect(cards).toHaveLength(2);
+    const pills = section.element.querySelectorAll('.calibration-card__pill');
+    expect(pills).toHaveLength(2);
+    expect(pills[0]!.textContent).toBe('NOT DONE');
+    expect(pills[1]!.textContent).toBe('NONE');
+  });
+
+  it('flips both pills to the done look once each calibration is set', () => {
+    const section = createCalibrationSection(
+      makeOptions({
+        appearance: 'modern',
+        getCalibration: () => ({ rollDeg: 1.0, pitchDeg: -0.5 }),
+        getVehicleCalibration: () => ({ rollDeg: 0.4, pitchDeg: 0.2 }),
+      }),
+    );
+    const pills = section.element.querySelectorAll('.calibration-card__pill');
+    expect(pills[0]!.textContent).toBe('DONE');
+    expect(pills[0]!.className).toContain('calibration-card__pill--done');
+    expect(pills[1]!.textContent).toBe('DONE');
+    expect(pills[1]!.className).toContain('calibration-card__pill--done');
+  });
+
+  it('the sensor pill updates live when "Calibrate now" succeeds', () => {
+    const calibrate = vi.fn<() => string | null>(() => null);
+    let calibrated: Calibration | null = null;
+    const section = createCalibrationSection(
+      makeOptions({
+        appearance: 'modern',
+        calibrate,
+        applyCalibration: (c) => {
+          calibrated = c;
+        },
+        getCalibration: () => calibrated,
+      }),
+    );
+    const pill = section.element.querySelector('.calibration-card__pill')!;
+    expect(pill.textContent).toBe('NOT DONE');
+    buttonByText(section.element, 'Calibrate now').click();
+    expect(calibrate).toHaveBeenCalledTimes(1);
+    expect(pill.textContent).toBe('NOT DONE'); // calibrate() itself doesn't call applyCalibration
+  });
+
+  it('shows the side/side and front/back readings once calibrated', () => {
+    const section = createCalibrationSection(
+      makeOptions({
+        appearance: 'modern',
+        getCalibration: () => ({ rollDeg: 1.2, pitchDeg: -3.4 }),
+      }),
+    );
+    const values = [...section.element.querySelectorAll('.calibration-card__reading-value')].map(
+      (v) => v.textContent,
+    );
+    expect(values).toEqual(['1.2°', '-3.4°']);
+  });
+
+  it('wires every button to the same host callbacks as Classic mode', () => {
+    const calibrate = vi.fn<() => string | null>(() => null);
+    const clearCalibration = vi.fn();
+    const calibrateVehicle = vi.fn<() => string | null>(() => null);
+    const clearVehicleCalibration = vi.fn();
+    const checkCalibration = vi.fn<() => string>(() => 'checked');
+    const checkVehicleCalibration = vi.fn<() => string>(() => 'checked');
+    const applyCalibration = vi.fn();
+    const section = createCalibrationSection(
+      makeOptions({
+        appearance: 'modern',
+        // Non-null so Clear/Check start enabled (as they would once the
+        // host actually has something stored).
+        getCalibration: () => ({ rollDeg: 1.0, pitchDeg: -0.5 }),
+        getVehicleCalibration: () => ({ rollDeg: 0.4, pitchDeg: 0.2 }),
+        calibrate,
+        clearCalibration,
+        calibrateVehicle,
+        clearVehicleCalibration,
+        checkCalibration,
+        checkVehicleCalibration,
+        applyCalibration,
+      }),
+    );
+
+    buttonByText(section.element, 'Calibrate now').click();
+    expect(calibrate).toHaveBeenCalledTimes(1);
+
+    buttonByText(section.element, 'Clear calibration').click();
+    expect(clearCalibration).toHaveBeenCalledTimes(1);
+
+    buttonByText(section.element, 'Check').click(); // sensor check — first "Check" in DOM order
+    expect(checkCalibration).toHaveBeenCalledTimes(1);
+    expect(checkVehicleCalibration).not.toHaveBeenCalled();
+
+    buttonByText(section.element, 'Set current position as level').click();
+    expect(calibrateVehicle).toHaveBeenCalledTimes(1);
+
+    buttonByText(section.element, 'Clear vehicle zero').click();
+    expect(clearVehicleCalibration).toHaveBeenCalledTimes(1);
+
+    // The flip flow (#50): first click captures, second click (after a
+    // fresh reading) applies via applyCalibration — same as Classic.
+    buttonByText(section.element, 'Calibrate by flipping').click();
+    buttonByText(section.element, 'Capture').click();
+    expect(applyCalibration).toHaveBeenCalledTimes(1);
+  });
+
+  it('the vehicle-zero action button is secondary-styled, unlike the filled sensor button', () => {
+    const section = createCalibrationSection(makeOptions({ appearance: 'modern' }));
+    const calibrateBtn = buttonByText(section.element, 'Calibrate now');
+    const vehicleBtn = buttonByText(section.element, 'Set current position as level');
+    expect(calibrateBtn.className).not.toContain('menu__action--secondary');
+    expect(vehicleBtn.className).toContain('menu__action--secondary');
   });
 });

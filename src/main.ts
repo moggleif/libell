@@ -152,6 +152,7 @@ function bootstrap(root: HTMLElement): void {
     onboardingOpen = true;
     showOnboarding({
       initialSettings: settings,
+      appearance: settings.appearance,
       onSettingsSaved(next) {
         settings = next;
         applyTheme(settings.theme);
@@ -198,6 +199,7 @@ function bootstrap(root: HTMLElement): void {
   // Menu (hamburger) with Settings / Calibration / Help.
   const menu = createMenu({
     initialSettings: settings,
+    appearance: settings.appearance,
     openOnboarding,
     onSettingsSaved(next) {
       settings = next;
