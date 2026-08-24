@@ -1013,3 +1013,94 @@ body {
   flex-direction: column;
   gap: 4px;
 }
+
+/* ---- Modern onboarding (#110) ----
+ * Structure is picked once, at construction, from the appearance the
+ * wizard was opened with (see onboarding.ts) — these rules only style
+ * whichever DOM that produced, they never react live to a later
+ * appearance change inside the same open wizard. */
+
+.onboarding__bars {
+  display: flex;
+  gap: 4px;
+}
+
+.onboarding__bar {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface-sunken);
+}
+
+.onboarding__bar--active {
+  background: var(--level);
+}
+
+.onboarding__title--modern {
+  font-size: 24px;
+}
+
+.onboarding__text--modern {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--on-surface-muted);
+}
+
+.onboarding__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onboarding__legend-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.onboarding__legend-swatch {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--surface);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.onboarding__legend-swatch--ok {
+  background: var(--level);
+}
+
+.onboarding__legend-swatch--up {
+  background: var(--lift-small);
+}
+
+.onboarding__legend-swatch--no {
+  background: var(--lift-large);
+}
+
+.onboarding__legend-text {
+  font-size: 14px;
+  color: var(--on-surface);
+}
+
+/* Same buttons, same handlers, only reordered and restyled: the pill
+ * "Next" first, the plain-text "Skip" below it (source order is
+ * unchanged — skip is still appended before next). */
+.onboarding__nav--modern {
+  flex-direction: column-reverse;
+}
+
+.onboarding__next--modern {
+  min-height: 50px;
+}
+
+.onboarding__skip--modern {
+  border: 0;
+  background: none;
+}
