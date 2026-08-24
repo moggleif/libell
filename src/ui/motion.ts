@@ -12,12 +12,14 @@
 /**
  * A hide call in flight arms a `transitionend` listener plus a fallback
  * timer (below) that forcibly sets `hidden` once. Tracked per element so
- * a later call — hide-when-already-hidden, or a show that interrupts an
- * in-flight hide — can cancel it; otherwise that stale timer fires on its
- * own schedule and can force the element hidden again after it was
- * legitimately re-shown (#108 field bug: opening a menu page straight
- * from closed armed a no-op hide call for the still-hidden page, then
- * closed the page a moment after it opened).
+ * a later call on the same element — a hide while already hidden, or a
+ * show that interrupts an in-flight hide — can cancel it first;
+ * otherwise that stale timer fires on its own schedule and can force the
+ * element hidden again after it was legitimately re-shown (field bug:
+ * opening a menu page straight from closed calls render() at the
+ * intermediate depth, hiding the still-hidden page and arming a no-op
+ * hide's timer, which then force-closes the page ~400ms after it
+ * actually opened).
  */
 const pendingHide = new WeakMap<
   HTMLElement,

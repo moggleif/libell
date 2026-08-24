@@ -141,3 +141,109 @@ describe('rvDiagram wheel labels', () => {
     expect(l.lift(0)).toBe('');
   });
 });
+
+describe('rvDiagram — modern appearance (#106)', () => {
+  function cardsOf(element: HTMLElement) {
+    const cards = [...element.querySelectorAll('.wheel-card')];
+    return {
+      count: cards.length,
+      label: (i: number) => cards[i]?.querySelector('.wheel-card__label')?.textContent,
+      step: (i: number) => cards[i]?.querySelector('.wheel-card__step')?.textContent,
+      mm: (i: number) => cards[i]?.querySelector('.wheel-card__mm')?.textContent,
+      markerGlyph: (i: number) => cards[i]?.querySelector('.wheel-card__marker')?.textContent,
+      severityClass: (i: number) => cards[i]?.getAttribute('class'),
+    };
+  }
+
+  it('does not render on-SVG step/lift text — that moved into wheel cards', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(
+      result({ frontLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
+      'mm',
+      STEPS,
+    );
+    expect(diagram.element.querySelectorAll('.rv-diagram__step-label')).toHaveLength(0);
+    expect(diagram.element.querySelectorAll('.rv-diagram__lift-label')).toHaveLength(0);
+  });
+
+  it('shows one wheel card per wheel, each labeled by position', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(result({}), 'mm', STEPS);
+    const c = cardsOf(diagram.element);
+    expect(c.count).toBe(4);
+    expect(c.label(0)).toBe('FRONT L');
+    expect(c.label(1)).toBe('FRONT R');
+    expect(c.label(2)).toBe('REAR L');
+    expect(c.label(3)).toBe('REAR R');
+  });
+
+  it('shows "Done" and the actual (near-zero) lift for a green wheel, not a blank step', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(result({}), 'mm', STEPS);
+    const c = cardsOf(diagram.element);
+    expect(c.step(1)).toBe('Done');
+    expect(c.mm(1)).toBe('0 mm');
+    expect(c.markerGlyph(1)).toBe('✓');
+    expect(c.severityClass(1)).toContain('wheel-card--none');
+  });
+
+  it('shows the step name and lift for an orange wheel, same figures as classic', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(
+      result({ frontLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
+      'mm',
+      STEPS,
+    );
+    const c = cardsOf(diagram.element);
+    expect(c.step(0)).toBe('Step 2');
+    expect(c.mm(0)).toBe('63 mm');
+    expect(c.markerGlyph(0)).toBe('↑');
+    expect(c.severityClass(0)).toContain('wheel-card--small');
+  });
+
+  it('dims the mm figure for an unserved wheel, same convention as classic', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(
+      result({ rearRight: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
+      'mm',
+      STEPS,
+    );
+    const mm = diagram.element.querySelectorAll('.wheel-card__mm')[3];
+    expect(mm?.classList.contains('wheel-card__mm--dim')).toBe(true);
+  });
+
+  it('still draws a glyph-only SVG wheel marker (status readable without the card)', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(
+      result({ frontLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
+      'mm',
+      STEPS,
+    );
+    const glyphs = [...diagram.element.querySelectorAll('.rv-diagram__wheel-glyph')];
+    expect(glyphs).toHaveLength(4);
+    expect(glyphs[0]?.textContent).toBe('↑');
+    const markers = [...diagram.element.querySelectorAll('.rv-diagram__wheel')];
+    expect(markers).toHaveLength(4);
+    expect(markers[0]?.getAttribute('class')).toContain('rv-diagram__wheel--small');
+  });
+
+  it('draws rear wheel pairs for a boggie, same as classic', () => {
+    const diagram = createRvDiagram('boggie', 'modern');
+    diagram.update(
+      result({ rearLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
+      'mm',
+      STEPS,
+    );
+    const markers = [...diagram.element.querySelectorAll('.rv-diagram__wheel')];
+    expect(markers).toHaveLength(6); // front 2×1 + rear 2×2
+    // Still one card per side, not one per physical wheel.
+    expect(diagram.element.querySelectorAll('.wheel-card')).toHaveLength(4);
+  });
+
+  it('classic mode is unaffected — no wheel cards, appearance defaults to classic', () => {
+    const diagram = createRvDiagram();
+    diagram.update(result({}), 'mm', STEPS);
+    expect(diagram.element.querySelectorAll('.wheel-card')).toHaveLength(0);
+    expect(diagram.element.classList.contains('rv-diagram--modern')).toBe(false);
+  });
+});

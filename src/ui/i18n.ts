@@ -47,6 +47,9 @@ export const MESSAGES = {
     'onboard.done': 'Done',
     'onboard.skipStep': 'Skip',
     'onboard.skipDefaults': 'Skip — use defaults',
+    'onboard.legend.ok': 'Green ✓ — that wheel is level.',
+    'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
+    'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
 
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
@@ -151,6 +154,10 @@ export const MESSAGES = {
     'calibration.flip.done': 'Done! Your surface leans {surface}° — cancelled out.',
     'calibration.flip.err.moved':
       'The two captures do not match — did the phone move? Try again from the start.',
+    // Short status-pill labels for the Modern calibration cards (#109).
+    'calibration.pill.notDone': 'NOT DONE',
+    'calibration.pill.done': 'DONE',
+    'calibration.pill.none': 'NONE',
 
     'feedback.intro':
       'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
@@ -215,6 +222,11 @@ export const MESSAGES = {
       'Top-down view of your caravan showing the axle wheels and the jockey wheel',
     'diagram.front': 'Front',
     'diagram.step': 'Step {n}',
+    'diagram.done': 'Done',
+    'diagram.wheel.frontLeft': 'FRONT L',
+    'diagram.wheel.frontRight': 'FRONT R',
+    'diagram.wheel.rearLeft': 'REAR L',
+    'diagram.wheel.rearRight': 'REAR R',
     'caravan.crankUp': 'Crank up',
     'caravan.crankDown': 'Crank down',
     'status.crank.up': 'Crank the jockey wheel up',
@@ -269,6 +281,9 @@ export const MESSAGES = {
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
+    'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
+    'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
+    'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',
@@ -373,6 +388,10 @@ export const MESSAGES = {
     'calibration.flip.done': 'Klart! Din yta lutar {surface}° — borträknat.',
     'calibration.flip.err.moved':
       'De två mätningarna stämmer inte överens — flyttades telefonen? Börja om.',
+    // Korta statusetiketter för Modern-kalibreringens kort (#109).
+    'calibration.pill.notDone': 'EJ GJORD',
+    'calibration.pill.done': 'GJORD',
+    'calibration.pill.none': 'INGET',
 
     'feedback.intro':
       'Har du hittat ett problem eller har en idé? Fyll i det här och tryck på ' +
@@ -437,6 +456,11 @@ export const MESSAGES = {
     'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',
     'diagram.front': 'Fram',
     'diagram.step': 'Steg {n}',
+    'diagram.done': 'Klart',
+    'diagram.wheel.frontLeft': 'V FRAM',
+    'diagram.wheel.frontRight': 'H FRAM',
+    'diagram.wheel.rearLeft': 'V BAK',
+    'diagram.wheel.rearRight': 'H BAK',
     'caravan.crankUp': 'Veva upp',
     'caravan.crankDown': 'Veva ner',
     'status.crank.up': 'Veva upp stödhjulet',
