@@ -28,6 +28,9 @@ export const MESSAGES = {
     'menu.help': 'Help',
     'menu.intro': 'Show introduction',
     'menu.about': 'About Libell',
+    'menu.others': 'OTHER',
+    'menu.card.notSaved': 'Not saved',
+    'menu.card.notDone': 'Not done',
 
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
@@ -261,6 +264,9 @@ export const MESSAGES = {
     'menu.help': 'Hjälp',
     'menu.intro': 'Visa introduktionen',
     'menu.about': 'Om Libell',
+    'menu.others': 'ÖVRIGT',
+    'menu.card.notSaved': 'Ej sparade',
+    'menu.card.notDone': 'Ej gjord',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +

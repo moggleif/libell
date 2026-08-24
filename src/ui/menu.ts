@@ -49,6 +49,12 @@ export interface MenuOptions {
   checkCalibration(): string;
   checkVehicleCalibration(): string;
   clearVehicleCalibration(): void;
+  /**
+   * Whether the vehicle settings have ever been saved — mirrors the
+   * topbar warning lamp's own condition. Drives the Modern menu's
+   * Settings card status label ("Not saved", #107); unused in Classic.
+   */
+  hasSavedSettings(): boolean;
 }
 
 export interface Menu {
@@ -62,6 +68,11 @@ export interface Menu {
 
 export function createMenu(options: MenuOptions): Menu {
   const container = document.createElement('div');
+  // Which structure the top-level list renders — decided once at
+  // construction from the settings available then, same rule as every
+  // other appearance-branching component (rvDiagram, settingsPanel,
+  // calibrationSection, onboarding): never re-evaluated live (#107).
+  const isModern = options.appearance === 'modern';
 
   // --- Navigation drawer ---
   const backdrop = document.createElement('div');
@@ -85,6 +96,24 @@ export function createMenu(options: MenuOptions): Menu {
   header.append(title, close);
   drawer.append(header);
   backdrop.append(drawer);
+
+  // --- Modern-only containers (#107): a fullscreen card list instead
+  // of Classic's flat item stack. Built either way so addSection() and
+  // the others-row helper below have somewhere to append; simply never
+  // attached to the drawer when Classic. ---
+  const primaryList = document.createElement('div');
+  primaryList.className = 'menu__primary-list';
+  const othersHeading = document.createElement('p');
+  othersHeading.className = 'menu__others-heading';
+  othersHeading.textContent = t('menu.others');
+  const othersList = document.createElement('div');
+  othersList.className = 'menu__others-list';
+  const versionFooter = document.createElement('p');
+  versionFooter.className = 'menu__version';
+  if (__APP_VERSION__) versionFooter.textContent = `v${__APP_VERSION__}`;
+  if (isModern) {
+    drawer.append(primaryList, othersHeading, othersList, versionFooter);
+  }
 
   // --- Full-screen page ---
   const page = document.createElement('div');
@@ -113,14 +142,111 @@ export function createMenu(options: MenuOptions): Menu {
   >();
   let onPageClosed: (() => void) | null = null;
 
-  function addSection(id: MenuSection, label: string, body: HTMLElement): void {
+  /** A primary section's pending status (#107): the Modern card's dot
+   * lights `--warning` and shows `text` while `isPending()` is true. */
+  interface SectionStatus {
+    isPending(): boolean;
+    text: string;
+  }
+  const cardRefreshers: (() => void)[] = [];
+
+  function buildModernCard(
+    id: MenuSection,
+    label: string,
+    status?: SectionStatus,
+  ): HTMLButtonElement {
     const item = document.createElement('button');
     item.type = 'button';
-    item.className = 'menu__item';
-    item.textContent = label;
+    item.className = 'menu__card';
     item.addEventListener('click', () => showPage(id));
-    drawer.append(item);
+
+    const dot = document.createElement('span');
+    dot.className = 'menu__card-dot';
+    dot.setAttribute('aria-hidden', 'true');
+
+    const titleEl = document.createElement('span');
+    titleEl.className = 'menu__card-title';
+    titleEl.textContent = label;
+
+    const statusEl = document.createElement('span');
+    statusEl.className = 'menu__card-status';
+
+    const chevron = document.createElement('span');
+    chevron.className = 'menu__card-chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+    chevron.textContent = '›';
+
+    item.append(dot, titleEl, statusEl, chevron);
+    primaryList.append(item);
+
+    if (status) {
+      cardRefreshers.push(() => {
+        const pending = status.isPending();
+        dot.classList.toggle('menu__card-dot--pending', pending);
+        statusEl.textContent = pending ? status.text : '';
+      });
+    }
+    return item;
+  }
+
+  function addSection(
+    id: MenuSection,
+    label: string,
+    body: HTMLElement,
+    status?: SectionStatus,
+  ): void {
+    let item: HTMLButtonElement;
+    if (isModern) {
+      item = buildModernCard(id, label, status);
+    } else {
+      item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'menu__item';
+      item.textContent = label;
+      item.addEventListener('click', () => showPage(id));
+      drawer.append(item);
+    }
     sections.set(id, { label, body, item });
+  }
+
+  /** A bottom-of-list section (Modern: a plain "ÖVRIGT" row; Classic:
+   * the same item style as everything else — feedback/about, #107). */
+  function addOtherSection(id: MenuSection, label: string, body: HTMLElement): void {
+    const item = addOtherItem(label, () => showPage(id));
+    sections.set(id, { label, body, item });
+  }
+
+  /** A bottom-of-list action with no page of its own (the introduction
+   * relaunch — Modern: a plain "ÖVRIGT" row; Classic: same item style
+   * as everything else). */
+  function addOtherItem(label: string, onClick: () => void): HTMLButtonElement {
+    if (!isModern) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'menu__item';
+      item.textContent = label;
+      item.addEventListener('click', onClick);
+      drawer.append(item);
+      return item;
+    }
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'menu__row';
+    const text = document.createElement('span');
+    text.className = 'menu__row-title';
+    text.textContent = label;
+    const chevron = document.createElement('span');
+    chevron.className = 'menu__row-chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+    chevron.textContent = '›';
+    item.append(text, chevron);
+    item.addEventListener('click', onClick);
+    othersList.append(item);
+    return item;
+  }
+
+  function refreshModernCards(): void {
+    for (const refresh of cardRefreshers) refresh();
   }
 
   // --- History-integrated open/close state ---
@@ -153,6 +279,7 @@ export function createMenu(options: MenuOptions): Menu {
       depth = 1;
     }
     refreshCalibration();
+    refreshModernCards();
     render();
   }
 
@@ -174,6 +301,7 @@ export function createMenu(options: MenuOptions): Menu {
       depth = 2;
     }
     refreshCalibration();
+    refreshModernCards();
     render(section);
   }
 
@@ -205,12 +333,18 @@ export function createMenu(options: MenuOptions): Menu {
   settingsBody.append(
     createSettingsForm(options.initialSettings, options.onSettingsSaved, options),
   );
-  addSection('settings', t('menu.settings'), settingsBody);
+  addSection('settings', t('menu.settings'), settingsBody, {
+    isPending: () => !options.hasSavedSettings(),
+    text: t('menu.card.notSaved'),
+  });
 
   // --- Calibration (one-shot + flip) ---
   const calibrationSection = createCalibrationSection(options);
   const refreshCalibration = calibrationSection.refresh;
-  addSection('calibration', t('menu.calibration'), calibrationSection.element);
+  addSection('calibration', t('menu.calibration'), calibrationSection.element, {
+    isPending: () => options.getCalibration() === null && options.getVehicleCalibration() === null,
+    text: t('menu.card.notDone'),
+  });
 
   // --- Help: illustration-first, short captions (#54) ---
   const HELP: {
@@ -239,20 +373,15 @@ export function createMenu(options: MenuOptions): Menu {
   }
   addSection('help', t('menu.help'), helpBody);
 
-  // --- Reopen the introduction ---
-  const introItem = document.createElement('button');
-  introItem.type = 'button';
-  introItem.className = 'menu__item';
-  introItem.textContent = t('menu.intro');
-  introItem.addEventListener('click', () => {
+  // --- Reopen the introduction, feedback, about (bottom — reached
+  // rarely; Modern groups these under an "ÖVRIGT" heading as plain
+  // rows instead of cards, #107) ---
+  addOtherItem(t('menu.intro'), () => {
     goBack();
     options.openOnboarding();
   });
-  drawer.append(introItem);
-
-  // --- Feedback and About (bottom — reached rarely) ---
-  addSection('feedback', t('menu.feedback'), createFeedbackSection());
-  addSection('about', t('menu.about'), createAboutSection());
+  addOtherSection('feedback', t('menu.feedback'), createFeedbackSection());
+  addOtherSection('about', t('menu.about'), createAboutSection());
 
   return {
     element: container,

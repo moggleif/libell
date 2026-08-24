@@ -774,6 +774,130 @@ body {
   border-color: var(--level);
 }
 
+/* ---- Modern menu: fullscreen card list (#107) ----
+ * The drawer/backdrop elements are shared with Classic (same open/close
+ * state machine); Modern only changes how they look and what's inside. */
+
+[data-appearance='modern'] .menu {
+  align-items: stretch;
+  background: var(--surface);
+}
+
+[data-appearance='modern'] .menu__drawer {
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  border-bottom: 0;
+  background: var(--surface);
+  transform: none;
+}
+
+[data-appearance='modern'] .menu__title {
+  font-size: 1.25rem;
+}
+
+.menu__primary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.menu__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--on-surface);
+  background: var(--surface-raised);
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.menu__card-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--outline);
+}
+
+.menu__card-dot--pending {
+  background: var(--warning);
+}
+
+.menu__card-title {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.menu__card-status {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.menu__card-chevron {
+  color: var(--on-surface-muted);
+  font-size: 1.1rem;
+}
+
+.menu__others-heading {
+  width: 100%;
+  margin: 14px 0 2px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: var(--on-surface-muted);
+}
+
+.menu__others-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.menu__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 14px 4px;
+  font: inherit;
+  font-size: 0.9375rem;
+  text-align: left;
+  color: var(--on-surface);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--surface-raised);
+  cursor: pointer;
+}
+
+.menu__others-list .menu__row:last-child {
+  border-bottom: 0;
+}
+
+.menu__row-chevron {
+  color: var(--on-surface-muted);
+  font-size: 1.1rem;
+}
+
+.menu__version {
+  width: 100%;
+  margin: auto 0 0;
+  padding-top: 20px;
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--on-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .menu__section {
   padding: 10px 4px 14px;
 }
