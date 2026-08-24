@@ -33,6 +33,8 @@ export const MESSAGES = {
       'Libell helps you level your motorhome or caravan with the phone you ' +
       'already have — no bubble vials, no guessing.',
     'about.version': 'Version {v}',
+    'about.offline':
+      'Works fully offline — the network is only used to fetch updates of the app itself.',
     'about.privacy':
       'Everything stays on your phone — no account, no tracking, and no data ' +
       'ever leaves the device.',
@@ -226,6 +228,9 @@ export const MESSAGES = {
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
       'du redan har — inget vattenpass, inget gissande.',
     'about.version': 'Version {v}',
+    'about.offline':
+      'Fungerar helt utan internet — nätet används bara för att hämta appens ' +
+      'egna uppdateringar.',
     'about.privacy':
       'Allt stannar i din telefon — inget konto, ingen spårning och ingen data ' +
       'lämnar någonsin enheten.',

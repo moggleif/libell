@@ -9,6 +9,7 @@ describe('about section', () => {
   it('says what Libell is, all in translated text', () => {
     const section = createAboutSection();
     expect(section.textContent).toContain(t('about.text'));
+    expect(section.textContent).toContain(t('about.offline'));
     expect(section.textContent).toContain(t('about.privacy'));
   });
 

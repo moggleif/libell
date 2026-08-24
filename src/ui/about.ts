@@ -1,8 +1,8 @@
 /**
- * About page (issue #95): what Libell is, the running version, the
- * privacy promise, and where the source lives. Static translated text;
- * the single link opens GitHub in a new tab with `noopener` — nothing
- * remote is ever loaded (ADR 0005).
+ * About page (issue #95): what Libell is, the running version, that it
+ * works offline, the privacy promise, and where the source lives. Static
+ * translated text; the single link opens GitHub in a new tab with
+ * `noopener` — the page itself loads nothing remote (ADR 0005).
  */
 
 import { t } from './i18n';
@@ -25,6 +25,10 @@ export function createAboutSection(): HTMLElement {
     body.append(version);
   }
 
+  const offline = document.createElement('p');
+  offline.className = 'menu__text';
+  offline.textContent = t('about.offline');
+
   const privacy = document.createElement('p');
   privacy.className = 'menu__text';
   privacy.textContent = t('about.privacy');
@@ -39,6 +43,6 @@ export function createAboutSection(): HTMLElement {
   link.textContent = t('about.source.link');
   source.append(document.createTextNode(`${t('about.source')} `), link);
 
-  body.append(privacy, source);
+  body.append(offline, privacy, source);
   return body;
 }
