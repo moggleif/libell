@@ -78,7 +78,8 @@ src/
 - **`?demo` query flag**: replaces the sensor with a fixed tilt — the way to run,
   screenshot or test the app on any sensorless machine.
 - **Versioning**: `VERSION` holds major.minor; first deploy of a minor is the release
-  (`vX.Y.0`), later merges deploy as QA candidates (`vX.Y.CR<PR>`). Details in ADR 0007.
+  (`vX.Y.0`), later merges deploy as QA candidates shown as `X.Y.0 – CR<PR>` and tagged
+  `vX.Y.0-CR<PR>`. Details in ADR 0007.
 - **Secure context**: sensors need HTTPS or `localhost`; iOS additionally needs a user
   gesture. Real-phone testing options are in `docs/01-CONTRIBUTING.md`.
 - **Sensor preference**: `DeviceMotionEvent.accelerationIncludingGravity` first,

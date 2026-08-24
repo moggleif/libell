@@ -14,6 +14,24 @@ describe('i18n dictionaries', () => {
     }
   });
 
+  it('lists each screen indicator on its own line (#95)', () => {
+    // The four wheel states of R5; the gray glyph is an en dash, distinct
+    // from the em dash used inside the sentences.
+    const glyphs = ['✓', '↑', '✕', '–'];
+    for (const lang of ['en', 'sv'] as const) {
+      const lines = MESSAGES[lang]['help.screen.t'].split('\n');
+      const glyphLines = lines.filter((line) => glyphs.some((g) => line.includes(g)));
+      // One line each — never a running paragraph.
+      expect(glyphLines.length, `${lang}: one line per indicator`).toBe(glyphs.length);
+      for (const glyph of glyphs) {
+        expect(
+          lines.filter((line) => line.includes(glyph)).length,
+          `${lang}: exactly one line for ${glyph}`,
+        ).toBe(1);
+      }
+    }
+  });
+
   it('validates a stored language override', () => {
     expect(resolveLanguage('sv')).toBe('sv');
     expect(resolveLanguage('en')).toBe('en');

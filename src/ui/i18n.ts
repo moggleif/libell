@@ -27,6 +27,19 @@ export const MESSAGES = {
     'menu.feedback': 'Feedback',
     'menu.help': 'Help',
     'menu.intro': 'Show introduction',
+    'menu.about': 'About Libell',
+
+    'about.text':
+      'Libell helps you level your motorhome or caravan with the phone you ' +
+      'already have — no bubble vials, no guessing.',
+    'about.version': 'Version {v}',
+    'about.offline':
+      'Works fully offline — the network is only used to fetch updates of the app itself.',
+    'about.privacy':
+      'Everything stays on your phone — no account, no tracking, and no data ' +
+      'ever leaves the device.',
+    'about.source': 'Libell is free and open source (MIT license).',
+    'about.source.link': 'Source code on GitHub',
 
     'onboard.step1.h': 'Place the phone like this',
     'onboard.next': 'Next',
@@ -150,26 +163,29 @@ export const MESSAGES = {
       'you until both are done. Everything is remembered.',
     'help.screen.h': 'Reading the screen',
     'help.screen.t':
-      'Green ✓: done. Orange ↑: drive that wheel up on the step shown above it. ' +
-      'Red ✕: not even your highest step is enough — move to a flatter spot. ' +
-      'Gray –: a low wheel your ramps do not stretch to. ' +
+      'Green ✓: done.\n' +
+      'Orange ↑: drive that wheel up on the step shown above it.\n' +
+      'Red ✕: not even your highest step is enough — move to a flatter spot.\n' +
+      'Gray –: a low wheel your ramps do not stretch to.\n' +
       'When the bubble rests in the middle, you are level.',
     'help.settings.h': 'The measurements',
     'help.settings.t':
-      'L is the wheelbase, W the track width (front and rear can differ) — usually in ' +
-      'the vehicle papers, or use a tape measure. Add your ramp steps with the + ' +
-      'button or pick a preset. Tolerance = how strict "level" is; Stability keeps ' +
-      'the numbers calm.',
+      'L is the wheelbase, W the track width (front and rear can differ) — usually ' +
+      'in the vehicle papers, or use a tape measure.\n' +
+      'Add your ramp steps with the + button or pick a preset.\n' +
+      'Tolerance = how strict "level" is.\n' +
+      'Stability keeps the numbers calm.',
     'help.calibration.h': 'Calibration',
     'help.calibration.t':
-      'Two layers: calibrate the phone once on a level surface (or with the 180° ' +
-      "flip), and — with the vehicle verifiably level — set the phone's normal spot " +
-      'as the vehicle zero, so a slightly tilting table is cancelled out too.',
+      'Two layers:\n' +
+      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
+      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
+      'vehicle zero — then a slightly tilting table is cancelled out too.',
     'help.notes.h': 'Good to know',
     'help.notes.t':
-      'Works fully offline once opened — add it to your home screen like an app. ' +
-      'On iPhone, tap Start each time; the version number at the bottom helps when ' +
-      'reporting problems.',
+      'Works fully offline once opened — add it to your home screen like an app.\n' +
+      'On iPhone, tap Start each time.\n' +
+      'The version number at the bottom helps when reporting problems.',
 
     'main.hint': 'Lay your phone flat inside your motorhome, top edge toward the front.',
     'main.start': 'Start',
@@ -221,6 +237,20 @@ export const MESSAGES = {
     'menu.feedback': 'Feedback',
     'menu.help': 'Hjälp',
     'menu.intro': 'Visa introduktionen',
+    'menu.about': 'Om Libell',
+
+    'about.text':
+      'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
+      'du redan har — inget vattenpass, inget gissande.',
+    'about.version': 'Version {v}',
+    'about.offline':
+      'Fungerar helt utan internet — nätet används bara för att hämta appens ' +
+      'egna uppdateringar.',
+    'about.privacy':
+      'Allt stannar i din telefon — inget konto, ingen spårning och ingen data ' +
+      'lämnar någonsin enheten.',
+    'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
+    'about.source.link': 'Källkoden på GitHub',
 
     'onboard.step1.h': 'Lägg telefonen så här',
     'onboard.next': 'Nästa',
@@ -344,26 +374,30 @@ export const MESSAGES = {
       'påminner tills båda är gjorda. Allt sparas.',
     'help.screen.h': 'Så läser du skärmen',
     'help.screen.t':
-      'Grönt ✓: klart. Orange ↑: kör upp hjulet på steget som visas ovanför. ' +
-      'Rött ✕: inte ens ditt högsta steg räcker — flytta till ett planare ställe. ' +
-      'Grått –: ett lågt hjul som ramperna inte räcker till. ' +
+      'Grönt ✓: klart.\n' +
+      'Orange ↑: kör upp hjulet på steget som visas ovanför.\n' +
+      'Rött ✕: inte ens ditt högsta steg räcker — flytta till ett planare ställe.\n' +
+      'Grått –: ett lågt hjul som ramperna inte räcker till.\n' +
       'När bubblan vilar i mitten står du i våg.',
     'help.settings.h': 'Måtten',
     'help.settings.t':
       'L är hjulbasen, W spårvidden (fram och bak kan skilja sig) — står oftast i ' +
-      'fordonspapperen, annars tumstock. Lägg till rampens steg med plusknappen ' +
-      'eller välj en färdig ramp. Tolerans = hur strikt "i våg" är; Stabilitet ' +
-      'håller siffrorna lugna.',
+      'fordonspapperen, annars tumstock.\n' +
+      'Lägg till rampens steg med plusknappen eller välj en färdig ramp.\n' +
+      'Tolerans = hur strikt "i våg" är.\n' +
+      'Stabilitet håller siffrorna lugna.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
-      'Två lager: kalibrera telefonen en gång på en plan yta (eller med 180°-' +
-      'vändningen), och — när fordonet står verifierat plant — sätt telefonens ' +
-      'vanliga plats som fordonets nolläge, så räknas även ett lutande bord bort.',
+      'Två lager:\n' +
+      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
+      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
+      'fordonets nolläge — då räknas även ett lutande bord bort.',
     'help.notes.h': 'Bra att veta',
     'help.notes.t':
-      'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen som ' +
-      'en app. På iPhone trycker du Start varje gång; versionsnumret längst ner är ' +
-      'bra vid felanmälan.',
+      'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen ' +
+      'som en app.\n' +
+      'På iPhone trycker du Start varje gång.\n' +
+      'Versionsnumret längst ner är bra vid felanmälan.',
 
     'main.hint': 'Lägg telefonen plant i husbilen, med ovansidan mot fronten.',
     'main.start': 'Start',

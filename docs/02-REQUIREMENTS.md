@@ -337,3 +337,21 @@ URL and must keep working with no signal.
   are recommended. Caravan mode is unaffected (one axle wheel is ever ramped, R22);
   its form hides both fields. Display hysteresis (R25's calm-display rules and the
   Stability dead band) applies to the plan too: it may not flap at boundaries.
+
+## R28 — Help reads one fact per line, and an About page
+
+- **Given** a Help section whose text is a list of facts (the screen indicators, the
+  measurements, the calibration layers, good to know)
+- **Then** each fact starts on its own line — the indicator colors in "Reading the
+  screen" (green ✓ / orange ↑ / red ✕ / gray –, R5) are never one running paragraph.
+  The breaks live in the i18n strings and render as real line breaks
+  (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same
+  caption and gets the same breaks.
+- **Given** the menu item "About" / "Om Libell"
+- **When** I open it
+- **Then** I see, in my language: what Libell is, that it works fully offline and
+  only uses the network to fetch updates of the app itself (R10), that all data
+  stays on the phone, and a link to the source code and license (MIT) on GitHub —
+  opened in a new tab with `noopener`, loading nothing remote. The app version comes
+  last, in small muted type like the footer on the main screen, and is omitted when
+  the build has none.
