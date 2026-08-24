@@ -240,3 +240,19 @@ URL and must keep working with no signal.
 - **Then** they apply to both corrections: level when the axle lift and the jockey
   correction are both within tolerance, with the same hysteresis behavior as the
   motorhome display. Decision record: ADR 0008.
+
+## R23 — Boggie (tandem) axles
+
+- **Given** the Settings choice "Rear axle" (motorhome) / "Axle" (caravan): Single
+  (default) or Boggie
+- **When** Boggie is chosen
+- **Then** the diagram draws a wheel pair per side at the axle position sharing one
+  color, glyph and label set — the recommendation applies to **both** wheels of the
+  pair with equal steps — and the measurement hint adds that wheelbase /
+  axle-to-jockey is measured to the centre of the axle pair.
+- **Given** the leveling math, tolerance and hysteresis
+- **Then** they are unchanged: a boggie is modeled as one leveling axle at its
+  midpoint (ADR 0009). Twin wheels (dual mounting) are out of scope — same plane
+  position, no setting.
+- The caravan's track width field is labeled plain "Track width" (no "rear" on a
+  single-axle vehicle); stored settings from older versions parse with axle Single.

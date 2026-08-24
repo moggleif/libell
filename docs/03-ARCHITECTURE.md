@@ -58,7 +58,9 @@ drives the ramp recommendation for the low axle wheel, and pitch drives a signed
 jockey-wheel correction over the `wheelbaseMm` axle-to-jockey distance — positive =
 crank up. The shared `stabilizeLift` core provides the same hysteresis; `main.ts`
 selects the compute → stabilize → render pipeline per vehicle type and rebuilds the
-level screen when it changes.
+level screen when it changes. A boggie (`rearAxle: 'boggie'`, ADR 0009) is one
+leveling axle at its midpoint: the math is untouched and the diagrams draw wheel
+pairs sharing one recommendation.
 
 ## Sensor (`src/sensor/orientation.ts`)
 

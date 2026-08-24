@@ -248,13 +248,18 @@ function bootstrap(root: HTMLElement): void {
   // rebuilt, and the generation counter stops the superseded frame loop.
   let screenGeneration = 0;
   let screenVehicle: LevelSettings['vehicleType'] | null = null;
+  let screenAxle: LevelSettings['rearAxle'] | null = null;
   const maybeRebuildScreen = () => {
-    if (screenVehicle !== null && screenVehicle !== settings.vehicleType) showLevelScreen();
+    if (screenVehicle === null) return;
+    if (screenVehicle !== settings.vehicleType || screenAxle !== settings.rearAxle) {
+      showLevelScreen();
+    }
   };
 
   function showLevelScreen(): void {
     const generation = ++screenGeneration;
     screenVehicle = settings.vehicleType;
+    screenAxle = settings.rearAxle;
     root.replaceChildren();
     root.classList.add('app--level');
 
@@ -291,7 +296,7 @@ function bootstrap(root: HTMLElement): void {
     let engineElement: HTMLElement;
     let engineTick: (gravity: GravityVector, nowMs: number) => EngineTick;
     if (settings.vehicleType === 'caravan') {
-      const diagram = createCaravanDiagram();
+      const diagram = createCaravanDiagram(settings.rearAxle);
       const stabilize = createCaravanStabilizer();
       const caravanStatusText = (result: ReturnType<typeof stabilize>): string => {
         if (result.isLevel) return t('main.level');
@@ -318,7 +323,7 @@ function bootstrap(root: HTMLElement): void {
         return { isLevel: result.isLevel, maxCorrectionMm: Math.max(maxAxleMm, jockeyMm) };
       };
     } else {
-      const diagram = createRvDiagram();
+      const diagram = createRvDiagram(settings.rearAxle);
       const stabilize = createDisplayStabilizer();
       const statusText = (result: ReturnType<typeof stabilize>): string => {
         if (result.isLevel) return t('main.level');

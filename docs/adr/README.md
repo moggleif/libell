@@ -27,3 +27,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0006 | [Feedback via pre-filled GitHub issue URL, no backend](0006-feedback-without-backend.md)                |
 | 0007 | [GitHub Pages doubles as QA; candidate builds are X.Y.CR&lt;PR&gt;](0007-pages-as-qa-and-versioning.md) |
 | 0008 | [Caravan mode: the axle is the reference, the jockey is bidirectional](0008-caravan-vehicle-model.md)   |
+| 0009 | [A boggie is one leveling axle at its midpoint, with paired wheels](0009-boggie-as-midpoint-axle.md)    |

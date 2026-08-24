@@ -12,6 +12,13 @@ export interface LevelSettings {
    * axle-to-jockey-wheel distance.
    */
   vehicleType: VehicleType;
+  /**
+   * The wheel axle's configuration: single, or a boggie (tandem) pair.
+   * A boggie is modeled as one leveling axle at its midpoint (ADR 0009)
+   * — the math is untouched; the diagram draws wheel pairs and the
+   * measurements are taken to the boggie's centre.
+   */
+  rearAxle: AxleConfig;
   /** Distance between front and rear axle, in mm. */
   wheelbaseMm: number;
   /** Distance between the front wheels, in mm. */
@@ -47,8 +54,11 @@ export type ThemeSetting = 'system' | 'light' | 'dark';
 
 export type VehicleType = 'motorhome' | 'caravan';
 
+export type AxleConfig = 'single' | 'boggie';
+
 export const DEFAULT_SETTINGS: LevelSettings = {
   vehicleType: 'motorhome',
+  rearAxle: 'single',
   wheelbaseMm: 3800,
   trackWidthFrontMm: 1810,
   trackWidthRearMm: 1980,
@@ -162,6 +172,7 @@ export function parseSettings(value: unknown): LevelSettings {
 
   return {
     vehicleType: raw.vehicleType === 'caravan' ? 'caravan' : 'motorhome',
+    rearAxle: raw.rearAxle === 'boggie' ? 'boggie' : 'single',
     wheelbaseMm: positiveNumber(
       raw.wheelbaseMm,
       cm(raw.wheelbaseCm) ?? DEFAULT_SETTINGS.wheelbaseMm,

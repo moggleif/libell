@@ -11,6 +11,7 @@ describe('parseSettings', () => {
   it('returns valid stored settings unchanged', () => {
     const stored = {
       vehicleType: 'caravan' as const,
+      rearAxle: 'boggie' as const,
       wheelbaseMm: 3500,
       trackWidthFrontMm: 2000,
       trackWidthRearMm: 1700,
@@ -60,6 +61,7 @@ describe('parseSettings', () => {
     });
     expect(result).toEqual({
       vehicleType: DEFAULT_SETTINGS.vehicleType,
+      rearAxle: DEFAULT_SETTINGS.rearAxle,
       wheelbaseMm: DEFAULT_SETTINGS.wheelbaseMm,
       trackWidthFrontMm: DEFAULT_SETTINGS.trackWidthFrontMm,
       trackWidthRearMm: 1700,
@@ -93,6 +95,13 @@ describe('parseSettings', () => {
     expect(parseSettings({ vehicleType: 'motorhome' }).vehicleType).toBe('motorhome');
     expect(parseSettings({ vehicleType: 'boat' }).vehicleType).toBe('motorhome');
     expect(parseSettings({}).vehicleType).toBe('motorhome');
+  });
+
+  it('validates the axle configuration, defaulting to single', () => {
+    expect(parseSettings({ rearAxle: 'boggie' }).rearAxle).toBe('boggie');
+    expect(parseSettings({ rearAxle: 'single' }).rearAxle).toBe('single');
+    expect(parseSettings({ rearAxle: 'triple' }).rearAxle).toBe('single');
+    expect(parseSettings({}).rearAxle).toBe('single');
   });
 
   it('validates the theme choice, defaulting to following the phone', () => {

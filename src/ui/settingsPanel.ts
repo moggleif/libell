@@ -10,6 +10,7 @@ import {
   DEFAULT_SETTINGS,
   formatLength,
   parseSettings,
+  type AxleConfig,
   type LevelSettings,
   type ThemeSetting,
   type VehicleType,
@@ -64,6 +65,31 @@ export function createSettingsForm(
   vehicleField.append(vehicleCaption, vehicleSelect);
   form.append(vehicleField);
 
+  // --- Axle configuration (#81): single or boggie (tandem) pair. An
+  // independent dimension, not more vehicle types — the boggie is one
+  // leveling axle at its midpoint (ADR 0009).
+  let axle: AxleConfig = initial.rearAxle;
+  const axleField = document.createElement('label');
+  axleField.className = 'settings__field';
+  const axleCaption = document.createElement('span');
+  const axleSelect = document.createElement('select');
+  axleSelect.className = 'settings__select';
+  const axleOptions: [HTMLOptionElement, MessageKey][] = [];
+  for (const value of ['single', 'boggie'] as const) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.selected = value === axle;
+    axleSelect.append(option);
+    axleOptions.push([option, `axle.${value}` as MessageKey]);
+  }
+  axleSelect.addEventListener('change', () => {
+    axle = axleSelect.value === 'boggie' ? 'boggie' : 'single';
+    applyUnitEverywhere();
+    notifyChanged();
+  });
+  axleField.append(axleCaption, axleSelect);
+  form.append(axleField);
+
   // --- Numeric fields (shown in the chosen unit) ---
   const inputs = new Map<NumberKey, HTMLInputElement>();
   const captions = new Map<NumberKey, HTMLSpanElement>();
@@ -82,8 +108,11 @@ export function createSettingsForm(
     captions.set(key, caption);
     fieldEls.set(key, field);
     const applyUnit = () => {
-      const labelKey: MessageKey =
-        key === 'wheelbaseMm' && vehicle === 'caravan' ? 'settings.axleToJockey' : label;
+      // Per-configuration labels: the caravan's wheelbase is the
+      // axle-to-jockey distance, and its single axle has no "rear".
+      let labelKey: MessageKey = label;
+      if (key === 'wheelbaseMm' && vehicle === 'caravan') labelKey = 'settings.axleToJockey';
+      if (key === 'trackWidthRearMm' && vehicle === 'caravan') labelKey = 'settings.track';
       caption.textContent = `${t(labelKey)} (${unit})`;
       input.step = String(toUnit(stepMm));
       input.min = String(min ?? toUnit(stepMm));
@@ -293,8 +322,12 @@ export function createSettingsForm(
     for (const apply of unitAppliers) apply();
     vehicleCaption.textContent = t('settings.vehicle');
     for (const [option, label] of vehicleOptions) option.textContent = t(label);
+    axleCaption.textContent = t(vehicle === 'caravan' ? 'settings.axle' : 'settings.rearAxle');
+    for (const [option, label] of axleOptions) option.textContent = t(label);
     // A caravan has one axle — the front track width does not apply.
     fieldEls.get('trackWidthFrontMm')!.hidden = vehicle === 'caravan';
+    measureHint.textContent =
+      t('settings.measureHint') + (axle === 'boggie' ? ` ${t('settings.measureHint.boggie')}` : '');
     stepsCaption.textContent = `${t('settings.steps')} (${unit})`;
     addInput.placeholder = unit === 'cm' ? '4' : '40';
     addButton.textContent = `+ ${t('settings.steps.add')}`;
@@ -316,6 +349,7 @@ export function createSettingsForm(
   const currentSettings = (): LevelSettings => {
     const raw: Record<string, unknown> = {
       vehicleType: vehicle,
+      rearAxle: axle,
       rampStepHeightsMm: [...steps],
       displayUnit: unit,
       soundOnLevel: soundInput.checked,
@@ -340,6 +374,8 @@ export function createSettingsForm(
     unitSelect.value = unit;
     vehicle = settings.vehicleType;
     vehicleSelect.value = vehicle;
+    axle = settings.rearAxle;
+    axleSelect.value = axle;
     applyUnitEverywhere();
     for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
     steps = [...settings.rampStepHeightsMm];

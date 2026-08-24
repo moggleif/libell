@@ -7,7 +7,8 @@
  * crank direction as a glyph plus the amount below.
  */
 import type { CaravanDisplayResult } from '../domain/caravan';
-import { formatLength } from '../domain/settings';
+import { formatLength, type AxleConfig } from '../domain/settings';
+import { wheelMarkers } from './rvDiagram';
 import { t } from './i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -35,14 +36,15 @@ export interface CaravanDiagram {
 }
 
 interface AxleRefs {
-  marker: SVGRectElement;
+  /** One rect for a single wheel, two for a tandem pair (ADR 0009). */
+  markers: SVGRectElement[];
   glyph: SVGTextElement;
   stepName: SVGTSpanElement;
   stepHeight: SVGTSpanElement;
   liftLabel: SVGTextElement;
 }
 
-export function createCaravanDiagram(): CaravanDiagram {
+export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): CaravanDiagram {
   const container = document.createElement('div');
   container.className = 'rv-diagram';
 
@@ -109,14 +111,7 @@ export function createCaravanDiagram(): CaravanDiagram {
   const axle = {} as Record<'left' | 'right', AxleRefs>;
   for (const side of ['left', 'right'] as const) {
     const x = side === 'left' ? AXLE.leftX : AXLE.rightX;
-    const marker = svgEl('rect', {
-      x: String(x - 14),
-      y: String(AXLE.y - 24),
-      width: '28',
-      height: '48',
-      rx: '9',
-      class: 'rv-diagram__wheel',
-    });
+    const markers = wheelMarkers(x, AXLE.y, axleConfig === 'boggie');
     const stepLabel = svgEl('text', {
       'text-anchor': 'middle',
       class: 'rv-diagram__step-label',
@@ -139,8 +134,8 @@ export function createCaravanDiagram(): CaravanDiagram {
       y: String(AXLE.y + 7),
       class: 'rv-diagram__wheel-glyph',
     });
-    svg.append(marker, glyph, stepLabel, liftLabel);
-    axle[side] = { marker, glyph, stepName, stepHeight, liftLabel };
+    svg.append(...markers, glyph, stepLabel, liftLabel);
+    axle[side] = { markers, glyph, stepName, stepHeight, liftLabel };
   }
 
   // Bubble level in the middle of the body.
@@ -171,7 +166,9 @@ export function createCaravanDiagram(): CaravanDiagram {
       for (const side of ['left', 'right'] as const) {
         const { displayMm, stepMm, severity } = result.axle[side];
         const refs = axle[side];
-        refs.marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
+        // A tandem pair shares one severity — both wheels get equal steps.
+        for (const marker of refs.markers)
+          marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         refs.glyph.textContent = severity === 'none' ? '✓' : severity === 'small' ? '↑' : '✕';
         if (severity === 'none' || stepMm <= 0) {
           refs.stepName.textContent = '';
