@@ -40,6 +40,7 @@ describe('settingsStore', () => {
       stabilityMm: 2,
       displayUnit: 'mm' as const,
       soundOnLevel: false,
+      soundGuidance: false,
       theme: 'dark' as const,
       appearance: 'modern' as const,
     };
