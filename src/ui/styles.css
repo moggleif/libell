@@ -1248,6 +1248,259 @@ body {
   accent-color: var(--level);
 }
 
+/* ---- Modern settings tabs (#108): Fordon / Klossar / Kalibrering ---- */
+
+.settings__tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.settings__tab {
+  flex: 1;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 10px 0;
+  color: var(--on-surface-muted);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--surface-sunken);
+  cursor: pointer;
+}
+
+.settings__tab[aria-selected='true'] {
+  color: var(--level);
+  border-bottom-color: var(--level);
+}
+
+.settings__tabpanel {
+  padding-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+/* Same guard as .menu[hidden] above: display: flex on the panel below
+   would otherwise win over the UA [hidden] rule and leave it showing. */
+.settings__tabpanel[hidden] {
+  display: none;
+}
+
+/* The Klossar tab is a column with a scrolling catalog and a footer
+   that stays put — the list scrolls, the step-height summary and
+   Save/Undo do not. */
+.settings__tabpanel--klossar {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 230px);
+}
+
+.klossar__filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.klossar__chip {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on-surface-muted);
+  background: none;
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.klossar__chip[aria-pressed='true'] {
+  color: var(--surface);
+  background: var(--level);
+  border-color: var(--level);
+}
+
+.klossar__pinned {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface-raised);
+  border: 1px solid var(--level);
+  border-radius: 10px;
+}
+
+/* Same guard as .menu[hidden] / .settings__tabpanel[hidden] above:
+   display: flex would otherwise win over the UA [hidden] rule and the
+   card would stay visible for a custom (non-catalog) step set. */
+.klossar__pinned[hidden] {
+  display: none;
+}
+
+.klossar__pinned-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.klossar__pinned-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--on-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.klossar__check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--surface);
+  background: var(--level);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.klossar__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.klossar__row {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  color: var(--on-surface);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--outline);
+  padding: 10px 2px;
+  cursor: pointer;
+}
+
+.klossar__row[hidden] {
+  display: none;
+}
+
+.klossar__row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.klossar__row-name {
+  font-size: 14px;
+}
+
+.klossar__row-mm {
+  font-size: 11px;
+  color: var(--on-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.klossar__radio {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1.5px solid var(--outline);
+}
+
+.klossar__radio--selected {
+  border-color: var(--level);
+  background: var(--level);
+  box-shadow: inset 0 0 0 3px var(--surface-raised);
+}
+
+.klossar__row--custom {
+  border-bottom: 0;
+}
+
+.klossar__custom-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 4px;
+}
+
+.klossar__custom-editor[hidden] {
+  display: none;
+}
+
+.klossar__footer {
+  flex-shrink: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--outline);
+}
+
+.klossar__footer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
+}
+
+.klossar__footer-model {
+  color: var(--on-surface);
+  text-transform: none;
+}
+
+.klossar__grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.klossar__grid-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.klossar__grid-label {
+  font-size: 10px;
+  color: var(--on-surface-muted);
+}
+
+.klossar__grid-value {
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.klossar__footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.klossar__footer-actions .menu__action {
+  margin-top: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Wrong-pose overlay: shown while the phone is not flat / rotated.
    Covers the app area only — the menu and the version stay reachable. */
 .pose-overlay {

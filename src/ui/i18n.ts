@@ -103,6 +103,14 @@ export const MESSAGES = {
     'settings.undo': 'Undo changes',
     'settings.reset': 'Reset to defaults',
 
+    'settings.tab.vehicle': 'Vehicle',
+    'settings.tab.ramps': 'Ramps',
+    'settings.klossar.brandAll': 'All',
+    'settings.klossar.pinnedSub': '{mm} mm · {steps}',
+    'settings.klossar.step.one': '1 step',
+    'settings.klossar.step.many': '{n} steps',
+    'settings.klossar.stepsHeading': 'Step heights (mm)',
+
     'status.measuring': 'Measuring…',
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
@@ -331,6 +339,14 @@ export const MESSAGES = {
     'settings.save': 'Spara',
     'settings.undo': 'Ångra ändringar',
     'settings.reset': 'Återställ standard',
+
+    'settings.tab.vehicle': 'Fordon',
+    'settings.tab.ramps': 'Klossar',
+    'settings.klossar.brandAll': 'Alla',
+    'settings.klossar.pinnedSub': '{mm} mm · {steps}',
+    'settings.klossar.step.one': '1 steg',
+    'settings.klossar.step.many': '{n} steg',
+    'settings.klossar.stepsHeading': 'Steghöjder (mm)',
 
     'status.measuring': 'Mäter…',
     'status.almost': 'Nästan i våg — {left} kvar',
