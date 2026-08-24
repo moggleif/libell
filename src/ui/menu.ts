@@ -11,6 +11,7 @@ import { createFeedbackSection } from './feedback';
 import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
 import { t, type MessageKey } from './i18n';
+import { setVisible } from './motion';
 import {
   calibrationIllustration,
   legendIllustration,
@@ -25,6 +26,12 @@ export interface MenuOptions {
   /** Open the first-run introduction again. */
   openOnboarding(): void;
   onSettingsSaved(settings: LevelSettings): void;
+  /**
+   * Visual preset (#104), forwarded to the calibration section — decided
+   * once from `initialSettings.appearance` at menu-construction time,
+   * same as everywhere else this is threaded through (#109).
+   */
+  appearance: LevelSettings['appearance'];
   getCalibration(): Calibration | null;
   /** Capture the current tilt as the phone's zero point. Returns an error text, or null on success. */
   calibrate(): string | null;
@@ -123,8 +130,8 @@ export function createMenu(options: MenuOptions): Menu {
   let depth = 0;
 
   function render(section?: MenuSection): void {
-    backdrop.hidden = depth === 0;
-    page.hidden = depth < 2;
+    setVisible(backdrop, depth > 0);
+    setVisible(page, depth === 2);
     if (depth === 2 && section) {
       const entry = sections.get(section);
       if (entry) {

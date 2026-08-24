@@ -111,6 +111,15 @@
   --on-surface-muted: #55665c;
 }
 
+/* Motion tokens (#105): shared by every transition below, independent
+ * of theme/appearance. Respected only when the OS allows motion — see
+ * the `prefers-reduced-motion` handling in motion.ts and share.ts. */
+:root {
+  --motion-fast: 140ms;
+  --motion-base: 220ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -173,12 +182,12 @@ body {
   cursor: pointer;
 }
 
-/* Transient confirmation ("link copied"). */
+/* Transient confirmation ("link copied") — fades and rises in, per #105. */
 .toast {
   position: fixed;
   left: 50%;
   bottom: calc(24px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(8px);
   z-index: 40;
   margin: 0;
   max-width: min(90vw, 420px);
@@ -189,6 +198,15 @@ body {
   border-radius: 10px;
   font-size: 0.9rem;
   overflow-wrap: anywhere;
+  opacity: 0;
+  transition:
+    opacity var(--motion-base) var(--motion-ease),
+    transform var(--motion-base) var(--motion-ease);
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .topbar__install {
@@ -246,6 +264,17 @@ body {
   padding: 4px 10px;
   cursor: pointer;
   white-space: nowrap;
+  /* Goes out like a dashboard lamp, not a flicker (#105). */
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.indicators__lamp.is-visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .app {
@@ -486,6 +515,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  /* The backdrop fades; the drawer itself also drops in slightly below
+   * (its own transition, #105) for a sense of depth, not just a flip. */
+  opacity: 0;
+  transition: opacity var(--motion-base) var(--motion-ease);
+}
+
+.menu.is-visible {
+  opacity: 1;
 }
 
 /* `display: flex` above would otherwise override the browser's default
@@ -508,6 +545,12 @@ body {
   align-items: center;
   gap: 6px;
   text-align: left;
+  transform: translateY(-14px);
+  transition: transform var(--motion-base) var(--motion-ease);
+}
+
+.menu.is-visible .menu__drawer {
+  transform: translateY(0);
 }
 
 .menu__drawer > * {
@@ -614,6 +657,115 @@ body {
 .menu__action:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+/* ---- Modern calibration cards (#109) ----
+ * Two-card restyle of the same calibration flow: sensor calibration and
+ * vehicle zero (#83) each get their own surfaced card with a status pill.
+ * Classic mode never mounts these classes — see calibrationSection.ts. */
+
+.calibration-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calibration-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface-raised);
+  border: 1px solid var(--outline);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.calibration-card > .menu__action {
+  margin-top: 0;
+}
+
+.calibration-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.calibration-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.calibration-card__pill {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--outline);
+  color: var(--on-surface-muted);
+  white-space: nowrap;
+}
+
+.calibration-card__pill--pending {
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
+.calibration-card__pill--done {
+  color: var(--level);
+  border-color: var(--level);
+}
+
+.calibration-card__body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--on-surface-muted);
+  white-space: pre-line;
+}
+
+.calibration-card__readings {
+  display: flex;
+  gap: 12px;
+}
+
+.calibration-card__reading {
+  flex: 1;
+  background: var(--surface-sunken);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.calibration-card__reading-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
+}
+
+.calibration-card__reading-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-surface);
+}
+
+.calibration-card__row {
+  display: flex;
+  gap: 8px;
+}
+
+.calibration-card__row .menu__action {
+  flex: 1;
+  margin-top: 0;
 }
 
 /* ---- Settings form ---- */
@@ -832,6 +984,18 @@ body {
   align-items: center;
   overflow-y: auto;
   padding: calc(6px + env(safe-area-inset-top)) 16px 24px;
+  /* Pushes in from the side like the phone-app pattern it follows
+   * (#105) — a fade alone would not read as "a page opened". */
+  opacity: 0;
+  transform: translateX(24px);
+  transition:
+    opacity var(--motion-base) var(--motion-ease),
+    transform var(--motion-base) var(--motion-ease);
+}
+
+.menu-page.is-visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .menu-page[hidden] {
