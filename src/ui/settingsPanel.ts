@@ -12,6 +12,7 @@ import {
   formatLength,
   MAX_RAMP_COUNT,
   parseSettings,
+  type AppearanceSetting,
   type AxleConfig,
   type LevelSettings,
   type ThemeSetting,
@@ -19,7 +20,7 @@ import {
 } from '../domain/settings';
 import { matchRampModel, rampLabel, RAMP_MODELS } from '../domain/ramps';
 import { saveSettings } from '../data/settingsStore';
-import { applyTheme } from './theme';
+import { applyAppearance, applyTheme } from './theme';
 import { t, type MessageKey } from './i18n';
 
 type NumberKey =
@@ -329,6 +330,32 @@ export function createSettingsForm(
   });
   themeField.append(themeCaption, themeSelect);
 
+  // --- Appearance (#104): a preset independent of light/dark — today's
+  // look ('classic') or the redesigned surfaces/screens ('modern').
+  const appearanceField = document.createElement('label');
+  appearanceField.className = 'settings__field';
+  const appearanceCaption = document.createElement('span');
+  const appearanceSelect = document.createElement('select');
+  appearanceSelect.className = 'settings__select';
+  const APPEARANCES: { value: AppearanceSetting; label: MessageKey }[] = [
+    { value: 'classic', label: 'appearance.classic' },
+    { value: 'modern', label: 'appearance.modern' },
+  ];
+  const appearanceOptions: [HTMLOptionElement, MessageKey][] = [];
+  for (const { value, label } of APPEARANCES) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.selected = value === initial.appearance;
+    appearanceSelect.append(option);
+    appearanceOptions.push([option, label]);
+  }
+  // Live preview — same pattern as the theme select above.
+  appearanceSelect.addEventListener('change', () => {
+    applyAppearance(appearanceSelect.value as AppearanceSetting);
+    notifyChanged();
+  });
+  appearanceField.append(appearanceCaption, appearanceSelect);
+
   // --- Level chime ---
   const soundField = document.createElement('label');
   soundField.className = 'settings__field';
@@ -385,6 +412,7 @@ export function createSettingsForm(
     fieldEls.get('stabilityMm')!,
     unitField,
     themeField,
+    appearanceField,
     soundField,
     actions,
   );
@@ -415,6 +443,8 @@ export function createSettingsForm(
     unitCaption.textContent = t('settings.unit');
     themeCaption.textContent = t('settings.theme');
     for (const [option, label] of themeOptions) option.textContent = t(label);
+    appearanceCaption.textContent = t('settings.appearance');
+    for (const [option, label] of appearanceOptions) option.textContent = t(label);
     soundCaption.textContent = t('settings.sound');
     vehicleHeading.textContent = t('settings.section.vehicle');
     rampsHeading.textContent = t('settings.section.ramps');
@@ -438,6 +468,7 @@ export function createSettingsForm(
       displayUnit: unit,
       soundOnLevel: soundInput.checked,
       theme: themeSelect.value,
+      appearance: appearanceSelect.value,
     };
     for (const [key, input] of inputs) raw[key] = fromUnit(input.valueAsNumber);
     return parseSettings(raw);
@@ -469,6 +500,8 @@ export function createSettingsForm(
     drainSelect.value = settings.drainPosition;
     themeSelect.value = settings.theme;
     applyTheme(settings.theme);
+    appearanceSelect.value = settings.appearance;
+    applyAppearance(settings.appearance);
     soundInput.checked = settings.soundOnLevel;
     notifyChanged();
   };

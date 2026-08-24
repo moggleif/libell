@@ -63,9 +63,18 @@ export interface LevelSettings {
   soundOnLevel: boolean;
   /** Color theme: follow the phone, or force light/dark. */
   theme: ThemeSetting;
+  /**
+   * Visual preset, independent of light/dark (#104): 'classic' is today's
+   * look; 'modern' is the redesigned surfaces, main view, menu, settings
+   * tabs, calibration and onboarding (#106–#110). Named `appearance`, not
+   * `theme` — that name is already the light/dark axis.
+   */
+  appearance: AppearanceSetting;
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
+
+export type AppearanceSetting = 'classic' | 'modern';
 
 export type VehicleType = 'motorhome' | 'caravan';
 
@@ -93,6 +102,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   displayUnit: 'mm',
   soundOnLevel: false,
   theme: 'system',
+  appearance: 'classic',
 };
 
 /**
@@ -224,6 +234,7 @@ export function parseSettings(value: unknown): LevelSettings {
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
     soundOnLevel: raw.soundOnLevel === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
+    appearance: raw.appearance === 'modern' ? 'modern' : 'classic',
   };
 }
 

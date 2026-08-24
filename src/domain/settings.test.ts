@@ -23,6 +23,7 @@ describe('parseSettings', () => {
       displayUnit: 'cm' as const,
       soundOnLevel: true,
       theme: 'light' as const,
+      appearance: 'modern' as const,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -75,6 +76,7 @@ describe('parseSettings', () => {
       displayUnit: 'mm',
       soundOnLevel: false,
       theme: 'system',
+      appearance: 'classic',
     });
   });
 
@@ -128,6 +130,12 @@ describe('parseSettings', () => {
     expect(parseSettings({ theme: 'light' }).theme).toBe('light');
     expect(parseSettings({ theme: 'dark' }).theme).toBe('dark');
     expect(parseSettings({ theme: 'sepia' }).theme).toBe('system');
+  });
+
+  it('validates the appearance preset, defaulting to classic (#104)', () => {
+    expect(parseSettings({}).appearance).toBe('classic');
+    expect(parseSettings({ appearance: 'modern' }).appearance).toBe('modern');
+    expect(parseSettings({ appearance: 'retro' }).appearance).toBe('classic');
   });
 });
 

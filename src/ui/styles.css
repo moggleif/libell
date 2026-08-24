@@ -1,6 +1,9 @@
 :root {
   --surface: #101418;
   --surface-raised: #1a2027;
+  /* No sunken UI in Classic (#104 adds tabs/cards that need it in
+   * Modern) — recesses to the base surface, a safe neutral default. */
+  --surface-sunken: #101418;
   --outline: #2d333b;
   --on-surface: #e6edf3;
   --on-surface-muted: #8b949e; /* 6.3:1 on --surface */
@@ -19,6 +22,7 @@
   :root {
     --surface: #f6f8fa;
     --surface-raised: #ffffff;
+    --surface-sunken: #f6f8fa;
     --outline: #d0d7de;
     --on-surface: #1f2328;
     --on-surface-muted: #57606a;
@@ -36,6 +40,7 @@
 :root[data-theme='dark'] {
   --surface: #101418;
   --surface-raised: #1a2027;
+  --surface-sunken: #101418;
   --outline: #2d333b;
   --on-surface: #e6edf3;
   --on-surface-muted: #8b949e;
@@ -49,6 +54,7 @@
 :root[data-theme='light'] {
   --surface: #f6f8fa;
   --surface-raised: #ffffff;
+  --surface-sunken: #f6f8fa;
   --outline: #d0d7de;
   --on-surface: #1f2328;
   --on-surface-muted: #57606a;
@@ -59,9 +65,55 @@
   --warning: #9a6700;
 }
 
+/* ---- Modern appearance preset (#104) ----
+ * A second, independent axis from light/dark: the data-appearance
+ * attribute on the root element, combined with the same theme
+ * resolution above (system via prefers-color-scheme, or an explicit
+ * data-theme). The status colors are unchanged in both presets, only
+ * the surface family differs. Screens opt into these tokens per
+ * #106 through #110; this rule set alone does not change how anything
+ * looks yet. */
+:root[data-appearance='modern'] {
+  --surface: #0c1310;
+  --surface-raised: #16211b;
+  --surface-sunken: #1d2c24;
+  --outline: #2c4437;
+  --on-surface: #e9f1ec;
+  --on-surface-muted: #93a89b;
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-appearance='modern'] {
+    --surface: #eef2ee;
+    --surface-raised: #ffffff;
+    --surface-sunken: #e4eae4;
+    --outline: #c6d2c7;
+    --on-surface: #12211a;
+    --on-surface-muted: #55665c;
+  }
+}
+
+:root[data-appearance='modern'][data-theme='dark'] {
+  --surface: #0c1310;
+  --surface-raised: #16211b;
+  --surface-sunken: #1d2c24;
+  --outline: #2c4437;
+  --on-surface: #e9f1ec;
+  --on-surface-muted: #93a89b;
+}
+
+:root[data-appearance='modern'][data-theme='light'] {
+  --surface: #eef2ee;
+  --surface-raised: #ffffff;
+  --surface-sunken: #e4eae4;
+  --outline: #c6d2c7;
+  --on-surface: #12211a;
+  --on-surface-muted: #55665c;
+}
+
 /* Motion tokens (#105): shared by every transition below, independent
  * of theme/appearance. Respected only when the OS allows motion — see
- * the `prefers-reduced-motion` block at the end of this section. */
+ * the `prefers-reduced-motion` handling in motion.ts and share.ts. */
 :root {
   --motion-fast: 140ms;
   --motion-base: 220ms;
