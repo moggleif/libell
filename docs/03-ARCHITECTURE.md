@@ -14,6 +14,7 @@ src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
+│   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
 │   └── settings.ts   # LevelSettings + Calibration (validation, legacy migrations)
 ├── data/          # settingsStore.ts — localStorage read/write for settings + calibration
@@ -53,6 +54,14 @@ their sum is subtracted from every reading. Output: per-wheel
 `{liftMm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
 display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
 band ("Stability") to the shown mm figure, step, wheel color and level status.
+
+The steps the motorhome screen actually shows come from `rampPlan.ts` (ADR 0011): an
+exhaustive search assigns the owned ramps (`rampCount`, a boggie pair costs two) to
+wheels so the vehicle ends as close to level as the set allows, preferring — in
+order — reaching the tolerance, fewer ramps, the waste-water drain side lowest
+(`drainPosition`), levelness, lowest climb. The stabilizer adopts a differing fresh
+plan only when it is clearly better under the current lifts, and wheel colors follow
+the plan: red means the owned ramps cannot bring that wheel within tolerance.
 
 Caravan mode (`vehicleType: 'caravan'`, ADR 0008) uses `src/domain/caravan.ts`
 instead: the single axle (track = `trackWidthRearMm`) is the reference plane, roll
@@ -108,7 +117,8 @@ layout on every tick.
 `localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
 outdated value falls back to defaults. The default values live in one place —
 `DEFAULT_SETTINGS` in `src/domain/settings.ts` (wheelbase 3800 mm, track width
-1810/1980 mm front/rear, the Thule Levelers steps 44/78/112 mm, tolerance 20 mm,
+1810/1980 mm front/rear, the Thule Levelers steps 44/78/112 mm, two ramps, no drain
+preference, tolerance 20 mm,
 stability 3 mm); update that constant, not prose copies of it. Legacy cm values
 migrate on read (×10): wheelbase, track widths (including a single `trackWidthCm` for
 both axles) and step heights.

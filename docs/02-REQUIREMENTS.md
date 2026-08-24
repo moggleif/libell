@@ -68,10 +68,13 @@ URL and must keep working with no signal.
 
 - **Given** the RV is not level
 - **When** I look at the RV diagram
-- **Then** each wheel is colored by "is it worth driving up?": green within the
-  tolerance, orange when some ramp step brings it within tolerance, red when even the
-  best step cannot — move the vehicle instead. Colored wheels show their required lift
-  in whole mm.
+- **Then** each wheel is colored by what the ramp plan (R27) says about it: green when
+  it ends within the tolerance with no ramp, orange when the plan says to drive it up
+  on the shown step, red only when not even the highest step could fix that wheel by
+  itself — move the vehicle instead — and toned-down gray (–) when it is low but gets
+  no ramp: fewer ramps than low wheels, nothing to do at that wheel. A wheel a step
+  could fix is never red, even while the global plan leaves it short. Colored wheels
+  show their required lift in whole mm (muted for the gray state).
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
@@ -101,7 +104,8 @@ URL and must keep working with no signal.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
-  is listed, e.g. "20; 40; 60"), Tolerance (mm a wheel may sit below the highest and
+  is listed, e.g. "20; 40; 60"), Number of ramps (R27), Waste-water drain (R27),
+  Tolerance (mm a wheel may sit below the highest and
   still count as level), Stability (display hysteresis dead band in mm; 0 disables
   it), display unit (R14), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
@@ -306,13 +310,41 @@ URL and must keep working with no signal.
   recalibrating." (threshold 0.3°); the recalibrate buttons are right there.
 - The timestamp never leaves the device.
 
-## R27 — Help reads one fact per line, and an About page
+## R27 — Only as many ramps as you own, placed where they help most
+
+- **Given** the Settings choice "Number of ramps" (1–4; default 2 — ramps are sold in
+  pairs), motorhome mode
+- **When** a combined roll + pitch tilt leaves more wheels below the highest corner
+  than I have ramps
+- **Then** the diagram never asks me to ramp more wheels than that: the plan picks the
+  combination of wheels and steps that leaves the vehicle closest to level (smallest
+  remaining height deficit, ADR 0011), a low wheel that gets no ramp is toned down
+  (gray –, R5) rather than alarmed — there is nothing to do at it — and the status
+  line counts only the wheels the plan asks me to drive up — or says the
+  ramps are not enough when no placement helps at all. A boggie pair consumes two
+  ramps (both wheels of the pair drive up, R23).
+- **Given** every wheel can be brought within the tolerance
+- **Then** the plan uses as few ramps as possible and the vehicle reports level once
+  I have driven up.
+- **Given** the Settings choice "Waste-water drain" (none / left / right / front /
+  rear; default none)
+- **When** several placements of my ramps level the vehicle within the tolerance
+- **Then** the app prefers the one leaving the drain side lowest, so the drains keep
+  working — sink and shower water runs toward the outlet instead of pooling — never
+  choosing a worse-than-tolerance solution or extra ramps just for
+  drainage.
+- The per-wheel required lifts (R3) are unchanged — the plan only decides which steps
+  are recommended. Caravan mode is unaffected (one axle wheel is ever ramped, R22);
+  its form hides both fields. Display hysteresis (R25's calm-display rules and the
+  Stability dead band) applies to the plan too: it may not flap at boundaries.
+
+## R28 — Help reads one fact per line, and an About page
 
 - **Given** a Help section whose text is a list of facts (the screen indicators, the
   measurements, the calibration layers, good to know)
-- **Then** each fact starts on its own line — the three indicator colors in
-  "Reading the screen" (green ✓ / orange ↑ / red ✕) are never one running
-  paragraph. The breaks live in the i18n strings and render as real line breaks
+- **Then** each fact starts on its own line — the indicator colors in "Reading the
+  screen" (green ✓ / orange ↑ / red ✕ / gray –, R5) are never one running paragraph.
+  The breaks live in the i18n strings and render as real line breaks
   (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same
   caption and gets the same breaks.
 - **Given** the menu item "About" / "Om Libell"

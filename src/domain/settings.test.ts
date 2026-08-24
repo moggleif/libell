@@ -16,6 +16,8 @@ describe('parseSettings', () => {
       trackWidthFrontMm: 2000,
       trackWidthRearMm: 1700,
       rampStepHeightsMm: [20, 50, 80],
+      rampCount: 4,
+      drainPosition: 'left' as const,
       toleranceMm: 15,
       stabilityMm: 5,
       displayUnit: 'cm' as const,
@@ -66,12 +68,29 @@ describe('parseSettings', () => {
       trackWidthFrontMm: DEFAULT_SETTINGS.trackWidthFrontMm,
       trackWidthRearMm: 1700,
       rampStepHeightsMm: [60],
+      rampCount: DEFAULT_SETTINGS.rampCount,
+      drainPosition: DEFAULT_SETTINGS.drainPosition,
       toleranceMm: DEFAULT_SETTINGS.toleranceMm,
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
       displayUnit: 'mm',
       soundOnLevel: false,
       theme: 'system',
     });
+  });
+
+  it('validates the ramp count: whole, at least 1, at most 4, default 2 (#93)', () => {
+    expect(DEFAULT_SETTINGS.rampCount).toBe(2); // ramps are sold in pairs
+    expect(parseSettings({ rampCount: 3 }).rampCount).toBe(3);
+    expect(parseSettings({ rampCount: 3.6 }).rampCount).toBe(4);
+    expect(parseSettings({ rampCount: 99 }).rampCount).toBe(4);
+    expect(parseSettings({ rampCount: 0 }).rampCount).toBe(2);
+    expect(parseSettings({ rampCount: 'many' }).rampCount).toBe(2);
+  });
+
+  it('validates the drain position, defaulting to none (#93)', () => {
+    expect(parseSettings({ drainPosition: 'rear' }).drainPosition).toBe('rear');
+    expect(parseSettings({ drainPosition: 'under' }).drainPosition).toBe('none');
+    expect(parseSettings({}).drainPosition).toBe('none');
   });
 
   it('drops a legacy degree-based tolerance in favor of the mm default', () => {

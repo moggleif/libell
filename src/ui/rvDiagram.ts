@@ -44,7 +44,7 @@ export function wheelMarkers(x: number, y: number, pair: boolean): SVGRectElemen
 }
 
 /** Shape per state so color is never the only signal (WCAG 1.4.1). */
-const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕' } as const;
+const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
 
 export interface RvDiagram {
   element: HTMLElement;
@@ -186,6 +186,14 @@ export function createRvDiagram(rearAxle: AxleConfig = 'single'): RvDiagram {
           stepHeight.textContent = stepNumber > 0 ? `(${formatLength(stepMm, unit)})` : '';
         }
         liftLabel.textContent = severity === 'none' ? '' : formatLength(displayMm, unit);
+        // An unserved wheel (low, but no ramp left for it — ADR 0011) is
+        // toned down: it asks for no action, so it must not shout.
+        liftLabel.setAttribute(
+          'class',
+          severity === 'unserved'
+            ? 'rv-diagram__lift-label rv-diagram__lift-label--dim'
+            : 'rv-diagram__lift-label',
+        );
       }
 
       // The bubble floats toward the high side.

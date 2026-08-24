@@ -65,6 +65,30 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0].rearAxle).toBe('boggie');
   });
 
+  it('round-trips the ramp count and drain position (#93)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme.
+    const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
+    const drainSelect = form.querySelectorAll('select')[4] as HTMLSelectElement;
+    expect(rampCountSelect.value).toBe('2'); // ramps are sold in pairs
+    expect(drainSelect.value).toBe('none');
+    rampCountSelect.value = '4';
+    rampCountSelect.dispatchEvent(new Event('change'));
+    drainSelect.value = 'left';
+    drainSelect.dispatchEvent(new Event('change'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].rampCount).toBe(4);
+    expect(onSave.mock.calls[0]![0].drainPosition).toBe('left');
+  });
+
+  it('hides the ramp count and drain fields for a caravan', () => {
+    const caravan: LevelSettings = { ...DEFAULT_SETTINGS, vehicleType: 'caravan' };
+    const form = createSettingsForm(caravan, vi.fn());
+    const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
+    expect((rampCountSelect.closest('label') as HTMLLabelElement).hidden).toBe(true);
+  });
+
   it('keeps math in mm while displaying cm', () => {
     const cmSettings: LevelSettings = { ...DEFAULT_SETTINGS, displayUnit: 'cm' };
     const onSave = vi.fn<(s: LevelSettings) => void>();

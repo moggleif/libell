@@ -32,6 +32,21 @@ export interface LevelSettings {
    */
   rampStepHeightsMm: number[];
   /**
+   * How many ramps the user actually owns (1–MAX_RAMP_COUNT). The ramp
+   * plan (ADR 0011) never asks for more wheels to drive up than this; a
+   * boggie pair consumes two ramps. Ramps are sold in pairs, so 2 is
+   * the default.
+   */
+  rampCount: number;
+  /**
+   * Where the waste-water drain sits, seen from the driver's seat. When
+   * several ramp placements level the vehicle within the tolerance, the
+   * plan prefers the one leaving this side lowest so the drains keep
+   * working — sink and shower water must run toward the outlet;
+   * 'none' disables the preference.
+   */
+  drainPosition: DrainPosition;
+  /**
    * Max height a wheel may sit below the highest wheel and still count
    * as level, in mm. Height-based, so wheelbase and track width are
    * inherently accounted for.
@@ -56,6 +71,13 @@ export type VehicleType = 'motorhome' | 'caravan';
 
 export type AxleConfig = 'single' | 'boggie';
 
+export type DrainPosition = 'none' | 'left' | 'right' | 'front' | 'rear';
+
+export const DRAIN_POSITIONS: readonly DrainPosition[] = ['none', 'left', 'right', 'front', 'rear'];
+
+/** More ramps than this cannot help a four-wheel vehicle. */
+export const MAX_RAMP_COUNT = 4;
+
 export const DEFAULT_SETTINGS: LevelSettings = {
   vehicleType: 'motorhome',
   rearAxle: 'single',
@@ -64,6 +86,8 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   trackWidthRearMm: 1980,
   // Thule Levelers — the most common ready-made ramp in the catalog.
   rampStepHeightsMm: [44, 78, 112],
+  rampCount: 2,
+  drainPosition: 'none',
   toleranceMm: 20,
   stabilityMm: 3,
   displayUnit: 'mm',
@@ -186,6 +210,13 @@ export function parseSettings(value: unknown): LevelSettings {
       cm(raw.trackWidthRearCm) ?? legacyTrackMm ?? DEFAULT_SETTINGS.trackWidthRearMm,
     ),
     rampStepHeightsMm: heights,
+    rampCount:
+      typeof raw.rampCount === 'number' && Number.isFinite(raw.rampCount) && raw.rampCount >= 1
+        ? Math.min(MAX_RAMP_COUNT, Math.round(raw.rampCount))
+        : DEFAULT_SETTINGS.rampCount,
+    drainPosition: DRAIN_POSITIONS.includes(raw.drainPosition as DrainPosition)
+      ? (raw.drainPosition as DrainPosition)
+      : DEFAULT_SETTINGS.drainPosition,
     // A legacy toleranceDeg (degrees) has no unambiguous mm equivalent —
     // it falls back to the default.
     toleranceMm: positiveNumber(raw.toleranceMm, DEFAULT_SETTINGS.toleranceMm),

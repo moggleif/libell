@@ -71,6 +71,19 @@ export const MESSAGES = {
     'settings.steps.remove': 'Remove {value}',
     'settings.ramp': 'Ready-made ramp',
     'settings.ramp.custom': 'Custom set',
+    'settings.rampCount': 'Number of ramps',
+    'settings.drain': 'Drain side',
+    'settings.rampHint':
+      'The app picks where your ramps do the most good — and, within the ' +
+      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
+    'settings.section.vehicle': 'Vehicle & measurements',
+    'settings.section.ramps': 'Ramps',
+    'settings.section.display': 'Level & display',
+    'drain.none': 'None / does not matter',
+    'drain.left': 'Left side',
+    'drain.right': 'Right side',
+    'drain.front': 'Front',
+    'drain.rear': 'Rear',
     'settings.unit': 'Show lengths in',
     'settings.theme': 'Theme',
     'theme.system': 'Follow the phone',
@@ -85,6 +98,7 @@ export const MESSAGES = {
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
     'status.many': '{n} wheels to raise',
+    'status.cantLevel': 'Your ramps are not enough here — move the vehicle',
 
     'calibration.intro':
       'Put the phone on a surface you know is level, then tap Calibrate now. ' +
@@ -149,9 +163,10 @@ export const MESSAGES = {
       'you until both are done. Everything is remembered.',
     'help.screen.h': 'Reading the screen',
     'help.screen.t':
-      'Green ✓ — done.\n' +
-      'Orange ↑ — drive that wheel up on the step shown above it.\n' +
-      'Red ✕ — not even your highest step is enough; move to a flatter spot.\n' +
+      'Green ✓: done.\n' +
+      'Orange ↑: drive that wheel up on the step shown above it.\n' +
+      'Red ✕: not even your highest step is enough — move to a flatter spot.\n' +
+      'Gray –: a low wheel your ramps do not stretch to.\n' +
       'When the bubble rests in the middle, you are level.',
     'help.settings.h': 'The measurements',
     'help.settings.t':
@@ -267,6 +282,19 @@ export const MESSAGES = {
     'settings.steps.remove': 'Ta bort {value}',
     'settings.ramp': 'Färdig ramp',
     'settings.ramp.custom': 'Egen uppsättning',
+    'settings.rampCount': 'Antal ramper',
+    'settings.drain': 'Avloppssida',
+    'settings.rampHint':
+      'Appen väljer var ramperna gör mest nytta — och lämnar avloppssidan ' +
+      'lägst inom toleransen, så att disk- och duschvattnet rinner undan.',
+    'settings.section.vehicle': 'Fordon och mått',
+    'settings.section.ramps': 'Ramper',
+    'settings.section.display': 'Nivå och visning',
+    'drain.none': 'Inget / spelar ingen roll',
+    'drain.left': 'Vänster sida',
+    'drain.right': 'Höger sida',
+    'drain.front': 'Fram',
+    'drain.rear': 'Bak',
     'settings.unit': 'Visa längder i',
     'settings.theme': 'Tema',
     'theme.system': 'Följ telefonen',
@@ -281,6 +309,7 @@ export const MESSAGES = {
     'status.almost': 'Nästan i våg — {left} kvar',
     'status.one': '1 hjul att höja',
     'status.many': '{n} hjul att höja',
+    'status.cantLevel': 'Ramperna räcker inte här — flytta fordonet',
 
     'calibration.intro':
       'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +
@@ -345,9 +374,10 @@ export const MESSAGES = {
       'påminner tills båda är gjorda. Allt sparas.',
     'help.screen.h': 'Så läser du skärmen',
     'help.screen.t':
-      'Grönt ✓ — klart.\n' +
-      'Orange ↑ — kör upp hjulet på steget som visas ovanför.\n' +
-      'Rött ✕ — inte ens ditt högsta steg räcker; flytta till ett planare ställe.\n' +
+      'Grönt ✓: klart.\n' +
+      'Orange ↑: kör upp hjulet på steget som visas ovanför.\n' +
+      'Rött ✕: inte ens ditt högsta steg räcker — flytta till ett planare ställe.\n' +
+      'Grått –: ett lågt hjul som ramperna inte räcker till.\n' +
       'När bubblan vilar i mitten står du i våg.',
     'help.settings.h': 'Måtten',
     'help.settings.t':
