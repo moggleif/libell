@@ -46,8 +46,10 @@ step_i = the configured ramp step height (mm) closest to lift_i (0 = no step)
 isLevel = max(lift) <= toleranceMm                      # height-based, default 20 mm
 ```
 
-The highest wheel is always the reference. An optional stored calibration (roll/pitch
-captured on a known-level surface) is subtracted from the reading. Output: per-wheel
+The highest wheel is always the reference. Calibration is two-layered (ADR 0010): the
+sensor offset (phone bias) and the vehicle zero (the phone spot's own tilt, captured
+with the vehicle verifiably level, stored sensor-corrected) are kept separately and
+their sum is subtracted from every reading. Output: per-wheel
 `{liftMm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
 display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
 band ("Stability") to the shown mm figure, step, wheel color and level status.

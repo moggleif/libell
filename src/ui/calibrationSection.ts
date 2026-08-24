@@ -15,6 +15,11 @@ export interface CalibrationOptions {
   readTilt(): Calibration | string;
   applyCalibration(calibration: Calibration): void;
   clearCalibration(): void;
+  /** The vehicle zero (#83): the phone spot's own tilt, captured with the vehicle verified level. */
+  getVehicleCalibration(): Calibration | null;
+  /** Capture the current position as level. Returns an error text, or null on success. */
+  calibrateVehicle(): string | null;
+  clearVehicleCalibration(): void;
 }
 
 export interface CalibrationSection {
@@ -24,6 +29,9 @@ export interface CalibrationSection {
 
 export function createCalibrationSection(options: CalibrationOptions): CalibrationSection {
   const calibrationBody = document.createElement('div');
+  const sensorHeading = document.createElement('h3');
+  sensorHeading.className = 'menu__heading';
+  sensorHeading.textContent = t('calibration.sensor.h');
   const calibrationIntro = document.createElement('p');
   calibrationIntro.className = 'menu__text';
   calibrationIntro.textContent = t('calibration.intro');
@@ -37,6 +45,25 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   clearButton.type = 'button';
   clearButton.className = 'menu__action menu__action--secondary';
   clearButton.textContent = t('calibration.clear');
+
+  // --- Vehicle zero (#83): the phone spot's own tilt — set with the
+  // vehicle verified level and the phone in its normal place.
+  const vehicleHeading = document.createElement('h3');
+  vehicleHeading.className = 'menu__heading';
+  vehicleHeading.textContent = t('calibration.vehicle.h');
+  const vehicleIntro = document.createElement('p');
+  vehicleIntro.className = 'menu__text';
+  vehicleIntro.textContent = t('calibration.vehicle.intro');
+  const vehicleStatus = document.createElement('p');
+  vehicleStatus.className = 'menu__text menu__text--status';
+  const vehicleButton = document.createElement('button');
+  vehicleButton.type = 'button';
+  vehicleButton.className = 'menu__action';
+  vehicleButton.textContent = t('calibration.vehicle.now');
+  const vehicleClearButton = document.createElement('button');
+  vehicleClearButton.type = 'button';
+  vehicleClearButton.className = 'menu__action menu__action--secondary';
+  vehicleClearButton.textContent = t('calibration.vehicle.clear');
 
   function refreshCalibration(error?: string): void {
     const calibration = options.getCalibration();
@@ -52,7 +79,30 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     }
     // Grayed out when there is nothing to clear.
     clearButton.disabled = !calibration;
+    refreshVehicle();
   }
+
+  function refreshVehicle(error?: string): void {
+    const vehicle = options.getVehicleCalibration();
+    if (error) {
+      vehicleStatus.textContent = error;
+    } else if (vehicle) {
+      vehicleStatus.textContent = t('calibration.vehicle.status', {
+        roll: vehicle.rollDeg.toFixed(1),
+        pitch: vehicle.pitchDeg.toFixed(1),
+      });
+    } else {
+      vehicleStatus.textContent = t('calibration.vehicle.status.none');
+    }
+    vehicleClearButton.disabled = !vehicle;
+  }
+  vehicleButton.addEventListener('click', () => {
+    refreshVehicle(options.calibrateVehicle() ?? undefined);
+  });
+  vehicleClearButton.addEventListener('click', () => {
+    options.clearVehicleCalibration();
+    refreshVehicle();
+  });
   calibrateButton.addEventListener('click', () => {
     refreshCalibration(options.calibrate() ?? undefined);
   });
@@ -108,6 +158,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   resetFlip();
   refreshCalibration();
   calibrationBody.append(
+    sensorHeading,
     calibrationIntro,
     calibrationStatus,
     calibrateButton,
@@ -115,6 +166,11 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     flipButton,
     flipStatus,
     clearButton,
+    vehicleHeading,
+    vehicleIntro,
+    vehicleStatus,
+    vehicleButton,
+    vehicleClearButton,
   );
   return { element: calibrationBody, refresh: refreshCalibration };
 }
