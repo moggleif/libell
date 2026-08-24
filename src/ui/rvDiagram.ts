@@ -44,7 +44,7 @@ export function wheelMarkers(x: number, y: number, pair: boolean): SVGRectElemen
 }
 
 /** Shape per state so color is never the only signal (WCAG 1.4.1). */
-const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
+export const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
 
 export interface RvDiagram {
   element: HTMLElement;

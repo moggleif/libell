@@ -369,3 +369,13 @@ URL and must keep working with no signal.
 - **Then** the choice persists like every other setting and is restored on next
   launch; a fresh install with no stored preference defaults to Classic, unchanged
   from before this preset existed.
+- **Given** Modern is the preset in effect when the first-run wizard (R18) opens
+- **Then** every step shows a row of bars — one per step, the current step's bar
+  filled — instead of the "n / total" text, and the step heading is larger; step
+  1's wheel-state legend shows one color-swatch-and-glyph row per status (with its
+  own short text) instead of the illustration and caption; and each step's primary
+  action is a filled pill button with any skip action shown as plain text beneath
+  it — the same skip/next behavior as Classic, only restyled. Whichever preset was
+  in effect when the wizard opened is what it keeps for that run, even if Modern is
+  turned on or off from the embedded Settings step meanwhile; the next time the
+  wizard opens it picks up the current preset.
