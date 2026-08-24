@@ -31,3 +31,12 @@ without `BUILD_VERSION` shows nothing rather than something wrong.
 - One environment, one workflow; the footer is the QA contract.
 - `main` is therefore always deployed — merges must keep the app usable.
 - The unusual `CR` scheme needs explaining exactly once (here and in CLAUDE.md).
+
+## Note (2026-08-24)
+
+The tag namespace is the version source of truth: `compute-version` decides
+release-vs-candidate by listing `v<major.minor>.*` tags. A stale tag from before
+this scheme existed (an old `v1.0.0` pointing at early history) made the first
+1.0 deploy come out as a candidate instead of the release. Before bumping
+`VERSION` to a new major.minor, check for — and remove — any pre-scheme tags in
+that namespace.
