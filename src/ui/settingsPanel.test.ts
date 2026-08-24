@@ -10,33 +10,38 @@ function input(form: HTMLFormElement, name: string): HTMLInputElement {
   return form.querySelector<HTMLInputElement>(`input[name="${name}"]`)!;
 }
 
+// This whole block exercises the flat, single-page Classic layout — its
+// select order and field positions only hold for Classic, so it fixes the
+// preset explicitly rather than assuming it from DEFAULT_SETTINGS (#136).
+const classic: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'classic' };
+
 describe('settings form', () => {
   it('tells the user where to find the measurements', () => {
-    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn());
+    const form = createSettingsForm(classic, vi.fn());
     const hint = form.querySelector('.settings__hint');
     expect(hint?.textContent).toContain('registration');
   });
 
   it('round-trips an edited field through save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const form = createSettingsForm(classic, onSave);
     input(form, 'wheelbaseMm').value = '4100';
     form.dispatchEvent(new Event('input'));
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave.mock.calls[0]![0]).toEqual({ ...DEFAULT_SETTINGS, wheelbaseMm: 4100 });
+    expect(onSave.mock.calls[0]![0]).toEqual({ ...classic, wheelbaseMm: 4100 });
   });
 
   it('falls back to defaults for an invalid field instead of saving garbage', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const form = createSettingsForm(classic, onSave);
     input(form, 'wheelbaseMm').value = '-5';
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
   });
 
   it('choosing "Custom set" sticks instead of snapping back to the matching model (#91)', () => {
-    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn());
+    const form = createSettingsForm(classic, vi.fn());
     // The default steps match Thule Levelers, so the picker shows it.
     const rampSelect = form.querySelectorAll('select')[2] as HTMLSelectElement;
     expect(rampSelect.value).not.toBe('');
@@ -57,7 +62,7 @@ describe('settings form', () => {
 
   it('round-trips the axle configuration (#81)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const form = createSettingsForm(classic, onSave);
     const axleSelect = form.querySelectorAll('select')[1] as HTMLSelectElement;
     axleSelect.value = 'boggie';
     axleSelect.dispatchEvent(new Event('change'));
@@ -67,7 +72,7 @@ describe('settings form', () => {
 
   it('round-trips the ramp count and drain position (#93)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const form = createSettingsForm(classic, onSave);
     // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme, appearance.
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     const drainSelect = form.querySelectorAll('select')[4] as HTMLSelectElement;
@@ -83,7 +88,7 @@ describe('settings form', () => {
   });
 
   it('hides the ramp count and drain fields for a caravan', () => {
-    const caravan: LevelSettings = { ...DEFAULT_SETTINGS, vehicleType: 'caravan' };
+    const caravan: LevelSettings = { ...classic, vehicleType: 'caravan' };
     const form = createSettingsForm(caravan, vi.fn());
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     expect((rampCountSelect.closest('label') as HTMLLabelElement).hidden).toBe(true);
@@ -91,7 +96,7 @@ describe('settings form', () => {
 
   it('round-trips the appearance preset, independent of theme (#104)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(DEFAULT_SETTINGS, onSave);
+    const form = createSettingsForm(classic, onSave);
     const selects = form.querySelectorAll('select');
     const themeSelect = selects[6] as HTMLSelectElement;
     const appearanceSelect = selects[7] as HTMLSelectElement;
@@ -105,7 +110,7 @@ describe('settings form', () => {
   });
 
   it('keeps math in mm while displaying cm', () => {
-    const cmSettings: LevelSettings = { ...DEFAULT_SETTINGS, displayUnit: 'cm' };
+    const cmSettings: LevelSettings = { ...classic, displayUnit: 'cm' };
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(cmSettings, onSave);
     // The field shows cm (3800 mm -> 380), but the saved value is mm again.
@@ -117,7 +122,7 @@ describe('settings form', () => {
   });
 
   it('Classic mode has no tab elements (#108)', () => {
-    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn());
+    const form = createSettingsForm(classic, vi.fn());
     expect(form.querySelector('.settings__tabs')).toBeNull();
     expect(form.querySelectorAll('[role="tab"]').length).toBe(0);
     // The original flat structure — a section heading straight in the form.

@@ -40,6 +40,10 @@ function modernSettings(): LevelSettings {
   return { ...DEFAULT_SETTINGS, appearance: 'modern' };
 }
 
+function classicSettings(): LevelSettings {
+  return { ...DEFAULT_SETTINGS, appearance: 'classic' };
+}
+
 function card(): HTMLElement {
   return document.querySelector('.onboarding__card')!;
 }
@@ -52,22 +56,22 @@ function next(): void {
   nextButton.click();
 }
 
-describe('onboarding wizard — Classic (default appearance, pixel-identical to pre-#110)', () => {
+describe('onboarding wizard — Classic (pixel-identical to pre-#110)', () => {
   it('shows the "n / total" text progress, not bars', () => {
-    showOnboarding(makeOptions());
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
     expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 3');
     expect(card().querySelector('.onboarding__bars')).toBeNull();
   });
 
   it('renders the SVG legend illustration and caption on step 1, not legend rows', () => {
-    showOnboarding(makeOptions());
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
     expect(card().querySelector('.illu')).not.toBeNull();
     expect(card().textContent).toContain(t('help.screen.t'));
     expect(card().querySelector('.onboarding__legend')).toBeNull();
   });
 
   it('does not add any modern modifier classes', () => {
-    showOnboarding(makeOptions());
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
     expect(card().querySelector('.onboarding__title--modern')).toBeNull();
     expect(card().querySelector('.onboarding__next--modern')).toBeNull();
     expect(card().querySelector('.onboarding__nav--modern')).toBeNull();
@@ -75,7 +79,9 @@ describe('onboarding wizard — Classic (default appearance, pixel-identical to 
 
   it('advances through steps and finishes on the last step’s button', () => {
     let finished = false;
-    showOnboarding(makeOptions({ onFinished: () => (finished = true) }));
+    showOnboarding(
+      makeOptions({ initialSettings: classicSettings(), onFinished: () => (finished = true) }),
+    );
     next(); // step 1 -> 2
     expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
     next(); // step 2 -> 3

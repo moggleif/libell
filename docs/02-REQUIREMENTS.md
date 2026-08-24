@@ -361,14 +361,15 @@ URL and must keep working with no signal.
 
 - **Given** the Settings form
 - **When** I open the Appearance field
-- **Then** I can choose "Classic" (default — today's look) or "Modern" (the
-  redesigned surfaces and screens, ADR 0012), combined freely with the Theme field
-  (R15) — choosing Modern does not change whether the app follows the phone's
-  light/dark scheme or a forced choice, and vice versa.
-- **Given** Modern is chosen and saved
+- **Then** I can choose "Modern" (the redesigned surfaces and screens, ADR 0012 —
+  default) or "Classic" (today's original look, a permanent, fully-supported
+  choice, not just kept around for migration), combined freely with the Theme
+  field (R15) — choosing either does not change whether the app follows the
+  phone's light/dark scheme or a forced choice, and vice versa.
+- **Given** a choice is made and saved, or nothing has ever been chosen
 - **Then** the choice persists like every other setting and is restored on next
-  launch; a fresh install with no stored preference defaults to Classic, unchanged
-  from before this preset existed.
+  launch; a fresh install, and settings stored before this preset existed, both
+  resolve to Modern (#136) — an explicit Classic choice is never overridden.
 - **Given** Modern is the preset in effect when the first-run wizard (R18) opens
 - **Then** every step shows a row of bars — one per step, the current step's bar
   filled — instead of the "n / total" text, and the step heading is larger; step

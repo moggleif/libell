@@ -34,9 +34,13 @@ function modernSettings(): LevelSettings {
   return { ...DEFAULT_SETTINGS, appearance: 'modern' };
 }
 
-describe('menu — Classic (default appearance, unchanged by #107)', () => {
+function classicSettings(): LevelSettings {
+  return { ...DEFAULT_SETTINGS, appearance: 'classic' };
+}
+
+describe('menu — Classic (unchanged by #107)', () => {
   it('renders a flat item list, no cards or "other" rows', () => {
-    const menu = createMenu(makeOptions());
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     menu.open('settings');
     expect(menu.element.querySelectorAll('.menu__item').length).toBeGreaterThanOrEqual(6);
     expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(0);
@@ -44,7 +48,7 @@ describe('menu — Classic (default appearance, unchanged by #107)', () => {
   });
 
   it('still opens Settings straight from closed (depth 0 → 2)', () => {
-    const menu = createMenu(makeOptions());
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     expect(menu.isOpen()).toBe(false);
     menu.open('settings');
     expect(menu.isOpen()).toBe(true);
