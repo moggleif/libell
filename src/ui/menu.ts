@@ -182,7 +182,12 @@ export function createMenu(options: MenuOptions): Menu {
 
   // --- Settings ---
   const settingsBody = document.createElement('div');
-  settingsBody.append(createSettingsForm(options.initialSettings, options.onSettingsSaved));
+  // `options` (MenuOptions) carries every field CalibrationOptions needs —
+  // passed through so Modern mode's embedded Kalibrering tab (#108) talks
+  // to the real sensor, not a stand-in.
+  settingsBody.append(
+    createSettingsForm(options.initialSettings, options.onSettingsSaved, options),
+  );
   addSection('settings', t('menu.settings'), settingsBody);
 
   // --- Calibration (one-shot + flip) ---
