@@ -143,6 +143,10 @@ export const MESSAGES = {
     'calibration.flip.done': 'Done! Your surface leans {surface}° — cancelled out.',
     'calibration.flip.err.moved':
       'The two captures do not match — did the phone move? Try again from the start.',
+    // Short status-pill labels for the Modern calibration cards (#109).
+    'calibration.pill.notDone': 'NOT DONE',
+    'calibration.pill.done': 'DONE',
+    'calibration.pill.none': 'NONE',
 
     'feedback.intro':
       'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
@@ -357,6 +361,10 @@ export const MESSAGES = {
     'calibration.flip.done': 'Klart! Din yta lutar {surface}° — borträknat.',
     'calibration.flip.err.moved':
       'De två mätningarna stämmer inte överens — flyttades telefonen? Börja om.',
+    // Korta statusetiketter för Modern-kalibreringens kort (#109).
+    'calibration.pill.notDone': 'EJ GJORD',
+    'calibration.pill.done': 'GJORD',
+    'calibration.pill.none': 'INGET',
 
     'feedback.intro':
       'Har du hittat ett problem eller har en idé? Fyll i det här och tryck på ' +
