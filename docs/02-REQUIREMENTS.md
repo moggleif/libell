@@ -405,3 +405,38 @@ URL and must keep working with no signal.
 - **Given** iOS's autoplay restrictions
 - **Then** guidance audio reuses the same `unlockAudio()` gesture-unlock as the
   R16 chime — the same Settings-save gesture that unlocks one unlocks both.
+
+## R31 — Saved level targets: switch between more than one intentional tilt
+
+- **Given** no target preset has ever been selected (the default, "Normal")
+- **Then** the app behaves exactly as it does today: leveling targets true level, and
+  the main screen shows nothing about targets at all (regression guard; ADR 0013).
+- **Given** the Targets menu section (reached from the menu, or from the main-screen
+  badge below once a target is active), listing "Normal" first and then any saved
+  presets
+- **When** I tap "Save current tilt as new target" and type a name
+- **Then** the current tilt — relative to whatever the sensor calibration and vehicle
+  zero (R11, R24) already define as level — is captured and stored as a new preset
+  under that name; a capture reading more than 15° from that zero is rejected, the
+  same implausible-capture guard R24 already uses.
+- **Given** a saved preset
+- **When** I tap it in the Targets section
+- **Then** it becomes the active target: every reading on the main screen is now
+  measured against that preset's tilt instead of true level — a THIRD offset summed
+  on top of the sensor calibration + vehicle zero sum (R24), never stored in the same
+  field as either and never touched by redoing or clearing them (ADR 0013). A small
+  badge appears on the main screen reading "Target: {name}" — the only thing the
+  main screen ever shows about targets, and gone the instant "Normal" is picked
+  again.
+- **Given** a preset I no longer want
+- **Then** its ✕ button deletes it; deleting the active one falls back to Normal
+  automatically. "Normal" itself has no delete button and can never be selected away
+  from existing — it is not a stored preset, so it can never be lost.
+- **Given** the app is reloaded
+- **Then** the saved presets and whichever one was active both survive, independent
+  of sensor calibration and the vehicle zero — either of those can be redone or
+  cleared without affecting a saved preset or which one is active.
+- This is unrelated to the drain-side ramp tie-break (#93, R27, ADR 0011), which only
+  chooses between placements already within tolerance and never deliberately
+  overshoots it; a target preset here can deliberately aim for a non-level position.
+  Everything is stored in `localStorage` only — no account, no backend.
