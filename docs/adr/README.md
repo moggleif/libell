@@ -29,3 +29,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0008 | [Caravan mode: the axle is the reference, the jockey is bidirectional](0008-caravan-vehicle-model.md)   |
 | 0009 | [A boggie is one leveling axle at its midpoint, with paired wheels](0009-boggie-as-midpoint-axle.md)    |
 | 0010 | [Two-layer calibration: sensor offset + vehicle zero, stored decomposed](0010-two-layer-calibration.md) |
+| 0011 | [Ramp advice is a plan for the ramps the user owns](0011-ramp-plan-for-owned-ramps.md)                  |

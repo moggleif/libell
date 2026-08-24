@@ -17,15 +17,20 @@
  * The level status is derived from the displayed wheel severities — level
  * exactly when every wheel shows green — so the status text, the overlay
  * and the wheel colors can never contradict each other.
+ *
+ * The motorhome screen shows a ramp *plan* (which wheels get the owned
+ * ramps — ADR 0011), so its stabilizer guards the plan as a whole; the
+ * caravan reuses the per-wheel `stabilizeLift` core.
  */
 import type { LevelingResult, LiftSeverity, WheelId } from './leveling';
 import { liftSeverity, recommendStep, WHEEL_IDS } from './leveling';
+import { evaluateSteps, plannedSeverity, planRamps, type RampPlan } from './rampPlan';
 import type { LevelSettings } from './settings';
 
 export interface DisplayWheel {
   /** Lift rounded to whole mm, changed only past the dead band. */
   displayMm: number;
-  /** Recommended ramp step (mm, 0 = none), changed only when clearly better. */
+  /** Planned ramp step (mm, 0 = none), changed only when clearly better. */
   stepMm: number;
   severity: LiftSeverity;
 }
@@ -54,8 +59,8 @@ export function newLiftPending(): LiftPending {
 
 /**
  * Stabilize one wheel's displayed lift/step/severity against the previous
- * shown state — the dead-band + dwell core, shared by the motorhome and
- * caravan stabilizers.
+ * shown state — the dead-band + dwell core used by the caravan, whose
+ * single ramped wheel needs no plan (the step is simply the closest one).
  */
 export function stabilizeLift(
   prev: DisplayWheel,
@@ -122,38 +127,130 @@ export function stabilizeLift(
 }
 
 /**
- * Creates a stateful stabilizer: feed it every LevelingResult with a
- * monotonic timestamp (`performance.now()` in the app, hand-stepped in
- * tests) and render what it returns. State is per-instance, so tests and
- * the app each own their history.
+ * Creates a stateful stabilizer for the motorhome screen: feed it every
+ * LevelingResult with a monotonic timestamp (`performance.now()` in the
+ * app, hand-stepped in tests) and render what it returns. State is
+ * per-instance, so tests and the app each own their history.
+ *
+ * Three stabilized layers:
+ * - each wheel's mm figure: dead band + dwell on the raw lift, as before;
+ * - the ramp plan (which wheels get steps): a fresh optimum replaces the
+ *   shown plan only when it is *clearly* better under the current lifts —
+ *   clearly more level, level with fewer ramps, or (all else equal)
+ *   clearly better for the drain — sustained for the value dwell;
+ * - each wheel's color: the fresh plan's verdict, adopted only when the
+ *   dead-band-shifted readings agree on it and it holds for the state
+ *   dwell — so the level status cannot flap at a boundary.
  */
 export function createDisplayStabilizer(): (
   result: LevelingResult,
   settings: LevelSettings,
   nowMs: number,
 ) => DisplayResult {
-  const wheels = {} as Record<WheelId, DisplayWheel>;
-  const pending = {} as Record<WheelId, LiftPending>;
   let initialized = false;
+  const displayMm = {} as Record<WheelId, number>;
+  const severity = {} as Record<WheelId, LiftSeverity>;
+  const mmSince = {} as Record<WheelId, number | null>;
+  const severitySince = {} as Record<WheelId, number | null>;
+  let shownSteps = {} as Record<WheelId, number>;
+  let planSince: number | null = null;
 
   return (result, settings, nowMs) => {
-    for (const id of WHEEL_IDS) {
-      const liftMm = result.wheels[id].liftMm;
-      if (!initialized) {
-        wheels[id] = {
-          displayMm: Math.round(liftMm),
-          stepMm: recommendStep(liftMm, settings.rampStepHeightsMm),
-          severity: liftSeverity(liftMm, settings),
-        };
-        pending[id] = newLiftPending();
-        continue;
+    const deadbandMm = settings.stabilityMm;
+    const lifts = {} as Record<WheelId, number>;
+    for (const id of WHEEL_IDS) lifts[id] = result.wheels[id].liftMm;
+
+    // The best plan for the current reading, and for the reading shifted
+    // by the dead band toward/away from level (the reference wheel stays
+    // the reference) — the severity boundary guard.
+    const fresh = planRamps(lifts, settings);
+    const shiftedPlan = (deltaMm: number): { plan: RampPlan; lifts: Record<WheelId, number> } => {
+      const shifted = {} as Record<WheelId, number>;
+      for (const id of WHEEL_IDS)
+        shifted[id] = lifts[id] > 0 ? Math.max(0, lifts[id] + deltaMm) : 0;
+      return { plan: planRamps(shifted, settings), lifts: shifted };
+    };
+    const severityOf = (
+      { plan, lifts: at }: { plan: RampPlan; lifts: Record<WheelId, number> },
+      id: WheelId,
+    ) => plannedSeverity(plan.steps[id], plan.deficits[id], at[id], settings);
+
+    if (!initialized) {
+      initialized = true;
+      shownSteps = { ...fresh.steps };
+      for (const id of WHEEL_IDS) {
+        displayMm[id] = Math.round(lifts[id]);
+        severity[id] = severityOf({ plan: fresh, lifts }, id);
+        mmSince[id] = null;
+        severitySince[id] = null;
       }
-      wheels[id] = stabilizeLift(wheels[id], pending[id], liftMm, settings, nowMs);
+    } else {
+      // Plan adoption: compare the fresh optimum against what the shown
+      // plan would achieve under the *current* lifts.
+      if (WHEEL_IDS.every((id) => fresh.steps[id] === shownSteps[id])) {
+        planSince = null;
+      } else {
+        const current = evaluateSteps(shownSteps, lifts, settings);
+        const clearlyLevel = (plan: RampPlan) =>
+          plan.maxDeficitMm <= settings.toleranceMm - deadbandMm;
+        const wantsPlan =
+          fresh.maxDeficitMm + deadbandMm < current.maxDeficitMm ||
+          (clearlyLevel(fresh) && fresh.rampsUsed < current.rampsUsed) ||
+          (clearlyLevel(fresh) &&
+            clearlyLevel(current) &&
+            fresh.rampsUsed === current.rampsUsed &&
+            fresh.drainScoreMm > current.drainScoreMm + deadbandMm);
+        if (!wantsPlan) {
+          planSince = null;
+        } else {
+          planSince ??= nowMs;
+          if (nowMs - planSince >= VALUE_DWELL_MS) {
+            shownSteps = { ...fresh.steps };
+            planSince = null;
+          }
+        }
+      }
+
+      const lo = shiftedPlan(-deadbandMm);
+      const hi = shiftedPlan(deadbandMm);
+      for (const id of WHEEL_IDS) {
+        // Whole-mm figure: clearly past the shown value, sustained.
+        const wantsMm = Math.abs(lifts[id] - displayMm[id]) > 0.5 + deadbandMm;
+        if (!wantsMm) {
+          mmSince[id] = null;
+        } else {
+          mmSince[id] ??= nowMs;
+          if (nowMs - mmSince[id]! >= VALUE_DWELL_MS) {
+            displayMm[id] = Math.round(lifts[id]);
+            mmSince[id] = null;
+          }
+        }
+
+        // Color: what the fresh plan says about this wheel — but only
+        // when a dead band's worth of tilt either way says the same.
+        const candidate = severityOf({ plan: fresh, lifts }, id);
+        const wantsSeverity =
+          candidate !== severity[id] &&
+          severityOf(lo, id) === candidate &&
+          severityOf(hi, id) === candidate;
+        if (!wantsSeverity) {
+          severitySince[id] = null;
+        } else {
+          severitySince[id] ??= nowMs;
+          if (nowMs - severitySince[id]! >= STATE_DWELL_MS) {
+            severity[id] = candidate;
+            severitySince[id] = null;
+          }
+        }
+      }
     }
 
-    initialized = true;
+    const wheels = {} as Record<WheelId, DisplayWheel>;
+    for (const id of WHEEL_IDS) {
+      wheels[id] = { displayMm: displayMm[id], stepMm: shownSteps[id], severity: severity[id] };
+    }
     // Level exactly when every wheel shows green — one source of truth.
-    const isLevel = WHEEL_IDS.every((id) => wheels[id].severity === 'none');
+    const isLevel = WHEEL_IDS.every((id) => severity[id] === 'none');
     return { rollDeg: result.rollDeg, pitchDeg: result.pitchDeg, isLevel, wheels };
   };
 }

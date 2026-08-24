@@ -50,16 +50,17 @@ export function placementIllustration(label: string): SVGSVGElement {
   return root;
 }
 
-/** The three wheel states with their glyphs. */
+/** The four wheel states with their glyphs. */
 export function legendIllustration(label: string): SVGSVGElement {
-  const root = svg('0 0 220 70', label);
+  const root = svg('0 0 260 70', label);
   const states: [string, string][] = [
     ['illu__wheel--ok', '✓'],
     ['illu__wheel--up', '↑'],
     ['illu__wheel--no', '✕'],
+    ['illu__wheel--dim', '–'],
   ];
   states.forEach(([cls, glyph], i) => {
-    const x = 30 + i * 75;
+    const x = 30 + i * 60;
     root.append(
       el('rect', {
         x: String(x),
