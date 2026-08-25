@@ -332,6 +332,11 @@ URL and must keep working with no signal.
   line counts only the wheels the plan asks me to drive up — or says the
   ramps are not enough when no placement helps at all. A boggie pair consumes two
   ramps (both wheels of the pair drive up, R23).
+- **Given** no placement of my ramps reaches the tolerance
+- **Then** the "ramps are not enough" status also conveys a rough magnitude — "close"
+  when the best plan's residual deficit is within twice the tolerance, "far" beyond
+  that — derived only from that deficit, never implying which way to move the vehicle
+  or where a better spot is (tilt alone cannot say that).
 - **Given** every wheel can be brought within the tolerance
 - **Then** the plan uses as few ramps as possible and the vehicle reports level once
   I have driven up.
