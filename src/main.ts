@@ -61,12 +61,18 @@ import {
   type OrientationSensor,
   type SensorState,
 } from './sensor/orientation';
-import { createEasyLevelSensor, type EasyLevelSensor } from './sensor/easyLevelSensor';
+import {
+  createEasyLevelSensor,
+  isWebBluetoothSupported,
+  type EasyLevelSensor,
+} from './sensor/easyLevelSensor';
 import { isSensorUnavailable } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
-import { createMenu } from './ui/menu';
+import { createMenu, type Menu } from './ui/menu';
+import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { createInfoPage } from './ui/infoMenu';
+import { createSensorPage } from './ui/sensorPage';
 import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
@@ -451,13 +457,16 @@ function bootstrap(root: HTMLElement): void {
     });
   };
 
-  // Menu (hamburger) with Settings / Calibration / Help.
-  const menu = createMenu({
+  // Shared options bag (#screen-cleanup follow-up): every field the ☰
+  // Classic menu, the Modern Settings page, the "?" info page's
+  // Diagnostics tab, and the External sensor page each need — reused
+  // as-is by whichever of those get constructed below, never duplicated.
+  const menuOptions = {
     initialSettings: settings,
     appearance: settings.appearance,
     openOnboarding,
     hasSavedSettings: () => demo || hasStoredSettings(),
-    onSettingsSaved(next) {
+    onSettingsSaved(next: LevelSettings) {
       settings = next;
       applyTheme(settings.theme);
       applyAppearance(settings.appearance);
@@ -470,7 +479,7 @@ function bootstrap(root: HTMLElement): void {
     getCalibration: () => calibration,
     calibrate: () => calibrateNow(),
     readTilt: () => readTiltNow(),
-    applyCalibration(next) {
+    applyCalibration(next: Calibration) {
       calibration = next;
       calibrationCapturedAt = Date.now();
       saveCalibration(next, undefined, calibrationCapturedAt);
@@ -497,9 +506,9 @@ function bootstrap(root: HTMLElement): void {
     },
     getTargetPresets: () => targetPresets,
     getActiveTargetId: () => activeTargetId,
-    selectTarget: (id) => selectTargetNow(id),
-    addTargetPreset: (name) => addTargetPresetNow(name),
-    deleteTargetPreset: (id) => deleteTargetPresetNow(id),
+    selectTarget: (id: string | null) => selectTargetNow(id),
+    addTargetPreset: (name: string) => addTargetPresetNow(name),
+    deleteTargetPreset: (id: string) => deleteTargetPresetNow(id),
     getSensorSource: () => sensor.getSource(),
     getSensorState: () => sensor.getState(),
     connectEasyLevel: () => connectEasyLevelNow(),
@@ -523,18 +532,53 @@ function bootstrap(root: HTMLElement): void {
       soundOnLevel: settings.soundOnLevel,
       soundGuidance: settings.soundGuidance,
     }),
-  });
-  document.body.append(menu.element);
+  };
+
+  // Modern (screen-cleanup follow-up): the gear icon opens the Settings
+  // page directly (Vehicle/Ramps/Kalibrering/Targets as tabs), never a
+  // drawer — and the old ☰ menu is gone entirely for this appearance.
+  // Classic has no tabs to land on, so it keeps the ☰ drawer, now holding
+  // just Settings/Calibration/Targets (Diagnostics, the introduction
+  // relaunch and External sensor moved to the universal pages below,
+  // reachable from Classic too — see their own file comments for why).
+  // Decided once at bootstrap, like every other appearance-branching
+  // component (rvDiagram, settingsPanel, onboarding) — never rebuilt on a
+  // later live appearance change.
+  const isModern = settings.appearance === 'modern';
+  let menu: Menu | null = null;
+  let settingsPage: SettingsPage | null = null;
   const settingsButton = document.querySelector<HTMLButtonElement>('#settings-button');
-  if (settingsButton) menu.attach(settingsButton);
-  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
-  // follow-up) — a fully independent component, not a section of the ☰
-  // Settings menu: sharing that menu's history depth let its back button
-  // pop through to reveal the Settings drawer underneath by mistake.
-  const infoPage = createInfoPage();
+  if (isModern) {
+    settingsPage = createSettingsPage(menuOptions);
+    document.body.append(settingsPage.element);
+    if (settingsButton) settingsPage.attach(settingsButton);
+  } else {
+    menu = createMenu(menuOptions);
+    document.body.append(menu.element);
+    if (settingsButton) menu.attach(settingsButton);
+  }
+  const isMenuOpen = () =>
+    isModern ? (settingsPage?.isOpen() ?? false) : (menu?.isOpen() ?? false);
+
+  // "?" opens its own Help/About/Feedback/Diagnostics tabbed page
+  // (screen-cleanup follow-up), with the introduction relaunch at the top
+  // of the Help tab — a fully independent page (universal, both
+  // appearances), not a section of the ☰ Settings menu: sharing that
+  // menu's history depth let its back button pop through to reveal the
+  // Settings drawer underneath by mistake.
+  const infoPage = createInfoPage({ diagnostics: menuOptions, openOnboarding });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
   if (helpButton) infoPage.attach(helpButton);
+
+  // External sensor (screen-cleanup follow-up): its own page, reached
+  // only from the top-right sensor-status icon now that the ☰ menu no
+  // longer carries an "External sensor" entry — universal, both
+  // appearances. Omitted entirely without Web Bluetooth — never a
+  // silently broken option (#116).
+  const easyLevelSupported = isWebBluetoothSupported();
+  const sensorPage = easyLevelSupported ? createSensorPage(menuOptions) : null;
+  if (sensorPage) document.body.append(sensorPage.element);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the
@@ -570,7 +614,14 @@ function bootstrap(root: HTMLElement): void {
   // Dashboard-style warning lamps. Demo mode presents as a configured
   // app (in memory only — nothing is written), so screenshots and demos
   // show the product, not the first-run warnings (#70).
-  const indicators = createIndicators((section) => menu.open(section));
+  const indicators = createIndicators((section) => {
+    if (isModern) {
+      if (section === 'calibration') settingsPage!.openCalibration();
+      else settingsPage!.open();
+    } else {
+      menu!.open(section);
+    }
+  });
   // Which pair of calibrations the amber lamp checks follows the ACTIVE
   // source (#131, ADR 0014), same as `zeroCalibration()` above: the
   // phone's sensor calibration + vehicle zero while the phone is active,
@@ -593,19 +644,21 @@ function bootstrap(root: HTMLElement): void {
   // target preset — hidden whenever Normal (true level) is active, so
   // the normal case shows nothing extra. Tapping it jumps straight to
   // the Targets menu section (fast switching from the main screen).
-  const targetBadge = createTargetBadge(() => menu.open('targets'));
+  const targetBadge = createTargetBadge(() => {
+    if (isModern) settingsPage!.openTargets();
+    else menu!.open('targets');
+  });
   document.querySelector('#indicators')?.append(targetBadge.element);
   const updateTargetBadge = () => {
     targetBadge.update(activeTargetName());
   };
   updateTargetBadge();
 
-  // External-sensor status indicator (#129): the main screen's only trace
-  // of an active external source — hidden entirely while the phone's own
-  // sensor is active (`sensorStatusIndicator.ts`'s regression guard).
-  // Tapping it jumps to the same "External sensor" menu page the
-  // sensor-source section lives on (mirrors the warning lamps' pattern).
-  const sensorStatus = createSensorStatusIndicator(() => menu.open('sensorSource'));
+  // External-sensor status indicator (#129, screen-cleanup follow-up): the
+  // only entry point to `sensorPage` now that the ☰ menu no longer
+  // carries "External sensor" — visible whenever Web Bluetooth exists at
+  // all, not just once connected (`sensorStatusIndicator.ts`).
+  const sensorStatus = createSensorStatusIndicator(easyLevelSupported, () => sensorPage?.open());
   document.querySelector('#indicators')?.append(sensorStatus.element);
   const updateSensorStatus = () => sensorStatus.update(sensor.getSource(), sensor.getState());
   updateSensorStatus();
@@ -966,10 +1019,10 @@ function bootstrap(root: HTMLElement): void {
       // has no separate callback into this module), the same way the
       // "waiting" hint below already discovers it.
       updateSensorStatus();
-      // Menu, info page, or wizard open: the user is reading, phone in
-      // hand — no pose nagging, no overlays, no celebration until they
-      // are back.
-      if (menu.isOpen() || infoPage.isOpen() || onboardingOpen) {
+      // Settings, info page, sensor page, or wizard open: the user is
+      // reading, phone in hand — no pose nagging, no overlays, no
+      // celebration until they are back.
+      if (isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen) {
         poseOverlay.hidden = true;
         staleOverlay.hidden = true;
         fallbackPrompt.update(false);
