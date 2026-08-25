@@ -1,10 +1,29 @@
 /**
- * First-run onboarding wizard (issue #43): originally a fixed three
- * steps — how to place the phone, the vehicle measurements, calibration.
- * Every step can be skipped; whatever is skipped stays flagged by the
- * warning lamps, so the wizard guides without ever blocking. Reuses the
- * real settings form and calibration section — one source of truth for
- * both.
+ * First-run onboarding wizard (issue #43, reworked #184): how to place
+ * the phone, which vehicle is being leveled, the vehicle measurements,
+ * calibration. Every step but the sensor-source and vehicle-type ones
+ * can be skipped; whatever is skipped stays flagged by the warning
+ * lamps, so the wizard guides without ever blocking. Reuses the real
+ * settings form, calibration section and illustrations — one source of
+ * truth, never a wizard-only duplicate that can drift from the real
+ * thing (#184's whole complaint about the pre-rework wizard).
+ *
+ * Vehicle type (#184): a new step, "What are you leveling?" (motorhome
+ * or caravan — the same two choices and labels Settings uses), always
+ * shown once — right after the sensor-source step when that one exists,
+ * otherwise first. `vehicleChoice` starts at whatever the stored settings
+ * already say (not hardcoded to motorhome) and is read by every later
+ * step: the placement and measurements illustrations pick the matching
+ * shape (`helpIllustrations.ts`), and the measurements step is built with
+ * `vehicleType` overridden to this choice so its field labels/visibility
+ * (axle-to-jockey, hidden front track width, ...) already match — see
+ * `settingsPanel.ts`'s existing vehicle-aware relabeling, reused as-is.
+ *
+ * Calibration (#184): embeds `createCalibrationSection` whole, exactly as
+ * Settings → Calibration does — no more reduced/compact rendering of its
+ * own, which used to look visibly older than the real Modern two-card
+ * design (#109) it stood in for. "Use the same" is the point: one
+ * calibration UI, not two that can drift apart.
  *
  * Sensor source choice (#135, ADR 0014): when an external sensor option
  * actually exists (`isWebBluetoothSupported()` — the exact same gate
@@ -12,7 +31,7 @@
  * new first step asks "This phone" vs. "external sensor" and branches
  * the rest of the wizard:
  *   - "This phone" (the default, and the only option when the gate is
- *     false): unchanged three-step flow below.
+ *     false): unchanged phone flow below.
  *   - external: connect + installation calibration (reusing
  *     `sensorSourceSection.ts`'s component whole — the same "Set vehicle
  *     level" block #131 added to the real menu page, never a wizard-only
@@ -30,7 +49,7 @@
  * fresh wizard picks up the new preset the next time it opens, since
  * `showOnboarding` is always called anew (see `main.ts`).
  */
-import type { LevelSettings } from '../domain/settings';
+import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
@@ -60,6 +79,13 @@ type SensorChoice = 'phone' | 'external';
 const SOURCE_OPTIONS: [SensorChoice, MessageKey][] = [
   ['phone', 'onboard.source.phone'],
   ['external', 'menu.sensorSource'],
+];
+
+// Reuses 'vehicle.motorhome'/'vehicle.caravan' — the exact labels
+// Settings already shows for this same choice (#184).
+const VEHICLE_OPTIONS: [VehicleType, MessageKey][] = [
+  ['motorhome', 'vehicle.motorhome'],
+  ['caravan', 'vehicle.caravan'],
 ];
 
 /** Modern legend rows (#110): status color swatch, glyph, short text —
@@ -122,6 +148,13 @@ export function showOnboarding(options: OnboardingOptions): void {
   // page (#116) — never a dead radio button on Safari/iOS or desktop.
   const sourceChoiceAvailable = isWebBluetoothSupported();
 
+  // Which vehicle every later step's imagery/labels are built for (#184)
+  // — starts at whatever is already stored (not hardcoded to motorhome).
+  // Every step after the vehicle step reads this live when it builds, so
+  // closing the wizard before or during the vehicle step just leaves the
+  // stored choice untouched — never an ambiguous state.
+  let vehicleChoice: VehicleType = options.initialSettings.vehicleType;
+
   const overlay = document.createElement('div');
   overlay.className = 'onboarding';
 
@@ -160,7 +193,7 @@ export function showOnboarding(options: OnboardingOptions): void {
         // How to read the answer (#71, restyled #110): color swatch
         // + glyph + short text per status, instead of the SVG legend.
         return [
-          placementIllustration(t('onboard.step1.h')),
+          placementIllustration(t('onboard.step1.h'), vehicleChoice),
           text,
           buildModernLegend(),
           audioGuidanceHint(),
@@ -172,7 +205,7 @@ export function showOnboarding(options: OnboardingOptions): void {
       legendText.className = 'menu__text';
       legendText.textContent = t('help.screen.t');
       return [
-        placementIllustration(t('onboard.step1.h')),
+        placementIllustration(t('onboard.step1.h'), vehicleChoice),
         text,
         legendIllustration(t('help.screen.h')),
         legendText,
@@ -195,18 +228,27 @@ export function showOnboarding(options: OnboardingOptions): void {
     title: t('menu.settings'),
     skipLabel: t('onboard.skipDefaults'),
     build: () => [
-      measuresIllustration(t('menu.settings')),
-      createSettingsForm(options.initialSettings, options.onSettingsSaved, undefined, {
-        compact: true,
-      }),
+      // vehicleType is overridden to the vehicle step's choice (#184) so
+      // this reduced form's field labels/visibility already match —
+      // settingsPanel.ts's own vehicle-aware relabeling does the rest.
+      measuresIllustration(t('menu.settings'), vehicleChoice),
+      createSettingsForm(
+        { ...options.initialSettings, vehicleType: vehicleChoice },
+        options.onSettingsSaved,
+        undefined,
+        { compact: true },
+      ),
       moreInMenuNote(),
     ],
   };
 
+  // Embeds the exact same calibration UI Settings → Calibration shows —
+  // no reduced rendering of its own (#184; used to look visibly older
+  // than the real Modern two-card design, #109).
   const calibrationStep: Step = {
     title: t('menu.calibration'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createCalibrationSection(options, { compact: true }).element, moreInMenuNote()],
+    build: () => [createCalibrationSection(options).element],
   };
 
   // External path's calibration equivalent (#135, ADR 0014): the box's
@@ -222,6 +264,36 @@ export function showOnboarding(options: OnboardingOptions): void {
     build: () => [createSensorSourceSection(options).element],
   };
 
+  // A labeled radio group for a single wizard choice — shared by the
+  // sensor-source and vehicle-type steps below, each just its own value
+  // type, options and change handler (#184).
+  function buildChoiceGroup<T extends string>(
+    name: string,
+    choices: [T, MessageKey][],
+    current: T,
+    onChange: (value: T) => void,
+  ): HTMLDivElement {
+    const group = document.createElement('div');
+    group.className = 'onboarding__source';
+    for (const [value, labelKey] of choices) {
+      const label = document.createElement('label');
+      label.className = 'onboarding__source-option';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = name;
+      radio.value = value;
+      radio.checked = current === value;
+      radio.addEventListener('change', () => {
+        if (radio.checked) onChange(value);
+      });
+      const text = document.createElement('span');
+      text.textContent = t(labelKey);
+      label.append(radio, text);
+      group.append(label);
+    }
+    return group;
+  }
+
   let sensorChoice: SensorChoice = 'phone';
 
   const sourceStep: Step = {
@@ -230,37 +302,39 @@ export function showOnboarding(options: OnboardingOptions): void {
       const intro = document.createElement('p');
       intro.className = isModern ? 'onboarding__text--modern' : 'menu__text';
       intro.textContent = t('onboard.source.intro');
+      return [
+        intro,
+        buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, sensorChoice, (value) => {
+          sensorChoice = value;
+        }),
+      ];
+    },
+  };
 
-      const group = document.createElement('div');
-      group.className = 'onboarding__source';
-      for (const [value, labelKey] of SOURCE_OPTIONS) {
-        const label = document.createElement('label');
-        label.className = 'onboarding__source-option';
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'onboarding-source';
-        radio.value = value;
-        radio.checked = sensorChoice === value;
-        radio.addEventListener('change', () => {
-          if (radio.checked) sensorChoice = value;
-        });
-        const text = document.createElement('span');
-        text.textContent = t(labelKey);
-        label.append(radio, text);
-        group.append(label);
-      }
-      return [intro, group];
+  // "What are you leveling?" (#184) — always asked once, right after the
+  // sensor-source step when it exists, otherwise first. Every later
+  // step reads `vehicleChoice` (see its declaration above) to match.
+  const vehicleStep: Step = {
+    title: t('onboard.vehicle.h'),
+    build: () => {
+      const intro = document.createElement('p');
+      intro.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      intro.textContent = t('onboard.vehicle.intro');
+      return [
+        intro,
+        buildChoiceGroup('onboarding-vehicle', VEHICLE_OPTIONS, vehicleChoice, (value) => {
+          vehicleChoice = value;
+        }),
+      ];
     },
   };
 
   const phoneSteps = [placementStep, settingsStep, calibrationStep];
   const externalSteps = [connectStep, settingsStep];
 
-  // Only ever offered when the gate above is true; otherwise `steps` is
-  // exactly the original three-item array — same length, same content,
-  // same order, so phone-only environments get byte-identical behavior
-  // to before #135 (the regression guard this issue asks for).
-  let steps: Step[] = sourceChoiceAvailable ? [sourceStep, ...phoneSteps] : phoneSteps;
+  let steps: Step[] = sourceChoiceAvailable
+    ? [sourceStep, vehicleStep, ...phoneSteps]
+    : [vehicleStep, ...phoneSteps];
 
   let index = 0;
 
@@ -318,7 +392,11 @@ export function showOnboarding(options: OnboardingOptions): void {
       // Leaving the source step: branch the rest of the wizard onto the
       // chosen path — read once, here, never re-evaluated afterward.
       if (step === sourceStep) {
-        steps = [sourceStep, ...(sensorChoice === 'external' ? externalSteps : phoneSteps)];
+        steps = [
+          sourceStep,
+          vehicleStep,
+          ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
+        ];
       }
       index += 1;
       renderStep();
