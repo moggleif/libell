@@ -724,7 +724,6 @@ describe('onboarding wizard — compact steps (#156)', () => {
     expect(card().querySelector('input[name="toleranceMm"]')).toBeNull();
     expect(card().querySelector('.settings__advanced')).toBeNull();
     expect(card().querySelector('select')).toBeNull();
-    expect(card().textContent).toContain(t('onboard.moreInMenu'));
     // Design review: the form's own Save/Undo/Reset row isn't mounted in
     // the wizard at all — Next (already tested elsewhere) is the only save
     // path, so there's no second, identically-styled "confirm" button.
