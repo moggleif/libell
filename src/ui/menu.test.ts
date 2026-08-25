@@ -40,6 +40,10 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
+    getLastSampleAt: () => null,
+    getRawTilt: () => null,
+    getCalibratedTilt: () => null,
+    getActiveTargetName: () => null,
     ...overrides,
   };
 }
@@ -90,6 +94,7 @@ describe('menu — Modern (#107)', () => {
     expect(rows.map((r) => r.querySelector('.menu__row-title')?.textContent)).toEqual([
       t('menu.intro'),
       t('menu.targets'),
+      t('menu.diagnostics'),
       t('menu.feedback'),
       t('menu.about'),
     ]);

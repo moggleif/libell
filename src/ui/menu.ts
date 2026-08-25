@@ -15,6 +15,7 @@ import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
 import { createTargetsSection } from './targetsSection';
 import { createSensorSourceSection } from './sensorSourceSection';
+import { createDiagnosticsSection } from './diagnosticsSection';
 import { t, type MessageKey } from './i18n';
 import { setVisible } from './motion';
 import {
@@ -25,7 +26,14 @@ import {
 } from './helpIllustrations';
 
 export type MenuSection =
-  'settings' | 'calibration' | 'targets' | 'feedback' | 'help' | 'about' | 'sensorSource';
+  | 'settings'
+  | 'calibration'
+  | 'targets'
+  | 'feedback'
+  | 'help'
+  | 'about'
+  | 'sensorSource'
+  | 'diagnostics';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -88,6 +96,20 @@ export interface MenuOptions {
   getInstallCalibrationCapturedAt(): number | null;
   checkInstallCalibration(): string;
   clearInstallCalibration(): void;
+  /**
+   * Diagnostics page (#133, R36) — development/support detail, reached
+   * only from this menu, never during normal leveling. Shares
+   * `getSensorSource`/`getSensorState` above; these four are the fields
+   * nothing else in the menu already exposes.
+   */
+  getLastSampleAt(): number | null;
+  /** Raw (uncalibrated) roll/pitch, or null before the first sample. */
+  getRawTilt(): Calibration | null;
+  /** Calibrated roll/pitch (sensor bias + vehicle zero + active target),
+   * or null before the first sample. */
+  getCalibratedTilt(): Calibration | null;
+  /** The active target preset's name (#122), or null for "Normal". */
+  getActiveTargetName(): string | null;
 }
 
 export interface Menu {
@@ -314,6 +336,7 @@ export function createMenu(options: MenuOptions): Menu {
     refreshCalibration();
     refreshTargets();
     refreshSensorSource();
+    refreshDiagnostics();
     refreshModernCards();
     render();
   }
@@ -338,6 +361,7 @@ export function createMenu(options: MenuOptions): Menu {
     refreshCalibration();
     refreshTargets();
     refreshSensorSource();
+    refreshDiagnostics();
     refreshModernCards();
     render(section);
   }
@@ -439,6 +463,12 @@ export function createMenu(options: MenuOptions): Menu {
   if (sensorSourceSection) {
     addOtherSection('sensorSource', t('menu.sensorSource'), sensorSourceSection.element);
   }
+  // Diagnostics (#133, R36): dev/support detail — deliberately grouped
+  // with the other rarely-tapped "OTHER" items, never a primary Modern
+  // card (this page is explicitly not part of first-run setup).
+  const diagnosticsSection = createDiagnosticsSection(options);
+  const refreshDiagnostics = diagnosticsSection.refresh;
+  addOtherSection('diagnostics', t('menu.diagnostics'), diagnosticsSection.element);
   addOtherSection('feedback', t('menu.feedback'), createFeedbackSection());
   addOtherSection('about', t('menu.about'), createAboutSection());
 
