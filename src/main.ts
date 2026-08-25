@@ -39,8 +39,10 @@ import {
   createOrientationSensor,
   isSensorSupported,
   needsPermissionGesture,
+  type OrientationSensor,
   type SensorState,
 } from './sensor/orientation';
+import { createEasyLevelSensor, type EasyLevelSensor } from './sensor/easyLevelSensor';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
@@ -190,7 +192,40 @@ function bootstrap(root: HTMLElement): void {
   // build-time screenshot generator and handy for trying the app on a
   // desktop without sensors.
   const demo = new URLSearchParams(location.search).has('demo');
-  const sensor = demo ? createDemoSensor() : createOrientationSensor();
+  // The phone sensor stays alive for the whole session (never recreated)
+  // so switching back from an external source needs no re-permissioning.
+  // `sensor` is the ONE injection point (#128, ADR 0014) the rest of this
+  // function reads from — `frame()` below closes over this binding, so
+  // reassigning it (on a successful EasyLevel connect, or a fallback on
+  // disconnect) takes effect on the very next animation frame.
+  const phoneSensor = demo ? createDemoSensor() : createOrientationSensor();
+  let sensor: OrientationSensor = phoneSensor;
+  // EasyLevel BLE box (#116): created lazily, on the first connect
+  // attempt (a real click handler — Web Bluetooth's `requestDevice`
+  // requires a live user gesture), and kept around afterward so
+  // reconnecting reuses the same adapter instance.
+  let easyLevelSensor: EasyLevelSensor | null = null;
+
+  /** Menu action: connect (or reconnect) the EasyLevel box. Must run
+   * synchronously inside the button's own click handler. */
+  async function connectEasyLevelNow(): Promise<SensorState> {
+    easyLevelSensor ??= createEasyLevelSensor();
+    const state = await easyLevelSensor.start();
+    if (state === 'granted') {
+      sensor = easyLevelSensor;
+      // The level screen may never have been built yet (e.g. a desktop
+      // without phone motion sensors) — build it now that a real source
+      // is feeding readings; harmless to rebuild if it already exists.
+      showLevelScreen();
+    }
+    return state;
+  }
+
+  /** Menu action: explicit disconnect — falls back to the phone sensor. */
+  function disconnectEasyLevelNow(): void {
+    easyLevelSensor?.disconnect();
+    sensor = phoneSensor;
+  }
 
   // While the menu or the wizard is open the user is reading, phone in
   // hand — pause the guidance loop so the pose guard and the level
@@ -296,6 +331,9 @@ function bootstrap(root: HTMLElement): void {
     selectTarget: (id) => selectTargetNow(id),
     addTargetPreset: (name) => addTargetPresetNow(name),
     deleteTargetPreset: (id) => deleteTargetPresetNow(id),
+    getSensorSource: () => sensor.getSource(),
+    connectEasyLevel: () => connectEasyLevelNow(),
+    disconnectEasyLevel: () => disconnectEasyLevelNow(),
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
@@ -607,7 +645,20 @@ function bootstrap(root: HTMLElement): void {
         return;
       }
       const gravity = sensor.getGravity();
-      if (gravity) {
+      if (!gravity) {
+        // No reading yet — or, for an external source (#116), no longer:
+        // an EasyLevel disconnect clears `getGravity()` back to null after
+        // readings were already flowing. Either way, say so instead of
+        // freezing the diagram on its last frame (#116's acceptance
+        // criteria) — this hint was already the "waiting for the very
+        // first reading" case; it just gains a second, disconnect-aware
+        // message and can now reappear after having been hidden.
+        waiting.hidden = false;
+        waiting.textContent =
+          sensor.getState() === 'disconnected'
+            ? t('main.easyLevelDisconnected')
+            : t('main.waiting');
+      } else {
         waiting.hidden = true;
         // Invalid pose: pause the guidance and say what to do instead.
         const badPose = detectPose(gravity) === 'not-flat';

@@ -29,9 +29,24 @@ export const MESSAGES = {
     'menu.help': 'Help',
     'menu.intro': 'Show introduction',
     'menu.about': 'About Libell',
+    'menu.sensorSource': 'External sensor',
     'menu.others': 'OTHER',
     'menu.card.notSaved': 'Not saved',
     'menu.card.notDone': 'Not done',
+
+    // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
+    // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
+    'sensorSource.intro':
+      "Connect an EasyLevel BLE box as an alternative to the phone's own sensor. " +
+      'Requires Chrome on Android with Bluetooth turned on.',
+    'sensorSource.connect': 'Connect EasyLevel sensor',
+    'sensorSource.reconnect': 'Reconnect EasyLevel sensor',
+    'sensorSource.disconnect': 'Disconnect',
+    'sensorSource.status.phone': "Using the phone's own sensor.",
+    'sensorSource.status.connected': 'Connected to the EasyLevel sensor.',
+    'sensorSource.status.connecting': 'Connecting…',
+    'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
+    'sensorSource.err.failed': 'Could not connect to the EasyLevel sensor.',
 
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
@@ -240,6 +255,8 @@ export const MESSAGES = {
     'main.https':
       'Libell needs a secure connection (HTTPS) to read the tilt sensors. ' +
       'Open the app over HTTPS and try again.',
+    'main.easyLevelDisconnected':
+      'Connection to the EasyLevel sensor was lost. Open the menu to reconnect.',
 
     'diagram.aria': 'Top-down view of your motorhome showing which wheels need raising',
     'diagram.caravan.aria':
@@ -286,9 +303,24 @@ export const MESSAGES = {
     'menu.help': 'Hjälp',
     'menu.intro': 'Visa introduktionen',
     'menu.about': 'Om Libell',
+    'menu.sensorSource': 'Extern sensor',
     'menu.others': 'ÖVRIGT',
     'menu.card.notSaved': 'Ej sparade',
     'menu.card.notDone': 'Ej gjord',
+
+    // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
+    // sensor, visas bara när Web Bluetooth finns (`menu.ts`).
+    'sensorSource.intro':
+      'Anslut en EasyLevel-box via Bluetooth som alternativ till telefonens egen ' +
+      'sensor. Kräver Chrome på Android med Bluetooth påslaget.',
+    'sensorSource.connect': 'Anslut EasyLevel-sensor',
+    'sensorSource.reconnect': 'Återanslut EasyLevel-sensor',
+    'sensorSource.disconnect': 'Koppla från',
+    'sensorSource.status.phone': 'Använder telefonens egen sensor.',
+    'sensorSource.status.connected': 'Ansluten till EasyLevel-sensorn.',
+    'sensorSource.status.connecting': 'Ansluter…',
+    'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
+    'sensorSource.err.failed': 'Kunde inte ansluta till EasyLevel-sensorn.',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
@@ -500,6 +532,8 @@ export const MESSAGES = {
     'main.https':
       'Libell behöver en säker anslutning (HTTPS) för att läsa lutningssensorerna. ' +
       'Öppna appen via HTTPS och försök igen.',
+    'main.easyLevelDisconnected':
+      'Anslutningen till EasyLevel-sensorn förlorades. Öppna menyn för att återansluta.',
 
     'diagram.aria': 'Din husbil ovanifrån, med hjulen som behöver höjas markerade',
     'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',

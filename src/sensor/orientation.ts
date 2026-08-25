@@ -13,16 +13,24 @@
  *
  * `OrientationSensor` is the multi-source seam formalized by #128 (ADR
  * 0014): `main.ts` selects between implementations at exactly one
- * injection point (today: this phone sensor, or the fixed-tilt `?demo`
- * stand-in), and nothing downstream — including all of `domain/` (ADR
- * 0002) — needs to know which one is active. A future external sensor
- * (#116's Web Bluetooth box, #119's iOS native bridge) is simply another
- * implementation of this same interface, isolated to `sensor/`.
+ * injection point (today: this phone sensor, the fixed-tilt `?demo`
+ * stand-in, or #116's `easyLevelSensor.ts`), and nothing downstream —
+ * including all of `domain/` (ADR 0002) — needs to know which one is
+ * active. A future external sensor (#119's iOS native bridge) is simply
+ * another implementation of this same interface, isolated to `sensor/`.
  */
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
 
-export type SensorState = 'idle' | 'unsupported' | 'needs-permission' | 'granted' | 'denied';
+/**
+ * `'disconnected'` (#116) belongs here rather than a source-specific
+ * parallel state machine: it means "was granted, then the connection was
+ * lost" — meaningful for any external `OrientationSensor` (the EasyLevel
+ * BLE box today, a future one tomorrow), not something the phone sensor
+ * itself can reach (its APIs have no equivalent lost-connection event).
+ */
+export type SensorState =
+  'idle' | 'unsupported' | 'needs-permission' | 'granted' | 'denied' | 'disconnected';
 
 type PermissionRequester = { requestPermission?: () => Promise<'granted' | 'denied'> };
 

@@ -80,12 +80,10 @@ export interface LevelSettings {
   appearance: AppearanceSetting;
   /**
    * Which physical sensor the gravity reading comes from (#128, ADR 0014).
-   * `'phone'` is the only member today — the built-in DeviceMotion/
-   * DeviceOrientation sensor `?demo` also stands in for. This is
-   * deliberately a single-member union: no other `OrientationSensor`
-   * implementation exists in this codebase yet (#116's Web Bluetooth box,
-   * #119's iOS bridge), so there is nothing else to select and no UI
-   * offers a choice. Future adapters extend this union one literal at a
+   * `'phone'` is the built-in DeviceMotion/DeviceOrientation sensor
+   * (`?demo` also stands in for it) and stays the default — an external
+   * source is always opt-in, never a silent replacement (#116). Future
+   * adapters (#119's iOS bridge, ...) extend this union one literal at a
    * time as they land, rather than this field being invented per-adapter.
    */
   sensorSource: SensorSource;
@@ -98,10 +96,13 @@ export type AppearanceSetting = 'classic' | 'modern';
 /**
  * The multi-source seam (#128, ADR 0014): identifies which
  * `OrientationSensor` implementation produced a reading. Every
- * implementation — today just the phone's own sensor and its `?demo`
- * stand-in — returns a fixed member of this union from `getSource()`.
+ * implementation returns a fixed member of this union from `getSource()`.
+ * `'phone'` covers the built-in sensor and its `?demo` stand-in;
+ * `'easylevel'` is the EasyLevel BLE box (#116, `src/sensor/easyLevelSensor.ts`).
  */
-export type SensorSource = 'phone';
+export type SensorSource = 'phone' | 'easylevel';
+
+export const SENSOR_SOURCES: readonly SensorSource[] = ['phone', 'easylevel'];
 
 export type VehicleType = 'motorhome' | 'caravan';
 
@@ -270,10 +271,12 @@ export function parseSettings(value: unknown): LevelSettings {
       raw.appearance === 'classic' || raw.appearance === 'modern'
         ? raw.appearance
         : DEFAULT_SETTINGS.appearance,
-    // Single-member union today (#128) — validated the same way every
-    // other enum-like field is, so a corrupt or future-version value
-    // never breaks startup; it just falls back to the only real source.
-    sensorSource: raw.sensorSource === 'phone' ? 'phone' : DEFAULT_SETTINGS.sensorSource,
+    // Validated the same way every other enum-like field is (#128), so a
+    // corrupt or future-version value never breaks startup — it falls
+    // back to the phone, which every install always has.
+    sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)
+      ? (raw.sensorSource as SensorSource)
+      : DEFAULT_SETTINGS.sensorSource,
   };
 }
 

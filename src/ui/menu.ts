@@ -5,13 +5,16 @@
  * History API is integrated so the Android back button/gesture closes
  * the page, then the menu, and only then leaves the app.
  */
-import type { Calibration, LevelSettings } from '../domain/settings';
+import type { Calibration, LevelSettings, SensorSource } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
+import type { SensorState } from '../sensor/orientation';
+import { isWebBluetoothSupported } from '../sensor/easyLevelSensor';
 import { createSettingsForm } from './settingsPanel';
 import { createFeedbackSection } from './feedback';
 import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
 import { createTargetsSection } from './targetsSection';
+import { createSensorSourceSection } from './sensorSourceSection';
 import { t, type MessageKey } from './i18n';
 import { setVisible } from './motion';
 import {
@@ -21,7 +24,8 @@ import {
   placementIllustration,
 } from './helpIllustrations';
 
-export type MenuSection = 'settings' | 'calibration' | 'targets' | 'feedback' | 'help' | 'about';
+export type MenuSection =
+  'settings' | 'calibration' | 'targets' | 'feedback' | 'help' | 'about' | 'sensorSource';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -64,6 +68,14 @@ export interface MenuOptions {
   selectTarget(id: string | null): void;
   addTargetPreset(name: string): string | null;
   deleteTargetPreset(id: string): void;
+  /**
+   * EasyLevel BLE box (#116, ADR 0014) — an opt-in second `sensorSource`.
+   * The menu page itself is only ever added when `isWebBluetoothSupported()`
+   * is true (see below), so these are only wired up where they can work.
+   */
+  getSensorSource(): SensorSource;
+  connectEasyLevel(): Promise<SensorState>;
+  disconnectEasyLevel(): void;
 }
 
 export interface Menu {
@@ -289,6 +301,7 @@ export function createMenu(options: MenuOptions): Menu {
     }
     refreshCalibration();
     refreshTargets();
+    refreshSensorSource();
     refreshModernCards();
     render();
   }
@@ -312,6 +325,7 @@ export function createMenu(options: MenuOptions): Menu {
     }
     refreshCalibration();
     refreshTargets();
+    refreshSensorSource();
     refreshModernCards();
     render(section);
   }
@@ -403,6 +417,16 @@ export function createMenu(options: MenuOptions): Menu {
   const targetsSection = createTargetsSection(options);
   const refreshTargets = targetsSection.refresh;
   addOtherSection('targets', t('menu.targets'), targetsSection.element);
+  // EasyLevel BLE box (#116): omitted entirely — never a silently broken
+  // option — on a browser without Web Bluetooth (Safari/iOS, most desktop
+  // browsers). Decided once here, matching the `isModern` pattern: no live
+  // re-check if the browser somehow changed mid-session.
+  const easyLevelSupported = isWebBluetoothSupported();
+  const sensorSourceSection = easyLevelSupported ? createSensorSourceSection(options) : null;
+  const refreshSensorSource = sensorSourceSection?.refresh ?? (() => {});
+  if (sensorSourceSection) {
+    addOtherSection('sensorSource', t('menu.sensorSource'), sensorSourceSection.element);
+  }
   addOtherSection('feedback', t('menu.feedback'), createFeedbackSection());
   addOtherSection('about', t('menu.about'), createAboutSection());
 
