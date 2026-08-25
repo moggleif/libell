@@ -102,23 +102,25 @@ URL and must keep working with no signal.
 
 ## R9 — Vehicle parameters are configurable and persist
 
-- **Given** I tap ☰ (gear icon)
+- **Given** I tap the gear icon
 - **Then** in Modern, it opens straight to the Settings tabs (Vehicle/Ramps/
-  Kalibrering/Targets, screen-cleanup follow-up) as its own page with a ✕ to close
-  — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
+  Kalibrering/Targets/General, screen-cleanup follow-up) as its own page with a ✕ to
+  close — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
   page (R38). Classic (no tabs) keeps a small ☰ drawer instead, holding just
   Settings/Calibration/Targets — Diagnostics, the introduction relaunch and
   External sensor moved off it entirely (to the "?" page and the top-right sensor
   icon, both reachable from Classic too, R38) since Classic has no tabs to fold
   them into. Help/About/Feedback are not part of either — reached only from the
-  bottom bar's "?" button.
+  bottom bar's "?" button. Classic's own flat form gets the same General grouping as
+  a plain section further down the page (below "Level & display"), not a tab, since
+  Classic has no tabs to begin with.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
   is listed, e.g. "20; 40; 60"), Number of ramps (R27), Waste-water drain (R27),
   Tolerance (mm a wheel may sit below the highest and
   still count as level), Stability (display hysteresis dead band in mm; 0 disables
-  it), display unit (R14), theme (R15) or level chime (R16) and save
+  it), display unit (R14), language (R13), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
   `docs/03-ARCHITECTURE.md` § Settings). Not the first-run wizard, which keeps its own
@@ -173,6 +175,13 @@ URL and must keep working with no signal.
 - **Then** every user-facing string is Swedish; any other locale gets English. A stored
   override (from settings) wins over auto-detection; an invalid stored value falls back
   to auto-detection.
+- **Given** the Language field in Settings → General (Svenska / English / "Automatic
+  (device language)", the last one being the default)
+- **When** I pick a language other than the one currently in effect
+- **Then** the choice is saved and the app reloads immediately — `t()` resolves its
+  dictionary once at startup (not reactively), so a reload is the only way every
+  already-built string picks up the change. Picking "Automatic" clears the stored
+  override and reloads, going back to phone-locale detection.
 - All strings go through `t()` in `src/ui/i18n.ts`; both dictionaries cover the same
   keys (enforced by a unit test).
 
@@ -231,23 +240,25 @@ URL and must keep working with no signal.
 - **Given** the placement/legend step
 - **Then** it also mentions the opt-in "Continuous audio guidance" (R30) — a
   discoverability tip, not a default change (#154): the setting itself stays off
-  until a user turns it on in Settings → Advanced.
+  until a user turns it on in Settings → General.
 - **Given** the measurements step
 - **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
   numbers the step's own hint text says come from the registration document.
-  Everything else the full Settings form has (Vehicle type, Rear axle, Tolerance,
-  Stability, Show lengths in, Theme, Appearance, Chime, Continuous audio guidance) is
-  reachable from ☰ → Settings afterward, not hidden from the app, just not shown on
-  this reduced step. A short note on the step says so.
+  Everything else the full Settings form has (Vehicle type, Rear axle — Vehicle tab;
+  Language, Theme, Chime, Continuous audio guidance — General tab; Tolerance,
+  Stability, Appearance — Advanced) is reachable from Settings afterward, not hidden
+  from the app, just not shown on this reduced step. A short note on the step says so.
 - **Given** the calibration step
 - **Then** it shows only "Calibrate now" and its result (#156) — the flip-calibration
-  technique and Vehicle zero position stay reachable from ☰ → Calibration afterward,
-  with the same short note.
+  technique and Vehicle zero position stay reachable from Settings → Calibration
+  afterward, with the same short note.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra first step, "How do you want to measure?",
-  offering "This phone" (pre-selected) or "Libell Sensor / supported external sensor";
-  every other browser gets exactly the three-step flow above, with no added step and
-  no dead radio button (#135).
+  offering "This phone" (pre-selected) or "External sensor" — the same name and
+  wording the sensor-status icon and its page use (R32) elsewhere, never a separate
+  "Libell Sensor" product name, which was never real; every other browser gets
+  exactly the three-step flow above, with no added step and no dead radio button
+  (#135).
 - **Given** the source step, with "This phone" left selected (the default)
 - **Then** the rest of the wizard is the unchanged three-step phone flow above.
 - **Given** the source step, with the external sensor selected instead
@@ -789,7 +800,7 @@ unannounced switch could show a plausible-looking but wrong reading.
   the primary, most-reached-for control), help ("?", opens its own page with Help
   (R28, "Show introduction" at the top of that tab), About (R28), Feedback (R12) and
   Diagnostics (R36) as tabs, in that order — a fully independent component from the
-  ☰ Settings menu, never routed through its drawer or sharing its back-navigation
+  Settings page/menu, never routed through its drawer or sharing its back-navigation
   state, so its close (✕) can never reveal the Settings drawer underneath).
 - **Given** I tap the sound button while "Chime when level" (R16) and/or "Continuous
   audio guidance" (R30) are on
@@ -797,6 +808,6 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** I tap the sound button again while muted
 - **Then** both settings return to exactly the values they held before muting — muting
   never forces a setting back on that was already off before I muted.
-- **Given** I mute or unmute from the bottom bar, then later open ☰ → Settings
+- **Given** I mute or unmute from the bottom bar, then later open Settings
 - **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
   never a stale display that could silently undo the mute on an unrelated Save.

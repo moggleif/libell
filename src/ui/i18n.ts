@@ -154,13 +154,12 @@ export const MESSAGES = {
 
     // Sensor source choice (#135, ADR 0014): the wizard's first step,
     // shown only when an external sensor option actually exists
-    // (`isWebBluetoothSupported()`). "Libell Sensor" names the product;
-    // the trailing clause leaves room for other supported boxes later
-    // without renaming this string.
+    // (`isWebBluetoothSupported()`). The external radio reuses
+    // 'menu.sensorSource' ("External sensor") for its label, not a
+    // separate name here.
     'onboard.source.h': 'How do you want to measure?',
     'onboard.source.intro': 'Choose which sensor Libell should read tilt from.',
     'onboard.source.phone': 'This phone',
-    'onboard.source.external': 'Libell Sensor / supported external sensor',
     'onboard.step1.h': 'Place the phone like this',
     'onboard.next': 'Next',
     'onboard.close': 'Close the introduction',
@@ -172,12 +171,12 @@ export const MESSAGES = {
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
     // Compact onboarding steps (#156): points to ☰ for everything the
     // reduced step doesn't show.
-    'onboard.moreInMenu': 'More options are available later in the ☰ menu.',
+    'onboard.moreInMenu': 'More options are available later in Settings.',
     // One-time discoverability mention (#154), alongside the legend on
     // step 1 — soundGuidance itself stays off by default; see #153 for
     // why the shorter "Chime when level" got the opposite treatment.
     'onboard.audioGuidance.hint':
-      'Tip: Settings → Advanced has an optional "Continuous audio guidance" — a tone ' +
+      'Tip: Settings → General has an optional "Continuous audio guidance" — a tone ' +
       'that rises as you approach level, so you can watch the ramps instead of the ' +
       'screen. Off by default.',
 
@@ -212,6 +211,12 @@ export const MESSAGES = {
     'settings.section.vehicle': 'Vehicle & measurements',
     'settings.section.ramps': 'Ramps',
     'settings.section.display': 'Level & display',
+    // General (screen-cleanup follow-up): language/theme/sound, common
+    // enough to want a visible home — a Modern tab, or this Classic
+    // section — rather than Advanced's rarely-tuned pile.
+    'settings.general': 'General',
+    'settings.language': 'Language',
+    'settings.language.auto': 'Automatic (device language)',
     'settings.advanced': 'Advanced',
     'drain.none': 'None / does not matter',
     'drain.left': 'Left side',
@@ -533,7 +538,6 @@ export const MESSAGES = {
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro': 'Välj vilken sensor Libell ska läsa lutning från.',
     'onboard.source.phone': 'Den här telefonen',
-    'onboard.source.external': 'Libell Sensor / extern sensor som stöds',
     'onboard.step1.h': 'Lägg telefonen så här',
     'onboard.next': 'Nästa',
     'onboard.close': 'Stäng introduktionen',
@@ -543,9 +547,9 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
-    'onboard.moreInMenu': 'Fler alternativ finns senare i menyn ☰.',
+    'onboard.moreInMenu': 'Fler alternativ finns senare i Inställningar.',
     'onboard.audioGuidance.hint':
-      'Tips: Inställningar → Avancerat har en valfri "Kontinuerlig ljudvägledning" — en ' +
+      'Tips: Inställningar → Allmänt har en valfri "Kontinuerlig ljudvägledning" — en ' +
       'ton som stiger när du närmar dig våg, så du kan titta på ramperna istället för ' +
       'skärmen. Avstängd som standard.',
 
@@ -580,6 +584,9 @@ export const MESSAGES = {
     'settings.section.vehicle': 'Fordon och mått',
     'settings.section.ramps': 'Ramper',
     'settings.section.display': 'Nivå och visning',
+    'settings.general': 'Allmänt',
+    'settings.language': 'Språk',
+    'settings.language.auto': 'Automatiskt (enhetens språk)',
     'settings.advanced': 'Avancerat',
     'drain.none': 'Inget / spelar ingen roll',
     'drain.left': 'Vänster sida',
