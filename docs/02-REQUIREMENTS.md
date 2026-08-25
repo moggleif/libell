@@ -238,22 +238,22 @@ URL and must keep working with no signal.
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
-- **Then** a five-step wizard runs: general preferences (Language, Theme, Chime,
-  Continuous audio guidance — skippable, #189), which vehicle I'm leveling (motorhome or
-  caravan — #184), how to place the phone and how to read the answer (the wheel-state
-  legend and the bubble), vehicle measurements (skippable — "use defaults"), calibration
-  (skippable). It can be closed with ✕ at any point, warning lamps (R11) stay lit for
-  whatever was skipped, and the "Show introduction" button at the top of the "?" page's
-  Help tab (R28, screen-cleanup follow-up) reopens it any time.
+- **Then** a five-step wizard runs: general preferences (Language, Theme, Appearance,
+  Chime, Continuous audio guidance — skippable, #189), which vehicle I'm leveling
+  (motorhome or caravan — #184), how to place the phone and how to read the answer (the
+  wheel-state legend and the bubble), vehicle measurements (skippable — "use defaults"),
+  calibration (skippable). It can be closed with ✕ at any point, warning lamps (R11)
+  stay lit for whatever was skipped, and the "Show introduction" button at the top of
+  the "?" page's Help tab (R28, screen-cleanup follow-up) reopens it any time.
 - **Given** the general step (#189, always first — usability review, personas like
   seniors leveling their first motorhome: being able to read the rest of the guide
   matters before anything else)
-- **Then** it shows Language, Theme, Chime and Continuous audio guidance — the same
-  fields and handlers Settings → General has, reused as-is (language still applies via
-  a full reload immediately on change, same as Settings; the rest saves like the
-  measurements step below). Skippable, using the shipped defaults; unlike the other
-  skippable steps, skipping it never lights a warning lamp — the defaults are already a
-  complete, valid choice.
+- **Then** it shows Language, Theme, Appearance, Chime and Continuous audio guidance —
+  the same fields and handlers Settings → General has, reused as-is (language still
+  applies via a full reload immediately on change, same as Settings; the rest saves
+  like the measurements step below). Skippable, using the shipped defaults; unlike the
+  other skippable steps, skipping it never lights a warning lamp — the defaults are
+  already a complete, valid choice.
 - **Given** the vehicle step (#184)
 - **Then** it asks "What are you leveling?" with the same Motorhome/Caravan choice and
   labels Settings uses, pre-selected to whatever is already stored (not hardcoded to
@@ -274,9 +274,8 @@ URL and must keep working with no signal.
   numbers the step's own hint text says come from the registration document, labeled
   for whichever vehicle the vehicle step chose. Everything else the full Settings form
   has beyond what the general step (#189) already covered (Rear axle — Vehicle tab;
-  Tolerance, Stability, Appearance — Advanced) is reachable from Settings afterward, not
-  hidden from the app, just not shown on this reduced step. A short note on the step
-  says so.
+  Tolerance, Stability — Advanced) is reachable from Settings afterward, not hidden from
+  the app, just not shown on this reduced step. A short note on the step says so.
 - **Given** the calibration step
 - **Then** it embeds the exact same calibration section Settings → Calibration shows —
   flip-calibration technique, Vehicle zero position, check/clear, all of it (#184: no

@@ -66,9 +66,11 @@
  * snapshot.
  *
  * General step (#189, at the user's own suggestion): a new first step —
- * Language, Theme, Chime, Continuous audio guidance, the exact fields
- * `createSettingsForm`'s new 'general' compact mode reuses from the full
- * form's General section — always shown, right before everything else,
+ * Language, Theme, Appearance, Chime, Continuous audio guidance, the
+ * exact fields `createSettingsForm`'s new 'general' compact mode reuses
+ * from the full form's General section (whatever that section currently
+ * holds — Appearance joined it after #189 first shipped) — always shown,
+ * right before everything else,
  * since being able to read the rest of the guide matters before any of
  * it. Skippable (the shipped defaults are already a complete choice);
  * unlike the other skippable steps it gets no warning-lamp hint, since

@@ -132,14 +132,15 @@ export interface SettingsFormOptions {
    * width front/rear — the three numbers most first-run users have on
    * hand from the registration document (see `measureHint` below).
    *
-   * 'general' (onboarding step, #189): only Language, Theme, Chime and
-   * Continuous audio guidance — the same fields the full form's General
-   * section has, reused as-is.
+   * 'general' (onboarding step, #189): Language, Theme, Appearance, Chime
+   * and Continuous audio guidance — the same fields the full form's
+   * General section has, reused as-is (Appearance moved into General
+   * alongside Theme; this mirrors that, whatever General currently holds).
    *
    * Either way, everything else (Vehicle type, Rear axle, Tolerance,
-   * Stability, Show lengths in, Appearance — including the Advanced
-   * disclosure from #157, not just collapsed but absent) stays reachable
-   * from ☰ → Settings afterward.
+   * Stability, Show lengths in — including the Advanced disclosure from
+   * #157, not just collapsed but absent) stays reachable from
+   * ☰ → Settings afterward.
    */
   compact?: 'measurements' | 'general';
 }
@@ -664,13 +665,15 @@ export function createSettingsForm(
       actions,
     );
   } else if (compact === 'general') {
-    // Onboarding step (#189): Language, Theme, Chime, Continuous audio
-    // guidance — the exact same field elements and handlers the full
-    // form's General section uses (language still reloads immediately on
-    // change, theme still live-previews), just this subset appended.
+    // Onboarding step (#189): Language, Theme, Appearance, Chime,
+    // Continuous audio guidance — the exact same field elements and
+    // handlers the full form's General section uses, in the same order
+    // (language still reloads immediately on change, theme/appearance
+    // still live-preview), just this subset appended.
     form.append(
       languageField,
       themeField,
+      appearanceField,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,

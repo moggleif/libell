@@ -91,9 +91,9 @@ describe('onboarding wizard — general step (#189, at the user’s suggestion)'
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
     expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('settings.general'));
     expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 5');
-    // Language + Theme selects, but not Appearance — that stays an
-    // Advanced/Settings-only concern (R18).
-    expect(card().querySelectorAll('select')).toHaveLength(2);
+    // Language, Theme, Appearance selects — the same three the full
+    // form's General section has.
+    expect(card().querySelectorAll('select')).toHaveLength(3);
     // Chime + Continuous audio guidance.
     expect(card().querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
     expect(card().querySelector('input[name="wheelbaseMm"]')).toBeNull();
