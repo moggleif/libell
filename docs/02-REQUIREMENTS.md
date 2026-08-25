@@ -291,6 +291,28 @@ URL and must keep working with no signal.
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
   any state, so an interrupted wizard can never leave the active source ambiguous.
+- **Given** any step after the first (#189: a usability review of R18 for less
+  tech-savvy users, e.g. seniors leveling their first motorhome)
+- **Then** a "Back" button returns to the previous step without losing any choice
+  already made — vehicle type, sensor source, and any measurements already entered in
+  the settings step. A wrong tap no longer requires finishing the wizard and correcting
+  it in Settings, or closing and restarting from step 1.
+- **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
+- **Then** tapping "Next" saves those values before advancing, the same as the step's
+  own Save button — Next and Save no longer disagree about whether typed-in
+  measurements survive leaving the step (#189; #159's separate guard, that Save itself
+  never closes or advances the wizard, is unchanged).
+- **Given** a skippable step (measurements, calibration, connect)
+- **Then** its Skip control is paired with a one-line note that a warning lamp (R11)
+  will remind the user later if they skip — not just "Skip" with no stated consequence.
+- **Given** the calibration step
+- **Then** a one-line hint above the embedded calibration UI says to calibrate the
+  sensor first (flip calibration if no known-level spot is at hand), and that the
+  vehicle zero below it is optional, extra precision — steering a first-time user
+  through the step's two distinct concepts instead of leaving the order to guesswork.
+- **Given** Modern appearance
+- **Then** the step progress shows a visible "n / total" text next to the bars, not
+  only an `aria-label` on them — legible at a glance, including for low-vision users.
 
 ## R19 — Share the app
 

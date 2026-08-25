@@ -158,7 +158,10 @@ export const MESSAGES = {
     // 'menu.sensorSource' ("External sensor") for its label, not a
     // separate name here.
     'onboard.source.h': 'How do you want to measure?',
-    'onboard.source.intro': 'Choose which sensor Libell should read tilt from.',
+    // #189: reassures anyone unfamiliar with the external-sensor concept
+    // that the default (pre-selected) choice is the normal one.
+    'onboard.source.intro':
+      'Choose which sensor Libell should read tilt from — most people just use the phone.',
     'onboard.source.phone': 'This phone',
     // Vehicle step: which vehicle every later step's imagery and field
     // labels are drawn for. Reuses 'vehicle.motorhome'/'vehicle.caravan' —
@@ -167,10 +170,17 @@ export const MESSAGES = {
     'onboard.vehicle.intro': 'Choose your vehicle — the rest of this guide matches it.',
     'onboard.step1.h': 'Place the phone like this',
     'onboard.next': 'Next',
+    // Back (#189): only shown from the second step on — lets a wrong tap
+    // (vehicle type, sensor source) be corrected without finishing the
+    // wizard or closing and restarting it.
+    'onboard.back': 'Back',
     'onboard.close': 'Close the introduction',
     'onboard.done': 'Done',
     'onboard.skipStep': 'Skip',
     'onboard.skipDefaults': 'Skip — use defaults',
+    // What skipping actually means (#189) — "Skip" alone never said a
+    // warning lamp (R11) stays lit until the step is done.
+    'onboard.skip.consequence': 'Skip for now — a warning lamp will remind you until it’s done.',
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
@@ -185,6 +195,13 @@ export const MESSAGES = {
       'Tip: Settings → General has an optional "Continuous audio guidance" — a tone ' +
       'that rises as you approach level, so you can watch the ramps instead of the ' +
       'screen. Off by default.',
+    // Which part of the calibration step matters most (#189) — the step
+    // embeds the full sensor-calibration + vehicle-zero UI with no order
+    // of its own; this just points at it, calibrationSection.ts still
+    // owns all the actual how-to copy.
+    'onboard.calibration.hint':
+      'Two things below: calibrate the sensor first (use flip calibration if you don’t ' +
+      'have a known-level spot) — vehicle zero is optional, for extra precision.',
 
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
@@ -548,16 +565,20 @@ export const MESSAGES = {
     'about.source.link': 'Källkoden på GitHub',
 
     'onboard.source.h': 'Hur vill du mäta?',
-    'onboard.source.intro': 'Välj vilken sensor Libell ska läsa lutning från.',
+    'onboard.source.intro':
+      'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',
     'onboard.source.phone': 'Den här telefonen',
     'onboard.vehicle.h': 'Vad ska nivelleras?',
     'onboard.vehicle.intro': 'Välj fordon — resten av guiden anpassas efter det.',
     'onboard.step1.h': 'Lägg telefonen så här',
     'onboard.next': 'Nästa',
+    'onboard.back': 'Tillbaka',
     'onboard.close': 'Stäng introduktionen',
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
+    'onboard.skip.consequence':
+      'Hoppar du över nu? En varningslampa påminner dig tills det är klart.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
@@ -567,6 +588,9 @@ export const MESSAGES = {
       'Tips: Inställningar → Allmänt har en valfri "Kontinuerlig ljudvägledning" — en ' +
       'ton som stiger när du närmar dig våg, så du kan titta på ramperna istället för ' +
       'skärmen. Avstängd som standard.',
+    'onboard.calibration.hint':
+      'Två saker nedan: kalibrera sensorn först (använd flip-kalibrering om du inte har ' +
+      'en känd plan yta) — fordonets nollpunkt är valfri, för extra precision.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',

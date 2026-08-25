@@ -540,3 +540,104 @@ describe('onboarding wizard — audio guidance discoverability (#154)', () => {
     expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint'));
   });
 });
+
+describe('onboarding wizard — usability review fixes (#189)', () => {
+  function back(): void {
+    const buttons = [...card().querySelectorAll('button')];
+    const backButton = buttons.find((b) => b.textContent === t('onboard.back'))!;
+    backButton.click();
+  }
+
+  it('shows no Back button on the first step', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    expect(card().textContent).not.toContain(t('onboard.back'));
+  });
+
+  it('Back returns to the previous step, preserving the vehicle choice', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
+    back(); // -> vehicle
+    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
+    const radios = [
+      ...card().querySelectorAll<HTMLInputElement>('input[name="onboarding-vehicle"]'),
+    ];
+    expect(radios[1]!.checked).toBe(true); // caravan, still selected
+  });
+
+  it('tapping Next on the settings step saves the typed-in measurements, without a separate Save', () => {
+    let saved: LevelSettings | null = null;
+    showOnboarding(
+      makeOptions({
+        initialSettings: classicSettings(),
+        onSettingsSaved: (s) => (saved = s),
+      }),
+    );
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    const wheelbase = card().querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
+    wheelbase.value = '4200';
+    wheelbase.dispatchEvent(new Event('input'));
+    next(); // settings -> calibration; must save first
+    expect(saved).not.toBeNull();
+    expect(saved!.wheelbaseMm).toBe(4200);
+  });
+
+  it('a Back visit after Next auto-saved shows the just-entered value, not the stale initial one', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    const wheelbase = card().querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
+    wheelbase.value = '4200';
+    wheelbase.dispatchEvent(new Event('input'));
+    next(); // settings -> calibration (auto-saves)
+    back(); // -> settings
+    const wheelbaseAgain = card().querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
+    expect(wheelbaseAgain.value).toBe('4200');
+  });
+
+  it('directly submitting the settings form still never advances or closes the wizard (#159, unaffected)', () => {
+    let finished = false;
+    showOnboarding(
+      makeOptions({ initialSettings: classicSettings(), onFinished: () => (finished = true) }),
+    );
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    const form = card().querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+    expect(finished).toBe(false);
+  });
+
+  it('pairs each skippable step’s Skip control with the warning-lamp consequence hint', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement
+    next(); // -> settings
+    expect(card().textContent).toContain(t('onboard.skip.consequence'));
+    next(); // -> calibration
+    expect(card().textContent).toContain(t('onboard.skip.consequence'));
+  });
+
+  it('does not show the skip consequence hint on non-skippable steps', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    expect(card().textContent).not.toContain(t('onboard.skip.consequence')); // vehicle step
+    next();
+    expect(card().textContent).not.toContain(t('onboard.skip.consequence')); // placement step
+  });
+
+  it('the calibration step steers which part to do first', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement
+    next(); // -> settings
+    next(); // -> calibration
+    expect(card().textContent).toContain(t('onboard.calibration.hint'));
+  });
+
+  it('Modern shows a visible "n / total" text next to the progress bars', () => {
+    showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    expect(card().querySelector('.onboarding__bars-text')?.textContent).toBe('1 / 4');
+    next();
+    expect(card().querySelector('.onboarding__bars-text')?.textContent).toBe('2 / 4');
+  });
+});

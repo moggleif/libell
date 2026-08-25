@@ -48,6 +48,21 @@
  * settings form (step 2) lets the user flip the preset mid-flow. A
  * fresh wizard picks up the new preset the next time it opens, since
  * `showOnboarding` is always called anew (see `main.ts`).
+ *
+ * Usability pass for less tech-savvy users (#189, a devil's-advocate
+ * review focused on personas like seniors leveling their first
+ * motorhome): a "Back" button (only from the second step on) so a wrong
+ * tap doesn't require finishing the wizard or restarting it; the
+ * measurements step's Next now also saves the form before advancing
+ * (previously Next and the form's own Save were fully independent, by
+ * design for #159 — that guard, that Save itself never advances or
+ * closes the wizard, is unchanged, only Next now also saves); every
+ * skippable step pairs its Skip control with a note that a warning lamp
+ * reminds the user later; and the calibration step gets a one-line
+ * steer on which of its two concepts (sensor calibration vs. vehicle
+ * zero) to actually do first. `currentSettings` tracks the measurements
+ * step's own latest save so a Back visit after Next auto-saved shows
+ * what was just entered, not the wizard's original snapshot.
  */
 import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
@@ -123,8 +138,13 @@ function buildModernLegend(): HTMLElement {
 }
 
 /** Modern step indicator (#110): one 24×4px bar per step, the current
- * step's bar in `--level`, the rest in `--surface-sunken`. */
+ * step's bar in `--level`, the rest in `--surface-sunken` — plus a visible
+ * "n / total" text (#189), since the bars' only text equivalent used to be
+ * an `aria-label`, unreadable to a sighted low-vision user at that size. */
 function buildModernProgress(current: number, total: number): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'onboarding__progress-wrap';
+
   const bars = document.createElement('div');
   bars.className = 'onboarding__bars';
   bars.setAttribute('role', 'img');
@@ -134,7 +154,14 @@ function buildModernProgress(current: number, total: number): HTMLElement {
     bar.className = i === current ? 'onboarding__bar onboarding__bar--active' : 'onboarding__bar';
     bars.append(bar);
   }
-  return bars;
+
+  const text = document.createElement('span');
+  text.className = 'onboarding__bars-text';
+  text.setAttribute('aria-hidden', 'true');
+  text.textContent = `${current + 1} / ${total}`;
+
+  wrap.append(bars, text);
+  return wrap;
 }
 
 function buildClassicProgress(current: number, total: number): HTMLElement {
@@ -158,6 +185,12 @@ export function showOnboarding(options: OnboardingOptions): void {
   // closing the wizard before or during the vehicle step just leaves the
   // stored choice untouched — never an ambiguous state.
   let vehicleChoice: VehicleType = options.initialSettings.vehicleType;
+
+  // The settings step's own source of truth for its form's starting values
+  // (#189): updated every time that form saves, so a Back visit after
+  // Next auto-saved (see settingsStep below) shows what was just entered,
+  // not the stale snapshot the wizard opened with.
+  let currentSettings: LevelSettings = options.initialSettings;
 
   const overlay = document.createElement('div');
   overlay.className = 'onboarding';
@@ -228,6 +261,16 @@ export function showOnboarding(options: OnboardingOptions): void {
     return note;
   }
 
+  // A skippable step's consequence, spelled out (#189): "Skip" alone never
+  // said what happens next — the warning lamp (R11) that stays lit is
+  // documented in the requirements but was never shown to the user here.
+  function skipConsequenceHint(): HTMLParagraphElement {
+    const hint = document.createElement('p');
+    hint.className = isModern ? 'onboarding__text--modern' : 'settings__hint';
+    hint.textContent = t('onboard.skip.consequence');
+    return hint;
+  }
+
   const settingsStep: Step = {
     title: t('menu.settings'),
     skipLabel: t('onboard.skipDefaults'),
@@ -237,14 +280,34 @@ export function showOnboarding(options: OnboardingOptions): void {
       // settingsPanel.ts's own vehicle-aware relabeling does the rest.
       measuresIllustration(t('menu.settings'), vehicleChoice),
       createSettingsForm(
-        { ...options.initialSettings, vehicleType: vehicleChoice },
-        options.onSettingsSaved,
+        // Built from currentSettings, not the static options.initialSettings
+        // (#189): once Next has auto-saved this step (see the nav handler
+        // below), a Back visit must show what was just entered, not the
+        // wizard's original snapshot.
+        { ...currentSettings, vehicleType: vehicleChoice },
+        (settings) => {
+          currentSettings = settings;
+          options.onSettingsSaved(settings);
+        },
         undefined,
         { compact: true },
       ),
       moreInMenuNote(),
+      skipConsequenceHint(),
     ],
   };
+
+  // What to actually do first (#189): the embedded section below packs two
+  // distinct concepts (sensor calibration, vehicle zero) and a two-capture
+  // flip technique into one step with no priority order — a first-time
+  // user got no steer on which button matters. This one-line hint doesn't
+  // duplicate calibrationSection.ts's own copy, just orders it.
+  function calibrationGuidanceHint(): HTMLParagraphElement {
+    const hint = document.createElement('p');
+    hint.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+    hint.textContent = t('onboard.calibration.hint');
+    return hint;
+  }
 
   // Embeds the exact same calibration UI Settings → Calibration shows —
   // no reduced rendering of its own (#184; used to look visibly older
@@ -252,7 +315,11 @@ export function showOnboarding(options: OnboardingOptions): void {
   const calibrationStep: Step = {
     title: t('menu.calibration'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createCalibrationSection(options).element],
+    build: () => [
+      calibrationGuidanceHint(),
+      createCalibrationSection(options).element,
+      skipConsequenceHint(),
+    ],
   };
 
   // External path's calibration equivalent (#135, ADR 0014): the box's
@@ -265,7 +332,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   const connectStep: Step = {
     title: t('menu.sensorSource'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createSensorSourceSection(options).element],
+    build: () => [createSensorSourceSection(options).element, skipConsequenceHint()],
   };
 
   // A labeled radio group for a single wizard choice — shared by the
@@ -375,6 +442,27 @@ export function showOnboarding(options: OnboardingOptions): void {
 
     const nav = document.createElement('div');
     nav.className = isModern ? 'onboarding__nav onboarding__nav--modern' : 'onboarding__nav';
+    // Back (#189): a wrong tap on vehicle type or sensor source used to be
+    // fixable only by finishing the wizard and correcting it in Settings,
+    // or closing (✕) and restarting from step 1. Always appended first —
+    // in Classic's plain column that puts it furthest from the primary
+    // Next action at the bottom; in Modern's column-reverse nav (see the
+    // CSS) that puts it last/least prominent instead, below Skip. Never
+    // shown on the first step, matching Skip's own "not always present"
+    // convention.
+    if (index > 0) {
+      const back = document.createElement('button');
+      back.type = 'button';
+      back.className = isModern
+        ? 'menu__action menu__action--secondary onboarding__back--modern'
+        : 'menu__action menu__action--secondary';
+      back.textContent = t('onboard.back');
+      back.addEventListener('click', () => {
+        index -= 1;
+        renderStep();
+      });
+      nav.append(back);
+    }
     if (step.skipLabel) {
       const skip = document.createElement('button');
       skip.type = 'button';
@@ -393,6 +481,17 @@ export function showOnboarding(options: OnboardingOptions): void {
     next.className = isModern ? 'menu__action onboarding__next--modern' : 'menu__action';
     next.textContent = index === steps.length - 1 ? t('onboard.done') : t('onboard.next');
     next.addEventListener('click', () => {
+      // Leaving the settings step (#189): Next used to be fully
+      // independent of the embedded form's own Save button (a deliberate
+      // choice for #159, so that Save's normal "return to main screen"
+      // behavior never fired inside the wizard) — but that meant a user
+      // who typed measurements and tapped Next, the near-universal wizard
+      // convention, lost them silently. Submitting the form here saves
+      // whatever is currently in it without changing what Save itself
+      // does when pressed directly (#159's guard is untouched).
+      if (step === settingsStep) {
+        body.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
       // Leaving the source step: branch the rest of the wizard onto the
       // chosen path — read once, here, never re-evaluated afterward.
       if (step === sourceStep) {
