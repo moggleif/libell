@@ -54,6 +54,14 @@ export interface OrientationSensor {
    * reported by name instead of silently falling back to another one.
    */
   getSource(): SensorSource;
+  /**
+   * `performance.now()` at the last real sample this adapter accepted, or
+   * null before the first one — never a value that merely reflects "still
+   * connected". Feeds `domain/staleness.ts` (#132): the caller compares
+   * this against the current time to decide whether a technically-present
+   * `getGravity()` value is actually fresh enough to show as live.
+   */
+  getLastSampleAt(): number | null;
 }
 
 /** True when the platform (iOS 13+) requires a user tap before motion data. */
@@ -97,6 +105,9 @@ export function createOrientationSensor(): OrientationSensor {
   let state: SensorState = 'idle';
   let smoothed: GravityVector | null = null;
   let usingMotion = false;
+  // #132: stamped on every accepted reading, not merely "listener attached"
+  // — the only honest signal that the stream is still actually alive.
+  let lastSampleAt: number | null = null;
 
   function accept(reading: GravityVector): void {
     smoothed =
@@ -107,6 +118,7 @@ export function createOrientationSensor(): OrientationSensor {
             y: smoothed.y + SMOOTHING_ALPHA * (reading.y - smoothed.y),
             z: smoothed.z + SMOOTHING_ALPHA * (reading.z - smoothed.z),
           };
+    lastSampleAt = performance.now();
   }
 
   function onMotion(event: DeviceMotionEvent): void {
@@ -170,5 +182,6 @@ export function createOrientationSensor(): OrientationSensor {
     getState: () => state,
     getGravity: () => smoothed,
     getSource: () => 'phone',
+    getLastSampleAt: () => lastSampleAt,
   };
 }

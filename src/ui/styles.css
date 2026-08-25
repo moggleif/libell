@@ -1681,6 +1681,35 @@ body {
   font-weight: 600;
 }
 
+/* Stale-data overlay (#132): sensor data has stopped refreshing — a
+   safety-critical, third state distinct from the wrong-pose overlay above
+   (never confuse "no trustworthy data at all" with "flat but rotated").
+   Same full-overlay layout, but the --warning tint (the same tone the
+   dashboard lamps and the disconnected sensor-status dot already use for
+   "something needs attention") keeps the two from reading the same. */
+.stale-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.stale-overlay[hidden] {
+  display: none;
+}
+
+.stale-overlay__text {
+  margin: 0;
+  color: var(--warning);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
 /* ---- Full-screen menu pages ---- */
 
 .menu-page {

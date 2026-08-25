@@ -319,6 +319,8 @@ export const MESSAGES = {
 
     'pose.layFlat': 'Lay the phone flat to measure',
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
+
+    'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
   },
   sv: {
     'topbar.install': 'Installera',
@@ -623,6 +625,9 @@ export const MESSAGES = {
 
     'pose.layFlat': 'Lägg telefonen plant för att mäta',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
+
+    'stale.dataUnavailable':
+      'Ingen ny sensordata – vägledningen är pausad tills den kommer tillbaka',
   },
 } as const;
 

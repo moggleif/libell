@@ -7,6 +7,11 @@ import { computeCaravanLeveling, createCaravanStabilizer } from './domain/carava
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
+import {
+  isSensorStale,
+  STALE_TIMEOUT_EASYLEVEL_MS,
+  STALE_TIMEOUT_PHONE_MS,
+} from './domain/staleness';
 import { deficitMagnitude } from './domain/rampPlan';
 import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
 import {
@@ -118,6 +123,9 @@ function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
     // and the type checker enforces this object stays a full
     // `OrientationSensor` if the interface ever grows again.
     getSource: () => 'phone' as const,
+    // Fixed synthetic tilt is always "just sampled" (#132) — demo mode and
+    // the screenshot generator must never show the stale-data overlay.
+    getLastSampleAt: () => performance.now(),
   };
 }
 
@@ -732,6 +740,20 @@ function bootstrap(root: HTMLElement): void {
     poseText.className = 'pose-overlay__text';
     poseOverlay.append(poseText);
     root.append(poseOverlay);
+
+    // Stale-data overlay (#132): a third, distinct state from the pose
+    // overlay above and R25's "Measuring…" — there is no trustworthy data
+    // at all (the active sensor has gone quiet, connected or not), so the
+    // wheel/ramp guidance is hidden rather than left frozen mid-display.
+    const staleOverlay = document.createElement('div');
+    staleOverlay.className = 'stale-overlay';
+    staleOverlay.hidden = true;
+    const staleText = document.createElement('p');
+    staleText.className = 'stale-overlay__text';
+    staleText.textContent = t('stale.dataUnavailable');
+    staleOverlay.append(staleText);
+    root.append(staleOverlay);
+
     const detectPose = createPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
     // Rocking vehicle (people moving around): show "Measuring…" until the
@@ -784,6 +806,7 @@ function bootstrap(root: HTMLElement): void {
       // pose nagging, no overlays, no celebration until they are back.
       if (menu.isOpen() || onboardingOpen) {
         poseOverlay.hidden = true;
+        staleOverlay.hidden = true;
         levelOverlay.hideNow();
         requestAnimationFrame(frame);
         return;
@@ -804,6 +827,24 @@ function bootstrap(root: HTMLElement): void {
             : t('main.waiting');
       } else {
         waiting.hidden = true;
+        const now = performance.now();
+        // Stale data (#132): the sensor still reports a reading, but it
+        // hasn't refreshed in a while — a BLE box whose notifications
+        // silently stopped while the GATT link stayed "connected", or a
+        // phone sensor stalled by tab backgrounding/OS throttling. Checked
+        // before the pose guard below: a reading old enough to be untrusted
+        // isn't safe to judge the pose from either, and the two overlays
+        // must never both fight for the screen at once.
+        const staleTimeoutMs =
+          sensor.getSource() === 'easylevel' ? STALE_TIMEOUT_EASYLEVEL_MS : STALE_TIMEOUT_PHONE_MS;
+        if (isSensorStale(sensor.getLastSampleAt(), now, staleTimeoutMs)) {
+          staleOverlay.hidden = false;
+          poseOverlay.hidden = true;
+          levelOverlay.hideNow();
+          requestAnimationFrame(frame);
+          return;
+        }
+        staleOverlay.hidden = true;
         // Invalid pose: pause the guidance and say what to do instead.
         const badPose = detectPose(gravity) === 'not-flat';
         if (badPose || landscape.matches) {
@@ -814,7 +855,6 @@ function bootstrap(root: HTMLElement): void {
           return;
         }
         poseOverlay.hidden = true;
-        const now = performance.now();
         const tilt = tiltFromGravity(gravity, null);
         const still = isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, now);
         const { isLevel, maxCorrectionMm } = engineTick(gravity, now);
