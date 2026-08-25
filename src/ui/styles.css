@@ -2094,20 +2094,6 @@ body {
   gap: 4px;
 }
 
-/* A settings/general step embeds the real settings form whole (see the
- * file header comment in onboarding.ts), Save included — which otherwise
- * shares the plain .menu__action green-pill style with the wizard's own
- * Next button below it: two identical-looking "confirm" buttons on one
- * screen that do different things (Save doesn't advance the wizard; Next
- * both saves and advances). Scoped to `.onboarding` only, so the real
- * Settings page keeps its own Save exactly as prominent as before —
- * demoted here to the same outline treatment as Undo/Reset next to it. */
-.onboarding .settings__actions .menu__action {
-  color: var(--on-surface);
-  background: none;
-  border: 1px solid var(--outline);
-}
-
 /* ---- Modern onboarding (#110) ----
  * Structure is picked once, at construction, from the appearance the
  * wizard was opened with (see onboarding.ts) — these rules only style

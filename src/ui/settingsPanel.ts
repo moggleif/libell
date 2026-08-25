@@ -657,19 +657,26 @@ export function createSettingsForm(
     // Onboarding step (#156): the reduced subset only — no tabs, no
     // Advanced disclosure, no vehicle-type/axle selectors. A short note
     // pointing to ☰ is added by onboarding.ts itself, next to this form.
+    // No `actions` row (design-review follow-up): a wizard step already has
+    // its own Next/Skip/Back, and Next submits this form directly — a
+    // second, identically-styled "Save" button here only duplicated it and
+    // invited a "do I need to press this too?" moment. Save/Undo/Reset stay
+    // exactly as they were on the real Settings page (the only place still
+    // reachable by mouse/keyboard, since `actions`'s buttons are still
+    // fully wired — just unmounted here).
     form.append(
       measureHint,
       fieldEls.get('wheelbaseMm')!,
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
-      actions,
     );
   } else if (compact === 'general') {
     // Onboarding step (#189): Language, Theme, Appearance, Chime,
     // Continuous audio guidance — the exact same field elements and
     // handlers the full form's General section uses, in the same order
     // (language still reloads immediately on change, theme/appearance
-    // still live-preview), just this subset appended.
+    // still live-preview), just this subset appended. No `actions` row —
+    // see the 'measurements' branch above.
     form.append(
       languageField,
       themeField,
@@ -677,7 +684,6 @@ export function createSettingsForm(
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
-      actions,
     );
   } else if (appearance === 'modern') {
     type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
@@ -1113,31 +1119,12 @@ export function createSettingsForm(
   };
 
   undo.addEventListener('click', () => populate(saved));
-  // Reset must only touch what this form actually shows (#189 follow-up):
-  // `populate(DEFAULT_SETTINGS)` would silently stage every field back to
-  // factory defaults — vehicle type, ramp steps, theme, appearance, sound —
-  // even on a compact onboarding step that only displays three measurement
-  // fields, with no on-screen sign that anything beyond them changed.
-  reset.addEventListener('click', () => {
-    if (compact === 'measurements') {
-      populate({
-        ...currentSettings(),
-        wheelbaseMm: DEFAULT_SETTINGS.wheelbaseMm,
-        trackWidthFrontMm: DEFAULT_SETTINGS.trackWidthFrontMm,
-        trackWidthRearMm: DEFAULT_SETTINGS.trackWidthRearMm,
-      });
-    } else if (compact === 'general') {
-      populate({
-        ...currentSettings(),
-        theme: DEFAULT_SETTINGS.theme,
-        appearance: DEFAULT_SETTINGS.appearance,
-        soundOnLevel: DEFAULT_SETTINGS.soundOnLevel,
-        soundGuidance: DEFAULT_SETTINGS.soundGuidance,
-      });
-    } else {
-      populate(DEFAULT_SETTINGS);
-    }
-  });
+  // Full reset, still needs Save to persist: safe because `actions` (this
+  // button included) is only ever mounted on the real, full Settings page
+  // now — the compact onboarding forms don't render it (see the 'compact'
+  // branches below), so there is no reduced screen left where "reset
+  // everything" could look like it only reset what's on screen.
+  reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
 
   form.resyncSoundFields = (sound) => {
     soundInput.checked = sound.soundOnLevel;

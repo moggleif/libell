@@ -534,66 +534,23 @@ describe('settings form — compact mode (#156)', () => {
     expect(form.querySelector('select')).not.toBeNull();
   });
 
-  // Style-consistency review follow-up: "Reset to defaults" on a compact
-  // step used to call populate(DEFAULT_SETTINGS) unconditionally, which
-  // also stages vehicleType/ramp/theme/appearance/sound back to factory
-  // defaults — fields this reduced form never shows — with no on-screen
-  // sign that anything beyond the three visible fields changed. Reset must
-  // only touch what a compact form actually displays.
-  it('"Reset to defaults" on the measurements step only resets the fields it shows', () => {
-    const customized: LevelSettings = {
-      ...classic,
-      vehicleType: 'caravan',
-      appearance: 'modern',
-      soundOnLevel: false,
-      soundGuidance: true,
-      wheelbaseMm: 4200,
-      trackWidthFrontMm: 1234,
-      trackWidthRearMm: 5678,
-    };
-    const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(customized, onSave, undefined, { compact: 'measurements' });
-    const reset = [...form.querySelectorAll('button')].find(
-      (b) => b.textContent === t('settings.reset'),
-    )!;
-    reset.click();
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-
-    const saved = onSave.mock.calls[0]![0];
-    expect(saved.wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
-    expect(saved.trackWidthFrontMm).toBe(DEFAULT_SETTINGS.trackWidthFrontMm);
-    expect(saved.trackWidthRearMm).toBe(DEFAULT_SETTINGS.trackWidthRearMm);
-    // Not shown on this step — must survive untouched.
-    expect(saved.vehicleType).toBe('caravan');
-    expect(saved.appearance).toBe('modern');
-    expect(saved.soundOnLevel).toBe(false);
-    expect(saved.soundGuidance).toBe(true);
-  });
-
-  it('"Reset to defaults" on the general step only resets the fields it shows', () => {
-    const customized: LevelSettings = {
-      ...classic,
-      vehicleType: 'caravan',
-      wheelbaseMm: 4200,
-      appearance: 'modern',
-      soundOnLevel: false,
-      soundGuidance: true,
-    };
-    const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(customized, onSave, undefined, { compact: 'general' });
-    const reset = [...form.querySelectorAll('button')].find(
-      (b) => b.textContent === t('settings.reset'),
-    )!;
-    reset.click();
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-
-    const saved = onSave.mock.calls[0]![0];
-    expect(saved.appearance).toBe(DEFAULT_SETTINGS.appearance);
-    expect(saved.soundOnLevel).toBe(DEFAULT_SETTINGS.soundOnLevel);
-    expect(saved.soundGuidance).toBe(DEFAULT_SETTINGS.soundGuidance);
-    // Not shown on this step — must survive untouched.
-    expect(saved.vehicleType).toBe('caravan');
-    expect(saved.wheelbaseMm).toBe(4200);
+  // Design review: a compact form's own Save/Undo/Reset row used to render
+  // right alongside the wizard's Next/Skip/Back — two "confirm" controls
+  // per screen, one of which (Reset) could silently stage every field back
+  // to factory defaults, including fields this reduced form never shows.
+  // Removing the row (not just fixing Reset's scope) is the actual fix:
+  // there is nothing left here for a first-time user to parse but the
+  // fields themselves — Next (tested via onboarding.ts) is the only save
+  // path. Save/Undo/Reset are unaffected on the full, non-compact form.
+  it('renders no Save/Undo/Reset row in either compact mode', () => {
+    for (const compact of ['measurements', 'general'] as const) {
+      const form = createSettingsForm(classic, vi.fn(), undefined, { compact });
+      expect(form.querySelector('.settings__actions')).toBeNull();
+      const buttonTexts = [...form.querySelectorAll('button')].map((b) => b.textContent);
+      expect(buttonTexts).not.toContain(t('settings.save'));
+      expect(buttonTexts).not.toContain(t('settings.undo'));
+      expect(buttonTexts).not.toContain(t('settings.reset'));
+    }
   });
 });
 
