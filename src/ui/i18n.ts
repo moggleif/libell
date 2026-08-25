@@ -271,11 +271,14 @@ export const MESSAGES = {
     'settings.advanced': 'Advanced',
     // Design review: the fields inside Advanced had labels but no
     // explanation of what they actually do — this is why the disclosure
-    // "saknar beskrivning" (was missing a description).
-    'settings.advanced.hint':
-      'Tolerance sets how close to level counts as "level" — tighter for a shower or ' +
-      'fridge, looser if close enough is fine. Stability smooths out small sensor jitter ' +
-      'so the numbers do not flicker.',
+    // "saknar beskrivning" (was missing a description). Split into one hint
+    // per field (follow-up), each placed right below its own field — the
+    // same pattern the response-delay hint below already uses — instead of
+    // one combined paragraph ahead of both fields.
+    'settings.tolerance.hint':
+      'Sets how close to level counts as "level" — tighter for a shower or fridge, ' +
+      'looser if close enough is fine.',
+    'settings.stability.hint': 'Smooths out small sensor jitter so the numbers do not flicker.',
     'drain.none': 'None / does not matter',
     // "Middle" (design review): the mean of the two wheels on that edge —
     // a coarser preference than a single corner, now that corners exist
@@ -715,10 +718,10 @@ export const MESSAGES = {
     'settings.language': 'Språk',
     'settings.language.auto': 'Automatiskt (enhetens språk)',
     'settings.advanced': 'Avancerat',
-    'settings.advanced.hint':
-      'Tolerans avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller ' +
-      'kylskåp, mer tillåtande om det bara ska vara tillräckligt bra. Stabilitet jämnar ' +
-      'ut små skakningar i sensorn så att siffrorna inte hoppar.',
+    'settings.tolerance.hint':
+      'Avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller kylskåp, ' +
+      'mer tillåtande om det bara ska vara tillräckligt bra.',
+    'settings.stability.hint': 'Jämnar ut små skakningar i sensorn så att siffrorna inte hoppar.',
     'drain.none': 'Inget / spelar ingen roll',
     'drain.left': 'Vänster, mitt',
     'drain.right': 'Höger, mitt',
