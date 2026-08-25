@@ -217,9 +217,6 @@ export const MESSAGES = {
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
     'onboard.legend.dim': 'Gray – — a low wheel your ramps don’t reach.',
-    // Compact onboarding steps (#156): points to ☰ for everything the
-    // reduced step doesn't show.
-    'onboard.moreInMenu': 'More options are available later in Settings.',
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
     'settings.trackRear': 'Track width rear',
@@ -673,7 +670,6 @@ export const MESSAGES = {
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
     'onboard.legend.dim': 'Grått – — ett lågt hjul som ramperna inte når.',
-    'onboard.moreInMenu': 'Fler alternativ finns senare i Inställningar.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',

@@ -308,27 +308,11 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
-  // A short, visible note that the compact steps below don't hide these
-  // features from the app — they just aren't on this reduced screen
-  // (#156); the full forms stay reachable from Settings afterward.
-  function moreInMenuNote(): HTMLParagraphElement {
-    const note = document.createElement('p');
-    note.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-    note.textContent = t('onboard.moreInMenu');
-    return note;
-  }
-
   // A skippable step's consequence, spelled out (#189): "Skip" alone never
   // said what happens next — the warning lamp (R11) that stays lit is
   // documented in the requirements but was never shown to the user here.
   function skipConsequenceHint(): HTMLParagraphElement {
     const hint = document.createElement('p');
-    // Same class as moreInMenuNote() (#189 follow-up) — Classic used to
-    // borrow 'settings__hint' (0.8rem, a different component's style) here
-    // while its neighboring note used 'menu__text' (0.9rem), so two grey
-    // helper lines back-to-back on the same step rendered at different
-    // sizes. Modern never had the mismatch since both already shared
-    // 'onboarding__text--modern'.
     hint.className = isModern ? 'onboarding__text--modern' : 'menu__text';
     hint.textContent = t('onboard.skip.consequence');
     return hint;
@@ -337,10 +321,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   const settingsStep: Step = {
     // 'help.settings.h' ("The measurements"), not 'menu.settings'
     // ("Settings") — #189 follow-up. This step only ever shows wheelbase/
-    // track widths, but titling it "Settings" collided with the
-    // moreInMenuNote() line right below it ("More options are available
-    // later in Settings"), which points at the real, full Settings page —
-    // same word, two different destinations, on the same screen.
+    // track widths.
     title: t('help.settings.h'),
     // Plain "Skip" (#189 follow-up), not "Skip — use defaults": skipping
     // this step does light a warning lamp (see skipConsequenceHint below),
@@ -365,7 +346,6 @@ export function showOnboarding(options: OnboardingOptions): void {
         undefined,
         { compact: 'measurements' },
       ),
-      moreInMenuNote(),
       skipConsequenceHint(),
     ],
   };
@@ -391,7 +371,6 @@ export function showOnboarding(options: OnboardingOptions): void {
         undefined,
         { compact },
       ),
-      moreInMenuNote(),
     ];
   }
 
@@ -442,7 +421,6 @@ export function showOnboarding(options: OnboardingOptions): void {
         undefined,
         { compact: 'ramps' },
       ),
-      moreInMenuNote(),
       skipConsequenceHint(),
     ],
   };

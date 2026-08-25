@@ -301,8 +301,7 @@ URL and must keep working with no signal.
   for whichever vehicle the vehicle step chose. Everything else the full Settings form
   has beyond what the Language/Appearance/Sound steps (#189) already covered (Rear axle
   — Vehicle tab; Tolerance, Stability — Advanced) is reachable from Settings afterward,
-  not hidden from the app, just not shown on this reduced step. A short note on the
-  step says so.
+  not hidden from the app, just not shown on this reduced step.
 - **Given** the ramps step (design review: never had a wizard step before, despite
   being what the ramp catalog and per-wheel step guidance actually run on — arguably
   what most sets this app's leveling apart from a plain bubble-level or sensor-only
