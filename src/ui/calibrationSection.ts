@@ -115,9 +115,11 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   vehicleStatus.className = 'menu__text menu__text--status';
   const vehicleButton = document.createElement('button');
   vehicleButton.type = 'button';
-  // Modern wants this action secondary-styled, unlike the filled sensor
-  // "Calibrate now" button (design handoff for #109).
-  vehicleButton.className = modern ? 'menu__action menu__action--secondary' : 'menu__action';
+  // All three calibrate actions (sensor, vehicle zero, flip) are equally
+  // primary — a user only ever does one of them at a time, so there is no
+  // "the real one" to single out as filled while the others fade to
+  // outline (follow-up to #109's original secondary styling).
+  vehicleButton.className = 'menu__action';
   vehicleButton.textContent = t('calibration.vehicle.now');
   const vehicleClearButton = document.createElement('button');
   vehicleClearButton.type = 'button';
@@ -216,7 +218,9 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   flipStatus.className = 'menu__text menu__text--status';
   const flipButton = document.createElement('button');
   flipButton.type = 'button';
-  flipButton.className = 'menu__action menu__action--secondary';
+  // Primary-styled like the other two calibrate actions above — see that
+  // comment.
+  flipButton.className = 'menu__action';
   let flipFirst: Calibration | null = null;
 
   function resetFlip(): void {
