@@ -76,7 +76,7 @@ describe('parseSettings', () => {
       toleranceMm: DEFAULT_SETTINGS.toleranceMm,
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
       displayUnit: 'mm',
-      soundOnLevel: false,
+      soundOnLevel: DEFAULT_SETTINGS.soundOnLevel,
       soundGuidance: false,
       theme: 'system',
       appearance: DEFAULT_SETTINGS.appearance,
@@ -112,9 +112,17 @@ describe('parseSettings', () => {
     expect(parseSettings({ displayUnit: 'cm' }).displayUnit).toBe('cm');
     expect(parseSettings({ displayUnit: 'inches' }).displayUnit).toBe('mm');
     expect(parseSettings({ soundOnLevel: true }).soundOnLevel).toBe(true);
-    expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(false);
+    expect(parseSettings({ soundOnLevel: false }).soundOnLevel).toBe(false);
+    expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(DEFAULT_SETTINGS.soundOnLevel);
     expect(parseSettings({ soundGuidance: true }).soundGuidance).toBe(true);
     expect(parseSettings({ soundGuidance: 'yes' }).soundGuidance).toBe(false);
+  });
+
+  it('defaults soundOnLevel to on for a never-saved value, without overriding an explicit choice (#153)', () => {
+    expect(parseSettings({}).soundOnLevel).toBe(true);
+    expect(parseSettings({ vehicleType: 'caravan' }).soundOnLevel).toBe(true);
+    expect(parseSettings({ soundOnLevel: false }).soundOnLevel).toBe(false);
+    expect(parseSettings({ soundOnLevel: true }).soundOnLevel).toBe(true);
   });
 
   it('validates the vehicle type, defaulting to motorhome', () => {

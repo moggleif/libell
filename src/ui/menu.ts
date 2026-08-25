@@ -10,7 +10,7 @@ import type { TargetPreset } from '../domain/targetPresets';
 import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { isWebBluetoothSupported } from '../sensor/easyLevelSensor';
-import { createSettingsForm } from './settingsPanel';
+import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
 import { createFeedbackSection } from './feedback';
 import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
@@ -368,6 +368,9 @@ export function createMenu(options: MenuOptions): Menu {
     refreshSensorSource();
     refreshDiagnostics();
     refreshModernCards();
+    // Modern's Calibration entry is a shortcut into Settings (#155) — jump
+    // its shared instance to the Kalibrering tab every time it's opened.
+    if (section === 'calibration') settingsForm.selectCalibrationTab?.();
     render(section);
   }
 
@@ -396,21 +399,38 @@ export function createMenu(options: MenuOptions): Menu {
   // `options` (MenuOptions) carries every field CalibrationOptions needs —
   // passed through so Modern mode's embedded Kalibrering tab (#108) talks
   // to the real sensor, not a stand-in.
-  settingsBody.append(
-    createSettingsForm(options.initialSettings, options.onSettingsSaved, options),
+  const settingsForm: SettingsFormElement = createSettingsForm(
+    options.initialSettings,
+    options.onSettingsSaved,
+    options,
   );
+  settingsBody.append(settingsForm);
   addSection('settings', t('menu.settings'), settingsBody, {
     isPending: () => !options.hasSavedSettings(),
     text: t('menu.card.notSaved'),
   });
 
   // --- Calibration (one-shot + flip) ---
-  const calibrationSection = createCalibrationSection(options);
-  const refreshCalibration = calibrationSection.refresh;
-  addSection('calibration', t('menu.calibration'), calibrationSection.element, {
-    isPending: () => options.getCalibration() === null && options.getVehicleCalibration() === null,
-    text: t('menu.card.notDone'),
-  });
+  // Modern (#155): a shortcut into Settings' own Kalibrering tab — the same
+  // live component instance embedded there (settingsForm.selectCalibrationTab),
+  // never a second independent createCalibrationSection render. Classic has
+  // no tabs, so it keeps its own standalone page exactly as before.
+  let refreshCalibration: (error?: string) => void = () => {};
+  if (isModern) {
+    addSection('calibration', t('menu.calibration'), settingsBody, {
+      isPending: () =>
+        options.getCalibration() === null && options.getVehicleCalibration() === null,
+      text: t('menu.card.notDone'),
+    });
+  } else {
+    const calibrationSection = createCalibrationSection(options);
+    refreshCalibration = calibrationSection.refresh;
+    addSection('calibration', t('menu.calibration'), calibrationSection.element, {
+      isPending: () =>
+        options.getCalibration() === null && options.getVehicleCalibration() === null,
+      text: t('menu.card.notDone'),
+    });
+  }
 
   // --- Help: illustration-first, short captions (#54) ---
   const HELP: {

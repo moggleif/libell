@@ -74,12 +74,20 @@ function inertCalibrationOptions(): CalibrationOptions {
   };
 }
 
+/**
+ * The Modern tab bar exposes `selectCalibrationTab` (undefined in Classic,
+ * which has no tabs) so the menu's Calibration entry can jump straight to
+ * the Kalibrering tab of this same live instance instead of mounting a
+ * second, independent `createCalibrationSection` (#155).
+ */
+export type SettingsFormElement = HTMLFormElement & { selectCalibrationTab?: () => void };
+
 export function createSettingsForm(
   initial: LevelSettings,
   onSave: (settings: LevelSettings) => void,
   calibrationOptions?: CalibrationOptions,
-): HTMLFormElement {
-  const form = document.createElement('form');
+): SettingsFormElement {
+  const form: SettingsFormElement = document.createElement('form');
   form.className = 'settings__form';
 
   // Decided once, at construction — see the file header comment.
@@ -531,6 +539,7 @@ export function createSettingsForm(
       for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
       if (id === 'calibration') embeddedCalibration.refresh();
     };
+    form.selectCalibrationTab = () => selectTab?.('calibration');
 
     // --- Fordon tab: today's vehicle/axle/measurement fields.
     vehiclePanel.append(
