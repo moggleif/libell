@@ -119,6 +119,14 @@ export type SettingsFormElement = HTMLFormElement & {
    * in-progress unsaved edit to clobber.
    */
   resyncSoundFields?: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>) => void;
+  /**
+   * Classic split pages (screen-cleanup follow-up, `splitPages` below):
+   * the same three bodies the menu's ☰ drawer navigates between —
+   * general/vehicle/ramps — sharing this one form's state. The menu
+   * swaps whichever body is this form's current child right before
+   * showing it; undefined unless `splitPages` was requested.
+   */
+  classicPages?: { general: HTMLElement; vehicle: HTMLElement; ramps: HTMLElement };
 };
 
 export interface SettingsFormOptions {
@@ -160,6 +168,18 @@ export interface SettingsFormOptions {
    * reachable from ☰ → Settings afterward.
    */
   compact?: 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps';
+  /**
+   * Classic split pages (screen-cleanup follow-up): render Classic's
+   * fields as three navigable bodies — General / Vehicle / Ramps, exposed
+   * as `classicPages` on the returned form — instead of one long flat
+   * page, mirroring Modern's General/Fordon/Klossar tab split (#108) now
+   * that the menu's ☰ drawer has somewhere to put them. Ignored when
+   * `appearance === 'modern'` (already split by tabs) or when `compact`
+   * is set (the wizard's reduced single-topic steps). Only the ☰ menu
+   * opts in; every other classic caller (tests, any future standalone
+   * use) keeps the original flat page below.
+   */
+  splitPages?: boolean;
 }
 
 export function createSettingsForm(
@@ -618,6 +638,38 @@ export function createSettingsForm(
   const saveButtons: HTMLButtonElement[] = [save];
   const undoButtons: HTMLButtonElement[] = [undo];
 
+  /**
+   * Save+Undo only, no Reset — the same footer shape Modern's Klossar tab
+   * already uses (`footerSave`/`footerUndo` below), reused for Classic's
+   * split General/Ramps pages (#108 follow-up). Reset-to-factory-defaults
+   * stays on the one page that already carries it (Vehicle, matching
+   * Modern's Vehicle tab) rather than repeated on every split page — a
+   * "Reset" next to Language/Theme/Sound would silently wipe the
+   * vehicle's own dimensions too, the same surprise the onboarding
+   * wizard's compact steps were fixed to avoid (design review). `saved`/
+   * `populate` are defined later in this function, referenced here only
+   * inside click closures that fire well after the whole form is built.
+   */
+  function buildSaveUndoRow(): HTMLDivElement {
+    const row = document.createElement('div');
+    row.className = 'settings__actions';
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'submit';
+    saveBtn.className = 'menu__action';
+    saveBtn.disabled = true;
+    saveBtn.textContent = t('settings.save');
+    const undoBtn = document.createElement('button');
+    undoBtn.type = 'button';
+    undoBtn.className = 'menu__action menu__action--secondary';
+    undoBtn.disabled = true;
+    undoBtn.textContent = t('settings.undo');
+    undoBtn.addEventListener('click', () => populate(saved));
+    row.append(saveBtn, undoBtn);
+    saveButtons.push(saveBtn);
+    undoButtons.push(undoBtn);
+    return row;
+  }
+
   // Four labeled sections keep the long (Classic) form readable: vehicle &
   // measurements, ramps, level & display, general (screen-cleanup
   // follow-up: language/theme/sound, promoted out of Advanced below since
@@ -1024,11 +1076,54 @@ export function createSettingsForm(
       rampsTab.textContent = t('settings.tab.ramps');
       targetsTab.textContent = t('menu.targets');
     });
+  } else if (formOptions?.splitPages) {
+    // --- Classic split pages (screen-cleanup follow-up): Settings ☰ used
+    // to fold Language/Theme/Appearance/Sound and Ramps into one long flat
+    // page alongside Vehicle's own fields — bundled because they used to
+    // share a Settings section header, not because they're one decision,
+    // the same bundling already fixed on the onboarding wizard's General/
+    // Ramps steps and on Modern's tabs (#108). The three bodies below
+    // reuse Modern's exact tab groupings (General/Fordon/Klossar), just as
+    // ☰ drawer pages instead of tabs — Classic has no tab bar to fold
+    // into. One shared `<form>`/state underneath, same as Modern's tabs:
+    // the menu swaps whichever body is this form's mounted child, so Save
+    // from any of the three persists the current values of all three, not
+    // just the one on screen.
+    const generalBody = document.createElement('div');
+    generalBody.append(
+      languageField,
+      appearanceGroupHeading,
+      themeField,
+      appearanceField,
+      soundGroupHeading,
+      soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
+      buildSaveUndoRow(),
+    );
+    const vehicleBody = document.createElement('div');
+    vehicleBody.append(
+      vehicleField,
+      axleField,
+      fieldEls.get('wheelbaseMm')!,
+      fieldEls.get('trackWidthFrontMm')!,
+      fieldEls.get('trackWidthRearMm')!,
+      measureHint,
+      unitField,
+      advancedDetails,
+      actions,
+    );
+    const rampsBody = document.createElement('div');
+    rampsBody.append(stepsField, rampCountField, drainField, rampHint, buildSaveUndoRow());
+
+    form.classicPages = { general: generalBody, vehicle: vehicleBody, ramps: rampsBody };
+    form.append(vehicleBody);
   } else {
-    // --- Classic: one flat page. Tolerance/stability move behind Advanced
-    // (#157); language/theme/appearance/sound get their own visible
-    // General section (screen-cleanup follow-up) — everything else is
-    // unchanged from #108.
+    // --- Classic: one flat page (default; the menu opts into the split
+    // pages above via `splitPages`). Tolerance/stability move behind
+    // Advanced (#157); language/theme/appearance/sound get their own
+    // visible General section (screen-cleanup follow-up) — everything
+    // else is unchanged from #108.
     form.append(
       vehicleHeading,
       vehicleField,

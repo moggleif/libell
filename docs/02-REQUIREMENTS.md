@@ -108,14 +108,17 @@ URL and must keep working with no signal.
   they color how the rest of the screen reads and are the other must-do besides the
   vehicle's own measurements) as its own page with a ✕ to
   close — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
-  page (R38). Classic (no tabs) keeps a small ☰ drawer instead, holding just
-  Settings/Calibration/Targets — Diagnostics, the introduction relaunch and
-  External sensor moved off it entirely (to the "?" page and the top-right sensor
-  icon, both reachable from Classic too, R38) since Classic has no tabs to fold
-  them into. Help/About/Feedback are not part of either — reached only from the
-  bottom bar's "?" button. Classic's own flat form gets the same General grouping as
-  a plain section further down the page (below "Level & display"), not a tab, since
-  Classic has no tabs to begin with.
+  page (R38). Classic (no tabs) keeps a small ☰ drawer instead, now holding the same
+  five sections in the same order — General/Calibration/Vehicle/Ramps/Targets (design
+  review) — as five full-screen drawer pages instead of tabs, one page per decision
+  rather than the old single flat page that bundled Vehicle's own fields with Ramps
+  and General underneath it. General/Vehicle/Ramps share one settings form/save state
+  under the hood, same as Modern's tabs do — Save from any of the three still persists
+  the current values of all three, not just the page on screen. Diagnostics, the
+  introduction relaunch and External sensor stay off this drawer entirely (on the "?"
+  page and the top-right sensor icon, both reachable from Classic too, R38). Help/
+  About/Feedback are not part of either — reached only from the bottom bar's "?"
+  button.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
