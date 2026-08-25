@@ -17,7 +17,8 @@ src/
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
 │   └── settings.ts   # LevelSettings + Calibration (validation, legacy migrations)
-├── data/          # settingsStore.ts — localStorage read/write for settings + calibration
+├── data/          # settingsStore.ts (settings + calibration), easyLevelDeviceStore.ts
+│                  # (remembered EasyLevel device id, #130) — localStorage read/write
 ├── sensor/        # orientation.ts (phone), easyLevelSensor.ts (BLE box, #116) — gravity vector as a subscription
 └── ui/            # render functions, SVG components, styles.css
 ```
@@ -104,7 +105,27 @@ parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardwar
 into a `GravityVector` at whatever scale it reports, deliberately not reimplementing the
 box's own onboard filter: the app's `atan2`-based roll/pitch only depends on axis ratios,
 not absolute units. A future external sensor (#119's iOS bridge) is just another
-implementation, isolated to `sensor/`. Calibration is correspondingly split three ways —
+implementation, isolated to `sensor/`.
+
+Remember-and-auto-reconnect (#130, R33): `EasyLevelSensor` gains a `reconnect(deviceId)`
+alongside `start()` — it tries Web Bluetooth's persistent-permissions API
+(`navigator.bluetooth.getDevices()` + `device.gatt.connect()`), which needs no device
+picker and no user gesture, and resolves `'granted'`/`'disconnected'`/`'unsupported'`
+without ever falling back to `start()`'s gesture-triggered `requestDevice()` picker
+itself (that fallback would be pointless with no gesture to spend, and wrong if one were
+available — see the module doc comment). `main.ts` calls `reconnect()` once at startup
+when `libell.settings`' `sensorSource` was last `'easylevel'` and a device id is
+remembered (`easyLevelDeviceStore.ts`); on any failure it still adopts
+`easyLevelSensor` as the active sensor so the existing `'disconnected'` UI (this
+section's paragraph above) is what the user sees, rather than a second, parallel
+"couldn't auto-reconnect" message. `sensorSource` flips between `'phone'`/`'easylevel'`
+on every explicit connect/disconnect; the remembered device id is written on a
+successful connect and deliberately left alone on disconnect ("not right now", not
+"forget this box") — the next connect can only ever overwrite it with the same or a
+newer id, never leave it stale in a way that matters.
+This is the PWA/Web-Bluetooth half of #130's cross-platform ask; iOS's CoreBluetooth
+equivalent (#119) is a separate native codebase and out of scope here. Calibration is
+correspondingly split three ways —
 sensor bias (R11, source-specific), installation/placement offset (R24's vehicle zero,
 ADR 0010, generalizable per source), and the desired vehicle target (ADR 0013,
 source-independent) — see ADR 0014 for the full rule.

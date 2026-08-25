@@ -32,9 +32,14 @@ import {
   markOnboardingSeen,
   saveActiveTargetId,
   saveCalibration,
+  saveSettings,
   saveTargetPresets,
   saveVehicleCalibration,
 } from './data/settingsStore';
+import {
+  loadRememberedEasyLevelDeviceId,
+  saveRememberedEasyLevelDeviceId,
+} from './data/easyLevelDeviceStore';
 import {
   createOrientationSensor,
   isSensorSupported,
@@ -207,6 +212,13 @@ function bootstrap(root: HTMLElement): void {
   // reconnecting reuses the same adapter instance.
   let easyLevelSensor: EasyLevelSensor | null = null;
 
+  /** Persist which source is active (#130) — read back on the next app
+   * open to decide whether a silent reconnect is even worth attempting. */
+  function rememberSensorSource(source: LevelSettings['sensorSource']): void {
+    settings = { ...settings, sensorSource: source };
+    saveSettings(settings);
+  }
+
   /** Menu action: connect (or reconnect) the EasyLevel box. Must run
    * synchronously inside the button's own click handler. */
   async function connectEasyLevelNow(): Promise<SensorState> {
@@ -214,6 +226,12 @@ function bootstrap(root: HTMLElement): void {
     const state = await easyLevelSensor.start();
     if (state === 'granted') {
       sensor = easyLevelSensor;
+      rememberSensorSource('easylevel');
+      // Remember this specific device (#130), not just "some sensor", so
+      // a later app open can try a silent `getDevices()` reconnect instead
+      // of showing the picker again.
+      const deviceId = easyLevelSensor.getDeviceId();
+      if (deviceId) saveRememberedEasyLevelDeviceId(deviceId);
       // The level screen may never have been built yet (e.g. a desktop
       // without phone motion sensors) — build it now that a real source
       // is feeding readings; harmless to rebuild if it already exists.
@@ -222,10 +240,47 @@ function bootstrap(root: HTMLElement): void {
     return state;
   }
 
-  /** Menu action: explicit disconnect — falls back to the phone sensor. */
+  /** Menu action: explicit disconnect — falls back to the phone sensor.
+   * Deliberately does NOT forget the remembered device id (#130): this is
+   * "not right now", not "never again" — only `sensorSource` flips back to
+   * 'phone', so the next app open skips auto-reconnect until the user
+   * connects again, while the box itself stays one tap away. */
   function disconnectEasyLevelNow(): void {
     easyLevelSensor?.disconnect();
     sensor = phoneSensor;
+    rememberSensorSource('phone');
+  }
+
+  /**
+   * Silent reconnect on open (#130): only when the last session left
+   * EasyLevel as the active source, and only a remembered device id (not a
+   * fresh device picker) — see `easyLevelSensor.ts`'s `reconnect()` for
+   * exactly which platform conditions this can and can't succeed under.
+   *
+   * Resolves true the moment EasyLevel has taken over the startup flow —
+   * whether the box actually reconnected or not. A failed attempt
+   * (`getDevices()` missing, box unreachable, ...) still adopts
+   * `easyLevelSensor` as `sensor` and builds the level screen: its
+   * existing per-frame loop already renders a 'disconnected' state
+   * honestly (the same "connection lost" hint and status dot #116/#129
+   * show for a live BLE drop), which is exactly the "fail cleanly, offer a
+   * one-tap manual reconnect, never a silent failure" behavior this issue
+   * asks for — reused rather than duplicated. Resolves false only when
+   * there was nothing to even attempt (EasyLevel wasn't the last source,
+   * nothing is remembered, or `navigator.bluetooth` itself doesn't exist),
+   * in which case the caller runs the ordinary phone-sensor flow instead.
+   */
+  async function attemptEasyLevelAutoReconnect(): Promise<boolean> {
+    if (settings.sensorSource !== 'easylevel') return false;
+    const deviceId = loadRememberedEasyLevelDeviceId();
+    if (!deviceId) return false;
+    easyLevelSensor ??= createEasyLevelSensor();
+    const state = await easyLevelSensor.reconnect(deviceId);
+    if (state === 'unsupported') return false; // behave exactly as if EasyLevel had never been selected
+    sensor = easyLevelSensor;
+    showLevelScreen();
+    updateSensorStatus();
+    return true;
   }
 
   // While the menu or the wizard is open the user is reading, phone in
@@ -745,26 +800,43 @@ function bootstrap(root: HTMLElement): void {
     return;
   }
 
-  if (!isSensorSupported()) {
-    handleState('unsupported');
-    return;
+  /** The phone-sensor startup this app has always had — unchanged, and
+   * still exactly what runs when EasyLevel was never selected, or its
+   * silent reconnect attempt below never had anything to try. */
+  function startDefaultSensorFlow(): void {
+    if (!isSensorSupported()) {
+      handleState('unsupported');
+      return;
+    }
+
+    if (needsPermissionGesture()) {
+      // iOS releases motion data only after a user gesture.
+      root.replaceChildren();
+      const hint = document.createElement('p');
+      hint.className = 'app__hint';
+      hint.textContent = t('main.hint');
+      const start = document.createElement('button');
+      start.type = 'button';
+      start.className = 'app__start';
+      start.textContent = t('main.start');
+      start.addEventListener('click', () => {
+        void sensor.start().then(handleState);
+      });
+      root.append(hint, start);
+    } else {
+      void sensor.start().then(handleState);
+    }
   }
 
-  if (needsPermissionGesture()) {
-    // iOS releases motion data only after a user gesture.
-    root.replaceChildren();
-    const hint = document.createElement('p');
-    hint.className = 'app__hint';
-    hint.textContent = t('main.hint');
-    const start = document.createElement('button');
-    start.type = 'button';
-    start.className = 'app__start';
-    start.textContent = t('main.start');
-    start.addEventListener('click', () => {
-      void sensor.start().then(handleState);
-    });
-    root.append(hint, start);
-  } else {
-    void sensor.start().then(handleState);
-  }
+  // EasyLevel silent auto-reconnect (#130): tried only when the last
+  // session left it as the active source. `attemptEasyLevelAutoReconnect`
+  // resolves true the moment EasyLevel has taken over the startup flow —
+  // either really connected, or honestly surfaced as "disconnected" via
+  // the existing sensor-status UI (#129) — and in both cases the ordinary
+  // phone-sensor flow below must NOT also run: it would call
+  // `easyLevelSensor.start()`, whose `requestDevice()` picker needs a live
+  // user gesture this automatic, page-load-time path does not have.
+  void attemptEasyLevelAutoReconnect().then((tookOver) => {
+    if (!tookOver) startDefaultSensorFlow();
+  });
 }

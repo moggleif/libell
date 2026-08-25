@@ -23,6 +23,20 @@
  *   this sensor to function.
  * - No encryption, no WRITE characteristic (confirmed by decompiling the
  *   official apps — see #116).
+ *
+ * Remember-and-auto-reconnect (#130): once a box has been paired via
+ * `connect()`'s `requestDevice()` picker, the browser remembers the grant
+ * for that origin. `reconnect()` uses Web Bluetooth's persistent-
+ * permissions API — `navigator.bluetooth.getDevices()` (no picker, no user
+ * gesture) plus `device.gatt.connect()` — to reattach to that same
+ * previously-authorized device on a later app open. This is a real,
+ * currently-shipping (Chrome/Android) piece of Web Bluetooth, distinct from
+ * `requestDevice()`, which always needs both a live gesture and (bar a
+ * matching `filters`-based auto-accept, not used here) a picker. Where
+ * `getDevices()` does not exist, or the remembered device is not in its
+ * list, or `gatt.connect()` fails, `reconnect()` fails cleanly — never a
+ * new picker, never a loop — leaving the caller to fall back to the
+ * ordinary gesture-triggered `start()`/`connect()` path.
  */
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
@@ -40,6 +54,9 @@ export function isWebBluetoothSupported(): boolean {
 
 /** One connected box: subscribe to its notify characteristics, disconnect on request. */
 export interface EasyLevelConnection {
+  /** Web Bluetooth's own device id (#130) — remembered so a later session
+   * can find this same device again via `getDevices()`. */
+  readonly deviceId: string;
   subscribeAccel(onData: (view: DataView) => void): Promise<void>;
   /** Best-effort (#116: layout beyond byte 7 undecoded) — raw bytes only. */
   subscribeStatus(onData: (view: DataView) => void): Promise<void>;
@@ -58,10 +75,44 @@ export interface EasyLevelTransport {
    * later (box powered off, out of range, ...).
    */
   connect(onDisconnect: () => void): Promise<EasyLevelConnection>;
+  /**
+   * Silent reconnect (#130): finds `deviceId` among the devices already
+   * authorized for this origin (`getDevices()`) and connects its GATT
+   * server — no picker, no user gesture. Resolves `null` (never rejects)
+   * when `getDevices()` doesn't exist, the id isn't in that list, or GATT
+   * connect fails — every "can't do this silently" reason degrades the
+   * same way, onto the caller's gesture-triggered fallback.
+   */
+  reconnect(deviceId: string, onDisconnect: () => void): Promise<EasyLevelConnection | null>;
 }
 
 /** The real Web Bluetooth transport. Scans by service UUID (#116: more reliable than the `CARATI...` name prefix). */
 export function createWebBluetoothTransport(): EasyLevelTransport {
+  async function connectToDevice(
+    device: BluetoothDevice,
+    onDisconnect: () => void,
+  ): Promise<EasyLevelConnection> {
+    device.addEventListener('gattserverdisconnected', onDisconnect);
+    const server = await device.gatt?.connect();
+    if (!server) throw new Error('EasyLevel: GATT connect failed');
+    const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
+
+    async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {
+      const characteristic = await service.getCharacteristic(uuid);
+      characteristic.addEventListener('characteristicvaluechanged', () => {
+        if (characteristic.value) onData(characteristic.value);
+      });
+      await characteristic.startNotifications();
+    }
+
+    return {
+      deviceId: device.id,
+      subscribeAccel: (onData) => subscribe(EASYLEVEL_ACCEL_CHARACTERISTIC_UUID, onData),
+      subscribeStatus: (onData) => subscribe(EASYLEVEL_STATUS_CHARACTERISTIC_UUID, onData),
+      disconnect: () => device.gatt?.disconnect(),
+    };
+  }
+
   return {
     async connect(onDisconnect): Promise<EasyLevelConnection> {
       // Only ever called after `isWebBluetoothSupported()` has confirmed
@@ -70,24 +121,25 @@ export function createWebBluetoothTransport(): EasyLevelTransport {
       const device = await navigator.bluetooth!.requestDevice({
         filters: [{ services: [EASYLEVEL_SERVICE_UUID] }],
       });
-      device.addEventListener('gattserverdisconnected', onDisconnect);
-      const server = await device.gatt?.connect();
-      if (!server) throw new Error('EasyLevel: GATT connect failed');
-      const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
-
-      async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {
-        const characteristic = await service.getCharacteristic(uuid);
-        characteristic.addEventListener('characteristicvaluechanged', () => {
-          if (characteristic.value) onData(characteristic.value);
-        });
-        await characteristic.startNotifications();
+      return connectToDevice(device, onDisconnect);
+    },
+    async reconnect(deviceId, onDisconnect): Promise<EasyLevelConnection | null> {
+      // Same "only called after isWebBluetoothSupported()" contract as
+      // connect() above, but getDevices() itself is a second, narrower
+      // feature (#130) that can be missing even where `bluetooth` exists.
+      const getDevices = navigator.bluetooth?.getDevices;
+      if (typeof getDevices !== 'function') return null;
+      try {
+        const devices = await getDevices.call(navigator.bluetooth);
+        const device = devices.find((candidate) => candidate.id === deviceId);
+        if (!device) return null;
+        return await connectToDevice(device, onDisconnect);
+      } catch {
+        // A GATT connect failure (box out of range, powered off, ...) —
+        // fails silently here by design; the caller decides what "no
+        // silent reconnect available" means for its own UI.
+        return null;
       }
-
-      return {
-        subscribeAccel: (onData) => subscribe(EASYLEVEL_ACCEL_CHARACTERISTIC_UUID, onData),
-        subscribeStatus: (onData) => subscribe(EASYLEVEL_STATUS_CHARACTERISTIC_UUID, onData),
-        disconnect: () => device.gatt?.disconnect(),
-      };
     },
   };
 }
@@ -96,6 +148,23 @@ export function createWebBluetoothTransport(): EasyLevelTransport {
 export interface EasyLevelSensor extends OrientationSensor {
   /** Raw `faf52c22-...` bytes, undecoded (#116) — for future diagnostics. */
   getStatusBytes(): Uint8Array | null;
+  /** The connected device's Web Bluetooth id (#130), or null before a
+   * successful `start()`/`reconnect()` — the caller remembers this to make
+   * a later `reconnect()` possible. */
+  getDeviceId(): string | null;
+  /**
+   * Silent reconnect (#130): tries `transport.reconnect(deviceId, ...)` —
+   * no device picker, no user gesture required — and resolves `'granted'`
+   * on success. Never falls back to `transport.connect()`'s gesture-
+   * triggered picker itself (that would be pointless outside a real click
+   * handler, and wrong inside one — see the module doc comment); on any
+   * failure it resolves `'disconnected'`, the same state an active
+   * connection reaches when it drops, so the UI's existing "lost
+   * connection, tap to reconnect" handling covers this case too rather
+   * than needing a parallel one. `'unsupported'` still means what it means
+   * everywhere else: `navigator.bluetooth` itself does not exist.
+   */
+  reconnect(deviceId: string): Promise<SensorState>;
   /** Explicit user disconnect — distinct from an unexpected `gattserverdisconnected`. */
   disconnect(): void;
 }
@@ -115,6 +184,26 @@ export function createEasyLevelSensor(
     gravity = null;
   }
 
+  /** Shared by start() and reconnect(): wire a fresh EasyLevelConnection's
+   * notify characteristics into this sensor's readings. */
+  async function wireConnection(next: EasyLevelConnection): Promise<void> {
+    connection = next;
+    await connection.subscribeAccel((view) => {
+      gravity = parseAccelPacket(view);
+    });
+    try {
+      // Best-effort only — see the module doc comment. A firmware without
+      // this characteristic, or one that rejects the subscription, must
+      // never prevent leveling from working.
+      await connection.subscribeStatus((view) => {
+        statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+      });
+    } catch {
+      // No status characteristic, or subscribe failed: accel alone is
+      // everything this sensor needs.
+    }
+  }
+
   return {
     async start(): Promise<SensorState> {
       if (state === 'granted') return state;
@@ -123,21 +212,7 @@ export function createEasyLevelSensor(
         return state;
       }
       try {
-        connection = await transport.connect(onGattDisconnected);
-        await connection.subscribeAccel((view) => {
-          gravity = parseAccelPacket(view);
-        });
-        try {
-          // Best-effort only — see the module doc comment. A firmware
-          // without this characteristic, or one that rejects the
-          // subscription, must never prevent leveling from working.
-          await connection.subscribeStatus((view) => {
-            statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
-          });
-        } catch {
-          // No status characteristic, or subscribe failed: accel alone
-          // is everything this sensor needs.
-        }
+        await wireConnection(await transport.connect(onGattDisconnected));
         state = 'granted';
         return state;
       } catch {
@@ -148,8 +223,32 @@ export function createEasyLevelSensor(
         return state;
       }
     },
+    async reconnect(deviceId: string): Promise<SensorState> {
+      if (state === 'granted') return state;
+      if (!isWebBluetoothSupported()) {
+        state = 'unsupported';
+        return state;
+      }
+      try {
+        const result = await transport.reconnect(deviceId, onGattDisconnected);
+        if (!result) {
+          state = 'disconnected';
+          return state;
+        }
+        await wireConnection(result);
+        state = 'granted';
+        return state;
+      } catch {
+        // A subscribe failure after a successful GATT connect, say — same
+        // honest "not actually connected" outcome as transport.reconnect()
+        // itself resolving null.
+        state = 'disconnected';
+        return state;
+      }
+    },
     getState: () => state,
     getGravity: () => gravity,
+    getDeviceId: () => connection?.deviceId ?? null,
     getSource: (): SensorSource => 'easylevel',
     getStatusBytes: () => statusBytes,
     disconnect(): void {

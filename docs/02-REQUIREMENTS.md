@@ -471,10 +471,12 @@ URL and must keep working with no signal.
 - **Then** the "External sensor" page is not shown at all — never a silent failure or a
   button that does nothing when tapped.
 - **Given** the EasyLevel box is the active source
-- **When** its BLE connection is lost (out of range, powered off)
+- **When** its BLE connection is lost (out of range, powered off) while the app stays
+  open
 - **Then** the main screen shows that the connection was lost instead of freezing on
-  the last reading, and the menu's "Connect" action offers to reconnect (a new pairing
-  gesture — Web Bluetooth has no silent background reconnect).
+  the last reading, and the menu's "Connect" action offers to reconnect — during a live
+  session this is always a fresh gesture-triggered pairing prompt (see #130 below for
+  what "reconnect" means the next time the app is opened instead).
 - **Given** the EasyLevel box is the active source and connected
 - **Then** the main screen shows only a small, neutral connection-state dot — no
   numbers, no clutter — and nothing at all is added to the main screen while the
@@ -500,3 +502,46 @@ URL and must keep working with no signal.
   characteristic (firmware version, temperature, calibration bytes) is read
   best-effort and not required for leveling to work; its exact layout beyond the
   firmware-version byte is undecoded and out of scope here.
+
+## R33 — EasyLevel box: remember the selection and auto-reconnect on open (#130)
+
+This requirement is scoped strictly to the PWA / Web Bluetooth path (#116's
+implementation). A future iOS native bridge (#119) and any future Android native app
+implement their own platform-appropriate reconnect behavior against this same
+cross-platform goal — they are not this app's code and are not covered here.
+
+- **Given** the user has successfully connected to an EasyLevel box at least once
+- **Then** the app remembers that specific box's identity (its Web Bluetooth device id,
+  `libell.easyLevelDeviceId`) and that EasyLevel was the active source
+  (`sensorSource` in `libell.settings`), not merely "an EasyLevel box was used once" —
+  both survive closing and reopening the app.
+- **Given** a browser that implements Web Bluetooth's persistent-permissions API
+  (`navigator.bluetooth.getDevices()` — Chrome/Android today) and a remembered box
+- **When** the app is opened
+- **Then** it reattaches to that same previously-authorized box (`getDevices()` to find
+  it, `device.gatt.connect()` to reconnect) automatically, with **no** device picker and
+  **no** user gesture — the ordinary use becomes open app → sensor reconnects → level,
+  never a repeated pairing dance.
+- **Given** the same situation, but the box is out of range, powered off, or its GATT
+  connect otherwise fails
+- **Then** the attempt fails cleanly — no retry loop, no repeated prompts — and the app
+  honestly shows the box as the active-but-disconnected source via the same
+  connection-lost UI a live drop uses (R32 above): the main-screen dot and the "External
+  sensor" menu page, both offering the existing one-tap manual reconnect. The app never
+  silently falls back to the phone's own sensor on the user's behalf — that is the
+  user's own explicit "Disconnect" action, same as ever.
+- **Given** a browser without `getDevices()` (Web Bluetooth's persistent-permissions API
+  is not implemented everywhere `navigator.bluetooth` itself is) — or without Web
+  Bluetooth at all
+- **Then** silent auto-reconnect is not attempted (a browser without Web Bluetooth never
+  had an EasyLevel box to remember in the first place, per R32); the box, if remembered,
+  surfaces exactly as "connection lost" above, and a manual reconnect through the
+  existing "Connect EasyLevel sensor" button still works — it just necessarily needs its
+  own user gesture, since that is what a fresh `requestDevice()` picker always requires.
+  This is a genuine platform ceiling, not a bug: the app never pretends a browser can
+  auto-reconnect when it can't.
+- **Given** the user taps "Disconnect" on the "External sensor" menu page
+- **Then** the box stays remembered (its device id is not forgotten), but
+  `sensorSource` reverts to `'phone'` — the next app open does not attempt to
+  auto-reconnect until the user connects again, honoring an explicit "not right now"
+  without an explicit "forget this box".
