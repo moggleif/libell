@@ -132,9 +132,13 @@ function wheelRect(x: number, y: number): SVGRectElement {
   });
 }
 
-/** Wheelbase (L) and track width (W) shown on the vehicle — a caravan's
- * "L" is the axle-to-jockey-wheel distance and its "W" the single axle's
- * track (same relabeling `settingsPanel.ts` applies to the real fields). */
+/** Wheelbase and track width shown on the vehicle as measure lines only —
+ * no "L"/"W" letters (the step's own field labels next to the numbers
+ * already say what each one is; the letters just repeated that). A
+ * caravan has one axle, one track-width line; a motorhome has two
+ * (trackWidthFrontMm and trackWidthRearMm are separate fields, so the
+ * illustration shows one dashed line at each axle, not a single one
+ * in between). */
 export function measuresIllustration(
   label: string,
   vehicleType: VehicleType = 'motorhome',
@@ -148,7 +152,6 @@ export function measuresIllustration(
       wheelRect(45, 120),
       wheelRect(145, 120),
       el('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
-      el('text', { x: '108', y: '85', class: 'illu__label' }, 'L'),
       el('line', {
         x1: '45',
         y1: '133',
@@ -156,7 +159,6 @@ export function measuresIllustration(
         y2: '133',
         class: 'illu__measure illu__measure--dash',
       }),
-      el('text', { x: '68', y: '150', class: 'illu__label' }, 'W'),
     );
     return root;
   }
@@ -168,15 +170,22 @@ export function measuresIllustration(
     wheelRect(45, 116),
     wheelRect(145, 116),
     el('line', { x1: '100', y1: '43', x2: '100', y2: '129', class: 'illu__measure' }),
-    el('text', { x: '108', y: '90', class: 'illu__label' }, 'L'),
+    // Front axle track width.
     el('line', {
       x1: '45',
-      y1: '80',
+      y1: '43',
       x2: '155',
-      y2: '80',
+      y2: '43',
       class: 'illu__measure illu__measure--dash',
     }),
-    el('text', { x: '68', y: '74', class: 'illu__label' }, 'W'),
+    // Rear axle track width.
+    el('line', {
+      x1: '45',
+      y1: '129',
+      x2: '155',
+      y2: '129',
+      class: 'illu__measure illu__measure--dash',
+    }),
   );
   return root;
 }
