@@ -222,6 +222,16 @@ export function saveLanguage(
   }
 }
 
+/** Clears a stored language override (the "Automatic" choice, screen-cleanup
+ * follow-up) — back to detecting from the browser's own language on every load. */
+export function clearLanguage(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    storage?.removeItem(LANGUAGE_KEY);
+  } catch {
+    // Nothing to do — the in-memory state is cleared by the caller.
+  }
+}
+
 export function hasSeenOnboarding(storage: KeyValueStorage | null = defaultStorage()): boolean {
   try {
     return storage?.getItem(ONBOARDED_KEY) === '1';

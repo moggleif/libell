@@ -54,9 +54,12 @@ export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptio
  * resolves to the phone sensor (see the module doc comment above). */
 type SensorChoice = 'phone' | 'external';
 
+// 'menu.sensorSource' ("External sensor") is reused verbatim for the
+// external radio's label (screen-cleanup follow-up) — no separate
+// "Libell Sensor" product name, which was never real and never will be.
 const SOURCE_OPTIONS: [SensorChoice, MessageKey][] = [
   ['phone', 'onboard.source.phone'],
-  ['external', 'onboard.source.external'],
+  ['external', 'menu.sensorSource'],
 ];
 
 /** Modern legend rows (#110): status color swatch, glyph, short text —
@@ -127,7 +130,8 @@ export function showOnboarding(options: OnboardingOptions): void {
   overlay.append(card);
 
   // Always escapable: ✕ closes the wizard from any step. It can be
-  // reopened from the menu ("Show introduction") at any time.
+  // reopened any time from the "Show introduction" button at the top of
+  // the "?" page's Help tab (screen-cleanup follow-up).
   const close = document.createElement('button');
   close.type = 'button';
   close.className = 'onboarding__close';
@@ -179,7 +183,7 @@ export function showOnboarding(options: OnboardingOptions): void {
 
   // A short, visible note that the compact steps below don't hide these
   // features from the app — they just aren't on this reduced screen
-  // (#156); the full forms stay reachable from ☰ afterward.
+  // (#156); the full forms stay reachable from Settings afterward.
   function moreInMenuNote(): HTMLParagraphElement {
     const note = document.createElement('p');
     note.className = isModern ? 'onboarding__text--modern' : 'menu__text';

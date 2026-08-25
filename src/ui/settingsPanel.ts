@@ -31,7 +31,7 @@ import {
   type VehicleType,
 } from '../domain/settings';
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
-import { saveSettings } from '../data/settingsStore';
+import { saveSettings, loadLanguage, saveLanguage, clearLanguage } from '../data/settingsStore';
 import { applyAppearance, applyTheme } from './theme';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createTargetsSection, type TargetsOptions } from './targetsSection';
@@ -455,6 +455,38 @@ export function createSettingsForm(
   });
   unitField.append(unitCaption, unitSelect);
 
+  // --- Language (screen-cleanup follow-up): a stored override, entirely
+  // separate from `LevelSettings` (see `settingsStore.ts`'s loadLanguage/
+  // saveLanguage) — so it applies (and reloads, since `t()` isn't
+  // reactive) immediately on change rather than waiting for Save/Undo.
+  // "Svenska"/"English" are deliberately literal, not translated via
+  // `t()` — a language picker always names each language in itself, so a
+  // Swedish reader can still find "English" and vice versa.
+  const languageField = document.createElement('label');
+  languageField.className = 'settings__field';
+  const languageCaption = document.createElement('span');
+  const languageSelect = document.createElement('select');
+  languageSelect.className = 'settings__select';
+  const languageAutoOption = document.createElement('option');
+  languageAutoOption.value = 'auto';
+  const languageSvOption = document.createElement('option');
+  languageSvOption.value = 'sv';
+  languageSvOption.textContent = 'Svenska';
+  const languageEnOption = document.createElement('option');
+  languageEnOption.value = 'en';
+  languageEnOption.textContent = 'English';
+  languageSelect.append(languageAutoOption, languageSvOption, languageEnOption);
+  const storedLanguage = loadLanguage();
+  languageSelect.value =
+    storedLanguage === 'sv' || storedLanguage === 'en' ? storedLanguage : 'auto';
+  languageSelect.addEventListener('change', () => {
+    const value = languageSelect.value;
+    if (value === 'sv' || value === 'en') saveLanguage(value);
+    else clearLanguage();
+    location.reload();
+  });
+  languageField.append(languageCaption, languageSelect);
+
   // --- Theme ---
   const themeField = document.createElement('label');
   themeField.className = 'settings__field';
@@ -558,8 +590,10 @@ export function createSettingsForm(
   const saveButtons: HTMLButtonElement[] = [save];
   const undoButtons: HTMLButtonElement[] = [undo];
 
-  // Three labeled sections keep the long (Classic) form readable:
-  // vehicle & measurements, ramps, level & display.
+  // Four labeled sections keep the long (Classic) form readable: vehicle &
+  // measurements, ramps, level & display, general (screen-cleanup
+  // follow-up: language/theme/sound, promoted out of Advanced below since
+  // they are common enough to want visible, not tucked behind a disclosure).
   const sectionHeading = (): HTMLParagraphElement => {
     const heading = document.createElement('p');
     heading.className = 'settings__section';
@@ -568,8 +602,9 @@ export function createSettingsForm(
   const vehicleHeading = sectionHeading();
   const rampsHeading = sectionHeading();
   const displayHeading = sectionHeading();
+  const generalHeading = sectionHeading();
 
-  // --- Advanced disclosure (#157): tolerance/stability/appearance/audio
+  // --- Advanced disclosure (#157): tolerance/stability/appearance
   // preferences, tuned rarely if ever, behind a single tap — always closed
   // on open, in Classic and in Modern's Vehicle tab alike. Never
   // auto-expanded for a customized value: the owner's explicit call is
@@ -577,6 +612,9 @@ export function createSettingsForm(
   // remember, and with no test cohort to validate a "smarter" default the
   // simplest rule wins. Built once, shared by both branches below — same
   // field elements, just appended inside this wrapper instead of flat.
+  // Language/Theme/Sound (screen-cleanup follow-up) moved out to their own
+  // General tab/section — common enough to deserve a visible home, not
+  // Advanced's rarely-tuned pile.
   const advancedDetails = document.createElement('details');
   advancedDetails.className = 'settings__advanced';
   const advancedSummary = document.createElement('summary');
@@ -589,9 +627,6 @@ export function createSettingsForm(
     dwellMotionField,
     dwellHint,
     appearanceField,
-    soundField,
-    soundGuidanceField,
-    soundGuidanceHint,
   );
 
   // ============================================================
@@ -600,7 +635,8 @@ export function createSettingsForm(
   // element above is reused as-is, just reparented into tab panels
   // instead of appended flat.
   // ============================================================
-  let selectTab: ((id: 'vehicle' | 'ramps' | 'calibration' | 'targets') => void) | null = null;
+  let selectTab:
+    ((id: 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general') => void) | null = null;
   /** Set by the Modern branch below; stays null (a no-op) in Classic. */
   let renderKlossarUiImpl: (() => void) | null = null;
   function renderKlossarUi(): void {
@@ -619,7 +655,7 @@ export function createSettingsForm(
       actions,
     );
   } else if (appearance === 'modern') {
-    type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets';
+    type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
     const tabsBar = document.createElement('div');
     tabsBar.className = 'settings__tabs';
     tabsBar.setAttribute('role', 'tablist');
@@ -647,6 +683,9 @@ export function createSettingsForm(
     // other three. Classic keeps it as its own standalone page (see
     // menu.ts) — it has no tabs to fold into.
     const targetsTab = makeTabButton('targets');
+    // General (screen-cleanup follow-up): language/theme/sound — common
+    // enough to want their own tab, not buried in Vehicle/Advanced.
+    const generalTab = makeTabButton('general');
 
     const vehiclePanel = document.createElement('div');
     vehiclePanel.className = 'settings__tabpanel';
@@ -656,10 +695,13 @@ export function createSettingsForm(
     calibrationPanel.className = 'settings__tabpanel';
     const targetsPanel = document.createElement('div');
     targetsPanel.className = 'settings__tabpanel';
+    const generalPanel = document.createElement('div');
+    generalPanel.className = 'settings__tabpanel';
     tabPanels.set('vehicle', vehiclePanel);
     tabPanels.set('ramps', rampsPanel);
     tabPanels.set('calibration', calibrationPanel);
     tabPanels.set('targets', targetsPanel);
+    tabPanels.set('general', generalPanel);
 
     // --- Kalibrering tab: embeds the same calibration section the menu
     // uses standalone (#109) — not a reimplementation. Its status text
@@ -674,6 +716,17 @@ export function createSettingsForm(
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
     targetsPanel.append(embeddedTargets.element);
 
+    // --- General tab (screen-cleanup follow-up): language, theme, sound —
+    // the same field elements Classic uses, just reparented here instead
+    // of appended flat.
+    generalPanel.append(
+      languageField,
+      themeField,
+      soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
+    );
+
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
       for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
@@ -684,7 +737,8 @@ export function createSettingsForm(
     form.selectTargetsTab = () => selectTab?.('targets');
 
     // --- Fordon tab: today's vehicle/axle/measurement fields visible by
-    // default; tolerance/stability/appearance/audio behind Advanced (#157).
+    // default; tolerance/stability/appearance behind Advanced (#157) —
+    // theme moved to the General tab (screen-cleanup follow-up).
     vehiclePanel.append(
       vehicleField,
       axleField,
@@ -693,7 +747,6 @@ export function createSettingsForm(
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
       unitField,
-      themeField,
       advancedDetails,
       actions,
     );
@@ -870,7 +923,7 @@ export function createSettingsForm(
       });
     };
 
-    form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel);
+    form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel, generalPanel);
     selectTab('vehicle');
 
     // applyUnitEverywhere sets tab-label text (needs unit/vehicle
@@ -880,10 +933,13 @@ export function createSettingsForm(
       rampsTab.textContent = t('settings.tab.ramps');
       calibrationTab.textContent = t('menu.calibration');
       targetsTab.textContent = t('menu.targets');
+      generalTab.textContent = t('settings.general');
     });
   } else {
-    // --- Classic: one flat page. Tolerance/stability/appearance/audio
-    // move behind Advanced (#157); everything else is unchanged from #108.
+    // --- Classic: one flat page. Tolerance/stability/appearance move
+    // behind Advanced (#157); language/theme/sound get their own visible
+    // General section (screen-cleanup follow-up) — everything else is
+    // unchanged from #108.
     form.append(
       vehicleHeading,
       vehicleField,
@@ -899,7 +955,12 @@ export function createSettingsForm(
       rampHint,
       displayHeading,
       unitField,
+      generalHeading,
+      languageField,
       themeField,
+      soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
       advancedDetails,
       actions,
     );
@@ -929,6 +990,8 @@ export function createSettingsForm(
     for (const [option, label] of drainOptions) option.textContent = t(label);
     rampHint.textContent = t('settings.rampHint');
     unitCaption.textContent = t('settings.unit');
+    languageCaption.textContent = t('settings.language');
+    languageAutoOption.textContent = t('settings.language.auto');
     themeCaption.textContent = t('settings.theme');
     for (const [option, label] of themeOptions) option.textContent = t(label);
     appearanceCaption.textContent = t('settings.appearance');
@@ -942,6 +1005,7 @@ export function createSettingsForm(
     vehicleHeading.textContent = t('settings.section.vehicle');
     rampsHeading.textContent = t('settings.section.ramps');
     displayHeading.textContent = t('settings.section.display');
+    generalHeading.textContent = t('settings.general');
     advancedSummary.textContent = t('settings.advanced');
     save.textContent = t('settings.save');
     undo.textContent = t('settings.undo');
