@@ -542,8 +542,8 @@ describe('settings form — compact mode (#156)', () => {
   // there is nothing left here for a first-time user to parse but the
   // fields themselves — Next (tested via onboarding.ts) is the only save
   // path. Save/Undo/Reset are unaffected on the full, non-compact form.
-  it('renders no Save/Undo/Reset row in either compact mode', () => {
-    for (const compact of ['measurements', 'general'] as const) {
+  it('renders no Save/Undo/Reset row in any compact mode', () => {
+    for (const compact of ['measurements', 'language', 'appearance', 'sound', 'ramps'] as const) {
       const form = createSettingsForm(classic, vi.fn(), undefined, { compact });
       expect(form.querySelector('.settings__actions')).toBeNull();
       const buttonTexts = [...form.querySelectorAll('button')].map((b) => b.textContent);

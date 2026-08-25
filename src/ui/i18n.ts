@@ -159,6 +159,12 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
       'finished later from Settings.',
+    // Sound step (design review): Chime + Continuous audio guidance
+    // together, split out of #189's combined 'general' step. No existing
+    // section heading covers just these two (unlike 'settings.language'/
+    // 'settings.appearance', reused as-is for their own steps), so this is
+    // the one new short label the split needed.
+    'onboard.sound.h': 'Sound',
     // Sensor source choice (#135, ADR 0014): the wizard's first step,
     // shown only when an external sensor option actually exists
     // (`isWebBluetoothSupported()`). The external radio reuses
@@ -560,6 +566,7 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Den här snabbguiden ställer in ditt fordon och din telefon. Varje steg går att ' +
       'hoppa över och avsluta senare från Inställningar.',
+    'onboard.sound.h': 'Ljud',
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro':
       'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',

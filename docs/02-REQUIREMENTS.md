@@ -238,30 +238,33 @@ URL and must keep working with no signal.
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
-- **Then** a seven-step wizard runs: welcome (design review — what Libell is for, before
-  any question), general preferences (Language, Theme, Appearance, Chime, Continuous
-  audio guidance — skippable, #189), which vehicle I'm leveling (motorhome or caravan —
-  #184), how to place the phone and how to read the answer (the wheel-state legend and
-  the bubble), vehicle measurements (skippable), phone-sensor calibration (skippable),
-  vehicle-zero position (skippable). It can be closed with ✕ at any point, warning lamps
-  (R11) stay lit for whatever was skipped, and the "Show introduction" button at the top
-  of the "?" page's Help tab (R28, screen-cleanup follow-up) reopens it any time.
+- **Then** a ten-step wizard runs: welcome (design review — what Libell is for, before
+  any question), Language (skippable), Appearance — Theme + Appearance (skippable),
+  Sound — Chime + Continuous audio guidance (skippable), which vehicle I'm leveling
+  (motorhome or caravan — #184), how to place the phone and how to read the answer (the
+  wheel-state legend and the bubble), vehicle measurements (skippable), ramp model/count
+  (skippable), phone-sensor calibration (skippable), vehicle-zero position (skippable).
+  It can be closed with ✕ at any point, warning lamps (R11) stay lit for whatever was
+  skipped, and the "Show introduction" button at the top of the "?" page's Help tab
+  (R28, screen-cleanup follow-up) reopens it any time.
 - **Given** the welcome step (design review, always first)
 - **Then** it shows what Libell does (the same one-line pitch the About page uses) and
   that the guide ahead is short and every step can be skipped and finished later. No
   form, no Skip control — there is nothing to configure here, only Next. No prior step
   used to explain why the following questions matter before asking them.
-- **Given** the general step (#189, right after welcome — usability review, personas
-  like seniors leveling their first motorhome: being able to read the rest of the guide
-  matters before anything else)
-- **Then** it shows Language, Theme, Appearance, Chime and Continuous audio guidance —
-  the same fields and handlers Settings → General has, reused as-is (language still
-  applies via a full reload immediately on change, same as Settings; the rest saves
-  like the measurements step below). Skippable, using the shipped defaults; unlike the
-  other skippable steps, skipping it never lights a warning lamp — the defaults are
+- **Given** the Language, Appearance and Sound steps (#189 introduced these as one
+  combined "General" step; a later design review split it into one step per actual
+  decision, not per what used to share a Settings section header)
+- **Then** Language stands alone, right after welcome — it has to resolve before the
+  rest of the guide is legible, a reason none of the other fields share (still applies
+  via a full reload immediately on change, same as Settings). Theme and Appearance share
+  a step, one "how it looks" decision. Chime and Continuous audio guidance share a step,
+  one "what it sounds like" decision. All three reuse the exact fields/handlers Settings
+  → General has. Each is skippable, using the shipped defaults; unlike the other
+  skippable steps, skipping any of them never lights a warning lamp — the defaults are
   already a complete, valid choice.
-- **Given** the general step or the measurements step, both of which embed a real
-  Settings form (design review)
+- **Given** any step that embeds a real Settings form — Language, Appearance, Sound,
+  measurements, ramps (design review)
 - **Then** the embedded form shows only its fields — no Save/Undo/Reset row. A wizard
   step's Next already submits the form (see below), so a second, identically-styled
   "confirm" control next to Next no longer asks a first-time user to parse two
@@ -272,12 +275,13 @@ URL and must keep working with no signal.
   labels Settings uses, pre-selected to whatever is already stored (not hardcoded to
   motorhome). Every later step reflects that choice: the placement and measurements
   illustrations draw the matching shape (a caravan gets its drawbar and jockey wheel,
-  not a four-wheel box), and the measurements step's field labels/visibility follow the
-  same vehicle-aware rules the full Settings form already applies (axle-to-jockey
-  distance, no front track width for a caravan).
+  not a four-wheel box), the measurements step's field labels/visibility follow the same
+  vehicle-aware rules the full Settings form already applies (axle-to-jockey distance,
+  no front track width for a caravan), and the ramps step hides "Number of ramps" (a
+  caravan ramps one wheel).
 - **Given** the placement/legend step
 - **Then** it does not repeat the opt-in "Continuous audio guidance" (R30) toggle or a
-  tip about it — the general step just before it already showed that exact toggle
+  tip about it — the Sound step a few steps before it already showed that exact toggle
   (#189, superseding #154's placement-step tip: pointing back at "Settings → General"
   for a setting the user could already see and flip a step earlier only re-raised the
   cognitive load #189 was trying to lower). The setting itself still stays off by
@@ -286,9 +290,21 @@ URL and must keep working with no signal.
 - **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
   numbers the step's own hint text says come from the registration document, labeled
   for whichever vehicle the vehicle step chose. Everything else the full Settings form
-  has beyond what the general step (#189) already covered (Rear axle — Vehicle tab;
-  Tolerance, Stability — Advanced) is reachable from Settings afterward, not hidden from
-  the app, just not shown on this reduced step. A short note on the step says so.
+  has beyond what the Language/Appearance/Sound steps (#189) already covered (Rear axle
+  — Vehicle tab; Tolerance, Stability — Advanced) is reachable from Settings afterward,
+  not hidden from the app, just not shown on this reduced step. A short note on the
+  step says so.
+- **Given** the ramps step (design review: never had a wizard step before, despite
+  being what the ramp catalog and per-wheel step guidance actually run on — arguably
+  what most sets this app's leveling apart from a plain bubble-level or sensor-only
+  competitor)
+- **Then** it shows the same ready-made ramp model/custom step-height picker and ramp
+  count Classic mode's own Ramps section uses — a single `<select>` + chip editor, not
+  Modern's scrolling brand-filtered catalog grid, proportionate to a reduced first-run
+  step either way. Drain position stays Advanced-tier, reachable from Settings
+  afterward. Skippable, with the same warning-lamp consequence hint as measurements —
+  skipping it leaves the shipped default ramp model in place, which may not match what
+  the user actually owns.
 - **Given** the phone-sensor calibration step and the vehicle-zero step (design review:
   split from one combined "Calibration" step into two)
 - **Then** each embeds exactly one half of the exact same calibration UI Settings →
@@ -300,23 +316,23 @@ URL and must keep working with no signal.
   step used to need. Both remain independently skippable.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra step, "How do you want to measure?", right
-  after the general step, offering "This phone" (pre-selected) or "External sensor" —
-  the same name and wording the sensor-status icon and its page use (R32) elsewhere,
-  never a separate "Libell Sensor" product name, which was never real; every other
-  browser gets exactly the seven-step flow above, with no added step and no dead radio
-  button (#135). The vehicle step always follows immediately after this one, so it is
-  answered before either device path continues.
+  after the Sound step, offering "This phone" (pre-selected) or "External sensor" — the
+  same name and wording the sensor-status icon and its page use (R32) elsewhere, never
+  a separate "Libell Sensor" product name, which was never real; every other browser
+  gets exactly the ten-step flow above, with no added step and no dead radio button
+  (#135). The vehicle step always follows immediately after this one, so it is answered
+  before either device path continues.
 - **Given** the source step, with "This phone" left selected (the default)
 - **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
-  placement, measurements, sensor calibration, vehicle zero).
+  placement, measurements, ramps, sensor calibration, vehicle zero).
 - **Given** the source step, with the external sensor selected instead
 - **Then** the wizard asks the vehicle step, then branches to the external sensor's own
   connect flow — the same External sensor page R32/R34 already describe, embedded
   whole rather than duplicated, which doubles as this path's calibration step (its own
   "Set vehicle level" installation offset, R34) — skippable on the same terms as the
-  phone calibration steps it replaces, then rejoins the shared vehicle-measurements step
-  before finishing. No phone-placement step and no phone calibration steps are shown on
-  this path.
+  phone calibration steps it replaces, then rejoins the shared vehicle-measurements and
+  ramps steps before finishing. No phone-placement step and no phone calibration steps
+  are shown on this path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
@@ -336,12 +352,13 @@ URL and must keep working with no signal.
 - **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
 - **Then** tapping "Next" saves those values before advancing — the only way to persist
   them, since the step shows no separate Save button (see above).
-- **Given** a skippable step (measurements, sensor calibration, vehicle zero, connect)
+- **Given** a skippable step (measurements, ramps, sensor calibration, vehicle zero,
+  connect)
 - **Then** its Skip control is paired with a one-line note that a warning lamp (R11)
   will remind the user later if they skip — not just "Skip" with no stated consequence.
   Its button reads plain "Skip", since skipping any of these does light that lamp; only
-  the general step's Skip reads "Skip — use defaults", since it is the one skippable
-  step with no such consequence (style-consistency review follow-up).
+  the Language/Appearance/Sound steps' Skip reads "Skip — use defaults", since those are
+  the skippable steps with no such consequence (style-consistency review follow-up).
 - **Given** Modern appearance
 - **Then** the step progress shows a visible "n / total" text next to the bars, not
   only an `aria-label` on them — legible at a glance, including for low-vision users.
