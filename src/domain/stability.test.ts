@@ -209,6 +209,37 @@ describe('createDisplayStabilizer', () => {
   });
 
   /**
+   * Real-world worry (#183 follow-up): a heavy vehicle with a manual
+   * gearbox often lurches forward on clutch engagement and settles back a
+   * few mm on suspension rebound — genuine rocking while driving onto a
+   * ramp, not a clean one-directional climb. Every rebound is a direction
+   * *reversal* relative to the last adopted reading, so — same rule as
+   * oscillating jitter above — it never qualifies for the fast motion
+   * dwell; a lurch peak can never be mistaken for the settled figure.
+   */
+  it('rocking on the ramp (manual-gearbox lurch) never snaps to a bounce peak', () => {
+    const at = createHarness();
+    expect(settle(at, 150).wheels.frontRight.displayMm).toBe(150); // parked at the ramp
+
+    // Clutch-engagement jitter before any real progress: small
+    // back-and-forth well inside the dead band — no change registers.
+    for (const liftMm of [148, 151, 147, 150]) {
+      expect(at(liftMm, 200).wheels.frontRight.displayMm).toBe(150);
+    }
+
+    // The vehicle actually lurches forward onto the ramp — a real,
+    // sustained change — and settles at 100 after the ordinary (full,
+    // first-direction) rest dwell.
+    expect(settle(at, 100).wheels.frontRight.displayMm).toBe(100);
+
+    // Suspension rebound immediately nudges it back up a few mm — a
+    // reversal. Fed faster than the motion dwell, it must NOT snap
+    // through: a reversal always pays the full rest dwell.
+    const rebound = at(108, settings.dwellMotionMs + 20);
+    expect(rebound.wheels.frontRight.displayMm).toBe(100); // not the bounce peak
+  });
+
+  /**
    * Field regression: a screenshot (v1.0.0-CR180) showed one corner as
    * "Klart" (green check, 43 mm) and the diagonal corner as a red X,
    * "Ingen ramp" ("no ramp reaches this wheel"), 0 mm — a wheel that by
