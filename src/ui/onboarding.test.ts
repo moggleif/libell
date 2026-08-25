@@ -545,42 +545,27 @@ describe('onboarding wizard — compact steps (#156)', () => {
   });
 });
 
-describe('onboarding wizard — audio guidance discoverability (#154)', () => {
-  it('the placement step mentions Continuous audio guidance alongside the legend, in Classic', () => {
-    open({ initialSettings: classicSettings() });
-    next(); // vehicle -> placement
-    expect(card().textContent).toContain(t('onboard.audioGuidance.hint'));
-  });
-
-  it('the placement step mentions Continuous audio guidance alongside the legend, in Modern', () => {
-    open({ initialSettings: modernSettings() });
-    next(); // vehicle -> placement
-    expect(card().textContent).toContain(t('onboard.audioGuidance.hint'));
-  });
-
-  it('never turns Continuous audio guidance on — it stays a deliberate opt-in', () => {
+describe('onboarding wizard — Continuous audio guidance defaults off, discovered via the General step (#154, #189)', () => {
+  // #154 originally put a "Tip: Settings → General has an optional
+  // Continuous audio guidance…" note on the placement step, since that
+  // step was the only place a first-run user was guaranteed to see the
+  // feature mentioned. #189's General step now shows the real toggle
+  // itself, one step earlier — a stale "go find it in Settings" hint
+  // right after that would only have confused the very users #189 was
+  // for, so it's gone; the toggle is still off by default here too.
+  it('the shipped default is off, and stays off when the general step is skipped', () => {
     let saved: LevelSettings | null = null;
     open({
       initialSettings: classicSettings(),
       onSettingsSaved: (s) => (saved = s),
     });
     next(); // vehicle -> placement
-    next(); // placement -> settings — the hint on the placement step doesn't touch settings
+    next(); // placement -> settings
     const form = card().querySelector('form')!;
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(saved).not.toBeNull();
     expect(saved!.soundGuidance).toBe(DEFAULT_SETTINGS.soundGuidance);
     expect(DEFAULT_SETTINGS.soundGuidance).toBe(false);
-  });
-
-  it('is not shown on any other step', () => {
-    open({ initialSettings: classicSettings() });
-    expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint')); // vehicle step
-    next(); // -> placement
-    next(); // -> settings
-    expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint'));
-    next(); // -> calibration
-    expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint'));
   });
 });
 

@@ -188,13 +188,6 @@ export const MESSAGES = {
     // Compact onboarding steps (#156): points to ☰ for everything the
     // reduced step doesn't show.
     'onboard.moreInMenu': 'More options are available later in Settings.',
-    // One-time discoverability mention (#154), alongside the legend on
-    // step 1 — soundGuidance itself stays off by default; see #153 for
-    // why the shorter "Chime when level" got the opposite treatment.
-    'onboard.audioGuidance.hint':
-      'Tip: Settings → General has an optional "Continuous audio guidance" — a tone ' +
-      'that rises as you approach level, so you can watch the ramps instead of the ' +
-      'screen. Off by default.',
     // Which part of the calibration step matters most (#189) — the step
     // embeds the full sensor-calibration + vehicle-zero UI with no order
     // of its own; this just points at it, calibrationSection.ts still
@@ -584,10 +577,6 @@ export const MESSAGES = {
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
     'onboard.legend.dim': 'Grått – — ett lågt hjul som ramperna inte når.',
     'onboard.moreInMenu': 'Fler alternativ finns senare i Inställningar.',
-    'onboard.audioGuidance.hint':
-      'Tips: Inställningar → Allmänt har en valfri "Kontinuerlig ljudvägledning" — en ' +
-      'ton som stiger när du närmar dig våg, så du kan titta på ramperna istället för ' +
-      'skärmen. Avstängd som standard.',
     'onboard.calibration.hint':
       'Två saker nedan: kalibrera sensorn först (använd flip-kalibrering om du inte har ' +
       'en känd plan yta) — fordonets nollpunkt är valfri, för extra precision.',

@@ -263,9 +263,12 @@ URL and must keep working with no signal.
   same vehicle-aware rules the full Settings form already applies (axle-to-jockey
   distance, no front track width for a caravan).
 - **Given** the placement/legend step
-- **Then** it also mentions the opt-in "Continuous audio guidance" (R30) — a
-  discoverability tip, not a default change (#154): the setting itself stays off
-  until a user turns it on in Settings → General.
+- **Then** it does not repeat the opt-in "Continuous audio guidance" (R30) toggle or a
+  tip about it — the general step just before it already showed that exact toggle
+  (#189, superseding #154's placement-step tip: pointing back at "Settings → General"
+  for a setting the user could already see and flip a step earlier only re-raised the
+  cognitive load #189 was trying to lower). The setting itself still stays off by
+  default.
 - **Given** the measurements step
 - **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
   numbers the step's own hint text says come from the registration document, labeled
