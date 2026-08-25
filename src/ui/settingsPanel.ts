@@ -421,8 +421,13 @@ export function createSettingsForm(
 
   // Save persists; Undo returns to the last saved values; Reset fills
   // the form with the factory defaults (still needs Save to persist,
-  // and Undo can take it back). Modern mode moves save/undo into the
-  // Klossar tab's fixed footer — same elements, no duplicates.
+  // and Undo can take it back). Modern mode's Klossar tab additionally
+  // gets its own Save/Undo pair in its fixed footer (spec'd — the ramp
+  // steps need to be saveable without switching tabs); every tab keeps
+  // this original pair too, so Save/Undo are always reachable from
+  // wherever the user is editing (#140). Kept in sync via saveButtons/
+  // undoButtons rather than sharing DOM nodes, since a node can only
+  // live in one place in the tree.
   const actions = document.createElement('div');
   actions.className = 'settings__actions';
   const save = document.createElement('button');
@@ -437,6 +442,8 @@ export function createSettingsForm(
   reset.type = 'button';
   reset.className = 'menu__action menu__action--secondary';
   actions.append(save, undo, reset);
+  const saveButtons: HTMLButtonElement[] = [save];
+  const undoButtons: HTMLButtonElement[] = [undo];
 
   // Three labeled sections keep the long (Classic) form readable:
   // vehicle & measurements, ramps, level & display.
@@ -628,7 +635,22 @@ export function createSettingsForm(
     footerGrid.className = 'klossar__grid';
     const footerActions = document.createElement('div');
     footerActions.className = 'klossar__footer-actions';
-    footerActions.append(save, undo);
+    const footerSave = document.createElement('button');
+    footerSave.type = 'submit';
+    footerSave.className = 'menu__action';
+    footerSave.disabled = true;
+    footerSave.textContent = t('settings.save');
+    const footerUndo = document.createElement('button');
+    footerUndo.type = 'button';
+    footerUndo.className = 'menu__action menu__action--secondary';
+    footerUndo.disabled = true;
+    footerUndo.textContent = t('settings.undo');
+    // populate()/saved are defined further down, but this only runs on a
+    // later click — by then the whole form is fully set up.
+    footerUndo.addEventListener('click', () => populate(saved));
+    footerActions.append(footerSave, footerUndo);
+    saveButtons.push(footerSave);
+    undoButtons.push(footerUndo);
     footer.append(footerHead, footerGrid, footerActions);
 
     rampsPanel.append(filterRow, pinnedCard, modelList, customRow, customEditor, footer);
@@ -783,8 +805,8 @@ export function createSettingsForm(
   let saved = initial;
   const notifyChanged = () => {
     const clean = JSON.stringify(currentSettings()) === JSON.stringify(saved);
-    save.disabled = clean;
-    undo.disabled = clean;
+    for (const btn of saveButtons) btn.disabled = clean;
+    for (const btn of undoButtons) btn.disabled = clean;
   };
   form.addEventListener('input', notifyChanged);
 
