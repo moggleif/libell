@@ -13,7 +13,12 @@ import {
   saveVehicleCalibration,
   loadCalibrationInfo,
   loadVehicleCalibrationInfo,
+  loadActiveTargetId,
+  loadTargetPresets,
+  saveActiveTargetId,
+  saveTargetPresets,
 } from './settingsStore';
+import type { TargetPreset } from '../domain/targetPresets';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {
   const data = new Map(Object.entries(initial));
@@ -126,5 +131,66 @@ describe('calibration timestamps (#87)', () => {
       capturedAt: null,
     });
     expect(loadCalibration(storage)).toEqual({ rollDeg: 1, pitchDeg: -0.5 });
+  });
+});
+
+describe('target preset store (#122, ADR 0013)', () => {
+  const preset: TargetPreset = {
+    id: 'a',
+    name: 'Shower drain',
+    offset: { rollDeg: 1.5, pitchDeg: -0.5 },
+  };
+
+  it('round-trips the preset list, stored separately from calibration keys', () => {
+    const storage = memoryStorage();
+    expect(loadTargetPresets(storage)).toEqual([]);
+    saveTargetPresets([preset], storage);
+    expect(loadTargetPresets(storage)).toEqual([preset]);
+    // Never conflated with either calibration layer's key.
+    expect(loadCalibration(storage)).toBeNull();
+    expect(loadVehicleCalibration(storage)).toBeNull();
+  });
+
+  it('drops a corrupt preset on read without losing the rest', () => {
+    const storage = memoryStorage();
+    storage.setItem(
+      'libell.targetPresets',
+      JSON.stringify([preset, { id: 'bad', name: 'x', offset: { rollDeg: 99, pitchDeg: 0 } }]),
+    );
+    expect(loadTargetPresets(storage)).toEqual([preset]);
+  });
+
+  it('falls back to an empty list for corrupt or missing storage', () => {
+    expect(loadTargetPresets(memoryStorage({ 'libell.targetPresets': '{not json' }))).toEqual([]);
+    expect(loadTargetPresets(null)).toEqual([]);
+  });
+
+  it('round-trips the active target id, validated against the preset list', () => {
+    const storage = memoryStorage();
+    expect(loadActiveTargetId([preset], storage)).toBeNull();
+    saveActiveTargetId('a', storage);
+    expect(loadActiveTargetId([preset], storage)).toBe('a');
+  });
+
+  it('resolves a dangling active id (preset deleted) to Normal', () => {
+    const storage = memoryStorage();
+    saveActiveTargetId('a', storage);
+    // The preset behind "a" is gone from the list passed on this read.
+    expect(loadActiveTargetId([], storage)).toBeNull();
+  });
+
+  it('Normal (null) removes the stored key entirely — never a stored value', () => {
+    const storage = memoryStorage();
+    saveActiveTargetId('a', storage);
+    expect(storage.getItem('libell.activeTarget')).not.toBeNull();
+    saveActiveTargetId(null, storage);
+    expect(storage.getItem('libell.activeTarget')).toBeNull();
+    expect(loadActiveTargetId([preset], storage)).toBeNull();
+  });
+
+  it('does not throw when storage is unavailable', () => {
+    expect(() => saveTargetPresets([preset], null)).not.toThrow();
+    expect(() => saveActiveTargetId('a', null)).not.toThrow();
+    expect(loadActiveTargetId([], null)).toBeNull();
   });
 });

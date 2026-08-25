@@ -24,6 +24,7 @@ export const MESSAGES = {
     'menu.close': 'Close menu',
     'menu.settings': 'Settings',
     'menu.calibration': 'Calibration',
+    'menu.targets': 'Targets',
     'menu.feedback': 'Feedback',
     'menu.help': 'Help',
     'menu.intro': 'Show introduction',
@@ -167,6 +168,20 @@ export const MESSAGES = {
     'calibration.pill.done': 'DONE',
     'calibration.pill.none': 'NONE',
 
+    // Target presets (#122, ADR 0013): an intentional NON-level target,
+    // distinct from the calibration layers above — "Normal" (true level)
+    // is always available and is not one of the saved presets.
+    'targets.intro':
+      'Save an intentional tilt — for the shower or grey-water drain — and switch ' +
+      'to it in a couple of taps. Normal (level) is always available and is never ' +
+      'overwritten.',
+    'targets.normal': 'Normal (level)',
+    'targets.name.placeholder': 'Name (e.g. "Shower drain")',
+    'targets.add': 'Save current tilt as new target',
+    'targets.delete': 'Delete {name}',
+    'targets.err.tooSteep': 'That looks like more than an intentional target (>15°) — try again.',
+    'targets.badge': 'Target: {name}',
+
     'feedback.intro':
       'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
       'a ready-made report on GitHub where you post it (a free GitHub account is ' +
@@ -265,6 +280,7 @@ export const MESSAGES = {
     'menu.close': 'Stäng menyn',
     'menu.settings': 'Inställningar',
     'menu.calibration': 'Kalibrering',
+    'menu.targets': 'Mål',
     'menu.feedback': 'Feedback',
     'menu.help': 'Hjälp',
     'menu.intro': 'Visa introduktionen',
@@ -409,6 +425,20 @@ export const MESSAGES = {
     'calibration.pill.notDone': 'EJ GJORD',
     'calibration.pill.done': 'GJORD',
     'calibration.pill.none': 'INGET',
+
+    // Sparade mål/presets (#122, ADR 0013): ett avsiktligt ICKE-plant mål,
+    // skilt från kalibreringslagren ovan — "Normal" (i våg) finns alltid
+    // kvar och är inte ett av de sparade målen.
+    'targets.intro':
+      'Spara en avsiktlig lutning — för dusch- eller gråvattenavlopp — och växla ' +
+      'till den på ett par tryck. Normal (i våg) finns alltid kvar och skrivs ' +
+      'aldrig över.',
+    'targets.normal': 'Normal (i våg)',
+    'targets.name.placeholder': 'Namn (t.ex. "Duschavlopp")',
+    'targets.add': 'Spara aktuell lutning som nytt mål',
+    'targets.delete': 'Ta bort {name}',
+    'targets.err.tooSteep': 'Det ser ut som mer än ett avsiktligt mål (>15°) — försök igen.',
+    'targets.badge': 'Mål: {name}',
 
     'feedback.intro':
       'Har du hittat ett problem eller har en idé? Fyll i det här och tryck på ' +

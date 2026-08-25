@@ -26,6 +26,11 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getVehicleCalibrationCapturedAt: () => null,
     checkCalibration: () => 'checked',
     checkVehicleCalibration: () => 'checked',
+    getTargetPresets: () => [],
+    getActiveTargetId: () => null,
+    selectTarget: () => {},
+    addTargetPreset: () => null,
+    deleteTargetPreset: () => {},
     ...overrides,
   };
 }
@@ -75,6 +80,7 @@ describe('menu — Modern (#107)', () => {
     const rows = [...menu.element.querySelectorAll('.menu__row')];
     expect(rows.map((r) => r.querySelector('.menu__row-title')?.textContent)).toEqual([
       t('menu.intro'),
+      t('menu.targets'),
       t('menu.feedback'),
       t('menu.about'),
     ]);

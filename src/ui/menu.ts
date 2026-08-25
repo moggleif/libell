@@ -6,10 +6,12 @@
  * the page, then the menu, and only then leaves the app.
  */
 import type { Calibration, LevelSettings } from '../domain/settings';
+import type { TargetPreset } from '../domain/targetPresets';
 import { createSettingsForm } from './settingsPanel';
 import { createFeedbackSection } from './feedback';
 import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
+import { createTargetsSection } from './targetsSection';
 import { t, type MessageKey } from './i18n';
 import { setVisible } from './motion';
 import {
@@ -19,7 +21,7 @@ import {
   placementIllustration,
 } from './helpIllustrations';
 
-export type MenuSection = 'settings' | 'calibration' | 'feedback' | 'help' | 'about';
+export type MenuSection = 'settings' | 'calibration' | 'targets' | 'feedback' | 'help' | 'about';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -55,6 +57,13 @@ export interface MenuOptions {
    * Settings card status label ("Not saved", #107); unused in Classic.
    */
   hasSavedSettings(): boolean;
+  /** Target presets (#122, ADR 0013) — an intentional non-level target,
+   * architecturally distinct from the calibration fields above. */
+  getTargetPresets(): TargetPreset[];
+  getActiveTargetId(): string | null;
+  selectTarget(id: string | null): void;
+  addTargetPreset(name: string): string | null;
+  deleteTargetPreset(id: string): void;
 }
 
 export interface Menu {
@@ -279,6 +288,7 @@ export function createMenu(options: MenuOptions): Menu {
       depth = 1;
     }
     refreshCalibration();
+    refreshTargets();
     refreshModernCards();
     render();
   }
@@ -301,6 +311,7 @@ export function createMenu(options: MenuOptions): Menu {
       depth = 2;
     }
     refreshCalibration();
+    refreshTargets();
     refreshModernCards();
     render(section);
   }
@@ -380,6 +391,18 @@ export function createMenu(options: MenuOptions): Menu {
     goBack();
     options.openOnboarding();
   });
+  // --- Targets (#122, ADR 0013): an intentional non-level target, on top
+  // of the zero point set up above — never a third block inside
+  // Calibration (it's a *target*, not a calibration). Grouped with the
+  // "other" items rather than a primary Modern card: selecting a target
+  // is a deliberate optional choice, not part of first-run setup, so it
+  // carries no pending status and does not compete with Settings /
+  // Calibration / Help for top billing — still just a couple of taps
+  // away, and the main-screen badge (`targetBadge.ts`) jumps straight to
+  // this page once a target is active.
+  const targetsSection = createTargetsSection(options);
+  const refreshTargets = targetsSection.refresh;
+  addOtherSection('targets', t('menu.targets'), targetsSection.element);
   addOtherSection('feedback', t('menu.feedback'), createFeedbackSection());
   addOtherSection('about', t('menu.about'), createAboutSection());
 

@@ -8,6 +8,12 @@ import { combineCalibrations, vehicleZeroFromReading } from './domain/calibratio
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
 import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
+import {
+  offsetTooSteep,
+  presetOffsetFromReading,
+  targetOffsetFor,
+  type TargetPreset,
+} from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
@@ -16,12 +22,16 @@ import {
   clearVehicleCalibration,
   hasSeenOnboarding,
   hasStoredSettings,
+  loadActiveTargetId,
   loadCalibrationInfo,
   loadLanguage,
   loadSettings,
+  loadTargetPresets,
   loadVehicleCalibrationInfo,
   markOnboardingSeen,
+  saveActiveTargetId,
   saveCalibration,
+  saveTargetPresets,
   saveVehicleCalibration,
 } from './data/settingsStore';
 import {
@@ -33,6 +43,7 @@ import {
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
+import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
 import { showOnboarding } from './ui/onboarding';
@@ -154,7 +165,18 @@ function bootstrap(root: HTMLElement): void {
   const storedVehicle = loadVehicleCalibrationInfo();
   let vehicleCalibration: Calibration | null = storedVehicle?.value ?? null;
   let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
-  const effectiveCalibration = () => combineCalibrations(calibration, vehicleCalibration);
+  // The two-layer calibration sum — what "level" means, untouched by
+  // target presets below (#122, ADR 0013).
+  const zeroCalibration = () => combineCalibrations(calibration, vehicleCalibration);
+  // Target presets (#122, ADR 0013): an intentional NON-level target,
+  // applied as a THIRD additive term on top of the two-layer sum above —
+  // never conflated with it, never stored in the same field. "Normal"
+  // (activeTargetId === null) leaves effectiveCalibration identical to
+  // zeroCalibration (regression guard).
+  let targetPresets: TargetPreset[] = loadTargetPresets();
+  let activeTargetId: string | null = loadActiveTargetId(targetPresets);
+  const effectiveCalibration = () =>
+    combineCalibrations(zeroCalibration(), targetOffsetFor(targetPresets, activeTargetId));
   applyTheme(settings.theme);
   applyAppearance(settings.appearance);
   followSystemTheme(() => settings.theme);
@@ -263,6 +285,11 @@ function bootstrap(root: HTMLElement): void {
       clearVehicleCalibration();
       updateIndicators();
     },
+    getTargetPresets: () => targetPresets,
+    getActiveTargetId: () => activeTargetId,
+    selectTarget: (id) => selectTargetNow(id),
+    addTargetPreset: (name) => addTargetPresetNow(name),
+    deleteTargetPreset: (id) => deleteTargetPresetNow(id),
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
@@ -279,6 +306,47 @@ function bootstrap(root: HTMLElement): void {
     });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
+
+  // Target badge (#122, ADR 0013): the only main-screen trace of a
+  // target preset — hidden whenever Normal (true level) is active, so
+  // the normal case shows nothing extra. Tapping it jumps straight to
+  // the Targets menu section (fast switching from the main screen).
+  const targetBadge = createTargetBadge(() => menu.open('targets'));
+  document.querySelector('#indicators')?.append(targetBadge.element);
+  const updateTargetBadge = () => {
+    const active = targetPresets.find((preset) => preset.id === activeTargetId) ?? null;
+    targetBadge.update(active ? active.name : null);
+  };
+  updateTargetBadge();
+
+  function selectTargetNow(id: string | null): void {
+    activeTargetId = id;
+    saveActiveTargetId(id);
+    updateTargetBadge();
+  }
+
+  /** Capture the current tilt, relative to the zero point (never to any
+   * currently active preset), as a new named preset. */
+  function addTargetPresetNow(name: string): string | null {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    const offset = presetOffsetFromReading(reading, zeroCalibration());
+    if (offsetTooSteep(offset)) return t('targets.err.tooSteep');
+    const id =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `preset-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    targetPresets = [...targetPresets, { id, name, offset }];
+    saveTargetPresets(targetPresets);
+    return null;
+  }
+
+  function deleteTargetPresetNow(id: string): void {
+    targetPresets = targetPresets.filter((preset) => preset.id !== id);
+    saveTargetPresets(targetPresets);
+    if (activeTargetId === id) selectTargetNow(null);
+    else updateTargetBadge();
+  }
 
   // Shared by the menu and the onboarding wizard. Starting the sensor on
   // demand makes calibration work from the wizard before the main screen
