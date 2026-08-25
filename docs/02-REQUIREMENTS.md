@@ -179,9 +179,11 @@ URL and must keep working with no signal.
 ## R16 — Reaching level is celebrated exactly once
 
 - **Given** the vehicle becomes level while I watch the screen
-- **Then** a brief full-screen ✓ overlay is shown and the phone vibrates; a chime
-  sounds only if the opt-in "Chime when level" setting is on (audio is unlocked by the
-  save gesture, satisfying autoplay policies).
+- **Then** a brief full-screen ✓ overlay is shown and the phone vibrates; a chime also
+  sounds unless the "Chime when level" setting has been explicitly turned off (on by
+  default, #153 — audio is unlocked by the save gesture, satisfying autoplay
+  policies). An install or settings blob that predates this default is treated the
+  same as a fresh install: the chime is on unless the user has explicitly chosen off.
 - **Given** the vehicle then jitters around the tolerance boundary
 - **Then** no further celebration fires: the trigger re-arms only after the vehicle has
   been clearly un-level (well past the tolerance, sustained for seconds) and a cooldown

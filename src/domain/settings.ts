@@ -128,7 +128,10 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   toleranceMm: 20,
   stabilityMm: 3,
   displayUnit: 'mm',
-  soundOnLevel: false,
+  // On by default (#153): a single short chime carries most of its value
+  // only if users don't have to discover and enable it themselves. Never
+  // overrides an explicit prior choice — see parseSettings' presence check.
+  soundOnLevel: true,
   soundGuidance: false,
   theme: 'system',
   // Modern is the default preset (#136); Classic remains a full,
@@ -264,7 +267,12 @@ export function parseSettings(value: unknown): LevelSettings {
     toleranceMm: positiveNumber(raw.toleranceMm, DEFAULT_SETTINGS.toleranceMm),
     stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
-    soundOnLevel: raw.soundOnLevel === true,
+    // Presence check, not a truthiness check (#153): "never saved" (key
+    // absent — fresh install or a pre-#153 settings blob) must fall back to
+    // the new default, while an explicit prior choice, true or false, is
+    // never overridden. Same pattern #136 used for the appearance default.
+    soundOnLevel:
+      typeof raw.soundOnLevel === 'boolean' ? raw.soundOnLevel : DEFAULT_SETTINGS.soundOnLevel,
     soundGuidance: raw.soundGuidance === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
     appearance:
