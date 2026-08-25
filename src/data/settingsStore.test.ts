@@ -13,6 +13,10 @@ import {
   saveVehicleCalibration,
   loadCalibrationInfo,
   loadVehicleCalibrationInfo,
+  clearEasyLevelCalibration,
+  loadEasyLevelCalibration,
+  loadEasyLevelCalibrationInfo,
+  saveEasyLevelCalibration,
   loadActiveTargetId,
   loadTargetPresets,
   saveActiveTargetId,
@@ -109,6 +113,51 @@ describe('vehicle calibration store (#83)', () => {
     expect(loadVehicleCalibration(storage)).toBeNull();
     storage.setItem('libell.vehicleCalibration', JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
     expect(loadVehicleCalibration(storage)).toBeNull();
+  });
+});
+
+describe('EasyLevel installation calibration store (#131, ADR 0014)', () => {
+  it('round-trips the installation offset and clears it', () => {
+    const storage = memoryStorage();
+    expect(loadEasyLevelCalibration(storage)).toBeNull();
+    saveEasyLevelCalibration({ rollDeg: 1.1, pitchDeg: -0.6 }, storage);
+    expect(loadEasyLevelCalibration(storage)).toEqual({ rollDeg: 1.1, pitchDeg: -0.6 });
+    clearEasyLevelCalibration(storage);
+    expect(loadEasyLevelCalibration(storage)).toBeNull();
+  });
+
+  it('rejects corrupt or implausible stored installation offsets', () => {
+    const storage = memoryStorage();
+    storage.setItem('libell.easyLevelInstallCalibration', 'not json');
+    expect(loadEasyLevelCalibration(storage)).toBeNull();
+    storage.setItem(
+      'libell.easyLevelInstallCalibration',
+      JSON.stringify({ rollDeg: 40, pitchDeg: 0 }),
+    );
+    expect(loadEasyLevelCalibration(storage)).toBeNull();
+  });
+
+  it('stores its capture timestamp independently of the other calibration layers', () => {
+    const storage = memoryStorage();
+    saveEasyLevelCalibration({ rollDeg: 0.3, pitchDeg: 0.1 }, storage, 1700000000002);
+    expect(loadEasyLevelCalibrationInfo(storage)).toEqual({
+      value: { rollDeg: 0.3, pitchDeg: 0.1 },
+      capturedAt: 1700000000002,
+    });
+  });
+
+  it('never shares a key, or gets touched by clearing, the phone vehicle zero', () => {
+    const storage = memoryStorage();
+    saveVehicleCalibration({ rollDeg: 2, pitchDeg: -1 }, storage);
+    saveEasyLevelCalibration({ rollDeg: 5, pitchDeg: 3 }, storage);
+    expect(loadVehicleCalibration(storage)).toEqual({ rollDeg: 2, pitchDeg: -1 });
+    expect(loadEasyLevelCalibration(storage)).toEqual({ rollDeg: 5, pitchDeg: 3 });
+    // Clearing one must leave the other completely intact.
+    clearEasyLevelCalibration(storage);
+    expect(loadVehicleCalibration(storage)).toEqual({ rollDeg: 2, pitchDeg: -1 });
+    clearVehicleCalibration(storage);
+    saveEasyLevelCalibration({ rollDeg: 5, pitchDeg: 3 }, storage);
+    expect(loadEasyLevelCalibration(storage)).toEqual({ rollDeg: 5, pitchDeg: 3 });
   });
 });
 

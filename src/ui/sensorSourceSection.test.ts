@@ -11,6 +11,11 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('granted'),
     disconnectEasyLevel: () => {},
+    getInstallCalibration: () => null,
+    calibrateInstall: () => null,
+    getInstallCalibrationCapturedAt: () => null,
+    checkInstallCalibration: () => '',
+    clearInstallCalibration: () => {},
     ...overrides,
   };
 }
@@ -31,10 +36,12 @@ describe('createSensorSourceSection (#116)', () => {
 
   it('shows the connected status and a visible disconnect button once EasyLevel is active', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
-    expect(section.element.querySelectorAll('button').length).toBe(2);
+    // Connect/disconnect are always the first two buttons appended, ahead of
+    // the health-detail and installation-offset (#131) blocks below them.
     const [connectButton, disconnectButton] = section.element.querySelectorAll('button');
     expect(disconnectButton!.hidden).toBe(false);
     expect(connectButton!.textContent).not.toBe('');
+    expect(findButton(section.element, 'Disconnect')).toBe(disconnectButton);
   });
 
   it('clicking connect calls connectEasyLevel() and reflects a successful result', async () => {
@@ -130,5 +137,104 @@ describe('createSensorSourceSection (#116)', () => {
     );
     const detail = section.element.querySelector<HTMLElement>('.menu__detail');
     expect(detail?.hidden).toBe(false);
+  });
+});
+
+// #131, ADR 0014: the installation-offset block generalizes R24's phone
+// "vehicle zero" to this external sensor — same capture/check/clear/age
+// pattern, its own independent state.
+describe('createSensorSourceSection installation calibration (#131)', () => {
+  function installBlock(root: HTMLElement): HTMLElement {
+    const heading = [...root.querySelectorAll('h3')].find(
+      (h) => h.textContent === 'Installation offset',
+    );
+    if (!heading?.parentElement) throw new Error('installation offset heading not found');
+    return heading.parentElement;
+  }
+
+  it('hides the installation-offset block while the phone is the active source', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
+    const heading = [...section.element.querySelectorAll('h3')].find(
+      (h) => h.textContent === 'Installation offset',
+    );
+    expect(heading?.parentElement?.hidden).toBe(true);
+  });
+
+  it('shows "no installation offset" until one is captured, once EasyLevel is active', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => null }),
+    );
+    const block = installBlock(section.element);
+    expect(block.hidden).toBe(false);
+    expect(block.textContent).toContain('No installation offset');
+  });
+
+  it('shows the stored offset and its age once captured', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getInstallCalibration: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }),
+        getInstallCalibrationCapturedAt: () => Date.now() - 14 * 86_400_000,
+      }),
+    );
+    const block = installBlock(section.element);
+    expect(block.textContent).toContain('1.2');
+    expect(block.textContent).toContain('-0.3');
+    expect(block.textContent).toContain('14 days ago');
+  });
+
+  it('clicking "Set vehicle level" calls calibrateInstall() and refreshes the status', () => {
+    const calibrateInstall = vi.fn(() => null);
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
+    );
+    const button = findButton(section.element, 'Set vehicle level');
+    button.click();
+    expect(calibrateInstall).toHaveBeenCalledOnce();
+  });
+
+  it('surfaces a rejected implausible capture as an error instead of silently storing it', () => {
+    const calibrateInstall = () =>
+      'That looks like more than placement tilt (>15°) — is the vehicle really level?';
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
+    );
+    const button = findButton(section.element, 'Set vehicle level');
+    button.click();
+    expect(section.element.textContent).toContain('more than placement tilt');
+  });
+
+  it('the Check button reuses the shared verdict text and the Clear button reuses clearInstallCalibration()', () => {
+    const checkInstallCalibration = vi.fn(() => 'Still good — off by 0.1°.');
+    const clearInstallCalibration = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getInstallCalibration: () => ({ rollDeg: 0.2, pitchDeg: 0.1 }),
+        checkInstallCalibration,
+        clearInstallCalibration,
+      }),
+    );
+    const checkButton = findButton(section.element, 'Check');
+    checkButton.click();
+    expect(checkInstallCalibration).toHaveBeenCalledOnce();
+    expect(section.element.textContent).toContain('Still good');
+
+    const clearButton = findButton(section.element, 'Clear installation offset');
+    clearButton.click();
+    expect(clearInstallCalibration).toHaveBeenCalledOnce();
+  });
+
+  it('disables Check/Clear while nothing is stored, and enables them once something is', () => {
+    let offset: { rollDeg: number; pitchDeg: number } | null = null;
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => offset }),
+    );
+    expect(findButton(section.element, 'Check').disabled).toBe(true);
+    expect(findButton(section.element, 'Clear installation offset').disabled).toBe(true);
+    offset = { rollDeg: 1, pitchDeg: 1 };
+    section.refresh();
+    expect(findButton(section.element, 'Check').disabled).toBe(false);
+    expect(findButton(section.element, 'Clear installation offset').disabled).toBe(false);
   });
 });

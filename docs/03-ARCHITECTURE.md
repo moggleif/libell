@@ -130,6 +130,22 @@ sensor bias (R11, source-specific), installation/placement offset (R24's vehicle
 ADR 0010, generalizable per source), and the desired vehicle target (ADR 0013,
 source-independent) — see ADR 0014 for the full rule.
 
+Installation calibration for a mounted external sensor (#131, R34) fills in the
+concrete storage shape ADR 0014 deferred: `settingsStore.ts` gains
+`loadEasyLevelCalibration`/`saveEasyLevelCalibration`/`clearEasyLevelCalibration`
+under their own `libell.easyLevelInstallCalibration` key — the same shape and
+`>15°` implausible-capture guard as `libell.vehicleCalibration`, just never the same
+key, so the two can never be conflated. `main.ts`'s `zeroCalibration()` picks which
+pair to sum from the ACTIVE `sensor.getSource()`: the phone's sensor calibration +
+vehicle zero while the phone is active, or just the EasyLevel installation offset
+while it is — there is no separate EasyLevel hardware-bias layer yet, so
+`vehicleZeroFromReading(reading, null)` (unmodified from R24) is reused directly for
+the capture. The UI lives in `sensorSourceSection.ts`'s "External sensor" page (not
+inside `calibrationSection.ts`), visible whenever EasyLevel is the active source,
+reusing `calibrationAge.ts`'s shared `ageText()` (factored out of
+`calibrationSection.ts` by this change) and the `calibration.check.*`/`calibration.age.*`
+i18n keys for the Check/age copy rather than re-deriving that wording.
+
 ## Screen wake
 
 `navigator.wakeLock.request('screen')` keeps the display on while leveling (Chrome on

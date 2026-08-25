@@ -15,6 +15,7 @@
  */
 import type { AppearanceSetting, Calibration } from '../domain/settings';
 import { flipCalibration } from '../domain/calibration';
+import { ageText } from './calibrationAge';
 import { t } from './i18n';
 
 export interface CalibrationOptions {
@@ -133,13 +134,6 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   vehicleCheckButton.type = 'button';
   vehicleCheckButton.className = 'menu__action menu__action--secondary';
   vehicleCheckButton.textContent = t('calibration.check');
-
-  /** "(14 days ago)" from a capture timestamp — empty when unknown (#87). */
-  function ageText(capturedAt: number | null): string {
-    if (capturedAt === null) return '';
-    const days = Math.max(0, Math.floor((Date.now() - capturedAt) / 86_400_000));
-    return ' ' + (days === 0 ? t('calibration.age.today') : t('calibration.age.days', { n: days }));
-  }
 
   function refreshCalibration(error?: string): void {
     const calibration = options.getCalibration();

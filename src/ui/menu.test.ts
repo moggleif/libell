@@ -35,6 +35,11 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('unsupported'),
     disconnectEasyLevel: () => {},
+    getInstallCalibration: () => null,
+    calibrateInstall: () => null,
+    getInstallCalibrationCapturedAt: () => null,
+    checkInstallCalibration: () => 'checked',
+    clearInstallCalibration: () => {},
     ...overrides,
   };
 }

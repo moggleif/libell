@@ -78,6 +78,16 @@ export interface MenuOptions {
   getSensorState(): SensorState;
   connectEasyLevel(): Promise<SensorState>;
   disconnectEasyLevel(): void;
+  /**
+   * The EasyLevel box's installation offset (#131, ADR 0014) — see
+   * `SensorSourceOptions`. Its own independent stored value: never the
+   * phone's `getVehicleCalibration()` above.
+   */
+  getInstallCalibration(): Calibration | null;
+  calibrateInstall(): string | null;
+  getInstallCalibrationCapturedAt(): number | null;
+  checkInstallCalibration(): string;
+  clearInstallCalibration(): void;
 }
 
 export interface Menu {
