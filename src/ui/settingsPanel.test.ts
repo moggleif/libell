@@ -22,6 +22,11 @@ describe('settings form', () => {
     expect(hint?.textContent).toContain('registration');
   });
 
+  it('has no selectCalibrationTab in Classic — there are no tabs to select (#155)', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    expect(form.selectCalibrationTab).toBeUndefined();
+  });
+
   it('round-trips an edited field through save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
@@ -161,6 +166,14 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(panels[2]!.hidden).toBe(false);
     // The embedded calibration section (#109's component, not a copy) renders.
     expect(panels[2]!.querySelector('.menu__action')).not.toBeNull();
+  });
+
+  it("exposes selectCalibrationTab so the menu's Calibration shortcut can jump here (#155)", () => {
+    const form = createSettingsForm(modern, vi.fn());
+    expect(typeof form.selectCalibrationTab).toBe('function');
+    form.selectCalibrationTab?.();
+    expect(tabButton(form, 'calibration').getAttribute('aria-selected')).toBe('true');
+    expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
   });
 
   it('shows the pinned card for the default (catalog) model, with its step count', () => {
