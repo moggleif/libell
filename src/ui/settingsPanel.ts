@@ -1007,7 +1007,23 @@ export function createSettingsForm(
     undoButtons.push(footerUndo);
     footer.append(footerHead, footerGrid, footerActions);
 
-    rampsPanel.append(filterRow, pinnedCard, modelList, customRow, customEditor, footer);
+    // Number of ramps / Drain side (pre-existing gap, found during the
+    // Classic split-pages review): these two were never appended anywhere
+    // in Modern at all, unlike Classic's Ramps page/step, which has always
+    // had them. Same elements/handlers as Classic — mounted here between
+    // the custom-set editor and the fixed footer, not inside it, so they
+    // scroll with the rest of the tab's content instead of crowding the
+    // footer's own Save/Undo.
+    rampsPanel.append(
+      filterRow,
+      pinnedCard,
+      modelList,
+      customRow,
+      customEditor,
+      rampCountField,
+      drainField,
+      footer,
+    );
 
     renderKlossarUiImpl = (): void => {
       const selectedModel = customChosen
