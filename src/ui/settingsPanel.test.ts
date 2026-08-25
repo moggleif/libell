@@ -366,3 +366,32 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(calibrate).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('settings form — compact mode (#156)', () => {
+  it('renders only Wheelbase and Track width front/rear, no tabs, no Advanced', () => {
+    for (const settings of [classic, { ...classic, appearance: 'modern' as const }]) {
+      const form = createSettingsForm(settings, vi.fn(), undefined, { compact: true });
+      expect(form.querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
+      expect(form.querySelector('input[name="trackWidthFrontMm"]')).not.toBeNull();
+      expect(form.querySelector('input[name="trackWidthRearMm"]')).not.toBeNull();
+      expect(form.querySelector('input[name="toleranceMm"]')).toBeNull();
+      expect(form.querySelector('.settings__tabs')).toBeNull();
+      expect(form.querySelector('.settings__advanced')).toBeNull();
+      expect(form.querySelector('select')).toBeNull();
+    }
+  });
+
+  it('still round-trips a compact field through Save', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classic, onSave, undefined, { compact: true });
+    input(form, 'wheelbaseMm').value = '4100';
+    form.dispatchEvent(new Event('input'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(4100);
+  });
+
+  it('defaults to the full (non-compact) render when no formOptions are passed', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    expect(form.querySelector('select')).not.toBeNull();
+  });
+});

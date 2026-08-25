@@ -153,6 +153,9 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
+    // Compact onboarding steps (#156): points to ☰ for everything the
+    // reduced step doesn't show.
+    'onboard.moreInMenu': 'More options are available later in the ☰ menu.',
 
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
@@ -502,6 +505,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
+    'onboard.moreInMenu': 'Fler alternativ finns senare i menyn ☰.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',
