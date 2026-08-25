@@ -232,9 +232,14 @@ export const MESSAGES = {
     'settings.ramp.custom': 'Custom set',
     'settings.rampCount': 'Number of ramps',
     'settings.drain': 'Drain side',
-    'settings.rampHint':
-      'The app picks where your ramps do the most good — and, within the ' +
-      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
+    'settings.rampHint': 'The app picks where your ramps do the most good.',
+    // Split out of the old combined rampHint (design review): only matters
+    // if the owner cares where sink/shower water drains, so it moved
+    // behind the Drain field's own Advanced disclosure instead of always
+    // showing next to the ramp steps.
+    'settings.drainHint':
+      'Matters only if you care where sink/shower water drains — within the ' +
+      'tolerance, the app then leaves this side lowest so it keeps draining.',
     'settings.section.vehicle': 'Vehicle & measurements',
     'settings.section.ramps': 'Ramps',
     'settings.section.display': 'Level & display',
@@ -245,11 +250,27 @@ export const MESSAGES = {
     'settings.language': 'Language',
     'settings.language.auto': 'Automatic (device language)',
     'settings.advanced': 'Advanced',
+    // Design review: the fields inside Advanced had labels but no
+    // explanation of what they actually do — this is why the disclosure
+    // "saknar beskrivning" (was missing a description).
+    'settings.advanced.hint':
+      'Tolerance sets how close to level counts as "level" — tighter for a shower or ' +
+      'fridge, looser if close enough is fine. Stability smooths out small sensor jitter ' +
+      'so the numbers do not flicker.',
     'drain.none': 'None / does not matter',
-    'drain.left': 'Left side',
-    'drain.right': 'Right side',
-    'drain.front': 'Front',
-    'drain.rear': 'Rear',
+    // "Middle" (design review): the mean of the two wheels on that edge —
+    // a coarser preference than a single corner, now that corners exist
+    // below as their own choice.
+    'drain.left': 'Left, middle',
+    'drain.right': 'Right, middle',
+    'drain.front': 'Front, middle',
+    'drain.rear': 'Rear, middle',
+    // Single-corner positions (design review): match a waste-water outlet
+    // that sits at one specific corner, not spread across a whole side.
+    'drain.frontLeft': 'Front left',
+    'drain.frontRight': 'Front right',
+    'drain.rearLeft': 'Rear left',
+    'drain.rearRight': 'Rear right',
     'settings.unit': 'Show lengths in',
     'settings.theme': 'Theme',
     'theme.system': 'Follow the phone',
@@ -258,6 +279,11 @@ export const MESSAGES = {
     'settings.appearance': 'Appearance',
     'appearance.classic': 'Classic',
     'appearance.modern': 'Modern',
+    // Design review, follow-up: switching this now saves and reloads
+    // (matching Language above) so the whole app switches immediately,
+    // not just this form's colors.
+    'settings.appearance.hint':
+      'Switching this saves your changes and reloads Libell so the new layout applies everywhere.',
     'settings.sound': 'Chime when level',
     'settings.soundGuidance': 'Continuous audio guidance',
     'settings.soundGuidance.help':
@@ -294,8 +320,19 @@ export const MESSAGES = {
       'The tilt sensor is not running yet — tap Start on the main screen first.',
     'calibration.err.notFlat':
       'The phone does not look flat — place it on a level surface and try again.',
-    'calibration.sensor.h': 'Phone sensor',
-    'calibration.vehicle.h': 'Vehicle zero position',
+    // Design review: both card headings now lead with the verb "Calibrate"
+    // — they used to name what each card was about ("Phone sensor",
+    // "Vehicle zero position") without naming the shared action.
+    'calibration.sensor.h': 'Calibrate the phone',
+    'calibration.vehicle.h': 'Calibrate the vehicle zero',
+    // Design review: the two-layer overview used to live only on the Help
+    // page ('help.calibration.t' below) — moved to the top of the actual
+    // Kalibrering tab, where it is actionable, not just informational.
+    'calibration.guide.intro':
+      'Two layers:\n' +
+      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
+      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
+      'vehicle zero — then a slightly tilting table is cancelled out too.',
     'calibration.vehicle.intro':
       'The sensor calibration zeroes the phone — not the spot where it lies. If the ' +
       'table tilts slightly, the app would always show that tilt. Level the vehicle ' +
@@ -374,9 +411,19 @@ export const MESSAGES = {
       'Gray –: a low wheel your ramps do not stretch to.\n' +
       'When the bubble rests in the middle, you are level.',
     'help.settings.h': 'The measurements',
+    // Design review, two follow-ups: (1) used to say "L is the wheelbase,
+    // W the track width", but the illustration stopped drawing those
+    // letters (see `helpIllustrations.ts`'s `measuresIllustration`) — the
+    // text still promised letters the picture no longer shows; (2) this
+    // static Help tab isn't tied to any particular user's vehicle (see
+    // that file's own comment) but the text only ever described a
+    // motorhome — now covers both, matching the motorhome+caravan pair of
+    // illustrations shown above it.
     'help.settings.t':
-      'L is the wheelbase, W the track width (front and rear can differ) — usually ' +
-      'in the vehicle papers, or use a tape measure.\n' +
+      'For a motorhome, wheelbase is the distance between the front and rear axles; a ' +
+      "caravan's is the axle-to-jockey-wheel distance instead. Track width is the distance " +
+      'between the left and right wheels — a motorhome can have a different width front and ' +
+      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.\n' +
       'Tolerance = how strict "level" is.\n' +
       'Stability keeps the numbers calm.',
     // Design review: used to be one sentence inside "The measurements"
@@ -387,11 +434,13 @@ export const MESSAGES = {
       'The app then picks where your ramps do the most good — and, within the ' +
       'tolerance, leaves the drain side lowest so sink and shower keep draining.',
     'help.calibration.h': 'Calibration',
+    // Design review: the step-by-step "how" moved to the actual
+    // Kalibrering tab ('calibration.guide.intro' above) where it is
+    // actionable — this stays the "why" instead of repeating it.
     'help.calibration.t':
-      'Two layers:\n' +
-      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
-      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
-      'vehicle zero — then a slightly tilting table is cancelled out too.',
+      "The phone reads its own tilt, not the ground's — and a vehicle floor is rarely " +
+      'perfectly flat either. Calibrating corrects for both, so what the app shows is ' +
+      'the actual ground, not just how the phone happens to sit.',
     'help.notes.h': 'Good to know',
     'help.notes.t':
       'Works fully offline once opened — add it to your home screen like an app.\n' +
@@ -624,9 +673,10 @@ export const MESSAGES = {
     'settings.ramp.custom': 'Egen uppsättning',
     'settings.rampCount': 'Antal ramper',
     'settings.drain': 'Avloppssida',
-    'settings.rampHint':
-      'Appen väljer var ramperna gör mest nytta — och lämnar avloppssidan ' +
-      'lägst inom toleransen, så att disk- och duschvattnet rinner undan.',
+    'settings.rampHint': 'Appen väljer var ramperna gör mest nytta.',
+    'settings.drainHint':
+      'Spelar bara roll om det är viktigt var disk- eller duschvattnet rinner — inom ' +
+      'toleransen lämnas den här sidan lägst så att det fortsätter rinna undan.',
     'settings.section.vehicle': 'Fordon och mått',
     'settings.section.ramps': 'Ramper',
     'settings.section.display': 'Nivå och visning',
@@ -634,11 +684,19 @@ export const MESSAGES = {
     'settings.language': 'Språk',
     'settings.language.auto': 'Automatiskt (enhetens språk)',
     'settings.advanced': 'Avancerat',
+    'settings.advanced.hint':
+      'Tolerans avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller ' +
+      'kylskåp, mer tillåtande om det bara ska vara tillräckligt bra. Stabilitet jämnar ' +
+      'ut små skakningar i sensorn så att siffrorna inte hoppar.',
     'drain.none': 'Inget / spelar ingen roll',
-    'drain.left': 'Vänster sida',
-    'drain.right': 'Höger sida',
-    'drain.front': 'Fram',
-    'drain.rear': 'Bak',
+    'drain.left': 'Vänster, mitt',
+    'drain.right': 'Höger, mitt',
+    'drain.front': 'Fram, mitt',
+    'drain.rear': 'Bak, mitt',
+    'drain.frontLeft': 'Vänster fram',
+    'drain.frontRight': 'Höger fram',
+    'drain.rearLeft': 'Vänster bak',
+    'drain.rearRight': 'Höger bak',
     'settings.unit': 'Visa längder i',
     'settings.theme': 'Tema',
     'theme.system': 'Följ telefonen',
@@ -647,6 +705,9 @@ export const MESSAGES = {
     'settings.appearance': 'Utseende',
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',
+    'settings.appearance.hint':
+      'Att byta det här sparar dina ändringar och laddar om Libell så att den nya ' +
+      'layouten gäller överallt.',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.soundGuidance': 'Kontinuerlig ljudvägledning',
     'settings.soundGuidance.help':
@@ -684,8 +745,13 @@ export const MESSAGES = {
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
     'calibration.err.notFlat':
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
-    'calibration.sensor.h': 'Telefonens sensor',
-    'calibration.vehicle.h': 'Fordonets nolläge',
+    'calibration.sensor.h': 'Kalibrera telefonen',
+    'calibration.vehicle.h': 'Kalibrera fordonets nolläge',
+    'calibration.guide.intro':
+      'Två lager:\n' +
+      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
+      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
+      'fordonets nolläge — då räknas även ett lutande bord bort.',
     'calibration.vehicle.intro':
       'Sensorkalibreringen nollar telefonen — inte platsen där den ligger. Lutar ' +
       'bordet lite visar appen alltid den lutningen. Ställ fordonet verifierat ' +
@@ -763,8 +829,10 @@ export const MESSAGES = {
       'När bubblan vilar i mitten står du i våg.',
     'help.settings.h': 'Måtten',
     'help.settings.t':
-      'L är hjulbasen, W spårvidden (fram och bak kan skilja sig) — står oftast i ' +
-      'fordonspapperen, annars tumstock.\n' +
+      'För en husbil är hjulbasen avståndet mellan fram- och bakaxeln; för en husvagn är ' +
+      'det istället avståndet från axeln till stödhjulet. Spårvidden är avståndet mellan ' +
+      'vänster och höger hjul — en husbil kan ha olika bredd fram och bak, en husvagn har ' +
+      'bara en. Står oftast i fordonspapperen, annars tumstock.\n' +
       'Tolerans = hur strikt "i våg" är.\n' +
       'Stabilitet håller siffrorna lugna.',
     'help.ramps.t':
@@ -773,10 +841,9 @@ export const MESSAGES = {
       'inom toleransen, så att disk- och duschvattnet rinner undan.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
-      'Två lager:\n' +
-      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
-      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
-      'fordonets nolläge — då räknas även ett lutande bord bort.',
+      'Telefonen läser sin egen lutning, inte markens — och fordonets golv är sällan ' +
+      'helt plant heller. Kalibrering rättar till båda delarna, så det appen visar är ' +
+      'den verkliga marken, inte bara hur telefonen råkar ligga.',
     'help.notes.h': 'Bra att veta',
     'help.notes.t':
       'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen ' +

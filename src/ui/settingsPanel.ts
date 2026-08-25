@@ -471,6 +471,20 @@ export function createSettingsForm(
   drainSelect.addEventListener('change', () => notifyChanged());
   drainField.append(drainCaption, drainSelect);
 
+  // Advanced-tier (design review): drain positioning only matters if the
+  // owner cares where sink/shower water drains — most don't, so it moved
+  // behind the same disclosure pattern as Tolerance/Stability instead of
+  // sitting unconditionally in the main Ramps flow. A distinct modifier
+  // class (not just `.settings__advanced`) keeps it distinguishable from
+  // the Vehicle tab's own Advanced block for tests/styling.
+  const rampsAdvancedDetails = document.createElement('details');
+  rampsAdvancedDetails.className = 'settings__advanced settings__advanced--drain';
+  const rampsAdvancedSummary = document.createElement('summary');
+  rampsAdvancedSummary.className = 'settings__advanced-summary';
+  const drainHint = document.createElement('p');
+  drainHint.className = 'settings__hint';
+  rampsAdvancedDetails.append(rampsAdvancedSummary, drainField, drainHint);
+
   const rampHint = document.createElement('p');
   rampHint.className = 'settings__hint';
 
@@ -580,14 +594,30 @@ export function createSettingsForm(
     appearanceSelect.append(option);
     appearanceOptions.push([option, label]);
   }
-  // Live preview — same pattern as the theme select above. Note this
-  // only ever affects colors (see the file header comment) — switching
-  // this select does not restructure the currently open form.
+  // Live preview for colors, same as the theme select above — but unlike
+  // Theme, this axis also decides *structure* (tabs vs. one flat page,
+  // the main diagram, onboarding — every appearance-branching component
+  // is built once at bootstrap and never restructured in place, per each
+  // component's own file comment). Design review: rather than leaving
+  // that structural switch stuck until next reopen, saving the draft and
+  // reloading makes it feel as immediate as Theme — the exact pattern
+  // the Language select already uses just above for the same reason
+  // (`t()` isn't reactive either). Skipped in a compact/wizard step
+  // (`compact` below): the wizard decides for itself when settings are
+  // actually persisted, so a mid-wizard appearance pick must stay a
+  // preview only, never an early save-and-reload.
   appearanceSelect.addEventListener('change', () => {
     applyAppearance(appearanceSelect.value as AppearanceSetting);
-    notifyChanged();
+    if (compact) {
+      notifyChanged();
+      return;
+    }
+    saveSettings(currentSettings());
+    location.reload();
   });
   appearanceField.append(appearanceCaption, appearanceSelect);
+  const appearanceHint = document.createElement('p');
+  appearanceHint.className = 'settings__hint';
 
   // --- Level chime ---
   const soundField = document.createElement('label');
@@ -615,40 +645,67 @@ export function createSettingsForm(
   // Save persists; Undo returns to the last saved values; Reset fills
   // the form with the factory defaults (still needs Save to persist,
   // and Undo can take it back). Modern mode's Klossar tab additionally
-  // gets its own Save/Undo pair in its fixed footer (spec'd — the ramp
+  // gets its own Save/Undo/Reset in its fixed footer (spec'd — the ramp
   // steps need to be saveable without switching tabs); every tab keeps
-  // this original pair too, so Save/Undo are always reachable from
-  // wherever the user is editing (#140). Kept in sync via saveButtons/
-  // undoButtons rather than sharing DOM nodes, since a node can only
+  // this same set too, so it's always reachable from wherever the user
+  // is editing (#140). Kept in sync via saveButtons/undoButtons/
+  // resetButtons rather than sharing DOM nodes, since a node can only
   // live in one place in the tree.
-  const actions = document.createElement('div');
-  actions.className = 'settings__actions';
-  const save = document.createElement('button');
-  save.type = 'submit';
-  save.className = 'menu__action';
-  save.disabled = true;
-  const undo = document.createElement('button');
-  undo.type = 'button';
-  undo.className = 'menu__action menu__action--secondary';
-  undo.disabled = true;
-  const reset = document.createElement('button');
-  reset.type = 'button';
-  reset.className = 'menu__action menu__action--secondary';
-  actions.append(save, undo, reset);
-  const saveButtons: HTMLButtonElement[] = [save];
-  const undoButtons: HTMLButtonElement[] = [undo];
+  const saveButtons: HTMLButtonElement[] = [];
+  const undoButtons: HTMLButtonElement[] = [];
+  const resetButtons: HTMLButtonElement[] = [];
 
   /**
-   * Save+Undo only, no Reset — the same footer shape Modern's Klossar tab
-   * already uses (`footerSave`/`footerUndo` below), reused for Classic's
-   * split General/Ramps pages (#108 follow-up). Reset-to-factory-defaults
-   * stays on the one page that already carries it (Vehicle, matching
-   * Modern's Vehicle tab) rather than repeated on every split page — a
-   * "Reset" next to Language/Theme/Sound would silently wipe the
-   * vehicle's own dimensions too, the same surprise the onboarding
-   * wizard's compact steps were fixed to avoid (design review). `saved`/
-   * `populate` are defined later in this function, referenced here only
-   * inside click closures that fire well after the whole form is built.
+   * Reset + Undo side by side, Save full-width below (design review,
+   * then two follow-ups: Save used to sit first in one flat row with
+   * Undo/Reset — moved to its own prominent row so it reads as the one
+   * primary action, biggest and green via CSS; and every tab that edits
+   * form fields gets this exact same row, Targets included — General had
+   * none at all and Klossar had Save/Undo only the first time around,
+   * and Targets was wrongly skipped as "immediate-apply like
+   * Kalibrering". Only Kalibrering stays exempt, the one tab with no
+   * "unsaved" form state at all.
+   */
+  function buildActionsRow(): HTMLDivElement {
+    const row = document.createElement('div');
+    row.className = 'settings__actions';
+    const topRow = document.createElement('div');
+    topRow.className = 'settings__actions-row';
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'menu__action menu__action--secondary';
+    resetBtn.textContent = t('settings.reset');
+    resetBtn.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+    const undoBtn = document.createElement('button');
+    undoBtn.type = 'button';
+    undoBtn.className = 'menu__action menu__action--secondary';
+    undoBtn.disabled = true;
+    undoBtn.textContent = t('settings.undo');
+    undoBtn.addEventListener('click', () => populate(saved));
+    topRow.append(resetBtn, undoBtn);
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'submit';
+    saveBtn.className = 'menu__action';
+    saveBtn.disabled = true;
+    saveBtn.textContent = t('settings.save');
+    row.append(topRow, saveBtn);
+    saveButtons.push(saveBtn);
+    undoButtons.push(undoBtn);
+    resetButtons.push(resetBtn);
+    return row;
+  }
+
+  /**
+   * Save+Undo only, no Reset — used only by Classic's split General/Ramps
+   * pages (#108 follow-up; Modern's own General/Klossar tabs use
+   * `buildActionsRow` above instead, design review). Reset-to-factory-
+   * defaults stays on the one Classic page that already carries it
+   * (Vehicle) rather than repeated on every split page — a "Reset" next
+   * to Language/Theme/Sound would silently wipe the vehicle's own
+   * dimensions too, the same surprise the onboarding wizard's compact
+   * steps were fixed to avoid (design review). `saved`/`populate` are
+   * defined later in this function, referenced here only inside click
+   * closures that fire well after the whole form is built.
    */
   function buildSaveUndoRow(): HTMLDivElement {
     const row = document.createElement('div');
@@ -664,7 +721,9 @@ export function createSettingsForm(
     undoBtn.disabled = true;
     undoBtn.textContent = t('settings.undo');
     undoBtn.addEventListener('click', () => populate(saved));
-    row.append(saveBtn, undoBtn);
+    // Undo, then Save — same "primary action last" order as the Reset
+    // rows above, for consistency even where there is no Reset to swap.
+    row.append(undoBtn, saveBtn);
     saveButtons.push(saveBtn);
     undoButtons.push(undoBtn);
     return row;
@@ -710,8 +769,14 @@ export function createSettingsForm(
   advancedDetails.className = 'settings__advanced';
   const advancedSummary = document.createElement('summary');
   advancedSummary.className = 'settings__advanced-summary';
+  // Design review: the disclosure used to jump straight from the summary
+  // to bare labeled inputs with no explanation of what Tolerance/Stability
+  // actually change.
+  const advancedHint = document.createElement('p');
+  advancedHint.className = 'settings__hint';
   advancedDetails.append(
     advancedSummary,
+    advancedHint,
     fieldEls.get('toleranceMm')!,
     fieldEls.get('stabilityMm')!,
     dwellRestField,
@@ -737,13 +802,12 @@ export function createSettingsForm(
     // Onboarding step (#156): the reduced subset only — no tabs, no
     // Advanced disclosure, no vehicle-type/axle selectors. A short note
     // pointing to ☰ is added by onboarding.ts itself, next to this form.
-    // No `actions` row (design-review follow-up): a wizard step already has
-    // its own Next/Skip/Back, and Next submits this form directly — a
-    // second, identically-styled "Save" button here only duplicated it and
-    // invited a "do I need to press this too?" moment. Save/Undo/Reset stay
-    // exactly as they were on the real Settings page (the only place still
-    // reachable by mouse/keyboard, since `actions`'s buttons are still
-    // fully wired — just unmounted here).
+    // No `buildActionsRow()` call here (design-review follow-up): a wizard
+    // step already has its own Next/Skip/Back, and Next submits this form
+    // directly — a second, identically-styled "Save" button here only
+    // duplicated it and invited a "do I need to press this too?" moment.
+    // Save/Undo/Reset stay exactly as they are on the real Settings page,
+    // the only place this ever gets called.
     form.append(
       measureHint,
       fieldEls.get('wheelbaseMm')!,
@@ -753,7 +817,7 @@ export function createSettingsForm(
   } else if (compact === 'language') {
     // Onboarding step (design review, split from #189's combined
     // 'general'): Language alone — still reloads immediately on change,
-    // same as Settings. No `actions` row — see 'measurements' above.
+    // same as Settings. No `buildActionsRow()` call — see 'measurements' above.
     form.append(languageField);
   } else if (compact === 'appearance') {
     // Onboarding step (design review): Theme + Appearance, the "how it
@@ -837,10 +901,12 @@ export function createSettingsForm(
       appearanceGroupHeading,
       themeField,
       appearanceField,
+      appearanceHint,
       soundGroupHeading,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
+      buildActionsRow(),
     );
 
     // --- Kalibrering tab: embeds the same calibration section the menu
@@ -852,9 +918,13 @@ export function createSettingsForm(
     );
     calibrationPanel.append(embeddedCalibration.element);
 
-    // --- Targets tab: same reuse pattern as Kalibrering above.
+    // --- Targets tab: same reuse pattern as Kalibrering above. Also gets
+    // the exact same Reset/Undo/Save row as General/Fordon/Klossar
+    // (design review, follow-up: "if I say Targets too, I mean it") —
+    // it acts on the whole form's state, same as those three, regardless
+    // of Targets' own presets applying immediately.
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
-    targetsPanel.append(embeddedTargets.element);
+    targetsPanel.append(embeddedTargets.element, buildActionsRow());
 
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
@@ -877,7 +947,7 @@ export function createSettingsForm(
       measureHint,
       unitField,
       advancedDetails,
-      actions,
+      buildActionsRow(),
     );
 
     // --- Klossar tab ---
@@ -987,13 +1057,18 @@ export function createSettingsForm(
     footerHead.append(footerHeading, footerModelName);
     const footerGrid = document.createElement('div');
     footerGrid.className = 'klossar__grid';
+    // Same Reset+Undo-then-Save layout as `buildActionsRow()` above, just
+    // built by hand since the fixed footer needs its own classes (design
+    // review: Klossar used to be Save/Undo only, one flat row).
     const footerActions = document.createElement('div');
     footerActions.className = 'klossar__footer-actions';
-    const footerSave = document.createElement('button');
-    footerSave.type = 'submit';
-    footerSave.className = 'menu__action';
-    footerSave.disabled = true;
-    footerSave.textContent = t('settings.save');
+    const footerTopRow = document.createElement('div');
+    footerTopRow.className = 'klossar__footer-actions-row';
+    const footerReset = document.createElement('button');
+    footerReset.type = 'button';
+    footerReset.className = 'menu__action menu__action--secondary';
+    footerReset.textContent = t('settings.reset');
+    footerReset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
     const footerUndo = document.createElement('button');
     footerUndo.type = 'button';
     footerUndo.className = 'menu__action menu__action--secondary';
@@ -1002,9 +1077,16 @@ export function createSettingsForm(
     // populate()/saved are defined further down, but this only runs on a
     // later click — by then the whole form is fully set up.
     footerUndo.addEventListener('click', () => populate(saved));
-    footerActions.append(footerSave, footerUndo);
+    footerTopRow.append(footerReset, footerUndo);
+    const footerSave = document.createElement('button');
+    footerSave.type = 'submit';
+    footerSave.className = 'menu__action';
+    footerSave.disabled = true;
+    footerSave.textContent = t('settings.save');
+    footerActions.append(footerTopRow, footerSave);
     saveButtons.push(footerSave);
     undoButtons.push(footerUndo);
+    resetButtons.push(footerReset);
     footer.append(footerHead, footerGrid, footerActions);
 
     // Number of ramps / Drain side (pre-existing gap, found during the
@@ -1021,7 +1103,8 @@ export function createSettingsForm(
       customRow,
       customEditor,
       rampCountField,
-      drainField,
+      rampsAdvancedDetails,
+      rampHint,
       footer,
     );
 
@@ -1111,6 +1194,7 @@ export function createSettingsForm(
       appearanceGroupHeading,
       themeField,
       appearanceField,
+      appearanceHint,
       soundGroupHeading,
       soundField,
       soundGuidanceField,
@@ -1127,10 +1211,16 @@ export function createSettingsForm(
       measureHint,
       unitField,
       advancedDetails,
-      actions,
+      buildActionsRow(),
     );
     const rampsBody = document.createElement('div');
-    rampsBody.append(stepsField, rampCountField, drainField, rampHint, buildSaveUndoRow());
+    rampsBody.append(
+      stepsField,
+      rampCountField,
+      rampsAdvancedDetails,
+      rampHint,
+      buildSaveUndoRow(),
+    );
 
     form.classicPages = { general: generalBody, vehicle: vehicleBody, ramps: rampsBody };
     form.append(vehicleBody);
@@ -1151,7 +1241,7 @@ export function createSettingsForm(
       rampsHeading,
       stepsField,
       rampCountField,
-      drainField,
+      rampsAdvancedDetails,
       rampHint,
       displayHeading,
       unitField,
@@ -1159,11 +1249,12 @@ export function createSettingsForm(
       languageField,
       themeField,
       appearanceField,
+      appearanceHint,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
       advancedDetails,
-      actions,
+      buildActionsRow(),
     );
   }
 
@@ -1184,11 +1275,13 @@ export function createSettingsForm(
     customOption.textContent = t('settings.ramp.custom');
     // Ramp planning applies to the motorhome; a caravan ramps one wheel.
     rampCountField.hidden = vehicle === 'caravan';
-    drainField.hidden = vehicle === 'caravan';
+    rampsAdvancedDetails.hidden = vehicle === 'caravan';
     rampHint.hidden = vehicle === 'caravan';
     rampCountCaption.textContent = t('settings.rampCount');
     drainCaption.textContent = t('settings.drain');
     for (const [option, label] of drainOptions) option.textContent = t(label);
+    rampsAdvancedSummary.textContent = t('settings.advanced');
+    drainHint.textContent = t('settings.drainHint');
     rampHint.textContent = t('settings.rampHint');
     unitCaption.textContent = t('settings.unit');
     languageCaption.textContent = t('settings.language');
@@ -1197,6 +1290,7 @@ export function createSettingsForm(
     for (const [option, label] of themeOptions) option.textContent = t(label);
     appearanceCaption.textContent = t('settings.appearance');
     for (const [option, label] of appearanceOptions) option.textContent = t(label);
+    appearanceHint.textContent = t('settings.appearance.hint');
     soundCaption.textContent = t('settings.sound');
     soundGuidanceCaption.textContent = t('settings.soundGuidance');
     soundGuidanceHint.textContent = t('settings.soundGuidance.help');
@@ -1212,9 +1306,10 @@ export function createSettingsForm(
     appearanceGroupHeading.textContent = t('settings.appearance');
     soundGroupHeading.textContent = t('onboard.sound.h');
     advancedSummary.textContent = t('settings.advanced');
-    save.textContent = t('settings.save');
-    undo.textContent = t('settings.undo');
-    reset.textContent = t('settings.reset');
+    advancedHint.textContent = t('settings.advanced.hint');
+    for (const btn of saveButtons) btn.textContent = t('settings.save');
+    for (const btn of undoButtons) btn.textContent = t('settings.undo');
+    for (const btn of resetButtons) btn.textContent = t('settings.reset');
   }
   applyUnitEverywhere();
   renderChips();
@@ -1273,13 +1368,13 @@ export function createSettingsForm(
     notifyChanged();
   };
 
-  undo.addEventListener('click', () => populate(saved));
-  // Full reset, still needs Save to persist: safe because `actions` (this
-  // button included) is only ever mounted on the real, full Settings page
-  // now — the compact onboarding forms don't render it (see the 'compact'
+  // Reset always needs Save to persist too: safe because `buildActionsRow`
+  // (Reset included) is only ever called on the real, full Settings page
+  // — the compact onboarding forms never call it (see the 'compact'
   // branches below), so there is no reduced screen left where "reset
-  // everything" could look like it only reset what's on screen.
-  reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+  // everything" could look like it only reset what's on screen. Each
+  // instance's own click handlers are wired inside `buildActionsRow`
+  // itself, not here.
 
   form.resyncSoundFields = (sound) => {
     soundInput.checked = sound.soundOnLevel;

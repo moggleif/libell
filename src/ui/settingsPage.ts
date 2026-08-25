@@ -32,10 +32,11 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
 
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    // Return to the main screen after a successful Save (#159).
+    // Design review, follow-up: Save used to close the page (#159) — but
+    // Save is not "I'm done", just "keep this" — the user may still want
+    // to change more. Only the ✕ actually closes the page now.
     (settings) => {
       options.onSettingsSaved(settings);
-      page.close();
     },
     options,
     undefined,

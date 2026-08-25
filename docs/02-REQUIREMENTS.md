@@ -249,7 +249,11 @@ URL and must keep working with no signal.
   (skippable), phone-sensor calibration (skippable), vehicle-zero position (skippable).
   It can be closed with ✕ at any point, warning lamps (R11) stay lit for whatever was
   skipped, and the "Show introduction" button at the top of the "?" page's Help tab
-  (R28, screen-cleanup follow-up) reopens it any time.
+  (R28, screen-cleanup follow-up) reopens it any time. That button reads green
+  (primary) until the wizard has actually been stepped through to its end at least
+  once — an early ✕ does not count, even though it still counts for the auto-launch
+  gate above (design review, follow-up); once truly completed, it turns secondary, a
+  plain re-launch rather than an unfinished first-run task.
 - **Given** the welcome step (design review, always first)
 - **Then** it shows what Libell does (the same one-line pitch the About page uses) and
   that the guide ahead is short and every step can be skipped and finished later. No
@@ -496,12 +500,13 @@ URL and must keep working with no signal.
 - **Given** every wheel can be brought within the tolerance
 - **Then** the plan uses as few ramps as possible and the vehicle reports level once
   I have driven up.
-- **Given** the Settings choice "Waste-water drain" (none / left / right / front /
-  rear; default none)
+- **Given** the Settings choice "Waste-water drain" — none, a side/axle middle (left /
+  right / front / rear, the mean of that edge's two wheels) or a single corner
+  (front-left / front-right / rear-left / rear-right, design review); default none
 - **When** several placements of my ramps level the vehicle within the tolerance
-- **Then** the app prefers the one leaving the drain side lowest, so the drains keep
-  working — sink and shower water runs toward the outlet instead of pooling — never
-  choosing a worse-than-tolerance solution or extra ramps just for
+- **Then** the app prefers the one leaving the configured wheel(s) lowest, so the
+  drains keep working — sink and shower water runs toward the outlet instead of
+  pooling — never choosing a worse-than-tolerance solution or extra ramps just for
   drainage.
 - The per-wheel required lifts (R3) are unchanged — the plan only decides which steps
   are recommended. Caravan mode is unaffected (one axle wheel is ever ramped, R22);

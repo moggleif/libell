@@ -117,6 +117,30 @@ describe('planRamps', () => {
     const level = planRamps(lifts(0, 0, 0, 0), { ...steps, drainPosition: 'rear' as const });
     expect(stepsOf(level)).toEqual([0, 0, 0, 0]);
   });
+
+  // Design review: a corner position (e.g. rearLeft) scores only its own
+  // wheel, unlike the side/axle "middle" positions above (e.g. rear),
+  // which average both wheels on that edge — a real difference whenever
+  // the two wheels of an edge end up at different deficits.
+  it('a corner drain position scores only its own wheel, not an average with its neighbor', () => {
+    const steps = { frontLeft: 0, frontRight: 0, rearLeft: 0, rearRight: 20 };
+    const zeroLifts = lifts(0, 0, 0, 0);
+    const rearRightDeficit = evaluateSteps(steps, zeroLifts, {
+      ...SETTINGS,
+      drainPosition: 'rearRight',
+    }).drainScoreMm;
+    const rearLeftDeficit = evaluateSteps(steps, zeroLifts, {
+      ...SETTINGS,
+      drainPosition: 'rearLeft',
+    }).drainScoreMm;
+    const rearAxleMean = evaluateSteps(steps, zeroLifts, {
+      ...SETTINGS,
+      drainPosition: 'rear',
+    }).drainScoreMm;
+    expect(rearRightDeficit).toBeCloseTo(0); // stepped up — no deficit
+    expect(rearLeftDeficit).toBeCloseTo(20); // never stepped — full deficit
+    expect(rearAxleMean).toBeCloseTo(10); // the two rear wheels' average
+  });
 });
 
 describe('evaluateSteps', () => {
