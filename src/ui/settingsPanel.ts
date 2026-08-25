@@ -471,6 +471,20 @@ export function createSettingsForm(
   drainSelect.addEventListener('change', () => notifyChanged());
   drainField.append(drainCaption, drainSelect);
 
+  // Advanced-tier (design review): drain positioning only matters if the
+  // owner cares where sink/shower water drains — most don't, so it moved
+  // behind the same disclosure pattern as Tolerance/Stability instead of
+  // sitting unconditionally in the main Ramps flow. A distinct modifier
+  // class (not just `.settings__advanced`) keeps it distinguishable from
+  // the Vehicle tab's own Advanced block for tests/styling.
+  const rampsAdvancedDetails = document.createElement('details');
+  rampsAdvancedDetails.className = 'settings__advanced settings__advanced--drain';
+  const rampsAdvancedSummary = document.createElement('summary');
+  rampsAdvancedSummary.className = 'settings__advanced-summary';
+  const drainHint = document.createElement('p');
+  drainHint.className = 'settings__hint';
+  rampsAdvancedDetails.append(rampsAdvancedSummary, drainField, drainHint);
+
   const rampHint = document.createElement('p');
   rampHint.className = 'settings__hint';
 
@@ -588,6 +602,11 @@ export function createSettingsForm(
     notifyChanged();
   });
   appearanceField.append(appearanceCaption, appearanceSelect);
+  // Explains the scope cut above (design review): color changes are as
+  // live as Theme's, but the layout itself only reflects the new preset
+  // next time this page is (re)built.
+  const appearanceHint = document.createElement('p');
+  appearanceHint.className = 'settings__hint';
 
   // --- Level chime ---
   const soundField = document.createElement('label');
@@ -710,8 +729,14 @@ export function createSettingsForm(
   advancedDetails.className = 'settings__advanced';
   const advancedSummary = document.createElement('summary');
   advancedSummary.className = 'settings__advanced-summary';
+  // Design review: the disclosure used to jump straight from the summary
+  // to bare labeled inputs with no explanation of what Tolerance/Stability
+  // actually change.
+  const advancedHint = document.createElement('p');
+  advancedHint.className = 'settings__hint';
   advancedDetails.append(
     advancedSummary,
+    advancedHint,
     fieldEls.get('toleranceMm')!,
     fieldEls.get('stabilityMm')!,
     dwellRestField,
@@ -837,10 +862,12 @@ export function createSettingsForm(
       appearanceGroupHeading,
       themeField,
       appearanceField,
+      appearanceHint,
       soundGroupHeading,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
+      buildSaveUndoRow(),
     );
 
     // --- Kalibrering tab: embeds the same calibration section the menu
@@ -1021,7 +1048,8 @@ export function createSettingsForm(
       customRow,
       customEditor,
       rampCountField,
-      drainField,
+      rampsAdvancedDetails,
+      rampHint,
       footer,
     );
 
@@ -1111,6 +1139,7 @@ export function createSettingsForm(
       appearanceGroupHeading,
       themeField,
       appearanceField,
+      appearanceHint,
       soundGroupHeading,
       soundField,
       soundGuidanceField,
@@ -1130,7 +1159,13 @@ export function createSettingsForm(
       actions,
     );
     const rampsBody = document.createElement('div');
-    rampsBody.append(stepsField, rampCountField, drainField, rampHint, buildSaveUndoRow());
+    rampsBody.append(
+      stepsField,
+      rampCountField,
+      rampsAdvancedDetails,
+      rampHint,
+      buildSaveUndoRow(),
+    );
 
     form.classicPages = { general: generalBody, vehicle: vehicleBody, ramps: rampsBody };
     form.append(vehicleBody);
@@ -1151,7 +1186,7 @@ export function createSettingsForm(
       rampsHeading,
       stepsField,
       rampCountField,
-      drainField,
+      rampsAdvancedDetails,
       rampHint,
       displayHeading,
       unitField,
@@ -1159,6 +1194,7 @@ export function createSettingsForm(
       languageField,
       themeField,
       appearanceField,
+      appearanceHint,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
@@ -1184,11 +1220,13 @@ export function createSettingsForm(
     customOption.textContent = t('settings.ramp.custom');
     // Ramp planning applies to the motorhome; a caravan ramps one wheel.
     rampCountField.hidden = vehicle === 'caravan';
-    drainField.hidden = vehicle === 'caravan';
+    rampsAdvancedDetails.hidden = vehicle === 'caravan';
     rampHint.hidden = vehicle === 'caravan';
     rampCountCaption.textContent = t('settings.rampCount');
     drainCaption.textContent = t('settings.drain');
     for (const [option, label] of drainOptions) option.textContent = t(label);
+    rampsAdvancedSummary.textContent = t('settings.advanced');
+    drainHint.textContent = t('settings.drainHint');
     rampHint.textContent = t('settings.rampHint');
     unitCaption.textContent = t('settings.unit');
     languageCaption.textContent = t('settings.language');
@@ -1197,6 +1235,7 @@ export function createSettingsForm(
     for (const [option, label] of themeOptions) option.textContent = t(label);
     appearanceCaption.textContent = t('settings.appearance');
     for (const [option, label] of appearanceOptions) option.textContent = t(label);
+    appearanceHint.textContent = t('settings.appearance.hint');
     soundCaption.textContent = t('settings.sound');
     soundGuidanceCaption.textContent = t('settings.soundGuidance');
     soundGuidanceHint.textContent = t('settings.soundGuidance.help');
@@ -1212,6 +1251,7 @@ export function createSettingsForm(
     appearanceGroupHeading.textContent = t('settings.appearance');
     soundGroupHeading.textContent = t('onboard.sound.h');
     advancedSummary.textContent = t('settings.advanced');
+    advancedHint.textContent = t('settings.advanced.hint');
     save.textContent = t('settings.save');
     undo.textContent = t('settings.undo');
     reset.textContent = t('settings.reset');

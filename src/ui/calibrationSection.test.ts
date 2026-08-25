@@ -153,17 +153,29 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(pill.textContent).toBe('NOT DONE'); // calibrate() itself doesn't call applyCalibration
   });
 
-  it('shows the side/side and front/back readings once calibrated', () => {
+  // Design review: the vehicle-zero card used to show its roll/pitch only
+  // buried inside a status sentence, unlike the phone card's own numeric
+  // readout box — both now show numbers the same way.
+  it('shows the side/side and front/back readings for both the phone and the vehicle zero once calibrated', () => {
     const section = createCalibrationSection(
       makeOptions({
         appearance: 'modern',
         getCalibration: () => ({ rollDeg: 1.2, pitchDeg: -3.4 }),
+        getVehicleCalibration: () => ({ rollDeg: 0.4, pitchDeg: 0.2 }),
       }),
     );
     const values = [...section.element.querySelectorAll('.calibration-card__reading-value')].map(
       (v) => v.textContent,
     );
-    expect(values).toEqual(['1.2°', '-3.4°']);
+    expect(values).toEqual(['1.2°', '-3.4°', '0.4°', '0.2°']);
+  });
+
+  it('shows a dash placeholder for both readouts before anything is calibrated', () => {
+    const section = createCalibrationSection(makeOptions({ appearance: 'modern' }));
+    const values = [...section.element.querySelectorAll('.calibration-card__reading-value')].map(
+      (v) => v.textContent,
+    );
+    expect(values).toEqual(['—', '—', '—', '—']);
   });
 
   it('wires every button to the same host callbacks as Classic mode', () => {

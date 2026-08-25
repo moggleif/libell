@@ -32,11 +32,19 @@ export interface RampPlan {
   drainScoreMm: number;
 }
 
-const DRAIN_WHEELS: Record<Exclude<DrainPosition, 'none'>, [WheelId, WheelId]> = {
+// A side/axle position averages its two wheels (the middle of that edge);
+// a corner position (design review) targets just the one wheel — a
+// tighter match for a waste-water outlet that sits at one specific
+// corner, not spread across a whole side.
+const DRAIN_WHEELS: Record<Exclude<DrainPosition, 'none'>, readonly WheelId[]> = {
   left: ['frontLeft', 'rearLeft'],
   right: ['frontRight', 'rearRight'],
   front: ['frontLeft', 'frontRight'],
   rear: ['rearLeft', 'rearRight'],
+  frontLeft: ['frontLeft'],
+  frontRight: ['frontRight'],
+  rearLeft: ['rearLeft'],
+  rearRight: ['rearRight'],
 };
 
 /** Physical ramps needed to drive this wheel up: a boggie pair is two. */
@@ -67,8 +75,8 @@ export function evaluateSteps(
   }
   let drainScoreMm = 0;
   if (settings.drainPosition !== 'none') {
-    const [a, b] = DRAIN_WHEELS[settings.drainPosition];
-    drainScoreMm = (deficits[a] + deficits[b]) / 2;
+    const wheels = DRAIN_WHEELS[settings.drainPosition];
+    drainScoreMm = wheels.reduce((sum, id) => sum + deficits[id], 0) / wheels.length;
   }
   return {
     steps,

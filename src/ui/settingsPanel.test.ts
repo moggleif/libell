@@ -139,8 +139,13 @@ describe('settings form', () => {
 });
 
 describe('settings form — Advanced disclosure (#157)', () => {
+  // Vehicle's own Advanced (Tolerance/Stability/dwell) — not the Ramps
+  // tab's separate Drain disclosure (`.settings__advanced--drain` below),
+  // which also matches the bare `.settings__advanced` class.
   function advanced(form: HTMLFormElement): HTMLDetailsElement {
-    return form.querySelector<HTMLDetailsElement>('.settings__advanced')!;
+    return [...form.querySelectorAll<HTMLDetailsElement>('.settings__advanced')].find(
+      (el) => !el.classList.contains('settings__advanced--drain'),
+    )!;
   }
 
   it('Classic: Tolerance/Stability/Appearance/Chime/Continuous audio guidance are collapsed by default', () => {
@@ -283,6 +288,42 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(generalPanel.textContent).toContain('English');
   });
 
+  // Design review: every tab that edits form fields (General/Fordon/
+  // Klossar) gets its own working Save/Undo — General used to have none
+  // at all, so editing Language/Theme/Sound had no way to save without
+  // switching to another tab first.
+  it('the General tab has its own working Save/Undo', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    const generalPanel = tabPanel(form, 'general');
+    const generalSave = generalPanel.querySelector<HTMLButtonElement>(
+      '.settings__actions button[type="submit"]',
+    )!;
+    const generalUndo = generalPanel.querySelectorAll<HTMLButtonElement>(
+      '.settings__actions button',
+    )[1]!;
+    expect(generalSave.disabled).toBe(true);
+    expect(generalUndo.disabled).toBe(true);
+
+    const themeSelect = generalPanel.querySelectorAll<HTMLSelectElement>('.settings__select')[1]!;
+    themeSelect.value = 'dark';
+    themeSelect.dispatchEvent(new Event('change'));
+    expect(generalSave.disabled).toBe(false);
+    expect(generalUndo.disabled).toBe(false);
+
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0]![0].theme).toBe('dark');
+    expect(generalSave.disabled).toBe(true);
+
+    themeSelect.value = 'light';
+    themeSelect.dispatchEvent(new Event('change'));
+    expect(generalUndo.disabled).toBe(false);
+    generalUndo.click();
+    expect(themeSelect.value).toBe('dark');
+    expect(generalSave.disabled).toBe(true);
+  });
+
   describe('the Language select persists the choice and reloads', () => {
     function languageSelect(form: HTMLFormElement): HTMLSelectElement {
       return tabPanel(form, 'general').querySelector<HTMLSelectElement>('.settings__select')!;
@@ -345,6 +386,30 @@ describe('settings form — Modern tabs (#108)', () => {
     const caravanRampsPanel = tabPanel(caravanForm, 'ramps');
     const rampCountField = caravanRampsPanel.querySelector<HTMLLabelElement>('.settings__field');
     expect(rampCountField?.hidden).toBe(true);
+  });
+
+  // Design review: Drain side only matters if the owner cares where sink/
+  // shower water drains — moved behind its own Advanced disclosure
+  // instead of sitting unconditionally in the main Klossar flow.
+  it('tucks Waste-water drain behind its own Advanced disclosure, collapsed by default', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const rampsPanel = tabPanel(form, 'ramps');
+    const drainAdvanced = rampsPanel.querySelector<HTMLDetailsElement>(
+      '.settings__advanced--drain',
+    )!;
+    expect(drainAdvanced.open).toBe(false);
+    expect(drainAdvanced.querySelector('select')?.closest('label')?.textContent).toContain(
+      t('settings.drain'),
+    );
+    // The general ramp-placement hint stays visible outside Advanced.
+    expect(rampsPanel.textContent).toContain(t('settings.rampHint'));
+
+    const caravanModern: LevelSettings = { ...modern, vehicleType: 'caravan' };
+    const caravanForm = createSettingsForm(caravanModern, vi.fn());
+    const caravanDrainAdvanced = tabPanel(caravanForm, 'ramps').querySelector<HTMLDetailsElement>(
+      '.settings__advanced--drain',
+    )!;
+    expect(caravanDrainAdvanced.hidden).toBe(true);
   });
 
   it('shows the pinned card for the default (catalog) model, with its step count', () => {
@@ -464,12 +529,14 @@ describe('settings form — Modern tabs (#108)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(modern, onSave);
     // The Fordon (Vehicle) tab is active by default — its actions bar
-    // must be usable without switching to Klossar first.
+    // must be usable without switching to Klossar first. Scoped to
+    // [data-tab="vehicle"] specifically since General now has its own
+    // Save/Undo row too (#140 follow-up).
     const fordonSave = form.querySelector<HTMLButtonElement>(
-      '.settings__tabpanel .settings__actions button[type="submit"]',
+      '.settings__tabpanel[data-tab="vehicle"] .settings__actions button[type="submit"]',
     )!;
     const fordonUndo = form.querySelectorAll<HTMLButtonElement>(
-      '.settings__tabpanel .settings__actions button',
+      '.settings__tabpanel[data-tab="vehicle"] .settings__actions button',
     )[1]!;
     const klossarSave = form.querySelector<HTMLButtonElement>(
       '.klossar__footer-actions button[type="submit"]',
