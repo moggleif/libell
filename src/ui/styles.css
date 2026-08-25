@@ -306,6 +306,34 @@ body {
  * active. Deliberately neutral (on-surface / outline), not the amber
  * warning lamp treatment above: an active target is a deliberate choice,
  * never something wrong. */
+/* External-sensor status indicator (#129): a small neutral dot, shown
+ * only while an external source (EasyLevel) is active — deliberately no
+ * text/numbers on the main screen (detail lives in the menu page). The
+ * dot itself carries the state: muted/neutral while connected, the same
+ * --warning tone the dashboard lamps use once the connection is lost. */
+.sensor-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.sensor-status__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--on-surface-muted);
+}
+
+.sensor-status--disconnected .sensor-status__dot {
+  background: var(--warning);
+}
+
 .target-badge {
   font: inherit;
   font-size: 0.75rem;
@@ -939,6 +967,12 @@ body {
   margin: 8px 0 4px;
   font-size: 1rem;
   font-weight: 700;
+}
+
+/* Sensor-source detail block (#129): battery/RSSI/temperature, separated
+ * from the connect/disconnect buttons above it. */
+.menu__detail {
+  margin-top: 18px;
 }
 
 .menu__text {

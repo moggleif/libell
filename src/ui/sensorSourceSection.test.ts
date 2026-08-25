@@ -8,6 +8,7 @@ setLanguage('en');
 function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSourceOptions {
   return {
     getSensorSource: () => 'phone',
+    getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('granted'),
     disconnectEasyLevel: () => {},
     ...overrides,
@@ -91,5 +92,43 @@ describe('createSensorSourceSection (#116)', () => {
     source = 'easylevel';
     section.refresh();
     expect(section.element.textContent).toContain('Connected');
+  });
+
+  // #129: honest detailed status — connection state distinguishes a live
+  // connection from a dropped one, and battery/RSSI/temperature are always
+  // spelled out as "not available yet" rather than omitted or fabricated.
+  it('shows a distinct disconnected status once the connection is lost, not the plain "connected" text', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
+    );
+    expect(section.element.textContent).toContain('lost');
+    expect(section.element.textContent).not.toContain('Connected to the EasyLevel sensor.');
+  });
+
+  it('hides the battery/RSSI/temperature detail block while the phone is the active source', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
+    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
+    expect(detail?.hidden).toBe(true);
+  });
+
+  it('shows battery/RSSI/temperature explicitly as "not available yet" once EasyLevel is (or was) active — never omitted, never fabricated', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'granted' }),
+    );
+    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
+    expect(detail?.hidden).toBe(false);
+    expect(detail?.textContent).toContain('Battery');
+    expect(detail?.textContent).toContain('Signal strength');
+    expect(detail?.textContent).toContain('Temperature');
+    const notAvailableCount = (detail?.textContent?.match(/Not available yet/g) ?? []).length;
+    expect(notAvailableCount).toBe(3);
+  });
+
+  it('still shows the detail block (as "not available yet") for a dropped connection — not omitted on disconnect', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
+    );
+    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
+    expect(detail?.hidden).toBe(false);
   });
 });
