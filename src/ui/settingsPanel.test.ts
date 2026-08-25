@@ -253,6 +253,41 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(save.disabled).toBe(true);
   });
 
+  it('the Fordon tab has its own working Save/Undo, kept in sync with the Klossar footer (#140)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    // The Fordon (Vehicle) tab is active by default — its actions bar
+    // must be usable without switching to Klossar first.
+    const fordonSave = form.querySelector<HTMLButtonElement>(
+      '.settings__tabpanel .settings__actions button[type="submit"]',
+    )!;
+    const fordonUndo = form.querySelectorAll<HTMLButtonElement>(
+      '.settings__tabpanel .settings__actions button',
+    )[1]!;
+    const klossarSave = form.querySelector<HTMLButtonElement>(
+      '.klossar__footer-actions button[type="submit"]',
+    )!;
+    expect(fordonSave.disabled).toBe(true);
+    expect(fordonUndo.disabled).toBe(true);
+
+    input(form, 'wheelbaseMm').value = '4200';
+    form.dispatchEvent(new Event('input'));
+    expect(fordonSave.disabled).toBe(false);
+    expect(fordonUndo.disabled).toBe(false);
+    expect(klossarSave.disabled).toBe(false); // the two pairs stay in sync
+
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(4200);
+    expect(fordonSave.disabled).toBe(true);
+    expect(klossarSave.disabled).toBe(true);
+
+    input(form, 'wheelbaseMm').value = '5000';
+    form.dispatchEvent(new Event('input'));
+    fordonUndo.click();
+    expect(input(form, 'wheelbaseMm').value).toBe('4200');
+  });
+
   it('embeds a working calibration section in the Kalibrering tab (#109)', () => {
     const calibrate = vi.fn(() => null);
     const form = createSettingsForm(modern, vi.fn(), {
