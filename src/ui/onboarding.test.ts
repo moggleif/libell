@@ -319,3 +319,62 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
     expect(finished).toBe(true);
   });
 });
+
+describe('onboarding wizard — compact steps (#156)', () => {
+  it('Settings step shows only Wheelbase/Track width front/rear, not the full form', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // step 1 -> 2 (settings)
+    expect(card().querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
+    expect(card().querySelector('input[name="trackWidthFrontMm"]')).not.toBeNull();
+    expect(card().querySelector('input[name="trackWidthRearMm"]')).not.toBeNull();
+    // Nothing else from the full form: no tolerance/stability/appearance/
+    // audio fields, no Advanced disclosure, no vehicle-type/axle/theme selects.
+    expect(card().querySelector('input[name="toleranceMm"]')).toBeNull();
+    expect(card().querySelector('.settings__advanced')).toBeNull();
+    expect(card().querySelector('select')).toBeNull();
+    expect(card().textContent).toContain(t('onboard.moreInMenu'));
+  });
+
+  it('Settings step can still be saved (Save button present, fields wired)', () => {
+    let saved: LevelSettings | null = null;
+    showOnboarding(
+      makeOptions({
+        initialSettings: classicSettings(),
+        onSettingsSaved: (s) => (saved = s),
+      }),
+    );
+    next(); // -> settings
+    const wheelbase = card().querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
+    wheelbase.value = '4200';
+    wheelbase.dispatchEvent(new Event('input'));
+    const form = card().querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(saved).not.toBeNull();
+    expect(saved!.wheelbaseMm).toBe(4200);
+  });
+
+  it('Calibration step shows only "Calibrate now", not flip calibration or vehicle zero', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // -> settings
+    next(); // -> calibration
+    const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
+    expect(buttonTexts).toContain(t('calibration.now'));
+    expect(buttonTexts).not.toContain(t('calibration.flip.start'));
+    expect(buttonTexts).not.toContain(t('calibration.vehicle.now'));
+    expect(buttonTexts).not.toContain(t('calibration.clear'));
+    expect(card().textContent).not.toContain(t('calibration.vehicle.h'));
+    expect(card().textContent).toContain(t('onboard.moreInMenu'));
+  });
+
+  it('Modern appearance: the same compact reduction applies', () => {
+    showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    next(); // -> settings
+    expect(card().querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
+    expect(card().querySelector('.settings__tabs')).toBeNull();
+    expect(card().querySelector('.settings__advanced')).toBeNull();
+    next(); // -> calibration
+    const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
+    expect(buttonTexts).toContain(t('calibration.now'));
+    expect(buttonTexts).not.toContain(t('calibration.vehicle.now'));
+  });
+});

@@ -160,19 +160,32 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
+  // A short, visible note that the compact steps below don't hide these
+  // features from the app — they just aren't on this reduced screen
+  // (#156); the full forms stay reachable from ☰ afterward.
+  function moreInMenuNote(): HTMLParagraphElement {
+    const note = document.createElement('p');
+    note.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+    note.textContent = t('onboard.moreInMenu');
+    return note;
+  }
+
   const settingsStep: Step = {
     title: t('menu.settings'),
     skipLabel: t('onboard.skipDefaults'),
     build: () => [
       measuresIllustration(t('menu.settings')),
-      createSettingsForm(options.initialSettings, options.onSettingsSaved),
+      createSettingsForm(options.initialSettings, options.onSettingsSaved, undefined, {
+        compact: true,
+      }),
+      moreInMenuNote(),
     ],
   };
 
   const calibrationStep: Step = {
     title: t('menu.calibration'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createCalibrationSection(options).element],
+    build: () => [createCalibrationSection(options, { compact: true }).element, moreInMenuNote()],
   };
 
   // External path's calibration equivalent (#135, ADR 0014): the box's

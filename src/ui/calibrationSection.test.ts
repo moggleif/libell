@@ -222,3 +222,28 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(vehicleBtn.className).toContain('menu__action--secondary');
   });
 });
+
+describe('calibration section — compact mode (#156)', () => {
+  it('renders only "Calibrate now" and its status, in both Classic and Modern', () => {
+    for (const appearance of ['classic', 'modern'] as const) {
+      const section = createCalibrationSection(makeOptions({ appearance }), { compact: true });
+      const buttons = [...section.element.querySelectorAll('button')].map((b) => b.textContent);
+      expect(buttons).toEqual(['Calibrate now']);
+      expect(section.element.querySelector('.menu__text--status')).not.toBeNull();
+    }
+  });
+
+  it('the compact "Calibrate now" button still calls the host callback and refreshes status', () => {
+    const calibrate = vi.fn<() => string | null>(() => null);
+    const section = createCalibrationSection(makeOptions({ calibrate }), { compact: true });
+    buttonByText(section.element, 'Calibrate now').click();
+    expect(calibrate).toHaveBeenCalledTimes(1);
+  });
+
+  it('defaults to the full (non-compact) render when no options are passed', () => {
+    const section = createCalibrationSection(makeOptions());
+    const buttons = [...section.element.querySelectorAll('button')].map((b) => b.textContent);
+    expect(buttons).toContain('Calibrate by flipping');
+    expect(buttons).toContain('Set current position as level');
+  });
+});

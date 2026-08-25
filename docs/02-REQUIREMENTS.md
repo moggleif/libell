@@ -214,6 +214,17 @@ URL and must keep working with no signal.
   defaults"), calibration (skippable). It can be closed with ✕ at any
   point, warning lamps (R11) stay lit for whatever was skipped, and ☰ → "Show
   introduction" reopens it any time.
+- **Given** the measurements step
+- **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
+  numbers the step's own hint text says come from the registration document.
+  Everything else the full Settings form has (Vehicle type, Rear axle, Tolerance,
+  Stability, Show lengths in, Theme, Appearance, Chime, Continuous audio guidance) is
+  reachable from ☰ → Settings afterward, not hidden from the app, just not shown on
+  this reduced step. A short note on the step says so.
+- **Given** the calibration step
+- **Then** it shows only "Calibrate now" and its result (#156) — the flip-calibration
+  technique and Vehicle zero position stay reachable from ☰ → Calibration afterward,
+  with the same short note.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra first step, "How do you want to measure?",
   offering "This phone" (pre-selected) or "Libell Sensor / supported external sensor";
