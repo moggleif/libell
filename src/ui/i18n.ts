@@ -311,7 +311,8 @@ export const MESSAGES = {
     'settings.soundGuidance.help':
       'A pulse speeds up and rises in pitch as you approach level, with a distinct ' +
       'signal for getting closer vs. moving the wrong way — so you can watch the ' +
-      'ramps instead of the screen. Pauses while the vehicle moves or is unsteady.',
+      'ramps instead of the screen. Silent when the reading is too unreliable to ' +
+      'trust — changing too fast, for instance.',
     'settings.save': 'Save',
     'settings.undo': 'Undo changes',
     'settings.reset': 'Reset to defaults',
@@ -745,8 +746,8 @@ export const MESSAGES = {
     'settings.soundGuidance.help':
       'En puls blir snabbare och stiger i tonhöjd ju närmare våg du kommer, med en ' +
       'tydlig signal för om du närmar dig eller rör dig åt fel håll — så att du kan ' +
-      'titta på klossarna istället för skärmen. Pausar medan fordonet rör sig eller ' +
-      'är ostadigt.',
+      'titta på klossarna istället för skärmen. Tyst vid osäker indata — till ' +
+      'exempel för snabba förändringar.',
     'settings.save': 'Spara',
     'settings.undo': 'Ångra ändringar',
     'settings.reset': 'Återställ standard',
