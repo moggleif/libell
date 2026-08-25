@@ -120,8 +120,14 @@ parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardwar
 `navigator.bluetooth` needed) and maps the box's raw accelerometer int16 triplet directly
 into a `GravityVector` at whatever scale it reports, deliberately not reimplementing the
 box's own onboard filter: the app's `atan2`-based roll/pitch only depends on axis ratios,
-not absolute units. A future external sensor (#119's iOS bridge) is just another
-implementation, isolated to `sensor/`.
+not absolute units. iOS gets no second `OrientationSensor` implementation (#119, closed
+in favor of R39 below): Safari's WebKit has no Web Bluetooth and Apple has no plans to
+add it, so instead of a native CoreBluetooth bridge, `src/ui/iosSensorGuidePage.ts`
+guides the user to Bluefy — a third-party Web Bluetooth browser — which makes
+`easyLevelSensor.ts` above work completely unchanged once Libell is opened inside it.
+`src/ui/platform.ts`'s `isIos()` (shared with the install-button hint) gates this: shown
+only when Web Bluetooth is absent _and_ the phone is iOS, so other unsupported browsers
+still get R32's plain hidden case.
 
 Remember-and-auto-reconnect (#130, R33): `EasyLevelSensor` gains a `reconnect(deviceId)`
 alongside `start()` — it tries Web Bluetooth's persistent-permissions API
@@ -139,9 +145,11 @@ on every explicit connect/disconnect; the remembered device id is written on a
 successful connect and deliberately left alone on disconnect ("not right now", not
 "forget this box") — the next connect can only ever overwrite it with the same or a
 newer id, never leave it stale in a way that matters.
-This is the PWA/Web-Bluetooth half of #130's cross-platform ask; iOS's CoreBluetooth
-equivalent (#119) is a separate native codebase and out of scope here. Calibration is
-correspondingly split three ways —
+This is the PWA/Web-Bluetooth half of #130's ask; iOS reaches this same code through
+Bluefy (R39) rather than a native codebase, so its auto-reconnect depends on whether
+Bluefy itself implements `getDevices()` — degrading honestly to one manual reconnect
+tap there when it doesn't, the same `'disconnected'` UI already described above.
+Calibration is correspondingly split three ways —
 sensor bias (R11, source-specific), installation/placement offset (R24's vehicle zero,
 ADR 0010, generalizable per source), and the desired vehicle target (ADR 0013,
 source-independent) — see ADR 0014 for the full rule.

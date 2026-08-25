@@ -2,15 +2,20 @@
 
 Libell's EasyLevel support (R32/R33) is built on the standard Web Bluetooth API. Safari's
 WebKit engine does not implement Web Bluetooth and Apple has no plans to
-([webkit.org/status](https://webkit.org/status/) lists it as "no signal"), so on a
-regular iPhone the **External sensor** menu page never appears (R32's own gate: it is
-hidden whenever `navigator.bluetooth` doesn't exist) — this is expected, not a bug.
+([webkit.org/status](https://webkit.org/status/) lists it as "no signal"), so a regular
+iPhone can never connect directly, in any browser (all of them use WebKit) — this is
+expected, not a bug.
 
 Rather than build and maintain a separate native iOS app (see the discussion closing
 #119), the supported route on iPhone is to run Libell inside **Bluefy**, a third-party
 browser that adds a Web Bluetooth implementation to iOS. Libell's code needs no changes
 for this — `easyLevelSensor.ts` talks to whatever `navigator.bluetooth` the browser
 provides, exactly as it already does on Chrome/Android.
+
+This same guide is also shown in-app (R39): on iOS without Web Bluetooth, the top-bar
+sensor-status dot stays visible instead of hidden, and opens a condensed version of the
+steps below (`src/ui/iosSensorGuidePage.ts`). This document is the long-form reference
+those in-app strings are kept consistent with.
 
 ## Steps
 

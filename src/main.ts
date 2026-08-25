@@ -73,6 +73,8 @@ import { createMenu, type Menu } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { createInfoPage } from './ui/infoMenu';
 import { createSensorPage } from './ui/sensorPage';
+import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
+import { isIos } from './ui/platform';
 import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
@@ -575,9 +577,17 @@ function bootstrap(root: HTMLElement): void {
   // only from the top-right sensor-status icon now that the ☰ menu no
   // longer carries an "External sensor" entry — universal, both
   // appearances. Omitted entirely without Web Bluetooth — never a
-  // silently broken option (#116).
+  // silently broken option (#116) — except on iOS (R39): Apple has no
+  // plans to add Web Bluetooth there, so instead of hiding the entry point
+  // outright, iOS gets a guide to the Bluefy workaround
+  // (`iosSensorGuidePage.ts`, docs/ios-easylevel-bluefy-guide.md).
   const easyLevelSupported = isWebBluetoothSupported();
-  const sensorPage = easyLevelSupported ? createSensorPage(menuOptions) : null;
+  const showIosGuide = !easyLevelSupported && isIos();
+  const sensorPage = easyLevelSupported
+    ? createSensorPage(menuOptions)
+    : showIosGuide
+      ? createIosSensorGuidePage()
+      : null;
   if (sensorPage) document.body.append(sensorPage.element);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
@@ -658,7 +668,9 @@ function bootstrap(root: HTMLElement): void {
   // only entry point to `sensorPage` now that the ☰ menu no longer
   // carries "External sensor" — visible whenever Web Bluetooth exists at
   // all, not just once connected (`sensorStatusIndicator.ts`).
-  const sensorStatus = createSensorStatusIndicator(easyLevelSupported, () => sensorPage?.open());
+  const sensorStatus = createSensorStatusIndicator(easyLevelSupported, showIosGuide, () =>
+    sensorPage?.open(),
+  );
   document.querySelector('#indicators')?.append(sensorStatus.element);
   const updateSensorStatus = () => sensorStatus.update(sensor.getSource(), sensor.getState());
   updateSensorStatus();

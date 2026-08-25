@@ -36,6 +36,9 @@ export const MESSAGES = {
     // remaining entry point to External sensor now that the ☰ menu no
     // longer carries it.
     'sensorStatus.idle': 'External sensor — tap to connect',
+    // iOS Safari (R39): tapping this opens the Bluefy workaround guide
+    // instead of a connect flow that could never work there.
+    'sensorStatus.idle.guide': 'External sensor — tap for iPhone setup guide',
 
     'menu.title': 'Menu',
     'menu.close': 'Close menu',
@@ -76,6 +79,22 @@ export const MESSAGES = {
       'Connection to the EasyLevel sensor was lost — tap Reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     'sensorSource.err.failed': 'Could not connect to the EasyLevel sensor.',
+
+    // iOS Safari has no Web Bluetooth and Apple has no plans to add it
+    // (R39) — rather than hide this page outright there too, iOS shows a
+    // guide to a workaround: Bluefy, a third-party browser that adds Web
+    // Bluetooth, makes the page above work unchanged once Libell is opened
+    // inside it. See docs/ios-easylevel-bluefy-guide.md for the long form.
+    'sensorSource.ios.intro':
+      "Safari can't connect to Bluetooth sensors directly, but there's a workaround:",
+    'sensorSource.ios.step1': 'Install "Bluefy – Web Bluetooth Browser" from the App Store.',
+    'sensorSource.ios.step2': 'Open Bluefy and allow the Bluetooth permission.',
+    'sensorSource.ios.step3': 'In Bluefy, go to this same Libell address.',
+    'sensorSource.ios.step4': 'Open External sensor here again — it works like on Android.',
+    'sensorSource.ios.note':
+      'Bluefy is a third-party app, not built by Libell — reconnecting when you open ' +
+      'the app may need one manual tap there, instead of happening silently.',
+    'sensorSource.ios.bluefyLink': 'Find Bluefy in the App Store',
 
     // Detailed sensor health (#129). Battery/temperature show real decoded
     // values (#123) once the first `faf52c22-...` status notification
@@ -466,6 +485,7 @@ export const MESSAGES = {
     'sensorStatus.connected': 'Extern sensor ansluten',
     'sensorStatus.disconnected': 'Extern sensor — anslutningen bröts, tryck för detaljer',
     'sensorStatus.idle': 'Extern sensor — tryck för att ansluta',
+    'sensorStatus.idle.guide': 'Extern sensor — tryck för guide till iPhone',
 
     'lamp.setup': '⚠ Mått',
     'lamp.setup.title':
@@ -504,6 +524,17 @@ export const MESSAGES = {
       'Anslutningen till EasyLevel-sensorn bröts — tryck på Återanslut.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
     'sensorSource.err.failed': 'Kunde inte ansluta till EasyLevel-sensorn.',
+
+    'sensorSource.ios.intro':
+      'Safari kan inte ansluta till Bluetooth-sensorer direkt, men det finns en lösning:',
+    'sensorSource.ios.step1': 'Installera "Bluefy – Web Bluetooth Browser" från App Store.',
+    'sensorSource.ios.step2': 'Öppna Bluefy och tillåt Bluetooth-behörigheten.',
+    'sensorSource.ios.step3': 'Gå till samma Libell-adress i Bluefy.',
+    'sensorSource.ios.step4': 'Öppna Extern sensor här igen — det fungerar som på Android.',
+    'sensorSource.ios.note':
+      'Bluefy är en tredjepartsapp som inte byggs av Libell — återanslutning när du öppnar ' +
+      'appen kan behöva en manuell tryckning där, istället för att ske tyst.',
+    'sensorSource.ios.bluefyLink': 'Hitta Bluefy i App Store',
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',

@@ -918,3 +918,28 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** I mute or unmute from the bottom bar, then later open Settings
 - **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
   never a stale display that could silently undo the mute on an unrelated Save.
+
+## R39 — External sensor on iOS: a Bluefy workaround guide, not a hidden option (#119)
+
+Safari/WebKit has no Web Bluetooth and Apple has no plans to add it, so unlike other
+unsupported browsers (R32's plain hidden case) iOS gets a guide instead of nothing —
+see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same guide.
+
+- **Given** a phone running iOS (any browser, since all of them use WebKit) without
+  Web Bluetooth
+- **When** the app loads
+- **Then** the top-bar sensor-status dot stays visible (unlike other unsupported
+  browsers, where it is hidden per R32) with a distinct "tap for iPhone setup guide"
+  label, and tapping it opens a page explaining that Bluefy — a third-party Web
+  Bluetooth browser — makes the ordinary EasyLevel connect flow (R32) work unchanged
+  once Libell is opened inside it, with the installation steps and a link to find it
+  in the App Store.
+- **Given** that guide page
+- **Then** it never shows a "Connect EasyLevel sensor" button or any health/battery
+  detail — there is no `navigator.bluetooth` behind this page to drive any of that,
+  so it is a different page from the ordinary External sensor page (R32), not a
+  variant of it.
+- **Given** the same phone, but opened inside Bluefy instead (Web Bluetooth now
+  exists)
+- **Then** the ordinary External sensor page (R32) shows instead, with no code
+  difference from Android — Bluefy's polyfill is all that changes.
