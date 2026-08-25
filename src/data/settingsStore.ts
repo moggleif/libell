@@ -19,6 +19,12 @@ import {
 const STORAGE_KEY = 'libell.settings';
 const CALIBRATION_KEY = 'libell.calibration';
 const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
+// The EasyLevel box's own installation offset (#131, ADR 0014): where the
+// permanently-mounted enclosure physically sits, exactly the same concept
+// as VEHICLE_CALIBRATION_KEY above but for a different sensor source — its
+// own distinctly-named key so it can never be read as, or overwrite, the
+// phone's vehicle zero, and switching sensors never mixes the two.
+const EASYLEVEL_CALIBRATION_KEY = 'libell.easyLevelInstallCalibration';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
 // Separate keys from the calibration ones above (#122, ADR 0013): a
@@ -154,6 +160,44 @@ export function saveVehicleCalibration(
 export function clearVehicleCalibration(storage: KeyValueStorage | null = defaultStorage()): void {
   try {
     storage?.removeItem(VEHICLE_CALIBRATION_KEY);
+  } catch {
+    // Nothing to do — the in-memory state is cleared by the caller.
+  }
+}
+
+/**
+ * The EasyLevel box's installation offset (#131, ADR 0014): the mechanism
+ * is identical to the phone's vehicle zero above (capture with the vehicle
+ * verified level, validated the same >15° implausible-capture guard via
+ * `parseCalibration`), but stored under its own key so it is a completely
+ * independent value — clearing or redoing it never touches, and is never
+ * touched by, the phone's own `libell.vehicleCalibration`.
+ */
+export function loadEasyLevelCalibration(
+  storage: KeyValueStorage | null = defaultStorage(),
+): Calibration | null {
+  return readCalibration(EASYLEVEL_CALIBRATION_KEY, storage)?.value ?? null;
+}
+
+export function loadEasyLevelCalibrationInfo(
+  storage: KeyValueStorage | null = defaultStorage(),
+): StoredCalibration | null {
+  return readCalibration(EASYLEVEL_CALIBRATION_KEY, storage);
+}
+
+export function saveEasyLevelCalibration(
+  calibration: Calibration,
+  storage: KeyValueStorage | null = defaultStorage(),
+  capturedAt: number = Date.now(),
+): void {
+  writeCalibration(EASYLEVEL_CALIBRATION_KEY, calibration, capturedAt, storage);
+}
+
+export function clearEasyLevelCalibration(
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    storage?.removeItem(EASYLEVEL_CALIBRATION_KEY);
   } catch {
     // Nothing to do — the in-memory state is cleared by the caller.
   }

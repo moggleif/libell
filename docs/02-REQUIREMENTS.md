@@ -545,3 +545,39 @@ cross-platform goal — they are not this app's code and are not covered here.
   `sensorSource` reverts to `'phone'` — the next app open does not attempt to
   auto-reconnect until the user connects again, honoring an explicit "not right now"
   without an explicit "forget this box".
+
+## R34 — EasyLevel box: installation calibration ("Set vehicle level")
+
+- **Given** a permanently-mounted EasyLevel box, wired into the vehicle rather than
+  laid flat like the phone
+- **Then** the app does not ask for "place it flat" (R2's phone pose) — it asks the
+  installer to level the _vehicle_ once and capture that as the box's own
+  installation offset (ADR 0014's three-way calibration split), after which the
+  box's physical orientation inside its enclosure stops mattering.
+- **Given** the "External sensor" menu page, once EasyLevel is (or was) the active
+  source
+- **When** the vehicle stands verifiably level (spirit level, or after leveling with
+  the ramps) and I tap "Set vehicle level"
+- **Then** the app stores the current reading as the box's installation offset, and
+  every subsequent reading from the box is corrected by it — the same "capture the
+  current tilt as zero" mechanism R24 already gives the phone's vehicle zero, applied
+  to this source instead.
+- **Given** the capture looks like more than placement tilt (>15°)
+- **Then** it is rejected with an explanation, the same guard R11/R24 already use.
+- **Given** a stored installation offset
+- **Then** its status line shows how old it is, reusing R26's "(14 days ago)" age
+  display and Check verdict wording exactly, and a Clear button removes it.
+- **Given** the phone's own sensor calibration and vehicle zero (R24), and the
+  EasyLevel box's installation offset above
+- **Then** they are stored completely independently (`libell.vehicleCalibration` vs.
+  `libell.easyLevelInstallCalibration`): clearing or redoing one never touches, and is
+  never touched by, the other, and switching the active source between the phone and
+  the box switches which pair of offsets "level" is measured against without losing
+  or corrupting either — mirroring how a target preset (R31) is never conflated with
+  either calibration layer.
+- The amber calibration lamp (R11) follows the same rule: it checks the phone's pair
+  while the phone is active, or just the box's installation offset while EasyLevel
+  is — never both pairs at once.
+- This installation-offset step lives on the "External sensor" menu page (#116, R32),
+  not inside the Calibration menu section, since it only makes sense once an external
+  source exists to calibrate.

@@ -20,11 +20,13 @@ import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
 import {
   clearCalibration,
+  clearEasyLevelCalibration,
   clearVehicleCalibration,
   hasSeenOnboarding,
   hasStoredSettings,
   loadActiveTargetId,
   loadCalibrationInfo,
+  loadEasyLevelCalibrationInfo,
   loadLanguage,
   loadSettings,
   loadTargetPresets,
@@ -32,6 +34,7 @@ import {
   markOnboardingSeen,
   saveActiveTargetId,
   saveCalibration,
+  saveEasyLevelCalibration,
   saveSettings,
   saveTargetPresets,
   saveVehicleCalibration,
@@ -179,9 +182,24 @@ function bootstrap(root: HTMLElement): void {
   const storedVehicle = loadVehicleCalibrationInfo();
   let vehicleCalibration: Calibration | null = storedVehicle?.value ?? null;
   let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
+  // The EasyLevel box's installation offset (#131, ADR 0014): the same
+  // "vehicle zero" concept as `vehicleCalibration` above, generalized to
+  // this external source — its own independent value, never combined
+  // with, or overwriting, the phone's. There is no separate EasyLevel
+  // hardware-bias layer yet (unlike the phone's own `calibration`), so
+  // this offset alone is everything "level" means while it is the source.
+  const storedEasyLevel = loadEasyLevelCalibrationInfo();
+  let easyLevelCalibration: Calibration | null = storedEasyLevel?.value ?? null;
+  let easyLevelCalibrationCapturedAt: number | null = storedEasyLevel?.capturedAt ?? null;
   // The two-layer calibration sum — what "level" means, untouched by
-  // target presets below (#122, ADR 0013).
-  const zeroCalibration = () => combineCalibrations(calibration, vehicleCalibration);
+  // target presets below (#122, ADR 0013). Selected per the ACTIVE sensor
+  // source (#131, ADR 0014): each source supplies its own sensor-bias/
+  // installation-offset pair, so switching sources never mixes one
+  // source's calibration into the other's readings.
+  const zeroCalibration = () =>
+    sensor.getSource() === 'easylevel'
+      ? easyLevelCalibration
+      : combineCalibrations(calibration, vehicleCalibration);
   // Target presets (#122, ADR 0013): an intentional NON-level target,
   // applied as a THIRD additive term on top of the two-layer sum above —
   // never conflated with it, never stored in the same field. "Normal"
@@ -236,6 +254,10 @@ function bootstrap(root: HTMLElement): void {
       // without phone motion sensors) — build it now that a real source
       // is feeding readings; harmless to rebuild if it already exists.
       showLevelScreen();
+      // The amber calibration lamp now checks the EasyLevel installation
+      // offset instead of the phone's pair (#131) — refresh immediately so
+      // switching source alone (no calibration action) still updates it.
+      updateIndicators();
     }
     return state;
   }
@@ -249,6 +271,8 @@ function bootstrap(root: HTMLElement): void {
     easyLevelSensor?.disconnect();
     sensor = phoneSensor;
     rememberSensorSource('phone');
+    // See the matching comment in `connectEasyLevelNow` (#131).
+    updateIndicators();
   }
 
   /**
@@ -280,6 +304,9 @@ function bootstrap(root: HTMLElement): void {
     sensor = easyLevelSensor;
     showLevelScreen();
     updateSensorStatus();
+    // See the matching comment in `connectEasyLevelNow` (#131): the amber
+    // lamp's condition follows the active source.
+    updateIndicators();
     return true;
   }
 
@@ -391,6 +418,16 @@ function bootstrap(root: HTMLElement): void {
     getSensorState: () => sensor.getState(),
     connectEasyLevel: () => connectEasyLevelNow(),
     disconnectEasyLevel: () => disconnectEasyLevelNow(),
+    getInstallCalibration: () => easyLevelCalibration,
+    calibrateInstall: () => calibrateEasyLevelNow(),
+    getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
+    checkInstallCalibration: () => checkAgainst(easyLevelCalibration),
+    clearInstallCalibration() {
+      easyLevelCalibration = null;
+      easyLevelCalibrationCapturedAt = null;
+      clearEasyLevelCalibration();
+      updateIndicators();
+    },
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
@@ -400,10 +437,20 @@ function bootstrap(root: HTMLElement): void {
   // app (in memory only — nothing is written), so screenshots and demos
   // show the product, not the first-run warnings (#70).
   const indicators = createIndicators((section) => menu.open(section));
+  // Which pair of calibrations the amber lamp checks follows the ACTIVE
+  // source (#131, ADR 0014), same as `zeroCalibration()` above: the
+  // phone's sensor calibration + vehicle zero while the phone is active,
+  // or just the EasyLevel installation offset while it is — never both
+  // pairs at once, so connecting EasyLevel with no installation offset yet
+  // still warns even if the phone was calibrated long ago, and vice versa.
   const updateIndicators = () =>
     indicators.update({
       settingsSaved: demo || hasStoredSettings(),
-      calibrated: demo || calibration !== null || vehicleCalibration !== null,
+      calibrated:
+        demo ||
+        (sensor.getSource() === 'easylevel'
+          ? easyLevelCalibration !== null
+          : calibration !== null || vehicleCalibration !== null),
     });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
@@ -518,6 +565,30 @@ function bootstrap(root: HTMLElement): void {
     vehicleCalibration = vehicleZeroFromReading(reading, calibration);
     vehicleCalibrationCapturedAt = Date.now();
     saveVehicleCalibration(vehicleCalibration, undefined, vehicleCalibrationCapturedAt);
+    updateIndicators();
+    return null;
+  }
+
+  /** "Set vehicle level" for the EasyLevel box (#131, ADR 0014): the same
+   * capture/validate/store flow as `calibrateVehicleNow` above, generalized
+   * to this external source and kept in its own storage/state so the two
+   * can never be conflated. There is no separate EasyLevel hardware-bias
+   * layer to subtract (unlike the phone's `calibration`) — `null` here
+   * simply means "none yet", the same shape `vehicleZeroFromReading`
+   * already handles, so a future hardware-bias layer could subtract from
+   * it without migrating anything already stored. */
+  function calibrateEasyLevelNow(): string | null {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    if (
+      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
+      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
+    ) {
+      return t('calibration.vehicle.err.notFlat');
+    }
+    easyLevelCalibration = vehicleZeroFromReading(reading, null);
+    easyLevelCalibrationCapturedAt = Date.now();
+    saveEasyLevelCalibration(easyLevelCalibration, undefined, easyLevelCalibrationCapturedAt);
     updateIndicators();
     return null;
   }

@@ -70,6 +70,24 @@ export const MESSAGES = {
     'sensorSource.detail.temperature': 'Temperature: {value}',
     'sensorSource.detail.notAvailable': 'Not available yet',
 
+    // Installation calibration (#131, ADR 0014): the same "vehicle zero"
+    // concept R24 already applies to the phone, generalized to a
+    // permanently-mounted external sensor — the ">15° looks wrong",
+    // "age", and "Check" copy is intentionally reused from
+    // `calibration.vehicle.*` / `calibration.*` rather than re-invented.
+    // Shown only once EasyLevel is connected: an install offset means
+    // nothing until there is a live reading to capture.
+    'sensorSource.install.h': 'Installation offset',
+    'sensorSource.install.intro':
+      'Once the sensor is permanently mounted, its exact placement inside the ' +
+      'enclosure stops mattering — only where the enclosure sits does. Level the ' +
+      'vehicle verifiably once (spirit level, or after leveling with your ramps), ' +
+      'then set the current reading as level.',
+    'sensorSource.install.now': 'Set vehicle level',
+    'sensorSource.install.clear': 'Clear installation offset',
+    'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
+    'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
+
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
       'already have — no bubble vials, no guessing.',
@@ -356,6 +374,21 @@ export const MESSAGES = {
     'sensorSource.detail.rssi': 'Signalstyrka: {value}',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Inte tillgängligt ännu',
+
+    // Installationskalibrering (#131, ADR 0014): samma "fordonets nolläge"
+    // som R24 redan använder för telefonen, generaliserat till en permanent
+    // monterad extern sensor.
+    'sensorSource.install.h': 'Installationsoffset',
+    'sensorSource.install.intro':
+      'När sensorn är permanent monterad spelar dess exakta placering i höljet ' +
+      'inte längre någon roll — bara var höljet sitter gör det. Ställ fordonet ' +
+      'verifierat plant en gång (vattenpass, eller efter nivellering med ' +
+      'ramperna), och sätt sedan den aktuella avläsningen som plan.',
+    'sensorSource.install.now': 'Sätt fordonet som plant',
+    'sensorSource.install.clear': 'Rensa installationsoffset',
+    'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
+    'sensorSource.install.status.none':
+      'Inget installationsoffset — den råa avläsningen räknas som plan.',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
