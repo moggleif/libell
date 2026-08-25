@@ -27,14 +27,7 @@ import {
 } from './helpIllustrations';
 
 export type MenuSection =
-  | 'settings'
-  | 'calibration'
-  | 'targets'
-  | 'feedback'
-  | 'help'
-  | 'about'
-  | 'sensorSource'
-  | 'diagnostics';
+  'settings' | 'calibration' | 'targets' | 'help' | 'sensorSource' | 'diagnostics';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -126,6 +119,13 @@ export interface Menu {
   element: HTMLElement;
   open(section: MenuSection): void;
   attach(button: HTMLButtonElement): void;
+  /**
+   * Wires the bottom bar's "?" button to the combined Help/About/Feedback
+   * page (screen-cleanup follow-up) — opened directly, the same
+   * depth-0-to-2 shortcut `attach`'s ☰ button and `showPage` already use
+   * for Settings, never routed through the Settings drawer.
+   */
+  attachHelp(button: HTMLButtonElement): void;
   /** True while the drawer or a page is showing — the app pauses guidance. */
   isOpen(): boolean;
 }
@@ -506,7 +506,13 @@ export function createMenu(options: MenuOptions): Menu {
     });
   }
 
-  // --- Help: illustration-first, short captions (#54) ---
+  // --- Help + About + Feedback (screen-cleanup follow-up): the old ☰ menu
+  // held these as three separate low-traffic entries; they now live behind
+  // the bottom bar's "?" button instead (`attachHelp` below), entirely
+  // outside the Settings drawer — never listed as a card, a Modern "OTHER"
+  // row, or a Classic flat item. One page, so one tap from "?" reaches all
+  // three; each keeps its own heading so they still read as distinct
+  // sections rather than a run-on wall of text.
   const HELP: {
     h: MessageKey;
     text: MessageKey;
@@ -531,7 +537,14 @@ export function createMenu(options: MenuOptions): Menu {
     p.textContent = t(text);
     helpBody.append(p);
   }
-  addSection('help', t('menu.help'), helpBody);
+  const aboutHeading = document.createElement('h3');
+  aboutHeading.className = 'menu__heading';
+  aboutHeading.textContent = t('menu.about');
+  helpBody.append(aboutHeading, createAboutSection());
+  const feedbackHeading = document.createElement('h3');
+  feedbackHeading.className = 'menu__heading';
+  feedbackHeading.textContent = t('menu.feedback');
+  helpBody.append(feedbackHeading, createFeedbackSection());
 
   // --- Advanced (#152): optional, behavior-changing features — External
   // sensor first, then Targets — split from the meta items below (Modern
@@ -576,8 +589,6 @@ export function createMenu(options: MenuOptions): Menu {
   const diagnosticsSection = createDiagnosticsSection(options);
   const refreshDiagnostics = diagnosticsSection.refresh;
   addOtherSection('diagnostics', t('menu.diagnostics'), diagnosticsSection.element);
-  addOtherSection('feedback', t('menu.feedback'), createFeedbackSection());
-  addOtherSection('about', t('menu.about'), createAboutSection());
 
   return {
     element: container,
@@ -592,6 +603,14 @@ export function createMenu(options: MenuOptions): Menu {
         if (depth === 0) showDrawer();
         else goBack();
       });
+    },
+    attachHelp(button) {
+      // Registered here, not alongside the other sections above: this page
+      // is reached only from this one button, never listed in the drawer,
+      // so its focus-return target (`item`, see `render()`) is the button
+      // itself rather than a drawer row.
+      sections.set('help', { label: t('menu.help'), body: helpBody, item: button });
+      button.addEventListener('click', () => showPage('help'));
     },
   };
 }

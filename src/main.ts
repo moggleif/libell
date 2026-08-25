@@ -526,8 +526,11 @@ function bootstrap(root: HTMLElement): void {
   document.body.append(menu.element);
   const settingsButton = document.querySelector<HTMLButtonElement>('#settings-button');
   if (settingsButton) menu.attach(settingsButton);
+  // "?" opens Help/About/Feedback directly (screen-cleanup follow-up) — no
+  // longer a shortcut into the ☰ Settings menu's Help section, since Help/
+  // About/Feedback no longer live there at all.
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
-  helpButton?.addEventListener('click', () => menu.open('help'));
+  if (helpButton) menu.attachHelp(helpButton);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the

@@ -54,13 +54,11 @@ export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): Caravan
     'aria-label': t('diagram.caravan.aria'),
   });
 
-  // Front arrow above the coupling.
+  // Front arrow above the coupling — shape only, no text label (#161 follow-up).
   const arrow = svgEl('path', {
     d: 'M120 6 L110 24 L117 24 L117 36 L123 36 L123 24 L130 24 Z',
     class: 'rv-diagram__arrow',
   });
-  const arrowLabel = svgEl('text', { x: '120', y: '54', class: 'rv-diagram__front-label' });
-  arrowLabel.textContent = t('diagram.front');
 
   // Caravan body with a drawbar converging on the coupling.
   const body = svgEl('rect', {
@@ -75,7 +73,7 @@ export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): Caravan
     d: 'M74 132 L120 66 L166 132',
     class: 'rv-diagram__drawbar',
   });
-  svg.append(arrow, arrowLabel, drawbar, body);
+  svg.append(arrow, drawbar, body);
 
   // Jockey wheel on the drawbar.
   const jockeyMarker = svgEl('rect', {
