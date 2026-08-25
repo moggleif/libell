@@ -345,6 +345,11 @@ export function createMenu(options: MenuOptions): Menu {
   // history.back() so the browser/Android back gesture and our buttons
   // share one code path.
   let depth = 0;
+  // Set right before a script-driven multi-step history.go() jump (#159),
+  // so the one popstate that jump produces on arrival doesn't also run
+  // the regular single-step-back handling below — the closing code has
+  // already applied the closed state itself.
+  let suppressNextPopstate = false;
 
   function render(section?: MenuSection): void {
     setVisible(backdrop, depth > 0);
@@ -406,6 +411,10 @@ export function createMenu(options: MenuOptions): Menu {
   }
 
   window.addEventListener('popstate', () => {
+    if (suppressNextPopstate) {
+      suppressNextPopstate = false;
+      return;
+    }
     if (depth > 0) {
       depth -= 1;
       render();
@@ -414,6 +423,23 @@ export function createMenu(options: MenuOptions): Menu {
 
   const goBack = () => {
     if (depth > 0) history.back();
+  };
+
+  /** Return all the way to the main level screen (#159) — a successful
+   * Save reached via ☰ → Settings, from any depth. Unlike `goBack()`
+   * (one step, shared with the physical back gesture), this jumps
+   * straight to closed: the app's own state closes immediately, and the
+   * matching number of history entries this menu pushed to get here are
+   * unwound in the same script-driven step, so a later physical back
+   * press still lands exactly where it would have before this shortcut. */
+  const closeAll = () => {
+    const stepsBack = depth;
+    depth = 0;
+    render();
+    if (stepsBack > 0) {
+      suppressNextPopstate = true;
+      history.go(-stepsBack);
+    }
   };
   close.addEventListener('click', goBack);
   back.addEventListener('click', goBack);
@@ -432,7 +458,16 @@ export function createMenu(options: MenuOptions): Menu {
   // to the real sensor, not a stand-in.
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    options.onSettingsSaved,
+    // Return to the main screen after a successful Save reached via ☰
+    // (#159) — scoped to this menu-context wrapper alone, so onboarding's
+    // own direct createSettingsForm call (its own Skip/Next flow) is
+    // completely unaffected. Applies to the Settings page as a whole,
+    // regardless of which Modern tab (Vehicle/Ramps/Kalibrering) Save was
+    // tapped from, since they all share this one form instance.
+    (settings) => {
+      options.onSettingsSaved(settings);
+      closeAll();
+    },
     options,
   );
   settingsBody.append(settingsForm);
