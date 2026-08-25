@@ -22,6 +22,7 @@ import {
   DEFAULT_SETTINGS,
   DRAIN_POSITIONS,
   formatLength,
+  formatLengthValue,
   MAX_RAMP_COUNT,
   parseSettings,
   type AppearanceSetting,
@@ -793,7 +794,13 @@ export function createSettingsForm(
     modelList.className = 'klossar__list';
     const modelRows = new Map<
       string,
-      { row: HTMLButtonElement; radio: HTMLSpanElement; brand: string }
+      {
+        row: HTMLButtonElement;
+        radio: HTMLSpanElement;
+        mmLine: HTMLSpanElement;
+        brand: string;
+        stepsMm: number[];
+      }
     >();
     for (const model of RAMP_MODELS) {
       const row = document.createElement('button');
@@ -806,7 +813,6 @@ export function createSettingsForm(
       name.textContent = model.name;
       const mmLine = document.createElement('span');
       mmLine.className = 'klossar__row-mm';
-      mmLine.textContent = `${model.stepsMm.join('/')} mm`;
       info.append(name, mmLine);
       const radio = document.createElement('span');
       radio.className = 'klossar__radio';
@@ -814,7 +820,13 @@ export function createSettingsForm(
       row.append(info, radio);
       row.addEventListener('click', () => applyRampChoice(model));
       modelList.append(row);
-      modelRows.set(model.name, { row, radio, brand: model.name.split(' ')[0]! });
+      modelRows.set(model.name, {
+        row,
+        radio,
+        mmLine,
+        brand: model.name.split(' ')[0]!,
+        stepsMm: model.stepsMm,
+      });
     }
 
     const customRow = document.createElement('button');
@@ -842,7 +854,6 @@ export function createSettingsForm(
     footerHead.className = 'klossar__footer-head';
     const footerHeading = document.createElement('span');
     footerHeading.className = 'klossar__footer-heading';
-    footerHeading.textContent = t('settings.klossar.stepsHeading');
     const footerModelName = document.createElement('span');
     footerModelName.className = 'klossar__footer-model';
     footerHead.append(footerHeading, footerModelName);
@@ -883,7 +894,7 @@ export function createSettingsForm(
             ? t('settings.klossar.step.one')
             : t('settings.klossar.step.many', { n: selectedModel.stepsMm.length });
         pinnedSub.textContent = t('settings.klossar.pinnedSub', {
-          mm: selectedModel.stepsMm.join(' / '),
+          lengths: `${selectedModel.stepsMm.map((mm) => formatLengthValue(mm, unit)).join(' / ')} ${unit}`,
           steps: stepWord,
         });
       }
@@ -901,11 +912,13 @@ export function createSettingsForm(
       customRadio.classList.toggle('klossar__radio--selected', customChosen);
       customEditor.hidden = !customChosen;
 
-      for (const { row, brand } of modelRows.values()) {
+      for (const { row, brand, mmLine, stepsMm } of modelRows.values()) {
         row.hidden = brandFilter !== null && brand !== brandFilter;
+        mmLine.textContent = `${stepsMm.map((mm) => formatLengthValue(mm, unit)).join('/')} ${unit}`;
       }
 
       const sortedSteps = [...steps].sort((a, b) => a - b);
+      footerHeading.textContent = `${t('settings.klossar.stepsHeading')} (${unit})`;
       footerModelName.textContent = selectedModel ? selectedModel.name : t('settings.ramp.custom');
       footerGrid.replaceChildren();
       footerGrid.style.gridTemplateColumns = `repeat(${sortedSteps.length || 1}, 1fr)`;
@@ -917,7 +930,7 @@ export function createSettingsForm(
         label.textContent = t('diagram.step', { n: i + 1 });
         const value = document.createElement('span');
         value.className = 'klossar__grid-value';
-        value.textContent = String(Math.round(mm));
+        value.textContent = formatLengthValue(mm, unit);
         cell.append(label, value);
         footerGrid.append(cell);
       });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
   formatLength,
+  formatLengthValue,
   formatStepHeightsList,
   parseStepHeightsList,
   parseSettings,
@@ -193,6 +194,16 @@ describe('formatLength', () => {
     expect(formatLength(63, 'mm')).toBe('63 mm');
     expect(formatLength(63, 'cm')).toBe('6.3 cm');
     expect(formatLength(40, 'cm')).toBe('4 cm');
+  });
+});
+
+describe('formatLengthValue', () => {
+  // Same rounding as formatLength, minus the unit suffix — for callers that
+  // list several lengths under one shared "(mm)"/"(cm)" label (R14).
+  it('formats the number only, no unit suffix', () => {
+    expect(formatLengthValue(63, 'mm')).toBe('63');
+    expect(formatLengthValue(63, 'cm')).toBe('6.3');
+    expect(formatLengthValue(40, 'cm')).toBe('4');
   });
 });
 

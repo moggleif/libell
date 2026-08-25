@@ -375,6 +375,29 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(form.querySelector('.klossar__pinned-name')?.textContent).toBe('Milenco Quattro Level');
   });
 
+  // R14: every displayed length follows "Show lengths in" — the catalog
+  // preview, pinned subtitle and fixed footer had been stuck showing raw mm
+  // regardless of that setting; only the chip editor above them converted.
+  it('shows the catalog preview, pinned subtitle and footer grid in cm when displayUnit is cm (R14)', () => {
+    const cmModern: LevelSettings = { ...modern, displayUnit: 'cm' };
+    const form = createSettingsForm(cmModern, vi.fn());
+
+    const rows = [
+      ...form.querySelectorAll<HTMLElement>('.klossar__row:not(.klossar__row--custom)'),
+    ];
+    const milenco = rows.find(
+      (r) => r.querySelector('.klossar__row-name')?.textContent === 'Milenco Quattro Level',
+    )!;
+    expect(milenco.querySelector('.klossar__row-mm')?.textContent).toBe('4/8/12/16 cm');
+
+    milenco.click();
+
+    expect(form.querySelector('.klossar__pinned-sub')?.textContent).toContain('4 / 8 / 12 / 16 cm');
+    expect(form.querySelector('.klossar__footer-heading')?.textContent).toBe('Step heights (cm)');
+    const values = [...form.querySelectorAll('.klossar__grid-value')].map((el) => el.textContent);
+    expect(values).toEqual(['4', '8', '12', '16']);
+  });
+
   it('picking "Egen uppsättning" reveals the chip editor and hides the pinned card', () => {
     const form = createSettingsForm(modern, vi.fn());
     const customRow = form.querySelector<HTMLElement>('.klossar__row--custom')!;

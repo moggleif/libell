@@ -313,13 +313,22 @@ export function parseSettings(value: unknown): LevelSettings {
   };
 }
 
-/** Format a length in the chosen display unit ("63 mm" / "6.3 cm"). */
-export function formatLength(mm: number, unit: 'mm' | 'cm'): string {
+/**
+ * The number only, no unit suffix ("63" / "6.3") — for callers that show
+ * several lengths under one shared unit label (R14) rather than repeating
+ * "mm"/"cm" on every value.
+ */
+export function formatLengthValue(mm: number, unit: 'mm' | 'cm'): string {
   if (unit === 'cm') {
     const cm = mm / 10;
-    return `${Number.isInteger(cm) ? cm : cm.toFixed(1)} cm`;
+    return Number.isInteger(cm) ? String(cm) : cm.toFixed(1);
   }
-  return `${Math.round(mm)} mm`;
+  return String(Math.round(mm));
+}
+
+/** Format a length in the chosen display unit ("63 mm" / "6.3 cm"). */
+export function formatLength(mm: number, unit: 'mm' | 'cm'): string {
+  return `${formatLengthValue(mm, unit)} ${unit}`;
 }
 
 /** The two sound preferences the bottom bar's mute toggle (#161) acts on
