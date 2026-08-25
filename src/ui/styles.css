@@ -1709,6 +1709,53 @@ body {
   font-weight: 600;
 }
 
+/* Sensor unavailable fallback prompt (#134): the actionable Retry/"Use
+   phone sensor" form of the plain "waiting" hint, shown only for an
+   EasyLevel connection that cannot be reached. In-flow (not a full
+   overlay) like the hint it replaces — the two are mutually exclusive
+   (`main.ts`'s frame loop), and it never appears while the pose/stale
+   overlays above are showing (both need a gravity reading this state
+   never has). Buttons reuse `.menu__action`/`.menu__action--secondary`
+   rather than a one-off style. */
+.sensor-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 8px 24px;
+}
+
+.sensor-fallback[hidden] {
+  display: none;
+}
+
+.sensor-fallback__text {
+  margin: 0;
+  color: var(--warning);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.sensor-fallback__hint {
+  margin: 0;
+  color: var(--on-surface-muted);
+  font-size: 0.95rem;
+}
+
+.sensor-fallback__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 4px;
+}
+
+.sensor-fallback__actions .menu__action {
+  margin-top: 0;
+}
+
 /* ---- Full-screen menu pages ---- */
 
 .menu-page {
