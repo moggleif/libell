@@ -529,10 +529,6 @@ body {
   stroke-dasharray: 3 5;
 }
 
-.rv-diagram__wheel-glyph--modern {
-  font-size: 22px;
-}
-
 .rv-diagram--modern .rv-diagram__body {
   fill: var(--surface-sunken);
   stroke: var(--outline);
