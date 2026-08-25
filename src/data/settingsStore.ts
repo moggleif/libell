@@ -27,6 +27,14 @@ const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
 const EASYLEVEL_CALIBRATION_KEY = 'libell.easyLevelInstallCalibration';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
+// Distinct from ONBOARDED_KEY (design review, follow-up): that one means
+// "the wizard has been dismissed at least once, either way" and gates the
+// auto-launch on first load — an early ✕ sets it too, same as reaching
+// the end. This one means "actually stepped through to the end" (whatever
+// individual steps were skipped along the way) and is what "Show
+// introduction" checks to decide whether it still reads as an unfinished
+// first-run task (green) or a plain re-launch (secondary).
+const ONBOARDING_COMPLETED_KEY = 'libell.onboardingCompleted';
 // Separate keys from the calibration ones above (#122, ADR 0013): a
 // preset is never stored in the same field as either calibration layer.
 const TARGET_PRESETS_KEY = 'libell.targetPresets';
@@ -243,6 +251,27 @@ export function hasSeenOnboarding(storage: KeyValueStorage | null = defaultStora
 export function markOnboardingSeen(storage: KeyValueStorage | null = defaultStorage()): void {
   try {
     storage?.setItem(ONBOARDED_KEY, '1');
+  } catch {
+    // Non-fatal.
+  }
+}
+
+/** True once the wizard has actually been stepped through to the end —
+ * see `ONBOARDING_COMPLETED_KEY` above for how this differs from
+ * `hasSeenOnboarding`. */
+export function hasCompletedOnboarding(
+  storage: KeyValueStorage | null = defaultStorage(),
+): boolean {
+  try {
+    return storage?.getItem(ONBOARDING_COMPLETED_KEY) === '1';
+  } catch {
+    return true; // Storage unavailable — default to the "done" look, not a false nag.
+  }
+}
+
+export function markOnboardingCompleted(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    storage?.setItem(ONBOARDING_COMPLETED_KEY, '1');
   } catch {
     // Non-fatal.
   }

@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import {
   clearCalibration,
+  hasCompletedOnboarding,
   hasStoredSettings,
   loadCalibration,
   loadSettings,
+  markOnboardingCompleted,
   saveCalibration,
   saveSettings,
   type KeyValueStorage,
@@ -79,6 +81,35 @@ describe('settingsStore', () => {
     expect(hasStoredSettings(storage)).toBe(false);
     saveSettings(DEFAULT_SETTINGS, storage);
     expect(hasStoredSettings(storage)).toBe(true);
+  });
+});
+
+// Design review, follow-up: distinct from `hasSeenOnboarding`/
+// `markOnboardingSeen` (untested here, unchanged) — that pair means "the
+// wizard was dismissed at least once, either way" and gates the
+// auto-launch on first load. This pair means "actually stepped through
+// to the end" and drives whether "Show introduction" reads as an
+// unfinished first-run task or a plain re-launch.
+describe('onboarding completion tracking', () => {
+  it('is false until explicitly marked, then true', () => {
+    const storage = memoryStorage();
+    expect(hasCompletedOnboarding(storage)).toBe(false);
+    markOnboardingCompleted(storage);
+    expect(hasCompletedOnboarding(storage)).toBe(true);
+  });
+
+  it('defaults to true (not a nag) when storage access throws', () => {
+    const throwingStorage: KeyValueStorage = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+      removeItem: () => {},
+    };
+    expect(hasCompletedOnboarding(throwingStorage)).toBe(true);
+    expect(() => markOnboardingCompleted(throwingStorage)).not.toThrow();
   });
 });
 

@@ -33,6 +33,7 @@ import {
   clearCalibration,
   clearEasyLevelCalibration,
   clearVehicleCalibration,
+  hasCompletedOnboarding,
   hasSeenOnboarding,
   hasStoredSettings,
   loadActiveTargetId,
@@ -42,6 +43,7 @@ import {
   loadSettings,
   loadTargetPresets,
   loadVehicleCalibrationInfo,
+  markOnboardingCompleted,
   markOnboardingSeen,
   saveActiveTargetId,
   saveCalibration,
@@ -449,9 +451,10 @@ function bootstrap(root: HTMLElement): void {
         clearEasyLevelCalibration();
         updateIndicators();
       },
-      onFinished() {
+      onFinished(completed) {
         onboardingOpen = false;
         markOnboardingSeen();
+        if (completed) markOnboardingCompleted();
         updateIndicators();
       },
     });
@@ -566,7 +569,11 @@ function bootstrap(root: HTMLElement): void {
   // appearances), not a section of the ☰ Settings menu: sharing that
   // menu's history depth let its back button pop through to reveal the
   // Settings drawer underneath by mistake.
-  const infoPage = createInfoPage({ diagnostics: menuOptions, openOnboarding });
+  const infoPage = createInfoPage({
+    diagnostics: menuOptions,
+    openOnboarding,
+    hasCompletedOnboarding,
+  });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
   if (helpButton) infoPage.attach(helpButton);

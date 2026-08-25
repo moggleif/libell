@@ -122,7 +122,17 @@ import { t, type MessageKey } from './i18n';
 export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptions {
   initialSettings: LevelSettings;
   onSettingsSaved(settings: LevelSettings): void;
-  onFinished(): void;
+  /**
+   * Called whenever the wizard closes, either way — ✕ at any point, or
+   * reaching the end. `completed` distinguishes the two (design review,
+   * follow-up): true only when every step was actually stepped through
+   * to the end (whatever individual steps the user chose to skip along
+   * the way), false for an early ✕. Both still count as "seen" for the
+   * auto-launch gate (`hasSeenOnboarding`) — only `completed` decides
+   * whether "Show introduction" still reads as an unfinished first-run
+   * task (green) or a plain re-launch (secondary), see `infoMenu.ts`.
+   */
+  onFinished(completed: boolean): void;
 }
 
 /** Which source the first step's radios currently have selected — 'phone'
@@ -249,7 +259,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   close.className = 'onboarding__close';
   close.setAttribute('aria-label', t('onboard.close'));
   close.textContent = '✕';
-  close.addEventListener('click', () => finish());
+  close.addEventListener('click', () => finish(false));
 
   // What Libell is for, before any question or form (design-review
   // follow-up): the first-ever screen a new user sees used to be a
@@ -596,15 +606,15 @@ export function showOnboarding(options: OnboardingOptions): void {
 
   let index = 0;
 
-  function finish(): void {
+  function finish(completed: boolean): void {
     overlay.remove();
-    options.onFinished();
+    options.onFinished(completed);
   }
 
   function renderStep(): void {
     const step = steps[index];
     if (!step) {
-      finish();
+      finish(true);
       return;
     }
     card.replaceChildren();

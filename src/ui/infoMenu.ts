@@ -33,6 +33,14 @@ export interface InfoPageOptions {
   diagnostics: DiagnosticsOptions;
   /** Relaunch the first-run wizard — the button at the top of the Help tab. */
   openOnboarding(): void;
+  /**
+   * True once the wizard has actually been stepped through to the end —
+   * distinct from merely having been opened and dismissed early (design
+   * review, follow-up). Decides whether "Show introduction" still reads
+   * as an unfinished first-run task (green, `false`) or a plain
+   * re-launch (secondary, `true`) — see `buildIntroButton` below.
+   */
+  hasCompletedOnboarding(): boolean;
 }
 
 export interface InfoPage {
@@ -81,17 +89,35 @@ const HELP: {
 
 /** The introduction relaunch, at the top of the Help tab (screen-cleanup
  * follow-up) — the same action the old ☰ menu's "Show introduction" row
- * performed, closing this page first so the wizard isn't shown behind it. */
-function buildIntroButton(page: StandalonePage, openOnboarding: () => void): HTMLButtonElement {
+ * performed, closing this page first so the wizard isn't shown behind it.
+ *
+ * Styled green (the "still an open first-run task" look, same as the
+ * "not calibrated"/"settings not saved" lamps) until the wizard has
+ * actually been completed once — not merely opened and dismissed early,
+ * see `hasCompletedOnboarding` (design review, follow-up: it used to be
+ * permanently secondary-styled, as if re-launching it were never more
+ * than an optional extra). `refresh()` re-checks the stored flag — call
+ * it whenever it might have changed underneath this button (the page
+ * reopening; the wizard just finished). */
+function buildIntroButton(
+  page: StandalonePage,
+  openOnboarding: () => void,
+  hasCompletedOnboarding: () => boolean,
+): { element: HTMLButtonElement; refresh(): void } {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'menu__action menu__action--secondary';
   button.textContent = t('menu.intro');
   button.addEventListener('click', () => {
     page.close();
     openOnboarding();
   });
-  return button;
+  function refresh(): void {
+    button.className = hasCompletedOnboarding()
+      ? 'menu__action menu__action--secondary'
+      : 'menu__action';
+  }
+  refresh();
+  return { element: button, refresh };
 }
 
 /** Motorhome + caravan illustrations side by side, each with its own
@@ -134,9 +160,17 @@ function buildHelpPanel(introButton: HTMLButtonElement): HTMLElement {
 }
 
 export function createInfoPage(options: InfoPageOptions): InfoPage {
+  // Assigned below, once `buildIntroButton` runs — referenced here only
+  // inside a callback that fires on a later reopen, well after that.
+  let refreshIntroButton: () => void = () => {};
   const page = createStandalonePage(t('menu.help'), () => {
     selectTab('help');
     diagnosticsSection.refresh();
+    // The wizard may have been completed (or not) since this page was
+    // last open (design review, follow-up) — resync "Show introduction"'s
+    // green/secondary look every reopen, same pattern as the mute
+    // toggle resyncing Settings' own sound checkboxes.
+    refreshIntroButton();
   });
 
   const tabsBar = document.createElement('div');
@@ -176,8 +210,13 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     tabPanels.set(id, panel);
   }
 
-  const introButton = buildIntroButton(page, options.openOnboarding);
-  addTab('help', buildHelpPanel(introButton));
+  const introButton = buildIntroButton(
+    page,
+    options.openOnboarding,
+    options.hasCompletedOnboarding,
+  );
+  refreshIntroButton = introButton.refresh;
+  addTab('help', buildHelpPanel(introButton.element));
   addTab('about', createAboutSection());
   addTab('feedback', createFeedbackSection());
   // Diagnostics (#133, R36): to the right of Feedback (screen-cleanup

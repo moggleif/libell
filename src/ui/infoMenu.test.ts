@@ -49,10 +49,13 @@ function makeMenuOptions(): MenuOptions {
   };
 }
 
-function makeOptions(openOnboarding = vi.fn()): InfoPageOptions {
+function makeOptions(
+  openOnboarding = vi.fn(),
+  hasCompletedOnboarding = () => true,
+): InfoPageOptions {
   // MenuOptions is a superset of DiagnosticsOptions — reused as-is, same
   // pattern main.ts uses for its one shared options bag.
-  return { diagnostics: makeMenuOptions(), openOnboarding };
+  return { diagnostics: makeMenuOptions(), openOnboarding, hasCompletedOnboarding };
 }
 
 describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
@@ -163,6 +166,42 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     introButton.click();
     expect(info.isOpen()).toBe(false);
     expect(openOnboarding).toHaveBeenCalledOnce();
+  });
+
+  // Design review, follow-up: the button used to be permanently
+  // secondary-styled, as if re-launching the wizard were never more than
+  // an optional extra — now it reads as an unfinished first-run task
+  // (green, primary) until the wizard has actually been completed once.
+  function introButton(info: ReturnType<typeof createInfoPage>): HTMLButtonElement {
+    return [...info.element.querySelectorAll('button')].find(
+      (b) => b.textContent === t('menu.intro'),
+    )!;
+  }
+
+  it('"Show introduction" is green (primary) while onboarding has never been completed', () => {
+    const info = createInfoPage(makeOptions(vi.fn(), () => false));
+    const button = introButton(info);
+    expect(button.className).toBe('menu__action');
+  });
+
+  it('"Show introduction" is secondary once onboarding has been completed', () => {
+    const info = createInfoPage(makeOptions(vi.fn(), () => true));
+    const button = introButton(info);
+    expect(button.className).toContain('menu__action--secondary');
+  });
+
+  it('re-checks completion every time the page reopens', () => {
+    let completed = false;
+    const info = createInfoPage(makeOptions(vi.fn(), () => completed));
+    const attachButton = document.createElement('button');
+    info.attach(attachButton);
+    attachButton.click(); // open
+    expect(introButton(info).className).toBe('menu__action');
+
+    attachButton.click(); // close
+    completed = true; // the wizard finished while this page was closed
+    attachButton.click(); // reopen
+    expect(introButton(info).className).toContain('menu__action--secondary');
   });
 
   // The bug this component fixes (screen-cleanup follow-up): a prior

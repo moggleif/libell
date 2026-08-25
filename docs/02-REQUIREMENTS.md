@@ -249,7 +249,11 @@ URL and must keep working with no signal.
   (skippable), phone-sensor calibration (skippable), vehicle-zero position (skippable).
   It can be closed with ✕ at any point, warning lamps (R11) stay lit for whatever was
   skipped, and the "Show introduction" button at the top of the "?" page's Help tab
-  (R28, screen-cleanup follow-up) reopens it any time.
+  (R28, screen-cleanup follow-up) reopens it any time. That button reads green
+  (primary) until the wizard has actually been stepped through to its end at least
+  once — an early ✕ does not count, even though it still counts for the auto-launch
+  gate above (design review, follow-up); once truly completed, it turns secondary, a
+  plain re-launch rather than an unfinished first-run task.
 - **Given** the welcome step (design review, always first)
 - **Then** it shows what Libell does (the same one-line pitch the About page uses) and
   that the guide ahead is short and every step can be skipped and finished later. No
