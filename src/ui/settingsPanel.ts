@@ -674,11 +674,12 @@ export function createSettingsForm(
 
   /**
    * Save+Undo+Reset — the exact same three buttons as `actions` above,
-   * built fresh so every Modern tab that edits form fields (General/
-   * Fordon/Klossar) shows the identical set (design review: they used to
-   * differ — General had none at all, Klossar had Save/Undo only). Only
-   * Kalibrering/Targets are exempt, since both apply changes immediately
-   * and have no "unsaved" state to Save/Undo/Reset in the first place.
+   * built fresh so every Modern tab shows the identical set (design
+   * review, then a follow-up: General had none at all, Klossar had
+   * Save/Undo only, and Targets was skipped entirely as "immediate-apply
+   * like Kalibrering" — wrong, since the user explicitly asked for it too;
+   * only Kalibrering stays exempt, the one tab with no "unsaved" form
+   * state at all).
    */
   function buildActionsRow(): HTMLDivElement {
     const row = document.createElement('div');
@@ -930,9 +931,13 @@ export function createSettingsForm(
     );
     calibrationPanel.append(embeddedCalibration.element);
 
-    // --- Targets tab: same reuse pattern as Kalibrering above.
+    // --- Targets tab: same reuse pattern as Kalibrering above. Also gets
+    // the exact same Reset/Undo/Save row as General/Fordon/Klossar
+    // (design review, follow-up: "if I say Targets too, I mean it") —
+    // it acts on the whole form's state, same as those three, regardless
+    // of Targets' own presets applying immediately.
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
-    targetsPanel.append(embeddedTargets.element);
+    targetsPanel.append(embeddedTargets.element, buildActionsRow());
 
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));

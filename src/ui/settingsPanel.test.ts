@@ -349,13 +349,13 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(generalSave.disabled).toBe(true);
   });
 
-  // Design review, follow-up: "exakt samma" — every tab that edits form
-  // fields (General/Fordon/Klossar) must show the identical three
-  // buttons, not just each have *some* Save/Undo pair. Kalibrering and
-  // Targets apply changes immediately and are the acknowledged exception.
-  it('General, Fordon and Klossar all show the exact same three action buttons, Reset/Undo/Save in that order', () => {
+  // Design review, then a follow-up: "exakt samma" means every tab —
+  // Targets was wrongly skipped as "immediate-apply like Kalibrering"
+  // the first time around; only Kalibrering is actually exempt (no
+  // "unsaved" form state at all).
+  it('General, Fordon, Klossar and Targets all show the exact same three action buttons, Reset/Undo/Save in that order', () => {
     const form = createSettingsForm(modern, vi.fn());
-    for (const tab of ['general', 'vehicle', 'ramps']) {
+    for (const tab of ['general', 'vehicle', 'ramps', 'targets']) {
       const panel = tabPanel(form, tab);
       const actions = panel.querySelector<HTMLElement>(
         '.settings__actions, .klossar__footer-actions',
