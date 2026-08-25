@@ -353,6 +353,21 @@ describe('onboarding wizard — compact steps (#156)', () => {
     expect(saved!.wheelbaseMm).toBe(4200);
   });
 
+  it('regression guard (#159): saving from the wizard never closes or advances it — only ☰ → Settings does that', () => {
+    let finished = false;
+    showOnboarding(
+      makeOptions({ initialSettings: classicSettings(), onFinished: () => (finished = true) }),
+    );
+    next(); // -> settings (step 2 of 3)
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
+    const form = card().querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    // Still open, still on step 2 — Save/Next stay fully independent here.
+    expect(document.querySelector('.onboarding__card')).not.toBeNull();
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
+    expect(finished).toBe(false);
+  });
+
   it('Calibration step shows only "Calibrate now", not flip calibration or vehicle zero', () => {
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
     next(); // -> settings

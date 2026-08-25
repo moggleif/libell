@@ -111,7 +111,10 @@ URL and must keep working with no signal.
   it), display unit (R14), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
-  `docs/03-ARCHITECTURE.md` § Settings).
+  `docs/03-ARCHITECTURE.md` § Settings). Reached via ☰ (not the first-run wizard, which
+  keeps its own Skip/Next flow), a successful Save also returns to the main level
+  screen (#159), so the effect is visible without an extra tap — regardless of which
+  Modern tab (Vehicle/Ramps/Kalibrering) Save was tapped from.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 - **Given** the measurement fields (also in the wizard's measurements step, which

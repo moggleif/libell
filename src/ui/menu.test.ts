@@ -73,6 +73,14 @@ describe('menu — Classic (unchanged by #107)', () => {
     expect(menu.isOpen()).toBe(true);
     expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
   });
+
+  it('closes back to the main screen after a successful Save (#159)', () => {
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    menu.open('settings');
+    expect(menu.isOpen()).toBe(true);
+    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(menu.isOpen()).toBe(false);
+  });
 });
 
 describe('menu — Modern (#107)', () => {
@@ -203,6 +211,33 @@ describe('menu — Modern (#107)', () => {
     expect(
       calibrationForm?.querySelector('[data-tab="vehicle"]')?.getAttribute('aria-selected'),
     ).toBe('false');
+  });
+
+  it('closes back to the main screen after a successful Save reached via ☰ → Settings (#159)', () => {
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    menu.open('settings');
+    expect(menu.isOpen()).toBe(true);
+    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    // isOpen() reflects the app's own depth state synchronously; the
+    // .menu-page element's `hidden` attribute itself only lands after the
+    // hide transition (#105), so it isn't asserted here.
+    expect(menu.isOpen()).toBe(false);
+  });
+
+  it('closes back to the main screen after Save reached via the Calibration shortcut too (#159)', () => {
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    menu.open('calibration');
+    expect(menu.isOpen()).toBe(true);
+    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(menu.isOpen()).toBe(false);
+  });
+
+  it('closes back to the main screen when Save is tapped from the Ramps tab too (#159)', () => {
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    menu.open('settings');
+    menu.element.querySelector<HTMLButtonElement>('[data-tab="ramps"]')!.click();
+    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(menu.isOpen()).toBe(false);
   });
 });
 
