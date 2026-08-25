@@ -3,14 +3,19 @@
 **➡️ Open the app: <https://moggleif.github.io/libell/>**
 
 Libell is an installable web app (PWA) that helps you level a motorhome / RV with your
-phone.
+phone. It doesn't just tell you how far off level you are — it turns that tilt into a
+plan for the ramps you actually own: which wheels to drive up, onto which step, and when
+your ramps can't finish the job at all.
 
 Lay the phone flat inside the vehicle (for example on the table) with the **top edge of
 the phone pointing toward the front**. Libell shows a top-down view of the RV: green
-wheels are fine, orange wheels show which ramp step to drive up onto and how many mm they
-are missing, and red means even your tallest step is not enough — reposition instead. A
-bubble level sits in the middle of the diagram, and a big "Your RV is level!" confirms
-when you are done. Everything works offline once loaded; there is no account.
+wheels are already within tolerance, orange wheels show which ramp step to drive up onto
+and how many mm they are missing, gray wheels are low but get no ramp because your ramp
+set doesn't stretch that far, and red means even your tallest step can't fix that wheel
+by itself — reposition instead. If no arrangement of your ramps reaches level at all, the
+status line says so and gives a rough sense of how far off ("close" or "far"). A bubble
+level sits in the middle of the diagram, and a big "Your RV is level!" confirms when you
+are done. Everything works offline once loaded; there is no account.
 
 ## Using it on your phone
 
@@ -38,11 +43,15 @@ Two platform notes:
 ## How leveling works
 
 The phone's gravity vector gives the vehicle's roll and pitch; from your wheelbase and
-track widths the app computes each wheel's height, takes the **highest wheel as the
-reference** (blocks only go _under_ wheels), and recommends the configured ramp step
-closest to each wheel's missing height. The vehicle counts as level when no wheel sits
-more than the tolerance below the highest one. The full math, defaults and display
-pipeline are specified in `docs/03-ARCHITECTURE.md` — that document is the single
+track widths the app computes each wheel's required lift, taking the **highest wheel as
+the reference** (blocks only go _under_ wheels). Because ramps are sold in pairs and most
+owners carry only two or three, raising every low wheel independently is often not
+physically possible, so a planning layer picks which wheels get which of your configured
+ramp steps — favoring the plan that levels the vehicle with the fewest ramps and, when a
+choice remains, keeps your waste-water drain side lowest. The vehicle counts as level
+when no wheel sits more than the tolerance below the highest one. The full math, defaults
+and display pipeline are specified in `docs/03-ARCHITECTURE.md`, and the ramp-planning
+decision in `docs/adr/0011-ramp-plan-for-owned-ramps.md` — those documents are the single
 source for the formulas.
 
 ## Tech
