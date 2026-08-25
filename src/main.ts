@@ -46,6 +46,7 @@ import { createMenu } from './ui/menu';
 import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
+import { createLevelOverlay } from './ui/levelOverlay';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 
@@ -462,18 +463,10 @@ function bootstrap(root: HTMLElement): void {
     waiting.className = 'app__hint';
     waiting.textContent = t('main.waiting');
 
-    // Full-screen confirmation shown briefly when level is reached.
-    const overlay = document.createElement('div');
-    overlay.className = 'level-overlay';
-    overlay.hidden = true;
-    const overlayMark = document.createElement('div');
-    overlayMark.className = 'level-overlay__mark';
-    overlayMark.textContent = '✓';
-    const overlayText = document.createElement('p');
-    overlayText.className = 'level-overlay__text';
-    overlayText.textContent = t('main.level');
-    overlay.append(overlayMark, overlayText);
-    root.append(overlay);
+    // Full-screen confirmation shown briefly when level is reached (#124:
+    // animated fade/scale, reduced-motion-aware — see levelOverlay.ts).
+    const levelOverlay = createLevelOverlay();
+    root.append(levelOverlay.element);
 
     // Vehicle engine (#72): compute → stabilize → render for the chosen
     // vehicle type, reporting what the celebration/re-arm logic needs.
@@ -563,7 +556,6 @@ function bootstrap(root: HTMLElement): void {
     const isStill = createStillnessDetector();
 
     let wasLevel = false;
-    let overlayTimer = 0;
     // Celebration arming (field feedback, twice): the vibration + overlay
     // fire once per actual leveling. The trigger re-arms only after the
     // vehicle has been CLEARLY un-level — well past the tolerance, and
@@ -592,11 +584,7 @@ function bootstrap(root: HTMLElement): void {
       lastCelebrate = now;
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
       if (settings.soundOnLevel) playChime();
-      overlay.hidden = false;
-      window.clearTimeout(overlayTimer);
-      overlayTimer = window.setTimeout(() => {
-        overlay.hidden = true;
-      }, 2500);
+      levelOverlay.celebrate();
     };
 
     const frame = () => {
@@ -606,7 +594,7 @@ function bootstrap(root: HTMLElement): void {
       // pose nagging, no overlays, no celebration until they are back.
       if (menu.isOpen() || onboardingOpen) {
         poseOverlay.hidden = true;
-        overlay.hidden = true;
+        levelOverlay.hideNow();
         requestAnimationFrame(frame);
         return;
       }
@@ -618,7 +606,7 @@ function bootstrap(root: HTMLElement): void {
         if (badPose || landscape.matches) {
           poseText.textContent = badPose ? t('pose.layFlat') : t('pose.portrait');
           poseOverlay.hidden = false;
-          overlay.hidden = true;
+          levelOverlay.hideNow();
           requestAnimationFrame(frame);
           return;
         }
@@ -634,7 +622,7 @@ function bootstrap(root: HTMLElement): void {
           status.classList.remove('status-line--level');
         }
         if (still && isLevel && !wasLevel) celebrate();
-        if (!isLevel) overlay.hidden = true;
+        if (!isLevel) levelOverlay.hideNow();
         wasLevel = isLevel;
         const guidance = guideAudio(maxCorrectionMm, isLevel, settings, now);
         if (

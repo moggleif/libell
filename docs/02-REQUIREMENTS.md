@@ -185,6 +185,14 @@ URL and must keep working with no signal.
 - **Then** no further celebration fires: the trigger re-arms only after the vehicle has
   been clearly un-level (well past the tolerance, sustained for seconds) and a cooldown
   has passed, and never while the menu or the wizard is open or the page is hidden.
+- **Given** the OS `prefers-reduced-motion: reduce` setting
+- **Then** the ✓ overlay still appears immediately and communicates "level reached"
+  just as clearly, but without its animated fade/scale — an instant state change
+  instead (#124). Without that preference, the overlay's fade/scale is unchanged.
+  The overlay is also always withdrawn instantly, with no animation, the moment the
+  vehicle stops being level or the menu/wizard opens (correctness, not a motion
+  preference — an animated ✓ lingering after the state has genuinely changed would
+  misinform).
 
 ## R17 — Wrong phone pose pauses the guidance instead of misleading
 
