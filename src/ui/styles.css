@@ -650,7 +650,10 @@ body {
 }
 
 /* Brief confirmation when the vehicle reaches level. Covers the app
-   area only — the top bar and the footer stay visible. */
+ * area only — the top bar and the footer stay visible. Fades/scales in
+ * via `.is-visible` (levelOverlay.ts uses `setVisible`, motion.ts), which
+ * skips this transition entirely under `prefers-reduced-motion`: the ✓
+ * still appears, just without the animated step (#124). */
 .level-overlay {
   position: absolute;
   inset: 0;
@@ -662,6 +665,16 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity var(--motion-base) var(--motion-ease),
+    transform var(--motion-base) var(--motion-ease);
+}
+
+.level-overlay.is-visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .level-overlay[hidden] {
