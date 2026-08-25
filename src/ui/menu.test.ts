@@ -133,12 +133,17 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     );
   });
 
-  it('closes back to the main screen after a successful Save from the Vehicle page (#159)', () => {
-    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
+  // Design review, follow-up: Save used to close the whole drawer back to
+  // the main screen (#159) — reversed, since the user may still want to
+  // change more right after saving. Only ✕/back actually close it now.
+  it('Save persists from the Vehicle page but does not close the drawer', () => {
+    const onSettingsSaved = vi.fn();
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings(), onSettingsSaved }));
     menu.open('vehicle');
     expect(menu.isOpen()).toBe(true);
     menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(menu.isOpen()).toBe(false);
+    expect(onSettingsSaved).toHaveBeenCalledTimes(1);
+    expect(menu.isOpen()).toBe(true);
   });
 
   it('Save from the Ramps page persists Vehicle fields edited earlier, not the stale snapshot (#108 follow-up)', () => {

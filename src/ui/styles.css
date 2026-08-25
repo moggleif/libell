@@ -1457,7 +1457,9 @@ body {
   gap: 4px;
 }
 
-/* Save / Undo / Reset row at the bottom of the settings form. */
+/* Reset / Undo / Save row at the bottom of the settings form — Save
+ * (the only [type="submit"]) is the primary action: biggest, and already
+ * green via the plain .menu__action base (design review, follow-up). */
 .settings__actions {
   display: flex;
   flex-wrap: wrap;
@@ -1469,6 +1471,12 @@ body {
   width: auto;
   flex: 1 1 auto;
   padding: 10px 14px;
+}
+
+.settings__actions .menu__action[type='submit'] {
+  flex-grow: 2;
+  padding: 12px 14px;
+  font-size: 1.05em;
 }
 
 .steps__ramp .settings__select {
@@ -1741,6 +1749,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Save (the only [type="submit"]) is the primary action here too — same
+ * "biggest" treatment as `.settings__actions` above (design review,
+ * follow-up). */
+.klossar__footer-actions .menu__action[type='submit'] {
+  min-height: 56px;
+  font-size: 1.05em;
 }
 
 /* Wrong-pose overlay: shown while the phone is not flat / rotated.

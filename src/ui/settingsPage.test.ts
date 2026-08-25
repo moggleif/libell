@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createSettingsPage } from './settingsPage';
 import type { MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
@@ -107,11 +107,19 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     ).toBe('true');
   });
 
-  it('closes back to the main screen after a successful Save, from any tab (#159)', () => {
-    const page = createSettingsPage(makeOptions());
+  // Design review, follow-up: Save used to close the page back to the main
+  // screen (#159) — reversed, since the user may want to change more
+  // right after saving. Only the ✕ actually closes it now.
+  it('Save persists but does not close the page — only the ✕ does', () => {
+    const onSettingsSaved = vi.fn();
+    const page = createSettingsPage(makeOptions({ onSettingsSaved }));
     page.open();
     page.element.querySelector<HTMLButtonElement>('[data-tab="ramps"]')!.click();
     page.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSettingsSaved).toHaveBeenCalledTimes(1);
+    expect(page.isOpen()).toBe(true);
+
+    page.element.querySelector<HTMLButtonElement>('.menu-page__back')!.click();
     expect(page.isOpen()).toBe(false);
   });
 

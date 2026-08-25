@@ -664,7 +664,10 @@ export function createSettingsForm(
   const reset = document.createElement('button');
   reset.type = 'button';
   reset.className = 'menu__action menu__action--secondary';
-  actions.append(save, undo, reset);
+  // Design review, follow-up: Reset/Undo/Save left to right — the primary
+  // action (Save, biggest and green via CSS) sits last/most prominent,
+  // not first.
+  actions.append(reset, undo, save);
   const saveButtons: HTMLButtonElement[] = [save];
   const undoButtons: HTMLButtonElement[] = [undo];
   const resetButtons: HTMLButtonElement[] = [reset];
@@ -696,7 +699,7 @@ export function createSettingsForm(
     resetBtn.className = 'menu__action menu__action--secondary';
     resetBtn.textContent = t('settings.reset');
     resetBtn.addEventListener('click', () => populate(DEFAULT_SETTINGS));
-    row.append(saveBtn, undoBtn, resetBtn);
+    row.append(resetBtn, undoBtn, saveBtn);
     saveButtons.push(saveBtn);
     undoButtons.push(undoBtn);
     resetButtons.push(resetBtn);
@@ -729,7 +732,9 @@ export function createSettingsForm(
     undoBtn.disabled = true;
     undoBtn.textContent = t('settings.undo');
     undoBtn.addEventListener('click', () => populate(saved));
-    row.append(saveBtn, undoBtn);
+    // Undo, then Save — same "primary action last" order as the Reset
+    // rows above, for consistency even where there is no Reset to swap.
+    row.append(undoBtn, saveBtn);
     saveButtons.push(saveBtn);
     undoButtons.push(undoBtn);
     return row;
@@ -1083,7 +1088,9 @@ export function createSettingsForm(
     footerReset.className = 'menu__action menu__action--secondary';
     footerReset.textContent = t('settings.reset');
     footerReset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
-    footerActions.append(footerSave, footerUndo, footerReset);
+    // Reset/Undo/Save top to bottom — Save (biggest and green via CSS)
+    // last, same order as `actions`/`buildActionsRow` above.
+    footerActions.append(footerReset, footerUndo, footerSave);
     saveButtons.push(footerSave);
     undoButtons.push(footerUndo);
     resetButtons.push(footerReset);

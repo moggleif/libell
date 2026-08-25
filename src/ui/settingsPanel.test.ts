@@ -353,7 +353,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // fields (General/Fordon/Klossar) must show the identical three
   // buttons, not just each have *some* Save/Undo pair. Kalibrering and
   // Targets apply changes immediately and are the acknowledged exception.
-  it('General, Fordon and Klossar all show the exact same three action buttons (Save/Undo/Reset)', () => {
+  it('General, Fordon and Klossar all show the exact same three action buttons, Reset/Undo/Save in that order', () => {
     const form = createSettingsForm(modern, vi.fn());
     for (const tab of ['general', 'vehicle', 'ramps']) {
       const panel = tabPanel(form, tab);
@@ -361,7 +361,9 @@ describe('settings form — Modern tabs (#108)', () => {
         '.settings__actions, .klossar__footer-actions',
       )!;
       const labels = [...actions.querySelectorAll('button')].map((b) => b.textContent);
-      expect(labels).toEqual(['Save', 'Undo changes', 'Reset to defaults']);
+      // Design review, follow-up: Save (biggest/green, the primary action)
+      // moved last — Reset and Undo swapped ahead of it.
+      expect(labels).toEqual(['Reset to defaults', 'Undo changes', 'Save']);
     }
   });
 
