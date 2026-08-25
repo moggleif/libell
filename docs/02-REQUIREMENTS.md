@@ -102,9 +102,13 @@ URL and must keep working with no signal.
 
 ## R9 — Vehicle parameters are configurable and persist
 
-- **Given** I open Settings from the ☰ (gear icon) menu, which also holds Calibration,
-  Targets and External sensor (screen-cleanup follow-up: Help/About/Feedback moved out
-  to the bottom bar's "?" button, R38)
+- **Given** I tap ☰ (gear icon)
+- **Then** in Modern, it opens straight to the Settings tabs (Vehicle/Ramps/
+  Kalibrering/Targets, screen-cleanup follow-up) — no intermediate list to tap
+  through first; a ‹ back-tap from there reaches External sensor, Diagnostics and
+  Show introduction in a small menu. Classic (no tabs) opens that same small menu
+  first, unchanged, and reaches Settings from there. Help/About/Feedback are not
+  part of this menu at all — reached only from the bottom bar's "?" button (R38).
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
@@ -114,10 +118,10 @@ URL and must keep working with no signal.
   it), display unit (R14), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
-  `docs/03-ARCHITECTURE.md` § Settings). Reached via ☰ (not the first-run wizard, which
-  keeps its own Skip/Next flow), a successful Save also returns to the main level
-  screen (#159), so the effect is visible without an extra tap — regardless of which
-  Modern tab (Vehicle/Ramps/Kalibrering) Save was tapped from.
+  `docs/03-ARCHITECTURE.md` § Settings). Not the first-run wizard, which keeps its own
+  Skip/Next flow — a successful Save here also returns to the main level screen (#159),
+  so the effect is visible without an extra tap — regardless of which Modern tab
+  (Vehicle/Ramps/Kalibrering/Targets) Save was tapped from.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 - **Given** the measurement fields (also in the wizard's measurements step, which
@@ -769,10 +773,10 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** the app loads
 - **Then** a bottom action bar shows exactly three controls, spread across the bar
   (settings at the left edge, sound centered, help at the right edge — screen-cleanup
-  follow-up: not clustered together in the middle): settings (a gear icon, opens the
-  Settings/Calibration/Targets/External-sensor menu — Help/About/Feedback are no
-  longer part of it), sound (visually larger — the primary, most-reached-for
-  control), help ("?", opens its own page with Help (R28), About (R28) and Feedback
+  follow-up: not clustered together in the middle): settings (a gear icon, R9 —
+  Help/About/Feedback are not part of this menu at all), sound (visually larger —
+  the primary, most-reached-for control), help ("?", opens its own page with Help
+  (R28), About (R28) and Feedback
   (R12) as tabs — a fully independent component from the ☰ Settings menu, never
   routed through its drawer or sharing its back-navigation state, so its close (✕)
   can never reveal the Settings drawer underneath).

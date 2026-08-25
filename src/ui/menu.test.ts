@@ -95,32 +95,37 @@ describe('menu — Modern (#107)', () => {
     return [...menu.element.querySelectorAll('.menu__card')];
   }
 
-  it('renders exactly two primary cards — Help/About/Feedback moved to the bottom bar\'s "?" (screen-cleanup follow-up)', () => {
+  it('renders exactly three primary cards — Settings/Calibration/Targets, Help/About/Feedback moved to the bottom bar\'s "?" (screen-cleanup follow-up)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
     const titles = cards(menu).map((c) => c.querySelector('.menu__card-title')?.textContent);
-    expect(titles).toEqual([t('menu.settings'), t('menu.calibration')]);
+    expect(titles).toEqual([t('menu.settings'), t('menu.calibration'), t('menu.targets')]);
   });
 
-  it('groups Targets under "ADVANCED" and just the introduction/diagnostics links under "OTHER" (#152, screen-cleanup follow-up)', () => {
+  it('hides the empty "ADVANCED" heading and lists just the introduction/diagnostics under "OTHER" when Web Bluetooth is unavailable (screen-cleanup follow-up)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
-    const headings = [...menu.element.querySelectorAll('.menu__others-heading')];
-    expect(headings.map((h) => h.textContent)).toEqual([t('menu.advanced'), t('menu.others')]);
-
-    const [advancedHeading, othersHeading] = headings;
-    const advancedList = advancedHeading!.nextElementSibling!;
-    const othersList = othersHeading!.nextElementSibling!;
-    const rowTitles = (list: Element) =>
-      [...list.querySelectorAll('.menu__row-title')].map((r) => r.textContent);
-
     // No Web Bluetooth in this test environment, so External sensor is
-    // never offered — Advanced holds only Targets, exactly as today.
-    expect(rowTitles(advancedList)).toEqual([t('menu.targets')]);
+    // never offered — and Targets moved into the Settings tabs above, so
+    // ADVANCED has nothing left in it at all; its heading must not show
+    // over an empty list.
+    const advancedHeading = [
+      ...menu.element.querySelectorAll<HTMLElement>('.menu__others-heading'),
+    ].find((h) => h.textContent === t('menu.advanced'))!;
+    expect(advancedHeading.hidden).toBe(true);
+    expect((advancedHeading.nextElementSibling as HTMLElement | null)?.hidden).toBe(true);
+
+    const othersHeading = [
+      ...menu.element.querySelectorAll<HTMLElement>('.menu__others-heading'),
+    ].find((h) => h.textContent === t('menu.others'))!;
+    const othersList = othersHeading.nextElementSibling!;
+    const rowTitles = [...othersList.querySelectorAll('.menu__row-title')].map(
+      (r) => r.textContent,
+    );
     // Feedback and About no longer live in the drawer at all — they moved
     // into infoMenu.ts's own tabbed page, reached directly from "?".
-    expect(rowTitles(othersList)).toEqual([t('menu.intro'), t('menu.diagnostics')]);
-    expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(2); // rows aren't cards
+    expect(rowTitles).toEqual([t('menu.intro'), t('menu.diagnostics')]);
+    expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(3); // rows aren't cards
   });
 
   it('lights the Settings card dot and label while nothing has ever been saved', () => {
@@ -207,6 +212,27 @@ describe('menu — Modern (#107)', () => {
     ).toBe('false');
   });
 
+  // Targets folded into Settings as a 4th tab (screen-cleanup follow-up),
+  // same shortcut-into-the-same-instance pattern as Calibration above —
+  // this is also what the main-screen target badge (`targetBadge.ts`)
+  // relies on when tapped.
+  it('the Targets card is a shortcut into the same Settings instance too', () => {
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    menu.open('settings');
+    const settingsForm = menu.element.querySelector('.menu-page__body form.settings__form');
+    expect(settingsForm).toBeTruthy();
+
+    menu.open('targets');
+    const targetsForm = menu.element.querySelector('.menu-page__body form.settings__form');
+    expect(targetsForm).toBe(settingsForm);
+    expect(targetsForm?.querySelector('[data-tab="targets"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(targetsForm?.querySelector('[data-tab="vehicle"]')?.getAttribute('aria-selected')).toBe(
+      'false',
+    );
+  });
+
   it('closes back to the main screen after a successful Save reached via ☰ → Settings (#159)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
@@ -270,21 +296,57 @@ describe('EasyLevel BLE sensor source (#116)', () => {
     expect(connectEasyLevel).toHaveBeenCalledOnce();
   });
 
-  it('External sensor appears first under ADVANCED, above Targets (#152)', () => {
+  it('ADVANCED shows External sensor, visible (not hidden as empty) once Web Bluetooth exists (#152, screen-cleanup follow-up)', () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
       configurable: true,
     });
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
-    const advancedHeading = [...menu.element.querySelectorAll('.menu__others-heading')].find(
-      (h) => h.textContent === t('menu.advanced'),
-    )!;
-    const advancedList = advancedHeading.nextElementSibling!;
+    const advancedHeading = [
+      ...menu.element.querySelectorAll<HTMLElement>('.menu__others-heading'),
+    ].find((h) => h.textContent === t('menu.advanced'))!;
+    expect(advancedHeading.hidden).toBe(false);
+    const advancedList = advancedHeading.nextElementSibling as HTMLElement;
+    expect(advancedList.hidden).toBe(false);
+    // Targets no longer lives here — it moved into the Settings tabs.
     const rowTitles = [...advancedList.querySelectorAll('.menu__row-title')].map(
       (r) => r.textContent,
     );
-    expect(rowTitles).toEqual([t('menu.sensorSource'), t('menu.targets')]);
+    expect(rowTitles).toEqual([t('menu.sensorSource')]);
+  });
+});
+
+describe('attach() — the gear icon (screen-cleanup follow-up)', () => {
+  it('Modern: jumps straight to the Settings tabs, skipping the drawer', () => {
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    const button = document.createElement('button');
+    menu.attach(button);
+    expect(menu.isOpen()).toBe(false);
+
+    button.click();
+    expect(menu.isOpen()).toBe(true);
+    // Landed directly on the Settings page — visible and already
+    // populated with the live form, not just the (still-present but
+    // covered) drawer underneath it.
+    expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
+    expect(menu.element.querySelector('.menu-page__body form.settings__form')).not.toBeNull();
+
+    // A second click while open closes it (goBack), same toggle as ever.
+    button.click();
+    expect(menu.isOpen()).toBe(false);
+  });
+
+  it('Classic: still opens the drawer first, unchanged', () => {
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    const button = document.createElement('button');
+    menu.attach(button);
+
+    button.click();
+    expect(menu.isOpen()).toBe(true);
+    // The drawer's flat item list is showing, not the Settings page itself.
+    expect(menu.element.querySelectorAll('.menu__item').length).toBeGreaterThanOrEqual(5);
+    expect(menu.element.querySelector('.menu-page__body form.settings__form')).toBeNull();
   });
 });
 
