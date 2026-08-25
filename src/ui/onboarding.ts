@@ -1,9 +1,27 @@
 /**
- * First-run onboarding wizard (issue #43): three steps — how to place
- * the phone, the vehicle measurements, calibration. Every step can be
- * skipped; whatever is skipped stays flagged by the warning lamps, so
- * the wizard guides without ever blocking. Reuses the real settings
- * form and calibration section — one source of truth for both.
+ * First-run onboarding wizard (issue #43): originally a fixed three
+ * steps — how to place the phone, the vehicle measurements, calibration.
+ * Every step can be skipped; whatever is skipped stays flagged by the
+ * warning lamps, so the wizard guides without ever blocking. Reuses the
+ * real settings form and calibration section — one source of truth for
+ * both.
+ *
+ * Sensor source choice (#135, ADR 0014): when an external sensor option
+ * actually exists (`isWebBluetoothSupported()` — the exact same gate
+ * `menu.ts` already uses before offering the "External sensor" page), a
+ * new first step asks "This phone" vs. "external sensor" and branches
+ * the rest of the wizard:
+ *   - "This phone" (the default, and the only option when the gate is
+ *     false): unchanged three-step flow below.
+ *   - external: connect + installation calibration (reusing
+ *     `sensorSourceSection.ts`'s component whole — the same "Set vehicle
+ *     level" block #131 added to the real menu page, never a wizard-only
+ *     duplicate) followed directly by the settings/dimensions step.
+ * `sensorChoice` starts at `'phone'` and is only read once, when Next is
+ * pressed from the source step — closing the wizard (✕) before or during
+ * that step never sets anything, so an unfinished choice always leaves
+ * the app on the phone sensor (the existing `DEFAULT_SETTINGS.sensorSource`),
+ * never an ambiguous state.
  *
  * Appearance (#110): whether this instance renders Classic or Modern
  * structure is decided once, up front, from `initialSettings.appearance`
@@ -15,6 +33,8 @@
 import type { LevelSettings } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
+import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
+import { isWebBluetoothSupported } from '../sensor/easyLevelSensor';
 import {
   legendIllustration,
   measuresIllustration,
@@ -23,11 +43,21 @@ import {
 import { SEVERITY_GLYPH } from './rvDiagram';
 import { t, type MessageKey } from './i18n';
 
-export interface OnboardingOptions extends CalibrationOptions {
+export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptions {
   initialSettings: LevelSettings;
   onSettingsSaved(settings: LevelSettings): void;
   onFinished(): void;
 }
+
+/** Which source the first step's radios currently have selected — 'phone'
+ * until the user picks otherwise, so an unfinished/closed wizard always
+ * resolves to the phone sensor (see the module doc comment above). */
+type SensorChoice = 'phone' | 'external';
+
+const SOURCE_OPTIONS: [SensorChoice, MessageKey][] = [
+  ['phone', 'onboard.source.phone'],
+  ['external', 'onboard.source.external'],
+];
 
 /** Modern legend rows (#110): status color swatch, glyph, short text —
  * same three severities the diagram itself uses. */
@@ -81,8 +111,13 @@ function buildClassicProgress(current: number, total: number): HTMLElement {
   return progress;
 }
 
+type Step = { title: string; build: () => Element[]; skipLabel?: string };
+
 export function showOnboarding(options: OnboardingOptions): void {
   const isModern = options.initialSettings.appearance === 'modern';
+  // Same gate `menu.ts` uses before ever offering the "External sensor"
+  // page (#116) — never a dead radio button on Safari/iOS or desktop.
+  const sourceChoiceAvailable = isWebBluetoothSupported();
 
   const overlay = document.createElement('div');
   overlay.className = 'onboarding';
@@ -100,45 +135,98 @@ export function showOnboarding(options: OnboardingOptions): void {
   close.textContent = '✕';
   close.addEventListener('click', () => finish());
 
-  const steps: { title: string; build: () => Element[]; skipLabel?: string }[] = [
-    {
-      title: t('onboard.step1.h'),
-      build: () => {
-        const text = document.createElement('p');
-        text.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-        text.textContent = t('help.what.t');
-        if (isModern) {
-          // How to read the answer (#71, restyled #110): color swatch
-          // + glyph + short text per status, instead of the SVG legend.
-          return [placementIllustration(t('onboard.step1.h')), text, buildModernLegend()];
-        }
-        // How to read the answer (#71): the same legend and caption as
-        // the Help section — colors, glyphs and the bubble.
-        const legendText = document.createElement('p');
-        legendText.className = 'menu__text';
-        legendText.textContent = t('help.screen.t');
-        return [
-          placementIllustration(t('onboard.step1.h')),
-          text,
-          legendIllustration(t('help.screen.h')),
-          legendText,
-        ];
-      },
+  const placementStep: Step = {
+    title: t('onboard.step1.h'),
+    build: () => {
+      const text = document.createElement('p');
+      text.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      text.textContent = t('help.what.t');
+      if (isModern) {
+        // How to read the answer (#71, restyled #110): color swatch
+        // + glyph + short text per status, instead of the SVG legend.
+        return [placementIllustration(t('onboard.step1.h')), text, buildModernLegend()];
+      }
+      // How to read the answer (#71): the same legend and caption as
+      // the Help section — colors, glyphs and the bubble.
+      const legendText = document.createElement('p');
+      legendText.className = 'menu__text';
+      legendText.textContent = t('help.screen.t');
+      return [
+        placementIllustration(t('onboard.step1.h')),
+        text,
+        legendIllustration(t('help.screen.h')),
+        legendText,
+      ];
     },
-    {
-      title: t('menu.settings'),
-      skipLabel: t('onboard.skipDefaults'),
-      build: () => [
-        measuresIllustration(t('menu.settings')),
-        createSettingsForm(options.initialSettings, options.onSettingsSaved),
-      ],
+  };
+
+  const settingsStep: Step = {
+    title: t('menu.settings'),
+    skipLabel: t('onboard.skipDefaults'),
+    build: () => [
+      measuresIllustration(t('menu.settings')),
+      createSettingsForm(options.initialSettings, options.onSettingsSaved),
+    ],
+  };
+
+  const calibrationStep: Step = {
+    title: t('menu.calibration'),
+    skipLabel: t('onboard.skipStep'),
+    build: () => [createCalibrationSection(options).element],
+  };
+
+  // External path's calibration equivalent (#135, ADR 0014): the box's
+  // own connect flow already ends in its "Set vehicle level" block (#131)
+  // once connected, so a single embedded `sensorSourceSection` covers
+  // both "connect sensor" and "installation calibration" — reused whole,
+  // exactly as it already is on the real menu page, never split apart
+  // into wizard-only duplicates. Skippable on the same terms as the
+  // phone's calibration step above, which it stands in for.
+  const connectStep: Step = {
+    title: t('menu.sensorSource'),
+    skipLabel: t('onboard.skipStep'),
+    build: () => [createSensorSourceSection(options).element],
+  };
+
+  let sensorChoice: SensorChoice = 'phone';
+
+  const sourceStep: Step = {
+    title: t('onboard.source.h'),
+    build: () => {
+      const intro = document.createElement('p');
+      intro.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      intro.textContent = t('onboard.source.intro');
+
+      const group = document.createElement('div');
+      group.className = 'onboarding__source';
+      for (const [value, labelKey] of SOURCE_OPTIONS) {
+        const label = document.createElement('label');
+        label.className = 'onboarding__source-option';
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'onboarding-source';
+        radio.value = value;
+        radio.checked = sensorChoice === value;
+        radio.addEventListener('change', () => {
+          if (radio.checked) sensorChoice = value;
+        });
+        const text = document.createElement('span');
+        text.textContent = t(labelKey);
+        label.append(radio, text);
+        group.append(label);
+      }
+      return [intro, group];
     },
-    {
-      title: t('menu.calibration'),
-      skipLabel: t('onboard.skipStep'),
-      build: () => [createCalibrationSection(options).element],
-    },
-  ];
+  };
+
+  const phoneSteps = [placementStep, settingsStep, calibrationStep];
+  const externalSteps = [connectStep, settingsStep];
+
+  // Only ever offered when the gate above is true; otherwise `steps` is
+  // exactly the original three-item array — same length, same content,
+  // same order, so phone-only environments get byte-identical behavior
+  // to before #135 (the regression guard this issue asks for).
+  let steps: Step[] = sourceChoiceAvailable ? [sourceStep, ...phoneSteps] : phoneSteps;
 
   let index = 0;
 
@@ -193,6 +281,11 @@ export function showOnboarding(options: OnboardingOptions): void {
     next.className = isModern ? 'menu__action onboarding__next--modern' : 'menu__action';
     next.textContent = index === steps.length - 1 ? t('onboard.done') : t('onboard.next');
     next.addEventListener('click', () => {
+      // Leaving the source step: branch the rest of the wizard onto the
+      // chosen path — read once, here, never re-evaluated afterward.
+      if (step === sourceStep) {
+        steps = [sourceStep, ...(sensorChoice === 'external' ? externalSteps : phoneSteps)];
+      }
       index += 1;
       renderStep();
     });
