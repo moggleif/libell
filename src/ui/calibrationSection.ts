@@ -1,7 +1,9 @@
 /**
  * Calibration UI (one-shot + 180° flip), shared by the menu page and the
- * onboarding wizard. The host supplies sensor access through
- * `CalibrationOptions`; this module owns only the DOM and the flow.
+ * onboarding wizard (#184: the wizard embeds this whole, unmodified —
+ * no reduced step of its own — so it always matches Settings exactly).
+ * The host supplies sensor access through `CalibrationOptions`; this
+ * module owns only the DOM and the flow.
  *
  * Modern appearance (#109) restyles this into two cards — sensor
  * calibration and vehicle zero (#83) — with a status pill each. Which
@@ -49,21 +51,7 @@ export interface CalibrationSection {
   refresh(error?: string): void;
 }
 
-export interface CalibrationSectionOptions {
-  /**
-   * Onboarding step 3 (#156): render only "Calibrate now" and its status
-   * — the flip-calibration technique and Vehicle zero position stay
-   * reachable from ☰ → Calibration afterward. Defaults to false
-   * everywhere else (the menu's Calibration page/shortcut).
-   */
-  compact?: boolean;
-}
-
-export function createCalibrationSection(
-  options: CalibrationOptions,
-  sectionOptions: CalibrationSectionOptions = {},
-): CalibrationSection {
-  const compact = sectionOptions.compact ?? false;
+export function createCalibrationSection(options: CalibrationOptions): CalibrationSection {
   // Decided once, here — see the module doc comment (#109).
   const modern = options.appearance === 'modern';
 
@@ -268,11 +256,7 @@ export function createCalibrationSection(
   resetFlip();
   refreshCalibration();
 
-  if (compact) {
-    // Onboarding step 3 (#156): "Calibrate now" only. A short note
-    // pointing to ☰ is added by onboarding.ts itself, next to this.
-    calibrationBody.append(sensorHeading, calibrationIntro, calibrateButton, calibrationStatus);
-  } else if (modern) {
+  if (modern) {
     // Two cards (#109): sensor calibration, then vehicle zero. Each
     // reuses the exact same elements/handlers built above — only the
     // container shape changes.

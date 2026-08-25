@@ -236,42 +236,53 @@ URL and must keep working with no signal.
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
-- **Then** a three-step wizard runs: how to place the phone and how to read the answer
-  (the wheel-state legend and the bubble), vehicle measurements (skippable — "use
-  defaults"), calibration (skippable). It can be closed with ✕ at any
-  point, warning lamps (R11) stay lit for whatever was skipped, and the "Show
-  introduction" button at the top of the "?" page's Help tab (R28, screen-cleanup
-  follow-up) reopens it any time.
+- **Then** a four-step wizard runs: which vehicle I'm leveling (motorhome or caravan —
+  #184), how to place the phone and how to read the answer (the wheel-state legend and
+  the bubble), vehicle measurements (skippable — "use defaults"), calibration
+  (skippable). It can be closed with ✕ at any point, warning lamps (R11) stay lit for
+  whatever was skipped, and the "Show introduction" button at the top of the "?" page's
+  Help tab (R28, screen-cleanup follow-up) reopens it any time.
+- **Given** the vehicle step (#184)
+- **Then** it asks "What are you leveling?" with the same Motorhome/Caravan choice and
+  labels Settings uses, pre-selected to whatever is already stored (not hardcoded to
+  motorhome). Every later step reflects that choice: the placement and measurements
+  illustrations draw the matching shape (a caravan gets its drawbar and jockey wheel,
+  not a four-wheel box), and the measurements step's field labels/visibility follow the
+  same vehicle-aware rules the full Settings form already applies (axle-to-jockey
+  distance, no front track width for a caravan).
 - **Given** the placement/legend step
 - **Then** it also mentions the opt-in "Continuous audio guidance" (R30) — a
   discoverability tip, not a default change (#154): the setting itself stays off
   until a user turns it on in Settings → General.
 - **Given** the measurements step
 - **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
-  numbers the step's own hint text says come from the registration document.
-  Everything else the full Settings form has (Vehicle type, Rear axle — Vehicle tab;
-  Language, Theme, Chime, Continuous audio guidance — General tab; Tolerance,
-  Stability, Appearance — Advanced) is reachable from Settings afterward, not hidden
-  from the app, just not shown on this reduced step. A short note on the step says so.
+  numbers the step's own hint text says come from the registration document, labeled
+  for whichever vehicle the vehicle step chose. Everything else the full Settings form
+  has (Rear axle — Vehicle tab; Language, Theme, Chime, Continuous audio guidance —
+  General tab; Tolerance, Stability, Appearance — Advanced) is reachable from Settings
+  afterward, not hidden from the app, just not shown on this reduced step. A short note
+  on the step says so.
 - **Given** the calibration step
-- **Then** it shows only "Calibrate now" and its result (#156) — the flip-calibration
-  technique and Vehicle zero position stay reachable from Settings → Calibration
-  afterward, with the same short note.
+- **Then** it embeds the exact same calibration section Settings → Calibration shows —
+  flip-calibration technique, Vehicle zero position, check/clear, all of it (#184: no
+  more reduced rendering of its own that could drift from the real one) — skippable.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra first step, "How do you want to measure?",
   offering "This phone" (pre-selected) or "External sensor" — the same name and
   wording the sensor-status icon and its page use (R32) elsewhere, never a separate
   "Libell Sensor" product name, which was never real; every other browser gets
-  exactly the three-step flow above, with no added step and no dead radio button
-  (#135).
+  exactly the four-step flow above, with no added step and no dead radio button
+  (#135). The vehicle step always follows immediately after this one, so it is
+  answered before either device path continues.
 - **Given** the source step, with "This phone" left selected (the default)
-- **Then** the rest of the wizard is the unchanged three-step phone flow above.
+- **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
+  placement, measurements, calibration).
 - **Given** the source step, with the external sensor selected instead
-- **Then** the wizard branches to the external sensor's own connect flow — the same
-  External sensor page R32/R34 already describe, embedded whole rather than
-  duplicated, which doubles as this path's calibration step (its own "Set vehicle
-  level" installation offset, R34) — skippable on the same terms as the phone
-  calibration step it replaces, then rejoins the shared vehicle-measurements step
+- **Then** the wizard asks the vehicle step, then branches to the external sensor's own
+  connect flow — the same External sensor page R32/R34 already describe, embedded
+  whole rather than duplicated, which doubles as this path's calibration step (its own
+  "Set vehicle level" installation offset, R34) — skippable on the same terms as the
+  phone calibration step it replaces, then rejoins the shared vehicle-measurements step
   before finishing. No phone-placement step and no phone calibration step are shown on
   this path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
