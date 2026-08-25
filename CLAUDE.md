@@ -31,7 +31,8 @@ waiting to drift.
 src/
 ├── main.ts        # entry point: wires sensor → state → render
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
-├── data/          # settingsStore.ts (localStorage: settings + calibration)
+├── data/          # settingsStore.ts (settings + calibration), easyLevelDeviceStore.ts
+│                  # (remembered EasyLevel device id, #130) — all localStorage
 ├── sensor/        # orientation.ts (DeviceMotion / DeviceOrientation)
 └── ui/            # DOM + SVG components, hamburger menu, i18n, styles
 ```

@@ -31,11 +31,22 @@ interface BluetoothRemoteGATTServer {
 }
 
 interface BluetoothDevice extends EventTarget {
+  /** Browser-assigned, stable across sessions for a device the user has
+   * granted access to (#130) — not the box's real MAC address. */
+  readonly id: string;
   readonly gatt?: BluetoothRemoteGATTServer;
 }
 
 interface Bluetooth {
   requestDevice(options: RequestDeviceOptions): Promise<BluetoothDevice>;
+  /**
+   * Web Bluetooth's persistent-permissions API (#130): the previously-
+   * authorized devices for this origin, without a device picker or a user
+   * gesture. Optional because it is not implemented everywhere `bluetooth`
+   * itself exists — feature-detect with `typeof navigator.bluetooth
+   * ?.getDevices === 'function'` before calling it.
+   */
+  getDevices?(): Promise<BluetoothDevice[]>;
 }
 
 interface Navigator {

@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createEasyLevelSensor,
+  createWebBluetoothTransport,
   isWebBluetoothSupported,
+  EASYLEVEL_SERVICE_UUID,
   type EasyLevelConnection,
   type EasyLevelTransport,
 } from './easyLevelSensor';
@@ -17,8 +19,10 @@ function accelBytes(x: number, y: number, z: number): Uint8Array {
 
 /** A controllable stand-in for `createWebBluetoothTransport()` (#116) — no
  * real `navigator.bluetooth` involved, so the state machine is fully
- * testable without hardware or a browser. */
-function fakeTransport(): {
+ * testable without hardware or a browser. `reconnect` defaults to
+ * succeeding the same way `connect` does (#130) — tests that want a failed
+ * silent reconnect override it. */
+function fakeTransport(options?: { reconnect?: EasyLevelTransport['reconnect'] }): {
   transport: EasyLevelTransport;
   emitAccel(bytes: Uint8Array): void;
   emitDisconnect(): void;
@@ -27,6 +31,7 @@ function fakeTransport(): {
   let accelHandler: ((view: DataView) => void) | null = null;
   let disconnectHandler: (() => void) | null = null;
   const connection: EasyLevelConnection = {
+    deviceId: 'fake-device-id',
     subscribeAccel: async (onData) => {
       accelHandler = onData;
     },
@@ -42,6 +47,12 @@ function fakeTransport(): {
         disconnectHandler = onDisconnect;
         return connection;
       },
+      reconnect:
+        options?.reconnect ??
+        (async (_deviceId, onDisconnect) => {
+          disconnectHandler = onDisconnect;
+          return connection;
+        }),
     },
     emitAccel: (bytes) => accelHandler?.(new DataView(bytes.buffer)),
     emitDisconnect: () => disconnectHandler?.(),
@@ -120,6 +131,7 @@ describe('createEasyLevelSensor (#116)', () => {
     });
     const transport: EasyLevelTransport = {
       connect: () => Promise.reject(new Error('User cancelled the requestDevice() chooser.')),
+      reconnect: async () => null,
     };
     const sensor = createEasyLevelSensor(transport);
     expect(await sensor.start()).toBe('denied');
@@ -132,11 +144,15 @@ describe('createEasyLevelSensor (#116)', () => {
       configurable: true,
     });
     const connection: EasyLevelConnection = {
+      deviceId: 'fake-device-id',
       subscribeAccel: async () => {},
       subscribeStatus: () => Promise.reject(new Error('no such characteristic')),
       disconnect: vi.fn(),
     };
-    const transport: EasyLevelTransport = { connect: async () => connection };
+    const transport: EasyLevelTransport = {
+      connect: async () => connection,
+      reconnect: async () => connection,
+    };
     const sensor = createEasyLevelSensor(transport);
     expect(await sensor.start()).toBe('granted');
   });
@@ -172,6 +188,163 @@ describe('createEasyLevelSensor (#116)', () => {
 
     expect(await sensor.start()).toBe('granted');
     expect(connectSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('getDeviceId() is null before connecting and the connected device id afterward', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    expect(sensor.getDeviceId()).toBeNull();
+
+    await sensor.start();
+    expect(sensor.getDeviceId()).toBe('fake-device-id');
+  });
+});
+
+describe('createEasyLevelSensor().reconnect() (#130)', () => {
+  it('reports unsupported when navigator.bluetooth does not exist, without calling the transport', async () => {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    const { transport } = fakeTransport();
+    const reconnectSpy = vi.spyOn(transport, 'reconnect');
+    const sensor = createEasyLevelSensor(transport);
+    expect(await sensor.reconnect('fake-device-id')).toBe('unsupported');
+    expect(sensor.getState()).toBe('unsupported');
+    expect(reconnectSpy).not.toHaveBeenCalled();
+  });
+
+  it('reconnects silently to a remembered device id and starts feeding gravity, with no picker involved', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel } = fakeTransport();
+    const connectSpy = vi.spyOn(transport, 'connect');
+    const sensor = createEasyLevelSensor(transport);
+
+    expect(await sensor.reconnect('fake-device-id')).toBe('granted');
+    expect(connectSpy).not.toHaveBeenCalled();
+    expect(sensor.getDeviceId()).toBe('fake-device-id');
+
+    emitAccel(accelBytes(5, 6, 7));
+    expect(sensor.getGravity()).toEqual({ x: 5, y: 6, z: 7 });
+  });
+
+  it('resolves "disconnected" — not a new picker — when the remembered device cannot be found (transport.reconnect() resolves null)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, connection } = fakeTransport({ reconnect: async () => null });
+    const connectSpy = vi.spyOn(transport, 'connect');
+    const sensor = createEasyLevelSensor(transport);
+
+    expect(await sensor.reconnect('some-other-device-id')).toBe('disconnected');
+    expect(sensor.getState()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+    expect(sensor.getDeviceId()).toBeNull();
+    expect(connectSpy).not.toHaveBeenCalled(); // never falls back to the gesture-triggered picker
+    expect(connection.disconnect).not.toHaveBeenCalled();
+  });
+
+  it('resolves "disconnected" when transport.reconnect() rejects outright (e.g. a GATT error)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const transport: EasyLevelTransport = {
+      connect: async () => {
+        throw new Error('should never be called');
+      },
+      reconnect: () => Promise.reject(new Error('GATT operation failed')),
+    };
+    const sensor = createEasyLevelSensor(transport);
+    expect(await sensor.reconnect('fake-device-id')).toBe('disconnected');
+  });
+
+  it('a later unexpected GATT disconnect after a silent reconnect surfaces the same way as after a manual connect', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitDisconnect } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.reconnect('fake-device-id');
+    emitAccel(accelBytes(1, 2, 3));
+
+    emitDisconnect();
+
+    expect(sensor.getState()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+  });
+});
+
+/** A minimal fake `BluetoothDevice`, enough to exercise
+ * `createWebBluetoothTransport()`'s real GATT-wiring code (#130) — no
+ * physical box or real `navigator.bluetooth` involved. */
+function fakeBluetoothDevice(id: string, options?: { connectFails?: boolean }): BluetoothDevice {
+  const characteristic = {
+    value: undefined,
+    addEventListener: vi.fn(),
+    startNotifications: vi.fn().mockResolvedValue(undefined),
+  };
+  const service = {
+    getCharacteristic: vi.fn().mockResolvedValue(characteristic),
+  };
+  const server = {
+    connect: options?.connectFails
+      ? vi.fn().mockRejectedValue(new Error('device out of range'))
+      : vi.fn(),
+    disconnect: vi.fn(),
+    getPrimaryService: vi.fn().mockResolvedValue(service),
+  };
+  if (!options?.connectFails) server.connect.mockResolvedValue(server);
+  return { id, gatt: server, addEventListener: vi.fn() } as unknown as BluetoothDevice;
+}
+
+describe('createWebBluetoothTransport().reconnect() (#130 — the real Web Bluetooth transport)', () => {
+  it('resolves null when getDevices() does not exist on navigator.bluetooth', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} }, // no getDevices — an older/unsupporting browser
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    expect(await transport.reconnect('device-1', vi.fn())).toBeNull();
+  });
+
+  it('resolves null when the remembered id is not among the previously-authorized devices', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: {
+        bluetooth: { getDevices: vi.fn().mockResolvedValue([fakeBluetoothDevice('device-other')]) },
+      },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    expect(await transport.reconnect('device-1', vi.fn())).toBeNull();
+  });
+
+  it('resolves null (never throws) when the device is found but GATT connect fails', async () => {
+    const device = fakeBluetoothDevice('device-1', { connectFails: true });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { getDevices: vi.fn().mockResolvedValue([device]) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await expect(transport.reconnect('device-1', vi.fn())).resolves.toBeNull();
+  });
+
+  it('connects GATT and wires the same service as connect() when the remembered device is found', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { getDevices: vi.fn().mockResolvedValue([device]) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    const connection = await transport.reconnect('device-1', vi.fn());
+    expect(connection?.deviceId).toBe('device-1');
+    expect(device.gatt?.getPrimaryService).toHaveBeenCalledWith(EASYLEVEL_SERVICE_UUID);
   });
 });
 
