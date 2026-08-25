@@ -21,6 +21,8 @@ import {
   loadTargetPresets,
   saveActiveTargetId,
   saveTargetPresets,
+  loadLanguage,
+  saveLanguage,
 } from './settingsStore';
 import type { TargetPreset } from '../domain/targetPresets';
 
@@ -242,5 +244,48 @@ describe('target preset store (#122, ADR 0013)', () => {
     expect(() => saveTargetPresets([preset], null)).not.toThrow();
     expect(() => saveActiveTargetId('a', null)).not.toThrow();
     expect(loadActiveTargetId([], null)).toBeNull();
+  });
+});
+
+describe('language store (#176)', () => {
+  it('is null before any override is saved', () => {
+    expect(loadLanguage(memoryStorage())).toBeNull();
+  });
+
+  it('round-trips a language override', () => {
+    const storage = memoryStorage();
+    saveLanguage('sv', storage);
+    expect(loadLanguage(storage)).toBe('sv');
+  });
+
+  it('saving null clears a previously stored override', () => {
+    const storage = memoryStorage();
+    saveLanguage('sv', storage);
+    saveLanguage(null, storage);
+    expect(storage.getItem('libell.language')).toBeNull();
+    expect(loadLanguage(storage)).toBeNull();
+  });
+
+  it('degrades gracefully when storage is unavailable', () => {
+    expect(loadLanguage(null)).toBeUndefined();
+    expect(() => saveLanguage('sv', null)).not.toThrow();
+    expect(() => saveLanguage(null, null)).not.toThrow();
+  });
+
+  it('degrades gracefully when storage throws', () => {
+    const throwing: KeyValueStorage = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+      removeItem: () => {
+        throw new Error('blocked');
+      },
+    };
+    expect(loadLanguage(throwing)).toBeNull();
+    expect(() => saveLanguage('sv', throwing)).not.toThrow();
+    expect(() => saveLanguage(null, throwing)).not.toThrow();
   });
 });

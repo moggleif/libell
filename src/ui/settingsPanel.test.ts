@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
+import { loadLanguage, saveLanguage } from '../data/settingsStore';
 
 setLanguage('en');
 
@@ -78,7 +79,7 @@ describe('settings form', () => {
   it('round-trips the ramp count and drain position (#93)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
-    // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme, appearance.
+    // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme, language, appearance.
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     const drainSelect = form.querySelectorAll('select')[4] as HTMLSelectElement;
     expect(rampCountSelect.value).toBe('2'); // ramps are sold in pairs
@@ -104,7 +105,7 @@ describe('settings form', () => {
     const form = createSettingsForm(classic, onSave);
     const selects = form.querySelectorAll('select');
     const themeSelect = selects[6] as HTMLSelectElement;
-    const appearanceSelect = selects[7] as HTMLSelectElement;
+    const appearanceSelect = selects[8] as HTMLSelectElement;
     expect(appearanceSelect.value).toBe('classic');
     appearanceSelect.value = 'modern';
     appearanceSelect.dispatchEvent(new Event('change'));
@@ -112,6 +113,86 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0].appearance).toBe('modern');
     // theme (light/dark) is untouched by the appearance choice.
     expect(onSave.mock.calls[0]![0].theme).toBe(themeSelect.value);
+  });
+
+  describe('language override (#176)', () => {
+    afterEach(() => {
+      saveLanguage(null);
+    });
+
+    it('pre-selects Automatic when no override is stored', () => {
+      const form = createSettingsForm(classic, vi.fn());
+      const selects = form.querySelectorAll('select');
+      const languageSelect = selects[7] as HTMLSelectElement;
+      expect(languageSelect.value).toBe('auto');
+    });
+
+    it('pre-selects a previously stored override', () => {
+      saveLanguage('sv');
+      const form = createSettingsForm(classic, vi.fn());
+      const languageSelect = form.querySelectorAll('select')[7] as HTMLSelectElement;
+      expect(languageSelect.value).toBe('sv');
+    });
+
+    it('enables Save on a language change alone, with nothing else edited', () => {
+      const form = createSettingsForm(classic, vi.fn());
+      const languageSelect = form.querySelectorAll('select')[7] as HTMLSelectElement;
+      const saveButton = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      expect(saveButton.disabled).toBe(true);
+      languageSelect.value = 'sv';
+      languageSelect.dispatchEvent(new Event('change'));
+      expect(saveButton.disabled).toBe(false);
+    });
+
+    it('saving a changed language persists it and reloads instead of calling onSave', () => {
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      const onSave = vi.fn<(s: LevelSettings) => void>();
+      const form = createSettingsForm(classic, onSave);
+      const languageSelect = form.querySelectorAll('select')[7] as HTMLSelectElement;
+      languageSelect.value = 'sv';
+      languageSelect.dispatchEvent(new Event('change'));
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      expect(loadLanguage()).toBe('sv');
+      expect(reload).toHaveBeenCalledOnce();
+      expect(onSave).not.toHaveBeenCalled();
+      reload.mockRestore();
+    });
+
+    it('saving Automatic clears a previously stored override', () => {
+      saveLanguage('en');
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      const form = createSettingsForm(classic, vi.fn());
+      const languageSelect = form.querySelectorAll('select')[7] as HTMLSelectElement;
+      languageSelect.value = 'auto';
+      languageSelect.dispatchEvent(new Event('change'));
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      expect(loadLanguage()).toBeNull();
+      reload.mockRestore();
+    });
+
+    it('Undo reverts an unsaved language change', () => {
+      const form = createSettingsForm(classic, vi.fn());
+      const languageSelect = form.querySelectorAll('select')[7] as HTMLSelectElement;
+      const undoButton = [...form.querySelectorAll('button')].find(
+        (b) => b.textContent === t('settings.undo'),
+      )!;
+      languageSelect.value = 'sv';
+      languageSelect.dispatchEvent(new Event('change'));
+      undoButton.click();
+      expect(languageSelect.value).toBe('auto');
+    });
+
+    it('Reset to defaults resets language to Automatic', () => {
+      saveLanguage('sv');
+      const form = createSettingsForm(classic, vi.fn());
+      const languageSelect = form.querySelectorAll('select')[7] as HTMLSelectElement;
+      expect(languageSelect.value).toBe('sv');
+      const resetButton = [...form.querySelectorAll('button')].find(
+        (b) => b.textContent === t('settings.reset'),
+      )!;
+      resetButton.click();
+      expect(languageSelect.value).toBe('auto');
+    });
   });
 
   it('keeps math in mm while displaying cm', () => {

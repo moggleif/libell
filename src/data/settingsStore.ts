@@ -211,12 +211,15 @@ export function loadLanguage(storage: KeyValueStorage | null = defaultStorage())
   }
 }
 
+/** `null` clears the override (storage key removed) — the next start goes
+ * back to auto-detecting from `navigator.language`. */
 export function saveLanguage(
-  lang: string,
+  lang: string | null,
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
   try {
-    storage?.setItem(LANGUAGE_KEY, lang);
+    if (lang === null) storage?.removeItem(LANGUAGE_KEY);
+    else storage?.setItem(LANGUAGE_KEY, lang);
   } catch {
     // Non-fatal — auto-detection covers the next start.
   }

@@ -215,6 +215,13 @@ export const MESSAGES = {
     'theme.system': 'Follow the phone',
     'theme.light': 'Light',
     'theme.dark': 'Dark',
+    // Manual language override (#176) — issue #42 built the plumbing for
+    // this and left it unused until now. "language.sv"/"language.en" name
+    // the language in itself (Svenska/English), not translated per-locale.
+    'settings.language': 'Language',
+    'language.auto': 'Automatic (device language)',
+    'language.sv': 'Svenska',
+    'language.en': 'English',
     'settings.appearance': 'Appearance',
     'appearance.classic': 'Classic',
     'appearance.modern': 'Modern',
@@ -577,6 +584,10 @@ export const MESSAGES = {
     'theme.system': 'Följ telefonen',
     'theme.light': 'Ljust',
     'theme.dark': 'Mörkt',
+    'settings.language': 'Språk',
+    'language.auto': 'Automatiskt (enhetens språk)',
+    'language.sv': 'Svenska',
+    'language.en': 'English',
     'settings.appearance': 'Utseende',
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',

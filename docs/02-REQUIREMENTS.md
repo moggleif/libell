@@ -165,6 +165,13 @@ URL and must keep working with no signal.
   to auto-detection.
 - All strings go through `t()` in `src/ui/i18n.ts`; both dictionaries cover the same
   keys (enforced by a unit test).
+- **Given** I open Settings and change Language away from Automatic to Svenska or
+  English, and tap Save
+- **Then** the choice is stored as the override above and the app reloads, showing
+  every string in the chosen language regardless of the phone's own locale.
+- **Given** I set Language back to Automatic and tap Save
+- **Then** the stored override is cleared and the app reloads following the phone's
+  locale again.
 
 ## R14 — Lengths display in mm or cm
 

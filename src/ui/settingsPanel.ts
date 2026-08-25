@@ -31,10 +31,10 @@ import {
   type VehicleType,
 } from '../domain/settings';
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
-import { saveSettings } from '../data/settingsStore';
+import { loadLanguage, saveLanguage, saveSettings } from '../data/settingsStore';
 import { applyAppearance, applyTheme } from './theme';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
-import { t, type MessageKey } from './i18n';
+import { t, type Language, type MessageKey } from './i18n';
 
 type NumberKey =
   'wheelbaseMm' | 'trackWidthFrontMm' | 'trackWidthRearMm' | 'toleranceMm' | 'stabilityMm';
@@ -418,6 +418,43 @@ export function createSettingsForm(
   });
   themeField.append(themeCaption, themeSelect);
 
+  // --- Language (#176): a manual override of the auto-detected sv/en
+  // split from issue #42, which built `loadLanguage`/`saveLanguage` and
+  // `getLanguage`/`setLanguage`/`resolveLanguage` for exactly this. Taking
+  // effect needs every string across the whole app (menu, main screen,
+  // onboarding…) to re-render, and this codebase has no live
+  // cross-component relabeling — so, same scope cut as Appearance above,
+  // the choice only applies on Save, via a full reload (`submit` handler
+  // below) rather than new machinery for a preference nobody changes often.
+  const languageField = document.createElement('label');
+  languageField.className = 'settings__field';
+  const languageCaption = document.createElement('span');
+  const languageSelect = document.createElement('select');
+  languageSelect.className = 'settings__select';
+  type LanguageChoice = 'auto' | Language;
+  const LANGUAGES: { value: LanguageChoice; label: MessageKey }[] = [
+    { value: 'auto', label: 'language.auto' },
+    { value: 'sv', label: 'language.sv' },
+    { value: 'en', label: 'language.en' },
+  ];
+  const storedLanguage = loadLanguage();
+  const initialLanguage: LanguageChoice =
+    storedLanguage === 'sv' || storedLanguage === 'en' ? storedLanguage : 'auto';
+  let languageChoice: LanguageChoice = initialLanguage;
+  const languageOptions: [HTMLOptionElement, MessageKey][] = [];
+  for (const { value, label } of LANGUAGES) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.selected = value === initialLanguage;
+    languageSelect.append(option);
+    languageOptions.push([option, label]);
+  }
+  languageSelect.addEventListener('change', () => {
+    languageChoice = languageSelect.value as LanguageChoice;
+    notifyChanged();
+  });
+  languageField.append(languageCaption, languageSelect);
+
   // --- Appearance (#104): a preset independent of light/dark — today's
   // look ('classic') or the redesigned surfaces/screens ('modern').
   const appearanceField = document.createElement('label');
@@ -613,6 +650,7 @@ export function createSettingsForm(
       measureHint,
       unitField,
       themeField,
+      languageField,
       advancedDetails,
       actions,
     );
@@ -818,6 +856,7 @@ export function createSettingsForm(
       displayHeading,
       unitField,
       themeField,
+      languageField,
       advancedDetails,
       actions,
     );
@@ -849,6 +888,8 @@ export function createSettingsForm(
     unitCaption.textContent = t('settings.unit');
     themeCaption.textContent = t('settings.theme');
     for (const [option, label] of themeOptions) option.textContent = t(label);
+    languageCaption.textContent = t('settings.language');
+    for (const [option, label] of languageOptions) option.textContent = t(label);
     appearanceCaption.textContent = t('settings.appearance');
     for (const [option, label] of appearanceOptions) option.textContent = t(label);
     soundCaption.textContent = t('settings.sound');
@@ -887,7 +928,9 @@ export function createSettingsForm(
   // Save and Undo are grayed out until the form differs from what is saved.
   let saved = initial;
   const notifyChanged = () => {
-    const clean = JSON.stringify(currentSettings()) === JSON.stringify(saved);
+    const clean =
+      JSON.stringify(currentSettings()) === JSON.stringify(saved) &&
+      languageChoice === initialLanguage;
     for (const btn of saveButtons) btn.disabled = clean;
     for (const btn of undoButtons) btn.disabled = clean;
   };
@@ -917,8 +960,20 @@ export function createSettingsForm(
     notifyChanged();
   };
 
-  undo.addEventListener('click', () => populate(saved));
-  reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+  // Language is not part of `LevelSettings` (#176, same as the reason
+  // above), so `populate()` never touches it — reset it alongside.
+  undo.addEventListener('click', () => {
+    populate(saved);
+    languageChoice = initialLanguage;
+    languageSelect.value = languageChoice;
+    notifyChanged();
+  });
+  reset.addEventListener('click', () => {
+    populate(DEFAULT_SETTINGS);
+    languageChoice = 'auto';
+    languageSelect.value = languageChoice;
+    notifyChanged();
+  });
 
   form.resyncSoundFields = (sound) => {
     soundInput.checked = sound.soundOnLevel;
@@ -935,6 +990,16 @@ export function createSettingsForm(
     renderChips();
     saveSettings(settings);
     saved = settings;
+    // A language change needs the whole app relabeled — the same "decided
+    // once, at construction" cut as Appearance's tab structure, but here
+    // resolved with a reload instead of leaving it until the form is next
+    // built (#176), since unlike Appearance there is no fallback view of
+    // the app in the old language to leave stale until then.
+    if (languageChoice !== initialLanguage) {
+      saveLanguage(languageChoice === 'auto' ? null : languageChoice);
+      location.reload();
+      return;
+    }
     notifyChanged();
     onSave(settings);
   });
