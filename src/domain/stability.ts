@@ -23,7 +23,7 @@
  * caravan reuses the per-wheel `stabilizeLift` core.
  */
 import type { LevelingResult, LiftSeverity, WheelId } from './leveling';
-import { liftSeverity, recommendStep, WHEEL_IDS } from './leveling';
+import { recommendStep, WHEEL_IDS } from './leveling';
 import { evaluateSteps, plannedSeverity, planRamps, type RampPlan } from './rampPlan';
 import type { LevelSettings } from './settings';
 
@@ -54,17 +54,22 @@ export const STATE_DWELL_MS = 1500;
 export interface LiftPending {
   displaySince: number | null;
   stepSince: number | null;
-  severitySince: number | null;
 }
 
 export function newLiftPending(): LiftPending {
-  return { displaySince: null, stepSince: null, severitySince: null };
+  return { displaySince: null, stepSince: null };
 }
 
 /**
- * Stabilize one wheel's displayed lift/step/severity against the previous
- * shown state — the dead-band + dwell core used by the caravan, whose
- * single ramped wheel needs no plan (the step is simply the closest one).
+ * Stabilize one wheel's displayed lift/step against the previous shown
+ * state — the dead-band + dwell core used by the caravan, whose single
+ * ramped wheel needs no plan (the step is simply the closest one).
+ *
+ * Severity is deliberately NOT a third independently-clocked layer here
+ * either (see the `createDisplayStabilizer` doc comment for the field
+ * report this fixed on the motorhome screen): it is derived below from
+ * the mm figure and step *this call is about to return*, so the color
+ * can never name a state those two numbers don't.
  */
 export function stabilizeLift(
   prev: DisplayWheel,
@@ -74,11 +79,8 @@ export function stabilizeLift(
   nowMs: number,
 ): DisplayWheel {
   const deadbandMm = settings.stabilityMm;
-  const fresh: DisplayWheel = {
-    displayMm: Math.round(liftMm),
-    stepMm: recommendStep(liftMm, settings.rampStepHeightsMm),
-    severity: liftSeverity(liftMm, settings),
-  };
+  const freshDisplayMm = Math.round(liftMm);
+  const freshStepMm = recommendStep(liftMm, settings.rampStepHeightsMm);
 
   // Whole-mm figure: the reading must sit half a mm plus the dead
   // band away from the shown value, and stay there for the dwell.
@@ -89,43 +91,35 @@ export function stabilizeLift(
   } else {
     pend.displaySince ??= nowMs;
     if (nowMs - pend.displaySince >= VALUE_DWELL_MS) {
-      displayMm = fresh.displayMm;
+      displayMm = freshDisplayMm;
       pend.displaySince = null;
     }
   }
 
   // Ramp step: the candidate must be clearly closer than the shown
   // step (0 = "no step" competes too), sustained for the dwell.
-  const wantsStep = Math.abs(liftMm - fresh.stepMm) + deadbandMm < Math.abs(liftMm - prev.stepMm);
+  const wantsStep = Math.abs(liftMm - freshStepMm) + deadbandMm < Math.abs(liftMm - prev.stepMm);
   let stepMm = prev.stepMm;
   if (!wantsStep) {
     pend.stepSince = null;
   } else {
     pend.stepSince ??= nowMs;
     if (nowMs - pend.stepSince >= VALUE_DWELL_MS) {
-      stepMm = fresh.stepMm;
+      stepMm = freshStepMm;
       pend.stepSince = null;
     }
   }
 
-  // Severity: the reading must be past the color boundary by the dead
-  // band in both directions (clearly on the new side), and hold there
-  // for the state dwell before the color — and the level status that
-  // is derived from it — may change.
-  const wantsSeverity =
-    fresh.severity !== prev.severity &&
-    liftSeverity(liftMm - deadbandMm, settings) === fresh.severity &&
-    liftSeverity(liftMm + deadbandMm, settings) === fresh.severity;
-  let severity = prev.severity;
-  if (!wantsSeverity) {
-    pend.severitySince = null;
-  } else {
-    pend.severitySince ??= nowMs;
-    if (nowMs - pend.severitySince >= STATE_DWELL_MS) {
-      severity = fresh.severity;
-      pend.severitySince = null;
-    }
-  }
+  // Severity: the same green/orange/red call `liftSeverity` makes, but
+  // against the shown step instead of recomputing its own — so it always
+  // describes exactly the mm figure and step above, never a fresher or
+  // staler reading of either.
+  const severity: LiftSeverity =
+    displayMm <= settings.toleranceMm
+      ? 'none'
+      : Math.abs(displayMm - stepMm) <= settings.toleranceMm
+        ? 'small'
+        : 'large';
 
   return { displayMm, stepMm, severity };
 }
@@ -136,15 +130,26 @@ export function stabilizeLift(
  * app, hand-stepped in tests) and render what it returns. State is
  * per-instance, so tests and the app each own their history.
  *
- * Three stabilized layers:
- * - each wheel's mm figure: dead band + dwell on the raw lift, as before;
+ * Two stabilized layers, each with its own dead band + dwell against the
+ * raw reading:
+ * - each wheel's mm figure;
  * - the ramp plan (which wheels get steps): a fresh optimum replaces the
  *   shown plan only when it is *clearly* better under the current lifts —
  *   clearly more level, level with fewer ramps, or (all else equal)
- *   clearly better for the drain — sustained for the value dwell;
- * - each wheel's color: the fresh plan's verdict, adopted only when the
- *   dead-band-shifted readings agree on it and it holds for the state
- *   dwell — so the level status cannot flap at a boundary.
+ *   clearly better for the drain — sustained for the value dwell.
+ *
+ * A wheel's severity (color/glyph) is deliberately NOT a third stabilized
+ * layer with its own clock: earlier this module derived it straight from
+ * the live lift and a *not-yet-adopted* candidate plan, on a longer dwell
+ * than the mm figure and the shown plan used. That let the three ship on
+ * different schedules, so a screen could — correctly per each layer's own
+ * rule — show a wheel's mm figure and plan already caught up to a big
+ * tilt while its color/text still reflected the old one (e.g. "0 mm" next
+ * to a red "no ramp reaches this wheel"), self-contradictory even though
+ * no single layer was wrong in isolation (field report, screenshot v1.0.0
+ * CR180). Severity is instead recomputed every tick as a pure function of
+ * *this tick's* shown plan and displayed mm — the same two numbers the
+ * diagram renders — so it can never name a state the numbers don't.
  */
 export function createDisplayStabilizer(): (
   result: LevelingResult,
@@ -153,9 +158,7 @@ export function createDisplayStabilizer(): (
 ) => DisplayResult {
   let initialized = false;
   const displayMm = {} as Record<WheelId, number>;
-  const severity = {} as Record<WheelId, LiftSeverity>;
   const mmSince = {} as Record<WheelId, number | null>;
-  const severitySince = {} as Record<WheelId, number | null>;
   let shownSteps = {} as Record<WheelId, number>;
   let planSince: number | null = null;
 
@@ -164,29 +167,16 @@ export function createDisplayStabilizer(): (
     const lifts = {} as Record<WheelId, number>;
     for (const id of WHEEL_IDS) lifts[id] = result.wheels[id].liftMm;
 
-    // The best plan for the current reading, and for the reading shifted
-    // by the dead band toward/away from level (the reference wheel stays
-    // the reference) — the severity boundary guard.
+    // The best plan for the current (live) reading — used only to decide
+    // *whether* to adopt a new shown plan, never to render directly.
     const fresh = planRamps(lifts, settings);
-    const shiftedPlan = (deltaMm: number): { plan: RampPlan; lifts: Record<WheelId, number> } => {
-      const shifted = {} as Record<WheelId, number>;
-      for (const id of WHEEL_IDS)
-        shifted[id] = lifts[id] > 0 ? Math.max(0, lifts[id] + deltaMm) : 0;
-      return { plan: planRamps(shifted, settings), lifts: shifted };
-    };
-    const severityOf = (
-      { plan, lifts: at }: { plan: RampPlan; lifts: Record<WheelId, number> },
-      id: WheelId,
-    ) => plannedSeverity(plan.steps[id], plan.deficits[id], at[id], settings);
 
     if (!initialized) {
       initialized = true;
       shownSteps = { ...fresh.steps };
       for (const id of WHEEL_IDS) {
         displayMm[id] = Math.round(lifts[id]);
-        severity[id] = severityOf({ plan: fresh, lifts }, id);
         mmSince[id] = null;
-        severitySince[id] = null;
       }
     } else {
       // Plan adoption: compare the fresh optimum against what the shown
@@ -215,8 +205,6 @@ export function createDisplayStabilizer(): (
         }
       }
 
-      const lo = shiftedPlan(-deadbandMm);
-      const hi = shiftedPlan(deadbandMm);
       for (const id of WHEEL_IDS) {
         // Whole-mm figure: clearly past the shown value, sustained.
         const wantsMm = Math.abs(lifts[id] - displayMm[id]) > 0.5 + deadbandMm;
@@ -229,36 +217,31 @@ export function createDisplayStabilizer(): (
             mmSince[id] = null;
           }
         }
-
-        // Color: what the fresh plan says about this wheel — but only
-        // when a dead band's worth of tilt either way says the same.
-        const candidate = severityOf({ plan: fresh, lifts }, id);
-        const wantsSeverity =
-          candidate !== severity[id] &&
-          severityOf(lo, id) === candidate &&
-          severityOf(hi, id) === candidate;
-        if (!wantsSeverity) {
-          severitySince[id] = null;
-        } else {
-          severitySince[id] ??= nowMs;
-          if (nowMs - severitySince[id]! >= STATE_DWELL_MS) {
-            severity[id] = candidate;
-            severitySince[id] = null;
-          }
-        }
       }
     }
 
+    // Severity, one wheel-card's worth of mm + step + color, computed
+    // together from the two layers just settled above — see the doc
+    // comment: this is what keeps them from ever contradicting.
+    const shown = evaluateSteps(shownSteps, displayMm, settings);
     const wheels = {} as Record<WheelId, DisplayWheel>;
     for (const id of WHEEL_IDS) {
-      wheels[id] = { displayMm: displayMm[id], stepMm: shownSteps[id], severity: severity[id] };
+      wheels[id] = {
+        displayMm: displayMm[id],
+        stepMm: shownSteps[id],
+        severity: plannedSeverity(shownSteps[id], shown.deficits[id], displayMm[id], settings),
+      };
     }
     // Level exactly when every wheel shows green — one source of truth.
-    const isLevel = WHEEL_IDS.every((id) => severity[id] === 'none');
-    // What the *shown* plan (not necessarily `fresh`, mid-adoption) leaves
-    // un-level under the current lifts — the same plan the steps/severities
-    // above come from.
-    const maxDeficitMm = evaluateSteps(shownSteps, lifts, settings).maxDeficitMm;
-    return { rollDeg: result.rollDeg, pitchDeg: result.pitchDeg, isLevel, wheels, maxDeficitMm };
+    const isLevel = WHEEL_IDS.every((id) => wheels[id].severity === 'none');
+    return {
+      rollDeg: result.rollDeg,
+      pitchDeg: result.pitchDeg,
+      isLevel,
+      wheels,
+      // Same shown plan + displayed mm the wheel cards above come from, so
+      // the status line's magnitude wording (#125) can never disagree.
+      maxDeficitMm: shown.maxDeficitMm,
+    };
   };
 }

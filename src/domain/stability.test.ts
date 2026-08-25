@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from './leveling';
+import { evaluateSteps, plannedSeverity } from './rampPlan';
 import { DEFAULT_SETTINGS } from './settings';
 import { createDisplayStabilizer, STATE_DWELL_MS, VALUE_DWELL_MS } from './stability';
 
@@ -148,6 +149,73 @@ describe('createDisplayStabilizer', () => {
     at(40, VALUE_DWELL_MS / 2);
     const settled = at(40, VALUE_DWELL_MS);
     expect(settled.wheels.frontRight.displayMm).toBe(40);
+  });
+
+  /**
+   * Field regression: a screenshot (v1.0.0-CR180) showed one corner as
+   * "Klart" (green check, 43 mm) and the diagonal corner as a red X,
+   * "Ingen ramp" ("no ramp reaches this wheel"), 0 mm — a wheel that by
+   * its own displayed number needs no lift at all, flagged as needing one
+   * a ramp can't provide. Each field (mm, step, color) was individually
+   * "correct" per its own dwell, but the mm figure and the shown plan
+   * updated on different clocks than the color, so mid-transition they
+   * could disagree. The fix: severity is now a pure function of the
+   * *exact* shown plan + displayed mm figures — recomputing it from
+   * those two (the same inputs the UI renders) must equal what the
+   * stabilizer actually returned, on every single frame, never just at
+   * rest.
+   */
+  it('never lets a wheel card show a color the shown mm/step figures disagree with (field regression: screenshot v1.0.0-CR180)', () => {
+    const stabilize = createDisplayStabilizer();
+    const wheel = (liftMm: number) => ({ liftMm, stepMm: 0 });
+    const resultFor = (fl: number, fr: number, rl: number, rr: number) => ({
+      rollDeg: 0,
+      pitchDeg: 0,
+      isLevel: false,
+      wheels: {
+        frontLeft: wheel(fl),
+        frontRight: wheel(fr),
+        rearLeft: wheel(rl),
+        rearRight: wheel(rr),
+      },
+    });
+
+    // A wheel needing the tallest step, then a sudden clear back near
+    // level — fed at sensor rate (16 ms) so most frames land mid-dwell,
+    // exactly where the old, independently-clocked severity could drift
+    // from the mm figure and shown step it was meant to describe.
+    const frames: Array<[number, number, number, number, number]> = [
+      [0, 150, 30, 118, 1600], // settle: a real "needs a big step" state
+      [0, 150, 30, 118, 1600],
+      [0, 0, 30, 118, 16],
+      [0, 0, 30, 118, 16],
+      [0, 0, 30, 118, 200],
+      [0, 0, 30, 118, 400],
+      [0, 0, 30, 118, 700],
+      [0, 0, 30, 118, 1600],
+      [0, 8, 5, 20, 16],
+      [0, 8, 5, 20, 700],
+      [0, 8, 5, 20, 1600],
+    ];
+
+    let now = 0;
+    for (const [fl, fr, rl, rr, dtMs] of frames) {
+      now += dtMs;
+      const display = stabilize(resultFor(fl, fr, rl, rr), settings, now);
+
+      const shownSteps = {} as Record<(typeof WHEEL_IDS)[number], number>;
+      const shownMm = {} as Record<(typeof WHEEL_IDS)[number], number>;
+      for (const id of WHEEL_IDS) {
+        shownSteps[id] = display.wheels[id].stepMm;
+        shownMm[id] = display.wheels[id].displayMm;
+      }
+      const deficits = evaluateSteps(shownSteps, shownMm, settings).deficits;
+
+      for (const id of WHEEL_IDS) {
+        const expected = plannedSeverity(shownSteps[id], deficits[id], shownMm[id], settings);
+        expect(display.wheels[id].severity).toBe(expected);
+      }
+    }
   });
 });
 

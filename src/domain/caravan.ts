@@ -11,16 +11,15 @@
  */
 import type { Calibration, LevelSettings } from './settings';
 import {
-  liftSeverity,
   recommendStep,
   tiltFromGravity,
   type GravityVector,
+  type LiftSeverity,
   type WheelLift,
 } from './leveling';
 import {
   newLiftPending,
   stabilizeLift,
-  STATE_DWELL_MS,
   VALUE_DWELL_MS,
   type DisplayWheel,
   type LiftPending,
@@ -100,30 +99,33 @@ export function createCaravanStabilizer(): (
     left: newLiftPending(),
     right: newLiftPending(),
   };
-  let jockeyShownMm = 0;
-  let jockeyDirection: JockeyDirection = 'ok';
+  // The one stabilized quantity for the jockey is its signed mm figure;
+  // the displayed magnitude and direction are both derived from it below
+  // rather than tracked on their own clocks, so — as with the axle wheels
+  // and the motorhome screen — the arrow can never point a way the number
+  // has already stopped agreeing with (see `createDisplayStabilizer`'s
+  // doc comment for the field report this pattern fixed).
+  let jockeyShownSignedMm = 0;
   let jockeyMmSince: number | null = null;
-  let jockeyDirSince: number | null = null;
 
   return (result, settings, nowMs) => {
     const deadbandMm = settings.stabilityMm;
     const dirOf = (mm: number): JockeyDirection =>
       Math.abs(mm) <= settings.toleranceMm ? 'ok' : mm > 0 ? 'up' : 'down';
-    const freshMm = Math.round(Math.abs(result.jockeyMm));
-    const freshDir = dirOf(result.jockeyMm);
 
     if (!initialized) {
       initialized = true;
       for (const side of ['left', 'right'] as const) {
         const liftMm = result.axle[side].liftMm;
-        axle[side] = {
-          displayMm: Math.round(liftMm),
-          stepMm: result.axle[side].stepMm,
-          severity: liftSeverity(liftMm, settings),
-        };
+        const severity: LiftSeverity =
+          liftMm <= settings.toleranceMm
+            ? 'none'
+            : Math.abs(liftMm - result.axle[side].stepMm) <= settings.toleranceMm
+              ? 'small'
+              : 'large';
+        axle[side] = { displayMm: Math.round(liftMm), stepMm: result.axle[side].stepMm, severity };
       }
-      jockeyShownMm = freshMm;
-      jockeyDirection = freshDir;
+      jockeyShownSignedMm = result.jockeyMm;
     } else {
       axle.left = stabilizeLift(axle.left, pending.left, result.axle.left.liftMm, settings, nowMs);
       axle.right = stabilizeLift(
@@ -134,38 +136,21 @@ export function createCaravanStabilizer(): (
         nowMs,
       );
 
-      // Jockey magnitude: like the wheel mm figure — clearly past the shown
-      // value, sustained for the value dwell.
-      const wantsMm = Math.abs(Math.abs(result.jockeyMm) - jockeyShownMm) > 0.5 + deadbandMm;
+      // Signed jockey figure: clearly past the shown value, sustained for
+      // the value dwell — same dead-band + dwell shape as a wheel's mm.
+      const wantsMm = Math.abs(result.jockeyMm - jockeyShownSignedMm) > 0.5 + deadbandMm;
       if (!wantsMm) {
         jockeyMmSince = null;
       } else {
         jockeyMmSince ??= nowMs;
         if (nowMs - jockeyMmSince >= VALUE_DWELL_MS) {
-          jockeyShownMm = freshMm;
+          jockeyShownSignedMm = result.jockeyMm;
           jockeyMmSince = null;
-        }
-      }
-
-      // Jockey direction: clearly past the tolerance boundary by the dead
-      // band in both directions, held for the state dwell.
-      const magnitude = Math.abs(result.jockeyMm);
-      const sign = Math.sign(result.jockeyMm);
-      const wantsDir =
-        freshDir !== jockeyDirection &&
-        dirOf(sign * (magnitude - deadbandMm)) === freshDir &&
-        dirOf(sign * (magnitude + deadbandMm)) === freshDir;
-      if (!wantsDir) {
-        jockeyDirSince = null;
-      } else {
-        jockeyDirSince ??= nowMs;
-        if (nowMs - jockeyDirSince >= STATE_DWELL_MS) {
-          jockeyDirection = freshDir;
-          jockeyDirSince = null;
         }
       }
     }
 
+    const jockeyDirection = dirOf(jockeyShownSignedMm);
     return {
       rollDeg: result.rollDeg,
       pitchDeg: result.pitchDeg,
@@ -173,7 +158,7 @@ export function createCaravanStabilizer(): (
       isLevel:
         axle.left.severity === 'none' && axle.right.severity === 'none' && jockeyDirection === 'ok',
       axle: { left: axle.left, right: axle.right },
-      jockey: { displayMm: jockeyShownMm, direction: jockeyDirection },
+      jockey: { displayMm: Math.round(Math.abs(jockeyShownSignedMm)), direction: jockeyDirection },
     };
   };
 }
