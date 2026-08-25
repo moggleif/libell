@@ -61,6 +61,14 @@ export interface LevelSettings {
   displayUnit: 'mm' | 'cm';
   /** Play a chime when the vehicle reaches level (opt-in). */
   soundOnLevel: boolean;
+  /**
+   * Continuous audio guidance while approaching level (#121, opt-in,
+   * default off): pulse rate/pitch tracks the STABILIZED distance from
+   * level, plus a non-alarming improving/worsening signal — see
+   * `src/domain/audioGuidance.ts`. Independent of `soundOnLevel`, which
+   * only covers the "reached" chime.
+   */
+  soundGuidance: boolean;
   /** Color theme: follow the phone, or force light/dark. */
   theme: ThemeSetting;
   /**
@@ -101,6 +109,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   stabilityMm: 3,
   displayUnit: 'mm',
   soundOnLevel: false,
+  soundGuidance: false,
   theme: 'system',
   // Modern is the default preset (#136); Classic remains a full,
   // permanently-supported choice for anyone who picks it.
@@ -235,6 +244,7 @@ export function parseSettings(value: unknown): LevelSettings {
     stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
     soundOnLevel: raw.soundOnLevel === true,
+    soundGuidance: raw.soundGuidance === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
     appearance:
       raw.appearance === 'classic' || raw.appearance === 'modern'

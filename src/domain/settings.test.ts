@@ -22,6 +22,7 @@ describe('parseSettings', () => {
       stabilityMm: 5,
       displayUnit: 'cm' as const,
       soundOnLevel: true,
+      soundGuidance: true,
       theme: 'light' as const,
       appearance: 'modern' as const,
     };
@@ -75,6 +76,7 @@ describe('parseSettings', () => {
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
       displayUnit: 'mm',
       soundOnLevel: false,
+      soundGuidance: false,
       theme: 'system',
       appearance: DEFAULT_SETTINGS.appearance,
     });
@@ -109,6 +111,8 @@ describe('parseSettings', () => {
     expect(parseSettings({ displayUnit: 'inches' }).displayUnit).toBe('mm');
     expect(parseSettings({ soundOnLevel: true }).soundOnLevel).toBe(true);
     expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(false);
+    expect(parseSettings({ soundGuidance: true }).soundGuidance).toBe(true);
+    expect(parseSettings({ soundGuidance: 'yes' }).soundGuidance).toBe(false);
   });
 
   it('validates the vehicle type, defaulting to motorhome', () => {

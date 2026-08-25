@@ -2,9 +2,10 @@
  * Settings form: vehicle geometry, the ramp step editor (a ready-made
  * ramp picker plus a visual +/− list — no separator syntax to learn),
  * display unit,
- * tolerance/stability and the level chime. Values are entered and shown
- * in the chosen unit; storage and math stay mm. Save is disabled until
- * the form differs from the saved settings.
+ * tolerance/stability, the level chime and continuous audio guidance
+ * (#121). Values are entered and shown in the chosen unit; storage and
+ * math stay mm. Save is disabled until the form differs from the saved
+ * settings.
  *
  * Modern appearance (#108): when `initial.appearance === 'modern'`, the
  * form renders as three tabs (Fordon/Klossar/Kalibrering) instead of one
@@ -419,6 +420,19 @@ export function createSettingsForm(
   soundInput.checked = initial.soundOnLevel;
   soundField.append(soundCaption, soundInput);
 
+  // --- Continuous audio guidance (#121): a separate opt-in from the
+  // completion chime above — pulse rate/pitch while approaching level.
+  const soundGuidanceField = document.createElement('label');
+  soundGuidanceField.className = 'settings__field';
+  const soundGuidanceCaption = document.createElement('span');
+  const soundGuidanceInput = document.createElement('input');
+  soundGuidanceInput.type = 'checkbox';
+  soundGuidanceInput.className = 'settings__checkbox';
+  soundGuidanceInput.checked = initial.soundGuidance;
+  soundGuidanceField.append(soundGuidanceCaption, soundGuidanceInput);
+  const soundGuidanceHint = document.createElement('p');
+  soundGuidanceHint.className = 'settings__hint';
+
   // Save persists; Undo returns to the last saved values; Reset fills
   // the form with the factory defaults (still needs Save to persist,
   // and Undo can take it back). Modern mode's Klossar tab additionally
@@ -533,6 +547,8 @@ export function createSettingsForm(
       themeField,
       appearanceField,
       soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
       actions,
     );
 
@@ -740,6 +756,8 @@ export function createSettingsForm(
       themeField,
       appearanceField,
       soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
       actions,
     );
   }
@@ -773,6 +791,8 @@ export function createSettingsForm(
     appearanceCaption.textContent = t('settings.appearance');
     for (const [option, label] of appearanceOptions) option.textContent = t(label);
     soundCaption.textContent = t('settings.sound');
+    soundGuidanceCaption.textContent = t('settings.soundGuidance');
+    soundGuidanceHint.textContent = t('settings.soundGuidance.help');
     vehicleHeading.textContent = t('settings.section.vehicle');
     rampsHeading.textContent = t('settings.section.ramps');
     displayHeading.textContent = t('settings.section.display');
@@ -794,6 +814,7 @@ export function createSettingsForm(
       drainPosition: drainSelect.value,
       displayUnit: unit,
       soundOnLevel: soundInput.checked,
+      soundGuidance: soundGuidanceInput.checked,
       theme: themeSelect.value,
       appearance: appearanceSelect.value,
     };
@@ -830,6 +851,7 @@ export function createSettingsForm(
     appearanceSelect.value = settings.appearance;
     applyAppearance(settings.appearance);
     soundInput.checked = settings.soundOnLevel;
+    soundGuidanceInput.checked = settings.soundGuidance;
     notifyChanged();
   };
 

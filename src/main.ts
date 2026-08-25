@@ -7,6 +7,13 @@ import { computeCaravanLeveling, createCaravanStabilizer } from './domain/carava
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
+import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
+import {
+  offsetTooSteep,
+  presetOffsetFromReading,
+  targetOffsetFor,
+  type TargetPreset,
+} from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
@@ -15,12 +22,16 @@ import {
   clearVehicleCalibration,
   hasSeenOnboarding,
   hasStoredSettings,
+  loadActiveTargetId,
   loadCalibrationInfo,
   loadLanguage,
   loadSettings,
+  loadTargetPresets,
   loadVehicleCalibrationInfo,
   markOnboardingSeen,
+  saveActiveTargetId,
   saveCalibration,
+  saveTargetPresets,
   saveVehicleCalibration,
 } from './data/settingsStore';
 import {
@@ -32,6 +43,7 @@ import {
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
+import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
 import { showOnboarding } from './ui/onboarding';
@@ -119,6 +131,28 @@ function playChime(): void {
   }
 }
 
+// Continuous audio guidance pulse (#121) — a short, soft tone at the pitch
+// the domain layer computed from the stabilized distance, with a brief
+// glide up (improving) or down (worsening) that reads as directional
+// without being alarming. Deliberately quieter and shorter than the
+// two-tone completion chime above so the two never get confused.
+function playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const durationS = 0.09;
+  const glide = direction === 'improving' ? 1.15 : direction === 'worsening' ? 1 / 1.15 : 1;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.frequency.setValueAtTime(pitchHz, now);
+  osc.frequency.linearRampToValueAtTime(pitchHz * glide, now + durationS);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + durationS);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + durationS + 0.02);
+}
+
 function bootstrap(root: HTMLElement): void {
   keepScreenAwake();
 
@@ -131,7 +165,18 @@ function bootstrap(root: HTMLElement): void {
   const storedVehicle = loadVehicleCalibrationInfo();
   let vehicleCalibration: Calibration | null = storedVehicle?.value ?? null;
   let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
-  const effectiveCalibration = () => combineCalibrations(calibration, vehicleCalibration);
+  // The two-layer calibration sum — what "level" means, untouched by
+  // target presets below (#122, ADR 0013).
+  const zeroCalibration = () => combineCalibrations(calibration, vehicleCalibration);
+  // Target presets (#122, ADR 0013): an intentional NON-level target,
+  // applied as a THIRD additive term on top of the two-layer sum above —
+  // never conflated with it, never stored in the same field. "Normal"
+  // (activeTargetId === null) leaves effectiveCalibration identical to
+  // zeroCalibration (regression guard).
+  let targetPresets: TargetPreset[] = loadTargetPresets();
+  let activeTargetId: string | null = loadActiveTargetId(targetPresets);
+  const effectiveCalibration = () =>
+    combineCalibrations(zeroCalibration(), targetOffsetFor(targetPresets, activeTargetId));
   applyTheme(settings.theme);
   applyAppearance(settings.appearance);
   followSystemTheme(() => settings.theme);
@@ -207,8 +252,8 @@ function bootstrap(root: HTMLElement): void {
       applyTheme(settings.theme);
       applyAppearance(settings.appearance);
       // The save click is a user gesture — the right moment to unlock
-      // audio for the opt-in level chime.
-      if (settings.soundOnLevel) unlockAudio();
+      // audio for the opt-in level chime and/or continuous guidance.
+      if (settings.soundOnLevel || settings.soundGuidance) unlockAudio();
       updateIndicators();
       maybeRebuildScreen();
     },
@@ -240,6 +285,11 @@ function bootstrap(root: HTMLElement): void {
       clearVehicleCalibration();
       updateIndicators();
     },
+    getTargetPresets: () => targetPresets,
+    getActiveTargetId: () => activeTargetId,
+    selectTarget: (id) => selectTargetNow(id),
+    addTargetPreset: (name) => addTargetPresetNow(name),
+    deleteTargetPreset: (id) => deleteTargetPresetNow(id),
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
@@ -256,6 +306,47 @@ function bootstrap(root: HTMLElement): void {
     });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
+
+  // Target badge (#122, ADR 0013): the only main-screen trace of a
+  // target preset — hidden whenever Normal (true level) is active, so
+  // the normal case shows nothing extra. Tapping it jumps straight to
+  // the Targets menu section (fast switching from the main screen).
+  const targetBadge = createTargetBadge(() => menu.open('targets'));
+  document.querySelector('#indicators')?.append(targetBadge.element);
+  const updateTargetBadge = () => {
+    const active = targetPresets.find((preset) => preset.id === activeTargetId) ?? null;
+    targetBadge.update(active ? active.name : null);
+  };
+  updateTargetBadge();
+
+  function selectTargetNow(id: string | null): void {
+    activeTargetId = id;
+    saveActiveTargetId(id);
+    updateTargetBadge();
+  }
+
+  /** Capture the current tilt, relative to the zero point (never to any
+   * currently active preset), as a new named preset. */
+  function addTargetPresetNow(name: string): string | null {
+    const reading = readTiltNow();
+    if (typeof reading === 'string') return reading;
+    const offset = presetOffsetFromReading(reading, zeroCalibration());
+    if (offsetTooSteep(offset)) return t('targets.err.tooSteep');
+    const id =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `preset-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    targetPresets = [...targetPresets, { id, name, offset }];
+    saveTargetPresets(targetPresets);
+    return null;
+  }
+
+  function deleteTargetPresetNow(id: string): void {
+    targetPresets = targetPresets.filter((preset) => preset.id !== id);
+    saveTargetPresets(targetPresets);
+    if (activeTargetId === id) selectTargetNow(null);
+    else updateTargetBadge();
+  }
 
   // Shared by the menu and the onboarding wizard. Starting the sensor on
   // demand makes calibration work from the wizard before the main screen
@@ -485,6 +576,14 @@ function bootstrap(root: HTMLElement): void {
     const REARM_SUSTAIN_MS = 3000;
     const CELEBRATE_COOLDOWN_MS = 20000;
 
+    // Continuous audio guidance (#121, opt-in): pulse rate/pitch track the
+    // STABILIZED maxCorrectionMm the engine already produces — never a raw
+    // reading. The guidance state is still fed every frame (so its own
+    // direction hysteresis keeps working smoothly), but a pulse is only
+    // actually scheduled while still (R25) and the setting is on.
+    const guideAudio = createAudioGuidance();
+    let lastGuidancePulseAt = -Infinity;
+
     const celebrate = () => {
       if (!celebrateArmed || document.visibilityState !== 'visible') return;
       const now = performance.now();
@@ -537,6 +636,17 @@ function bootstrap(root: HTMLElement): void {
         if (still && isLevel && !wasLevel) celebrate();
         if (!isLevel) overlay.hidden = true;
         wasLevel = isLevel;
+        const guidance = guideAudio(maxCorrectionMm, isLevel, settings, now);
+        if (
+          settings.soundGuidance &&
+          still &&
+          guidance.pulseIntervalMs !== null &&
+          guidance.pitchHz !== null &&
+          now - lastGuidancePulseAt >= guidance.pulseIntervalMs
+        ) {
+          playGuidancePulse(guidance.pitchHz, guidance.direction);
+          lastGuidancePulseAt = now;
+        }
         // Re-arm the celebration only once clearly un-level, sustained.
         if (!isLevel && maxCorrectionMm > settings.toleranceMm + REARM_MARGIN_MM) {
           clearlyUnlevelSince ??= now;

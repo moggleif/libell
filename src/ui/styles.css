@@ -301,6 +301,26 @@ body {
   background: color-mix(in srgb, var(--warning) 12%, transparent);
 }
 
+/* Target badge (#122, ADR 0013): a small, unobtrusive, purely
+ * informational indicator — hidden entirely while Normal (true level) is
+ * active. Deliberately neutral (on-surface / outline), not the amber
+ * warning lamp treatment above: an active target is a deliberate choice,
+ * never something wrong. */
+.target-badge {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--on-surface);
+  background: var(--surface-sunken);
+  border: 1.5px solid var(--outline);
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .app {
   flex: 1;
   /* Anchor for the pose/level overlays: they cover the app area only,
@@ -1067,6 +1087,94 @@ body {
 .calibration-card__row .menu__action {
   flex: 1;
   margin-top: 0;
+}
+
+/* ---- Target presets (#122, ADR 0013) ----
+ * A menu list, not calibration cards: presets are a *target*, not a
+ * calibration — see targetsSection.ts. Neutral, informational styling
+ * (not the amber warning treatment) since selecting a preset is a
+ * deliberate choice, never something left undone. */
+
+.targets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.targets__row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.targets__row-select {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--on-surface);
+  background: var(--surface-sunken);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.targets__row-select--active {
+  border-color: var(--on-surface);
+}
+
+.targets__row-radio {
+  flex: none;
+  color: var(--on-surface-muted);
+}
+
+.targets__row-select--active .targets__row-radio {
+  color: var(--on-surface);
+}
+
+.targets__row-label {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.targets__row-delete {
+  flex: none;
+  font: inherit;
+  color: var(--on-surface-muted);
+  background: none;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  min-width: 44px;
+  cursor: pointer;
+}
+
+.targets__add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.targets__name-input {
+  flex: 1;
+  min-width: 10em;
+  font: inherit;
+  padding: 8px 10px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+}
+
+.targets__add .menu__action--secondary {
+  margin-top: 0;
+  width: auto;
+  padding: 8px 14px;
 }
 
 /* ---- Settings form ---- */

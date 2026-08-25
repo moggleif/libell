@@ -10,12 +10,21 @@ import {
   type Calibration,
   type LevelSettings,
 } from '../domain/settings';
+import {
+  parseActiveTargetId,
+  parseTargetPresets,
+  type TargetPreset,
+} from '../domain/targetPresets';
 
 const STORAGE_KEY = 'libell.settings';
 const CALIBRATION_KEY = 'libell.calibration';
 const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
+// Separate keys from the calibration ones above (#122, ADR 0013): a
+// preset is never stored in the same field as either calibration layer.
+const TARGET_PRESETS_KEY = 'libell.targetPresets';
+const ACTIVE_TARGET_KEY = 'libell.activeTarget';
 
 /** The subset of `Storage` the store needs; injectable for tests. */
 export interface KeyValueStorage {
@@ -190,5 +199,63 @@ export function clearCalibration(storage: KeyValueStorage | null = defaultStorag
     storage?.removeItem(CALIBRATION_KEY);
   } catch {
     // Nothing to do — the in-memory state is cleared by the caller.
+  }
+}
+
+/** Saved target presets (#122): validated on every read, same discipline
+ * as settings and calibration — one corrupt entry never breaks startup. */
+export function loadTargetPresets(
+  storage: KeyValueStorage | null = defaultStorage(),
+): TargetPreset[] {
+  try {
+    const raw = storage?.getItem(TARGET_PRESETS_KEY);
+    if (raw === null || raw === undefined) return [];
+    return parseTargetPresets(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+export function saveTargetPresets(
+  presets: TargetPreset[],
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    storage?.setItem(TARGET_PRESETS_KEY, JSON.stringify(presets));
+  } catch {
+    // Same graceful degradation as saveSettings.
+  }
+}
+
+/**
+ * The active target id — "Normal" (`null`) unless a preset was
+ * explicitly selected. Validated against the current preset list so a
+ * preset deleted elsewhere (or corrupt storage) can never leave the app
+ * targeting a nonexistent preset.
+ */
+export function loadActiveTargetId(
+  presets: TargetPreset[],
+  storage: KeyValueStorage | null = defaultStorage(),
+): string | null {
+  try {
+    const raw = storage?.getItem(ACTIVE_TARGET_KEY);
+    if (raw === null || raw === undefined) return null;
+    return parseActiveTargetId(JSON.parse(raw), presets);
+  } catch {
+    return null;
+  }
+}
+
+/** `null` (Normal) removes the key entirely — Normal is never a stored
+ * value, so it can never be corrupted or lost (#122). */
+export function saveActiveTargetId(
+  id: string | null,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    if (id === null) storage?.removeItem(ACTIVE_TARGET_KEY);
+    else storage?.setItem(ACTIVE_TARGET_KEY, JSON.stringify(id));
+  } catch {
+    // Same graceful degradation as saveSettings.
   }
 }
