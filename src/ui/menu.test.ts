@@ -87,14 +87,23 @@ describe('menu — Modern (#107)', () => {
     expect(titles).toEqual([t('menu.settings'), t('menu.calibration'), t('menu.help')]);
   });
 
-  it('groups the introduction/feedback/about links under an "OTHER" heading as plain rows', () => {
+  it('groups Targets under "ADVANCED" and the introduction/feedback/about links under "OTHER" (#152)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
-    expect(menu.element.querySelector('.menu__others-heading')?.textContent).toBe(t('menu.others'));
-    const rows = [...menu.element.querySelectorAll('.menu__row')];
-    expect(rows.map((r) => r.querySelector('.menu__row-title')?.textContent)).toEqual([
+    const headings = [...menu.element.querySelectorAll('.menu__others-heading')];
+    expect(headings.map((h) => h.textContent)).toEqual([t('menu.advanced'), t('menu.others')]);
+
+    const [advancedHeading, othersHeading] = headings;
+    const advancedList = advancedHeading!.nextElementSibling!;
+    const othersList = othersHeading!.nextElementSibling!;
+    const rowTitles = (list: Element) =>
+      [...list.querySelectorAll('.menu__row-title')].map((r) => r.textContent);
+
+    // No Web Bluetooth in this test environment, so External sensor is
+    // never offered — Advanced holds only Targets, exactly as today.
+    expect(rowTitles(advancedList)).toEqual([t('menu.targets')]);
+    expect(rowTitles(othersList)).toEqual([
       t('menu.intro'),
-      t('menu.targets'),
       t('menu.diagnostics'),
       t('menu.feedback'),
       t('menu.about'),
@@ -230,5 +239,22 @@ describe('EasyLevel BLE sensor source (#116)', () => {
     expect(button).toBeDefined();
     button!.click();
     expect(connectEasyLevel).toHaveBeenCalledOnce();
+  });
+
+  it('External sensor appears first under ADVANCED, above Targets (#152)', () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    menu.open('settings');
+    const advancedHeading = [...menu.element.querySelectorAll('.menu__others-heading')].find(
+      (h) => h.textContent === t('menu.advanced'),
+    )!;
+    const advancedList = advancedHeading.nextElementSibling!;
+    const rowTitles = [...advancedList.querySelectorAll('.menu__row-title')].map(
+      (r) => r.textContent,
+    );
+    expect(rowTitles).toEqual([t('menu.sensorSource'), t('menu.targets')]);
   });
 });

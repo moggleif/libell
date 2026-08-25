@@ -163,6 +163,15 @@ export function createMenu(options: MenuOptions): Menu {
   // attached to the drawer when Classic. ---
   const primaryList = document.createElement('div');
   primaryList.className = 'menu__primary-list';
+  // Advanced (#152): optional, behavior-changing features (External
+  // sensor, Targets) — split from the one-off meta items below so
+  // scanning the menu tells the two kinds of item apart. Same row style
+  // and heading class as "OTHER", just a second group above it.
+  const advancedHeading = document.createElement('p');
+  advancedHeading.className = 'menu__others-heading';
+  advancedHeading.textContent = t('menu.advanced');
+  const advancedList = document.createElement('div');
+  advancedList.className = 'menu__others-list';
   const othersHeading = document.createElement('p');
   othersHeading.className = 'menu__others-heading';
   othersHeading.textContent = t('menu.others');
@@ -172,7 +181,14 @@ export function createMenu(options: MenuOptions): Menu {
   versionFooter.className = 'menu__version';
   if (__APP_VERSION__) versionFooter.textContent = `v${__APP_VERSION__}`;
   if (isModern) {
-    drawer.append(primaryList, othersHeading, othersList, versionFooter);
+    drawer.append(
+      primaryList,
+      advancedHeading,
+      advancedList,
+      othersHeading,
+      othersList,
+      versionFooter,
+    );
   }
 
   // --- Full-screen page ---
@@ -269,17 +285,32 @@ export function createMenu(options: MenuOptions): Menu {
     sections.set(id, { label, body, item });
   }
 
-  /** A bottom-of-list section (Modern: a plain "ÖVRIGT" row; Classic:
-   * the same item style as everything else — feedback/about, #107). */
-  function addOtherSection(id: MenuSection, label: string, body: HTMLElement): void {
-    const item = addOtherItem(label, () => showPage(id));
+  /** Which row group an item/section belongs to in Modern (#152) — Classic
+   * ignores this entirely, since it has no headings at all (still one
+   * flat, unheaded item list, exactly as before this issue). */
+  type OtherGroup = 'advanced' | 'other';
+
+  /** A bottom-of-list section (Modern: a plain row under "Advanced" or
+   * "OTHER"; Classic: the same item style as everything else —
+   * feedback/about, #107). */
+  function addOtherSection(
+    id: MenuSection,
+    label: string,
+    body: HTMLElement,
+    group: OtherGroup = 'other',
+  ): void {
+    const item = addOtherItem(label, () => showPage(id), group);
     sections.set(id, { label, body, item });
   }
 
   /** A bottom-of-list action with no page of its own (the introduction
-   * relaunch — Modern: a plain "ÖVRIGT" row; Classic: same item style
-   * as everything else). */
-  function addOtherItem(label: string, onClick: () => void): HTMLButtonElement {
+   * relaunch — Modern: a plain row under "Advanced" or "OTHER"; Classic:
+   * same item style as everything else). */
+  function addOtherItem(
+    label: string,
+    onClick: () => void,
+    group: OtherGroup = 'other',
+  ): HTMLButtonElement {
     if (!isModern) {
       const item = document.createElement('button');
       item.type = 'button';
@@ -301,7 +332,7 @@ export function createMenu(options: MenuOptions): Menu {
     chevron.textContent = '›';
     item.append(text, chevron);
     item.addEventListener('click', onClick);
-    othersList.append(item);
+    (group === 'advanced' ? advancedList : othersList).append(item);
     return item;
   }
 
@@ -459,25 +490,10 @@ export function createMenu(options: MenuOptions): Menu {
   }
   addSection('help', t('menu.help'), helpBody);
 
-  // --- Reopen the introduction, feedback, about (bottom — reached
-  // rarely; Modern groups these under an "ÖVRIGT" heading as plain
-  // rows instead of cards, #107) ---
-  addOtherItem(t('menu.intro'), () => {
-    goBack();
-    options.openOnboarding();
-  });
-  // --- Targets (#122, ADR 0013): an intentional non-level target, on top
-  // of the zero point set up above — never a third block inside
-  // Calibration (it's a *target*, not a calibration). Grouped with the
-  // "other" items rather than a primary Modern card: selecting a target
-  // is a deliberate optional choice, not part of first-run setup, so it
-  // carries no pending status and does not compete with Settings /
-  // Calibration / Help for top billing — still just a couple of taps
-  // away, and the main-screen badge (`targetBadge.ts`) jumps straight to
-  // this page once a target is active.
-  const targetsSection = createTargetsSection(options);
-  const refreshTargets = targetsSection.refresh;
-  addOtherSection('targets', t('menu.targets'), targetsSection.element);
+  // --- Advanced (#152): optional, behavior-changing features — External
+  // sensor first, then Targets — split from the meta items below (Modern
+  // only; Classic stays one flat, unheaded list, exactly as before).
+  //
   // EasyLevel BLE box (#116): omitted entirely — never a silently broken
   // option — on a browser without Web Bluetooth (Safari/iOS, most desktop
   // browsers). Decided once here, matching the `isModern` pattern: no live
@@ -486,8 +502,31 @@ export function createMenu(options: MenuOptions): Menu {
   const sensorSourceSection = easyLevelSupported ? createSensorSourceSection(options) : null;
   const refreshSensorSource = sensorSourceSection?.refresh ?? (() => {});
   if (sensorSourceSection) {
-    addOtherSection('sensorSource', t('menu.sensorSource'), sensorSourceSection.element);
+    addOtherSection(
+      'sensorSource',
+      t('menu.sensorSource'),
+      sensorSourceSection.element,
+      'advanced',
+    );
   }
+  // Targets (#122, ADR 0013): an intentional non-level target, on top of
+  // the zero point set up above — never a third block inside Calibration
+  // (it's a *target*, not a calibration). Selecting a target is a
+  // deliberate optional choice, not part of first-run setup, so it
+  // carries no pending status and does not compete with Settings /
+  // Calibration / Help for top billing — still just a couple of taps
+  // away, and the main-screen badge (`targetBadge.ts`) jumps straight to
+  // this page once a target is active.
+  const targetsSection = createTargetsSection(options);
+  const refreshTargets = targetsSection.refresh;
+  addOtherSection('targets', t('menu.targets'), targetsSection.element, 'advanced');
+
+  // --- OTHER (reached rarely; Modern groups these under an "ÖVRIGT"
+  // heading as plain rows instead of cards, #107) ---
+  addOtherItem(t('menu.intro'), () => {
+    goBack();
+    options.openOnboarding();
+  });
   // Diagnostics (#133, R36): dev/support detail — deliberately grouped
   // with the other rarely-tapped "OTHER" items, never a primary Modern
   // card (this page is explicitly not part of first-run setup).

@@ -37,6 +37,10 @@ export const MESSAGES = {
     'menu.intro': 'Show introduction',
     'menu.about': 'About Libell',
     'menu.sensorSource': 'External sensor',
+    // Modern-only heading (#152) grouping External sensor + Targets above
+    // "OTHER" — distinct key from settings.advanced (#157), a different
+    // heading in a different part of the UI.
+    'menu.advanced': 'ADVANCED',
     'menu.others': 'OTHER',
     'menu.card.notSaved': 'Not saved',
     'menu.card.notDone': 'Not done',
@@ -416,6 +420,7 @@ export const MESSAGES = {
     'menu.intro': 'Visa introduktionen',
     'menu.about': 'Om Libell',
     'menu.sensorSource': 'Extern sensor',
+    'menu.advanced': 'AVANCERAT',
     'menu.others': 'ÖVRIGT',
     'menu.card.notSaved': 'Ej sparade',
     'menu.card.notDone': 'Ej gjord',
