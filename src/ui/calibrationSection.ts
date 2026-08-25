@@ -264,9 +264,12 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     const sensorHeader = document.createElement('div');
     sensorHeader.className = 'calibration-card__header';
     sensorHeader.append(sensorHeading, sensorPill);
-    const flipRow = document.createElement('div');
-    flipRow.className = 'calibration-card__row';
-    flipRow.append(flipButton, checkButton);
+    // Check + Clear side by side (design review, follow-up) — same
+    // pairing as the vehicle-zero card's own row below, not paired with
+    // the unrelated flip button.
+    const checkClearRow = document.createElement('div');
+    checkClearRow.className = 'calibration-card__row';
+    checkClearRow.append(checkButton, clearButton);
     const sensorCard = document.createElement('div');
     sensorCard.className = 'calibration-card';
     sensorCard.append(
@@ -274,9 +277,9 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       calibrationIntro,
       calibrateButton,
       flipIntro,
-      flipRow,
+      flipButton,
       flipStatus,
-      clearButton,
+      checkClearRow,
       calibrationStatus,
     );
 
