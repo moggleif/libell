@@ -645,62 +645,50 @@ export function createSettingsForm(
   // Save persists; Undo returns to the last saved values; Reset fills
   // the form with the factory defaults (still needs Save to persist,
   // and Undo can take it back). Modern mode's Klossar tab additionally
-  // gets its own Save/Undo pair in its fixed footer (spec'd — the ramp
+  // gets its own Save/Undo/Reset in its fixed footer (spec'd — the ramp
   // steps need to be saveable without switching tabs); every tab keeps
-  // this original pair too, so Save/Undo are always reachable from
-  // wherever the user is editing (#140). Kept in sync via saveButtons/
-  // undoButtons rather than sharing DOM nodes, since a node can only
+  // this same set too, so it's always reachable from wherever the user
+  // is editing (#140). Kept in sync via saveButtons/undoButtons/
+  // resetButtons rather than sharing DOM nodes, since a node can only
   // live in one place in the tree.
-  const actions = document.createElement('div');
-  actions.className = 'settings__actions';
-  const save = document.createElement('button');
-  save.type = 'submit';
-  save.className = 'menu__action';
-  save.disabled = true;
-  const undo = document.createElement('button');
-  undo.type = 'button';
-  undo.className = 'menu__action menu__action--secondary';
-  undo.disabled = true;
-  const reset = document.createElement('button');
-  reset.type = 'button';
-  reset.className = 'menu__action menu__action--secondary';
-  // Design review, follow-up: Reset/Undo/Save left to right — the primary
-  // action (Save, biggest and green via CSS) sits last/most prominent,
-  // not first.
-  actions.append(reset, undo, save);
-  const saveButtons: HTMLButtonElement[] = [save];
-  const undoButtons: HTMLButtonElement[] = [undo];
-  const resetButtons: HTMLButtonElement[] = [reset];
+  const saveButtons: HTMLButtonElement[] = [];
+  const undoButtons: HTMLButtonElement[] = [];
+  const resetButtons: HTMLButtonElement[] = [];
 
   /**
-   * Save+Undo+Reset — the exact same three buttons as `actions` above,
-   * built fresh so every Modern tab shows the identical set (design
-   * review, then a follow-up: General had none at all, Klossar had
-   * Save/Undo only, and Targets was skipped entirely as "immediate-apply
-   * like Kalibrering" — wrong, since the user explicitly asked for it too;
-   * only Kalibrering stays exempt, the one tab with no "unsaved" form
-   * state at all).
+   * Reset + Undo side by side, Save full-width below (design review,
+   * then two follow-ups: Save used to sit first in one flat row with
+   * Undo/Reset — moved to its own prominent row so it reads as the one
+   * primary action, biggest and green via CSS; and every tab that edits
+   * form fields gets this exact same row, Targets included — General had
+   * none at all and Klossar had Save/Undo only the first time around,
+   * and Targets was wrongly skipped as "immediate-apply like
+   * Kalibrering". Only Kalibrering stays exempt, the one tab with no
+   * "unsaved" form state at all.
    */
   function buildActionsRow(): HTMLDivElement {
     const row = document.createElement('div');
     row.className = 'settings__actions';
-    const saveBtn = document.createElement('button');
-    saveBtn.type = 'submit';
-    saveBtn.className = 'menu__action';
-    saveBtn.disabled = true;
-    saveBtn.textContent = t('settings.save');
+    const topRow = document.createElement('div');
+    topRow.className = 'settings__actions-row';
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'menu__action menu__action--secondary';
+    resetBtn.textContent = t('settings.reset');
+    resetBtn.addEventListener('click', () => populate(DEFAULT_SETTINGS));
     const undoBtn = document.createElement('button');
     undoBtn.type = 'button';
     undoBtn.className = 'menu__action menu__action--secondary';
     undoBtn.disabled = true;
     undoBtn.textContent = t('settings.undo');
     undoBtn.addEventListener('click', () => populate(saved));
-    const resetBtn = document.createElement('button');
-    resetBtn.type = 'button';
-    resetBtn.className = 'menu__action menu__action--secondary';
-    resetBtn.textContent = t('settings.reset');
-    resetBtn.addEventListener('click', () => populate(DEFAULT_SETTINGS));
-    row.append(resetBtn, undoBtn, saveBtn);
+    topRow.append(resetBtn, undoBtn);
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'submit';
+    saveBtn.className = 'menu__action';
+    saveBtn.disabled = true;
+    saveBtn.textContent = t('settings.save');
+    row.append(topRow, saveBtn);
     saveButtons.push(saveBtn);
     undoButtons.push(undoBtn);
     resetButtons.push(resetBtn);
@@ -814,13 +802,12 @@ export function createSettingsForm(
     // Onboarding step (#156): the reduced subset only — no tabs, no
     // Advanced disclosure, no vehicle-type/axle selectors. A short note
     // pointing to ☰ is added by onboarding.ts itself, next to this form.
-    // No `actions` row (design-review follow-up): a wizard step already has
-    // its own Next/Skip/Back, and Next submits this form directly — a
-    // second, identically-styled "Save" button here only duplicated it and
-    // invited a "do I need to press this too?" moment. Save/Undo/Reset stay
-    // exactly as they were on the real Settings page (the only place still
-    // reachable by mouse/keyboard, since `actions`'s buttons are still
-    // fully wired — just unmounted here).
+    // No `buildActionsRow()` call here (design-review follow-up): a wizard
+    // step already has its own Next/Skip/Back, and Next submits this form
+    // directly — a second, identically-styled "Save" button here only
+    // duplicated it and invited a "do I need to press this too?" moment.
+    // Save/Undo/Reset stay exactly as they are on the real Settings page,
+    // the only place this ever gets called.
     form.append(
       measureHint,
       fieldEls.get('wheelbaseMm')!,
@@ -830,7 +817,7 @@ export function createSettingsForm(
   } else if (compact === 'language') {
     // Onboarding step (design review, split from #189's combined
     // 'general'): Language alone — still reloads immediately on change,
-    // same as Settings. No `actions` row — see 'measurements' above.
+    // same as Settings. No `buildActionsRow()` call — see 'measurements' above.
     form.append(languageField);
   } else if (compact === 'appearance') {
     // Onboarding step (design review): Theme + Appearance, the "how it
@@ -960,7 +947,7 @@ export function createSettingsForm(
       measureHint,
       unitField,
       advancedDetails,
-      actions,
+      buildActionsRow(),
     );
 
     // --- Klossar tab ---
@@ -1070,13 +1057,18 @@ export function createSettingsForm(
     footerHead.append(footerHeading, footerModelName);
     const footerGrid = document.createElement('div');
     footerGrid.className = 'klossar__grid';
+    // Same Reset+Undo-then-Save layout as `buildActionsRow()` above, just
+    // built by hand since the fixed footer needs its own classes (design
+    // review: Klossar used to be Save/Undo only, one flat row).
     const footerActions = document.createElement('div');
     footerActions.className = 'klossar__footer-actions';
-    const footerSave = document.createElement('button');
-    footerSave.type = 'submit';
-    footerSave.className = 'menu__action';
-    footerSave.disabled = true;
-    footerSave.textContent = t('settings.save');
+    const footerTopRow = document.createElement('div');
+    footerTopRow.className = 'klossar__footer-actions-row';
+    const footerReset = document.createElement('button');
+    footerReset.type = 'button';
+    footerReset.className = 'menu__action menu__action--secondary';
+    footerReset.textContent = t('settings.reset');
+    footerReset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
     const footerUndo = document.createElement('button');
     footerUndo.type = 'button';
     footerUndo.className = 'menu__action menu__action--secondary';
@@ -1085,17 +1077,13 @@ export function createSettingsForm(
     // populate()/saved are defined further down, but this only runs on a
     // later click — by then the whole form is fully set up.
     footerUndo.addEventListener('click', () => populate(saved));
-    // Design review: Klossar used to be Save/Undo only — Reset added so
-    // every editable Modern tab (General/Fordon/Klossar) offers the exact
-    // same three actions.
-    const footerReset = document.createElement('button');
-    footerReset.type = 'button';
-    footerReset.className = 'menu__action menu__action--secondary';
-    footerReset.textContent = t('settings.reset');
-    footerReset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
-    // Reset/Undo/Save top to bottom — Save (biggest and green via CSS)
-    // last, same order as `actions`/`buildActionsRow` above.
-    footerActions.append(footerReset, footerUndo, footerSave);
+    footerTopRow.append(footerReset, footerUndo);
+    const footerSave = document.createElement('button');
+    footerSave.type = 'submit';
+    footerSave.className = 'menu__action';
+    footerSave.disabled = true;
+    footerSave.textContent = t('settings.save');
+    footerActions.append(footerTopRow, footerSave);
     saveButtons.push(footerSave);
     undoButtons.push(footerUndo);
     resetButtons.push(footerReset);
@@ -1223,7 +1211,7 @@ export function createSettingsForm(
       measureHint,
       unitField,
       advancedDetails,
-      actions,
+      buildActionsRow(),
     );
     const rampsBody = document.createElement('div');
     rampsBody.append(
@@ -1266,7 +1254,7 @@ export function createSettingsForm(
       soundGuidanceField,
       soundGuidanceHint,
       advancedDetails,
-      actions,
+      buildActionsRow(),
     );
   }
 
@@ -1319,8 +1307,8 @@ export function createSettingsForm(
     soundGroupHeading.textContent = t('onboard.sound.h');
     advancedSummary.textContent = t('settings.advanced');
     advancedHint.textContent = t('settings.advanced.hint');
-    save.textContent = t('settings.save');
-    undo.textContent = t('settings.undo');
+    for (const btn of saveButtons) btn.textContent = t('settings.save');
+    for (const btn of undoButtons) btn.textContent = t('settings.undo');
     for (const btn of resetButtons) btn.textContent = t('settings.reset');
   }
   applyUnitEverywhere();
@@ -1380,13 +1368,13 @@ export function createSettingsForm(
     notifyChanged();
   };
 
-  undo.addEventListener('click', () => populate(saved));
-  // Full reset, still needs Save to persist: safe because `actions` (this
-  // button included) is only ever mounted on the real, full Settings page
-  // now — the compact onboarding forms don't render it (see the 'compact'
+  // Reset always needs Save to persist too: safe because `buildActionsRow`
+  // (Reset included) is only ever called on the real, full Settings page
+  // — the compact onboarding forms never call it (see the 'compact'
   // branches below), so there is no reduced screen left where "reset
-  // everything" could look like it only reset what's on screen.
-  reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+  // everything" could look like it only reset what's on screen. Each
+  // instance's own click handlers are wired inside `buildActionsRow`
+  // itself, not here.
 
   form.resyncSoundFields = (sound) => {
     soundInput.checked = sound.soundOnLevel;
