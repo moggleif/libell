@@ -124,15 +124,15 @@ export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptio
   onSettingsSaved(settings: LevelSettings): void;
   /**
    * Called whenever the wizard closes, either way — ✕ at any point, or
-   * reaching the end. `completed` distinguishes the two (design review,
+   * reaching the end. `done` distinguishes the two (design review,
    * follow-up): true only when every step was actually stepped through
    * to the end (whatever individual steps the user chose to skip along
    * the way), false for an early ✕. Both still count as "seen" for the
-   * auto-launch gate (`hasSeenOnboarding`) — only `completed` decides
-   * whether "Show introduction" still reads as an unfinished first-run
-   * task (green) or a plain re-launch (secondary), see `infoMenu.ts`.
+   * auto-launch gate (`hasSeenOnboarding`) — only `done` decides whether
+   * "Show introduction" still reads as an unfinished first-run task
+   * (green) or a plain re-launch (secondary), see `infoMenu.ts`.
    */
-  onFinished(completed: boolean): void;
+  onFinished(done: boolean): void;
 }
 
 /** Which source the first step's radios currently have selected — 'phone'
@@ -606,9 +606,9 @@ export function showOnboarding(options: OnboardingOptions): void {
 
   let index = 0;
 
-  function finish(completed: boolean): void {
+  function finish(done: boolean): void {
     overlay.remove();
-    options.onFinished(completed);
+    options.onFinished(done);
   }
 
   function renderStep(): void {

@@ -33,7 +33,7 @@ import {
   clearCalibration,
   clearEasyLevelCalibration,
   clearVehicleCalibration,
-  hasCompletedOnboarding,
+  hasDoneOnboarding,
   hasSeenOnboarding,
   hasStoredSettings,
   loadActiveTargetId,
@@ -43,7 +43,7 @@ import {
   loadSettings,
   loadTargetPresets,
   loadVehicleCalibrationInfo,
-  markOnboardingCompleted,
+  markOnboardingDone,
   markOnboardingSeen,
   saveActiveTargetId,
   saveCalibration,
@@ -451,10 +451,10 @@ function bootstrap(root: HTMLElement): void {
         clearEasyLevelCalibration();
         updateIndicators();
       },
-      onFinished(completed) {
+      onFinished(done) {
         onboardingOpen = false;
         markOnboardingSeen();
-        if (completed) markOnboardingCompleted();
+        if (done) markOnboardingDone();
         updateIndicators();
       },
     });
@@ -572,7 +572,7 @@ function bootstrap(root: HTMLElement): void {
   const infoPage = createInfoPage({
     diagnostics: menuOptions,
     openOnboarding,
-    hasCompletedOnboarding,
+    hasDoneOnboarding,
   });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');

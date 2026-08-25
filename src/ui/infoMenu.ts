@@ -40,7 +40,7 @@ export interface InfoPageOptions {
    * as an unfinished first-run task (green, `false`) or a plain
    * re-launch (secondary, `true`) — see `buildIntroButton` below.
    */
-  hasCompletedOnboarding(): boolean;
+  hasDoneOnboarding(): boolean;
 }
 
 export interface InfoPage {
@@ -94,7 +94,7 @@ const HELP: {
  * Styled green (the "still an open first-run task" look, same as the
  * "not calibrated"/"settings not saved" lamps) until the wizard has
  * actually been completed once — not merely opened and dismissed early,
- * see `hasCompletedOnboarding` (design review, follow-up: it used to be
+ * see `hasDoneOnboarding` (design review, follow-up: it used to be
  * permanently secondary-styled, as if re-launching it were never more
  * than an optional extra). `refresh()` re-checks the stored flag — call
  * it whenever it might have changed underneath this button (the page
@@ -102,7 +102,7 @@ const HELP: {
 function buildIntroButton(
   page: StandalonePage,
   openOnboarding: () => void,
-  hasCompletedOnboarding: () => boolean,
+  hasDoneOnboarding: () => boolean,
 ): { element: HTMLButtonElement; refresh(): void } {
   const button = document.createElement('button');
   button.type = 'button';
@@ -112,7 +112,7 @@ function buildIntroButton(
     openOnboarding();
   });
   function refresh(): void {
-    button.className = hasCompletedOnboarding()
+    button.className = hasDoneOnboarding()
       ? 'menu__action menu__action--secondary'
       : 'menu__action';
   }
@@ -210,11 +210,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     tabPanels.set(id, panel);
   }
 
-  const introButton = buildIntroButton(
-    page,
-    options.openOnboarding,
-    options.hasCompletedOnboarding,
-  );
+  const introButton = buildIntroButton(page, options.openOnboarding, options.hasDoneOnboarding);
   refreshIntroButton = introButton.refresh;
   addTab('help', buildHelpPanel(introButton.element));
   addTab('about', createAboutSection());

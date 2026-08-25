@@ -278,26 +278,26 @@ describe('onboarding wizard — Classic (no Web Bluetooth): vehicle, placement, 
   // uses it to decide whether it still reads as an unfinished first-run
   // task or a plain re-launch.
   it('onFinished(true) once the last step is reached', () => {
-    let completed: boolean | undefined;
+    let done: boolean | undefined;
     showOnboarding(
-      makeOptions({ initialSettings: classicSettings(), onFinished: (c) => (completed = c) }),
+      makeOptions({ initialSettings: classicSettings(), onFinished: (d) => (done = d) }),
     );
     for (let i = 0; i < 10; i += 1) next();
-    expect(completed).toBe(true);
+    expect(done).toBe(true);
   });
 
   it('the ✕ close button finishes immediately from any step, with onFinished(false)', () => {
     let finished = false;
-    let completed: boolean | undefined;
+    let done: boolean | undefined;
     showOnboarding(
       makeOptions({
         initialSettings: classicSettings(),
-        onFinished: (c) => ((finished = true), (completed = c)),
+        onFinished: (d) => ((finished = true), (done = d)),
       }),
     );
     card().querySelector<HTMLButtonElement>('.onboarding__close')!.click();
     expect(finished).toBe(true);
-    expect(completed).toBe(false);
+    expect(done).toBe(false);
   });
 });
 

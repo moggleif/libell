@@ -49,13 +49,10 @@ function makeMenuOptions(): MenuOptions {
   };
 }
 
-function makeOptions(
-  openOnboarding = vi.fn(),
-  hasCompletedOnboarding = () => true,
-): InfoPageOptions {
+function makeOptions(openOnboarding = vi.fn(), hasDoneOnboarding = () => true): InfoPageOptions {
   // MenuOptions is a superset of DiagnosticsOptions — reused as-is, same
   // pattern main.ts uses for its one shared options bag.
-  return { diagnostics: makeMenuOptions(), openOnboarding, hasCompletedOnboarding };
+  return { diagnostics: makeMenuOptions(), openOnboarding, hasDoneOnboarding };
 }
 
 describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {

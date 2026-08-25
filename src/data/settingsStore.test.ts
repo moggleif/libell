@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import {
   clearCalibration,
-  hasCompletedOnboarding,
+  hasDoneOnboarding,
   hasStoredSettings,
   loadCalibration,
   loadSettings,
-  markOnboardingCompleted,
+  markOnboardingDone,
   saveCalibration,
   saveSettings,
   type KeyValueStorage,
@@ -93,9 +93,9 @@ describe('settingsStore', () => {
 describe('onboarding completion tracking', () => {
   it('is false until explicitly marked, then true', () => {
     const storage = memoryStorage();
-    expect(hasCompletedOnboarding(storage)).toBe(false);
-    markOnboardingCompleted(storage);
-    expect(hasCompletedOnboarding(storage)).toBe(true);
+    expect(hasDoneOnboarding(storage)).toBe(false);
+    markOnboardingDone(storage);
+    expect(hasDoneOnboarding(storage)).toBe(true);
   });
 
   it('defaults to true (not a nag) when storage access throws', () => {
@@ -108,8 +108,8 @@ describe('onboarding completion tracking', () => {
       },
       removeItem: () => {},
     };
-    expect(hasCompletedOnboarding(throwingStorage)).toBe(true);
-    expect(() => markOnboardingCompleted(throwingStorage)).not.toThrow();
+    expect(hasDoneOnboarding(throwingStorage)).toBe(true);
+    expect(() => markOnboardingDone(throwingStorage)).not.toThrow();
   });
 });
 
