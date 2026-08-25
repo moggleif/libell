@@ -9,8 +9,9 @@ criteria. Each maps to a GitHub issue. They describe how the finished system wor
 Libell helps a motorhome/RV owner level their vehicle on a pitch. The user lays the
 phone flat inside the RV (on a table or floor) with the **top edge of the phone pointing
 toward the front of the vehicle**. The app tells them which wheels to raise and by how
-much, and shows a live level. There is **no account**. An optional phone calibration
-cancels phone/case bias; without it the raw sensor is used.
+much, turned into a concrete plan for the ramps they actually own rather than a per-wheel
+number in isolation (R21, R27), and shows a live level. There is **no account**. An
+optional phone calibration cancels phone/case bias; without it the raw sensor is used.
 
 Libell is an installable web app (PWA), so it runs on any modern phone from a single
 URL and must keep working with no signal.
