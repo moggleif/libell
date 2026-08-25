@@ -8,8 +8,8 @@
  * settings.
  *
  * Modern appearance (#108): when `initial.appearance === 'modern'`, the
- * form renders as three tabs (Fordon/Klossar/Kalibrering) instead of one
- * long page, with a redesigned ramp picker (brand filter, pinned current
+ * form renders as tabs (Allmän/Kalibrering/Fordon/Klossar/Targets) instead
+ * of one long page, with a redesigned ramp picker (brand filter, pinned current
  * model, scrolling catalog, fixed step-height footer). Which structure to
  * build is decided once, from `initial.appearance`, at construction time
  * — same pattern as `rearAxle` deciding wheel-pair markers in
@@ -631,7 +631,7 @@ export function createSettingsForm(
   );
 
   // ============================================================
-  // Modern (#108): three tabs (Fordon/Klossar/Kalibrering) instead
+  // Modern (#108): tabs (Allmän/Kalibrering/Fordon/Klossar/Targets) instead
   // of one long page. Built only when appearance === 'modern'; every
   // element above is reused as-is, just reparented into tab panels
   // instead of appended flat.
@@ -675,34 +675,50 @@ export function createSettingsForm(
       tabButtons.set(id, btn);
       return btn;
     };
+    // Tab order (screen-cleanup follow-up): General and Kalibrering lead —
+    // language/theme color how the rest of the screen reads, and
+    // calibration is the other must-do before the app is usable (matches
+    // the "not calibrated" lamp's shortcut) — ahead of the vehicle's own
+    // physical setup (Fordon/Klossar) and the rarely-touched Targets.
+    const generalTab = makeTabButton('general');
+    const calibrationTab = makeTabButton('calibration');
     const vehicleTab = makeTabButton('vehicle');
     const rampsTab = makeTabButton('ramps');
-    const calibrationTab = makeTabButton('calibration');
-    // Targets (screen-cleanup follow-up): folded in as a 4th tab instead
-    // of its own drawer entry — an intentional non-level target (#122,
-    // ADR 0013) is just as much "how this vehicle is set up" as the
-    // other three. Classic keeps it as its own standalone page (see
-    // menu.ts) — it has no tabs to fold into.
+    // Targets: folded in as a tab instead of its own drawer entry — an
+    // intentional non-level target (#122, ADR 0013) is just as much "how
+    // this vehicle is set up" as the other three. Classic keeps it as its
+    // own standalone page (see menu.ts) — it has no tabs to fold into.
     const targetsTab = makeTabButton('targets');
-    // General (screen-cleanup follow-up): language/theme/sound — common
-    // enough to want their own tab, not buried in Vehicle/Advanced.
-    const generalTab = makeTabButton('general');
 
+    const generalPanel = document.createElement('div');
+    generalPanel.className = 'settings__tabpanel';
+    const calibrationPanel = document.createElement('div');
+    calibrationPanel.className = 'settings__tabpanel';
     const vehiclePanel = document.createElement('div');
     vehiclePanel.className = 'settings__tabpanel';
     const rampsPanel = document.createElement('div');
     rampsPanel.className = 'settings__tabpanel settings__tabpanel--klossar';
-    const calibrationPanel = document.createElement('div');
-    calibrationPanel.className = 'settings__tabpanel';
     const targetsPanel = document.createElement('div');
     targetsPanel.className = 'settings__tabpanel';
-    const generalPanel = document.createElement('div');
-    generalPanel.className = 'settings__tabpanel';
+    tabPanels.set('general', generalPanel);
+    tabPanels.set('calibration', calibrationPanel);
     tabPanels.set('vehicle', vehiclePanel);
     tabPanels.set('ramps', rampsPanel);
-    tabPanels.set('calibration', calibrationPanel);
     tabPanels.set('targets', targetsPanel);
-    tabPanels.set('general', generalPanel);
+    // Mirrors the tab buttons' dataset.tab — lets callers (and tests) find
+    // a panel by id instead of by DOM position, so reordering the tabs
+    // never silently breaks a positional lookup.
+    for (const [id, panel] of tabPanels) panel.dataset.tab = id;
+
+    // --- General tab: language, theme, sound — the same field elements
+    // Classic uses, just reparented here instead of appended flat.
+    generalPanel.append(
+      languageField,
+      themeField,
+      soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
+    );
 
     // --- Kalibrering tab: embeds the same calibration section the menu
     // uses standalone (#109) — not a reimplementation. Its status text
@@ -716,17 +732,6 @@ export function createSettingsForm(
     // --- Targets tab: same reuse pattern as Kalibrering above.
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
     targetsPanel.append(embeddedTargets.element);
-
-    // --- General tab (screen-cleanup follow-up): language, theme, sound —
-    // the same field elements Classic uses, just reparented here instead
-    // of appended flat.
-    generalPanel.append(
-      languageField,
-      themeField,
-      soundField,
-      soundGuidanceField,
-      soundGuidanceHint,
-    );
 
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
@@ -936,17 +941,17 @@ export function createSettingsForm(
       });
     };
 
-    form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel, generalPanel);
-    selectTab('vehicle');
+    form.append(tabsBar, generalPanel, calibrationPanel, vehiclePanel, rampsPanel, targetsPanel);
+    selectTab('general');
 
     // applyUnitEverywhere sets tab-label text (needs unit/vehicle
     // resolved captions elsewhere already handled below).
     unitAppliers.push(() => {
+      generalTab.textContent = t('settings.general');
+      calibrationTab.textContent = t('menu.calibration');
       vehicleTab.textContent = t('settings.tab.vehicle');
       rampsTab.textContent = t('settings.tab.ramps');
-      calibrationTab.textContent = t('menu.calibration');
       targetsTab.textContent = t('menu.targets');
-      generalTab.textContent = t('settings.general');
     });
   } else {
     // --- Classic: one flat page. Tolerance/stability/appearance move

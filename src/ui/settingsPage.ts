@@ -1,7 +1,7 @@
 /**
  * Settings page (screen-cleanup follow-up, Modern only): the gear icon
- * opens straight to the same 4-tab form (Vehicle/Ramps/Kalibrering/
- * Targets, `settingsPanel.ts`) that used to sit behind a drawer/card list
+ * opens straight to the same tabbed form (General/Kalibrering/Vehicle/
+ * Ramps/Targets, `settingsPanel.ts`) that used to sit behind a drawer/card list
  * — now its own standalone page (`standalonePage.ts`), with a ✕ to close
  * instead of a ‹ back that used to reveal that drawer. Classic has no
  * tabs to land on, so it keeps the old drawer-based `menu.ts` unchanged.

@@ -103,8 +103,10 @@ URL and must keep working with no signal.
 ## R9 — Vehicle parameters are configurable and persist
 
 - **Given** I tap the gear icon
-- **Then** in Modern, it opens straight to the Settings tabs (Vehicle/Ramps/
-  Kalibrering/Targets/General, screen-cleanup follow-up) as its own page with a ✕ to
+- **Then** in Modern, it opens straight to the Settings tabs (General/Kalibrering/
+  Vehicle/Ramps/Targets, screen-cleanup follow-up — General and Kalibrering lead since
+  they color how the rest of the screen reads and are the other must-do besides the
+  vehicle's own measurements) as its own page with a ✕ to
   close — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
   page (R38). Classic (no tabs) keeps a small ☰ drawer instead, holding just
   Settings/Calibration/Targets — Diagnostics, the introduction relaunch and
@@ -131,7 +133,7 @@ URL and must keep working with no signal.
   `docs/03-ARCHITECTURE.md` § Settings). Not the first-run wizard, which keeps its own
   Skip/Next flow — a successful Save here also returns to the main level screen (#159),
   so the effect is visible without an extra tap — regardless of which Modern tab
-  (Vehicle/Ramps/Kalibrering/Targets) Save was tapped from.
+  (General/Kalibrering/Vehicle/Ramps/Targets) Save was tapped from.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 - **Given** the measurement fields (also in the wizard's measurements step, which

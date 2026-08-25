@@ -7,8 +7,8 @@
  * the app.
  *
  * Modern no longer uses this component at all: its gear icon opens
- * `settingsPage.ts` directly (Vehicle/Ramps/Kalibrering/Targets as tabs,
- * no drawer). Help, About, Feedback, Diagnostics and the introduction
+ * `settingsPage.ts` directly (General/Kalibrering/Vehicle/Ramps/Targets as
+ * tabs, no drawer). Help, About, Feedback, Diagnostics and the introduction
  * relaunch live on `infoMenu.ts`'s own page, reached from "?" — and
  * External sensor lives on `sensorPage.ts`'s, reached from the top-right
  * sensor-status icon — both universal, reachable from Classic too. Classic

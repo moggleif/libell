@@ -197,30 +197,41 @@ describe('settings form — Modern tabs (#108)', () => {
     return form.querySelector<HTMLButtonElement>(`.settings__tab[data-tab="${id}"]`)!;
   }
 
-  it('renders five tabs, Fordon active by default, and switches on click', () => {
+  function tabPanel(form: HTMLFormElement, id: string): HTMLElement {
+    return form.querySelector<HTMLElement>(`.settings__tabpanel[data-tab="${id}"]`)!;
+  }
+
+  it('renders five tabs in order, General active by default, and switches on click', () => {
     const form = createSettingsForm(modern, vi.fn());
     const tabs = form.querySelectorAll('.settings__tab');
     expect(tabs.length).toBe(5);
-    const vehicleTab = tabButton(form, 'vehicle');
+    // General and Kalibrering lead (screen-cleanup follow-up): language/
+    // theme color how the rest of the screen reads, and calibration is the
+    // other must-do besides the vehicle's own measurements.
+    expect([...tabs].map((tab) => tab.getAttribute('data-tab'))).toEqual([
+      'general',
+      'calibration',
+      'vehicle',
+      'ramps',
+      'targets',
+    ]);
+    const generalTab = tabButton(form, 'general');
     const rampsTab = tabButton(form, 'ramps');
     const calibrationTab = tabButton(form, 'calibration');
-    expect(vehicleTab.getAttribute('aria-selected')).toBe('true');
+    expect(generalTab.getAttribute('aria-selected')).toBe('true');
     expect(rampsTab.getAttribute('aria-selected')).toBe('false');
-
-    const vehiclePanel = form.querySelector<HTMLElement>('.settings__tabpanel')!;
-    expect(vehiclePanel.hidden).toBe(false);
+    expect(tabPanel(form, 'general').hidden).toBe(false);
 
     rampsTab.click();
     expect(rampsTab.getAttribute('aria-selected')).toBe('true');
-    expect(vehicleTab.getAttribute('aria-selected')).toBe('false');
-    const panels = form.querySelectorAll<HTMLElement>('.settings__tabpanel');
-    expect(panels[0]!.hidden).toBe(true); // Fordon, now inactive
-    expect(panels[1]!.hidden).toBe(false); // Klossar, now active
+    expect(generalTab.getAttribute('aria-selected')).toBe('false');
+    expect(tabPanel(form, 'general').hidden).toBe(true);
+    expect(tabPanel(form, 'ramps').hidden).toBe(false);
 
     calibrationTab.click();
-    expect(panels[2]!.hidden).toBe(false);
+    expect(tabPanel(form, 'calibration').hidden).toBe(false);
     // The embedded calibration section (#109's component, not a copy) renders.
-    expect(panels[2]!.querySelector('.menu__action')).not.toBeNull();
+    expect(tabPanel(form, 'calibration').querySelector('.menu__action')).not.toBeNull();
   });
 
   it("exposes selectCalibrationTab so the menu's Calibration shortcut can jump here (#155)", () => {
@@ -228,10 +239,10 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(typeof form.selectCalibrationTab).toBe('function');
     form.selectCalibrationTab?.();
     expect(tabButton(form, 'calibration').getAttribute('aria-selected')).toBe('true');
-    expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
+    expect(tabButton(form, 'general').getAttribute('aria-selected')).toBe('false');
   });
 
-  // Targets folded in as a 4th tab (screen-cleanup follow-up), same
+  // Targets folded in as a tab (screen-cleanup follow-up), same
   // embed-and-shortcut pattern as Kalibrering above.
   it("renders a Targets tab with the embedded targets section, and exposes selectTargetsTab for the menu's shortcut", () => {
     const form = createSettingsForm(modern, vi.fn());
@@ -241,12 +252,11 @@ describe('settings form — Modern tabs (#108)', () => {
 
     form.selectTargetsTab?.();
     expect(targetsTab.getAttribute('aria-selected')).toBe('true');
-    expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
-    const panels = form.querySelectorAll<HTMLElement>('.settings__tabpanel');
-    expect(panels[3]!.hidden).toBe(false);
+    expect(tabButton(form, 'general').getAttribute('aria-selected')).toBe('false');
+    expect(tabPanel(form, 'targets').hidden).toBe(false);
     // The embedded targets section (targetsSection.ts, not a copy) renders
     // its "Normal" row even with no host wired (inertTargetsOptions).
-    expect(panels[3]!.textContent).toContain('Normal');
+    expect(tabPanel(form, 'targets').textContent).toContain('Normal');
   });
 
   // Language/Theme/Sound folded into a General tab (screen-cleanup
@@ -257,12 +267,12 @@ describe('settings form — Modern tabs (#108)', () => {
     const generalTab = tabButton(form, 'general');
     expect(generalTab.textContent).toBe('General');
 
-    const vehiclePanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[0]!;
+    const vehiclePanel = tabPanel(form, 'vehicle');
     expect(vehiclePanel.textContent).not.toContain('Theme'); // moved to General
 
     generalTab.click();
     expect(generalTab.getAttribute('aria-selected')).toBe('true');
-    const generalPanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[4]!;
+    const generalPanel = tabPanel(form, 'general');
     expect(generalPanel.hidden).toBe(false);
     expect(generalPanel.textContent).toContain('Language');
     expect(generalPanel.textContent).toContain('Theme');
@@ -274,11 +284,8 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   describe('the Language select persists the choice and reloads', () => {
-    // General is the 5th tabpanel; scope past it so we don't hit the
-    // Theme <select> that shares the same .settings__select class there.
     function languageSelect(form: HTMLFormElement): HTMLSelectElement {
-      const generalPanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[4]!;
-      return generalPanel.querySelector<HTMLSelectElement>('.settings__select')!;
+      return tabPanel(form, 'general').querySelector<HTMLSelectElement>('.settings__select')!;
     }
 
     beforeEach(() => {
@@ -490,7 +497,7 @@ describe('settings form — Modern tabs (#108)', () => {
       clearVehicleCalibration: () => {},
     });
     tabButton(form, 'calibration').click();
-    const calibrationPanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[2]!;
+    const calibrationPanel = tabPanel(form, 'calibration');
     const calibrateButton = [
       ...calibrationPanel.querySelectorAll<HTMLButtonElement>('button'),
     ].find((b) => b.textContent === 'Calibrate now')!;
