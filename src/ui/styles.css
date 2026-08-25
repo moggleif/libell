@@ -2249,10 +2249,11 @@ body {
   background: color-mix(in srgb, var(--level) 10%, transparent);
 }
 
-/* Same accent as .settings__checkbox — a plain radio otherwise falls back
- * to the browser's own (off-brand) accent color. */
+/* Same size and accent as .settings__checkbox — a plain radio otherwise
+ * falls back to the browser's own (off-brand) accent color, and a mismatched
+ * size would just trade one small inconsistency for another. */
 .onboarding__source-radio {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   accent-color: var(--level);
 }
