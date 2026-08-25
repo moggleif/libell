@@ -631,6 +631,17 @@ export function createSettingsForm(
   const rampsHeading = sectionHeading();
   const displayHeading = sectionHeading();
   const generalHeading = sectionHeading();
+  // Sub-grouping inside Modern's General tab only (design review, following
+  // up on the onboarding wizard's split of this same field set into
+  // Language/Appearance/Sound steps): unlike the wizard, Settings is a
+  // revisit-with-intent surface where a returning user already knows what
+  // these fields are, so splitting into more tabs would trade a real cost
+  // (extra navigation) for a small win (less to hold in mind) — not worth
+  // it. Light eyebrow labels get the scanning benefit for free, no new
+  // navigation. Classic's single flat page keeps its one "General" heading
+  // unchanged; these two are Modern-tab-only.
+  const appearanceGroupHeading = sectionHeading();
+  const soundGroupHeading = sectionHeading();
 
   // --- Advanced disclosure (#157): tolerance/stability preferences, tuned
   // rarely if ever, behind a single tap — always closed on open, in Classic
@@ -765,10 +776,16 @@ export function createSettingsForm(
 
     // --- General tab: language, theme, appearance, sound — the same field
     // elements Classic uses, just reparented here instead of appended flat.
+    // Grouped under eyebrow labels (design review) — Language stands alone
+    // at the top, same reasoning as its own wizard step; "Appearance" over
+    // Theme+Appearance and "Sound" over Chime+Continuous audio guidance
+    // mirror the wizard's step split without adding tabs or clicks.
     generalPanel.append(
       languageField,
+      appearanceGroupHeading,
       themeField,
       appearanceField,
+      soundGroupHeading,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
@@ -1079,6 +1096,10 @@ export function createSettingsForm(
     rampsHeading.textContent = t('settings.section.ramps');
     displayHeading.textContent = t('settings.section.display');
     generalHeading.textContent = t('settings.general');
+    // Reuses the wizard's own step titles (#189 follow-up) — same names
+    // for the same grouping, not new copy for the same idea.
+    appearanceGroupHeading.textContent = t('settings.appearance');
+    soundGroupHeading.textContent = t('onboard.sound.h');
     advancedSummary.textContent = t('settings.advanced');
     save.textContent = t('settings.save');
     undo.textContent = t('settings.undo');

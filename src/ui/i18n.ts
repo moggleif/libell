@@ -377,9 +377,15 @@ export const MESSAGES = {
     'help.settings.t':
       'L is the wheelbase, W the track width (front and rear can differ) — usually ' +
       'in the vehicle papers, or use a tape measure.\n' +
-      'Add your ramp steps with the + button or pick a preset.\n' +
       'Tolerance = how strict "level" is.\n' +
       'Stability keeps the numbers calm.',
+    // Design review: used to be one sentence inside "The measurements"
+    // ("Add your ramp steps...") — moved to its own topic, matching Ramps'
+    // status elsewhere (its own wizard step, its own Settings tab).
+    'help.ramps.t':
+      'Pick a ready-made ramp model, or add your own step heights with the + button. ' +
+      'The app then picks where your ramps do the most good — and, within the ' +
+      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
     'help.calibration.h': 'Calibration',
     'help.calibration.t':
       'Two layers:\n' +
@@ -759,9 +765,12 @@ export const MESSAGES = {
     'help.settings.t':
       'L är hjulbasen, W spårvidden (fram och bak kan skilja sig) — står oftast i ' +
       'fordonspapperen, annars tumstock.\n' +
-      'Lägg till rampens steg med plusknappen eller välj en färdig ramp.\n' +
       'Tolerans = hur strikt "i våg" är.\n' +
       'Stabilitet håller siffrorna lugna.',
+    'help.ramps.t':
+      'Välj en färdig ramp, eller lägg till egna steghöjder med plusknappen. Appen ' +
+      'väljer sedan var ramperna gör mest nytta — och lämnar avloppssidan lägst ' +
+      'inom toleransen, så att disk- och duschvattnet rinner undan.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
       'Två lager:\n' +

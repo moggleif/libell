@@ -326,13 +326,14 @@ URL and must keep working with no signal.
 - **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
   placement, measurements, ramps, sensor calibration, vehicle zero).
 - **Given** the source step, with the external sensor selected instead
-- **Then** the wizard asks the vehicle step, then branches to the external sensor's own
-  connect flow — the same External sensor page R32/R34 already describe, embedded
-  whole rather than duplicated, which doubles as this path's calibration step (its own
-  "Set vehicle level" installation offset, R34) — skippable on the same terms as the
-  phone calibration steps it replaces, then rejoins the shared vehicle-measurements and
-  ramps steps before finishing. No phone-placement step and no phone calibration steps
-  are shown on this path.
+- **Then** the wizard asks the vehicle step, then branches to two steps of the external
+  sensor's own page (design review: split, same reasoning as the phone-calibration
+  split above) — Connect, then Installation offset — the same External sensor page
+  R32/R34 already describe, embedded in two halves rather than duplicated (connect once,
+  then separately verify the vehicle is level and set the offset), standing in for the
+  phone calibration steps it replaces (skippable on the same terms), then rejoins the
+  shared vehicle-measurements and ramps steps before finishing. No phone-placement step
+  and no phone calibration steps are shown on this path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
@@ -513,6 +514,20 @@ URL and must keep working with no signal.
   The breaks live in the i18n strings and render as real line breaks
   (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same
   caption and gets the same breaks.
+- **Given** the Help tab's first section (design review)
+- **Then** it is titled "What Libell does" and actually says what Libell does — the
+  same one-line pitch the About tab and the onboarding wizard's welcome step use
+  (`about.text`) — not placement instructions under a mismatched heading. The
+  placement instructions that used to sit under that heading get their own section
+  right after, titled with the wizard's own step heading for the same content
+  ("Place the phone like this").
+- **Given** the Help tab's "Ramps" section (design review — used to be one sentence
+  inside "The measurements", the only place in the app that still didn't give ramp
+  configuration its own topic)
+- **Then** it explains picking a ready-made model or adding custom step heights, and
+  that the app picks where ramps do the most good while preferring to keep the drain
+  side low — the same explanation `settings.rampHint` gives elsewhere, in its own
+  words for this context rather than a literal string reuse.
 - **Given** the "About" / "Om Libell" tab on the "?" page (R38)
 - **When** I open it
 - **Then** I see, in my language: what Libell is, that it works fully offline and

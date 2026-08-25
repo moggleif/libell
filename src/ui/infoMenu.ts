@@ -42,15 +42,28 @@ export interface InfoPage {
 
 type InfoTab = 'help' | 'about' | 'feedback' | 'diagnostics';
 
+// Design review: 'help.what.h' ("What Libell does") used to be paired with
+// 'help.what.t' — actually placement instructions, not a value pitch, so
+// the heading promised one thing and delivered another. Split in two:
+// this row now pairs the heading with the real pitch ('about.text', the
+// same one the About tab and the onboarding wizard's welcome step use);
+// the placement instructions moved to their own row below, titled with
+// the wizard's own step heading for the same content ('onboard.step1.h').
+// A Ramps row was added too (reusing 'settings.tab.ramps', the same
+// heading the wizard step and the Settings tab use) — it used to be one
+// sentence inside "The measurements", the only place in the app that
+// still didn't give ramp configuration its own topic.
 const HELP: {
   h: MessageKey;
   text: MessageKey;
   illustration?: (label: string) => SVGSVGElement;
 }[] = [
-  { h: 'help.what.h', text: 'help.what.t', illustration: placementIllustration },
+  { h: 'help.what.h', text: 'about.text' },
+  { h: 'onboard.step1.h', text: 'help.what.t', illustration: placementIllustration },
   { h: 'help.first.h', text: 'help.first.t' },
   { h: 'help.screen.h', text: 'help.screen.t', illustration: legendIllustration },
   { h: 'help.settings.h', text: 'help.settings.t', illustration: measuresIllustration },
+  { h: 'settings.tab.ramps', text: 'help.ramps.t' },
   { h: 'help.calibration.h', text: 'help.calibration.t', illustration: calibrationIllustration },
   { h: 'help.notes.h', text: 'help.notes.t' },
 ];

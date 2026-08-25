@@ -55,10 +55,11 @@
  * the wizard:
  *   - "This phone" (the default, and the only option when the gate is
  *     false): unchanged phone flow below.
- *   - external: connect + installation calibration (reusing
- *     `sensorSourceSection.ts`'s component whole — the same "Set vehicle
- *     level" block #131 added to the real menu page, never a wizard-only
- *     duplicate) followed directly by the settings/dimensions step.
+ *   - external: connect, then installation offset (design review: split
+ *     into two steps — see the two steps' own doc comment below), reusing
+ *     `sensorSourceSection.ts`'s halves — the same "Set vehicle level"
+ *     block #131 added to the real menu page, never a wizard-only
+ *     duplicate — followed by the settings/dimensions and ramps steps.
  * `sensorChoice` starts at `'phone'`; the step list re-resolves against it
  * on every change on the source step, not just once when Next is pressed
  * (#189 follow-up — otherwise the "n / total" progress readout could
@@ -455,17 +456,35 @@ export function showOnboarding(options: OnboardingOptions): void {
     build: () => [createCalibrationSection(options).vehicleElement, skipConsequenceHint()],
   };
 
-  // External path's calibration equivalent (#135, ADR 0014): the box's
-  // own connect flow already ends in its "Set vehicle level" block (#131)
-  // once connected, so a single embedded `sensorSourceSection` covers
-  // both "connect sensor" and "installation calibration" — reused whole,
-  // exactly as it already is on the real menu page, never split apart
-  // into wizard-only duplicates. Skippable on the same terms as the
-  // phone's calibration step above, which it stands in for.
+  // External path's calibration equivalent (#135, ADR 0014, split into two
+  // steps on a design review — same reasoning as the phone-sensor/
+  // vehicle-zero split above): the box's own connect flow and its
+  // "Set vehicle level" installation offset (#131) are two different
+  // moments — connect once, then separately verify the vehicle is level
+  // and set the offset — so each gets its own step,
+  // `connectElement`/`installElement` from `createSensorSourceSection`,
+  // still the exact same UI the real menu page shows, never a wizard-only
+  // rebuild of either half. Both skippable on the same terms as the
+  // phone's calibration steps, which this pair stands in for.
+  //
+  // `connectEasyLevel()` is asynchronous (a live Web Bluetooth device
+  // picker, then a GATT connect) — the picker itself is a native, modal
+  // UI that blocks interacting with this step while it's open, but the
+  // GATT connect afterward does not, so it's possible to tap Next before
+  // it resolves. The install step then simply shows its own "not
+  // running"/no-offset state, same as visiting it before ever connecting
+  // at all — no special guard, matching the wizard's "never block, always
+  // recoverable via Back" rule elsewhere (#189).
   const connectStep: Step = {
     title: t('menu.sensorSource'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createSensorSourceSection(options).element, skipConsequenceHint()],
+    build: () => [createSensorSourceSection(options).connectElement, skipConsequenceHint()],
+  };
+
+  const installOffsetStep: Step = {
+    title: t('sensorSource.install.h'),
+    skipLabel: t('onboard.skipStep'),
+    build: () => [createSensorSourceSection(options).installElement, skipConsequenceHint()],
   };
 
   // A labeled radio group for a single wizard choice — shared by the
@@ -553,7 +572,7 @@ export function showOnboarding(options: OnboardingOptions): void {
     sensorCalibrationStep,
     vehicleZeroStep,
   ];
-  const externalSteps = [connectStep, settingsStep, rampsStep];
+  const externalSteps = [connectStep, installOffsetStep, settingsStep, rampsStep];
 
   // welcomeStep, then languageStep/appearanceStep/soundStep, always lead
   // (#189, design review) — every branch below prepends all four. Depends
