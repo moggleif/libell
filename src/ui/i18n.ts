@@ -156,6 +156,13 @@ export const MESSAGES = {
     // Compact onboarding steps (#156): points to ☰ for everything the
     // reduced step doesn't show.
     'onboard.moreInMenu': 'More options are available later in the ☰ menu.',
+    // One-time discoverability mention (#154), alongside the legend on
+    // step 1 — soundGuidance itself stays off by default; see #153 for
+    // why the shorter "Chime when level" got the opposite treatment.
+    'onboard.audioGuidance.hint':
+      'Tip: Settings → Advanced has an optional "Continuous audio guidance" — a tone ' +
+      'that rises as you approach level, so you can watch the ramps instead of the ' +
+      'screen. Off by default.',
 
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
@@ -506,6 +513,10 @@ export const MESSAGES = {
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
     'onboard.moreInMenu': 'Fler alternativ finns senare i menyn ☰.',
+    'onboard.audioGuidance.hint':
+      'Tips: Inställningar → Avancerat har en valfri "Kontinuerlig ljudvägledning" — en ' +
+      'ton som stiger när du närmar dig våg, så du kan titta på ramperna istället för ' +
+      'skärmen. Avstängd som standard.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',

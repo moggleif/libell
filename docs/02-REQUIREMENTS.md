@@ -214,6 +214,10 @@ URL and must keep working with no signal.
   defaults"), calibration (skippable). It can be closed with ✕ at any
   point, warning lamps (R11) stay lit for whatever was skipped, and ☰ → "Show
   introduction" reopens it any time.
+- **Given** the placement/legend step
+- **Then** it also mentions the opt-in "Continuous audio guidance" (R30) — a
+  discoverability tip, not a default change (#154): the setting itself stays off
+  until a user turns it on in Settings → Advanced.
 - **Given** the measurements step
 - **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
   numbers the step's own hint text says come from the registration document.
