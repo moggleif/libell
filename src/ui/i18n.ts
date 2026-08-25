@@ -445,9 +445,7 @@ export const MESSAGES = {
       'For a motorhome, wheelbase is the distance between the front and rear axles; a ' +
       "caravan's is the axle-to-jockey-wheel distance instead. Track width is the distance " +
       'between the left and right wheels — a motorhome can have a different width front and ' +
-      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.\n' +
-      'Tolerance = how strict "level" is.\n' +
-      'Stability keeps the numbers calm.',
+      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.',
     // Design review: used to be one sentence inside "The measurements"
     // ("Add your ramp steps...") — moved to its own topic, matching Ramps'
     // status elsewhere (its own wizard step, its own Settings tab).
@@ -866,9 +864,7 @@ export const MESSAGES = {
       'För en husbil är hjulbasen avståndet mellan fram- och bakaxeln; för en husvagn är ' +
       'det istället avståndet från axeln till stödhjulet. Spårvidden är avståndet mellan ' +
       'vänster och höger hjul — en husbil kan ha olika bredd fram och bak, en husvagn har ' +
-      'bara en. Står oftast i fordonspapperen, annars tumstock.\n' +
-      'Tolerans = hur strikt "i våg" är.\n' +
-      'Stabilitet håller siffrorna lugna.',
+      'bara en. Står oftast i fordonspapperen, annars tumstock.',
     'help.ramps.t':
       'Välj en färdig ramp, eller lägg till egna steghöjder med plusknappen. Appen ' +
       'väljer sedan var ramperna gör mest nytta — och lämnar avloppssidan lägst ' +
