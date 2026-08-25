@@ -222,11 +222,15 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(applyCalibration).toHaveBeenCalledTimes(1);
   });
 
-  it('the vehicle-zero action button is secondary-styled, unlike the filled sensor button', () => {
-    const section = createCalibrationSection(makeOptions({ appearance: 'modern' }));
-    const calibrateBtn = buttonByText(section.element, 'Calibrate now');
-    const vehicleBtn = buttonByText(section.element, 'Set current position as level');
-    expect(calibrateBtn.className).not.toContain('menu__action--secondary');
-    expect(vehicleBtn.className).toContain('menu__action--secondary');
+  it('all three calibrate actions are equally primary-styled, in both appearances', () => {
+    for (const appearance of ['classic', 'modern'] as const) {
+      const section = createCalibrationSection(makeOptions({ appearance }));
+      const calibrateBtn = buttonByText(section.element, 'Calibrate now');
+      const vehicleBtn = buttonByText(section.element, 'Set current position as level');
+      const flipBtn = buttonByText(section.element, 'Calibrate by flipping');
+      expect(calibrateBtn.className).not.toContain('menu__action--secondary');
+      expect(vehicleBtn.className).not.toContain('menu__action--secondary');
+      expect(flipBtn.className).not.toContain('menu__action--secondary');
+    }
   });
 });

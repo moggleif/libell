@@ -271,11 +271,14 @@ export const MESSAGES = {
     'settings.advanced': 'Advanced',
     // Design review: the fields inside Advanced had labels but no
     // explanation of what they actually do — this is why the disclosure
-    // "saknar beskrivning" (was missing a description).
-    'settings.advanced.hint':
-      'Tolerance sets how close to level counts as "level" — tighter for a shower or ' +
-      'fridge, looser if close enough is fine. Stability smooths out small sensor jitter ' +
-      'so the numbers do not flicker.',
+    // "saknar beskrivning" (was missing a description). Split into one hint
+    // per field (follow-up), each placed right below its own field — the
+    // same pattern the response-delay hint below already uses — instead of
+    // one combined paragraph ahead of both fields.
+    'settings.tolerance.hint':
+      'Sets how close to level counts as "level" — tighter for a shower or fridge, ' +
+      'looser if close enough is fine.',
+    'settings.stability.hint': 'Smooths out small sensor jitter so the numbers do not flicker.',
     'drain.none': 'None / does not matter',
     // "Middle" (design review): the mean of the two wheels on that edge —
     // a coarser preference than a single corner, now that corners exist
@@ -442,9 +445,7 @@ export const MESSAGES = {
       'For a motorhome, wheelbase is the distance between the front and rear axles; a ' +
       "caravan's is the axle-to-jockey-wheel distance instead. Track width is the distance " +
       'between the left and right wheels — a motorhome can have a different width front and ' +
-      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.\n' +
-      'Tolerance = how strict "level" is.\n' +
-      'Stability keeps the numbers calm.',
+      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.',
     // Design review: used to be one sentence inside "The measurements"
     // ("Add your ramp steps...") — moved to its own topic, matching Ramps'
     // status elsewhere (its own wizard step, its own Settings tab).
@@ -715,10 +716,10 @@ export const MESSAGES = {
     'settings.language': 'Språk',
     'settings.language.auto': 'Automatiskt (enhetens språk)',
     'settings.advanced': 'Avancerat',
-    'settings.advanced.hint':
-      'Tolerans avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller ' +
-      'kylskåp, mer tillåtande om det bara ska vara tillräckligt bra. Stabilitet jämnar ' +
-      'ut små skakningar i sensorn så att siffrorna inte hoppar.',
+    'settings.tolerance.hint':
+      'Avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller kylskåp, ' +
+      'mer tillåtande om det bara ska vara tillräckligt bra.',
+    'settings.stability.hint': 'Jämnar ut små skakningar i sensorn så att siffrorna inte hoppar.',
     'drain.none': 'Inget / spelar ingen roll',
     'drain.left': 'Vänster, mitt',
     'drain.right': 'Höger, mitt',
@@ -863,9 +864,7 @@ export const MESSAGES = {
       'För en husbil är hjulbasen avståndet mellan fram- och bakaxeln; för en husvagn är ' +
       'det istället avståndet från axeln till stödhjulet. Spårvidden är avståndet mellan ' +
       'vänster och höger hjul — en husbil kan ha olika bredd fram och bak, en husvagn har ' +
-      'bara en. Står oftast i fordonspapperen, annars tumstock.\n' +
-      'Tolerans = hur strikt "i våg" är.\n' +
-      'Stabilitet håller siffrorna lugna.',
+      'bara en. Står oftast i fordonspapperen, annars tumstock.',
     'help.ramps.t':
       'Välj en färdig ramp, eller lägg till egna steghöjder med plusknappen. Appen ' +
       'väljer sedan var ramperna gör mest nytta — och lämnar avloppssidan lägst ' +

@@ -771,14 +771,19 @@ export function createSettingsForm(
   advancedSummary.className = 'settings__advanced-summary';
   // Design review: the disclosure used to jump straight from the summary
   // to bare labeled inputs with no explanation of what Tolerance/Stability
-  // actually change.
-  const advancedHint = document.createElement('p');
-  advancedHint.className = 'settings__hint';
+  // actually change. One hint per field, placed right below it — same
+  // pattern as `dwellHint` below the response-delay fields — rather than
+  // one combined paragraph ahead of both fields.
+  const toleranceHint = document.createElement('p');
+  toleranceHint.className = 'settings__hint';
+  const stabilityHint = document.createElement('p');
+  stabilityHint.className = 'settings__hint';
   advancedDetails.append(
     advancedSummary,
-    advancedHint,
     fieldEls.get('toleranceMm')!,
+    toleranceHint,
     fieldEls.get('stabilityMm')!,
+    stabilityHint,
     dwellRestField,
     dwellMotionField,
     dwellHint,
@@ -1306,7 +1311,8 @@ export function createSettingsForm(
     appearanceGroupHeading.textContent = t('settings.appearance');
     soundGroupHeading.textContent = t('onboard.sound.h');
     advancedSummary.textContent = t('settings.advanced');
-    advancedHint.textContent = t('settings.advanced.hint');
+    toleranceHint.textContent = t('settings.tolerance.hint');
+    stabilityHint.textContent = t('settings.stability.hint');
     for (const btn of saveButtons) btn.textContent = t('settings.save');
     for (const btn of undoButtons) btn.textContent = t('settings.undo');
     for (const btn of resetButtons) btn.textContent = t('settings.reset');
