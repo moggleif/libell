@@ -551,6 +551,7 @@ body {
   position: absolute;
   transform: translateY(-50%);
   width: 126px;
+  min-height: 88px;
   display: flex;
   background: var(--surface-raised);
   border: 1px solid var(--outline);
@@ -602,6 +603,7 @@ body {
   padding: 8px 9px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 1px;
 }
 

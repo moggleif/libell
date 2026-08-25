@@ -282,15 +282,18 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
 // ============================================================
 
 /** Card anchor point per wheel — the SVG itself carries no per-wheel
- * marker, so only the vertical position (for `card.style.top`) matters. */
+ * marker, so only the vertical position (for `card.style.top`) matters.
+ * Front sits well clear of the cab (which ends at y=124) so the card
+ * never overlaps it; rear mirrors the same distance from the box's
+ * bottom edge. */
 const MODERN_WHEEL_Y: Record<WheelId, number> = {
-  frontLeft: 116,
-  frontRight: 116,
-  rearLeft: 250,
-  rearRight: 250,
+  frontLeft: 165,
+  frontRight: 165,
+  rearLeft: 318,
+  rearRight: 318,
 };
-const MODERN_VIEWBOX = { width: 260, height: 320 };
-const MODERN_BUBBLE_CENTER = { x: 130, y: 198 };
+const MODERN_VIEWBOX = { width: 260, height: 420 };
+const MODERN_BUBBLE_CENTER = { x: 130, y: 236 };
 const MODERN_BUBBLE_TRAVEL = 28;
 const MODERN_BUBBLE_FULL_SCALE_DEG = 5;
 
@@ -367,7 +370,7 @@ function createModernDiagram(): RvDiagram {
   // Mirrors, hugging the cab.
   const mirrorLeft = svgEl('rect', {
     x: '76',
-    y: '118',
+    y: '100',
     width: '12',
     height: '18',
     rx: '4',
@@ -375,7 +378,7 @@ function createModernDiagram(): RvDiagram {
   });
   const mirrorRight = svgEl('rect', {
     x: '172',
-    y: '118',
+    y: '100',
     width: '12',
     height: '18',
     rx: '4',
@@ -383,24 +386,26 @@ function createModernDiagram(): RvDiagram {
   });
 
   // Two-tone box body: outer shell, then an inset "roof" panel on top.
+  // Longer than the cab by design (#161 follow-up: a motorhome reads as
+  // a long box behind a short cab, not a stubby capsule).
   const body = svgEl('rect', {
     x: '62',
-    y: '116',
+    y: '106',
     width: '136',
-    height: '182',
+    height: '288',
     rx: '28',
     class: 'rv-diagram__body',
   });
   const roof = svgEl('rect', {
     x: '74',
-    y: '138',
+    y: '141',
     width: '112',
-    height: '146',
+    height: '232',
     rx: '20',
     class: 'rv-diagram__roof',
   });
   const windshield = svgEl('path', {
-    d: 'M96 96 Q130 82 164 96 L158 128 Q130 116 102 128 Z',
+    d: 'M96 92 Q130 78 164 92 L158 122 Q130 110 102 122 Z',
     class: 'rv-diagram__windshield',
   });
 
@@ -409,17 +414,17 @@ function createModernDiagram(): RvDiagram {
   // carry that weight.
   const windowLeft = svgEl('rect', {
     x: '68',
-    y: '150',
+    y: '160',
     width: '6',
-    height: '120',
+    height: '190',
     rx: '3',
     class: 'rv-diagram__trim',
   });
   const windowRight = svgEl('rect', {
     x: '186',
-    y: '150',
+    y: '160',
     width: '6',
-    height: '120',
+    height: '190',
     rx: '3',
     class: 'rv-diagram__trim',
   });
@@ -427,7 +432,7 @@ function createModernDiagram(): RvDiagram {
   // Roof hatch (skylight) and a rear hatch — panel-filled, outlined.
   const roofHatch = svgEl('rect', {
     x: '106',
-    y: '158',
+    y: '172',
     width: '48',
     height: '34',
     rx: '6',
@@ -435,7 +440,7 @@ function createModernDiagram(): RvDiagram {
   });
   const rearHatch = svgEl('rect', {
     x: '112',
-    y: '250',
+    y: '318',
     width: '36',
     height: '24',
     rx: '5',
@@ -443,7 +448,7 @@ function createModernDiagram(): RvDiagram {
   });
   const awning = svgEl('rect', {
     x: '176',
-    y: '196',
+    y: '234',
     width: '8',
     height: '40',
     rx: '4',
@@ -455,16 +460,16 @@ function createModernDiagram(): RvDiagram {
   // as an attempt at a photo.
   const crosshairV = svgEl('line', {
     x1: '130',
-    y1: '150',
+    y1: '160',
     x2: '130',
-    y2: '246',
+    y2: '312',
     class: 'rv-diagram__crosshair',
   });
   const crosshairH = svgEl('line', {
     x1: '82',
-    y1: '198',
+    y1: '236',
     x2: '178',
-    y2: '198',
+    y2: '236',
     class: 'rv-diagram__crosshair',
   });
 
