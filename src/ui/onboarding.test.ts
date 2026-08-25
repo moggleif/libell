@@ -32,6 +32,17 @@ function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOpti
     getVehicleCalibrationCapturedAt: () => null,
     checkCalibration: () => 'checked',
     checkVehicleCalibration: () => 'checked',
+    // SensorSourceOptions (#135) — same fixture values menu.test.ts uses,
+    // since main.ts wires both from the same set of real callbacks.
+    getSensorSource: () => 'phone',
+    getSensorState: () => 'idle',
+    connectEasyLevel: () => Promise.resolve('unsupported'),
+    disconnectEasyLevel: () => {},
+    getInstallCalibration: () => null,
+    calibrateInstall: () => null,
+    getInstallCalibrationCapturedAt: () => null,
+    checkInstallCalibration: () => 'checked',
+    clearInstallCalibration: () => {},
     ...overrides,
   };
 }
@@ -95,6 +106,126 @@ describe('onboarding wizard — Classic (pixel-identical to pre-#110)', () => {
     showOnboarding(makeOptions({ onFinished: () => (finished = true) }));
     card().querySelector<HTMLButtonElement>('.onboarding__close')!.click();
     expect(finished).toBe(true);
+  });
+});
+
+describe('onboarding wizard — sensor source choice (#135)', () => {
+  const originalNavigator = globalThis.navigator;
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+    });
+  });
+
+  function withoutBluetooth(): void {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+  }
+
+  function withBluetooth(): void {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+  }
+
+  describe('regression guard: no Web Bluetooth', () => {
+    it('never adds the source-choice step — byte-identical to the pre-#135 3-step wizard', () => {
+      withoutBluetooth();
+      showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+      // Same first heading, same 3-step total, no radios anywhere.
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 3');
+      expect(card().querySelectorAll('input[type="radio"]')).toHaveLength(0);
+      expect(card().textContent).not.toContain(t('onboard.source.h'));
+
+      next(); // step 1 -> 2 (settings)
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+      next(); // step 2 -> 3 (calibration)
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.calibration'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 3');
+    });
+
+    it('still finishes on the 3rd step’s "Done" button, same as before #135', () => {
+      withoutBluetooth();
+      let finished = false;
+      showOnboarding(
+        makeOptions({ initialSettings: classicSettings(), onFinished: () => (finished = true) }),
+      );
+      next();
+      next();
+      next(); // "Done" on the last (3rd) step
+      expect(finished).toBe(true);
+    });
+  });
+
+  describe('external sensor option available', () => {
+    it('adds "How do you want to measure?" as step 1 of 4, with two radios, phone pre-selected', () => {
+      withBluetooth();
+      showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.source.h'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 4');
+      const radios = [...card().querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+      expect(radios).toHaveLength(2);
+      expect(radios.map((r) => r.value)).toEqual(['phone', 'external']);
+      expect(radios[0]!.checked).toBe(true);
+      expect(radios[1]!.checked).toBe(false);
+      expect(card().textContent).toContain(t('onboard.source.phone'));
+      expect(card().textContent).toContain(t('onboard.source.external'));
+    });
+
+    it('picking "This phone" (the default) and Next leads to the unchanged phone flow', () => {
+      withBluetooth();
+      showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+      next(); // source step -> placement (phone radio already checked)
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 4');
+      next(); // -> settings
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+      next(); // -> calibration
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.calibration'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('4 / 4');
+    });
+
+    it('picking the external sensor branches to connect, then straight to settings', () => {
+      withBluetooth();
+      let finished = false;
+      const connectEasyLevel = () => Promise.resolve<'granted'>('granted');
+      showOnboarding(
+        makeOptions({
+          initialSettings: classicSettings(),
+          connectEasyLevel,
+          onFinished: () => (finished = true),
+        }),
+      );
+      const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;
+      external.checked = true;
+      external.dispatchEvent(new Event('change'));
+      next(); // source step -> connect (embeds the real sensorSourceSection)
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.sensorSource'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
+      // The real connect flow, not a wizard-only duplicate.
+      expect(
+        [...card().querySelectorAll('button')].some(
+          (b) => b.textContent === t('sensorSource.connect'),
+        ),
+      ).toBe(true);
+      expect(card().textContent).toContain(t('sensorSource.install.h'));
+      next(); // connect -> settings (dimensions), never the phone calibration step
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 3');
+      next(); // "Done" — no phone calibration step for the external path
+      expect(finished).toBe(true);
+    });
+
+    it('closing (✕) before a choice is made never leaves an ambiguous state', () => {
+      withBluetooth();
+      let finished = false;
+      showOnboarding(makeOptions({ onFinished: () => (finished = true) }));
+      // No radio was ever touched — 'phone' stays the implicit default.
+      card().querySelector<HTMLButtonElement>('.onboarding__close')!.click();
+      expect(finished).toBe(true);
+    });
   });
 });
 

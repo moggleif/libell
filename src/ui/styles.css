@@ -2052,3 +2052,22 @@ body {
   border: 0;
   background: none;
 }
+
+/* Sensor source choice (#135): the wizard's first step when an external
+ * sensor option exists. */
+.onboarding__source {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.onboarding__source-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  cursor: pointer;
+}

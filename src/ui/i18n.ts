@@ -128,6 +128,15 @@ export const MESSAGES = {
     'about.source': 'Libell is free and open source (MIT license).',
     'about.source.link': 'Source code on GitHub',
 
+    // Sensor source choice (#135, ADR 0014): the wizard's first step,
+    // shown only when an external sensor option actually exists
+    // (`isWebBluetoothSupported()`). "Libell Sensor" names the product;
+    // the trailing clause leaves room for other supported boxes later
+    // without renaming this string.
+    'onboard.source.h': 'How do you want to measure?',
+    'onboard.source.intro': 'Choose which sensor Libell should read tilt from.',
+    'onboard.source.phone': 'This phone',
+    'onboard.source.external': 'Libell Sensor / supported external sensor',
     'onboard.step1.h': 'Place the phone like this',
     'onboard.next': 'Next',
     'onboard.close': 'Close the introduction',
@@ -469,6 +478,10 @@ export const MESSAGES = {
     'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
     'about.source.link': 'Källkoden på GitHub',
 
+    'onboard.source.h': 'Hur vill du mäta?',
+    'onboard.source.intro': 'Välj vilken sensor Libell ska läsa lutning från.',
+    'onboard.source.phone': 'Den här telefonen',
+    'onboard.source.external': 'Libell Sensor / extern sensor som stöds',
     'onboard.step1.h': 'Lägg telefonen så här',
     'onboard.next': 'Nästa',
     'onboard.close': 'Stäng introduktionen',

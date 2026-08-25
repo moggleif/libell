@@ -205,12 +205,32 @@ URL and must keep working with no signal.
 
 ## R18 — A first-run introduction, skippable and reopenable
 
-- **Given** I open Libell for the very first time
+- **Given** I open Libell for the very first time, on a browser without Web Bluetooth
+  support (R32's exact gate)
 - **Then** a three-step wizard runs: how to place the phone and how to read the answer
   (the wheel-state legend and the bubble), vehicle measurements (skippable — "use
   defaults"), calibration (skippable). It can be closed with ✕ at any
   point, warning lamps (R11) stay lit for whatever was skipped, and ☰ → "Show
   introduction" reopens it any time.
+- **Given** Web Bluetooth support exists (an external sensor is actually a real option)
+- **Then** the wizard opens with one extra first step, "How do you want to measure?",
+  offering "This phone" (pre-selected) or "Libell Sensor / supported external sensor";
+  every other browser gets exactly the three-step flow above, with no added step and
+  no dead radio button (#135).
+- **Given** the source step, with "This phone" left selected (the default)
+- **Then** the rest of the wizard is the unchanged three-step phone flow above.
+- **Given** the source step, with the external sensor selected instead
+- **Then** the wizard branches to the external sensor's own connect flow — the same
+  "External sensor" section R32/R34 already give the menu, embedded whole rather than
+  duplicated, which doubles as this path's calibration step (its own "Set vehicle
+  level" installation offset, R34) — skippable on the same terms as the phone
+  calibration step it replaces, then rejoins the shared vehicle-measurements step
+  before finishing. No phone-placement step and no phone calibration step are shown on
+  this path.
+- **Given** the source step is left unanswered (closed via ✕, or the wizard is never
+  reopened)
+- **Then** the app defaults to the phone sensor — the source step itself never writes
+  any state, so an interrupted wizard can never leave the active source ambiguous.
 
 ## R19 — Share the app
 

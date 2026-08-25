@@ -409,6 +409,24 @@ function bootstrap(root: HTMLElement): void {
         clearVehicleCalibration();
         updateIndicators();
       },
+      // Sensor source choice (#135, ADR 0014): same fields, same
+      // callbacks as `createMenu` below wires up — the wizard's
+      // external-sensor step embeds the exact same `sensorSourceSection`
+      // component the real menu page uses, never a duplicate.
+      getSensorSource: () => sensor.getSource(),
+      getSensorState: () => sensor.getState(),
+      connectEasyLevel: () => connectEasyLevelNow(),
+      disconnectEasyLevel: () => disconnectEasyLevelNow(),
+      getInstallCalibration: () => easyLevelCalibration,
+      calibrateInstall: () => calibrateEasyLevelNow(),
+      getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
+      checkInstallCalibration: () => checkAgainst(easyLevelCalibration),
+      clearInstallCalibration() {
+        easyLevelCalibration = null;
+        easyLevelCalibrationCapturedAt = null;
+        clearEasyLevelCalibration();
+        updateIndicators();
+      },
       onFinished() {
         onboardingOpen = false;
         markOnboardingSeen();
