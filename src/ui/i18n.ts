@@ -88,6 +88,34 @@ export const MESSAGES = {
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
     'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
 
+    // Diagnostics page (#133, R36): development/support detail, never
+    // shown during normal leveling — see `diagnosticsSection.ts`.
+    'menu.diagnostics': 'Diagnostics',
+    'diagnostics.intro':
+      'Technical detail for development and support — not needed for everyday leveling.',
+    'diagnostics.row.source': 'Sensor source: {value}',
+    'diagnostics.row.state': 'Connection state: {value}',
+    'diagnostics.row.sampleRate': 'Sample rate: {value}',
+    'diagnostics.row.lastSampleAge': 'Last sample: {value}',
+    'diagnostics.row.rawTilt': 'Raw tilt: {value}',
+    'diagnostics.row.calibratedTilt': 'Calibrated tilt: {value}',
+    'diagnostics.row.target': 'Effective target: {value}',
+    'diagnostics.row.battery': 'Battery: {value}',
+    'diagnostics.row.rssi': 'Signal strength: {value}',
+    'diagnostics.row.version': 'App version: {value}',
+    'diagnostics.roll': 'roll',
+    'diagnostics.pitch': 'pitch',
+    // Reported, not measured (see the file-level comment in
+    // `diagnosticsSection.ts` for why): honest, simple descriptions
+    // instead of a fabricated precise number.
+    'diagnostics.rate.phone': 'Continuous (device motion events, ≈60 Hz)',
+    'diagnostics.rate.easylevel': 'Event-driven (BLE notifications, no fixed rate)',
+    'diagnostics.age': '{s} s ago',
+    'diagnostics.version.unknown': 'unknown',
+    'diagnostics.copy': 'Copy diagnostics',
+    'diagnostics.copied': 'Diagnostics copied!',
+    'diagnostics.copy.failed': 'Could not copy automatically.',
+
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
       'already have — no bubble vials, no guessing.',
@@ -391,6 +419,32 @@ export const MESSAGES = {
     'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
     'sensorSource.install.status.none':
       'Inget installationsoffset — den råa avläsningen räknas som plan.',
+
+    // Diagnostikvy (#133, R36): utvecklings-/supportdetaljer, visas aldrig
+    // under vanlig nivellering — se `diagnosticsSection.ts`.
+    'menu.diagnostics': 'Diagnostik',
+    'diagnostics.intro':
+      'Teknisk detaljinformation för utveckling och support — behövs inte för ' +
+      'vardaglig nivellering.',
+    'diagnostics.row.source': 'Sensorkälla: {value}',
+    'diagnostics.row.state': 'Anslutningsstatus: {value}',
+    'diagnostics.row.sampleRate': 'Samplingsfrekvens: {value}',
+    'diagnostics.row.lastSampleAge': 'Senaste mätvärde: {value}',
+    'diagnostics.row.rawTilt': 'Rå lutning: {value}',
+    'diagnostics.row.calibratedTilt': 'Kalibrerad lutning: {value}',
+    'diagnostics.row.target': 'Aktivt mål: {value}',
+    'diagnostics.row.battery': 'Batteri: {value}',
+    'diagnostics.row.rssi': 'Signalstyrka: {value}',
+    'diagnostics.row.version': 'Appversion: {value}',
+    'diagnostics.roll': 'roll',
+    'diagnostics.pitch': 'pitch',
+    'diagnostics.rate.phone': 'Kontinuerlig (rörelsehändelser, ≈60 Hz)',
+    'diagnostics.rate.easylevel': 'Händelsestyrd (BLE-notiser, ingen fast frekvens)',
+    'diagnostics.age': '{s} s sedan',
+    'diagnostics.version.unknown': 'okänd',
+    'diagnostics.copy': 'Kopiera diagnostik',
+    'diagnostics.copied': 'Diagnostik kopierad!',
+    'diagnostics.copy.failed': 'Kunde inte kopiera automatiskt.',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +

@@ -615,3 +615,42 @@ noisy samples to arrive; this fires when no new samples arrive at all).
   is always a parameter, never read from the wall clock inside it, so it is fully
   unit-testable without real timers — the same discipline R25's stillness detector
   and the display stabilizer's dwell timers already follow.
+
+## R36 — Sensor diagnostics page for development/support (#133)
+
+A deeper, technical view of what the active sensor is actually doing — for
+development and bug reports, never part of everyday leveling. It also absorbs the
+earlier separate "angle/engineering detail view" idea: raw vs. calibrated roll/pitch
+is a subset of what this page already shows, so it never became a second screen.
+R8's always-visible main-screen degree readout is unaffected.
+
+- **Given** I want to inspect what the app is actually measuring (development, or a
+  bug report)
+- **When** I open the menu (☰) and choose "Diagnostics"
+- **Then** a dedicated page shows: the active sensor source (phone / EasyLevel) and
+  its connection state (R32/R33), sample rate, time since the last sample, raw
+  (uncalibrated) roll/pitch, calibrated roll/pitch (the same effective calibration —
+  sensor bias + vehicle zero + active target, R24/R31 — the leveling math itself
+  uses), the effective target preset's name or "Normal" (R31), battery/signal
+  strength when available, and the running app version (R28's About page value,
+  reused, not recomputed).
+- **Given** I have never connected an external sensor
+- **Then** every external-only field (battery, signal strength) reads "—" — never a
+  broken or undefined display — and the page works entirely from the phone sensor.
+- **Given** I want to report a problem
+- **When** I tap "Copy diagnostics"
+- **Then** a plain-text summary of everything on the page is copied to the clipboard,
+  confirmed with a brief toast, ready to paste into a bug report — no network call of
+  its own (R12's no-backend philosophy, the same one the Feedback form already
+  follows).
+- **Given** this page is never shown during normal leveling
+- **Then** it is reachable only through the deliberate menu entry above — never a
+  main-screen element, never opened automatically.
+- Sample rate is reported, not measured: the phone sensor's `devicemotion`/
+  `deviceorientation` events fire continuously once granted (tens of Hz), so it is
+  described as "continuous (~60 Hz)"; the EasyLevel BLE box's notifications are
+  event-driven with no fixed clock (R32/R35), so it is described as such rather than
+  given a fabricated precise number — an honest approximation, not a live
+  measurement, for a support-only page that is opened rarely and briefly.
+- Battery/signal strength reuse R32's exact "not available yet" wording — never a
+  second, slightly different phrasing, and never relaxed into a fabricated value.

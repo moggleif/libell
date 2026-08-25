@@ -436,6 +436,10 @@ function bootstrap(root: HTMLElement): void {
       clearEasyLevelCalibration();
       updateIndicators();
     },
+    getLastSampleAt: () => sensor.getLastSampleAt(),
+    getRawTilt: () => diagnosticsRawTilt(),
+    getCalibratedTilt: () => diagnosticsCalibratedTilt(),
+    getActiveTargetName: () => activeTargetName(),
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
@@ -470,8 +474,7 @@ function bootstrap(root: HTMLElement): void {
   const targetBadge = createTargetBadge(() => menu.open('targets'));
   document.querySelector('#indicators')?.append(targetBadge.element);
   const updateTargetBadge = () => {
-    const active = targetPresets.find((preset) => preset.id === activeTargetId) ?? null;
-    targetBadge.update(active ? active.name : null);
+    targetBadge.update(activeTargetName());
   };
   updateTargetBadge();
 
@@ -512,6 +515,36 @@ function bootstrap(root: HTMLElement): void {
     saveTargetPresets(targetPresets);
     if (activeTargetId === id) selectTargetNow(null);
     else updateTargetBadge();
+  }
+
+  /** The active target preset's own name, or null for "Normal" — shared by
+   * the main-screen badge and the diagnostics page (#133) so the two can
+   * never disagree about what "effective target" means. */
+  function activeTargetName(): string | null {
+    return targetPresets.find((preset) => preset.id === activeTargetId)?.name ?? null;
+  }
+
+  /** Diagnostics page (#133, R36): raw (uncalibrated) roll/pitch, read
+   * directly from the active sensor — never `readTiltNow()`, which starts
+   * the sensor as a side effect when there is no reading yet; a passive
+   * diagnostics refresh must never itself trigger a permission prompt. */
+  function diagnosticsRawTilt(): Calibration | null {
+    const gravity = sensor.getGravity();
+    if (!gravity) return null;
+    return {
+      rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
+      pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
+    };
+  }
+
+  /** Calibrated roll/pitch: the same effective calibration (sensor bias +
+   * vehicle zero + active target, #122) the leveling math itself
+   * subtracts — reused via `tiltFromGravity`, not recomputed. */
+  function diagnosticsCalibratedTilt(): Calibration | null {
+    const gravity = sensor.getGravity();
+    if (!gravity) return null;
+    const tilt = tiltFromGravity(gravity, effectiveCalibration());
+    return { rollDeg: tilt.roll * RAD_TO_DEG, pitchDeg: tilt.pitch * RAD_TO_DEG };
   }
 
   // Shared by the menu and the onboarding wizard. Starting the sensor on
