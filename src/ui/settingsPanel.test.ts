@@ -509,7 +509,7 @@ describe('settings form — Modern tabs (#108)', () => {
 describe('settings form — compact mode (#156)', () => {
   it('renders only Wheelbase and Track width front/rear, no tabs, no Advanced', () => {
     for (const settings of [classic, { ...classic, appearance: 'modern' as const }]) {
-      const form = createSettingsForm(settings, vi.fn(), undefined, { compact: true });
+      const form = createSettingsForm(settings, vi.fn(), undefined, { compact: 'measurements' });
       expect(form.querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
       expect(form.querySelector('input[name="trackWidthFrontMm"]')).not.toBeNull();
       expect(form.querySelector('input[name="trackWidthRearMm"]')).not.toBeNull();
@@ -522,7 +522,7 @@ describe('settings form — compact mode (#156)', () => {
 
   it('still round-trips a compact field through Save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave, undefined, { compact: true });
+    const form = createSettingsForm(classic, onSave, undefined, { compact: 'measurements' });
     input(form, 'wheelbaseMm').value = '4100';
     form.dispatchEvent(new Event('input'));
     form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -573,7 +573,8 @@ describe('settings form — resyncSoundFields (#161)', () => {
     const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
     expect(typeof createSettingsForm(modern, vi.fn()).resyncSoundFields).toBe('function');
     expect(
-      typeof createSettingsForm(classic, vi.fn(), undefined, { compact: true }).resyncSoundFields,
+      typeof createSettingsForm(classic, vi.fn(), undefined, { compact: 'measurements' })
+        .resyncSoundFields,
     ).toBe('function');
   });
 });

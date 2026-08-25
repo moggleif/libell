@@ -123,16 +123,25 @@ export type SettingsFormElement = HTMLFormElement & {
 
 export interface SettingsFormOptions {
   /**
-   * Onboarding step 2 (#156): render only Wheelbase and Track width
-   * front/rear — the three numbers most first-run users have on hand
-   * from the registration document (see `measureHint` below). Everything
-   * else (Vehicle type, Rear axle, Tolerance, Stability, Show lengths in,
-   * Theme, Appearance, Chime, Continuous audio guidance — including the
-   * Advanced disclosure from #157, not just collapsed but absent) stays
-   * reachable from ☰ → Settings afterward. Defaults to false everywhere
-   * else (the menu's Settings page, the embedded Modern tabs).
+   * Two reduced onboarding renderings, each just its own subset of the
+   * same field elements the full form builds — never a wizard-only
+   * duplicate. Omitted everywhere else (the menu's Settings page, the
+   * embedded Modern tabs), which get the full form instead.
+   *
+   * 'measurements' (onboarding step, #156): only Wheelbase and Track
+   * width front/rear — the three numbers most first-run users have on
+   * hand from the registration document (see `measureHint` below).
+   *
+   * 'general' (onboarding step, #189): only Language, Theme, Chime and
+   * Continuous audio guidance — the same fields the full form's General
+   * section has, reused as-is.
+   *
+   * Either way, everything else (Vehicle type, Rear axle, Tolerance,
+   * Stability, Show lengths in, Appearance — including the Advanced
+   * disclosure from #157, not just collapsed but absent) stays reachable
+   * from ☰ → Settings afterward.
    */
-  compact?: boolean;
+  compact?: 'measurements' | 'general';
 }
 
 export function createSettingsForm(
@@ -142,7 +151,7 @@ export function createSettingsForm(
   formOptions?: SettingsFormOptions,
   targetsOptions?: TargetsOptions,
 ): SettingsFormElement {
-  const compact = formOptions?.compact ?? false;
+  const compact = formOptions?.compact;
   const form: SettingsFormElement = document.createElement('form');
   form.className = 'settings__form';
 
@@ -644,8 +653,8 @@ export function createSettingsForm(
     renderKlossarUiImpl?.();
   }
 
-  if (compact) {
-    // Onboarding step 2 (#156): the reduced subset only — no tabs, no
+  if (compact === 'measurements') {
+    // Onboarding step (#156): the reduced subset only — no tabs, no
     // Advanced disclosure, no vehicle-type/axle selectors. A short note
     // pointing to ☰ is added by onboarding.ts itself, next to this form.
     form.append(
@@ -653,6 +662,19 @@ export function createSettingsForm(
       fieldEls.get('wheelbaseMm')!,
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
+      actions,
+    );
+  } else if (compact === 'general') {
+    // Onboarding step (#189): Language, Theme, Chime, Continuous audio
+    // guidance — the exact same field elements and handlers the full
+    // form's General section uses (language still reloads immediately on
+    // change, theme still live-previews), just this subset appended.
+    form.append(
+      languageField,
+      themeField,
+      soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
       actions,
     );
   } else if (appearance === 'modern') {

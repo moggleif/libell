@@ -53,16 +53,26 @@
  * review focused on personas like seniors leveling their first
  * motorhome): a "Back" button (only from the second step on) so a wrong
  * tap doesn't require finishing the wizard or restarting it; the
- * measurements step's Next now also saves the form before advancing
- * (previously Next and the form's own Save were fully independent, by
- * design for #159 — that guard, that Save itself never advances or
- * closes the wizard, is unchanged, only Next now also saves); every
- * skippable step pairs its Skip control with a note that a warning lamp
- * reminds the user later; and the calibration step gets a one-line
- * steer on which of its two concepts (sensor calibration vs. vehicle
- * zero) to actually do first. `currentSettings` tracks the measurements
- * step's own latest save so a Back visit after Next auto-saved shows
- * what was just entered, not the wizard's original snapshot.
+ * measurements/general steps' Next now also saves their form before
+ * advancing (previously Next and a form's own Save were fully
+ * independent, by design for #159 — that guard, that Save itself never
+ * advances or closes the wizard, is unchanged, only Next now also
+ * saves); every skippable step that can leave a warning lamp (R11) lit
+ * pairs its Skip control with a note saying so; and the calibration step
+ * gets a one-line steer on which of its two concepts (sensor calibration
+ * vs. vehicle zero) to actually do first. `currentSettings` tracks the
+ * wizard's own latest save (from either form) so a Back visit after Next
+ * auto-saved shows what was just entered, not the wizard's original
+ * snapshot.
+ *
+ * General step (#189, at the user's own suggestion): a new first step —
+ * Language, Theme, Chime, Continuous audio guidance, the exact fields
+ * `createSettingsForm`'s new 'general' compact mode reuses from the full
+ * form's General section — always shown, right before everything else,
+ * since being able to read the rest of the guide matters before any of
+ * it. Skippable (the shipped defaults are already a complete choice);
+ * unlike the other skippable steps it gets no warning-lamp hint, since
+ * skipping it never lights one.
  */
 import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
@@ -290,10 +300,38 @@ export function showOnboarding(options: OnboardingOptions): void {
           options.onSettingsSaved(settings);
         },
         undefined,
-        { compact: true },
+        { compact: 'measurements' },
       ),
       moreInMenuNote(),
       skipConsequenceHint(),
+    ],
+  };
+
+  // Language, Theme, Chime, Continuous audio guidance (#189, at the
+  // user's suggestion): the same General section fields the full
+  // Settings form has (`createSettingsForm`'s 'general' compact mode),
+  // not a wizard-only reimplementation. Always the very first step —
+  // knowing the app is legible matters before anything else — and reads
+  // `currentSettings` like the measurements step, so a language change's
+  // immediate reload (unrelated to Next/Save; see settingsPanel.ts's own
+  // languageSelect handler) never fights with a value saved seconds
+  // earlier here. No skip-consequence hint: unlike measurements/
+  // calibration, skipping this step leaves no warning lamp (R11) lit —
+  // the shipped defaults are already a complete, valid choice.
+  const generalStep: Step = {
+    title: t('settings.general'),
+    skipLabel: t('onboard.skipDefaults'),
+    build: () => [
+      createSettingsForm(
+        currentSettings,
+        (settings) => {
+          currentSettings = settings;
+          options.onSettingsSaved(settings);
+        },
+        undefined,
+        { compact: 'general' },
+      ),
+      moreInMenuNote(),
     ],
   };
 
@@ -403,9 +441,10 @@ export function showOnboarding(options: OnboardingOptions): void {
   const phoneSteps = [placementStep, settingsStep, calibrationStep];
   const externalSteps = [connectStep, settingsStep];
 
+  // generalStep always leads (#189) — every branch below prepends it.
   let steps: Step[] = sourceChoiceAvailable
-    ? [sourceStep, vehicleStep, ...phoneSteps]
-    : [vehicleStep, ...phoneSteps];
+    ? [generalStep, sourceStep, vehicleStep, ...phoneSteps]
+    : [generalStep, vehicleStep, ...phoneSteps];
 
   let index = 0;
 
@@ -481,21 +520,23 @@ export function showOnboarding(options: OnboardingOptions): void {
     next.className = isModern ? 'menu__action onboarding__next--modern' : 'menu__action';
     next.textContent = index === steps.length - 1 ? t('onboard.done') : t('onboard.next');
     next.addEventListener('click', () => {
-      // Leaving the settings step (#189): Next used to be fully
-      // independent of the embedded form's own Save button (a deliberate
-      // choice for #159, so that Save's normal "return to main screen"
-      // behavior never fired inside the wizard) — but that meant a user
-      // who typed measurements and tapped Next, the near-universal wizard
-      // convention, lost them silently. Submitting the form here saves
-      // whatever is currently in it without changing what Save itself
-      // does when pressed directly (#159's guard is untouched).
-      if (step === settingsStep) {
+      // Leaving a step with its own embedded form — settings (measurements)
+      // or general (#189): Next used to be fully independent of the
+      // embedded form's own Save button (a deliberate choice for #159, so
+      // that Save's normal "return to main screen" behavior never fired
+      // inside the wizard) — but that meant a user who typed measurements
+      // or flipped a General toggle and tapped Next, the near-universal
+      // wizard convention, lost it silently. Submitting the form here
+      // saves whatever is currently in it without changing what Save
+      // itself does when pressed directly (#159's guard is untouched).
+      if (step === settingsStep || step === generalStep) {
         body.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
       }
       // Leaving the source step: branch the rest of the wizard onto the
       // chosen path — read once, here, never re-evaluated afterward.
       if (step === sourceStep) {
         steps = [
+          generalStep,
           sourceStep,
           vehicleStep,
           ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
