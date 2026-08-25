@@ -238,12 +238,22 @@ URL and must keep working with no signal.
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
-- **Then** a four-step wizard runs: which vehicle I'm leveling (motorhome or caravan —
-  #184), how to place the phone and how to read the answer (the wheel-state legend and
-  the bubble), vehicle measurements (skippable — "use defaults"), calibration
-  (skippable). It can be closed with ✕ at any point, warning lamps (R11) stay lit for
-  whatever was skipped, and the "Show introduction" button at the top of the "?" page's
-  Help tab (R28, screen-cleanup follow-up) reopens it any time.
+- **Then** a five-step wizard runs: general preferences (Language, Theme, Appearance,
+  Chime, Continuous audio guidance — skippable, #189), which vehicle I'm leveling
+  (motorhome or caravan — #184), how to place the phone and how to read the answer (the
+  wheel-state legend and the bubble), vehicle measurements (skippable — "use defaults"),
+  calibration (skippable). It can be closed with ✕ at any point, warning lamps (R11)
+  stay lit for whatever was skipped, and the "Show introduction" button at the top of
+  the "?" page's Help tab (R28, screen-cleanup follow-up) reopens it any time.
+- **Given** the general step (#189, always first — usability review, personas like
+  seniors leveling their first motorhome: being able to read the rest of the guide
+  matters before anything else)
+- **Then** it shows Language, Theme, Appearance, Chime and Continuous audio guidance —
+  the same fields and handlers Settings → General has, reused as-is (language still
+  applies via a full reload immediately on change, same as Settings; the rest saves
+  like the measurements step below). Skippable, using the shipped defaults; unlike the
+  other skippable steps, skipping it never lights a warning lamp — the defaults are
+  already a complete, valid choice.
 - **Given** the vehicle step (#184)
 - **Then** it asks "What are you leveling?" with the same Motorhome/Caravan choice and
   labels Settings uses, pre-selected to whatever is already stored (not hardcoded to
@@ -253,28 +263,30 @@ URL and must keep working with no signal.
   same vehicle-aware rules the full Settings form already applies (axle-to-jockey
   distance, no front track width for a caravan).
 - **Given** the placement/legend step
-- **Then** it also mentions the opt-in "Continuous audio guidance" (R30) — a
-  discoverability tip, not a default change (#154): the setting itself stays off
-  until a user turns it on in Settings → General.
+- **Then** it does not repeat the opt-in "Continuous audio guidance" (R30) toggle or a
+  tip about it — the general step just before it already showed that exact toggle
+  (#189, superseding #154's placement-step tip: pointing back at "Settings → General"
+  for a setting the user could already see and flip a step earlier only re-raised the
+  cognitive load #189 was trying to lower). The setting itself still stays off by
+  default.
 - **Given** the measurements step
 - **Then** it shows only Wheelbase and Track width front/rear (#156) — the three
   numbers the step's own hint text says come from the registration document, labeled
   for whichever vehicle the vehicle step chose. Everything else the full Settings form
-  has (Rear axle — Vehicle tab; Language, Theme, Chime, Continuous audio guidance —
-  General tab; Tolerance, Stability, Appearance — Advanced) is reachable from Settings
-  afterward, not hidden from the app, just not shown on this reduced step. A short note
-  on the step says so.
+  has beyond what the general step (#189) already covered (Rear axle — Vehicle tab;
+  Tolerance, Stability — Advanced) is reachable from Settings afterward, not hidden from
+  the app, just not shown on this reduced step. A short note on the step says so.
 - **Given** the calibration step
 - **Then** it embeds the exact same calibration section Settings → Calibration shows —
   flip-calibration technique, Vehicle zero position, check/clear, all of it (#184: no
   more reduced rendering of its own that could drift from the real one) — skippable.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
-- **Then** the wizard opens with one extra first step, "How do you want to measure?",
-  offering "This phone" (pre-selected) or "External sensor" — the same name and
-  wording the sensor-status icon and its page use (R32) elsewhere, never a separate
-  "Libell Sensor" product name, which was never real; every other browser gets
-  exactly the four-step flow above, with no added step and no dead radio button
-  (#135). The vehicle step always follows immediately after this one, so it is
+- **Then** the wizard opens with one extra step, "How do you want to measure?", right
+  after the general step, offering "This phone" (pre-selected) or "External sensor" —
+  the same name and wording the sensor-status icon and its page use (R32) elsewhere,
+  never a separate "Libell Sensor" product name, which was never real; every other
+  browser gets exactly the five-step flow above, with no added step and no dead radio
+  button (#135). The vehicle step always follows immediately after this one, so it is
   answered before either device path continues.
 - **Given** the source step, with "This phone" left selected (the default)
 - **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
@@ -291,6 +303,28 @@ URL and must keep working with no signal.
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
   any state, so an interrupted wizard can never leave the active source ambiguous.
+- **Given** any step after the first (#189: a usability review of R18 for less
+  tech-savvy users, e.g. seniors leveling their first motorhome)
+- **Then** a "Back" button returns to the previous step without losing any choice
+  already made — vehicle type, sensor source, and any measurements already entered in
+  the settings step. A wrong tap no longer requires finishing the wizard and correcting
+  it in Settings, or closing and restarting from step 1.
+- **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
+- **Then** tapping "Next" saves those values before advancing, the same as the step's
+  own Save button — Next and Save no longer disagree about whether typed-in
+  measurements survive leaving the step (#189; #159's separate guard, that Save itself
+  never closes or advances the wizard, is unchanged).
+- **Given** a skippable step (measurements, calibration, connect)
+- **Then** its Skip control is paired with a one-line note that a warning lamp (R11)
+  will remind the user later if they skip — not just "Skip" with no stated consequence.
+- **Given** the calibration step
+- **Then** a one-line hint above the embedded calibration UI says to calibrate the
+  sensor first (flip calibration if no known-level spot is at hand), and that the
+  vehicle zero below it is optional, extra precision — steering a first-time user
+  through the step's two distinct concepts instead of leaving the order to guesswork.
+- **Given** Modern appearance
+- **Then** the step progress shows a visible "n / total" text next to the bars, not
+  only an `aria-label` on them — legible at a glance, including for low-vision users.
 
 ## R19 — Share the app
 

@@ -1950,6 +1950,13 @@ body {
   stroke-width: 2;
 }
 
+/* Same token as the real screen's .rv-diagram__windshield (#189) — this
+ * illustration's body used to be a plain box, unlike the real diagram's
+ * vehicle-from-above silhouette. */
+.illu__windshield {
+  fill: var(--outline);
+}
+
 .illu__phone {
   fill: var(--surface-raised);
   stroke: var(--on-surface-muted);
@@ -2093,6 +2100,12 @@ body {
  * whichever DOM that produced, they never react live to a later
  * appearance change inside the same open wizard. */
 
+.onboarding__progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .onboarding__bars {
   display: flex;
   gap: 4px;
@@ -2107,6 +2120,14 @@ body {
 
 .onboarding__bar--active {
   background: var(--level);
+}
+
+/* Visible "n / total" alongside the bars (#189) — the bars alone only
+ * carried that information in an aria-label, unreadable to a sighted
+ * low-vision user at 24×4px. */
+.onboarding__bars-text {
+  font-size: 0.75rem;
+  color: var(--on-surface-muted);
 }
 
 .onboarding__title--modern {
@@ -2178,6 +2199,13 @@ body {
 }
 
 .onboarding__skip--modern {
+  border: 0;
+  background: none;
+}
+
+/* Back (#189): same subordinate, link-like treatment as Skip — appended
+ * first in the nav, so column-reverse puts it last/least prominent. */
+.onboarding__back--modern {
   border: 0;
   background: none;
 }
