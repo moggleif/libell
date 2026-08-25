@@ -331,6 +331,22 @@ describe('settings form — Modern tabs (#108)', () => {
     });
   });
 
+  // Pre-existing gap found during the Classic split-pages review: Number of
+  // ramps / Waste-water drain were never appended anywhere in the Klossar
+  // tab, unlike Classic's Ramps page, which has always had them.
+  it('includes Number of ramps and Waste-water drain, hidden for a caravan', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const rampsPanel = tabPanel(form, 'ramps');
+    expect(rampsPanel.textContent).toContain(t('settings.rampCount'));
+    expect(rampsPanel.textContent).toContain(t('settings.drain'));
+
+    const caravanModern: LevelSettings = { ...modern, vehicleType: 'caravan' };
+    const caravanForm = createSettingsForm(caravanModern, vi.fn());
+    const caravanRampsPanel = tabPanel(caravanForm, 'ramps');
+    const rampCountField = caravanRampsPanel.querySelector<HTMLLabelElement>('.settings__field');
+    expect(rampCountField?.hidden).toBe(true);
+  });
+
   it('shows the pinned card for the default (catalog) model, with its step count', () => {
     const form = createSettingsForm(modern, vi.fn());
     const pinned = form.querySelector<HTMLElement>('.klossar__pinned')!;
