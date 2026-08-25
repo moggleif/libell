@@ -654,3 +654,45 @@ R8's always-visible main-screen degree readout is unaffected.
   measurement, for a support-only page that is opened rarely and briefly.
 - Battery/signal strength reuse R32's exact "not available yet" wording — never a
   second, slightly different phrasing, and never relaxed into a fabricated value.
+
+## R37 — Sensor unavailable: an explicit Retry / "Use phone sensor" prompt (#134)
+
+R32/R33 already report a lost or unreachable EasyLevel connection honestly (the
+main-screen dot, the "External sensor" menu page, a failed silent reconnect at open).
+This requirement makes that moment actionable instead of a dead end the user can only
+fix by opening the menu — and, per ADR 0014, never by switching source on its own:
+phone and EasyLevel keep independent calibration references, so an automatic,
+unannounced switch could show a plausible-looking but wrong reading.
+
+- **Given** EasyLevel is the active source and it cannot be reached — a live GATT
+  disconnect, or a failed silent reconnect attempt at app open (R33) that never
+  recovered
+- **When** I look at the main screen
+- **Then** instead of the plain "no reading yet" hint, a clear, non-blocking prompt is
+  shown: "External sensor unavailable." with two actions, "Retry" and "Use phone
+  sensor" — never a frozen or ambiguous screen.
+- **Given** the fallback prompt is shown
+- **When** I tap "Retry"
+- **Then** the app makes exactly one silent reconnect attempt against the remembered
+  box (the same `EasyLevelSensor.reconnect()` R33's own auto-reconnect uses, not a
+  duplicate implementation) — no retry loop, no backoff. On success the prompt clears
+  and leveling resumes on the external source; on failure the prompt simply stays (or
+  reappears on the next frame), with nothing further attempted automatically.
+- **Given** the fallback prompt is shown
+- **When** I tap "Use phone sensor"
+- **Then** the app switches the active source to the phone sensor via the exact same
+  explicit switch the menu's own "Disconnect" action already performs (never a
+  parallel code path), and the prompt itself says plainly, before I tap, that this
+  is not a like-for-like swap: the phone sensor needs the phone lying flat inside the
+  vehicle (R1/R17), unlike a permanently-mounted box. If the phone is not already
+  lying flat, R17's existing wrong-pose overlay reinforces the same point right after
+  the switch — reused as-is, not duplicated here.
+- **Given** I have switched to the phone sensor from this prompt
+- **Then** nothing about EasyLevel's calibration (its own installation offset, R34) is
+  reused or assumed for the phone — the phone's own calibration/vehicle-zero pair
+  (R24) is what "level" means from this point on, per ADR 0014's three-way split.
+- This prompt is deliberately not a second "sensor is down" surface: it is the
+  actionable form of the same `!gravity`/`'disconnected'` case R32's connection-lost
+  hint already covered, and it is distinct from R35's stale-data overlay (data still
+  arriving, just old) — that overlay is unaffected and keeps clearing itself
+  automatically the moment fresh samples resume.

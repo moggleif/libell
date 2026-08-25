@@ -323,8 +323,6 @@ export const MESSAGES = {
     'main.https':
       'Libell needs a secure connection (HTTPS) to read the tilt sensors. ' +
       'Open the app over HTTPS and try again.',
-    'main.easyLevelDisconnected':
-      'Connection to the EasyLevel sensor was lost. Open the menu to reconnect.',
 
     'diagram.aria': 'Top-down view of your motorhome showing which wheels need raising',
     'diagram.caravan.aria':
@@ -349,6 +347,18 @@ export const MESSAGES = {
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
 
     'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
+
+    // Sensor unavailable fallback prompt (#134): shown instead of the
+    // plain "waiting" hint once an EasyLevel connection cannot be
+    // reached — never a silent or automatic switch to the phone (ADR
+    // 0014's calibration split), always this explicit Retry / "Use phone
+    // sensor" choice.
+    'sensorFallback.unavailable': 'External sensor unavailable.',
+    'sensorFallback.phoneHint':
+      'The phone sensor needs the phone lying flat inside the vehicle — a permanently ' +
+      'mounted box does not.',
+    'sensorFallback.retry': 'Retry',
+    'sensorFallback.usePhone': 'Use phone sensor',
   },
   sv: {
     'topbar.install': 'Installera',
@@ -656,8 +666,6 @@ export const MESSAGES = {
     'main.https':
       'Libell behöver en säker anslutning (HTTPS) för att läsa lutningssensorerna. ' +
       'Öppna appen via HTTPS och försök igen.',
-    'main.easyLevelDisconnected':
-      'Anslutningen till EasyLevel-sensorn förlorades. Öppna menyn för att återansluta.',
 
     'diagram.aria': 'Din husbil ovanifrån, med hjulen som behöver höjas markerade',
     'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',
@@ -682,6 +690,13 @@ export const MESSAGES = {
 
     'stale.dataUnavailable':
       'Ingen ny sensordata – vägledningen är pausad tills den kommer tillbaka',
+
+    'sensorFallback.unavailable': 'Extern sensor otillgänglig.',
+    'sensorFallback.phoneHint':
+      'Telefonens sensor kräver att telefonen ligger plant i fordonet – en fast ' +
+      'monterad box behöver inte det.',
+    'sensorFallback.retry': 'Försök igen',
+    'sensorFallback.usePhone': 'Använd telefonsensorn',
   },
 } as const;
 

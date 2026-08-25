@@ -56,6 +56,7 @@ import {
   type SensorState,
 } from './sensor/orientation';
 import { createEasyLevelSensor, type EasyLevelSensor } from './sensor/easyLevelSensor';
+import { isSensorUnavailable } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
@@ -63,6 +64,7 @@ import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
 import { createSensorStatusIndicator } from './ui/sensorStatusIndicator';
+import { createSensorFallbackPrompt } from './ui/sensorFallbackPrompt';
 import { createLevelOverlay } from './ui/levelOverlay';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
@@ -281,6 +283,48 @@ function bootstrap(root: HTMLElement): void {
     rememberSensorSource('phone');
     // See the matching comment in `connectEasyLevelNow` (#131).
     updateIndicators();
+  }
+
+  /**
+   * "Use phone sensor" (#134): the fallback prompt's explicit, tap-only
+   * escape hatch from an unreachable EasyLevel connection. Reuses
+   * `disconnectEasyLevelNow` verbatim — the exact same real switch the
+   * menu's own "Disconnect" button already performs, never a parallel
+   * implementation, and never automatic (ADR 0014: phone and EasyLevel
+   * have different calibration references, so an unannounced switch could
+   * show a plausible-looking but wrong reading).
+   *
+   * The one thing added on top: this tap is itself a genuine user
+   * gesture, which is also the only thing `phoneSensor.start()` ever
+   * needs (iOS included). That start may never have happened yet — e.g.
+   * EasyLevel auto-reconnected (#130) at app open and took over the
+   * startup flow, so the ordinary phone-sensor flow never ran — and
+   * without it the phone sensor would sit silently at `getGravity() ===
+   * null` forever. Calling it here is a no-op once already granted, so
+   * this stays safe to call from every path that can reach this state.
+   */
+  function usePhoneSensorNow(): void {
+    disconnectEasyLevelNow();
+    void phoneSensor.start();
+  }
+
+  /**
+   * "Retry" (#134): one tap, one attempt — never a retry loop or
+   * backoff. Calls the existing silent `EasyLevelSensor.reconnect()`
+   * (#130) with whatever device id is available, exactly the same call
+   * the startup auto-reconnect already makes; on failure `reconnect()`
+   * itself already resolves back to `'disconnected'`, so the fallback
+   * prompt simply stays (or reappears) with no extra state to track here.
+   */
+  async function retryEasyLevelNow(): Promise<void> {
+    const deviceId = easyLevelSensor?.getDeviceId() ?? loadRememberedEasyLevelDeviceId();
+    if (!easyLevelSensor || !deviceId) return;
+    const state = await easyLevelSensor.reconnect(deviceId);
+    if (state === 'granted') {
+      sensor = easyLevelSensor;
+      updateIndicators();
+    }
+    updateSensorStatus();
   }
 
   /**
@@ -685,6 +729,15 @@ function bootstrap(root: HTMLElement): void {
     waiting.className = 'app__hint';
     waiting.textContent = t('main.waiting');
 
+    // Sensor unavailable fallback prompt (#134): the actionable form of
+    // the plain "waiting" hint above, shown instead of it once the active
+    // EasyLevel connection is unreachable (`isSensorUnavailable`,
+    // `sensor/sensorFallback.ts`) — never both at once, see `frame()`.
+    const fallbackPrompt = createSensorFallbackPrompt(
+      () => void retryEasyLevelNow(),
+      () => usePhoneSensorNow(),
+    );
+
     // Full-screen confirmation shown briefly when level is reached (#124:
     // animated fade/scale, reduced-motion-aware — see levelOverlay.ts).
     const levelOverlay = createLevelOverlay();
@@ -763,7 +816,7 @@ function bootstrap(root: HTMLElement): void {
       };
     }
 
-    root.append(engineElement, status, tilt.element, waiting);
+    root.append(engineElement, status, tilt.element, waiting, fallbackPrompt.element);
 
     // Pose guard: wrong-pose overlay instead of wrong guidance (#51).
     const poseOverlay = document.createElement('div');
@@ -840,6 +893,7 @@ function bootstrap(root: HTMLElement): void {
       if (menu.isOpen() || onboardingOpen) {
         poseOverlay.hidden = true;
         staleOverlay.hidden = true;
+        fallbackPrompt.update(false);
         levelOverlay.hideNow();
         requestAnimationFrame(frame);
         return;
@@ -851,15 +905,19 @@ function bootstrap(root: HTMLElement): void {
         // readings were already flowing. Either way, say so instead of
         // freezing the diagram on its last frame (#116's acceptance
         // criteria) — this hint was already the "waiting for the very
-        // first reading" case; it just gains a second, disconnect-aware
-        // message and can now reappear after having been hidden.
-        waiting.hidden = false;
-        waiting.textContent =
-          sensor.getState() === 'disconnected'
-            ? t('main.easyLevelDisconnected')
-            : t('main.waiting');
+        // first reading" case.
+        //
+        // Unreachable EasyLevel (#134) gets the actionable Retry/"Use
+        // phone sensor" prompt instead of the plain text — never both at
+        // once. Every other case here (first load, still connecting) is
+        // unchanged: the plain "waiting for the tilt sensor" hint.
+        const unavailable = isSensorUnavailable(sensor.getState());
+        fallbackPrompt.update(unavailable);
+        waiting.hidden = unavailable;
+        if (!unavailable) waiting.textContent = t('main.waiting');
       } else {
         waiting.hidden = true;
+        fallbackPrompt.update(false);
         const now = performance.now();
         // Stale data (#132): the sensor still reports a reading, but it
         // hasn't refreshed in a while — a BLE box whose notifications
