@@ -49,6 +49,7 @@ import { createMenu } from './ui/menu';
 import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
+import { createSensorStatusIndicator } from './ui/sensorStatusIndicator';
 import { createLevelOverlay } from './ui/levelOverlay';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
@@ -332,6 +333,7 @@ function bootstrap(root: HTMLElement): void {
     addTargetPreset: (name) => addTargetPresetNow(name),
     deleteTargetPreset: (id) => deleteTargetPresetNow(id),
     getSensorSource: () => sensor.getSource(),
+    getSensorState: () => sensor.getState(),
     connectEasyLevel: () => connectEasyLevelNow(),
     disconnectEasyLevel: () => disconnectEasyLevelNow(),
   });
@@ -362,6 +364,16 @@ function bootstrap(root: HTMLElement): void {
     targetBadge.update(active ? active.name : null);
   };
   updateTargetBadge();
+
+  // External-sensor status indicator (#129): the main screen's only trace
+  // of an active external source — hidden entirely while the phone's own
+  // sensor is active (`sensorStatusIndicator.ts`'s regression guard).
+  // Tapping it jumps to the same "External sensor" menu page the
+  // sensor-source section lives on (mirrors the warning lamps' pattern).
+  const sensorStatus = createSensorStatusIndicator(() => menu.open('sensorSource'));
+  document.querySelector('#indicators')?.append(sensorStatus.element);
+  const updateSensorStatus = () => sensorStatus.update(sensor.getSource(), sensor.getState());
+  updateSensorStatus();
 
   function selectTargetNow(id: string | null): void {
     activeTargetId = id;
@@ -636,6 +648,12 @@ function bootstrap(root: HTMLElement): void {
     const frame = () => {
       // A rebuilt screen (vehicle type change) owns the loop from here.
       if (generation !== screenGeneration) return;
+      // Refreshed every frame (#129), including while the menu is open
+      // (see below) — a lost EasyLevel connection is only ever observed
+      // by polling `getState()` (Web Bluetooth's `gattserverdisconnected`
+      // has no separate callback into this module), the same way the
+      // "waiting" hint below already discovers it.
+      updateSensorStatus();
       // Menu or wizard open: the user is reading, phone in hand — no
       // pose nagging, no overlays, no celebration until they are back.
       if (menu.isOpen() || onboardingOpen) {

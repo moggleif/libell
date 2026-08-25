@@ -32,6 +32,7 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
     getSensorSource: () => 'phone',
+    getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('unsupported'),
     disconnectEasyLevel: () => {},
     ...overrides,

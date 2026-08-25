@@ -74,6 +74,8 @@ export interface MenuOptions {
    * is true (see below), so these are only wired up where they can work.
    */
   getSensorSource(): SensorSource;
+  /** The active sensor's current state (#129) — see `SensorSourceOptions`. */
+  getSensorState(): SensorState;
   connectEasyLevel(): Promise<SensorState>;
   disconnectEasyLevel(): void;
 }

@@ -475,6 +475,21 @@ URL and must keep working with no signal.
 - **Then** the main screen shows that the connection was lost instead of freezing on
   the last reading, and the menu's "Connect" action offers to reconnect (a new pairing
   gesture — Web Bluetooth has no silent background reconnect).
+- **Given** the EasyLevel box is the active source and connected
+- **Then** the main screen shows only a small, neutral connection-state dot — no
+  numbers, no clutter — and nothing at all is added to the main screen while the
+  phone's own sensor is active (#129). Tapping the dot opens the "External sensor"
+  menu page, the same "tap the indicator to jump to its menu section" pattern the R11
+  warning lamps use.
+- **Given** the box disconnects, or its data goes stale
+- **Then** the main-screen dot switches to a clearly different (warning) look — this
+  dot is the visible half of the "never leave apparently-live instructions on screen"
+  guarantee; the freeze/stale-data logic that backs it is separate (#132).
+- **Given** the "External sensor" menu page, whether connected or disconnected
+- **Then** it spells out the connection state in full, and shows battery, signal
+  strength and temperature explicitly as "not available yet" — never silently
+  omitted, never a fabricated number — since none of the three is actually decoded
+  yet (see the `faf52c22-...` note below, and #123).
 - **Given** the box's `faf52c21-...` notification payload (6× signed int16,
   little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
 - **Then** only the accelerometer triplet is used, mapped directly into a

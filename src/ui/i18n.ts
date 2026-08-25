@@ -20,6 +20,13 @@ export const MESSAGES = {
     'lamp.calibrate': '⚠ Calibrate',
     'lamp.calibrate.title': 'The phone is not calibrated — tap to open Calibration',
 
+    // Main-screen external-sensor indicator (#129): shown only while an
+    // external source (today: EasyLevel) is active — never in phone mode.
+    // Deliberately just an icon/dot, no numbers — detail lives one tap
+    // away in the "External sensor" menu page.
+    'sensorStatus.connected': 'External sensor connected',
+    'sensorStatus.disconnected': 'External sensor connection lost — tap for details',
+
     'menu.title': 'Menu',
     'menu.close': 'Close menu',
     'menu.settings': 'Settings',
@@ -45,8 +52,23 @@ export const MESSAGES = {
     'sensorSource.status.phone': "Using the phone's own sensor.",
     'sensorSource.status.connected': 'Connected to the EasyLevel sensor.',
     'sensorSource.status.connecting': 'Connecting…',
+    // Connection lost while the box stays the selected source (#129) —
+    // distinct from the plain "connected" text above so the settings page
+    // never claims a live link that no longer exists.
+    'sensorSource.status.disconnected':
+      'Connection to the EasyLevel sensor was lost — tap Reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     'sensorSource.err.failed': 'Could not connect to the EasyLevel sensor.',
+
+    // Detailed sensor health (#129). Battery/RSSI/temperature are shown
+    // honestly as "not available yet" — `faf52c22-...`'s bytes beyond the
+    // firmware version are undecoded (#116, deferred to #123), and this
+    // app has no reliable, cross-browser RSSI reading — never fabricated.
+    'sensorSource.detail.heading': 'Sensor details',
+    'sensorSource.detail.battery': 'Battery: {value}',
+    'sensorSource.detail.rssi': 'Signal strength: {value}',
+    'sensorSource.detail.temperature': 'Temperature: {value}',
+    'sensorSource.detail.notAvailable': 'Not available yet',
 
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
@@ -288,6 +310,11 @@ export const MESSAGES = {
     'share.copied': 'Länken kopierad!',
     'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',
 
+    // Main-screen external-sensor indicator (#129): shown only while an
+    // external source (today: EasyLevel) is active — never in phone mode.
+    'sensorStatus.connected': 'Extern sensor ansluten',
+    'sensorStatus.disconnected': 'Extern sensor — anslutningen bröts, tryck för detaljer',
+
     'lamp.setup': '⚠ Mått',
     'lamp.setup.title':
       'Fordonsinställningarna har aldrig sparats — tryck för att öppna Inställningar',
@@ -319,8 +346,16 @@ export const MESSAGES = {
     'sensorSource.status.phone': 'Använder telefonens egen sensor.',
     'sensorSource.status.connected': 'Ansluten till EasyLevel-sensorn.',
     'sensorSource.status.connecting': 'Ansluter…',
+    'sensorSource.status.disconnected':
+      'Anslutningen till EasyLevel-sensorn bröts — tryck på Återanslut.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
     'sensorSource.err.failed': 'Kunde inte ansluta till EasyLevel-sensorn.',
+
+    'sensorSource.detail.heading': 'Sensordetaljer',
+    'sensorSource.detail.battery': 'Batteri: {value}',
+    'sensorSource.detail.rssi': 'Signalstyrka: {value}',
+    'sensorSource.detail.temperature': 'Temperatur: {value}',
+    'sensorSource.detail.notAvailable': 'Inte tillgängligt ännu',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
