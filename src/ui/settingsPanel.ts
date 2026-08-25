@@ -105,8 +105,8 @@ export type SettingsFormElement = HTMLFormElement & {
   selectCalibrationTab?: () => void;
   /**
    * Same shortcut as `selectCalibrationTab` above, for Targets
-   * (screen-cleanup follow-up, Modern only — Targets stays its own
-   * standalone page in Classic, which has no tabs at all).
+   * (screen-cleanup follow-up, Modern only — Classic has no tabs to
+   * select; its Targets page is reached via `classicPages` below instead).
    */
   selectTargetsTab?: () => void;
   /**
@@ -121,12 +121,29 @@ export type SettingsFormElement = HTMLFormElement & {
   resyncSoundFields?: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>) => void;
   /**
    * Classic split pages (screen-cleanup follow-up, `splitPages` below):
-   * the same three bodies the menu's ☰ drawer navigates between —
-   * general/vehicle/ramps — sharing this one form's state. The menu
-   * swaps whichever body is this form's current child right before
-   * showing it; undefined unless `splitPages` was requested.
+   * the same four bodies the menu's ☰ drawer navigates between —
+   * general/vehicle/ramps/targets — sharing this one form's state. The
+   * menu swaps whichever body is this form's current child right before
+   * showing it; undefined unless `splitPages` was requested. Calibration
+   * stays its own standalone page outside this form — the one page with
+   * no "unsaved" form state at all, same exemption as Modern's own
+   * Kalibrering tab.
    */
-  classicPages?: { general: HTMLElement; vehicle: HTMLElement; ramps: HTMLElement };
+  classicPages?: {
+    general: HTMLElement;
+    vehicle: HTMLElement;
+    ramps: HTMLElement;
+    targets: HTMLElement;
+  };
+  /**
+   * Refreshes the embedded targets section built for `classicPages.targets`
+   * above — the preset list and offset summary can change from outside
+   * this form (a preset added/deleted, the active target switched), so the
+   * menu host calls this every time it (re)opens the Targets page, same
+   * reasoning as `resyncSoundFields` above. Undefined unless `splitPages`
+   * was requested.
+   */
+  refreshTargetsPage?: () => void;
 };
 
 export interface SettingsFormOptions {
@@ -695,40 +712,6 @@ export function createSettingsForm(
     return row;
   }
 
-  /**
-   * Save+Undo only, no Reset — used only by Classic's split General/Ramps
-   * pages (#108 follow-up; Modern's own General/Klossar tabs use
-   * `buildActionsRow` above instead, design review). Reset-to-factory-
-   * defaults stays on the one Classic page that already carries it
-   * (Vehicle) rather than repeated on every split page — a "Reset" next
-   * to Language/Theme/Sound would silently wipe the vehicle's own
-   * dimensions too, the same surprise the onboarding wizard's compact
-   * steps were fixed to avoid (design review). `saved`/`populate` are
-   * defined later in this function, referenced here only inside click
-   * closures that fire well after the whole form is built.
-   */
-  function buildSaveUndoRow(): HTMLDivElement {
-    const row = document.createElement('div');
-    row.className = 'settings__actions';
-    const saveBtn = document.createElement('button');
-    saveBtn.type = 'submit';
-    saveBtn.className = 'menu__action';
-    saveBtn.disabled = true;
-    saveBtn.textContent = t('settings.save');
-    const undoBtn = document.createElement('button');
-    undoBtn.type = 'button';
-    undoBtn.className = 'menu__action menu__action--secondary';
-    undoBtn.disabled = true;
-    undoBtn.textContent = t('settings.undo');
-    undoBtn.addEventListener('click', () => populate(saved));
-    // Undo, then Save — same "primary action last" order as the Reset
-    // rows above, for consistency even where there is no Reset to swap.
-    row.append(undoBtn, saveBtn);
-    saveButtons.push(saveBtn);
-    undoButtons.push(undoBtn);
-    return row;
-  }
-
   // Four labeled sections keep the long (Classic) form readable: vehicle &
   // measurements, ramps, level & display, general (screen-cleanup
   // follow-up: language/theme/sound, promoted out of Advanced below since
@@ -1186,13 +1169,17 @@ export function createSettingsForm(
     // page alongside Vehicle's own fields — bundled because they used to
     // share a Settings section header, not because they're one decision,
     // the same bundling already fixed on the onboarding wizard's General/
-    // Ramps steps and on Modern's tabs (#108). The three bodies below
-    // reuse Modern's exact tab groupings (General/Fordon/Klossar), just as
-    // ☰ drawer pages instead of tabs — Classic has no tab bar to fold
-    // into. One shared `<form>`/state underneath, same as Modern's tabs:
-    // the menu swaps whichever body is this form's mounted child, so Save
-    // from any of the three persists the current values of all three, not
-    // just the one on screen.
+    // Ramps steps and on Modern's tabs (#108). The four bodies below
+    // reuse Modern's exact tab groupings (General/Fordon/Klossar/Targets),
+    // just as ☰ drawer pages instead of tabs — Classic has no tab bar to
+    // fold into. One shared `<form>`/state underneath, same as Modern's
+    // tabs: the menu swaps whichever body is this form's mounted child, so
+    // Save from any of the four persists the current values of all four,
+    // not just the one on screen. Every page gets the exact same
+    // Reset/Undo/Save row (design review, matching Modern's General/
+    // Fordon/Klossar/Targets, #108 follow-up) — Classic used to leave
+    // Reset off General/Ramps and skip the whole row on Targets, which is
+    // exactly the "Classic doesn't match Modern" gap this closes.
     const generalBody = document.createElement('div');
     generalBody.append(
       languageField,
@@ -1204,7 +1191,7 @@ export function createSettingsForm(
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
-      buildSaveUndoRow(),
+      buildActionsRow(),
     );
     const vehicleBody = document.createElement('div');
     vehicleBody.append(
@@ -1219,15 +1206,24 @@ export function createSettingsForm(
       buildActionsRow(),
     );
     const rampsBody = document.createElement('div');
-    rampsBody.append(
-      stepsField,
-      rampCountField,
-      rampsAdvancedDetails,
-      rampHint,
-      buildSaveUndoRow(),
-    );
+    rampsBody.append(stepsField, rampCountField, rampsAdvancedDetails, rampHint, buildActionsRow());
 
-    form.classicPages = { general: generalBody, vehicle: vehicleBody, ramps: rampsBody };
+    // --- Targets page: same reuse pattern as Modern's Targets tab (#108
+    // follow-up) — one real `createTargetsSection` component, not a copy,
+    // sharing this form's state so its Reset/Undo/Save row acts on the
+    // whole form like the other three pages, regardless of Targets' own
+    // presets applying immediately.
+    const embeddedTargetsClassic = createTargetsSection(targetsOptions ?? inertTargetsOptions());
+    const targetsBody = document.createElement('div');
+    targetsBody.append(embeddedTargetsClassic.element, buildActionsRow());
+    form.refreshTargetsPage = embeddedTargetsClassic.refresh;
+
+    form.classicPages = {
+      general: generalBody,
+      vehicle: vehicleBody,
+      ramps: rampsBody,
+      targets: targetsBody,
+    };
     form.append(vehicleBody);
   } else {
     // --- Classic: one flat page (default; the menu opts into the split

@@ -112,9 +112,11 @@ URL and must keep working with no signal.
   five sections in the same order — General/Calibration/Vehicle/Ramps/Targets (design
   review) — as five full-screen drawer pages instead of tabs, one page per decision
   rather than the old single flat page that bundled Vehicle's own fields with Ramps
-  and General underneath it. General/Vehicle/Ramps share one settings form/save state
-  under the hood, same as Modern's tabs do — Save from any of the three still persists
-  the current values of all three, not just the page on screen. Diagnostics, the
+  and General underneath it. General/Vehicle/Ramps/Targets share one settings
+  form/save state under the hood, same as Modern's tabs do — Save from any of the
+  four still persists the current values of all four, not just the page on screen,
+  and every one of the four shows the exact same Reset/Undo/Save row (Calibration
+  alone stays exempt, the one page with no "unsaved" form state at all). Diagnostics, the
   introduction relaunch and External sensor stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"

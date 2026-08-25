@@ -632,6 +632,49 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 });
 
+// Classic split pages (screen-cleanup follow-up): mirrors Modern's tabs
+// one-for-one, but as `classicPages` bodies instead. General/Fordon/Klossar/
+// Targets must show the exact same Reset/Undo/Save row Modern's equivalent
+// tabs show — a gap here (Reset missing from General/Ramps, and Targets
+// having no row at all) is exactly the "settings look different between
+// Classic and Modern" regression this locks down.
+describe('settings form — Classic split pages (screen-cleanup follow-up)', () => {
+  const classicSplit: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'classic' };
+
+  it('General, Vehicle, Ramps and Targets all show the exact same three action buttons, Reset/Undo/Save in that order', () => {
+    const targetsOptions = {
+      getTargetPresets: () => [],
+      getActiveTargetId: () => null,
+      selectTarget: () => {},
+      addTargetPreset: () => null,
+      deleteTargetPreset: () => {},
+      getCalibration: () => null,
+      getVehicleCalibration: () => null,
+      getActiveTargetName: () => null,
+    };
+    const form = createSettingsForm(
+      classicSplit,
+      vi.fn(),
+      undefined,
+      { splitPages: true },
+      targetsOptions,
+    );
+    for (const page of ['general', 'vehicle', 'ramps', 'targets'] as const) {
+      const body = form.classicPages![page];
+      const labels = [...body.querySelectorAll('.settings__actions button')].map(
+        (b) => b.textContent,
+      );
+      expect(labels).toEqual(['Reset to defaults', 'Undo changes', 'Save']);
+    }
+  });
+
+  it('renders the embedded targets section in the Targets page (not a copy)', () => {
+    const form = createSettingsForm(classicSplit, vi.fn(), undefined, { splitPages: true });
+    // No host wired — inertTargetsOptions still renders the "Normal" row.
+    expect(form.classicPages!.targets.textContent).toContain('Normal');
+  });
+});
+
 describe('settings form — compact mode (#156)', () => {
   it('renders only Wheelbase and Track width front/rear, no tabs, no Advanced', () => {
     for (const settings of [classic, { ...classic, appearance: 'modern' as const }]) {
