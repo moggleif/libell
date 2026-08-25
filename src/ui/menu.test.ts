@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
@@ -31,6 +31,9 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
+    getSensorSource: () => 'phone',
+    connectEasyLevel: () => Promise.resolve('unsupported'),
+    disconnectEasyLevel: () => {},
     ...overrides,
   };
 }
@@ -161,5 +164,41 @@ describe('menu — Modern (#107)', () => {
     menu.open('help');
     expect(menu.isOpen()).toBe(true);
     expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
+  });
+});
+
+describe('EasyLevel BLE sensor source (#116)', () => {
+  const originalNavigator = globalThis.navigator;
+  afterEach(() => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+    });
+  });
+
+  it('never shows the "External sensor" page without Web Bluetooth (never a silent dead option)', () => {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    const menu = createMenu(makeOptions());
+    menu.open('sensorSource');
+    // No matching section was registered, so the page opens empty rather
+    // than throwing — nothing here identifies the EasyLevel feature at all.
+    expect(menu.element.textContent).not.toContain('EasyLevel');
+  });
+
+  it('shows a working "Connect EasyLevel sensor" entry when Web Bluetooth exists', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const connectEasyLevel = vi.fn(() => Promise.resolve<'granted'>('granted'));
+    const menu = createMenu(makeOptions({ connectEasyLevel }));
+    menu.open('sensorSource');
+    expect(menu.element.textContent).toContain('EasyLevel');
+    const button = [...menu.element.querySelectorAll('button')].find(
+      (b) => b.textContent === t('sensorSource.connect'),
+    );
+    expect(button).toBeDefined();
+    button!.click();
+    expect(connectEasyLevel).toHaveBeenCalledOnce();
   });
 });

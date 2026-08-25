@@ -148,14 +148,15 @@ describe('parseSettings', () => {
     expect(parseSettings({ appearance: 'retro' }).appearance).toBe('modern');
   });
 
-  it('validates the sensor source, defaulting to phone (#128)', () => {
+  it('validates the sensor source, defaulting to phone (#128, #116)', () => {
     expect(DEFAULT_SETTINGS.sensorSource).toBe('phone');
     expect(parseSettings({}).sensorSource).toBe('phone');
     expect(parseSettings({ sensorSource: 'phone' }).sensorSource).toBe('phone');
-    // No other OrientationSensor implementation exists yet (#116, #119) —
-    // any other value, including a future one this build doesn't know
+    // #116 adds the EasyLevel BLE box as a second real member of the union.
+    expect(parseSettings({ sensorSource: 'easylevel' }).sensorSource).toBe('easylevel');
+    // Any other value, including a future one this build doesn't know
     // about yet, falls back rather than silently trusting unknown input.
-    expect(parseSettings({ sensorSource: 'easylevel' }).sensorSource).toBe('phone');
+    expect(parseSettings({ sensorSource: 'bluetooth-widget' }).sensorSource).toBe('phone');
   });
 });
 

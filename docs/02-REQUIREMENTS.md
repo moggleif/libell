@@ -454,3 +454,34 @@ URL and must keep working with no signal.
   chooses between placements already within tolerance and never deliberately
   overshoots it; a target preset here can deliberately aim for a non-level position.
   Everything is stored in `localStorage` only — no account, no backend.
+
+## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
+
+- **Given** a phone with Chrome/Android and Web Bluetooth support
+- **When** the user opens the menu's "External sensor" page and taps "Connect
+  EasyLevel sensor"
+- **Then** the app pairs with the box over its `faf52c20-...` GATT service and the
+  wheel/bubble UI updates from the box's readings exactly as it does from the phone's
+  own sensor — same math, same diagram, same tolerance (ADR 0014's seam:
+  `OrientationSensor.getGravity()` returns one shape regardless of source). The phone's
+  own sensor is never replaced automatically; connecting is always an explicit,
+  reversible choice.
+- **Given** a browser without Web Bluetooth (e.g. Safari/iOS, most desktop browsers)
+- **When** the user opens the menu
+- **Then** the "External sensor" page is not shown at all — never a silent failure or a
+  button that does nothing when tapped.
+- **Given** the EasyLevel box is the active source
+- **When** its BLE connection is lost (out of range, powered off)
+- **Then** the main screen shows that the connection was lost instead of freezing on
+  the last reading, and the menu's "Connect" action offers to reconnect (a new pairing
+  gesture — Web Bluetooth has no silent background reconnect).
+- **Given** the box's `faf52c21-...` notification payload (6× signed int16,
+  little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
+- **Then** only the accelerometer triplet is used, mapped directly into a
+  `GravityVector` at whatever scale the box reports it — deliberately not
+  reimplementing the box's own onboard filter, since the app's existing
+  `atan2`-based roll/pitch math only depends on the ratio between the axes, not their
+  absolute unit (see `src/sensor/easyLevelProtocol.ts`). The `faf52c22-...`
+  characteristic (firmware version, temperature, calibration bytes) is read
+  best-effort and not required for leveling to work; its exact layout beyond the
+  firmware-version byte is undecoded and out of scope here.
