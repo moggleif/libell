@@ -48,6 +48,7 @@ describe('settingsStore', () => {
       soundGuidance: false,
       theme: 'dark' as const,
       appearance: 'modern' as const,
+      sensorSource: 'phone' as const,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);

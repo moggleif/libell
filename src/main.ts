@@ -103,6 +103,10 @@ function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
     start: () => Promise.resolve('granted' as const),
     getState: () => 'granted' as const,
     getGravity: () => gravity,
+    // The demo stand-in speaks for the phone sensor it replaces (#128) —
+    // and the type checker enforces this object stays a full
+    // `OrientationSensor` if the interface ever grows again.
+    getSource: () => 'phone' as const,
   };
 }
 

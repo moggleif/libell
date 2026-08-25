@@ -10,8 +10,17 @@
  * iOS 13+ hands out motion data only after `requestPermission()` from a
  * user gesture; `start()` must therefore be called from a tap handler
  * where that API exists (`needsPermissionGesture()` tells the UI).
+ *
+ * `OrientationSensor` is the multi-source seam formalized by #128 (ADR
+ * 0014): `main.ts` selects between implementations at exactly one
+ * injection point (today: this phone sensor, or the fixed-tilt `?demo`
+ * stand-in), and nothing downstream — including all of `domain/` (ADR
+ * 0002) — needs to know which one is active. A future external sensor
+ * (#116's Web Bluetooth box, #119's iOS native bridge) is simply another
+ * implementation of this same interface, isolated to `sensor/`.
  */
 import type { GravityVector } from '../domain/leveling';
+import type { SensorSource } from '../domain/settings';
 
 export type SensorState = 'idle' | 'unsupported' | 'needs-permission' | 'granted' | 'denied';
 
@@ -31,6 +40,12 @@ export interface OrientationSensor {
   getState(): SensorState;
   /** Latest smoothed gravity vector, or null before the first reading. */
   getGravity(): GravityVector | null;
+  /**
+   * Which source this adapter reads from (#128, ADR 0014) — a fixed value
+   * per implementation, e.g. so a lost/disconnected external source can be
+   * reported by name instead of silently falling back to another one.
+   */
+  getSource(): SensorSource;
 }
 
 /** True when the platform (iOS 13+) requires a user tap before motion data. */
@@ -146,5 +161,6 @@ export function createOrientationSensor(): OrientationSensor {
     },
     getState: () => state,
     getGravity: () => smoothed,
+    getSource: () => 'phone',
   };
 }

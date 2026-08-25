@@ -78,11 +78,30 @@ export interface LevelSettings {
    * `theme` — that name is already the light/dark axis.
    */
   appearance: AppearanceSetting;
+  /**
+   * Which physical sensor the gravity reading comes from (#128, ADR 0014).
+   * `'phone'` is the only member today — the built-in DeviceMotion/
+   * DeviceOrientation sensor `?demo` also stands in for. This is
+   * deliberately a single-member union: no other `OrientationSensor`
+   * implementation exists in this codebase yet (#116's Web Bluetooth box,
+   * #119's iOS bridge), so there is nothing else to select and no UI
+   * offers a choice. Future adapters extend this union one literal at a
+   * time as they land, rather than this field being invented per-adapter.
+   */
+  sensorSource: SensorSource;
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
 export type AppearanceSetting = 'classic' | 'modern';
+
+/**
+ * The multi-source seam (#128, ADR 0014): identifies which
+ * `OrientationSensor` implementation produced a reading. Every
+ * implementation — today just the phone's own sensor and its `?demo`
+ * stand-in — returns a fixed member of this union from `getSource()`.
+ */
+export type SensorSource = 'phone';
 
 export type VehicleType = 'motorhome' | 'caravan';
 
@@ -114,6 +133,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   // Modern is the default preset (#136); Classic remains a full,
   // permanently-supported choice for anyone who picks it.
   appearance: 'modern',
+  sensorSource: 'phone',
 };
 
 /**
@@ -250,6 +270,10 @@ export function parseSettings(value: unknown): LevelSettings {
       raw.appearance === 'classic' || raw.appearance === 'modern'
         ? raw.appearance
         : DEFAULT_SETTINGS.appearance,
+    // Single-member union today (#128) — validated the same way every
+    // other enum-like field is, so a corrupt or future-version value
+    // never breaks startup; it just falls back to the only real source.
+    sensorSource: raw.sensorSource === 'phone' ? 'phone' : DEFAULT_SETTINGS.sensorSource,
   };
 }
 

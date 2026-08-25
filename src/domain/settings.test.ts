@@ -25,6 +25,7 @@ describe('parseSettings', () => {
       soundGuidance: true,
       theme: 'light' as const,
       appearance: 'modern' as const,
+      sensorSource: 'phone' as const,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -79,6 +80,7 @@ describe('parseSettings', () => {
       soundGuidance: false,
       theme: 'system',
       appearance: DEFAULT_SETTINGS.appearance,
+      sensorSource: DEFAULT_SETTINGS.sensorSource,
     });
   });
 
@@ -144,6 +146,16 @@ describe('parseSettings', () => {
     // #136, when Classic was the default — is never overridden.
     expect(parseSettings({ appearance: 'classic' }).appearance).toBe('classic');
     expect(parseSettings({ appearance: 'retro' }).appearance).toBe('modern');
+  });
+
+  it('validates the sensor source, defaulting to phone (#128)', () => {
+    expect(DEFAULT_SETTINGS.sensorSource).toBe('phone');
+    expect(parseSettings({}).sensorSource).toBe('phone');
+    expect(parseSettings({ sensorSource: 'phone' }).sensorSource).toBe('phone');
+    // No other OrientationSensor implementation exists yet (#116, #119) —
+    // any other value, including a future one this build doesn't know
+    // about yet, falls back rather than silently trusting unknown input.
+    expect(parseSettings({ sensorSource: 'easylevel' }).sensorSource).toBe('phone');
   });
 });
 

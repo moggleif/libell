@@ -92,6 +92,16 @@ moving average to suppress jitter.
 The sensor module exposes an explicit state (`unsupported`, `needs-permission`, `granted`,
 `denied`) so the UI can render a "Start" button on iOS and an explanation elsewhere.
 
+`OrientationSensor` is the multi-source seam (#128, ADR 0014): `start()/getState()/
+getGravity()/getSource()` is the whole contract every gravity source implements — today
+the phone sensor above and the fixed-tilt `?demo` stand-in in `main.ts`, which selects
+between implementations at one line. A future external sensor (#116's Web Bluetooth box,
+#119's iOS bridge) is just another implementation, isolated to `sensor/`; `domain/` never
+learns which one is active. Calibration is correspondingly split three ways — sensor bias
+(R11, source-specific), installation/placement offset (R24's vehicle zero, ADR 0010,
+generalizable per source), and the desired vehicle target (ADR 0013, source-independent)
+— see ADR 0014 for the full rule.
+
 ## Screen wake
 
 `navigator.wakeLock.request('screen')` keeps the display on while leveling (Chrome on
