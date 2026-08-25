@@ -1171,36 +1171,6 @@ body {
   white-space: pre-line;
 }
 
-.calibration-card__readings {
-  display: flex;
-  gap: 12px;
-}
-
-.calibration-card__reading {
-  flex: 1;
-  background: var(--surface-sunken);
-  border-radius: 10px;
-  padding: 8px 10px;
-}
-
-.calibration-card__reading-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--on-surface-muted);
-}
-
-.calibration-card__reading-value {
-  display: block;
-  margin-top: 2px;
-  font-size: 20px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--on-surface);
-}
-
 .calibration-card__row {
   display: flex;
   gap: 8px;

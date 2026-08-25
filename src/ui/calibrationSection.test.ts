@@ -153,10 +153,12 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(pill.textContent).toBe('NOT DONE'); // calibrate() itself doesn't call applyCalibration
   });
 
-  // Design review: the vehicle-zero card used to show its roll/pitch only
-  // buried inside a status sentence, unlike the phone card's own numeric
-  // readout box — both now show numbers the same way.
-  it('shows the side/side and front/back readings for both the phone and the vehicle zero once calibrated', () => {
+  // Design review, follow-up: a separate numeric readout box was tried
+  // for the phone card (and briefly added to the vehicle-zero card too)
+  // but rejected — the status sentence already states the numbers, so
+  // both cards now show them only there, matching the vehicle-zero
+  // card's original, simpler layout.
+  it('shows the side/side and front/back numbers only in each status sentence, no separate readout box', () => {
     const section = createCalibrationSection(
       makeOptions({
         appearance: 'modern',
@@ -164,18 +166,12 @@ describe('calibration section — Modern two-card layout (#109)', () => {
         getVehicleCalibration: () => ({ rollDeg: 0.4, pitchDeg: 0.2 }),
       }),
     );
-    const values = [...section.element.querySelectorAll('.calibration-card__reading-value')].map(
-      (v) => v.textContent,
+    expect(section.element.querySelector('.calibration-card__reading-value')).toBeNull();
+    const statuses = [...section.element.querySelectorAll('.menu__text--status')].map(
+      (s) => s.textContent,
     );
-    expect(values).toEqual(['1.2°', '-3.4°', '0.4°', '0.2°']);
-  });
-
-  it('shows a dash placeholder for both readouts before anything is calibrated', () => {
-    const section = createCalibrationSection(makeOptions({ appearance: 'modern' }));
-    const values = [...section.element.querySelectorAll('.calibration-card__reading-value')].map(
-      (v) => v.textContent,
-    );
-    expect(values).toEqual(['—', '—', '—', '—']);
+    expect(statuses.some((s) => s?.includes('side/side 1.2'))).toBe(true);
+    expect(statuses.some((s) => s?.includes('side/side 0.4'))).toBe(true);
   });
 
   it('wires every button to the same host callbacks as Classic mode', () => {
