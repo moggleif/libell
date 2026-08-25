@@ -296,6 +296,10 @@ export const MESSAGES = {
     'targets.delete': 'Delete {name}',
     'targets.err.tooSteep': 'That looks like more than an intentional target (>15°) — try again.',
     'targets.badge': 'Target: {name}',
+    // Offset summary (#160): read-only, inside the menu only — never the
+    // main screen (see targetBadge.ts/R31's own guard against that).
+    'menu.offsetSummary':
+      'Level is calculated from: sensor {sensor} · vehicle zero {vehicleZero} · target: {target}',
 
     'feedback.intro':
       'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
@@ -652,6 +656,8 @@ export const MESSAGES = {
     'targets.delete': 'Ta bort {name}',
     'targets.err.tooSteep': 'Det ser ut som mer än ett avsiktligt mål (>15°) — försök igen.',
     'targets.badge': 'Mål: {name}',
+    'menu.offsetSummary':
+      'Nivån beräknas från: sensor {sensor} · fordonets nolläge {vehicleZero} · mål: {target}',
 
     'feedback.intro':
       'Har du hittat ett problem eller har en idé? Fyll i det här och tryck på ' +

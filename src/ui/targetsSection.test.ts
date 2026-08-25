@@ -13,6 +13,9 @@ function makeOptions(overrides: Partial<TargetsOptions> = {}): TargetsOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
+    getCalibration: () => null,
+    getVehicleCalibration: () => null,
+    getActiveTargetName: () => null,
     ...overrides,
   };
 }
@@ -107,5 +110,71 @@ describe('targets section (#122, ADR 0013)', () => {
       ),
     ).toBe(true);
     expect(input.value).toBe('Too steep');
+  });
+});
+
+describe('offset summary line (#160)', () => {
+  function summaryText(section: ReturnType<typeof createTargetsSection>): string | null {
+    return section.element.querySelector('.menu__text')!.textContent;
+  }
+
+  it('reflects all three layers unset (Normal, no sensor, no vehicle zero)', () => {
+    const section = createTargetsSection(makeOptions());
+    expect(summaryText(section)).toBe(
+      t('menu.offsetSummary', { sensor: '–', vehicleZero: '–', target: t('targets.normal') }),
+    );
+  });
+
+  it('reflects all three layers set, with the active target name', () => {
+    const section = createTargetsSection(
+      makeOptions({
+        getCalibration: () => ({ rollDeg: 1, pitchDeg: 1 }),
+        getVehicleCalibration: () => ({ rollDeg: 2, pitchDeg: 2 }),
+        getActiveTargetName: () => 'Shower drain',
+      }),
+    );
+    expect(summaryText(section)).toBe(
+      t('menu.offsetSummary', { sensor: '✓', vehicleZero: '✓', target: 'Shower drain' }),
+    );
+  });
+
+  it('reflects each combination of sensor/vehicle-zero set independently', () => {
+    const sensorOnly = createTargetsSection(
+      makeOptions({ getCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }) }),
+    );
+    expect(summaryText(sensorOnly)).toBe(
+      t('menu.offsetSummary', { sensor: '✓', vehicleZero: '–', target: t('targets.normal') }),
+    );
+
+    const vehicleZeroOnly = createTargetsSection(
+      makeOptions({ getVehicleCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }) }),
+    );
+    expect(summaryText(vehicleZeroOnly)).toBe(
+      t('menu.offsetSummary', { sensor: '–', vehicleZero: '✓', target: t('targets.normal') }),
+    );
+  });
+
+  it('updates live when selecting a target, without changing how sensor/vehicle zero are shown', () => {
+    // A stateful mock, matching how the real host (main.ts) reflects
+    // selectTarget's effect back through getActiveTargetName — this
+    // section owns none of that state itself.
+    let activeName: string | null = null;
+    const section = createTargetsSection(
+      makeOptions({
+        getTargetPresets: () => [SHOWER],
+        getCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }),
+        getActiveTargetName: () => activeName,
+        selectTarget: (id) => {
+          activeName = id === 'shower' ? 'Shower drain' : null;
+        },
+      }),
+    );
+    expect(summaryText(section)).toContain(t('targets.normal'));
+    expect(summaryText(section)).toContain('sensor ✓');
+
+    const select = section.element.querySelectorAll<HTMLButtonElement>('.targets__row-select')[1]!;
+    select.click(); // makeRow's onSelect already calls selectTarget + refresh
+    expect(summaryText(section)).toContain('Shower drain');
+    expect(summaryText(section)).toContain('sensor ✓');
   });
 });
