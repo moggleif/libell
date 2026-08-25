@@ -42,10 +42,12 @@ try {
   await page.waitForSelector('.rv-diagram svg', { timeout: 10_000 });
   const status = (await page.textContent('.status-line'))?.trim();
   assert(status, 'status line is empty');
-  const wheels = await page.locator('.rv-diagram__wheel').count();
-  assert(wheels === 4, `expected 4 wheel markers, got ${wheels}`);
-  const glyphs = (await page.locator('.rv-diagram__wheel-glyph').allTextContents()).join('');
-  assert(glyphs.length > 0, 'wheel glyphs are empty');
+  // Modern (the default appearance) shows per-wheel status only in the
+  // floating wheel cards — no on-body SVG marker (#161 follow-up).
+  const cards = await page.locator('.wheel-card').count();
+  assert(cards === 4, `expected 4 wheel cards, got ${cards}`);
+  const glyphs = (await page.locator('.wheel-card__marker').allTextContents()).join('');
+  assert(glyphs.length > 0, 'wheel card glyphs are empty');
   const lamps = await page.locator('.indicators__lamp:visible').count();
   assert(lamps === 0, `demo mode shows ${lamps} warning lamp(s) — it should present as configured`);
   assert(pageErrors.length === 0, `page errors: ${pageErrors.join('; ')}`);

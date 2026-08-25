@@ -213,31 +213,28 @@ describe('rvDiagram — modern appearance (#106)', () => {
     expect(mm?.classList.contains('wheel-card__mm--dim')).toBe(true);
   });
 
-  it('still draws a glyph-only SVG wheel marker (status readable without the card)', () => {
+  it('carries no on-body SVG wheel marker — status lives only in the card', () => {
     const diagram = createRvDiagram('single', 'modern');
     diagram.update(
       result({ frontLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
       'mm',
       STEPS,
     );
-    const glyphs = [...diagram.element.querySelectorAll('.rv-diagram__wheel-glyph')];
-    expect(glyphs).toHaveLength(4);
-    expect(glyphs[0]?.textContent).toBe('↑');
-    const markers = [...diagram.element.querySelectorAll('.rv-diagram__wheel')];
-    expect(markers).toHaveLength(4);
-    expect(markers[0]?.getAttribute('class')).toContain('rv-diagram__wheel--small');
+    expect(diagram.element.querySelectorAll('.rv-diagram__wheel-glyph')).toHaveLength(0);
+    expect(diagram.element.querySelectorAll('.rv-diagram__wheel')).toHaveLength(0);
+    const c = cardsOf(diagram.element);
+    expect(c.markerGlyph(0)).toBe('↑');
   });
 
-  it('draws rear wheel pairs for a boggie, same as classic', () => {
+  it('shows one card per side for a boggie too, same as single-axle', () => {
     const diagram = createRvDiagram('boggie', 'modern');
     diagram.update(
       result({ rearLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
       'mm',
       STEPS,
     );
-    const markers = [...diagram.element.querySelectorAll('.rv-diagram__wheel')];
-    expect(markers).toHaveLength(6); // front 2×1 + rear 2×2
-    // Still one card per side, not one per physical wheel.
+    // Boggie only changes the rear axle's classic on-SVG markers — modern
+    // has none to begin with, so the card count is unaffected either way.
     expect(diagram.element.querySelectorAll('.wheel-card')).toHaveLength(4);
   });
 
