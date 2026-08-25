@@ -43,6 +43,26 @@ function outline(x: number, y: number, w: number, h: number): SVGRectElement {
   });
 }
 
+/** Windshield notch, same proportions/curve as `rv-diagram.ts`'s real
+ * top-down body (`M74 92 Q120 76 166 92 L160 110 Q120 100 80 110 Z` on its
+ * own 124-wide/196-tall body) — scaled to whatever body rect is passed in,
+ * so a motorhome reads as a vehicle from above here too, not just on the
+ * real screen (#189: these two used to look nothing alike). */
+function windshield(x: number, y: number, w: number, h: number): SVGPathElement {
+  const inset = w * 0.13;
+  const left = x + inset;
+  const right = x + w - inset;
+  const mid = x + w / 2;
+  const topSide = y + h * 0.1;
+  const topPeak = y + h * 0.02;
+  const botSide = y + h * 0.19;
+  const botPeak = y + h * 0.14;
+  return el('path', {
+    d: `M${left} ${topSide} Q${mid} ${topPeak} ${right} ${topSide} L${right} ${botSide} Q${mid} ${botPeak} ${left} ${botSide} Z`,
+    class: 'illu__windshield',
+  });
+}
+
 function frontArrow(): SVGPathElement {
   return el('path', {
     d: 'M100 6 L92 20 L97 20 L97 30 L103 30 L103 20 L108 20 Z',
@@ -71,7 +91,7 @@ export function placementIllustration(
     );
     return root;
   }
-  root.append(frontArrow(), outline(60, 36, 80, 106), ...phone);
+  root.append(frontArrow(), outline(60, 36, 80, 106), windshield(60, 36, 80, 106), ...phone);
   return root;
 }
 
@@ -142,6 +162,7 @@ export function measuresIllustration(
   }
   root.append(
     outline(55, 12, 90, 136),
+    windshield(55, 12, 90, 136),
     wheelRect(45, 30),
     wheelRect(145, 30),
     wheelRect(45, 116),

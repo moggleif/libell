@@ -1950,6 +1950,13 @@ body {
   stroke-width: 2;
 }
 
+/* Same token as the real screen's .rv-diagram__windshield (#189) — this
+ * illustration's body used to be a plain box, unlike the real diagram's
+ * vehicle-from-above silhouette. */
+.illu__windshield {
+  fill: var(--outline);
+}
+
 .illu__phone {
   fill: var(--surface-raised);
   stroke: var(--on-surface-muted);
