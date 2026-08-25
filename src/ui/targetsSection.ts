@@ -12,6 +12,7 @@
  * of a third block there, built from the same `menu__*` classes so it
  * still reads as part of the same UI family in both Classic and Modern.
  */
+import type { Calibration } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
 
@@ -24,6 +25,17 @@ export interface TargetsOptions {
    * error text, or null on success. */
   addTargetPreset(name: string): string | null;
   deleteTargetPreset(id: string): void;
+  /**
+   * The other two additive layers (#160) — read here only to surface a
+   * one-line summary of all three together; this section owns none of
+   * their state, and clearing/redoing either never touches this page's
+   * own list above.
+   */
+  getCalibration(): Calibration | null;
+  getVehicleCalibration(): Calibration | null;
+  /** The active target preset's name, or null for "Normal" (#122) —
+   * the same value the summary line's own third clause restates. */
+  getActiveTargetName(): string | null;
 }
 
 export interface TargetsSection {
@@ -33,6 +45,14 @@ export interface TargetsSection {
 
 export function createTargetsSection(options: TargetsOptions): TargetsSection {
   const body = document.createElement('div');
+
+  // Offset summary (#160): a read-only line stating which of the three
+  // additive layers (sensor calibration, vehicle zero, active target)
+  // currently contribute to "level" — never shown on the main screen
+  // (R31's own regression guard against duplicating info there stays
+  // untouched; this is menu-only, alongside the list below it).
+  const summary = document.createElement('p');
+  summary.className = 'menu__text menu__text--status';
 
   const intro = document.createElement('p');
   intro.className = 'menu__text';
@@ -101,7 +121,16 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
     return row;
   }
 
+  function refreshSummary(): void {
+    summary.textContent = t('menu.offsetSummary', {
+      sensor: options.getCalibration() !== null ? '✓' : '–',
+      vehicleZero: options.getVehicleCalibration() !== null ? '✓' : '–',
+      target: options.getActiveTargetName() ?? t('targets.normal'),
+    });
+  }
+
   function refresh(): void {
+    refreshSummary();
     const presets = options.getTargetPresets();
     const activeId = options.getActiveTargetId();
     list.replaceChildren(
@@ -141,6 +170,6 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
   });
 
   refresh();
-  body.append(intro, list, addRow, addStatus);
+  body.append(summary, intro, list, addRow, addStatus);
   return { element: body, refresh };
 }
