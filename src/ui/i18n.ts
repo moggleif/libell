@@ -41,6 +41,9 @@ export const MESSAGES = {
     'menu.help': 'Help',
     'menu.intro': 'Show introduction',
     'menu.about': 'About Libell',
+    // Short form for the "?" page's tab button (screen-cleanup follow-up)
+    // — 'menu.about' above is the full title, too long for a tab pill.
+    'menu.about.tab': 'About',
     'menu.sensorSource': 'External sensor',
     // Modern-only heading (#152) grouping External sensor + Targets above
     // "OTHER" — distinct key from settings.advanced (#157), a different
@@ -370,6 +373,10 @@ export const MESSAGES = {
     'diagram.front': 'Front',
     'diagram.step': 'Step {n}',
     'diagram.done': 'Done',
+    // Gray/"unserved" wheel (low, but no ramp reaches it, R5) — says why
+    // nothing is happening there instead of leaving the step line blank
+    // (screen-cleanup follow-up).
+    'diagram.noRamp': 'No ramp',
     'diagram.wheel.frontLeft': 'FRONT L',
     'diagram.wheel.frontRight': 'FRONT R',
     'diagram.wheel.rearLeft': 'REAR L',
@@ -431,6 +438,7 @@ export const MESSAGES = {
     'menu.help': 'Hjälp',
     'menu.intro': 'Visa introduktionen',
     'menu.about': 'Om Libell',
+    'menu.about.tab': 'Om',
     'menu.sensorSource': 'Extern sensor',
     'menu.advanced': 'AVANCERAT',
     'menu.others': 'ÖVRIGT',
@@ -731,6 +739,7 @@ export const MESSAGES = {
     'diagram.front': 'Fram',
     'diagram.step': 'Steg {n}',
     'diagram.done': 'Klart',
+    'diagram.noRamp': 'Ingen ramp',
     'diagram.wheel.frontLeft': 'V FRAM',
     'diagram.wheel.frontRight': 'H FRAM',
     'diagram.wheel.rearLeft': 'V BAK',

@@ -57,8 +57,14 @@ function stepAndLiftText(
   unit: 'mm' | 'cm',
   stepHeightsMm: number[],
 ): { step: string; stepHeight: string; lift: string } {
-  if (severity === 'none' || stepMm <= 0) {
+  if (severity === 'none') {
     return { step: '', stepHeight: '', lift: formatLength(displayMm, unit) };
+  }
+  if (stepMm <= 0) {
+    // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel —
+    // say so instead of leaving the step line blank (screen-cleanup
+    // follow-up).
+    return { step: t('diagram.noRamp'), stepHeight: '', lift: formatLength(displayMm, unit) };
   }
   const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
   return {

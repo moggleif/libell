@@ -11,23 +11,14 @@ import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { isWebBluetoothSupported } from '../sensor/easyLevelSensor';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
-import { createFeedbackSection } from './feedback';
-import { createAboutSection } from './about';
 import { createCalibrationSection } from './calibrationSection';
 import { createTargetsSection } from './targetsSection';
 import { createSensorSourceSection } from './sensorSourceSection';
 import { createDiagnosticsSection } from './diagnosticsSection';
-import { t, type MessageKey } from './i18n';
+import { t } from './i18n';
 import { setVisible } from './motion';
-import {
-  calibrationIllustration,
-  legendIllustration,
-  measuresIllustration,
-  placementIllustration,
-} from './helpIllustrations';
 
-export type MenuSection =
-  'settings' | 'calibration' | 'targets' | 'help' | 'sensorSource' | 'diagnostics';
+export type MenuSection = 'settings' | 'calibration' | 'targets' | 'sensorSource' | 'diagnostics';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -119,13 +110,6 @@ export interface Menu {
   element: HTMLElement;
   open(section: MenuSection): void;
   attach(button: HTMLButtonElement): void;
-  /**
-   * Wires the bottom bar's "?" button to the combined Help/About/Feedback
-   * page (screen-cleanup follow-up) — opened directly, the same
-   * depth-0-to-2 shortcut `attach`'s ☰ button and `showPage` already use
-   * for Settings, never routed through the Settings drawer.
-   */
-  attachHelp(button: HTMLButtonElement): void;
   /** True while the drawer or a page is showing — the app pauses guidance. */
   isOpen(): boolean;
 }
@@ -506,45 +490,12 @@ export function createMenu(options: MenuOptions): Menu {
     });
   }
 
-  // --- Help + About + Feedback (screen-cleanup follow-up): the old ☰ menu
-  // held these as three separate low-traffic entries; they now live behind
-  // the bottom bar's "?" button instead (`attachHelp` below), entirely
-  // outside the Settings drawer — never listed as a card, a Modern "OTHER"
-  // row, or a Classic flat item. One page, so one tap from "?" reaches all
-  // three; each keeps its own heading so they still read as distinct
-  // sections rather than a run-on wall of text.
-  const HELP: {
-    h: MessageKey;
-    text: MessageKey;
-    illustration?: (label: string) => SVGSVGElement;
-  }[] = [
-    { h: 'help.what.h', text: 'help.what.t', illustration: placementIllustration },
-    { h: 'help.first.h', text: 'help.first.t' },
-    { h: 'help.screen.h', text: 'help.screen.t', illustration: legendIllustration },
-    { h: 'help.settings.h', text: 'help.settings.t', illustration: measuresIllustration },
-    { h: 'help.calibration.h', text: 'help.calibration.t', illustration: calibrationIllustration },
-    { h: 'help.notes.h', text: 'help.notes.t' },
-  ];
-  const helpBody = document.createElement('div');
-  for (const { h, text, illustration } of HELP) {
-    const heading = document.createElement('h3');
-    heading.className = 'menu__heading';
-    heading.textContent = t(h);
-    helpBody.append(heading);
-    if (illustration) helpBody.append(illustration(t(h)));
-    const p = document.createElement('p');
-    p.className = 'menu__text';
-    p.textContent = t(text);
-    helpBody.append(p);
-  }
-  const aboutHeading = document.createElement('h3');
-  aboutHeading.className = 'menu__heading';
-  aboutHeading.textContent = t('menu.about');
-  helpBody.append(aboutHeading, createAboutSection());
-  const feedbackHeading = document.createElement('h3');
-  feedbackHeading.className = 'menu__heading';
-  feedbackHeading.textContent = t('menu.feedback');
-  helpBody.append(feedbackHeading, createFeedbackSection());
+  // Help/About/Feedback (screen-cleanup follow-up): no longer part of this
+  // menu at all — they live on their own page, reached directly from the
+  // bottom bar's "?" button (see `infoMenu.ts`). Folding them into this
+  // menu's own drawer/page navigation used to let its back button pop
+  // through to reveal this Settings drawer underneath by mistake — a
+  // fully independent page has no such shared state to leak into.
 
   // --- Advanced (#152): optional, behavior-changing features — External
   // sensor first, then Targets — split from the meta items below (Modern
@@ -603,14 +554,6 @@ export function createMenu(options: MenuOptions): Menu {
         if (depth === 0) showDrawer();
         else goBack();
       });
-    },
-    attachHelp(button) {
-      // Registered here, not alongside the other sections above: this page
-      // is reached only from this one button, never listed in the drawer,
-      // so its focus-return target (`item`, see `render()`) is the button
-      // itself rather than a drawer row.
-      sections.set('help', { label: t('menu.help'), body: helpBody, item: button });
-      button.addEventListener('click', () => showPage('help'));
     },
   };
 }

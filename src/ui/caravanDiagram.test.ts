@@ -29,6 +29,19 @@ describe('caravanDiagram', () => {
     expect(diagram.element.textContent).not.toContain(t('diagram.front'));
   });
 
+  it('says "No ramp" for a gray/unserved axle wheel instead of a blank step line (screen-cleanup follow-up)', () => {
+    const diagram = createCaravanDiagram();
+    diagram.update(
+      result({ axle: { left: GREEN, right: { displayMm: 6, stepMm: 0, severity: 'unserved' } } }),
+      'mm',
+      STEPS,
+    );
+    const stepLabels = [...diagram.element.querySelectorAll('.rv-diagram__step-label')];
+    const right = stepLabels[2]!;
+    expect(right.children[0]?.textContent).toBe('No ramp');
+    expect(right.children[1]?.textContent).toBe('');
+  });
+
   it('shows step guidance on the low axle wheel like the motorhome diagram', () => {
     const diagram = createCaravanDiagram();
     diagram.update(
