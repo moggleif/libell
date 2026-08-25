@@ -124,6 +124,31 @@ describe('createCaravanStabilizer', () => {
     expect(shown.isLevel).toBe(false);
   });
 
+  it('keeps up with a sustained jockey crank, same as a wheel driving up a ramp (#183)', () => {
+    const stabilize = createCaravanStabilizer();
+    const degAt = (mm: number) => -(Math.atan(mm / SETTINGS.wheelbaseMm) * 180) / Math.PI;
+    let now = 0;
+    let shown = stabilize(raw(0, 0), SETTINGS, now); // settle: level
+    now += 5000;
+    shown = stabilize(raw(0, 0), SETTINGS, now);
+    expect(shown.jockey.displayMm).toBeCloseTo(0, 0);
+
+    // First move: a fresh direction — full rest dwell.
+    now += SETTINGS.dwellRestMs + 100;
+    shown = stabilize(raw(0, degAt(80)), SETTINGS, now);
+    now += SETTINGS.dwellRestMs + 100;
+    shown = stabilize(raw(0, degAt(80)), SETTINGS, now);
+    expect(shown.jockey.displayMm).toBeCloseTo(80, 0);
+
+    // Further cranking, same direction, fed quickly: keeps up well under
+    // the rest dwell — the same fix applied to a motorhome wheel's mm.
+    now += 50;
+    stabilize(raw(0, degAt(120)), SETTINGS, now);
+    now += SETTINGS.dwellMotionMs + 20;
+    shown = stabilize(raw(0, degAt(120)), SETTINGS, now);
+    expect(shown.jockey.displayMm).toBeCloseTo(120, 0);
+  });
+
   it('keeps the axle wheel mm figure steady inside the dead band', () => {
     const stabilize = createCaravanStabilizer();
     const first = stabilize(raw(-2, 0), SETTINGS, 0);

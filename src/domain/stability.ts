@@ -9,10 +9,22 @@
  * - a dead band (the user's "Stability" setting): a displayed value only
  *   changes once the reading is clearly past the boundary, like a
  *   thermostat;
- * - a dwell time: even a clear change is adopted only after it has held
- *   continuously for a moment, so a single noise spike can never flip
- *   anything. Jitter that oscillates across a boundary keeps resetting
- *   the dwell clock and the display stays frozen.
+ * - a dwell time (`dwellRestMs`): even a clear change is adopted only
+ *   after it has held continuously for a moment, so a single noise spike
+ *   can never flip anything. Jitter that oscillates across a boundary
+ *   keeps resetting the dwell clock and the display stays frozen.
+ *
+ * A wheel's live mm figure additionally gets an *adaptive* dwell
+ * (`stabilizeNumber`, #183): once a change has just been adopted, a
+ * further change in the *same direction* — the shape of a continuous,
+ * deliberate motion like driving up a ramp — only needs the much shorter
+ * `dwellMotionMs`, instead of the full `dwellRestMs` on every intermediate
+ * step. A first change, or one reversing direction, always pays the full
+ * rest dwell, so this never weakens the noise guard above — jitter
+ * doesn't hold a consistent direction for two changes in a row. The ramp
+ * plan/step (a discrete recommendation, not a live readout) intentionally
+ * keeps the fixed `dwellRestMs` throughout: it would be confusing for the
+ * recommended step to change while mid-climb.
  *
  * The level status is derived from the displayed wheel severities — level
  * exactly when every wheel shows green — so the status text, the overlay
@@ -46,18 +58,62 @@ export interface DisplayResult {
   maxDeficitMm: number;
 }
 
-/** A changed mm figure or ramp step must hold this long before it shows. */
-export const VALUE_DWELL_MS = 600;
-/** A changed color (and with it the level status) must hold this long. */
-export const STATE_DWELL_MS = 1500;
+/** Dead-band + dwell bookkeeping for one adaptively-dwelled numeric figure
+ * (a wheel's mm lift, or the caravan jockey's signed mm) — see the module
+ * doc comment. */
+export interface AdaptiveDwellPending {
+  /** When the current pending change first crossed the dead band. */
+  since: number | null;
+  /** Direction (+1/-1) of the most recently *adopted* change; 0 before any. */
+  lastDirection: -1 | 0 | 1;
+  /** When that change was adopted — how "fresh" the motion streak is. */
+  lastAdoptedAtMs: number | null;
+}
+
+export function newAdaptiveDwellPending(): AdaptiveDwellPending {
+  return { since: null, lastDirection: 0, lastAdoptedAtMs: null };
+}
+
+/**
+ * Dead-band + adaptive-dwell adoption of one whole-mm figure — the shared
+ * core behind a wheel's `displayMm` on both screens, and the caravan
+ * jockey's signed mm. See the module doc comment for the adaptive rule.
+ */
+export function stabilizeNumber(
+  prevShown: number,
+  pending: AdaptiveDwellPending,
+  rawValue: number,
+  deadbandMm: number,
+  dwellRestMs: number,
+  dwellMotionMs: number,
+  nowMs: number,
+): number {
+  const wants = Math.abs(rawValue - prevShown) > 0.5 + deadbandMm;
+  if (!wants) {
+    pending.since = null;
+    return prevShown;
+  }
+  pending.since ??= nowMs;
+  const direction: -1 | 1 = rawValue > prevShown ? 1 : -1;
+  const stillMoving =
+    pending.lastDirection === direction &&
+    pending.lastAdoptedAtMs !== null &&
+    nowMs - pending.lastAdoptedAtMs <= dwellRestMs;
+  const dwellMs = stillMoving ? Math.min(dwellMotionMs, dwellRestMs) : dwellRestMs;
+  if (nowMs - pending.since < dwellMs) return prevShown;
+  pending.since = null;
+  pending.lastDirection = direction;
+  pending.lastAdoptedAtMs = nowMs;
+  return Math.round(rawValue);
+}
 
 export interface LiftPending {
-  displaySince: number | null;
+  display: AdaptiveDwellPending;
   stepSince: number | null;
 }
 
 export function newLiftPending(): LiftPending {
-  return { displaySince: null, stepSince: null };
+  return { display: newAdaptiveDwellPending(), stepSince: null };
 }
 
 /**
@@ -79,32 +135,27 @@ export function stabilizeLift(
   nowMs: number,
 ): DisplayWheel {
   const deadbandMm = settings.stabilityMm;
-  const freshDisplayMm = Math.round(liftMm);
   const freshStepMm = recommendStep(liftMm, settings.rampStepHeightsMm);
 
-  // Whole-mm figure: the reading must sit half a mm plus the dead
-  // band away from the shown value, and stay there for the dwell.
-  const wantsDisplay = Math.abs(liftMm - prev.displayMm) > 0.5 + deadbandMm;
-  let displayMm = prev.displayMm;
-  if (!wantsDisplay) {
-    pend.displaySince = null;
-  } else {
-    pend.displaySince ??= nowMs;
-    if (nowMs - pend.displaySince >= VALUE_DWELL_MS) {
-      displayMm = freshDisplayMm;
-      pend.displaySince = null;
-    }
-  }
+  const displayMm = stabilizeNumber(
+    prev.displayMm,
+    pend.display,
+    liftMm,
+    deadbandMm,
+    settings.dwellRestMs,
+    settings.dwellMotionMs,
+    nowMs,
+  );
 
-  // Ramp step: the candidate must be clearly closer than the shown
-  // step (0 = "no step" competes too), sustained for the dwell.
+  // Ramp step: the candidate must be clearly closer than the shown step
+  // (0 = "no step" competes too), sustained for the (fixed) rest dwell.
   const wantsStep = Math.abs(liftMm - freshStepMm) + deadbandMm < Math.abs(liftMm - prev.stepMm);
   let stepMm = prev.stepMm;
   if (!wantsStep) {
     pend.stepSince = null;
   } else {
     pend.stepSince ??= nowMs;
-    if (nowMs - pend.stepSince >= VALUE_DWELL_MS) {
+    if (nowMs - pend.stepSince >= settings.dwellRestMs) {
       stepMm = freshStepMm;
       pend.stepSince = null;
     }
@@ -158,7 +209,8 @@ export function createDisplayStabilizer(): (
 ) => DisplayResult {
   let initialized = false;
   const displayMm = {} as Record<WheelId, number>;
-  const mmSince = {} as Record<WheelId, number | null>;
+  const mmPending = {} as Record<WheelId, AdaptiveDwellPending>;
+  for (const id of WHEEL_IDS) mmPending[id] = newAdaptiveDwellPending();
   let shownSteps = {} as Record<WheelId, number>;
   let planSince: number | null = null;
 
@@ -174,13 +226,11 @@ export function createDisplayStabilizer(): (
     if (!initialized) {
       initialized = true;
       shownSteps = { ...fresh.steps };
-      for (const id of WHEEL_IDS) {
-        displayMm[id] = Math.round(lifts[id]);
-        mmSince[id] = null;
-      }
+      for (const id of WHEEL_IDS) displayMm[id] = Math.round(lifts[id]);
     } else {
       // Plan adoption: compare the fresh optimum against what the shown
-      // plan would achieve under the *current* lifts.
+      // plan would achieve under the *current* lifts. Fixed rest dwell,
+      // not adaptive — see the module doc comment.
       if (WHEEL_IDS.every((id) => fresh.steps[id] === shownSteps[id])) {
         planSince = null;
       } else {
@@ -198,7 +248,7 @@ export function createDisplayStabilizer(): (
           planSince = null;
         } else {
           planSince ??= nowMs;
-          if (nowMs - planSince >= VALUE_DWELL_MS) {
+          if (nowMs - planSince >= settings.dwellRestMs) {
             shownSteps = { ...fresh.steps };
             planSince = null;
           }
@@ -206,17 +256,15 @@ export function createDisplayStabilizer(): (
       }
 
       for (const id of WHEEL_IDS) {
-        // Whole-mm figure: clearly past the shown value, sustained.
-        const wantsMm = Math.abs(lifts[id] - displayMm[id]) > 0.5 + deadbandMm;
-        if (!wantsMm) {
-          mmSince[id] = null;
-        } else {
-          mmSince[id] ??= nowMs;
-          if (nowMs - mmSince[id]! >= VALUE_DWELL_MS) {
-            displayMm[id] = Math.round(lifts[id]);
-            mmSince[id] = null;
-          }
-        }
+        displayMm[id] = stabilizeNumber(
+          displayMm[id],
+          mmPending[id],
+          lifts[id],
+          deadbandMm,
+          settings.dwellRestMs,
+          settings.dwellMotionMs,
+          nowMs,
+        );
       }
     }
 

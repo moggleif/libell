@@ -21,6 +21,8 @@ describe('parseSettings', () => {
       drainPosition: 'left' as const,
       toleranceMm: 15,
       stabilityMm: 5,
+      dwellRestMs: 500,
+      dwellMotionMs: 120,
       displayUnit: 'cm' as const,
       soundOnLevel: true,
       soundGuidance: true,
@@ -76,6 +78,8 @@ describe('parseSettings', () => {
       drainPosition: DEFAULT_SETTINGS.drainPosition,
       toleranceMm: DEFAULT_SETTINGS.toleranceMm,
       stabilityMm: DEFAULT_SETTINGS.stabilityMm,
+      dwellRestMs: DEFAULT_SETTINGS.dwellRestMs,
+      dwellMotionMs: DEFAULT_SETTINGS.dwellMotionMs,
       displayUnit: 'mm',
       soundOnLevel: DEFAULT_SETTINGS.soundOnLevel,
       soundGuidance: false,
@@ -83,6 +87,21 @@ describe('parseSettings', () => {
       appearance: DEFAULT_SETTINGS.appearance,
       sensorSource: DEFAULT_SETTINGS.sensorSource,
     });
+  });
+
+  it('clamps a stored motion dwell that exceeds the rest dwell (#183)', () => {
+    // A hand-edited or legacy blob could carry a faster-than-rest motion
+    // dwell that is no longer faster than a *changed* rest dwell — never
+    // let the "quick" figure end up slower than the "calm" one.
+    const result = parseSettings({ dwellRestMs: 300, dwellMotionMs: 900 });
+    expect(result.dwellRestMs).toBe(300);
+    expect(result.dwellMotionMs).toBe(300);
+  });
+
+  it('falls back to the default dwell values for invalid input', () => {
+    const result = parseSettings({ dwellRestMs: -5, dwellMotionMs: 'fast' });
+    expect(result.dwellRestMs).toBe(DEFAULT_SETTINGS.dwellRestMs);
+    expect(result.dwellMotionMs).toBe(DEFAULT_SETTINGS.dwellMotionMs);
   });
 
   it('validates the ramp count: whole, at least 1, at most 4, default 2 (#93)', () => {

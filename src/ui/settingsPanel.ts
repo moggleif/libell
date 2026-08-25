@@ -229,6 +229,42 @@ export function createSettingsForm(
     unitAppliers.push(applyUnit);
   }
 
+  // --- Response delay (ms, #183): how long a reading must hold before the
+  // shown mm figure/plan changes, and the shorter delay used only right
+  // after a change while actively adjusting (driving up a ramp, cranking
+  // the jockey wheel) — see `src/domain/stability.ts`. Not unit-converted
+  // (always milliseconds), so built separately from the mm fields above.
+  const msInputs = new Map<'dwellRestMs' | 'dwellMotionMs', HTMLInputElement>();
+  const dwellRestField = document.createElement('label');
+  dwellRestField.className = 'settings__field';
+  const dwellRestCaption = document.createElement('span');
+  const dwellRestInput = document.createElement('input');
+  dwellRestInput.type = 'number';
+  dwellRestInput.inputMode = 'decimal';
+  dwellRestInput.name = 'dwellRestMs';
+  dwellRestInput.min = '50';
+  dwellRestInput.step = '50';
+  dwellRestField.append(dwellRestCaption, dwellRestInput);
+  msInputs.set('dwellRestMs', dwellRestInput);
+
+  const dwellMotionField = document.createElement('label');
+  dwellMotionField.className = 'settings__field';
+  const dwellMotionCaption = document.createElement('span');
+  const dwellMotionInput = document.createElement('input');
+  dwellMotionInput.type = 'number';
+  dwellMotionInput.inputMode = 'decimal';
+  dwellMotionInput.name = 'dwellMotionMs';
+  dwellMotionInput.min = '20';
+  dwellMotionInput.step = '10';
+  dwellMotionField.append(dwellMotionCaption, dwellMotionInput);
+  msInputs.set('dwellMotionMs', dwellMotionInput);
+
+  const dwellHint = document.createElement('p');
+  dwellHint.className = 'settings__hint';
+
+  dwellRestInput.value = String(initial.dwellRestMs);
+  dwellMotionInput.value = String(initial.dwellMotionMs);
+
   vehicleSelect.addEventListener('change', () => {
     vehicle = vehicleSelect.value === 'caravan' ? 'caravan' : 'motorhome';
     applyUnitEverywhere();
@@ -549,6 +585,9 @@ export function createSettingsForm(
     advancedSummary,
     fieldEls.get('toleranceMm')!,
     fieldEls.get('stabilityMm')!,
+    dwellRestField,
+    dwellMotionField,
+    dwellHint,
     appearanceField,
     soundField,
     soundGuidanceField,
@@ -897,6 +936,9 @@ export function createSettingsForm(
     soundCaption.textContent = t('settings.sound');
     soundGuidanceCaption.textContent = t('settings.soundGuidance');
     soundGuidanceHint.textContent = t('settings.soundGuidance.help');
+    dwellRestCaption.textContent = t('settings.dwellRest');
+    dwellMotionCaption.textContent = t('settings.dwellMotion');
+    dwellHint.textContent = t('settings.dwell.hint');
     vehicleHeading.textContent = t('settings.section.vehicle');
     rampsHeading.textContent = t('settings.section.ramps');
     displayHeading.textContent = t('settings.section.display');
@@ -924,6 +966,7 @@ export function createSettingsForm(
       appearance: appearanceSelect.value,
     };
     for (const [key, input] of inputs) raw[key] = fromUnit(input.valueAsNumber);
+    for (const [key, input] of msInputs) raw[key] = input.valueAsNumber;
     return parseSettings(raw);
   };
 
@@ -946,6 +989,7 @@ export function createSettingsForm(
     axleSelect.value = axle;
     applyUnitEverywhere();
     for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
+    for (const [key, input] of msInputs) input.value = String(settings[key]);
     steps = [...settings.rampStepHeightsMm];
     customChosen = matchRampModel(steps) === null;
     renderChips();
@@ -974,6 +1018,7 @@ export function createSettingsForm(
     event.preventDefault();
     const settings = currentSettings();
     for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
+    for (const [key, input] of msInputs) input.value = String(settings[key]);
     steps = [...settings.rampStepHeightsMm];
     renderChips();
     saveSettings(settings);

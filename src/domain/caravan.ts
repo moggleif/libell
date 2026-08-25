@@ -18,9 +18,11 @@ import {
   type WheelLift,
 } from './leveling';
 import {
+  newAdaptiveDwellPending,
   newLiftPending,
   stabilizeLift,
-  VALUE_DWELL_MS,
+  stabilizeNumber,
+  type AdaptiveDwellPending,
   type DisplayWheel,
   type LiftPending,
 } from './stability';
@@ -106,7 +108,7 @@ export function createCaravanStabilizer(): (
   // has already stopped agreeing with (see `createDisplayStabilizer`'s
   // doc comment for the field report this pattern fixed).
   let jockeyShownSignedMm = 0;
-  let jockeyMmSince: number | null = null;
+  const jockeyPending: AdaptiveDwellPending = newAdaptiveDwellPending();
 
   return (result, settings, nowMs) => {
     const deadbandMm = settings.stabilityMm;
@@ -136,18 +138,18 @@ export function createCaravanStabilizer(): (
         nowMs,
       );
 
-      // Signed jockey figure: clearly past the shown value, sustained for
-      // the value dwell — same dead-band + dwell shape as a wheel's mm.
-      const wantsMm = Math.abs(result.jockeyMm - jockeyShownSignedMm) > 0.5 + deadbandMm;
-      if (!wantsMm) {
-        jockeyMmSince = null;
-      } else {
-        jockeyMmSince ??= nowMs;
-        if (nowMs - jockeyMmSince >= VALUE_DWELL_MS) {
-          jockeyShownSignedMm = result.jockeyMm;
-          jockeyMmSince = null;
-        }
-      }
+      // Signed jockey figure: same adaptive dead-band + dwell as a wheel's
+      // mm figure — a sustained crank in one direction shouldn't lag any
+      // more than driving up a ramp does.
+      jockeyShownSignedMm = stabilizeNumber(
+        jockeyShownSignedMm,
+        jockeyPending,
+        result.jockeyMm,
+        deadbandMm,
+        settings.dwellRestMs,
+        settings.dwellMotionMs,
+        nowMs,
+      );
     }
 
     const jockeyDirection = dirOf(jockeyShownSignedMm);

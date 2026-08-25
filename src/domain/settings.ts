@@ -57,6 +57,21 @@ export interface LevelSettings {
    * a boundary before the shown value changes. 0 disables it.
    */
   stabilityMm: number;
+  /**
+   * How long (ms) a reading must sit clearly past `stabilityMm` before the
+   * shown mm figure and ramp plan adopt it — the baseline used whenever
+   * the reading isn't already trending (jitter, a bump, first settling).
+   */
+  dwellRestMs: number;
+  /**
+   * A shorter dwell (ms), used only for a wheel's mm figure once it has
+   * *just* been confirmed moving consistently in one direction — the
+   * shape of a deliberate, continuous motion like driving up a ramp —
+   * so the live figure doesn't lag by the full `dwellRestMs` on every
+   * intermediate step while the wheel is genuinely climbing (#183).
+   * Never exceeds `dwellRestMs` (clamped where used).
+   */
+  dwellMotionMs: number;
   /** Unit used for displayed lengths; storage and math stay mm. */
   displayUnit: 'mm' | 'cm';
   /** Play a chime when the vehicle reaches level (opt-in). */
@@ -127,6 +142,8 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   drainPosition: 'none',
   toleranceMm: 20,
   stabilityMm: 3,
+  dwellRestMs: 600,
+  dwellMotionMs: 150,
   displayUnit: 'mm',
   // On by default (#153): a single short chime carries most of its value
   // only if users don't have to discover and enable it themselves. Never
@@ -223,6 +240,7 @@ export function parseSettings(value: unknown): LevelSettings {
     return Number.isNaN(n) ? undefined : n * 10;
   };
   const legacyTrackMm = cm(raw.trackWidthCm);
+  const dwellRestMs = positiveNumber(raw.dwellRestMs, DEFAULT_SETTINGS.dwellRestMs);
 
   let heights = Array.isArray(raw.rampStepHeightsMm)
     ? normalizeHeights(raw.rampStepHeightsMm.filter((v): v is number => typeof v === 'number'))
@@ -266,6 +284,13 @@ export function parseSettings(value: unknown): LevelSettings {
     // it falls back to the default.
     toleranceMm: positiveNumber(raw.toleranceMm, DEFAULT_SETTINGS.toleranceMm),
     stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
+    dwellRestMs,
+    // Clamped against the (already-validated) rest dwell, not its own
+    // default, so a corrupt/legacy value can never end up slower than rest.
+    dwellMotionMs: Math.min(
+      positiveNumber(raw.dwellMotionMs, DEFAULT_SETTINGS.dwellMotionMs),
+      dwellRestMs,
+    ),
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
     // Presence check, not a truthiness check (#153): "never saved" (key
     // absent — fresh install or a pre-#153 settings blob) must fall back to

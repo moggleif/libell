@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from './leveling';
 import { evaluateSteps, plannedSeverity } from './rampPlan';
 import { DEFAULT_SETTINGS } from './settings';
-import { createDisplayStabilizer, STATE_DWELL_MS, VALUE_DWELL_MS } from './stability';
+import { createDisplayStabilizer } from './stability';
 
 const G = 9.81;
 
@@ -26,6 +26,11 @@ const settings = {
   rampStepHeightsMm: [20, 40, 60],
 };
 
+// A first change in a direction, or one reversing the last adopted
+// direction, always pays the full rest dwell (#183) — this is "plenty of
+// time" for any single, isolated transition in these tests.
+const SETTLE_MS = settings.dwellRestMs + 100;
+
 /**
  * Frame-by-frame harness: each reading advances a fake clock, long enough
  * by default for every dwell to elapse, so a *sustained* reading always
@@ -34,7 +39,7 @@ const settings = {
 function createHarness() {
   const stabilize = createDisplayStabilizer();
   let now = 0;
-  return (liftMm: number, dtMs = STATE_DWELL_MS + 100) => {
+  return (liftMm: number, dtMs = SETTLE_MS) => {
     now += dtMs;
     const result = computeLeveling(gravityFor(rollForLift(liftMm, 1800), 0), settings);
     return stabilize(result, settings, now);
@@ -89,7 +94,7 @@ describe('createDisplayStabilizer', () => {
     expect(at(15, 16).isLevel).toBe(true);
     // Sustained past the band for the dwell: now it flips.
     at(26, 16);
-    expect(at(26, STATE_DWELL_MS + 100).isLevel).toBe(false);
+    expect(at(26, SETTLE_MS).isLevel).toBe(false);
   });
 
   it('shows every wheel green while the vehicle is level', () => {
@@ -110,7 +115,7 @@ describe('createDisplayStabilizer', () => {
     const at = createHarness();
     const sweep = [30, 25, 22, 19, 21, 17, 23, 24, 16, 15, 21, 26, 22, 18, 14];
     for (const liftMm of sweep) {
-      for (const dtMs of [16, 16, STATE_DWELL_MS + 100]) {
+      for (const dtMs of [16, 16, SETTLE_MS]) {
         const display = at(liftMm, dtMs);
         const allGreen = WHEEL_IDS.every((id) => display.wheels[id].severity === 'none');
         expect(display.isLevel).toBe(allGreen);
@@ -146,9 +151,61 @@ describe('createDisplayStabilizer', () => {
     // follow after the dwell, not freeze.
     const at = createHarness();
     expect(at(60).wheels.frontRight.displayMm).toBe(60);
-    at(40, VALUE_DWELL_MS / 2);
-    const settled = at(40, VALUE_DWELL_MS);
+    at(40, settings.dwellRestMs / 2);
+    const settled = at(40, settings.dwellRestMs);
     expect(settled.wheels.frontRight.displayMm).toBe(40);
+  });
+
+  /**
+   * #183: driving up a ramp is a continuous, sustained change, but every
+   * intermediate reading used to pay the full rest dwell (600 ms
+   * default) before showing — noticeably laggy to watch while actually
+   * adjusting. Once a change has *just* been adopted, a further change
+   * in the same direction only needs the much shorter motion dwell; a
+   * fresh direction (including the very first change, or one reversing
+   * the last) still pays the full rest dwell, so the noise guard for
+   * genuine jitter (which doesn't hold one direction for two changes in
+   * a row) is unaffected.
+   */
+  it('keeps up with a sustained one-directional change (driving up a ramp), but not a fresh or reversed one', () => {
+    const at = createHarness();
+    expect(settle(at, 200).wheels.frontRight.displayMm).toBe(200);
+
+    // First step down: a fresh direction — full rest dwell, unchanged
+    // from before this feature existed.
+    expect(settle(at, 150).wheels.frontRight.displayMm).toBe(150);
+
+    // A further step, same direction, fed at sensor rate: total elapsed
+    // is well under the rest dwell, but the figure keeps up regardless —
+    // this is the "still climbing the ramp" case.
+    at(100, 50);
+    const quick = at(100, settings.dwellMotionMs + 20);
+    expect(quick.wheels.frontRight.displayMm).toBe(100);
+
+    // A change reversing direction, fed just as quickly, does NOT get the
+    // fast path — it needs the full rest dwell like any fresh direction.
+    at(120, 50);
+    const reversed = at(120, settings.dwellMotionMs + 20);
+    expect(reversed.wheels.frontRight.displayMm).toBe(100); // not yet
+    expect(settle(at, 120).wheels.frontRight.displayMm).toBe(120); // given time, it does adopt
+  });
+
+  it('does not let oscillating jitter borrow the fast motion dwell', () => {
+    // Jitter alternates direction every reading, so — with nothing yet
+    // adopted to compare against — it can never satisfy "the same
+    // direction as the last adopted change": every reading here is fed
+    // faster than the motion dwell (150 ms default), which would have
+    // been enough to adopt *if* this were a sustained one-directional
+    // change; staying frozen past that proves the slow, full rest-dwell
+    // path is the one actually being used.
+    const at = createHarness();
+    expect(settle(at, 50).wheels.frontRight.displayMm).toBe(50);
+    const dtMs = settings.dwellMotionMs + 20;
+    const bounce = [80, 20, 80]; // 3 × dtMs is still short of the rest dwell
+    expect(3 * dtMs).toBeLessThan(settings.dwellRestMs);
+    for (const liftMm of bounce) {
+      expect(at(liftMm, dtMs).wheels.frontRight.displayMm).toBe(50);
+    }
   });
 
   /**
