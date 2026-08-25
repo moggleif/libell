@@ -94,7 +94,8 @@ The sensor module exposes an explicit state (`unsupported`, `needs-permission`, 
 `denied`) so the UI can render a "Start" button on iOS and an explanation elsewhere.
 
 `OrientationSensor` is the multi-source seam (#128, ADR 0014): `start()/getState()/
-getGravity()/getSource()` is the whole contract every gravity source implements — the
+getGravity()/getSource()/getLastSampleAt()` is the whole contract every gravity source
+implements — the
 phone sensor above, the fixed-tilt `?demo` stand-in in `main.ts`, and
 `src/sensor/easyLevelSensor.ts` (#116, R32: the EasyLevel BLE box, opt-in via the menu's
 "External sensor" page, only shown when `navigator.bluetooth` exists). `main.ts` selects
@@ -145,6 +146,25 @@ inside `calibrationSection.ts`), visible whenever EasyLevel is the active source
 reusing `calibrationAge.ts`'s shared `ageText()` (factored out of
 `calibrationSection.ts` by this change) and the `calibration.check.*`/`calibration.age.*`
 i18n keys for the Check/age copy rather than re-deriving that wording.
+
+Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
+`getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone
+sensor's `accept()`, the EasyLevel sensor's accel-notification handler — never on
+"listener attached" or "GATT still open", so a stalled stream (a backgrounded tab's
+throttled `devicemotion`, a BLE box whose notifications silently stopped while its
+connection stayed open) is visible even though `getGravity()` still returns its last
+non-null value. `domain/staleness.ts`'s `isSensorStale(lastSampleAtMs, nowMs,
+timeoutMs)` is the one pure predicate both sources share — time is always a parameter,
+matching R25's stillness detector and the display stabilizer's dwell timers, so it is
+unit-tested without real timers. `main.ts`'s frame loop checks it every frame with a
+per-source timeout (2s phone, continuously sampling; 4s EasyLevel, whose event-driven
+BLE notifications can have larger natural gaps) and, while stale, shows a dedicated
+overlay instead of the pose overlay or the diagram — a third state, never conflated
+with R17's wrong-pose guard (checked after staleness: a reading too old to trust isn't
+safe to judge the pose from either) or R25's "Measuring…" (which needs new, noisy
+samples to compute anything, and so cannot by itself detect the sensor going silent).
+Recovery is automatic: the overlay clears the instant a fresh sample updates
+`getLastSampleAt()`, with no separate flag to reset.
 
 ## Screen wake
 

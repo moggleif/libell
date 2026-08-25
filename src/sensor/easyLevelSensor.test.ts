@@ -172,6 +172,7 @@ describe('createEasyLevelSensor (#116)', () => {
     expect(connection.disconnect).toHaveBeenCalledOnce();
     expect(sensor.getState()).toBe('idle');
     expect(sensor.getGravity()).toBeNull();
+    expect(sensor.getLastSampleAt()).toBeNull();
   });
 
   it('a fresh start() after a lost connection reconnects via the transport again', async () => {
@@ -188,6 +189,33 @@ describe('createEasyLevelSensor (#116)', () => {
 
     expect(await sensor.start()).toBe('granted');
     expect(connectSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('tracks getLastSampleAt() from real notifications, not merely "connected" (#132)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitDisconnect } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    expect(sensor.getLastSampleAt()).toBeNull();
+
+    await sensor.start();
+    // Connected, but no notification has arrived yet — still no timestamp.
+    expect(sensor.getLastSampleAt()).toBeNull();
+
+    const before = performance.now();
+    emitAccel(accelBytes(1, 2, 3));
+    const after = performance.now();
+    const sampledAt = sensor.getLastSampleAt();
+    expect(sampledAt).not.toBeNull();
+    expect(sampledAt).toBeGreaterThanOrEqual(before);
+    expect(sampledAt).toBeLessThanOrEqual(after);
+
+    // A GATT disconnect clears the timestamp along with the gravity —
+    // never leaves a stale timestamp claiming the last reading is fresh.
+    emitDisconnect();
+    expect(sensor.getLastSampleAt()).toBeNull();
   });
 
   it('getDeviceId() is null before connecting and the connected device id afterward', async () => {

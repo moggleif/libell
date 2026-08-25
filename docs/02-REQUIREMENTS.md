@@ -581,3 +581,37 @@ cross-platform goal — they are not this app's code and are not covered here.
 - This installation-offset step lives on the "External sensor" menu page (#116, R32),
   not inside the Calibration menu section, since it only makes sense once an external
   source exists to calibrate.
+
+## R35 — Stale sensor data is never shown as live (#132)
+
+A disconnected or stalled sensor silently freezing on its last reading while the app
+keeps showing "drive forward" is actively dangerous — P0. This is a third, distinct
+safety state: never R17's "wrong phone pose" overlay (the phone is flat, but the
+_data itself_ can no longer be trusted), never R25's "Measuring…" (that needs new,
+noisy samples to arrive; this fires when no new samples arrive at all).
+
+- **Given** the active sensor (phone or EasyLevel box) has not delivered a fresh
+  reading within its timeout — 2 seconds for the continuously-sampling phone sensor,
+  4 seconds for the event-driven EasyLevel BLE box, whose notifications can
+  legitimately have larger natural gaps — while `getGravity()` still returns its last
+  non-null value
+- **When** I look at the main screen
+- **Then** the wheel/ramp guidance is hidden behind a clearly worded "no new sensor
+  data" overlay instead of continuing to display the last reading as if it were live;
+  the level celebration cannot fire while this overlay is shown.
+- **Given** the EasyLevel box's GATT connection stays technically open but its
+  notifications have simply stopped arriving
+- **Then** this is caught the same way as an outright disconnect going unnoticed —
+  staleness is judged purely by "time since the last real sample", never by
+  connection state alone.
+- **Given** fresh data resumes (the tab regains focus and `devicemotion` starts
+  firing again, a stalled BLE box starts notifying again, ...)
+- **Then** the overlay clears automatically the moment the next sample arrives — no
+  manual action is needed purely to clear it. (Reconnecting a sensor that actually
+  disconnected is a separate action, R33's job, not this one's.)
+- The staleness check itself is one pure function shared by every
+  `OrientationSensor` implementation (`domain/staleness.ts`): given the timestamp of
+  the last real sample and the current time, has more than the timeout passed? Time
+  is always a parameter, never read from the wall clock inside it, so it is fully
+  unit-testable without real timers — the same discipline R25's stillness detector
+  and the display stabilizer's dwell timers already follow.

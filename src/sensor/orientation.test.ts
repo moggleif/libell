@@ -18,6 +18,7 @@ function fixedAdapter(
     getState: () => 'granted',
     getGravity: () => gravity,
     getSource: () => source,
+    getLastSampleAt: () => 0,
   };
 }
 
@@ -41,5 +42,10 @@ describe('OrientationSensor as a multi-source seam (#128)', () => {
     expect(sensor.getSource()).toBe('phone');
     expect(sensor.getState()).toBe('idle');
     expect(sensor.getGravity()).toBeNull();
+  });
+
+  it('reports no last-sample timestamp before any reading has arrived (#132)', () => {
+    const sensor = createOrientationSensor();
+    expect(sensor.getLastSampleAt()).toBeNull();
   });
 });

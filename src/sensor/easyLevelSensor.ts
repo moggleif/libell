@@ -176,12 +176,18 @@ export function createEasyLevelSensor(
   let gravity: GravityVector | null = null;
   let statusBytes: Uint8Array | null = null;
   let connection: EasyLevelConnection | null = null;
+  // #132: stamped on every accepted accel notification — the only honest
+  // signal that data is still actually arriving, as opposed to the GATT
+  // link merely still being open (this issue's first example: notifications
+  // silently stopping while the connection stays "connected").
+  let lastSampleAt: number | null = null;
 
   function onGattDisconnected(): void {
     // Lost, not denied: surfaces distinctly (#116's AC) so the UI can
     // offer reconnection instead of silently freezing on the last value.
     state = 'disconnected';
     gravity = null;
+    lastSampleAt = null;
   }
 
   /** Shared by start() and reconnect(): wire a fresh EasyLevelConnection's
@@ -190,6 +196,7 @@ export function createEasyLevelSensor(
     connection = next;
     await connection.subscribeAccel((view) => {
       gravity = parseAccelPacket(view);
+      lastSampleAt = performance.now();
     });
     try {
       // Best-effort only — see the module doc comment. A firmware without
@@ -250,12 +257,14 @@ export function createEasyLevelSensor(
     getGravity: () => gravity,
     getDeviceId: () => connection?.deviceId ?? null,
     getSource: (): SensorSource => 'easylevel',
+    getLastSampleAt: () => lastSampleAt,
     getStatusBytes: () => statusBytes,
     disconnect(): void {
       connection?.disconnect();
       connection = null;
       state = 'idle';
       gravity = null;
+      lastSampleAt = null;
     },
   };
 }
