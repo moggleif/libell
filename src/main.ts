@@ -66,6 +66,7 @@ import { isSensorUnavailable } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu } from './ui/menu';
+import { createInfoPage } from './ui/infoMenu';
 import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators } from './ui/indicators';
@@ -526,11 +527,14 @@ function bootstrap(root: HTMLElement): void {
   document.body.append(menu.element);
   const settingsButton = document.querySelector<HTMLButtonElement>('#settings-button');
   if (settingsButton) menu.attach(settingsButton);
-  // "?" opens Help/About/Feedback directly (screen-cleanup follow-up) — no
-  // longer a shortcut into the ☰ Settings menu's Help section, since Help/
-  // About/Feedback no longer live there at all.
+  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
+  // follow-up) — a fully independent component, not a section of the ☰
+  // Settings menu: sharing that menu's history depth let its back button
+  // pop through to reveal the Settings drawer underneath by mistake.
+  const infoPage = createInfoPage();
+  document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
-  if (helpButton) menu.attachHelp(helpButton);
+  if (helpButton) infoPage.attach(helpButton);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the
@@ -962,9 +966,10 @@ function bootstrap(root: HTMLElement): void {
       // has no separate callback into this module), the same way the
       // "waiting" hint below already discovers it.
       updateSensorStatus();
-      // Menu or wizard open: the user is reading, phone in hand — no
-      // pose nagging, no overlays, no celebration until they are back.
-      if (menu.isOpen() || onboardingOpen) {
+      // Menu, info page, or wizard open: the user is reading, phone in
+      // hand — no pose nagging, no overlays, no celebration until they
+      // are back.
+      if (menu.isOpen() || infoPage.isOpen() || onboardingOpen) {
         poseOverlay.hidden = true;
         staleOverlay.hidden = true;
         fallbackPrompt.update(false);

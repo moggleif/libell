@@ -648,7 +648,10 @@ body {
   font-weight: 700;
   color: var(--on-surface-muted);
   min-height: 1.2em;
-  white-space: nowrap;
+  /* "No ramp" (screen-cleanup follow-up) doesn't fit the card's ~68px text
+   * column on one line at this size — let it wrap to two instead of
+   * clipping; shorter text ("Done", "Step 1") never needed the nowrap. */
+  line-height: 1.15;
 }
 
 .wheel-card--none .wheel-card__step {

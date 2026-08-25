@@ -64,7 +64,8 @@ describe('menu — Classic (unchanged by #107)', () => {
     menu.open('settings');
     // Settings, Calibration, Targets, Diagnostics, Show introduction — Help/
     // About/Feedback are no longer drawer items at all (screen-cleanup
-    // follow-up: they moved to the bottom bar's "?" button, attachHelp()).
+    // follow-up: they moved to their own page, infoMenu.ts, reached
+    // directly from the bottom bar's "?" button).
     expect(menu.element.querySelectorAll('.menu__item').length).toBeGreaterThanOrEqual(5);
     expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(0);
     expect(menu.element.querySelectorAll('.menu__row')).toHaveLength(0);
@@ -117,7 +118,7 @@ describe('menu — Modern (#107)', () => {
     // never offered — Advanced holds only Targets, exactly as today.
     expect(rowTitles(advancedList)).toEqual([t('menu.targets')]);
     // Feedback and About no longer live in the drawer at all — they moved
-    // into the combined Help page reached from "?" (attachHelp()).
+    // into infoMenu.ts's own tabbed page, reached directly from "?".
     expect(rowTitles(othersList)).toEqual([t('menu.intro'), t('menu.diagnostics')]);
     expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(2); // rows aren't cards
   });
@@ -183,7 +184,7 @@ describe('menu — Modern (#107)', () => {
   it('opening a page directly from closed still reaches depth 2 (menu list → page)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     expect(menu.isOpen()).toBe(false);
-    menu.open('help');
+    menu.open('diagnostics');
     expect(menu.isOpen()).toBe(true);
     expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
   });
@@ -284,26 +285,6 @@ describe('EasyLevel BLE sensor source (#116)', () => {
       (r) => r.textContent,
     );
     expect(rowTitles).toEqual([t('menu.sensorSource'), t('menu.targets')]);
-  });
-});
-
-describe('attachHelp — "?" opens Help/About/Feedback directly (screen-cleanup follow-up)', () => {
-  it('opens straight to a page combining Help, About and Feedback, not through the Settings drawer', () => {
-    const menu = createMenu(makeOptions());
-    const helpButton = document.createElement('button');
-    menu.attachHelp(helpButton);
-    expect(menu.isOpen()).toBe(false);
-
-    helpButton.click();
-    expect(menu.isOpen()).toBe(true);
-    expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
-    // Never landed on the Settings drawer first — .menu__card/.menu__item
-    // never appear inside the visible page body.
-    const pageBody = menu.element.querySelector('.menu-page__body')!;
-    expect(pageBody.textContent).toContain(t('help.what.h'));
-    expect(pageBody.textContent).toContain(t('menu.about'));
-    expect(pageBody.textContent).toContain(t('menu.feedback'));
-    expect(pageBody.querySelector('form')).not.toBeNull(); // the feedback form
   });
 });
 

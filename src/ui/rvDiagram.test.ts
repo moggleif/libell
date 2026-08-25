@@ -94,6 +94,18 @@ describe('rvDiagram wheel labels', () => {
     expect(l.wheelClass(2)).toContain('rv-diagram__wheel--large');
   });
 
+  it('says "No ramp" for a gray/unserved wheel instead of a blank step line (screen-cleanup follow-up)', () => {
+    const diagram = createRvDiagram();
+    diagram.update(
+      result({ rearLeft: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
+      'mm',
+      STEPS,
+    );
+    const l = labelsOf(diagram.element);
+    expect(l.stepName(2)).toBe('No ramp');
+    expect(l.stepHeight(2)).toBe('');
+  });
+
   it('falls back to the plain height when the step is not in the configured list', () => {
     const diagram = createRvDiagram();
     diagram.update(
@@ -223,6 +235,17 @@ describe('rvDiagram — modern appearance (#106)', () => {
     );
     const mm = diagram.element.querySelectorAll('.wheel-card__mm')[3];
     expect(mm?.classList.contains('wheel-card__mm--dim')).toBe(true);
+  });
+
+  it('says "No ramp" for an unserved wheel instead of a blank step line (screen-cleanup follow-up)', () => {
+    const diagram = createRvDiagram('single', 'modern');
+    diagram.update(
+      result({ rearRight: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
+      'mm',
+      STEPS,
+    );
+    const c = cardsOf(diagram.element);
+    expect(c.step(3)).toBe('No ramp');
   });
 
   it('carries no on-body SVG wheel marker — status lives only in the card', () => {

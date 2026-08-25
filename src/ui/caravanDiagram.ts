@@ -168,8 +168,14 @@ export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): Caravan
         for (const marker of refs.markers)
           marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         refs.glyph.textContent = severity === 'none' ? '✓' : severity === 'small' ? '↑' : '✕';
-        if (severity === 'none' || stepMm <= 0) {
+        if (severity === 'none') {
           refs.stepName.textContent = '';
+          refs.stepHeight.textContent = '';
+        } else if (stepMm <= 0) {
+          // Unserved (gray): low, but no ramp reaches this wheel — say so
+          // instead of leaving the step line blank (screen-cleanup
+          // follow-up), same convention as the motorhome diagram.
+          refs.stepName.textContent = t('diagram.noRamp');
           refs.stepHeight.textContent = '';
         } else {
           const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
