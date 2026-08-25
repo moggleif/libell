@@ -70,6 +70,14 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   const modern = options.appearance === 'modern';
 
   const calibrationBody = document.createElement('div');
+  // Design review: the two-layer overview used to live only on the Help
+  // page — moved here, at the top of the actual Kalibrering tab, where it
+  // is actionable. Only a child of `calibrationBody` (not `sensorElement`/
+  // `vehicleElement`), so the onboarding wizard — which re-parents those
+  // two individually onto separate steps — never picks it up.
+  const guideIntro = document.createElement('p');
+  guideIntro.className = modern ? 'calibration-card__body' : 'menu__text';
+  guideIntro.textContent = t('calibration.guide.intro');
   const sensorHeading = document.createElement('h3');
   sensorHeading.className = modern ? 'calibration-card__title' : 'menu__heading';
   sensorHeading.textContent = t('calibration.sensor.h');
@@ -87,35 +95,13 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   clearButton.className = 'menu__action menu__action--secondary';
   clearButton.textContent = t('calibration.clear');
 
-  // Modern-only status pill and side-by-side roll/pitch readings — the
-  // same underlying values as `calibrationStatus`, just laid out as a
-  // card instead of a sentence (#109). Never mounted in Classic mode.
+  // Modern-only status pill (#109) — the roll/pitch numbers themselves
+  // live only in `calibrationStatus`'s sentence below, the same "good
+  // layout" the vehicle-zero card always used (design review, follow-up:
+  // a separate numeric readout box here was tried and rejected — the
+  // status sentence already says the numbers, a second copy was noise).
   const sensorPill = document.createElement('span');
-  const rollValue = document.createElement('span');
-  const pitchValue = document.createElement('span');
-  let sensorReadings: HTMLDivElement | null = null;
-  if (modern) {
-    sensorPill.className = 'calibration-card__pill';
-    const rollLabel = document.createElement('span');
-    rollLabel.className = 'calibration-card__reading-label';
-    rollLabel.textContent = t('tilt.sideSide');
-    rollValue.className = 'calibration-card__reading-value';
-    const rollBox = document.createElement('div');
-    rollBox.className = 'calibration-card__reading';
-    rollBox.append(rollLabel, rollValue);
-
-    const pitchLabel = document.createElement('span');
-    pitchLabel.className = 'calibration-card__reading-label';
-    pitchLabel.textContent = t('tilt.frontBack');
-    pitchValue.className = 'calibration-card__reading-value';
-    const pitchBox = document.createElement('div');
-    pitchBox.className = 'calibration-card__reading';
-    pitchBox.append(pitchLabel, pitchValue);
-
-    sensorReadings = document.createElement('div');
-    sensorReadings.className = 'calibration-card__readings';
-    sensorReadings.append(rollBox, pitchBox);
-  }
+  if (modern) sensorPill.className = 'calibration-card__pill';
 
   // --- Vehicle zero (#83): the phone spot's own tilt — set with the
   // vehicle verified level and the phone in its normal place.
@@ -174,8 +160,6 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       sensorPill.className = calibration
         ? 'calibration-card__pill calibration-card__pill--done'
         : 'calibration-card__pill calibration-card__pill--pending';
-      rollValue.textContent = calibration ? `${calibration.rollDeg.toFixed(1)}°` : '—';
-      pitchValue.textContent = calibration ? `${calibration.pitchDeg.toFixed(1)}°` : '—';
     }
     refreshVehicle();
   }
@@ -280,21 +264,22 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     const sensorHeader = document.createElement('div');
     sensorHeader.className = 'calibration-card__header';
     sensorHeader.append(sensorHeading, sensorPill);
-    const flipRow = document.createElement('div');
-    flipRow.className = 'calibration-card__row';
-    flipRow.append(flipButton, checkButton);
+    // Check + Clear side by side (design review, follow-up) — same
+    // pairing as the vehicle-zero card's own row below, not paired with
+    // the unrelated flip button.
+    const checkClearRow = document.createElement('div');
+    checkClearRow.className = 'calibration-card__row';
+    checkClearRow.append(checkButton, clearButton);
     const sensorCard = document.createElement('div');
     sensorCard.className = 'calibration-card';
     sensorCard.append(
       sensorHeader,
       calibrationIntro,
-      // sensorReadings is always set when modern — see its declaration.
-      sensorReadings as HTMLDivElement,
       calibrateButton,
       flipIntro,
-      flipRow,
+      flipButton,
       flipStatus,
-      clearButton,
+      checkClearRow,
       calibrationStatus,
     );
 
@@ -309,7 +294,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     vehicleCard.append(vehicleHeader, vehicleIntro, vehicleButton, vehicleRow, vehicleStatus);
 
     calibrationBody.className = 'calibration-cards';
-    calibrationBody.append(sensorCard, vehicleCard);
+    calibrationBody.append(guideIntro, sensorCard, vehicleCard);
     sensorElement = sensorCard;
     vehicleElement = vehicleCard;
   } else {
@@ -338,7 +323,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       vehicleCheckButton,
       vehicleClearButton,
     );
-    calibrationBody.append(sensorSection, vehicleSection);
+    calibrationBody.append(guideIntro, sensorSection, vehicleSection);
     sensorElement = sensorSection;
     vehicleElement = vehicleSection;
   }

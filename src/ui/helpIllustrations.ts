@@ -150,7 +150,11 @@ export function measuresIllustration(
       el('circle', { cx: '100', cy: '30', r: '7', class: 'illu__wheel' }),
       outline(55, 60, 90, 88),
       wheelRect(45, 120),
-      wheelRect(145, 120),
+      // Mirrors the left wheel (45) about the 100 centre line, matching
+      // where the dashed track-width line below actually ends (155) —
+      // was 145, sitting asymmetrically inside the body outline (#184
+      // follow-up: "högerdäcken ligger fel").
+      wheelRect(155, 120),
       el('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
       el('line', {
         x1: '45',
@@ -166,9 +170,10 @@ export function measuresIllustration(
     outline(55, 12, 90, 136),
     windshield(55, 12, 90, 136),
     wheelRect(45, 30),
-    wheelRect(145, 30),
+    // Same right-wheel fix as the caravan branch above.
+    wheelRect(155, 30),
     wheelRect(45, 116),
-    wheelRect(145, 116),
+    wheelRect(155, 116),
     el('line', { x1: '100', y1: '43', x2: '100', y2: '129', class: 'illu__measure' }),
     // Front axle track width.
     el('line', {
