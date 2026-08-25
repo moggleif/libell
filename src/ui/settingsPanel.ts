@@ -605,17 +605,17 @@ export function createSettingsForm(
   const displayHeading = sectionHeading();
   const generalHeading = sectionHeading();
 
-  // --- Advanced disclosure (#157): tolerance/stability/appearance
-  // preferences, tuned rarely if ever, behind a single tap — always closed
-  // on open, in Classic and in Modern's Vehicle tab alike. Never
-  // auto-expanded for a customized value: the owner's explicit call is
-  // that a user's own settings are personal choices they're expected to
-  // remember, and with no test cohort to validate a "smarter" default the
-  // simplest rule wins. Built once, shared by both branches below — same
-  // field elements, just appended inside this wrapper instead of flat.
-  // Language/Theme/Sound (screen-cleanup follow-up) moved out to their own
-  // General tab/section — common enough to deserve a visible home, not
-  // Advanced's rarely-tuned pile.
+  // --- Advanced disclosure (#157): tolerance/stability preferences, tuned
+  // rarely if ever, behind a single tap — always closed on open, in Classic
+  // and in Modern's Vehicle tab alike. Never auto-expanded for a customized
+  // value: the owner's explicit call is that a user's own settings are
+  // personal choices they're expected to remember, and with no test cohort
+  // to validate a "smarter" default the simplest rule wins. Built once,
+  // shared by both branches below — same field elements, just appended
+  // inside this wrapper instead of flat. Language/Theme/Appearance/Sound
+  // (screen-cleanup follow-up) moved out to their own General tab/section
+  // — common enough to deserve a visible home, not Advanced's rarely-tuned
+  // pile.
   const advancedDetails = document.createElement('details');
   advancedDetails.className = 'settings__advanced';
   const advancedSummary = document.createElement('summary');
@@ -627,7 +627,6 @@ export function createSettingsForm(
     dwellRestField,
     dwellMotionField,
     dwellHint,
-    appearanceField,
   );
 
   // ============================================================
@@ -710,11 +709,12 @@ export function createSettingsForm(
     // never silently breaks a positional lookup.
     for (const [id, panel] of tabPanels) panel.dataset.tab = id;
 
-    // --- General tab: language, theme, sound — the same field elements
-    // Classic uses, just reparented here instead of appended flat.
+    // --- General tab: language, theme, appearance, sound — the same field
+    // elements Classic uses, just reparented here instead of appended flat.
     generalPanel.append(
       languageField,
       themeField,
+      appearanceField,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
@@ -743,8 +743,8 @@ export function createSettingsForm(
     form.selectTargetsTab = () => selectTab?.('targets');
 
     // --- Fordon tab: today's vehicle/axle/measurement fields visible by
-    // default; tolerance/stability/appearance behind Advanced (#157) —
-    // theme moved to the General tab (screen-cleanup follow-up).
+    // default; tolerance/stability behind Advanced (#157) — theme and
+    // appearance moved to the General tab (screen-cleanup follow-up).
     vehiclePanel.append(
       vehicleField,
       axleField,
@@ -954,8 +954,8 @@ export function createSettingsForm(
       targetsTab.textContent = t('menu.targets');
     });
   } else {
-    // --- Classic: one flat page. Tolerance/stability/appearance move
-    // behind Advanced (#157); language/theme/sound get their own visible
+    // --- Classic: one flat page. Tolerance/stability move behind Advanced
+    // (#157); language/theme/appearance/sound get their own visible
     // General section (screen-cleanup follow-up) — everything else is
     // unchanged from #108.
     form.append(
@@ -976,6 +976,7 @@ export function createSettingsForm(
       generalHeading,
       languageField,
       themeField,
+      appearanceField,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
