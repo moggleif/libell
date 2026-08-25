@@ -1946,6 +1946,35 @@ body {
   margin: 4px auto 8px;
 }
 
+/* Motorhome + caravan side by side (design review, follow-up: "The
+ * measurements" — #184's static Help tab default). Narrower than the
+ * single-illustration `.illu` above since two now share the row. */
+.illu-pair {
+  display: flex;
+  gap: 12px;
+}
+
+.illu-pair__item {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.illu-pair__caption {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
+}
+
+.illu-pair .illu {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto 4px;
+}
+
 .illu__body {
   fill: var(--surface-raised);
   stroke: var(--outline);

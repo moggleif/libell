@@ -27,6 +27,7 @@ import {
   measuresIllustration,
   placementIllustration,
 } from './helpIllustrations';
+import type { VehicleType } from '../domain/settings';
 
 export interface InfoPageOptions {
   diagnostics: DiagnosticsOptions;
@@ -57,12 +58,22 @@ const HELP: {
   h: MessageKey;
   text: MessageKey;
   illustration?: (label: string) => SVGSVGElement;
+  /** Motorhome + caravan side by side, one per vehicle type (design
+   * review, follow-up): this static Help tab isn't tied to any
+   * particular user's vehicle (see `helpIllustrations.ts`'s file
+   * comment) — it used to default to just showing the motorhome, as if
+   * a caravan owner's measurements didn't exist. Only "The measurements"
+   * needs this: it's the one topic whose picture and text actually
+   * differ by vehicle type (axle-to-jockey vs. front/rear axles, one
+   * track width vs. two) — every other illustrated topic (placement,
+   * the screen legend, calibration) looks and reads the same either way. */
+  vehiclePair?: boolean;
 }[] = [
   { h: 'help.what.h', text: 'about.text' },
   { h: 'onboard.step1.h', text: 'help.what.t', illustration: placementIllustration },
   { h: 'help.first.h', text: 'help.first.t' },
   { h: 'help.screen.h', text: 'help.screen.t', illustration: legendIllustration },
-  { h: 'help.settings.h', text: 'help.settings.t', illustration: measuresIllustration },
+  { h: 'help.settings.h', text: 'help.settings.t', vehiclePair: true },
   { h: 'settings.tab.ramps', text: 'help.ramps.t' },
   { h: 'help.calibration.h', text: 'help.calibration.t', illustration: calibrationIllustration },
   { h: 'help.notes.h', text: 'help.notes.t' },
@@ -83,15 +94,37 @@ function buildIntroButton(page: StandalonePage, openOnboarding: () => void): HTM
   return button;
 }
 
+/** Motorhome + caravan illustrations side by side, each with its own
+ * small caption — see `vehiclePair` on `HELP` above. */
+function buildVehiclePair(heading: string): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'illu-pair';
+  const variants: [VehicleType, MessageKey][] = [
+    ['motorhome', 'vehicle.motorhome'],
+    ['caravan', 'vehicle.caravan'],
+  ];
+  for (const [vehicleType, labelKey] of variants) {
+    const item = document.createElement('div');
+    item.className = 'illu-pair__item';
+    const caption = document.createElement('p');
+    caption.className = 'illu-pair__caption';
+    caption.textContent = t(labelKey);
+    item.append(caption, measuresIllustration(`${heading} – ${t(labelKey)}`, vehicleType));
+    row.append(item);
+  }
+  return row;
+}
+
 function buildHelpPanel(introButton: HTMLButtonElement): HTMLElement {
   const panel = document.createElement('div');
   panel.append(introButton);
-  for (const { h, text, illustration } of HELP) {
+  for (const { h, text, illustration, vehiclePair } of HELP) {
     const heading = document.createElement('h3');
     heading.className = 'menu__heading';
     heading.textContent = t(h);
     panel.append(heading);
-    if (illustration) panel.append(illustration(t(h)));
+    if (vehiclePair) panel.append(buildVehiclePair(t(h)));
+    else if (illustration) panel.append(illustration(t(h)));
     const p = document.createElement('p');
     p.className = 'menu__text';
     p.textContent = t(text);

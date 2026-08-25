@@ -411,14 +411,19 @@ export const MESSAGES = {
       'Gray –: a low wheel your ramps do not stretch to.\n' +
       'When the bubble rests in the middle, you are level.',
     'help.settings.h': 'The measurements',
-    // Design review: used to say "L is the wheelbase, W the track width",
-    // but the illustration below stopped drawing those letters (see
-    // `helpIllustrations.ts`'s `measuresIllustration`) — the text still
-    // promised letters the picture no longer shows.
+    // Design review, two follow-ups: (1) used to say "L is the wheelbase,
+    // W the track width", but the illustration stopped drawing those
+    // letters (see `helpIllustrations.ts`'s `measuresIllustration`) — the
+    // text still promised letters the picture no longer shows; (2) this
+    // static Help tab isn't tied to any particular user's vehicle (see
+    // that file's own comment) but the text only ever described a
+    // motorhome — now covers both, matching the motorhome+caravan pair of
+    // illustrations shown above it.
     'help.settings.t':
-      'Wheelbase is the distance between the front and rear axles; track width is the ' +
-      'distance between the left and right wheels (front and rear can differ) — usually ' +
-      'in the vehicle papers, or use a tape measure.\n' +
+      'For a motorhome, wheelbase is the distance between the front and rear axles; a ' +
+      "caravan's is the axle-to-jockey-wheel distance instead. Track width is the distance " +
+      'between the left and right wheels — a motorhome can have a different width front and ' +
+      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.\n' +
       'Tolerance = how strict "level" is.\n' +
       'Stability keeps the numbers calm.',
     // Design review: used to be one sentence inside "The measurements"
@@ -824,9 +829,10 @@ export const MESSAGES = {
       'När bubblan vilar i mitten står du i våg.',
     'help.settings.h': 'Måtten',
     'help.settings.t':
-      'Hjulbasen är avståndet mellan fram- och bakaxeln, spårvidden avståndet mellan ' +
-      'vänster och höger hjul (fram och bak kan skilja sig) — står oftast i ' +
-      'fordonspapperen, annars tumstock.\n' +
+      'För en husbil är hjulbasen avståndet mellan fram- och bakaxeln; för en husvagn är ' +
+      'det istället avståndet från axeln till stödhjulet. Spårvidden är avståndet mellan ' +
+      'vänster och höger hjul — en husbil kan ha olika bredd fram och bak, en husvagn har ' +
+      'bara en. Står oftast i fordonspapperen, annars tumstock.\n' +
       'Tolerans = hur strikt "i våg" är.\n' +
       'Stabilitet håller siffrorna lugna.',
     'help.ramps.t':
