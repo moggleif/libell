@@ -1113,7 +1113,31 @@ export function createSettingsForm(
   };
 
   undo.addEventListener('click', () => populate(saved));
-  reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+  // Reset must only touch what this form actually shows (#189 follow-up):
+  // `populate(DEFAULT_SETTINGS)` would silently stage every field back to
+  // factory defaults — vehicle type, ramp steps, theme, appearance, sound —
+  // even on a compact onboarding step that only displays three measurement
+  // fields, with no on-screen sign that anything beyond them changed.
+  reset.addEventListener('click', () => {
+    if (compact === 'measurements') {
+      populate({
+        ...currentSettings(),
+        wheelbaseMm: DEFAULT_SETTINGS.wheelbaseMm,
+        trackWidthFrontMm: DEFAULT_SETTINGS.trackWidthFrontMm,
+        trackWidthRearMm: DEFAULT_SETTINGS.trackWidthRearMm,
+      });
+    } else if (compact === 'general') {
+      populate({
+        ...currentSettings(),
+        theme: DEFAULT_SETTINGS.theme,
+        appearance: DEFAULT_SETTINGS.appearance,
+        soundOnLevel: DEFAULT_SETTINGS.soundOnLevel,
+        soundGuidance: DEFAULT_SETTINGS.soundGuidance,
+      });
+    } else {
+      populate(DEFAULT_SETTINGS);
+    }
+  });
 
   form.resyncSoundFields = (sound) => {
     soundInput.checked = sound.soundOnLevel;

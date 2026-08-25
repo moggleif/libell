@@ -241,10 +241,10 @@ URL and must keep working with no signal.
 - **Then** a five-step wizard runs: general preferences (Language, Theme, Appearance,
   Chime, Continuous audio guidance — skippable, #189), which vehicle I'm leveling
   (motorhome or caravan — #184), how to place the phone and how to read the answer (the
-  wheel-state legend and the bubble), vehicle measurements (skippable — "use defaults"),
-  calibration (skippable). It can be closed with ✕ at any point, warning lamps (R11)
-  stay lit for whatever was skipped, and the "Show introduction" button at the top of
-  the "?" page's Help tab (R28, screen-cleanup follow-up) reopens it any time.
+  wheel-state legend and the bubble), vehicle measurements (skippable), calibration
+  (skippable). It can be closed with ✕ at any point, warning lamps (R11) stay lit for
+  whatever was skipped, and the "Show introduction" button at the top of the "?" page's
+  Help tab (R28, screen-cleanup follow-up) reopens it any time.
 - **Given** the general step (#189, always first — usability review, personas like
   seniors leveling their first motorhome: being able to read the rest of the guide
   matters before anything else)
@@ -276,6 +276,13 @@ URL and must keep working with no signal.
   has beyond what the general step (#189) already covered (Rear axle — Vehicle tab;
   Tolerance, Stability — Advanced) is reachable from Settings afterward, not hidden from
   the app, just not shown on this reduced step. A short note on the step says so.
+- **Given** the measurements step (or the general step), with "Reset to defaults" tapped
+  (style-consistency review follow-up)
+- **Then** only the fields that step actually shows reset to the shipped defaults —
+  Wheelbase/Track widths on the measurements step, Theme/Appearance/Chime/Continuous
+  audio guidance on the general step. Vehicle type, ramp configuration, and every other
+  field not visible on that reduced step keep whatever was already entered elsewhere in
+  the wizard; the button's name never silently means "reset everything."
 - **Given** the calibration step
 - **Then** it embeds the exact same calibration section Settings → Calibration shows —
   flip-calibration technique, Vehicle zero position, check/clear, all of it (#184: no
@@ -303,6 +310,12 @@ URL and must keep working with no signal.
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
   any state, so an interrupted wizard can never leave the active source ambiguous.
+- **Given** the source step, with the external sensor picked instead of "This phone"
+  (style-consistency review follow-up)
+- **Then** the "n / total" step count updates immediately, on the source step itself —
+  not only once "Next" is pressed — since the external path has fewer steps than the
+  phone path; the total shown must never be one a later choice on the same screen then
+  falsifies.
 - **Given** any step after the first (#189: a usability review of R18 for less
   tech-savvy users, e.g. seniors leveling their first motorhome)
 - **Then** a "Back" button returns to the previous step without losing any choice
@@ -317,6 +330,9 @@ URL and must keep working with no signal.
 - **Given** a skippable step (measurements, calibration, connect)
 - **Then** its Skip control is paired with a one-line note that a warning lamp (R11)
   will remind the user later if they skip — not just "Skip" with no stated consequence.
+  Its button reads plain "Skip", since skipping any of these three does light that lamp;
+  only the general step's Skip reads "Skip — use defaults", since it is the one
+  skippable step with no such consequence (style-consistency review follow-up).
 - **Given** the calibration step
 - **Then** a one-line hint above the embedded calibration UI says to calibrate the
   sensor first (flip calibration if no known-level spot is at hand), and that the

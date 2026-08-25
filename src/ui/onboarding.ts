@@ -36,9 +36,12 @@
  *     `sensorSourceSection.ts`'s component whole — the same "Set vehicle
  *     level" block #131 added to the real menu page, never a wizard-only
  *     duplicate) followed directly by the settings/dimensions step.
- * `sensorChoice` starts at `'phone'` and is only read once, when Next is
- * pressed from the source step — closing the wizard (✕) before or during
- * that step never sets anything, so an unfinished choice always leaves
+ * `sensorChoice` starts at `'phone'`; the step list re-resolves against it
+ * on every change on the source step, not just once when Next is pressed
+ * (#189 follow-up — otherwise the "n / total" progress readout could
+ * commit to a total that a later choice then falsified). Closing the
+ * wizard (✕) before or during that step never *saves* anything, so an
+ * unfinished choice always leaves
  * the app on the phone sensor (the existing `DEFAULT_SETTINGS.sensorSource`),
  * never an ambiguous state.
  *
@@ -265,19 +268,35 @@ export function showOnboarding(options: OnboardingOptions): void {
   // documented in the requirements but was never shown to the user here.
   function skipConsequenceHint(): HTMLParagraphElement {
     const hint = document.createElement('p');
-    hint.className = isModern ? 'onboarding__text--modern' : 'settings__hint';
+    // Same class as moreInMenuNote() (#189 follow-up) — Classic used to
+    // borrow 'settings__hint' (0.8rem, a different component's style) here
+    // while its neighboring note used 'menu__text' (0.9rem), so two grey
+    // helper lines back-to-back on the same step rendered at different
+    // sizes. Modern never had the mismatch since both already shared
+    // 'onboarding__text--modern'.
+    hint.className = isModern ? 'onboarding__text--modern' : 'menu__text';
     hint.textContent = t('onboard.skip.consequence');
     return hint;
   }
 
   const settingsStep: Step = {
-    title: t('menu.settings'),
-    skipLabel: t('onboard.skipDefaults'),
+    // 'help.settings.h' ("The measurements"), not 'menu.settings'
+    // ("Settings") — #189 follow-up. This step only ever shows wheelbase/
+    // track widths, but titling it "Settings" collided with the
+    // moreInMenuNote() line right below it ("More options are available
+    // later in Settings"), which points at the real, full Settings page —
+    // same word, two different destinations, on the same screen.
+    title: t('help.settings.h'),
+    // Plain "Skip" (#189 follow-up), not "Skip — use defaults": skipping
+    // this step does light a warning lamp (see skipConsequenceHint below),
+    // same as Calibration/External sensor — "use defaults" is reserved for
+    // the one step (General) that truly has no consequence.
+    skipLabel: t('onboard.skipStep'),
     build: () => [
       // vehicleType is overridden to the vehicle step's choice (#184) so
       // this reduced form's field labels/visibility already match —
       // settingsPanel.ts's own vehicle-aware relabeling does the rest.
-      measuresIllustration(t('menu.settings'), vehicleChoice),
+      measuresIllustration(t('help.settings.h'), vehicleChoice),
       createSettingsForm(
         // Built from currentSettings, not the static options.initialSettings
         // (#189): once Next has auto-saved this step (see the nav handler
@@ -378,6 +397,11 @@ export function showOnboarding(options: OnboardingOptions): void {
       label.className = 'onboarding__source-option';
       const radio = document.createElement('input');
       radio.type = 'radio';
+      // Themed like every other control in the app (.settings__checkbox
+      // does the same) — plain radios default to the browser's own accent
+      // color, off-brand and the one hex-free rule CLAUDE.md is strict
+      // about (#189 follow-up).
+      radio.className = 'onboarding__source-radio';
       radio.name = name;
       radio.value = value;
       radio.checked = current === value;
@@ -404,6 +428,14 @@ export function showOnboarding(options: OnboardingOptions): void {
         intro,
         buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, sensorChoice, (value) => {
           sensorChoice = value;
+          // Re-resolve immediately, not just when Next is pressed (#189
+          // follow-up): the "n / total" progress readout already commits to
+          // a total on this very step (6 for the phone path, the default),
+          // so picking "external" here must update it right away — a total
+          // that only turns out to have been wrong once you've moved on is
+          // worse than one that updates as you choose.
+          steps = resolveSteps();
+          renderStep();
         }),
       ];
     },
@@ -431,9 +463,22 @@ export function showOnboarding(options: OnboardingOptions): void {
   const externalSteps = [connectStep, settingsStep];
 
   // generalStep always leads (#189) — every branch below prepends it.
-  let steps: Step[] = sourceChoiceAvailable
-    ? [generalStep, sourceStep, vehicleStep, ...phoneSteps]
-    : [generalStep, vehicleStep, ...phoneSteps];
+  // Depends on `sensorChoice`, so it's re-run both up front and every time
+  // the source-step radio changes (see sourceStep above) — the displayed
+  // step count always matches the path the user has (currently) chosen,
+  // never a stale guess from before they picked.
+  function resolveSteps(): Step[] {
+    return sourceChoiceAvailable
+      ? [
+          generalStep,
+          sourceStep,
+          vehicleStep,
+          ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
+        ]
+      : [generalStep, vehicleStep, ...phoneSteps];
+  }
+
+  let steps: Step[] = resolveSteps();
 
   let index = 0;
 
@@ -472,12 +517,12 @@ export function showOnboarding(options: OnboardingOptions): void {
     nav.className = isModern ? 'onboarding__nav onboarding__nav--modern' : 'onboarding__nav';
     // Back (#189): a wrong tap on vehicle type or sensor source used to be
     // fixable only by finishing the wizard and correcting it in Settings,
-    // or closing (✕) and restarting from step 1. Always appended first —
-    // in Classic's plain column that puts it furthest from the primary
-    // Next action at the bottom; in Modern's column-reverse nav (see the
-    // CSS) that puts it last/least prominent instead, below Skip. Never
-    // shown on the first step, matching Skip's own "not always present"
-    // convention.
+    // or closing (✕) and restarting from step 1. Always appended first, so
+    // in both appearances' plain (non-reversed) column it ends up furthest
+    // from the primary Next action at the true bottom edge — same order,
+    // same "closest to the thumb wins" rule, in Classic and Modern alike.
+    // Never shown on the first step, matching Skip's own "not always
+    // present" convention.
     if (index > 0) {
       const back = document.createElement('button');
       back.type = 'button';
@@ -520,16 +565,6 @@ export function showOnboarding(options: OnboardingOptions): void {
       // itself does when pressed directly (#159's guard is untouched).
       if (step === settingsStep || step === generalStep) {
         body.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
-      }
-      // Leaving the source step: branch the rest of the wizard onto the
-      // chosen path — read once, here, never re-evaluated afterward.
-      if (step === sourceStep) {
-        steps = [
-          generalStep,
-          sourceStep,
-          vehicleStep,
-          ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
-        ];
       }
       index += 1;
       renderStep();

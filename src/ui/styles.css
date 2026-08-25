@@ -2094,6 +2094,20 @@ body {
   gap: 4px;
 }
 
+/* A settings/general step embeds the real settings form whole (see the
+ * file header comment in onboarding.ts), Save included — which otherwise
+ * shares the plain .menu__action green-pill style with the wizard's own
+ * Next button below it: two identical-looking "confirm" buttons on one
+ * screen that do different things (Save doesn't advance the wizard; Next
+ * both saves and advances). Scoped to `.onboarding` only, so the real
+ * Settings page keeps its own Save exactly as prominent as before —
+ * demoted here to the same outline treatment as Undo/Reset next to it. */
+.onboarding .settings__actions .menu__action {
+  color: var(--on-surface);
+  background: none;
+  border: 1px solid var(--outline);
+}
+
 /* ---- Modern onboarding (#110) ----
  * Structure is picked once, at construction, from the appearance the
  * wizard was opened with (see onboarding.ts) — these rules only style
@@ -2187,13 +2201,12 @@ body {
   color: var(--on-surface);
 }
 
-/* Same buttons, same handlers, only reordered and restyled: the pill
- * "Next" first, the plain-text "Skip" below it (source order is
- * unchanged — skip is still appended before next). */
-.onboarding__nav--modern {
-  flex-direction: column-reverse;
-}
-
+/* Same buttons, same handlers and same top-to-bottom order as Classic
+ * (Back, Skip, Next) — so the pill "Next" lands at the true bottom edge,
+ * closest to the thumb, in both appearances. Only restyled: bigger/bolder
+ * here, plain-text there. (Reviewed away from an earlier column-reverse
+ * that put Next visually first but Skip/Back closest to the thumb —
+ * the opposite of Classic's order and of standard mobile ergonomics.) */
 .onboarding__next--modern {
   min-height: 50px;
 }
@@ -2203,8 +2216,7 @@ body {
   background: none;
 }
 
-/* Back (#189): same subordinate, link-like treatment as Skip — appended
- * first in the nav, so column-reverse puts it last/least prominent. */
+/* Back (#189): same subordinate, link-like treatment as Skip. */
 .onboarding__back--modern {
   border: 0;
   background: none;
@@ -2227,4 +2239,20 @@ body {
   border: 1px solid var(--outline);
   border-radius: 10px;
   cursor: pointer;
+}
+
+/* Chosen option gets the same visual language as the rest of the app's
+ * status-driven UI (calibration badges, severity colors) — until now the
+ * only feedback was the radio dot itself (#189 follow-up). */
+.onboarding__source-option:has(.onboarding__source-radio:checked) {
+  border-color: var(--level);
+  background: color-mix(in srgb, var(--level) 10%, transparent);
+}
+
+/* Same accent as .settings__checkbox — a plain radio otherwise falls back
+ * to the browser's own (off-brand) accent color. */
+.onboarding__source-radio {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--level);
 }

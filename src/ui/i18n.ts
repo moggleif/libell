@@ -570,8 +570,7 @@ export const MESSAGES = {
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
-    'onboard.skip.consequence':
-      'Hoppar du över nu? En varningslampa påminner dig tills det är klart.',
+    'onboard.skip.consequence': 'Hoppa över nu — en varningslampa påminner dig tills det är klart.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',

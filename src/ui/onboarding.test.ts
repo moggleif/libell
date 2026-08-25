@@ -301,7 +301,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       next(); // vehicle -> placement
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
       next(); // placement -> settings
-      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.settings.h'));
       next(); // settings -> calibration
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.calibration'));
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 5');
@@ -350,7 +350,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       next(); // -> placement
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
       next(); // -> settings
-      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.settings.h'));
       next(); // -> calibration
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.calibration'));
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('6 / 6');
@@ -381,7 +381,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       ).toBe(true);
       expect(card().textContent).toContain(t('sensorSource.install.h'));
       next(); // connect -> settings (dimensions), never the phone calibration step
-      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.settings.h'));
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 5');
       next(); // "Done" — no phone calibration step for the external path
       expect(finished).toBe(true);
@@ -453,7 +453,7 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
     expect(card().querySelector('.illu__wheel')).toBeNull();
   });
 
-  it('reorders Next above Skip visually without touching the click handlers', () => {
+  it('restyles Next/Skip/Back without touching the click handlers or their order', () => {
     let finished = false;
     open({
       initialSettings: modernSettings(),
@@ -468,9 +468,17 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
     const nav = card().querySelector('.onboarding__nav--modern')!;
     expect(nav.classList.contains('onboarding__nav--modern')).toBe(true);
     const skip = card().querySelector<HTMLButtonElement>('.onboarding__skip--modern')!;
-    expect(skip.textContent).toBe(t('onboard.skipDefaults'));
+    // "Skip" (#189 follow-up), not "Skip — use defaults": this step's skip
+    // leaves a warning lamp lit, same as Calibration/External sensor —
+    // "use defaults" is reserved for the one step (General) that truly has
+    // no consequence.
+    expect(skip.textContent).toBe(t('onboard.skipStep'));
     const nextButton = card().querySelector<HTMLButtonElement>('.onboarding__next--modern')!;
     expect(nextButton.textContent).toBe(t('onboard.next'));
+    // Same DOM order as Classic (Back, Skip, Next) — Next lands at the true
+    // bottom edge, closest to the thumb, in both appearances (#110 follow-up).
+    const buttons = [...nav.querySelectorAll('button')];
+    expect(buttons.indexOf(skip)).toBeLessThan(buttons.indexOf(nextButton));
 
     skip.click(); // same skip-forward behavior as Classic
     const bars = [...card().querySelectorAll('.onboarding__bar')];
@@ -630,7 +638,7 @@ describe('onboarding wizard — usability review fixes (#189)', () => {
     next(); // placement -> settings
     const form = card().querySelector('form')!;
     form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
+    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.settings.h'));
     expect(finished).toBe(false);
   });
 
