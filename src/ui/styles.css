@@ -615,10 +615,11 @@ body {
 }
 
 .wheel-card__step {
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--on-surface-muted);
   min-height: 1.2em;
+  white-space: nowrap;
 }
 
 .wheel-card--none .wheel-card__step {
