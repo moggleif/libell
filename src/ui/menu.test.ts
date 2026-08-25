@@ -176,6 +176,24 @@ describe('menu — Modern (#107)', () => {
     expect(menu.isOpen()).toBe(true);
     expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
   });
+
+  it('the Calibration card is a shortcut into the same Settings instance, not a second render (#155)', () => {
+    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
+    menu.open('settings');
+    const settingsForm = menu.element.querySelector('.menu-page__body form.settings__form');
+    expect(settingsForm).toBeTruthy();
+
+    menu.open('calibration');
+    const calibrationForm = menu.element.querySelector('.menu-page__body form.settings__form');
+    // Same live DOM node — not a second createCalibrationSection instance.
+    expect(calibrationForm).toBe(settingsForm);
+    expect(
+      calibrationForm?.querySelector('[data-tab="calibration"]')?.getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(
+      calibrationForm?.querySelector('[data-tab="vehicle"]')?.getAttribute('aria-selected'),
+    ).toBe('false');
+  });
 });
 
 describe('EasyLevel BLE sensor source (#116)', () => {
