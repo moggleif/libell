@@ -324,6 +324,22 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(generalSave.disabled).toBe(true);
   });
 
+  // Design review, follow-up: "exakt samma" — every tab that edits form
+  // fields (General/Fordon/Klossar) must show the identical three
+  // buttons, not just each have *some* Save/Undo pair. Kalibrering and
+  // Targets apply changes immediately and are the acknowledged exception.
+  it('General, Fordon and Klossar all show the exact same three action buttons (Save/Undo/Reset)', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    for (const tab of ['general', 'vehicle', 'ramps']) {
+      const panel = tabPanel(form, tab);
+      const actions = panel.querySelector<HTMLElement>(
+        '.settings__actions, .klossar__footer-actions',
+      )!;
+      const labels = [...actions.querySelectorAll('button')].map((b) => b.textContent);
+      expect(labels).toEqual(['Save', 'Undo changes', 'Reset to defaults']);
+    }
+  });
+
   describe('the Language select persists the choice and reloads', () => {
     function languageSelect(form: HTMLFormElement): HTMLSelectElement {
       return tabPanel(form, 'general').querySelector<HTMLSelectElement>('.settings__select')!;

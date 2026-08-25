@@ -656,18 +656,53 @@ export function createSettingsForm(
   actions.append(save, undo, reset);
   const saveButtons: HTMLButtonElement[] = [save];
   const undoButtons: HTMLButtonElement[] = [undo];
+  const resetButtons: HTMLButtonElement[] = [reset];
 
   /**
-   * Save+Undo only, no Reset — the same footer shape Modern's Klossar tab
-   * already uses (`footerSave`/`footerUndo` below), reused for Classic's
-   * split General/Ramps pages (#108 follow-up). Reset-to-factory-defaults
-   * stays on the one page that already carries it (Vehicle, matching
-   * Modern's Vehicle tab) rather than repeated on every split page — a
-   * "Reset" next to Language/Theme/Sound would silently wipe the
-   * vehicle's own dimensions too, the same surprise the onboarding
-   * wizard's compact steps were fixed to avoid (design review). `saved`/
-   * `populate` are defined later in this function, referenced here only
-   * inside click closures that fire well after the whole form is built.
+   * Save+Undo+Reset — the exact same three buttons as `actions` above,
+   * built fresh so every Modern tab that edits form fields (General/
+   * Fordon/Klossar) shows the identical set (design review: they used to
+   * differ — General had none at all, Klossar had Save/Undo only). Only
+   * Kalibrering/Targets are exempt, since both apply changes immediately
+   * and have no "unsaved" state to Save/Undo/Reset in the first place.
+   */
+  function buildActionsRow(): HTMLDivElement {
+    const row = document.createElement('div');
+    row.className = 'settings__actions';
+    const saveBtn = document.createElement('button');
+    saveBtn.type = 'submit';
+    saveBtn.className = 'menu__action';
+    saveBtn.disabled = true;
+    saveBtn.textContent = t('settings.save');
+    const undoBtn = document.createElement('button');
+    undoBtn.type = 'button';
+    undoBtn.className = 'menu__action menu__action--secondary';
+    undoBtn.disabled = true;
+    undoBtn.textContent = t('settings.undo');
+    undoBtn.addEventListener('click', () => populate(saved));
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'menu__action menu__action--secondary';
+    resetBtn.textContent = t('settings.reset');
+    resetBtn.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+    row.append(saveBtn, undoBtn, resetBtn);
+    saveButtons.push(saveBtn);
+    undoButtons.push(undoBtn);
+    resetButtons.push(resetBtn);
+    return row;
+  }
+
+  /**
+   * Save+Undo only, no Reset — used only by Classic's split General/Ramps
+   * pages (#108 follow-up; Modern's own General/Klossar tabs use
+   * `buildActionsRow` above instead, design review). Reset-to-factory-
+   * defaults stays on the one Classic page that already carries it
+   * (Vehicle) rather than repeated on every split page — a "Reset" next
+   * to Language/Theme/Sound would silently wipe the vehicle's own
+   * dimensions too, the same surprise the onboarding wizard's compact
+   * steps were fixed to avoid (design review). `saved`/`populate` are
+   * defined later in this function, referenced here only inside click
+   * closures that fire well after the whole form is built.
    */
   function buildSaveUndoRow(): HTMLDivElement {
     const row = document.createElement('div');
@@ -867,7 +902,7 @@ export function createSettingsForm(
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
-      buildSaveUndoRow(),
+      buildActionsRow(),
     );
 
     // --- Kalibrering tab: embeds the same calibration section the menu
@@ -1029,9 +1064,18 @@ export function createSettingsForm(
     // populate()/saved are defined further down, but this only runs on a
     // later click — by then the whole form is fully set up.
     footerUndo.addEventListener('click', () => populate(saved));
-    footerActions.append(footerSave, footerUndo);
+    // Design review: Klossar used to be Save/Undo only — Reset added so
+    // every editable Modern tab (General/Fordon/Klossar) offers the exact
+    // same three actions.
+    const footerReset = document.createElement('button');
+    footerReset.type = 'button';
+    footerReset.className = 'menu__action menu__action--secondary';
+    footerReset.textContent = t('settings.reset');
+    footerReset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+    footerActions.append(footerSave, footerUndo, footerReset);
     saveButtons.push(footerSave);
     undoButtons.push(footerUndo);
+    resetButtons.push(footerReset);
     footer.append(footerHead, footerGrid, footerActions);
 
     // Number of ramps / Drain side (pre-existing gap, found during the
@@ -1254,7 +1298,7 @@ export function createSettingsForm(
     advancedHint.textContent = t('settings.advanced.hint');
     save.textContent = t('settings.save');
     undo.textContent = t('settings.undo');
-    reset.textContent = t('settings.reset');
+    for (const btn of resetButtons) btn.textContent = t('settings.reset');
   }
   applyUnitEverywhere();
   renderChips();
