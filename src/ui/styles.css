@@ -2187,13 +2187,12 @@ body {
   color: var(--on-surface);
 }
 
-/* Same buttons, same handlers, only reordered and restyled: the pill
- * "Next" first, the plain-text "Skip" below it (source order is
- * unchanged — skip is still appended before next). */
-.onboarding__nav--modern {
-  flex-direction: column-reverse;
-}
-
+/* Same buttons, same handlers and same top-to-bottom order as Classic
+ * (Back, Skip, Next) — so the pill "Next" lands at the true bottom edge,
+ * closest to the thumb, in both appearances. Only restyled: bigger/bolder
+ * here, plain-text there. (Reviewed away from an earlier column-reverse
+ * that put Next visually first but Skip/Back closest to the thumb —
+ * the opposite of Classic's order and of standard mobile ergonomics.) */
 .onboarding__next--modern {
   min-height: 50px;
 }
@@ -2203,8 +2202,7 @@ body {
   background: none;
 }
 
-/* Back (#189): same subordinate, link-like treatment as Skip — appended
- * first in the nav, so column-reverse puts it last/least prominent. */
+/* Back (#189): same subordinate, link-like treatment as Skip. */
 .onboarding__back--modern {
   border: 0;
   background: none;
@@ -2227,4 +2225,21 @@ body {
   border: 1px solid var(--outline);
   border-radius: 10px;
   cursor: pointer;
+}
+
+/* Chosen option gets the same visual language as the rest of the app's
+ * status-driven UI (calibration badges, severity colors) — until now the
+ * only feedback was the radio dot itself (#189 follow-up). */
+.onboarding__source-option:has(.onboarding__source-radio:checked) {
+  border-color: var(--level);
+  background: color-mix(in srgb, var(--level) 10%, transparent);
+}
+
+/* Same size and accent as .settings__checkbox — a plain radio otherwise
+ * falls back to the browser's own (off-brand) accent color, and a mismatched
+ * size would just trade one small inconsistency for another. */
+.onboarding__source-radio {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--level);
 }

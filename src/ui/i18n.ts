@@ -152,6 +152,19 @@ export const MESSAGES = {
     'about.source': 'Libell is free and open source (MIT license).',
     'about.source.link': 'Source code on GitHub',
 
+    // Welcome step (design-review follow-up): the very first thing a new
+    // user sees, before any question or form — what the app is for. Body
+    // reuses 'about.text' verbatim rather than separate copy.
+    'onboard.welcome.h': 'Welcome to Libell',
+    'onboard.welcome.t':
+      'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
+      'finished later from Settings.',
+    // Sound step (design review): Chime + Continuous audio guidance
+    // together, split out of #189's combined 'general' step. No existing
+    // section heading covers just these two (unlike 'settings.language'/
+    // 'settings.appearance', reused as-is for their own steps), so this is
+    // the one new short label the split needed.
+    'onboard.sound.h': 'Sound',
     // Sensor source choice (#135, ADR 0014): the wizard's first step,
     // shown only when an external sensor option actually exists
     // (`isWebBluetoothSupported()`). The external radio reuses
@@ -188,14 +201,6 @@ export const MESSAGES = {
     // Compact onboarding steps (#156): points to ☰ for everything the
     // reduced step doesn't show.
     'onboard.moreInMenu': 'More options are available later in Settings.',
-    // Which part of the calibration step matters most (#189) — the step
-    // embeds the full sensor-calibration + vehicle-zero UI with no order
-    // of its own; this just points at it, calibrationSection.ts still
-    // owns all the actual how-to copy.
-    'onboard.calibration.hint':
-      'Two things below: calibrate the sensor first (use flip calibration if you don’t ' +
-      'have a known-level spot) — vehicle zero is optional, for extra precision.',
-
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
     'settings.trackRear': 'Track width rear',
@@ -557,6 +562,11 @@ export const MESSAGES = {
     'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
     'about.source.link': 'Källkoden på GitHub',
 
+    'onboard.welcome.h': 'Välkommen till Libell',
+    'onboard.welcome.t':
+      'Den här snabbguiden ställer in ditt fordon och din telefon. Varje steg går att ' +
+      'hoppa över och avsluta senare från Inställningar.',
+    'onboard.sound.h': 'Ljud',
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro':
       'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',
@@ -570,16 +580,12 @@ export const MESSAGES = {
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
-    'onboard.skip.consequence':
-      'Hoppar du över nu? En varningslampa påminner dig tills det är klart.',
+    'onboard.skip.consequence': 'Hoppa över nu — en varningslampa påminner dig tills det är klart.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
     'onboard.legend.dim': 'Grått – — ett lågt hjul som ramperna inte når.',
     'onboard.moreInMenu': 'Fler alternativ finns senare i Inställningar.',
-    'onboard.calibration.hint':
-      'Två saker nedan: kalibrera sensorn först (använd flip-kalibrering om du inte har ' +
-      'en känd plan yta) — fordonets nollpunkt är valfri, för extra precision.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',

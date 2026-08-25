@@ -533,6 +533,25 @@ describe('settings form — compact mode (#156)', () => {
     const form = createSettingsForm(classic, vi.fn());
     expect(form.querySelector('select')).not.toBeNull();
   });
+
+  // Design review: a compact form's own Save/Undo/Reset row used to render
+  // right alongside the wizard's Next/Skip/Back — two "confirm" controls
+  // per screen, one of which (Reset) could silently stage every field back
+  // to factory defaults, including fields this reduced form never shows.
+  // Removing the row (not just fixing Reset's scope) is the actual fix:
+  // there is nothing left here for a first-time user to parse but the
+  // fields themselves — Next (tested via onboarding.ts) is the only save
+  // path. Save/Undo/Reset are unaffected on the full, non-compact form.
+  it('renders no Save/Undo/Reset row in any compact mode', () => {
+    for (const compact of ['measurements', 'language', 'appearance', 'sound', 'ramps'] as const) {
+      const form = createSettingsForm(classic, vi.fn(), undefined, { compact });
+      expect(form.querySelector('.settings__actions')).toBeNull();
+      const buttonTexts = [...form.querySelectorAll('button')].map((b) => b.textContent);
+      expect(buttonTexts).not.toContain(t('settings.save'));
+      expect(buttonTexts).not.toContain(t('settings.undo'));
+      expect(buttonTexts).not.toContain(t('settings.reset'));
+    }
+  });
 });
 
 describe('settings form — resyncSoundFields (#161)', () => {

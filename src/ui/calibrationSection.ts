@@ -1,9 +1,13 @@
 /**
  * Calibration UI (one-shot + 180° flip), shared by the menu page and the
- * onboarding wizard (#184: the wizard embeds this whole, unmodified —
- * no reduced step of its own — so it always matches Settings exactly).
- * The host supplies sensor access through `CalibrationOptions`; this
- * module owns only the DOM and the flow.
+ * onboarding wizard. The host supplies sensor access through
+ * `CalibrationOptions`; this module owns the DOM and the flow, and is the
+ * single source of truth for both halves' copy and behavior — Settings
+ * and the wizard show the exact same sensor-calibration and vehicle-zero
+ * UI, never a wizard-only reduced rebuild of either (#184). The wizard
+ * places the two halves on separate steps (design-review follow-up: one
+ * concept per step, matching the rest of the wizard) via `sensorElement`/
+ * `vehicleElement`; Settings shows both together via `element`.
  *
  * Modern appearance (#109) restyles this into two cards — sensor
  * calibration and vehicle zero (#83) — with a status pill each. Which
@@ -47,7 +51,17 @@ export interface CalibrationOptions {
 }
 
 export interface CalibrationSection {
+  /** Both halves together, as Settings → Calibration shows them. */
   element: HTMLElement;
+  /** Phone-sensor half alone (design-review follow-up): lets a caller —
+   * the onboarding wizard — place the two halves on separate steps
+   * instead of stacking both under one heading. Live in `element` too;
+   * moving either into a different parent (e.g. a wizard step's body)
+   * re-parents it away from `element`, which is fine — nothing here reads
+   * from `element`'s children after construction. */
+  sensorElement: HTMLElement;
+  /** Vehicle-zero half alone — see `sensorElement`. */
+  vehicleElement: HTMLElement;
   refresh(error?: string): void;
 }
 
@@ -256,6 +270,9 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   resetFlip();
   refreshCalibration();
 
+  let sensorElement: HTMLElement;
+  let vehicleElement: HTMLElement;
+
   if (modern) {
     // Two cards (#109): sensor calibration, then vehicle zero. Each
     // reuses the exact same elements/handlers built above — only the
@@ -293,8 +310,15 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
 
     calibrationBody.className = 'calibration-cards';
     calibrationBody.append(sensorCard, vehicleCard);
+    sensorElement = sensorCard;
+    vehicleElement = vehicleCard;
   } else {
-    calibrationBody.append(
+    // Two plain wrapper divs, not flat siblings (design-review follow-up):
+    // lets a caller split the two halves onto separate steps (the
+    // onboarding wizard) while `element` below still shows both together,
+    // identically to before — an unstyled div changes nothing visually.
+    const sensorSection = document.createElement('div');
+    sensorSection.append(
       sensorHeading,
       calibrationIntro,
       calibrationStatus,
@@ -304,6 +328,9 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       flipStatus,
       checkButton,
       clearButton,
+    );
+    const vehicleSection = document.createElement('div');
+    vehicleSection.append(
       vehicleHeading,
       vehicleIntro,
       vehicleStatus,
@@ -311,6 +338,9 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       vehicleCheckButton,
       vehicleClearButton,
     );
+    calibrationBody.append(sensorSection, vehicleSection);
+    sensorElement = sensorSection;
+    vehicleElement = vehicleSection;
   }
-  return { element: calibrationBody, refresh: refreshCalibration };
+  return { element: calibrationBody, sensorElement, vehicleElement, refresh: refreshCalibration };
 }

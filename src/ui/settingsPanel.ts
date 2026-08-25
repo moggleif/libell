@@ -123,7 +123,7 @@ export type SettingsFormElement = HTMLFormElement & {
 
 export interface SettingsFormOptions {
   /**
-   * Two reduced onboarding renderings, each just its own subset of the
+   * Reduced onboarding-only renderings, each just its own subset of the
    * same field elements the full form builds — never a wizard-only
    * duplicate. Omitted everywhere else (the menu's Settings page, the
    * embedded Modern tabs), which get the full form instead.
@@ -132,17 +132,34 @@ export interface SettingsFormOptions {
    * width front/rear — the three numbers most first-run users have on
    * hand from the registration document (see `measureHint` below).
    *
-   * 'general' (onboarding step, #189): Language, Theme, Appearance, Chime
-   * and Continuous audio guidance — the same fields the full form's
-   * General section has, reused as-is (Appearance moved into General
-   * alongside Theme; this mirrors that, whatever General currently holds).
+   * 'language' / 'appearance' / 'sound' (onboarding steps; #189 introduced
+   * these as one combined 'general' step, later split by a design review
+   * into one step per actual decision): Language stands alone — it has to
+   * resolve before the rest of the guide is legible, which none of the
+   * others need. Theme and Appearance are one "how it looks" decision, so
+   * they share a step. Chime and Continuous audio guidance are one "what
+   * it sounds like" decision, so they share a step. Splitting by what the
+   * fields are *for*, not just moving the same five fields onto more
+   * screens — grouping unrelated settings just because they used to share
+   * a Settings section header is what made them feel bundled together in
+   * the first place.
    *
-   * Either way, everything else (Vehicle type, Rear axle, Tolerance,
-   * Stability, Show lengths in — including the Advanced disclosure from
-   * #157, not just collapsed but absent) stays reachable from
-   * ☰ → Settings afterward.
+   * 'ramps' (onboarding step, design review): the ready-made ramp
+   * model/custom step-height picker and ramp count — what the ramp
+   * catalog and per-wheel step guidance actually run on, the thing that
+   * most sets this app's leveling apart from a plain bubble-level or
+   * sensor-only competitor. Reuses the same classic-style single
+   * `<select>` + chip editor Classic mode's own Ramps section uses, not
+   * Modern's scrolling brand-filtered catalog grid — proportionate to a
+   * reduced first-run step either way. Drain position stays Advanced-tier,
+   * reachable from Settings afterward, same as Tolerance/Stability.
+   *
+   * Any way, everything not listed above (Vehicle type, Rear axle,
+   * Tolerance, Stability, Show lengths in, Drain position — including the
+   * Advanced disclosure from #157, not just collapsed but absent) stays
+   * reachable from ☰ → Settings afterward.
    */
-  compact?: 'measurements' | 'general';
+  compact?: 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps';
 }
 
 export function createSettingsForm(
@@ -657,28 +674,40 @@ export function createSettingsForm(
     // Onboarding step (#156): the reduced subset only — no tabs, no
     // Advanced disclosure, no vehicle-type/axle selectors. A short note
     // pointing to ☰ is added by onboarding.ts itself, next to this form.
+    // No `actions` row (design-review follow-up): a wizard step already has
+    // its own Next/Skip/Back, and Next submits this form directly — a
+    // second, identically-styled "Save" button here only duplicated it and
+    // invited a "do I need to press this too?" moment. Save/Undo/Reset stay
+    // exactly as they were on the real Settings page (the only place still
+    // reachable by mouse/keyboard, since `actions`'s buttons are still
+    // fully wired — just unmounted here).
     form.append(
       measureHint,
       fieldEls.get('wheelbaseMm')!,
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
-      actions,
     );
-  } else if (compact === 'general') {
-    // Onboarding step (#189): Language, Theme, Appearance, Chime,
-    // Continuous audio guidance — the exact same field elements and
-    // handlers the full form's General section uses, in the same order
-    // (language still reloads immediately on change, theme/appearance
-    // still live-preview), just this subset appended.
-    form.append(
-      languageField,
-      themeField,
-      appearanceField,
-      soundField,
-      soundGuidanceField,
-      soundGuidanceHint,
-      actions,
-    );
+  } else if (compact === 'language') {
+    // Onboarding step (design review, split from #189's combined
+    // 'general'): Language alone — still reloads immediately on change,
+    // same as Settings. No `actions` row — see 'measurements' above.
+    form.append(languageField);
+  } else if (compact === 'appearance') {
+    // Onboarding step (design review): Theme + Appearance, the "how it
+    // looks" pair — still live-preview on change, same as Settings.
+    form.append(themeField, appearanceField);
+  } else if (compact === 'sound') {
+    // Onboarding step (design review): Chime + Continuous audio guidance,
+    // the "what it sounds like" pair.
+    form.append(soundField, soundGuidanceField, soundGuidanceHint);
+  } else if (compact === 'ramps') {
+    // Onboarding step (design review): the ready-made ramp model/custom
+    // step-height picker + ramp count — the same elements/handlers
+    // Classic mode's own Ramps section uses. `applyUnitEverywhere()` still
+    // hides rampCountField/rampHint for a caravan (it ramps one wheel),
+    // exactly as it already does on the full form — no extra logic needed
+    // here for that.
+    form.append(rampHint, stepsField, rampCountField);
   } else if (appearance === 'modern') {
     type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
     const tabsBar = document.createElement('div');
@@ -1113,6 +1142,11 @@ export function createSettingsForm(
   };
 
   undo.addEventListener('click', () => populate(saved));
+  // Full reset, still needs Save to persist: safe because `actions` (this
+  // button included) is only ever mounted on the real, full Settings page
+  // now — the compact onboarding forms don't render it (see the 'compact'
+  // branches below), so there is no reduced screen left where "reset
+  // everything" could look like it only reset what's on screen.
   reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
 
   form.resyncSoundFields = (sound) => {
