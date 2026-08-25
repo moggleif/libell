@@ -9,8 +9,13 @@
 export const MESSAGES = {
   en: {
     'topbar.install': 'Install',
-    'topbar.menu': 'Menu',
     'topbar.share': 'Share Libell',
+    // Bottom action bar (#161): settings/sound/help, aria-labels only —
+    // the settings/help buttons show fixed glyphs (☰ / ?), never text.
+    'bottombar.settings': 'Settings',
+    'bottombar.sound.mute': 'Mute sound',
+    'bottombar.sound.unmute': 'Unmute sound',
+    'bottombar.help': 'Help',
     'share.text': 'Level your motorhome with your phone.',
     'share.copied': 'Link copied!',
     'install.hint': 'Tap Share, then "Add to Home Screen".',
@@ -397,8 +402,11 @@ export const MESSAGES = {
   },
   sv: {
     'topbar.install': 'Installera',
-    'topbar.menu': 'Meny',
     'topbar.share': 'Dela Libell',
+    'bottombar.settings': 'Inställningar',
+    'bottombar.sound.mute': 'Stäng av ljud',
+    'bottombar.sound.unmute': 'Slå på ljud',
+    'bottombar.help': 'Hjälp',
     'share.text': 'Få husbilen i våg med telefonen.',
     'share.copied': 'Länken kopierad!',
     'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',

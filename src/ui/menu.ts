@@ -5,7 +5,7 @@
  * History API is integrated so the Android back button/gesture closes
  * the page, then the menu, and only then leaves the app.
  */
-import type { Calibration, LevelSettings, SensorSource } from '../domain/settings';
+import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
 import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
@@ -115,6 +115,10 @@ export interface MenuOptions {
   getCalibratedTilt(): Calibration | null;
   /** The active target preset's name (#122), or null for "Normal". */
   getActiveTargetName(): string | null;
+  /** Live soundOnLevel/soundGuidance (#161) — the bottom bar's mute
+   * toggle can change these outside this form, so the Settings page
+   * resyncs from here every time the menu (re)opens. */
+  getSoundPrefs(): SoundPrefs;
 }
 
 export interface Menu {
@@ -379,6 +383,9 @@ export function createMenu(options: MenuOptions): Menu {
     refreshSensorSource();
     refreshDiagnostics();
     refreshModernCards();
+    // The bottom bar's mute toggle (#161) can change soundOnLevel/
+    // soundGuidance while the menu is closed — resync every reopen.
+    settingsForm.resyncSoundFields?.(options.getSoundPrefs());
     render();
   }
 
@@ -404,6 +411,7 @@ export function createMenu(options: MenuOptions): Menu {
     refreshSensorSource();
     refreshDiagnostics();
     refreshModernCards();
+    settingsForm.resyncSoundFields?.(options.getSoundPrefs());
     // Modern's Calibration entry is a shortcut into Settings (#155) — jump
     // its shared instance to the Kalibrering tab every time it's opened.
     if (section === 'calibration') settingsForm.selectCalibrationTab?.();

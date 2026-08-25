@@ -5,6 +5,7 @@ import {
   formatStepHeightsList,
   parseStepHeightsList,
   parseSettings,
+  toggleMute,
 } from './settings';
 
 describe('parseSettings', () => {
@@ -188,5 +189,34 @@ describe('parseStepHeightsList', () => {
 
   it('round-trips through the display format', () => {
     expect(formatStepHeightsList(parseStepHeightsList('60;20;40'))).toBe('20; 40; 60');
+  });
+});
+
+describe('toggleMute (#161)', () => {
+  it('muting both on turns both off and remembers the prior values', () => {
+    const result = toggleMute({ soundOnLevel: true, soundGuidance: true }, null);
+    expect(result.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
+    expect(result.preMute).toEqual({ soundOnLevel: true, soundGuidance: true });
+  });
+
+  it('unmuting restores exactly the remembered prior values', () => {
+    const muted = toggleMute({ soundOnLevel: true, soundGuidance: true }, null);
+    const unmuted = toggleMute(muted.settings, muted.preMute);
+    expect(unmuted.settings).toEqual({ soundOnLevel: true, soundGuidance: true });
+    expect(unmuted.preMute).toBeNull();
+  });
+
+  it('never forces a setting back on that was already off before muting', () => {
+    const muted = toggleMute({ soundOnLevel: false, soundGuidance: true }, null);
+    expect(muted.preMute).toEqual({ soundOnLevel: false, soundGuidance: true });
+    const unmuted = toggleMute(muted.settings, muted.preMute);
+    expect(unmuted.settings).toEqual({ soundOnLevel: false, soundGuidance: true });
+  });
+
+  it('muting when both are already off is a harmless no-op restore', () => {
+    const muted = toggleMute({ soundOnLevel: false, soundGuidance: false }, null);
+    expect(muted.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
+    const unmuted = toggleMute(muted.settings, muted.preMute);
+    expect(unmuted.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
   });
 });
