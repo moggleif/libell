@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from './leveling';
+import { evaluateSteps, plannedSeverity } from './rampPlan';
 import { DEFAULT_SETTINGS } from './settings';
-import { createDisplayStabilizer, STATE_DWELL_MS, VALUE_DWELL_MS } from './stability';
+import { createDisplayStabilizer } from './stability';
 
 const G = 9.81;
 
@@ -25,6 +26,11 @@ const settings = {
   rampStepHeightsMm: [20, 40, 60],
 };
 
+// A first change in a direction, or one reversing the last adopted
+// direction, always pays the full rest dwell (#183) — this is "plenty of
+// time" for any single, isolated transition in these tests.
+const SETTLE_MS = settings.dwellRestMs + 100;
+
 /**
  * Frame-by-frame harness: each reading advances a fake clock, long enough
  * by default for every dwell to elapse, so a *sustained* reading always
@@ -33,7 +39,7 @@ const settings = {
 function createHarness() {
   const stabilize = createDisplayStabilizer();
   let now = 0;
-  return (liftMm: number, dtMs = STATE_DWELL_MS + 100) => {
+  return (liftMm: number, dtMs = SETTLE_MS) => {
     now += dtMs;
     const result = computeLeveling(gravityFor(rollForLift(liftMm, 1800), 0), settings);
     return stabilize(result, settings, now);
@@ -88,7 +94,7 @@ describe('createDisplayStabilizer', () => {
     expect(at(15, 16).isLevel).toBe(true);
     // Sustained past the band for the dwell: now it flips.
     at(26, 16);
-    expect(at(26, STATE_DWELL_MS + 100).isLevel).toBe(false);
+    expect(at(26, SETTLE_MS).isLevel).toBe(false);
   });
 
   it('shows every wheel green while the vehicle is level', () => {
@@ -109,7 +115,7 @@ describe('createDisplayStabilizer', () => {
     const at = createHarness();
     const sweep = [30, 25, 22, 19, 21, 17, 23, 24, 16, 15, 21, 26, 22, 18, 14];
     for (const liftMm of sweep) {
-      for (const dtMs of [16, 16, STATE_DWELL_MS + 100]) {
+      for (const dtMs of [16, 16, SETTLE_MS]) {
         const display = at(liftMm, dtMs);
         const allGreen = WHEEL_IDS.every((id) => display.wheels[id].severity === 'none');
         expect(display.isLevel).toBe(allGreen);
@@ -145,9 +151,159 @@ describe('createDisplayStabilizer', () => {
     // follow after the dwell, not freeze.
     const at = createHarness();
     expect(at(60).wheels.frontRight.displayMm).toBe(60);
-    at(40, VALUE_DWELL_MS / 2);
-    const settled = at(40, VALUE_DWELL_MS);
+    at(40, settings.dwellRestMs / 2);
+    const settled = at(40, settings.dwellRestMs);
     expect(settled.wheels.frontRight.displayMm).toBe(40);
+  });
+
+  /**
+   * #183: driving up a ramp is a continuous, sustained change, but every
+   * intermediate reading used to pay the full rest dwell (600 ms
+   * default) before showing — noticeably laggy to watch while actually
+   * adjusting. Once a change has *just* been adopted, a further change
+   * in the same direction only needs the much shorter motion dwell; a
+   * fresh direction (including the very first change, or one reversing
+   * the last) still pays the full rest dwell, so the noise guard for
+   * genuine jitter (which doesn't hold one direction for two changes in
+   * a row) is unaffected.
+   */
+  it('keeps up with a sustained one-directional change (driving up a ramp), but not a fresh or reversed one', () => {
+    const at = createHarness();
+    expect(settle(at, 200).wheels.frontRight.displayMm).toBe(200);
+
+    // First step down: a fresh direction — full rest dwell, unchanged
+    // from before this feature existed.
+    expect(settle(at, 150).wheels.frontRight.displayMm).toBe(150);
+
+    // A further step, same direction, fed at sensor rate: total elapsed
+    // is well under the rest dwell, but the figure keeps up regardless —
+    // this is the "still climbing the ramp" case.
+    at(100, 50);
+    const quick = at(100, settings.dwellMotionMs + 20);
+    expect(quick.wheels.frontRight.displayMm).toBe(100);
+
+    // A change reversing direction, fed just as quickly, does NOT get the
+    // fast path — it needs the full rest dwell like any fresh direction.
+    at(120, 50);
+    const reversed = at(120, settings.dwellMotionMs + 20);
+    expect(reversed.wheels.frontRight.displayMm).toBe(100); // not yet
+    expect(settle(at, 120).wheels.frontRight.displayMm).toBe(120); // given time, it does adopt
+  });
+
+  it('does not let oscillating jitter borrow the fast motion dwell', () => {
+    // Jitter alternates direction every reading, so — with nothing yet
+    // adopted to compare against — it can never satisfy "the same
+    // direction as the last adopted change": every reading here is fed
+    // faster than the motion dwell (150 ms default), which would have
+    // been enough to adopt *if* this were a sustained one-directional
+    // change; staying frozen past that proves the slow, full rest-dwell
+    // path is the one actually being used.
+    const at = createHarness();
+    expect(settle(at, 50).wheels.frontRight.displayMm).toBe(50);
+    const dtMs = settings.dwellMotionMs + 20;
+    const bounce = [80, 20, 80]; // 3 × dtMs is still short of the rest dwell
+    expect(3 * dtMs).toBeLessThan(settings.dwellRestMs);
+    for (const liftMm of bounce) {
+      expect(at(liftMm, dtMs).wheels.frontRight.displayMm).toBe(50);
+    }
+  });
+
+  /**
+   * Real-world worry (#183 follow-up): a heavy vehicle with a manual
+   * gearbox often lurches forward on clutch engagement and settles back a
+   * few mm on suspension rebound — genuine rocking while driving onto a
+   * ramp, not a clean one-directional climb. Every rebound is a direction
+   * *reversal* relative to the last adopted reading, so — same rule as
+   * oscillating jitter above — it never qualifies for the fast motion
+   * dwell; a lurch peak can never be mistaken for the settled figure.
+   */
+  it('rocking on the ramp (manual-gearbox lurch) never snaps to a bounce peak', () => {
+    const at = createHarness();
+    expect(settle(at, 150).wheels.frontRight.displayMm).toBe(150); // parked at the ramp
+
+    // Clutch-engagement jitter before any real progress: small
+    // back-and-forth well inside the dead band — no change registers.
+    for (const liftMm of [148, 151, 147, 150]) {
+      expect(at(liftMm, 200).wheels.frontRight.displayMm).toBe(150);
+    }
+
+    // The vehicle actually lurches forward onto the ramp — a real,
+    // sustained change — and settles at 100 after the ordinary (full,
+    // first-direction) rest dwell.
+    expect(settle(at, 100).wheels.frontRight.displayMm).toBe(100);
+
+    // Suspension rebound immediately nudges it back up a few mm — a
+    // reversal. Fed faster than the motion dwell, it must NOT snap
+    // through: a reversal always pays the full rest dwell.
+    const rebound = at(108, settings.dwellMotionMs + 20);
+    expect(rebound.wheels.frontRight.displayMm).toBe(100); // not the bounce peak
+  });
+
+  /**
+   * Field regression: a screenshot (v1.0.0-CR180) showed one corner as
+   * "Klart" (green check, 43 mm) and the diagonal corner as a red X,
+   * "Ingen ramp" ("no ramp reaches this wheel"), 0 mm — a wheel that by
+   * its own displayed number needs no lift at all, flagged as needing one
+   * a ramp can't provide. Each field (mm, step, color) was individually
+   * "correct" per its own dwell, but the mm figure and the shown plan
+   * updated on different clocks than the color, so mid-transition they
+   * could disagree. The fix: severity is now a pure function of the
+   * *exact* shown plan + displayed mm figures — recomputing it from
+   * those two (the same inputs the UI renders) must equal what the
+   * stabilizer actually returned, on every single frame, never just at
+   * rest.
+   */
+  it('never lets a wheel card show a color the shown mm/step figures disagree with (field regression: screenshot v1.0.0-CR180)', () => {
+    const stabilize = createDisplayStabilizer();
+    const wheel = (liftMm: number) => ({ liftMm, stepMm: 0 });
+    const resultFor = (fl: number, fr: number, rl: number, rr: number) => ({
+      rollDeg: 0,
+      pitchDeg: 0,
+      isLevel: false,
+      wheels: {
+        frontLeft: wheel(fl),
+        frontRight: wheel(fr),
+        rearLeft: wheel(rl),
+        rearRight: wheel(rr),
+      },
+    });
+
+    // A wheel needing the tallest step, then a sudden clear back near
+    // level — fed at sensor rate (16 ms) so most frames land mid-dwell,
+    // exactly where the old, independently-clocked severity could drift
+    // from the mm figure and shown step it was meant to describe.
+    const frames: Array<[number, number, number, number, number]> = [
+      [0, 150, 30, 118, 1600], // settle: a real "needs a big step" state
+      [0, 150, 30, 118, 1600],
+      [0, 0, 30, 118, 16],
+      [0, 0, 30, 118, 16],
+      [0, 0, 30, 118, 200],
+      [0, 0, 30, 118, 400],
+      [0, 0, 30, 118, 700],
+      [0, 0, 30, 118, 1600],
+      [0, 8, 5, 20, 16],
+      [0, 8, 5, 20, 700],
+      [0, 8, 5, 20, 1600],
+    ];
+
+    let now = 0;
+    for (const [fl, fr, rl, rr, dtMs] of frames) {
+      now += dtMs;
+      const display = stabilize(resultFor(fl, fr, rl, rr), settings, now);
+
+      const shownSteps = {} as Record<(typeof WHEEL_IDS)[number], number>;
+      const shownMm = {} as Record<(typeof WHEEL_IDS)[number], number>;
+      for (const id of WHEEL_IDS) {
+        shownSteps[id] = display.wheels[id].stepMm;
+        shownMm[id] = display.wheels[id].displayMm;
+      }
+      const deficits = evaluateSteps(shownSteps, shownMm, settings).deficits;
+
+      for (const id of WHEEL_IDS) {
+        const expected = plannedSeverity(shownSteps[id], deficits[id], shownMm[id], settings);
+        expect(display.wheels[id].severity).toBe(expected);
+      }
+    }
   });
 });
 

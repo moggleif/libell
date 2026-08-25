@@ -185,6 +185,12 @@ export const MESSAGES = {
     'settings.trackRear': 'Track width rear',
     'settings.tolerance': 'Tolerance',
     'settings.stability': 'Stability',
+    'settings.dwellRest': 'Response delay (ms)',
+    'settings.dwellMotion': 'Response delay while adjusting (ms)',
+    'settings.dwell.hint':
+      'How long a reading must hold steady before the shown number changes. The second ' +
+      "value applies only right after a change, while you're actively adjusting (e.g. " +
+      "driving up a ramp), so the live number doesn't lag behind.",
     'settings.vehicle': 'Vehicle',
     'vehicle.motorhome': 'Motorhome',
     'vehicle.caravan': 'Caravan',
@@ -558,6 +564,12 @@ export const MESSAGES = {
     'settings.trackRear': 'Spårvidd bak',
     'settings.tolerance': 'Tolerans',
     'settings.stability': 'Stabilitet',
+    'settings.dwellRest': 'Svarsfördröjning (ms)',
+    'settings.dwellMotion': 'Svarsfördröjning vid justering (ms)',
+    'settings.dwell.hint':
+      'Hur länge en mätning måste hålla i sig innan den visade siffran ändras. Det andra ' +
+      'värdet gäller bara direkt efter en ändring, medan du aktivt justerar (t.ex. kör upp ' +
+      'på en ramp), så att siffran inte släpar efter.',
     'settings.vehicle': 'Fordon',
     'vehicle.motorhome': 'Husbil',
     'vehicle.caravan': 'Husvagn',

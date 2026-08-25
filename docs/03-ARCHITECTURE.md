@@ -54,7 +54,22 @@ with the vehicle verifiably level, stored sensor-corrected) are kept separately 
 their sum is subtracted from every reading. Output: per-wheel
 `{liftMm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
 display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
-band ("Stability") to the shown mm figure, step, wheel color and level status.
+band ("Stability") to the shown mm figure and, on the motorhome screen, to which
+ramp plan is shown, each held for `dwellRestMs` (default 600) before it changes.
+Wheel color/glyph and `isLevel` are deliberately _not_ a third value with its own dead
+band and dwell: they are recomputed every frame straight from that tick's
+already-stabilized mm figure and plan, so the color can never lag or lead the numbers
+it is describing (field regression, screenshot v1.0.0-CR180 — "0 mm" next to a red "no
+ramp reaches this wheel"). A wheel's live mm figure (and the caravan jockey's signed
+mm) additionally gets an adaptive dwell (#183, `stabilizeNumber`): once a change has
+just been adopted, a further change in the _same direction_ — driving up a ramp,
+cranking the jockey — only needs the much shorter `dwellMotionMs` (default 150)
+instead of paying the full rest dwell on every intermediate reading; a fresh
+direction, or one reversing the last, still pays `dwellRestMs`, so oscillating noise
+(which never holds one direction twice) can't borrow the fast path. The ramp
+plan/step keeps the fixed rest dwell throughout — a discrete recommendation, not a
+live readout, so it shouldn't change mid-climb. Both dwell figures are `LevelSettings`
+fields, editable under Settings → Advanced.
 
 The steps the motorhome screen actually shows come from `rampPlan.ts` (ADR 0011): an
 exhaustive search assigns the owned ramps (`rampCount`, a boggie pair costs two) to

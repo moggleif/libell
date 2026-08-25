@@ -148,8 +148,21 @@ describe('settings form — Advanced disclosure (#157)', () => {
     expect(advanced(form).open).toBe(false);
     expect(advanced(form).querySelector('input[name="toleranceMm"]')).not.toBeNull();
     expect(advanced(form).querySelector('input[name="stabilityMm"]')).not.toBeNull();
+    expect(advanced(form).querySelector('input[name="dwellRestMs"]')).not.toBeNull();
+    expect(advanced(form).querySelector('input[name="dwellMotionMs"]')).not.toBeNull();
     // Fields that stay visible by default are outside the disclosure.
     expect(advanced(form).querySelector('input[name="wheelbaseMm"]')).toBeNull();
+  });
+
+  it('round-trips edited response-delay fields through save, not unit-converted (#183)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classic, onSave);
+    input(form, 'dwellRestMs').value = '500';
+    input(form, 'dwellMotionMs').value = '120';
+    form.dispatchEvent(new Event('input'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].dwellRestMs).toBe(500);
+    expect(onSave.mock.calls[0]![0].dwellMotionMs).toBe(120);
   });
 
   it('never starts expanded, even when a field inside it holds a non-default value', () => {

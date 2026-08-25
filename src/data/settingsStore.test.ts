@@ -47,6 +47,8 @@ describe('settingsStore', () => {
       drainPosition: 'right' as const,
       toleranceMm: 25,
       stabilityMm: 2,
+      dwellRestMs: 700,
+      dwellMotionMs: 200,
       displayUnit: 'mm' as const,
       soundOnLevel: false,
       soundGuidance: false,

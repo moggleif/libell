@@ -120,7 +120,12 @@ URL and must keep working with no signal.
   is listed, e.g. "20; 40; 60"), Number of ramps (R27), Waste-water drain (R27),
   Tolerance (mm a wheel may sit below the highest and
   still count as level), Stability (display hysteresis dead band in mm; 0 disables
-  it), display unit (R14), language (R13), theme (R15) or level chime (R16) and save
+  it), Response delay (ms a reading must hold before the shown mm figure/plan changes)
+  and Response delay while adjusting (ms, #183: a shorter delay used only for a wheel's
+  live mm figure right after a change has just been adopted and a further change keeps
+  the same direction — e.g. still driving up a ramp — never for the very first change or
+  one reversing direction, so it can never weaken the noise guard above), display unit
+  (R14), language (R13), theme (R15) or level chime (R16) and save
 - **Then** the values persist across app restarts (`localStorage`) and immediately affect
   the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
   `docs/03-ARCHITECTURE.md` § Settings). Not the first-run wizard, which keeps its own
