@@ -478,6 +478,28 @@ export function createSettingsForm(
   const rampsHeading = sectionHeading();
   const displayHeading = sectionHeading();
 
+  // --- Advanced disclosure (#157): tolerance/stability/appearance/audio
+  // preferences, tuned rarely if ever, behind a single tap — always closed
+  // on open, in Classic and in Modern's Vehicle tab alike. Never
+  // auto-expanded for a customized value: the owner's explicit call is
+  // that a user's own settings are personal choices they're expected to
+  // remember, and with no test cohort to validate a "smarter" default the
+  // simplest rule wins. Built once, shared by both branches below — same
+  // field elements, just appended inside this wrapper instead of flat.
+  const advancedDetails = document.createElement('details');
+  advancedDetails.className = 'settings__advanced';
+  const advancedSummary = document.createElement('summary');
+  advancedSummary.className = 'settings__advanced-summary';
+  advancedDetails.append(
+    advancedSummary,
+    fieldEls.get('toleranceMm')!,
+    fieldEls.get('stabilityMm')!,
+    appearanceField,
+    soundField,
+    soundGuidanceField,
+    soundGuidanceHint,
+  );
+
   // ============================================================
   // Modern (#108): three tabs (Fordon/Klossar/Kalibrering) instead
   // of one long page. Built only when appearance === 'modern'; every
@@ -541,7 +563,8 @@ export function createSettingsForm(
     };
     form.selectCalibrationTab = () => selectTab?.('calibration');
 
-    // --- Fordon tab: today's vehicle/axle/measurement fields.
+    // --- Fordon tab: today's vehicle/axle/measurement fields visible by
+    // default; tolerance/stability/appearance/audio behind Advanced (#157).
     vehiclePanel.append(
       vehicleField,
       axleField,
@@ -549,15 +572,9 @@ export function createSettingsForm(
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
-      sectionHeading(),
-      fieldEls.get('toleranceMm')!,
-      fieldEls.get('stabilityMm')!,
       unitField,
       themeField,
-      appearanceField,
-      soundField,
-      soundGuidanceField,
-      soundGuidanceHint,
+      advancedDetails,
       actions,
     );
 
@@ -744,7 +761,8 @@ export function createSettingsForm(
       calibrationTab.textContent = t('menu.calibration');
     });
   } else {
-    // --- Classic (unchanged): one flat page, exactly as before #108.
+    // --- Classic: one flat page. Tolerance/stability/appearance/audio
+    // move behind Advanced (#157); everything else is unchanged from #108.
     form.append(
       vehicleHeading,
       vehicleField,
@@ -759,14 +777,9 @@ export function createSettingsForm(
       drainField,
       rampHint,
       displayHeading,
-      fieldEls.get('toleranceMm')!,
-      fieldEls.get('stabilityMm')!,
       unitField,
       themeField,
-      appearanceField,
-      soundField,
-      soundGuidanceField,
-      soundGuidanceHint,
+      advancedDetails,
       actions,
     );
   }
@@ -805,6 +818,7 @@ export function createSettingsForm(
     vehicleHeading.textContent = t('settings.section.vehicle');
     rampsHeading.textContent = t('settings.section.ramps');
     displayHeading.textContent = t('settings.section.display');
+    advancedSummary.textContent = t('settings.advanced');
     save.textContent = t('settings.save');
     undo.textContent = t('settings.undo');
     reset.textContent = t('settings.reset');
