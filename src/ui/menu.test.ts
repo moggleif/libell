@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
@@ -60,11 +60,17 @@ function classicSettings(): LevelSettings {
 // this file used to cover, and infoMenu.test.ts / sensorPage.test.ts for
 // Diagnostics/introduction/External sensor, all moved off this menu.
 describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
-  it('renders a flat item list with exactly Settings, Calibration, Targets', () => {
+  it('renders a flat item list with General, Calibration, Vehicle, Ramps, Targets — Modern tab order', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
-    menu.open('settings');
+    menu.open('general');
     const items = [...menu.element.querySelectorAll('.menu__item')].map((i) => i.textContent);
-    expect(items).toEqual([t('menu.settings'), t('menu.calibration'), t('menu.targets')]);
+    expect(items).toEqual([
+      t('settings.general'),
+      t('menu.calibration'),
+      t('settings.tab.vehicle'),
+      t('settings.tab.ramps'),
+      t('menu.targets'),
+    ]);
     expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(0);
     expect(menu.element.querySelectorAll('.menu__row')).toHaveLength(0);
     // Diagnostics, the introduction relaunch, External sensor, Feedback
@@ -81,21 +87,42 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     }
   });
 
-  it('opens Settings straight from closed (depth 0 → 2)', () => {
+  it('opens General straight from closed (depth 0 → 2)', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     expect(menu.isOpen()).toBe(false);
-    menu.open('settings');
+    menu.open('general');
     expect(menu.isOpen()).toBe(true);
     expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
   });
 
-  it('opens Calibration and Targets as their own standalone pages, not tabs', () => {
+  it('General/Vehicle/Ramps share one settingsForm instance, swapped per page — no tabs', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
-    menu.open('settings');
+    menu.open('general');
     const settingsForm = menu.element.querySelector('.menu-page__body form.settings__form');
     expect(settingsForm).toBeTruthy();
     expect(menu.element.querySelector('.settings__tabs')).toBeNull(); // Classic has no tabs
+    expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain(
+      t('settings.language'),
+    );
 
+    menu.open('vehicle');
+    expect(menu.element.querySelector('.menu-page__body form.settings__form')).toBeTruthy();
+    expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain(
+      t('settings.vehicle'),
+    );
+    expect(menu.element.querySelector('.menu-page__body')?.textContent).not.toContain(
+      t('settings.language'),
+    );
+
+    menu.open('ramps');
+    expect(menu.element.querySelector('.menu-page__body form.settings__form')).toBeTruthy();
+    expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain(
+      t('settings.ramp'),
+    );
+  });
+
+  it('opens Calibration and Targets as their own standalone pages, not tabs', () => {
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     menu.open('calibration');
     const calibrationBody = menu.element.querySelector('.menu-page__body');
     expect(calibrationBody?.querySelector('form.settings__form')).toBeNull();
@@ -106,12 +133,30 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     );
   });
 
-  it('closes back to the main screen after a successful Save (#159)', () => {
+  it('closes back to the main screen after a successful Save from the Vehicle page (#159)', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
-    menu.open('settings');
+    menu.open('vehicle');
     expect(menu.isOpen()).toBe(true);
     menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(menu.isOpen()).toBe(false);
+  });
+
+  it('Save from the Ramps page persists Vehicle fields edited earlier, not the stale snapshot (#108 follow-up)', () => {
+    const onSettingsSaved = vi.fn();
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings(), onSettingsSaved }));
+    menu.open('vehicle');
+    const wheelbase = menu.element.querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
+    wheelbase.value = '4200';
+    wheelbase.dispatchEvent(new Event('input', { bubbles: true }));
+    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSettingsSaved.mock.calls[0]![0].wheelbaseMm).toBe(4200);
+
+    // Reopening Ramps re-mounts the same shared form — saving from there
+    // (without touching wheelbase again) must not clobber the value just
+    // saved from Vehicle back to its pre-edit snapshot.
+    menu.open('ramps');
+    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSettingsSaved.mock.calls[1]![0].wheelbaseMm).toBe(4200);
   });
 
   it('attach(): first click opens the drawer, second click closes it', () => {
@@ -121,7 +166,7 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
 
     button.click();
     expect(menu.isOpen()).toBe(true);
-    expect(menu.element.querySelectorAll('.menu__item').length).toBe(3);
+    expect(menu.element.querySelectorAll('.menu__item').length).toBe(5);
 
     button.click();
     expect(menu.isOpen()).toBe(false);
@@ -133,7 +178,7 @@ describe('Settings form resyncs sound fields on every reopen (#161)', () => {
     return [...menu.element.querySelectorAll<HTMLInputElement>('.settings__checkbox')];
   }
 
-  it('reflects a mute toggled outside the menu (bottom bar) the next time Settings opens', () => {
+  it('reflects a mute toggled outside the menu (bottom bar) the next time General opens', () => {
     let soundOnLevel = true;
     let soundGuidance = true;
     const menu = createMenu(
@@ -142,7 +187,7 @@ describe('Settings form resyncs sound fields on every reopen (#161)', () => {
         getSoundPrefs: () => ({ soundOnLevel, soundGuidance }),
       }),
     );
-    menu.open('settings');
+    menu.open('general');
     const [chime, guidance] = soundCheckboxes(menu);
     expect(chime!.checked).toBe(true);
     expect(guidance!.checked).toBe(true);
@@ -151,7 +196,7 @@ describe('Settings form resyncs sound fields on every reopen (#161)', () => {
     // closed — the host's getSoundPrefs() now answers differently.
     soundOnLevel = false;
     soundGuidance = false;
-    menu.open('settings');
+    menu.open('general');
     const [chimeAfter, guidanceAfter] = soundCheckboxes(menu);
     expect(chimeAfter!.checked).toBe(false);
     expect(guidanceAfter!.checked).toBe(false);

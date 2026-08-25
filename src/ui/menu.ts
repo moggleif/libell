@@ -1,8 +1,8 @@
 /**
  * ☰ menu (Classic appearance only, screen-cleanup follow-up): a flat
- * navigation list — Settings, Calibration, Targets — each opening a
- * full-screen page with a ‹ Back header, the pattern users know from
- * every phone app. The History API is integrated so the Android back
+ * navigation list — General, Calibration, Vehicle, Ramps, Targets — each
+ * opening a full-screen page with a ‹ Back header, the pattern users know
+ * from every phone app. The History API is integrated so the Android back
  * button/gesture closes the page, then the drawer, and only then leaves
  * the app.
  *
@@ -11,9 +11,19 @@
  * tabs, no drawer). Help, About, Feedback, Diagnostics and the introduction
  * relaunch live on `infoMenu.ts`'s own page, reached from "?" — and
  * External sensor lives on `sensorPage.ts`'s, reached from the top-right
- * sensor-status icon — both universal, reachable from Classic too. Classic
- * has no tabs to fold Calibration/Targets into, so it keeps this drawer
- * for just those three, unchanged in spirit from before this cleanup.
+ * sensor-status icon — both universal, reachable from Classic too.
+ *
+ * General/Vehicle/Ramps (design review, following up on #108's Modern
+ * tabs and the onboarding wizard's own step split): one settings form used
+ * to cover all three at once as a single flat drawer page — bundled
+ * because the fields historically shared a Settings section heading, not
+ * because they're one decision. `createSettingsForm`'s `splitPages` option
+ * builds the same three groupings Modern's tabs already use and exposes
+ * them as `classicPages`; this drawer swaps whichever one is the shared
+ * form's mounted content right before showing it (see `showPage` below),
+ * so Save from any of the three still persists all three, same as
+ * switching Modern's tabs does. Same reuse principle as Calibration/
+ * Targets below — one real component, reparented, never a copy.
  */
 import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
@@ -25,7 +35,7 @@ import { createTargetsSection } from './targetsSection';
 import { t } from './i18n';
 import { setVisible } from './motion';
 
-export type MenuSection = 'settings' | 'calibration' | 'targets';
+export type MenuSection = 'general' | 'calibration' | 'vehicle' | 'ramps' | 'targets';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -228,6 +238,12 @@ export function createMenu(options: MenuOptions): Menu {
   // opened. Two pushState calls still land (0->1->2), so back/gesture
   // behavior is unchanged.
   function showPage(section: MenuSection): void {
+    // General/Vehicle/Ramps share one settingsForm instance (see the file
+    // header comment) — swap its mounted content to the requested page
+    // before it's shown, same as Modern's own tab switch.
+    if (section === 'general' || section === 'vehicle' || section === 'ramps') {
+      settingsForm.replaceChildren(settingsForm.classicPages![section]);
+    }
     if (depth === 0) {
       history.pushState({ libellMenu: 1 }, '');
       depth = 1;
@@ -279,7 +295,9 @@ export function createMenu(options: MenuOptions): Menu {
     if (event.target === backdrop) goBack();
   });
 
-  // --- Settings ---
+  // --- Settings: General / Vehicle / Ramps, one shared form split into
+  // three drawer pages (see the file header comment) — order matches
+  // Modern's tabs (General, Calibration, Fordon, Klossar, Targets).
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
     // Return to the main screen after a successful Save reached via ☰
@@ -289,13 +307,17 @@ export function createMenu(options: MenuOptions): Menu {
       closeAll();
     },
     options,
+    { splitPages: true },
   );
-  addSection('settings', t('menu.settings'), settingsForm);
+  addSection('general', t('settings.general'), settingsForm);
 
   // --- Calibration (one-shot + flip) ---
   const calibrationSection = createCalibrationSection(options);
   const refreshCalibration = calibrationSection.refresh;
   addSection('calibration', t('menu.calibration'), calibrationSection.element);
+
+  addSection('vehicle', t('settings.tab.vehicle'), settingsForm);
+  addSection('ramps', t('settings.tab.ramps'), settingsForm);
 
   // --- Targets (#122, ADR 0013) ---
   const targetsSection = createTargetsSection(options);
