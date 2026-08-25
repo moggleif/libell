@@ -5,43 +5,53 @@ import { setLanguage } from './i18n';
 
 setLanguage('en');
 
-describe('createSensorStatusIndicator (#129)', () => {
-  it('is hidden while the phone is the active source (regression guard: nothing added in phone mode)', () => {
-    const indicator = createSensorStatusIndicator(vi.fn());
-    indicator.update('phone', 'granted');
+describe('createSensorStatusIndicator (#129, screen-cleanup follow-up)', () => {
+  it('is hidden entirely when Web Bluetooth is unsupported — never a silently broken option', () => {
+    const indicator = createSensorStatusIndicator(false, vi.fn());
+    indicator.update('easylevel', 'granted');
     expect(indicator.element.hidden).toBe(true);
   });
 
-  it('shows a neutral connected state once an external source is granted', () => {
-    const indicator = createSensorStatusIndicator(vi.fn());
-    indicator.update('easylevel', 'granted');
+  it('shows a neutral "tap to connect" state while the phone is the active source, once Web Bluetooth exists', () => {
+    const indicator = createSensorStatusIndicator(true, vi.fn());
     expect(indicator.element.hidden).toBe(false);
+    indicator.update('phone', 'granted');
+    expect(indicator.element.hidden).toBe(false);
+    expect(indicator.element.classList.contains('sensor-status--connected')).toBe(false);
+    expect(indicator.element.classList.contains('sensor-status--disconnected')).toBe(false);
+    expect(indicator.element.getAttribute('aria-label')).toContain('tap to connect');
+  });
+
+  it('shows a distinct connected state once an external source is granted', () => {
+    const indicator = createSensorStatusIndicator(true, vi.fn());
+    indicator.update('easylevel', 'granted');
     expect(indicator.element.classList.contains('sensor-status--connected')).toBe(true);
     expect(indicator.element.classList.contains('sensor-status--disconnected')).toBe(false);
     expect(indicator.element.getAttribute('aria-label')).toContain('connected');
   });
 
   it('switches to a clearly different (disconnected) state when the connection is lost', () => {
-    const indicator = createSensorStatusIndicator(vi.fn());
+    const indicator = createSensorStatusIndicator(true, vi.fn());
     indicator.update('easylevel', 'granted');
     indicator.update('easylevel', 'disconnected');
-    expect(indicator.element.hidden).toBe(false);
     expect(indicator.element.classList.contains('sensor-status--disconnected')).toBe(true);
     expect(indicator.element.classList.contains('sensor-status--connected')).toBe(false);
     expect(indicator.element.getAttribute('aria-label')?.toLowerCase()).toContain('lost');
   });
 
-  it('hides again once the source falls back to the phone (explicit disconnect)', () => {
-    const indicator = createSensorStatusIndicator(vi.fn());
+  it('returns to the neutral "tap to connect" state, not hidden, once the source falls back to the phone', () => {
+    const indicator = createSensorStatusIndicator(true, vi.fn());
     indicator.update('easylevel', 'disconnected');
     indicator.update('phone', 'granted');
-    expect(indicator.element.hidden).toBe(true);
+    expect(indicator.element.hidden).toBe(false);
+    expect(indicator.element.classList.contains('sensor-status--connected')).toBe(false);
+    expect(indicator.element.classList.contains('sensor-status--disconnected')).toBe(false);
   });
 
-  it('tapping the indicator navigates to the sensor settings page', () => {
+  it('tapping the indicator navigates to the External sensor page — the only entry point now (screen-cleanup follow-up)', () => {
     const onClick = vi.fn();
-    const indicator = createSensorStatusIndicator(onClick);
-    indicator.update('easylevel', 'granted');
+    const indicator = createSensorStatusIndicator(true, onClick);
+    indicator.update('phone', 'granted');
     indicator.element.click();
     expect(onClick).toHaveBeenCalledOnce();
   });

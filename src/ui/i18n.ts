@@ -31,6 +31,11 @@ export const MESSAGES = {
     // away in the "External sensor" menu page.
     'sensorStatus.connected': 'External sensor connected',
     'sensorStatus.disconnected': 'External sensor connection lost — tap for details',
+    // Screen-cleanup follow-up: shown whenever the phone's own sensor is
+    // active but an external one is available to connect — the only
+    // remaining entry point to External sensor now that the ☰ menu no
+    // longer carries it.
+    'sensorStatus.idle': 'External sensor — tap to connect',
 
     'menu.title': 'Menu',
     'menu.close': 'Close menu',
@@ -422,6 +427,7 @@ export const MESSAGES = {
     // external source (today: EasyLevel) is active — never in phone mode.
     'sensorStatus.connected': 'Extern sensor ansluten',
     'sensorStatus.disconnected': 'Extern sensor — anslutningen bröts, tryck för detaljer',
+    'sensorStatus.idle': 'Extern sensor — tryck för att ansluta',
 
     'lamp.setup': '⚠ Mått',
     'lamp.setup.title':

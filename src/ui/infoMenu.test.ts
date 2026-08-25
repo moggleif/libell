@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
-import { createInfoPage } from './infoMenu';
+import { describe, expect, it, vi } from 'vitest';
+import { createInfoPage, type InfoPageOptions } from './infoMenu';
 import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS } from '../domain/settings';
@@ -49,9 +49,15 @@ function makeMenuOptions(): MenuOptions {
   };
 }
 
+function makeOptions(openOnboarding = vi.fn()): InfoPageOptions {
+  // MenuOptions is a superset of DiagnosticsOptions — reused as-is, same
+  // pattern main.ts uses for its one shared options bag.
+  return { diagnostics: makeMenuOptions(), openOnboarding };
+}
+
 describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
   it('starts closed, with the Help tab active', () => {
-    const info = createInfoPage();
+    const info = createInfoPage(makeOptions());
     expect(info.isOpen()).toBe(false);
     expect(info.element.hasAttribute('hidden')).toBe(true);
     const helpTab = info.element.querySelector<HTMLElement>('[data-tab="help"]');
@@ -59,7 +65,7 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
   });
 
   it('opens on the first click of an attached button, closes on the second', () => {
-    const info = createInfoPage();
+    const info = createInfoPage(makeOptions());
     const button = document.createElement('button');
     info.attach(button);
 
@@ -72,7 +78,7 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
   });
 
   it('the ✕ button closes the page', () => {
-    const info = createInfoPage();
+    const info = createInfoPage(makeOptions());
     const button = document.createElement('button');
     info.attach(button);
     button.click();
@@ -82,8 +88,19 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     expect(info.isOpen()).toBe(false);
   });
 
+  it('shows four tabs — Help, About, Feedback, Diagnostics, in that order (screen-cleanup follow-up)', () => {
+    const info = createInfoPage(makeOptions());
+    const tabs = [...info.element.querySelectorAll<HTMLElement>('.settings__tab')];
+    expect(tabs.map((tab) => tab.dataset.tab)).toEqual([
+      'help',
+      'about',
+      'feedback',
+      'diagnostics',
+    ]);
+  });
+
   it('switching tabs shows the matching content and updates the header title', () => {
-    const info = createInfoPage();
+    const info = createInfoPage(makeOptions());
     const button = document.createElement('button');
     info.attach(button);
     button.click();
@@ -101,10 +118,18 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     feedbackTab.click();
     expect(info.element.querySelector('.menu-page__title')?.textContent).toBe(t('menu.feedback'));
     expect(info.element.querySelector('form')).not.toBeNull();
+
+    const diagnosticsTab = info.element.querySelector<HTMLButtonElement>(
+      '[data-tab="diagnostics"]',
+    )!;
+    diagnosticsTab.click();
+    expect(info.element.querySelector('.menu-page__title')?.textContent).toBe(
+      t('menu.diagnostics'),
+    );
   });
 
   it('reopening always lands back on the Help tab, even after leaving on a different one', () => {
-    const info = createInfoPage();
+    const info = createInfoPage(makeOptions());
     const button = document.createElement('button');
     info.attach(button);
     button.click();
@@ -116,6 +141,30 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     );
   });
 
+  // The introduction relaunch (screen-cleanup follow-up): used to be its
+  // own row in the ☰ menu's "OTHER" list; now a button at the top of the
+  // Help tab, closing this page first so the wizard isn't shown behind it.
+  it('shows a "Show introduction" button at the top of the Help tab that closes this page and relaunches onboarding', () => {
+    const openOnboarding = vi.fn();
+    const info = createInfoPage(makeOptions(openOnboarding));
+    const button = document.createElement('button');
+    info.attach(button);
+    button.click();
+
+    // Help is always the first tab panel added.
+    const helpPanel = info.element.querySelectorAll<HTMLElement>('.settings__tabpanel')[0]!;
+    const introButton = [...info.element.querySelectorAll('button')].find(
+      (b) => b.textContent === t('menu.intro'),
+    )!;
+    expect(introButton).toBeDefined();
+    // It's the first thing inside the Help panel, above the fact list.
+    expect(helpPanel.firstElementChild).toBe(introButton);
+
+    introButton.click();
+    expect(info.isOpen()).toBe(false);
+    expect(openOnboarding).toHaveBeenCalledOnce();
+  });
+
   // The bug this component fixes (screen-cleanup follow-up): a prior
   // version reached Help/About/Feedback through the ☰ Settings menu's own
   // shared history depth, so its back button could pop through and reveal
@@ -124,7 +173,7 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
   // must never affect an unrelated menu instance's own open/close state.
   it('never opens or affects an unrelated ☰ Settings menu instance', () => {
     const menu = createMenu(makeMenuOptions());
-    const info = createInfoPage();
+    const info = createInfoPage(makeOptions());
     const helpButton = document.createElement('button');
     info.attach(helpButton);
 

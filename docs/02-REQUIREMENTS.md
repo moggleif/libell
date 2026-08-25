@@ -104,11 +104,14 @@ URL and must keep working with no signal.
 
 - **Given** I tap ☰ (gear icon)
 - **Then** in Modern, it opens straight to the Settings tabs (Vehicle/Ramps/
-  Kalibrering/Targets, screen-cleanup follow-up) — no intermediate list to tap
-  through first; a ‹ back-tap from there reaches External sensor, Diagnostics and
-  Show introduction in a small menu. Classic (no tabs) opens that same small menu
-  first, unchanged, and reaches Settings from there. Help/About/Feedback are not
-  part of this menu at all — reached only from the bottom bar's "?" button (R38).
+  Kalibrering/Targets, screen-cleanup follow-up) as its own page with a ✕ to close
+  — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
+  page (R38). Classic (no tabs) keeps a small ☰ drawer instead, holding just
+  Settings/Calibration/Targets — Diagnostics, the introduction relaunch and
+  External sensor moved off it entirely (to the "?" page and the top-right sensor
+  icon, both reachable from Classic too, R38) since Classic has no tabs to fold
+  them into. Help/About/Feedback are not part of either — reached only from the
+  bottom bar's "?" button.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
@@ -222,8 +225,9 @@ URL and must keep working with no signal.
 - **Then** a three-step wizard runs: how to place the phone and how to read the answer
   (the wheel-state legend and the bubble), vehicle measurements (skippable — "use
   defaults"), calibration (skippable). It can be closed with ✕ at any
-  point, warning lamps (R11) stay lit for whatever was skipped, and ☰ → "Show
-  introduction" reopens it any time.
+  point, warning lamps (R11) stay lit for whatever was skipped, and the "Show
+  introduction" button at the top of the "?" page's Help tab (R28, screen-cleanup
+  follow-up) reopens it any time.
 - **Given** the placement/legend step
 - **Then** it also mentions the opt-in "Continuous audio guidance" (R30) — a
   discoverability tip, not a default change (#154): the setting itself stays off
@@ -248,7 +252,7 @@ URL and must keep working with no signal.
 - **Then** the rest of the wizard is the unchanged three-step phone flow above.
 - **Given** the source step, with the external sensor selected instead
 - **Then** the wizard branches to the external sensor's own connect flow — the same
-  "External sensor" section R32/R34 already give the menu, embedded whole rather than
+  External sensor page R32/R34 already describe, embedded whole rather than
   duplicated, which doubles as this path's calibration step (its own "Set vehicle
   level" installation offset, R34) — skippable on the same terms as the phone
   calibration step it replaces, then rejoins the shared vehicle-measurements step
@@ -505,7 +509,7 @@ URL and must keep working with no signal.
 ## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support
-- **When** the user opens the menu's "External sensor" page and taps "Connect
+- **When** the user opens the External sensor page and taps "Connect
   EasyLevel sensor"
 - **Then** the app pairs with the box over its `faf52c20-...` GATT service and the
   wheel/bubble UI updates from the box's readings exactly as it does from the phone's
@@ -525,16 +529,19 @@ URL and must keep working with no signal.
   session this is always a fresh gesture-triggered pairing prompt (see #130 below for
   what "reconnect" means the next time the app is opened instead).
 - **Given** the EasyLevel box is the active source and connected
-- **Then** the main screen shows only a small, neutral connection-state dot — no
-  numbers, no clutter — and nothing at all is added to the main screen while the
-  phone's own sensor is active (#129). Tapping the dot opens the "External sensor"
-  menu page, the same "tap the indicator to jump to its menu section" pattern the R11
-  warning lamps use.
+- **Then** the top bar shows only a small, distinctly-colored connection-state dot —
+  no numbers, no clutter (#129). While the phone's own sensor is active instead, the
+  same dot stays visible but in a third, neutral "tap to connect" look rather than
+  disappearing (screen-cleanup follow-up: it is now the only way to reach the
+  External sensor page at all, R38) — visible whenever Web Bluetooth exists in this
+  browser, hidden only when it doesn't. Tapping the dot opens the External sensor
+  page, the same "tap the indicator to jump to its own page" pattern the R11 warning
+  lamps use.
 - **Given** the box disconnects, or its data goes stale
 - **Then** the main-screen dot switches to a clearly different (warning) look — this
   dot is the visible half of the "never leave apparently-live instructions on screen"
   guarantee; the freeze/stale-data logic that backs it is separate (#132).
-- **Given** the "External sensor" menu page, whether connected or disconnected
+- **Given** the External sensor page, whether connected or disconnected
 - **Then** it spells out the connection state in full, and shows battery and
   temperature as real decoded values once the first `faf52c22-...` status
   notification has arrived — "not available yet" only in the brief window before
@@ -562,7 +569,7 @@ URL and must keep working with no signal.
 - **When** its reported battery percentage drops below a threshold (20%, with a few
   percentage points of hysteresis so it doesn't flicker right at the line — see
   `easyLevelProtocol.ts`'s `isLowBattery`)
-- **Then** a warning is shown on the "External sensor" menu page (settings), never as
+- **Then** a warning is shown on the External sensor page, never as
   a leveling-screen interruption — the main leveling view is unaffected either way.
 
 ## R33 — EasyLevel box: remember the selection and auto-reconnect on open (#130)
@@ -602,7 +609,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   own user gesture, since that is what a fresh `requestDevice()` picker always requires.
   This is a genuine platform ceiling, not a bug: the app never pretends a browser can
   auto-reconnect when it can't.
-- **Given** the user taps "Disconnect" on the "External sensor" menu page
+- **Given** the user taps "Disconnect" on the External sensor page
 - **Then** the box stays remembered (its device id is not forgotten), but
   `sensorSource` reverts to `'phone'` — the next app open does not attempt to
   auto-reconnect until the user connects again, honoring an explicit "not right now"
@@ -616,7 +623,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   installer to level the _vehicle_ once and capture that as the box's own
   installation offset (ADR 0014's three-way calibration split), after which the
   box's physical orientation inside its enclosure stops mattering.
-- **Given** the "External sensor" menu page, once EasyLevel is (or was) the active
+- **Given** the External sensor page, once EasyLevel is (or was) the active
   source
 - **When** the vehicle stands verifiably level (spirit level, or after leveling with
   the ramps) and I tap "Set vehicle level"
@@ -640,7 +647,7 @@ cross-platform goal — they are not this app's code and are not covered here.
 - The amber calibration lamp (R11) follows the same rule: it checks the phone's pair
   while the phone is active, or just the box's installation offset while EasyLevel
   is — never both pairs at once.
-- This installation-offset step lives on the "External sensor" menu page (#116, R32),
+- This installation-offset step lives on the External sensor page (#116, R32),
   not inside the Calibration menu section, since it only makes sense once an external
   source exists to calibrate.
 
@@ -688,8 +695,9 @@ R8's always-visible main-screen degree readout is unaffected.
 
 - **Given** I want to inspect what the app is actually measuring (development, or a
   bug report)
-- **When** I open the menu (☰) and choose "Diagnostics"
-- **Then** a dedicated page shows: the active sensor source (phone / EasyLevel) and
+- **When** I open "?" (R38) and switch to the Diagnostics tab (screen-cleanup
+  follow-up: to the right of Feedback, no longer behind the ☰ menu)
+- **Then** a dedicated tab shows: the active sensor source (phone / EasyLevel) and
   its connection state (R32/R33), sample rate, time since the last sample, raw
   (uncalibrated) roll/pitch, calibrated roll/pitch (the same effective calibration —
   sensor bias + vehicle zero + active target, R24/R31 — the leveling math itself
@@ -723,7 +731,7 @@ R8's always-visible main-screen degree readout is unaffected.
 ## R37 — Sensor unavailable: an explicit Retry / "Use phone sensor" prompt (#134)
 
 R32/R33 already report a lost or unreachable EasyLevel connection honestly (the
-main-screen dot, the "External sensor" menu page, a failed silent reconnect at open).
+main-screen dot, the External sensor page, a failed silent reconnect at open).
 This requirement makes that moment actionable instead of a dead end the user can only
 fix by opening the menu — and, per ADR 0014, never by switching source on its own:
 phone and EasyLevel keep independent calibration references, so an automatic,
@@ -746,7 +754,7 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** the fallback prompt is shown
 - **When** I tap "Use phone sensor"
 - **Then** the app switches the active source to the phone sensor via the exact same
-  explicit switch the menu's own "Disconnect" action already performs (never a
+  explicit switch the External sensor page's own "Disconnect" action already performs (never a
   parallel code path), and the prompt itself says plainly, before I tap, that this
   is not a like-for-like swap: the phone sensor needs the phone lying flat inside the
   vehicle (R1/R17), unlike a permanently-mounted box. If the phone is not already
@@ -766,20 +774,23 @@ unannounced switch could show a plausible-looking but wrong reading.
 
 - **Given** the app loads, on any screen width
 - **Then** the top bar shows only identity on the left (logo, title, share) and the
-  indicators cluster on the right (warning lamps, target badge, sensor status,
-  unchanged content and logic — only their row moved) — no menu button there. The
-  install prompt (R20) is unaffected, still using the `#install-hint` banner under the
-  top bar.
+  indicators cluster on the right (warning lamps, target badge, sensor status) — no
+  menu button there. The install prompt (R20) is unaffected, still using the
+  `#install-hint` banner under the top bar. The sensor-status icon (R32/R33,
+  screen-cleanup follow-up) is now the _only_ way to reach External sensor — it
+  stays visible whenever Web Bluetooth exists at all (a neutral "tap to connect"
+  look while the phone's own sensor is active, not just once EasyLevel is
+  connected), opening its own page with a ✕ to close.
 - **Given** the app loads
 - **Then** a bottom action bar shows exactly three controls, spread across the bar
   (settings at the left edge, sound centered, help at the right edge — screen-cleanup
   follow-up: not clustered together in the middle): settings (a gear icon, R9 —
   Help/About/Feedback are not part of this menu at all), sound (visually larger —
   the primary, most-reached-for control), help ("?", opens its own page with Help
-  (R28), About (R28) and Feedback
-  (R12) as tabs — a fully independent component from the ☰ Settings menu, never
-  routed through its drawer or sharing its back-navigation state, so its close (✕)
-  can never reveal the Settings drawer underneath).
+  (R28, "Show introduction" at the top of that tab), About (R28), Feedback (R12) and
+  Diagnostics (R36) as tabs, in that order — a fully independent component from the
+  ☰ Settings menu, never routed through its drawer or sharing its back-navigation
+  state, so its close (✕) can never reveal the Settings drawer underneath).
 - **Given** I tap the sound button while "Chime when level" (R16) and/or "Continuous
   audio guidance" (R30) are on
 - **Then** both turn off together and the button shows a muted state.
