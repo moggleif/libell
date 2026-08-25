@@ -594,17 +594,28 @@ export function createSettingsForm(
     appearanceSelect.append(option);
     appearanceOptions.push([option, label]);
   }
-  // Live preview — same pattern as the theme select above. Note this
-  // only ever affects colors (see the file header comment) — switching
-  // this select does not restructure the currently open form.
+  // Live preview for colors, same as the theme select above — but unlike
+  // Theme, this axis also decides *structure* (tabs vs. one flat page,
+  // the main diagram, onboarding — every appearance-branching component
+  // is built once at bootstrap and never restructured in place, per each
+  // component's own file comment). Design review: rather than leaving
+  // that structural switch stuck until next reopen, saving the draft and
+  // reloading makes it feel as immediate as Theme — the exact pattern
+  // the Language select already uses just above for the same reason
+  // (`t()` isn't reactive either). Skipped in a compact/wizard step
+  // (`compact` below): the wizard decides for itself when settings are
+  // actually persisted, so a mid-wizard appearance pick must stay a
+  // preview only, never an early save-and-reload.
   appearanceSelect.addEventListener('change', () => {
     applyAppearance(appearanceSelect.value as AppearanceSetting);
-    notifyChanged();
+    if (compact) {
+      notifyChanged();
+      return;
+    }
+    saveSettings(currentSettings());
+    location.reload();
   });
   appearanceField.append(appearanceCaption, appearanceSelect);
-  // Explains the scope cut above (design review): color changes are as
-  // live as Theme's, but the layout itself only reflects the new preset
-  // next time this page is (re)built.
   const appearanceHint = document.createElement('p');
   appearanceHint.className = 'settings__hint';
 

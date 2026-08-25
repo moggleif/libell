@@ -2,7 +2,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
 import { setLanguage, t } from './i18n';
-import { loadLanguage } from '../data/settingsStore';
+import { loadLanguage, loadSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
@@ -100,9 +100,17 @@ describe('settings form', () => {
     expect((rampCountSelect.closest('label') as HTMLLabelElement).hidden).toBe(true);
   });
 
-  it('round-trips the appearance preset, independent of theme (#104)', () => {
-    const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+  // Design review, follow-up: Appearance restructures the whole app
+  // (Settings' own tabs-vs-flat layout included, #108), a bootstrap-time
+  // decision no live preview can restructure in place — so unlike Theme,
+  // changing it now saves the current draft and reloads immediately,
+  // the same pattern the Language select already uses just below for the
+  // same "t()/appearance isn't reactive" reason. No explicit Save/submit
+  // needed first.
+  it('changing Appearance saves immediately and reloads, independent of theme (#104 follow-up)', () => {
+    const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+    localStorage.removeItem('libell.settings');
+    const form = createSettingsForm(classic, vi.fn());
     const selects = form.querySelectorAll('select');
     // Order: vehicle, axle, ramp model, ramp count, drain, unit, language
     // (screen-cleanup follow-up), theme, appearance.
@@ -111,10 +119,27 @@ describe('settings form', () => {
     expect(appearanceSelect.value).toBe('classic');
     appearanceSelect.value = 'modern';
     appearanceSelect.dispatchEvent(new Event('change'));
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave.mock.calls[0]![0].appearance).toBe('modern');
+    expect(reload).toHaveBeenCalledOnce();
+    const saved = loadSettings();
+    expect(saved.appearance).toBe('modern');
     // theme (light/dark) is untouched by the appearance choice.
-    expect(onSave.mock.calls[0]![0].theme).toBe(themeSelect.value);
+    expect(saved.theme).toBe(themeSelect.value);
+    reload.mockRestore();
+  });
+
+  // A wizard step previews the choice (live colors) like everywhere else,
+  // but must never save-and-reload mid-onboarding — the wizard itself
+  // decides when settings are actually persisted.
+  it('a compact wizard step previews Appearance without saving or reloading', () => {
+    const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+    localStorage.removeItem('libell.settings');
+    const form = createSettingsForm(classic, vi.fn(), undefined, { compact: 'appearance' });
+    const appearanceSelect = form.querySelectorAll('select')[1] as HTMLSelectElement;
+    appearanceSelect.value = 'modern';
+    appearanceSelect.dispatchEvent(new Event('change'));
+    expect(reload).not.toHaveBeenCalled();
+    expect(localStorage.getItem('libell.settings')).toBeNull();
+    reload.mockRestore();
   });
 
   it('keeps math in mm while displaying cm', () => {

@@ -279,11 +279,11 @@ export const MESSAGES = {
     'settings.appearance': 'Appearance',
     'appearance.classic': 'Classic',
     'appearance.modern': 'Modern',
-    // Design review: the color change previews immediately, same as Theme
-    // — this only explains why the *layout* (tabs vs. one long page) does
-    // not visibly switch until Settings is reopened.
+    // Design review, follow-up: switching this now saves and reloads
+    // (matching Language above) so the whole app switches immediately,
+    // not just this form's colors.
     'settings.appearance.hint':
-      'Colors update immediately; the full Modern layout takes effect next time you open Settings.',
+      'Switching this saves your changes and reloads Libell so the new layout applies everywhere.',
     'settings.sound': 'Chime when level',
     'settings.soundGuidance': 'Continuous audio guidance',
     'settings.soundGuidance.help':
@@ -701,8 +701,8 @@ export const MESSAGES = {
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',
     'settings.appearance.hint':
-      'Färgerna uppdateras direkt; hela Modern-layouten gäller nästa gång du öppnar ' +
-      'Inställningar.',
+      'Att byta det här sparar dina ändringar och laddar om Libell så att den nya ' +
+      'layouten gäller överallt.',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.soundGuidance': 'Kontinuerlig ljudvägledning',
     'settings.soundGuidance.help':
