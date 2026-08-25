@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { createCaravanDiagram } from './caravanDiagram';
-import { setLanguage } from './i18n';
+import { setLanguage, t } from './i18n';
 import type { CaravanDisplayResult } from '../domain/caravan';
 import type { DisplayWheel } from '../domain/stability';
 
@@ -22,6 +22,13 @@ function result(overrides: Partial<CaravanDisplayResult>): CaravanDisplayResult 
 }
 
 describe('caravanDiagram', () => {
+  it('draws the front arrow with no "Front" text label (screen-cleanup follow-up)', () => {
+    const diagram = createCaravanDiagram();
+    diagram.update(result({}), 'mm', STEPS);
+    expect(diagram.element.querySelector('.rv-diagram__arrow')).not.toBeNull();
+    expect(diagram.element.textContent).not.toContain(t('diagram.front'));
+  });
+
   it('shows step guidance on the low axle wheel like the motorhome diagram', () => {
     const diagram = createCaravanDiagram();
     diagram.update(

@@ -89,20 +89,26 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   intro.textContent = t('sensorSource.intro');
   body.append(intro);
 
-  const status = document.createElement('p');
-  status.className = 'menu__text menu__text--status';
-  body.append(status);
-
   const connectButton = document.createElement('button');
   connectButton.type = 'button';
   connectButton.className = 'menu__action';
   body.append(connectButton);
 
+  // The listed sensor + its disconnect action, side by side (screen-cleanup
+  // follow-up): "Disconnect" now reads as belonging to the connected
+  // sensor named beside it, instead of being a second stray full-width
+  // button underneath "Connect" — and hidden entirely whenever there is no
+  // sensor connected to disconnect (unchanged rule, just relocated).
+  const sensorRow = document.createElement('div');
+  sensorRow.className = 'sensor-row';
+  const status = document.createElement('p');
+  status.className = 'menu__text menu__text--status';
   const disconnectButton = document.createElement('button');
   disconnectButton.type = 'button';
-  disconnectButton.className = 'menu__action menu__action--secondary';
+  disconnectButton.className = 'menu__action menu__action--secondary menu__action--inline';
   disconnectButton.textContent = t('sensorSource.disconnect');
-  body.append(disconnectButton);
+  sensorRow.append(status, disconnectButton);
+  body.append(sensorRow);
 
   // Detailed health (#129): only meaningful once the box is (or was) the
   // active source — hidden entirely while the phone's own sensor is

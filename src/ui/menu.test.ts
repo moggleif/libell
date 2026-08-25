@@ -62,9 +62,14 @@ describe('menu — Classic (unchanged by #107)', () => {
   it('renders a flat item list, no cards or "other" rows', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     menu.open('settings');
-    expect(menu.element.querySelectorAll('.menu__item').length).toBeGreaterThanOrEqual(6);
+    // Settings, Calibration, Targets, Diagnostics, Show introduction — Help/
+    // About/Feedback are no longer drawer items at all (screen-cleanup
+    // follow-up: they moved to the bottom bar's "?" button, attachHelp()).
+    expect(menu.element.querySelectorAll('.menu__item').length).toBeGreaterThanOrEqual(5);
     expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(0);
     expect(menu.element.querySelectorAll('.menu__row')).toHaveLength(0);
+    expect(menu.element.textContent).not.toContain(t('menu.feedback'));
+    expect(menu.element.textContent).not.toContain(t('menu.about'));
   });
 
   it('still opens Settings straight from closed (depth 0 → 2)', () => {
@@ -89,14 +94,14 @@ describe('menu — Modern (#107)', () => {
     return [...menu.element.querySelectorAll('.menu__card')];
   }
 
-  it('renders exactly three primary cards, in the same order as Classic', () => {
+  it('renders exactly two primary cards — Help/About/Feedback moved to the bottom bar\'s "?" (screen-cleanup follow-up)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
     const titles = cards(menu).map((c) => c.querySelector('.menu__card-title')?.textContent);
-    expect(titles).toEqual([t('menu.settings'), t('menu.calibration'), t('menu.help')]);
+    expect(titles).toEqual([t('menu.settings'), t('menu.calibration')]);
   });
 
-  it('groups Targets under "ADVANCED" and the introduction/feedback/about links under "OTHER" (#152)', () => {
+  it('groups Targets under "ADVANCED" and just the introduction/diagnostics links under "OTHER" (#152, screen-cleanup follow-up)', () => {
     const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
     menu.open('settings');
     const headings = [...menu.element.querySelectorAll('.menu__others-heading')];
@@ -111,13 +116,10 @@ describe('menu — Modern (#107)', () => {
     // No Web Bluetooth in this test environment, so External sensor is
     // never offered — Advanced holds only Targets, exactly as today.
     expect(rowTitles(advancedList)).toEqual([t('menu.targets')]);
-    expect(rowTitles(othersList)).toEqual([
-      t('menu.intro'),
-      t('menu.diagnostics'),
-      t('menu.feedback'),
-      t('menu.about'),
-    ]);
-    expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(3); // rows aren't cards
+    // Feedback and About no longer live in the drawer at all — they moved
+    // into the combined Help page reached from "?" (attachHelp()).
+    expect(rowTitles(othersList)).toEqual([t('menu.intro'), t('menu.diagnostics')]);
+    expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(2); // rows aren't cards
   });
 
   it('lights the Settings card dot and label while nothing has ever been saved', () => {
@@ -161,16 +163,6 @@ describe('menu — Modern (#107)', () => {
     calibrated.open('settings');
     const doneCard = cards(calibrated)[1]!;
     expect(doneCard.querySelector('.menu__card-status')?.textContent).toBe('');
-  });
-
-  it('never shows a status label on the Help card', () => {
-    const menu = createMenu(makeOptions({ initialSettings: modernSettings() }));
-    menu.open('settings');
-    const helpCard = cards(menu)[2]!;
-    expect(helpCard.querySelector('.menu__card-status')?.textContent).toBe('');
-    expect(
-      helpCard.querySelector('.menu__card-dot')?.classList.contains('menu__card-dot--pending'),
-    ).toBe(false);
   });
 
   it('re-evaluates card status each time the list is (re)shown', () => {
@@ -292,6 +284,26 @@ describe('EasyLevel BLE sensor source (#116)', () => {
       (r) => r.textContent,
     );
     expect(rowTitles).toEqual([t('menu.sensorSource'), t('menu.targets')]);
+  });
+});
+
+describe('attachHelp — "?" opens Help/About/Feedback directly (screen-cleanup follow-up)', () => {
+  it('opens straight to a page combining Help, About and Feedback, not through the Settings drawer', () => {
+    const menu = createMenu(makeOptions());
+    const helpButton = document.createElement('button');
+    menu.attachHelp(helpButton);
+    expect(menu.isOpen()).toBe(false);
+
+    helpButton.click();
+    expect(menu.isOpen()).toBe(true);
+    expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
+    // Never landed on the Settings drawer first — .menu__card/.menu__item
+    // never appear inside the visible page body.
+    const pageBody = menu.element.querySelector('.menu-page__body')!;
+    expect(pageBody.textContent).toContain(t('help.what.h'));
+    expect(pageBody.textContent).toContain(t('menu.about'));
+    expect(pageBody.textContent).toContain(t('menu.feedback'));
+    expect(pageBody.querySelector('form')).not.toBeNull(); // the feedback form
   });
 });
 

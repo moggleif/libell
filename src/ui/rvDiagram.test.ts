@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { createRvDiagram } from './rvDiagram';
-import { setLanguage } from './i18n';
+import { setLanguage, t } from './i18n';
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 
 setLanguage('en');
@@ -40,6 +40,17 @@ function labelsOf(element: HTMLElement) {
       [...element.querySelectorAll('.rv-diagram__wheel')][i]?.getAttribute('class'),
   };
 }
+
+describe('rvDiagram front arrow (screen-cleanup follow-up)', () => {
+  it('draws the arrow with no "Front" text label, in both appearances', () => {
+    for (const appearance of ['classic', 'modern'] as const) {
+      const diagram = createRvDiagram('single', appearance);
+      diagram.update(result({}), 'mm', STEPS);
+      expect(diagram.element.querySelector('.rv-diagram__arrow')).not.toBeNull();
+      expect(diagram.element.textContent).not.toContain(t('diagram.front'));
+    }
+  });
+});
 
 describe('rvDiagram wheel labels', () => {
   it('shows the step name, its parenthesized height and the plain lift for an orange wheel', () => {
@@ -148,7 +159,7 @@ describe('rvDiagram — modern appearance (#106)', () => {
     const cards = [...element.querySelectorAll('.wheel-card')];
     return {
       count: cards.length,
-      label: (i: number) => cards[i]?.querySelector('.wheel-card__label')?.textContent,
+      ariaLabel: (i: number) => cards[i]?.getAttribute('aria-label'),
       step: (i: number) => cards[i]?.querySelector('.wheel-card__step')?.textContent,
       mm: (i: number) => cards[i]?.querySelector('.wheel-card__mm')?.textContent,
       markerGlyph: (i: number) => cards[i]?.querySelector('.wheel-card__marker')?.textContent,
@@ -167,15 +178,16 @@ describe('rvDiagram — modern appearance (#106)', () => {
     expect(diagram.element.querySelectorAll('.rv-diagram__lift-label')).toHaveLength(0);
   });
 
-  it('shows one wheel card per wheel, each labeled by position', () => {
+  it('shows one wheel card per wheel, identified by position via aria-label rather than visible text (screen-cleanup follow-up)', () => {
     const diagram = createRvDiagram('single', 'modern');
     diagram.update(result({}), 'mm', STEPS);
     const c = cardsOf(diagram.element);
     expect(c.count).toBe(4);
-    expect(c.label(0)).toBe('FRONT L');
-    expect(c.label(1)).toBe('FRONT R');
-    expect(c.label(2)).toBe('REAR L');
-    expect(c.label(3)).toBe('REAR R');
+    expect(c.ariaLabel(0)).toBe('FRONT L');
+    expect(c.ariaLabel(1)).toBe('FRONT R');
+    expect(c.ariaLabel(2)).toBe('REAR L');
+    expect(c.ariaLabel(3)).toBe('REAR R');
+    expect(diagram.element.querySelectorAll('.wheel-card__label')).toHaveLength(0);
   });
 
   it('shows "Done" and the actual (near-zero) lift for a green wheel, not a blank step', () => {

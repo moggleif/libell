@@ -235,14 +235,17 @@ body {
   cursor: pointer;
 }
 
-/* ---- Bottom action bar (#161): settings / sound (primary) / help ---- */
+/* ---- Bottom action bar: settings (left) / sound (center) / help (right)
+   (screen-cleanup follow-up to #161) — spread across the bar rather than
+   clustered in the middle, so the primary mute control keeps the visual
+   center while settings/help sit at the thumb-reachable edges. ---- */
 
 .bottombar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 28px;
-  padding: 6px 16px max(10px, env(safe-area-inset-bottom));
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 20px max(10px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--outline);
 }
 
@@ -442,13 +445,6 @@ body {
   fill: var(--level);
 }
 
-.rv-diagram__front-label {
-  fill: var(--on-surface);
-  font-size: 15px;
-  font-weight: 600;
-  text-anchor: middle;
-}
-
 .rv-diagram__body {
   fill: var(--surface-raised);
   stroke: var(--outline);
@@ -645,13 +641,6 @@ body {
   flex-direction: column;
   justify-content: center;
   gap: 1px;
-}
-
-.wheel-card__label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  color: var(--on-surface-muted);
 }
 
 .wheel-card__step {
@@ -1071,6 +1060,35 @@ body {
 .menu__action:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+/* The listed sensor + its disconnect action, side by side (screen-cleanup
+ * follow-up to #116/#129) — disconnect reads as belonging to the sensor
+ * it's next to, not as a second stray page-level button. */
+.sensor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.sensor-row .menu__text--status {
+  margin: 0;
+}
+
+.menu__action--inline {
+  display: inline-block;
+  flex-shrink: 0;
+  width: auto;
+  margin-top: 0;
+  padding: 6px 14px;
+  min-height: 36px;
+  font-size: 0.875rem;
+}
+
+.menu__action--inline[hidden] {
+  display: none;
 }
 
 /* ---- Modern calibration cards (#109) ----

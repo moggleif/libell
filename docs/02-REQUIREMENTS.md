@@ -60,10 +60,10 @@ URL and must keep working with no signal.
 
 - **Given** I am on the main screen
 - **When** I look at the RV diagram
-- **Then** I see a top-down outline of the RV with a big arrow labeled "Front", so I
-  know how to place the phone (the arrow graphic alone carries the direction — the
-  label has no arrow character of its own). The RV diagram is the focal element of
-  the screen.
+- **Then** I see a top-down outline of the RV with a big arrow pointing toward the
+  front, so I know how to place the phone — the arrow shape alone carries the
+  direction, with no "Front" text label next to it (screen-cleanup follow-up: the
+  shape already says it). The RV diagram is the focal element of the screen.
 
 ## R5 — Wheels that need raising are highlighted on the diagram
 
@@ -100,8 +100,9 @@ URL and must keep working with no signal.
 
 ## R9 — Vehicle parameters are configurable and persist
 
-- **Given** I open Settings from the hamburger menu (which also holds Calibration and
-  Help)
+- **Given** I open Settings from the ☰ (gear icon) menu, which also holds Calibration,
+  Targets and External sensor (screen-cleanup follow-up: Help/About/Feedback moved out
+  to the bottom bar's "?" button, R38)
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
@@ -147,8 +148,8 @@ URL and must keep working with no signal.
 ## R12 — Feedback without a backend
 
 - **Given** I want to report a bug or suggest something
-- **When** I open ☰ → Feedback, pick a category (Bug / Suggestion / Other), write a
-  title and a description, and tap the button
+- **When** I open "?" (Help, R38) and scroll to Feedback, pick a category (Bug /
+  Suggestion / Other), write a title and a description, and tap the button
 - **Then** GitHub's new-issue page opens in a new tab, pre-filled with
   `[Feedback] {category}: {title}`, my description and app metadata (version, screen
   size, timestamp, user agent), and I post it under my own GitHub account.
@@ -402,8 +403,8 @@ URL and must keep working with no signal.
   The breaks live in the i18n strings and render as real line breaks
   (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same
   caption and gets the same breaks.
-- **Given** the menu item "About" / "Om Libell"
-- **When** I open it
+- **Given** the "About" / "Om Libell" section on the "?" page (R38)
+- **When** I scroll to it
 - **Then** I see, in my language: what Libell is, that it works fully offline and
   only uses the network to fetch updates of the app itself (R10), that all data
   stays on the phone, and a link to the source code and license (MIT) on GitHub —
@@ -764,10 +765,13 @@ unannounced switch could show a plausible-looking but wrong reading.
   install prompt (R20) is unaffected, still using the `#install-hint` banner under the
   top bar.
 - **Given** the app loads
-- **Then** a new bottom action bar shows exactly three controls, in order: settings
-  (opens the same full menu ☰ always has), sound (center, visually larger — the
-  primary, most-reached-for control), help (opens the menu directly on its Help
-  section, R28, instead of the default landing section).
+- **Then** a bottom action bar shows exactly three controls, spread across the bar
+  (settings at the left edge, sound centered, help at the right edge — screen-cleanup
+  follow-up: not clustered together in the middle): settings (a gear icon, opens the
+  Settings/Calibration/Targets/External-sensor menu — Help/About/Feedback are no
+  longer part of it), sound (visually larger — the primary, most-reached-for
+  control), help ("?", opens a single page combining Help (R28), About (R28) and
+  Feedback (R12) — never routed through the Settings menu).
 - **Given** I tap the sound button while "Chime when level" (R16) and/or "Continuous
   audio guidance" (R30) are on
 - **Then** both turn off together and the button shows a muted state.

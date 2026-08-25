@@ -1,7 +1,8 @@
 /**
  * Top-down RV diagram — the hero of the screen.
  *
- * Classic: an RV outline seen from above with a "Front" arrow and one
+ * Classic: an RV outline seen from above with a front-pointing arrow (no
+ * text label — the shape alone says "this end is the front") and one
  * marker per wheel, the wheel carrying its own step/lift text right on
  * the SVG. Wheels are green when they need no lift; wheels that need
  * raising are orange (a step reaches) or red (beyond the tallest step).
@@ -13,9 +14,11 @@
  * bubble — with per-wheel status shown only in the floating "wheel cards"
  * (HTML, not SVG) positioned over the diagram, see `buildWheelCard`; the
  * SVG itself carries no per-wheel marker at all, so the silhouette stays
- * clean. Both variants share one severity→color/glyph vocabulary and the
- * same bubble-level physics; only the geometry and where the text lives
- * differ.
+ * clean. A card's position on screen already says which wheel it is, so
+ * the card carries no visible position text either — only an aria-label,
+ * for anyone not reading the layout visually (screen-cleanup follow-up).
+ * Both variants share one severity→color/glyph vocabulary and the same
+ * bubble-level physics; only the geometry and where the text lives differ.
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
@@ -155,13 +158,11 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
     'aria-label': t('diagram.aria'),
   });
 
-  // Front arrow.
+  // Front arrow — the shape alone says "front", no text label (#161 follow-up).
   const arrow = svgEl('path', {
     d: 'M120 8 L110 26 L117 26 L117 40 L123 40 L123 26 L130 26 Z',
     class: 'rv-diagram__arrow',
   });
-  const arrowLabel = svgEl('text', { x: '120', y: '58', class: 'rv-diagram__front-label' });
-  arrowLabel.textContent = t('diagram.front');
 
   // RV body: rounded outline with a windshield hint at the front.
   const body = svgEl('rect', {
@@ -177,7 +178,7 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
     class: 'rv-diagram__windshield',
   });
 
-  svg.append(arrow, arrowLabel, body, windshield);
+  svg.append(arrow, body, windshield);
 
   const wheels = {} as Record<WheelId, ClassicWheelRefs>;
   for (const id of WHEEL_IDS) {
@@ -315,20 +316,21 @@ function buildWheelCard(
 } {
   const card = document.createElement('div');
   card.className = `wheel-card wheel-card--${side}`;
+  // No visible position text (#161 follow-up): the card's position over
+  // the silhouette already says which wheel it is. The name still reaches
+  // anyone not reading the layout visually, via aria-label.
+  card.setAttribute('aria-label', t(WHEEL_LABEL[id]));
   const marker = document.createElement('div');
   marker.className = 'wheel-card__marker';
   const markerGlyph = document.createElement('span');
   marker.append(markerGlyph);
   const text = document.createElement('div');
   text.className = 'wheel-card__text';
-  const label = document.createElement('div');
-  label.className = 'wheel-card__label';
-  label.textContent = t(WHEEL_LABEL[id]);
   const step = document.createElement('div');
   step.className = 'wheel-card__step';
   const mm = document.createElement('div');
   mm.className = 'wheel-card__mm';
-  text.append(label, step, mm);
+  text.append(step, mm);
   card.append(marker, text);
   return { card, markerGlyph, step, mm };
 }
@@ -350,8 +352,6 @@ function createModernDiagram(): RvDiagram {
     d: 'M130 6 L118 28 L126 28 L126 44 L134 44 L134 28 L142 28 Z',
     class: 'rv-diagram__arrow',
   });
-  const arrowLabel = svgEl('text', { x: '130', y: '62', class: 'rv-diagram__front-label' });
-  arrowLabel.textContent = t('diagram.front');
 
   // Cab: a narrower rounded nose up front, widening into the box body
   // below it — same fill/stroke class as the box, overlapping it
@@ -475,7 +475,6 @@ function createModernDiagram(): RvDiagram {
 
   svg.append(
     arrow,
-    arrowLabel,
     cab,
     mirrorLeft,
     mirrorRight,
