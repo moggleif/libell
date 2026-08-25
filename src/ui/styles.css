@@ -373,6 +373,14 @@ body {
   background: var(--on-surface-muted);
 }
 
+/* Idle (screen-cleanup follow-up: visible whenever Web Bluetooth exists,
+ * not just once connected) stays the plain neutral dot above — connected
+ * gets its own distinct color so the two are never mistaken for each
+ * other now that both can show at once. */
+.sensor-status--connected .sensor-status__dot {
+  background: var(--level);
+}
+
 .sensor-status--disconnected .sensor-status__dot {
   background: var(--warning);
 }
