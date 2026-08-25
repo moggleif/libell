@@ -135,6 +135,45 @@ describe('settings form', () => {
   });
 });
 
+describe('settings form — Advanced disclosure (#157)', () => {
+  function advanced(form: HTMLFormElement): HTMLDetailsElement {
+    return form.querySelector<HTMLDetailsElement>('.settings__advanced')!;
+  }
+
+  it('Classic: Tolerance/Stability/Appearance/Chime/Continuous audio guidance are collapsed by default', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    expect(advanced(form).open).toBe(false);
+    expect(advanced(form).querySelector('input[name="toleranceMm"]')).not.toBeNull();
+    expect(advanced(form).querySelector('input[name="stabilityMm"]')).not.toBeNull();
+    // Fields that stay visible by default are outside the disclosure.
+    expect(advanced(form).querySelector('input[name="wheelbaseMm"]')).toBeNull();
+  });
+
+  it('never starts expanded, even when a field inside it holds a non-default value', () => {
+    const customized: LevelSettings = { ...classic, toleranceMm: classic.toleranceMm + 15 };
+    const form = createSettingsForm(customized, vi.fn());
+    expect(advanced(form).open).toBe(false);
+  });
+
+  it('Save/Undo still apply to fields inside Advanced while it is collapsed', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classic, onSave);
+    expect(advanced(form).open).toBe(false);
+    input(form, 'toleranceMm').value = String(classic.toleranceMm + 5);
+    form.dispatchEvent(new Event('input'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].toleranceMm).toBe(classic.toleranceMm + 5);
+  });
+
+  it('Modern: the Vehicle tab collapses the same fields behind Advanced', () => {
+    const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
+    const form = createSettingsForm(modern, vi.fn());
+    expect(advanced(form).open).toBe(false);
+    expect(advanced(form).querySelector('input[name="toleranceMm"]')).not.toBeNull();
+    expect(advanced(form).querySelector('input[name="wheelbaseMm"]')).toBeNull();
+  });
+});
+
 describe('settings form — Modern tabs (#108)', () => {
   const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
 

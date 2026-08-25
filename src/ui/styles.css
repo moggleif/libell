@@ -1287,6 +1287,41 @@ body {
   width: 100%;
 }
 
+/* Advanced disclosure (#157): closed by default, always — a native
+   <details>/<summary> needs no extra JS to track open/closed state. */
+.settings__advanced {
+  margin-top: 14px;
+}
+
+.settings__advanced > :not(summary) {
+  margin-top: 10px;
+}
+
+.settings__advanced-summary {
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
+  list-style: none;
+}
+
+.settings__advanced-summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings__advanced-summary::before {
+  content: '›';
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 0.15s ease;
+}
+
+.settings__advanced[open] > .settings__advanced-summary::before {
+  transform: rotate(90deg);
+}
+
 /* ---- Feedback form ---- */
 
 .feedback__categories {
