@@ -379,16 +379,17 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
     expect(heading.classList.contains('onboarding__title--modern')).toBe(true);
   });
 
-  it('renders three legend rows on the placement step, each a color swatch + glyph + matching text', () => {
+  it('renders four legend rows on the placement step, each a color swatch + glyph + matching text', () => {
     showOnboarding(makeOptions({ initialSettings: modernSettings() }));
     next(); // vehicle -> placement
     const rows = [...card().querySelectorAll('.onboarding__legend-row')];
-    expect(rows).toHaveLength(3);
+    expect(rows).toHaveLength(4);
 
     const expected: [string, string, string][] = [
       ['onboarding__legend-swatch--ok', '✓', t('onboard.legend.ok')],
       ['onboarding__legend-swatch--up', '↑', t('onboard.legend.up')],
       ['onboarding__legend-swatch--no', '✕', t('onboard.legend.no')],
+      ['onboarding__legend-swatch--dim', '–', t('onboard.legend.dim')],
     ];
     rows.forEach((row, i) => {
       const [swatchClass, glyph, text] = expected[i]!;

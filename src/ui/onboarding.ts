@@ -88,12 +88,16 @@ const VEHICLE_OPTIONS: [VehicleType, MessageKey][] = [
   ['caravan', 'vehicle.caravan'],
 ];
 
-/** Modern legend rows (#110): status color swatch, glyph, short text —
- * same three severities the diagram itself uses. */
+/** Modern legend rows: status color swatch, glyph, short text — the same
+ * four severities the diagram itself uses (#110 originally shipped only
+ * the first three; 'unserved' — the gray "ramps don't reach" wheel — was
+ * missing here even though Classic's legend and the Help text both cover
+ * it). */
 const LEGEND_ROWS: [string, keyof typeof SEVERITY_GLYPH, MessageKey][] = [
   ['onboarding__legend-swatch--ok', 'none', 'onboard.legend.ok'],
   ['onboarding__legend-swatch--up', 'small', 'onboard.legend.up'],
   ['onboarding__legend-swatch--no', 'large', 'onboard.legend.no'],
+  ['onboarding__legend-swatch--dim', 'unserved', 'onboard.legend.dim'],
 ];
 
 function buildModernLegend(): HTMLElement {

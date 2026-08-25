@@ -2157,6 +2157,10 @@ body {
   background: var(--lift-large);
 }
 
+.onboarding__legend-swatch--dim {
+  background: var(--lift-unserved);
+}
+
 .onboarding__legend-text {
   font-size: 14px;
   color: var(--on-surface);
