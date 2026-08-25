@@ -6,8 +6,30 @@ import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
 
+// Module-scoped, not per-describe (a per-test mutation whose cleanup ran as
+// the test's own last line used to leak into every later test whenever an
+// assertion above it threw first, skipping that cleanup line): every test
+// that touches `navigator` restores from the same afterEach, regardless of
+// how the test itself ends.
+const originalNavigator = globalThis.navigator;
+
+function withoutBluetooth(): void {
+  Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+}
+
+function withBluetooth(): void {
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { bluetooth: {} },
+    configurable: true,
+  });
+}
+
 afterEach(() => {
   document.body.replaceChildren();
+  Object.defineProperty(globalThis, 'navigator', {
+    value: originalNavigator,
+    configurable: true,
+  });
 });
 
 function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOptions {
@@ -360,10 +382,7 @@ describe('onboarding wizard — ramps step (design review): the ramp catalog/cou
   });
 
   it('also appears on the external-sensor path, as the last step', () => {
-    Object.defineProperty(globalThis, 'navigator', {
-      value: { bluetooth: {} },
-      configurable: true,
-    });
+    withBluetooth();
     let finished = false;
     open({ initialSettings: classicSettings(), onFinished: () => (finished = true) });
     const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;
@@ -371,13 +390,13 @@ describe('onboarding wizard — ramps step (design review): the ramp catalog/cou
     external.dispatchEvent(new Event('change'));
     next(); // source -> vehicle
     next(); // vehicle -> connect
-    next(); // connect -> settings
+    next(); // connect -> installation offset
+    next(); // -> settings
     next(); // settings -> ramps
     expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('settings.tab.ramps'));
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 9');
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('10 / 10');
     next(); // "Done"
     expect(finished).toBe(true);
-    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
   });
 });
 
@@ -443,25 +462,6 @@ describe('onboarding wizard — calibration is two steps, each the real calibrat
 });
 
 describe('onboarding wizard — sensor source choice (#135)', () => {
-  const originalNavigator = globalThis.navigator;
-  afterEach(() => {
-    Object.defineProperty(globalThis, 'navigator', {
-      value: originalNavigator,
-      configurable: true,
-    });
-  });
-
-  function withoutBluetooth(): void {
-    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
-  }
-
-  function withBluetooth(): void {
-    Object.defineProperty(globalThis, 'navigator', {
-      value: { bluetooth: {} },
-      configurable: true,
-    });
-  }
-
   describe('regression guard: no Web Bluetooth', () => {
     it('never adds the source-choice step — Sound is followed straight by the vehicle step', () => {
       withoutBluetooth();
@@ -521,7 +521,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('11 / 11');
     });
 
-    it('picking the external sensor branches to vehicle, then connect, then settings, then ramps', () => {
+    it('picking the external sensor branches to vehicle, then connect, then installation offset, then settings, then ramps', () => {
       withBluetooth();
       let finished = false;
       const connectEasyLevel = () => Promise.resolve<'granted'>('granted');
@@ -535,22 +535,33 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       external.dispatchEvent(new Event('change'));
       next(); // source step -> vehicle
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
-      next(); // vehicle -> connect (embeds the real sensorSourceSection)
+      next(); // vehicle -> connect (embeds the real sensorSourceSection's connect half)
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.sensorSource'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('7 / 9');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('7 / 10');
       // The real connect flow, not a wizard-only duplicate.
       expect(
         [...card().querySelectorAll('button')].some(
           (b) => b.textContent === t('sensorSource.connect'),
         ),
       ).toBe(true);
-      expect(card().textContent).toContain(t('sensorSource.install.h'));
-      next(); // connect -> settings (dimensions), never the phone calibration steps
+      // Split into its own step (design review) — not shown alongside Connect.
+      expect(card().textContent).not.toContain(t('sensorSource.install.h'));
+      next(); // connect -> installation offset
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(
+        t('sensorSource.install.h'),
+      );
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('8 / 10');
+      expect(
+        [...card().querySelectorAll('button')].some(
+          (b) => b.textContent === t('sensorSource.install.now'),
+        ),
+      ).toBe(true);
+      next(); // installation offset -> settings (dimensions), never the phone calibration steps
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.settings.h'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('8 / 9');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 10');
       next(); // -> ramps, the last step for this path
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('settings.tab.ramps'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 9');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('10 / 10');
       next(); // "Done" — no phone calibration steps for the external path
       expect(finished).toBe(true);
     });
