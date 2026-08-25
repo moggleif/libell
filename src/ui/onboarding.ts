@@ -135,6 +135,17 @@ export function showOnboarding(options: OnboardingOptions): void {
   close.textContent = '✕';
   close.addEventListener('click', () => finish());
 
+  // Discoverability mention (#154), alongside the legend on step 1 — the
+  // only place a first-run user is guaranteed to see it, without turning
+  // "Continuous audio guidance" on by default (it stays a deliberate
+  // opt-in, unlike the shorter "Chime when level", #153).
+  function audioGuidanceHint(): HTMLParagraphElement {
+    const hint = document.createElement('p');
+    hint.className = isModern ? 'onboarding__text--modern' : 'settings__hint';
+    hint.textContent = t('onboard.audioGuidance.hint');
+    return hint;
+  }
+
   const placementStep: Step = {
     title: t('onboard.step1.h'),
     build: () => {
@@ -144,7 +155,12 @@ export function showOnboarding(options: OnboardingOptions): void {
       if (isModern) {
         // How to read the answer (#71, restyled #110): color swatch
         // + glyph + short text per status, instead of the SVG legend.
-        return [placementIllustration(t('onboard.step1.h')), text, buildModernLegend()];
+        return [
+          placementIllustration(t('onboard.step1.h')),
+          text,
+          buildModernLegend(),
+          audioGuidanceHint(),
+        ];
       }
       // How to read the answer (#71): the same legend and caption as
       // the Help section — colors, glyphs and the bubble.
@@ -156,6 +172,7 @@ export function showOnboarding(options: OnboardingOptions): void {
         text,
         legendIllustration(t('help.screen.h')),
         legendText,
+        audioGuidanceHint(),
       ];
     },
   };

@@ -378,3 +378,39 @@ describe('onboarding wizard — compact steps (#156)', () => {
     expect(buttonTexts).not.toContain(t('calibration.vehicle.now'));
   });
 });
+
+describe('onboarding wizard — audio guidance discoverability (#154)', () => {
+  it('step 1 mentions Continuous audio guidance alongside the legend, in Classic', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    expect(card().textContent).toContain(t('onboard.audioGuidance.hint'));
+  });
+
+  it('step 1 mentions Continuous audio guidance alongside the legend, in Modern', () => {
+    showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    expect(card().textContent).toContain(t('onboard.audioGuidance.hint'));
+  });
+
+  it('never turns Continuous audio guidance on — it stays a deliberate opt-in', () => {
+    let saved: LevelSettings | null = null;
+    showOnboarding(
+      makeOptions({
+        initialSettings: classicSettings(),
+        onSettingsSaved: (s) => (saved = s),
+      }),
+    );
+    next(); // step 1 -> 2 (settings) — the hint on step 1 doesn't touch settings
+    const form = card().querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(saved).not.toBeNull();
+    expect(saved!.soundGuidance).toBe(DEFAULT_SETTINGS.soundGuidance);
+    expect(DEFAULT_SETTINGS.soundGuidance).toBe(false);
+  });
+
+  it('is not shown on any other step', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // -> settings
+    expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint'));
+    next(); // -> calibration
+    expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint'));
+  });
+});
