@@ -60,15 +60,21 @@ export const MESSAGES = {
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     'sensorSource.err.failed': 'Could not connect to the EasyLevel sensor.',
 
-    // Detailed sensor health (#129). Battery/RSSI/temperature are shown
-    // honestly as "not available yet" — `faf52c22-...`'s bytes beyond the
-    // firmware version are undecoded (#116, deferred to #123), and this
-    // app has no reliable, cross-browser RSSI reading — never fabricated.
+    // Detailed sensor health (#129). Battery/temperature show real decoded
+    // values (#123) once the first `faf52c22-...` status notification
+    // arrives — "not available yet" only before that. Signal strength
+    // stays "not available yet": this app has no reliable, cross-browser
+    // RSSI reading — never fabricated.
     'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
     'sensorSource.detail.rssi': 'Signal strength: {value}',
     'sensorSource.detail.temperature': 'Temperature: {value}',
     'sensorSource.detail.notAvailable': 'Not available yet',
+    // Low-battery warning (#123): a settings-page notice, not a
+    // leveling-screen interruption — see `easyLevelProtocol.ts`'s
+    // `isLowBattery` for the threshold/hysteresis it is driven by.
+    'sensorSource.lowBattery':
+      '⚠ Low battery ({value}) — consider replacing the sensor box’s battery soon.',
 
     // Installation calibration (#131, ADR 0014): the same "vehicle zero"
     // concept R24 already applies to the phone, generalized to a
@@ -101,6 +107,7 @@ export const MESSAGES = {
     'diagnostics.row.calibratedTilt': 'Calibrated tilt: {value}',
     'diagnostics.row.target': 'Effective target: {value}',
     'diagnostics.row.battery': 'Battery: {value}',
+    'diagnostics.row.temperature': 'Temperature: {value}',
     'diagnostics.row.rssi': 'Signal strength: {value}',
     'diagnostics.row.version': 'App version: {value}',
     'diagnostics.roll': 'roll',
@@ -423,6 +430,8 @@ export const MESSAGES = {
     'sensorSource.detail.rssi': 'Signalstyrka: {value}',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Inte tillgängligt ännu',
+    'sensorSource.lowBattery':
+      '⚠ Låg batterinivå ({value}) — överväg att byta batteri i sensorboxen snart.',
 
     // Installationskalibrering (#131, ADR 0014): samma "fordonets nolläge"
     // som R24 redan använder för telefonen, generaliserat till en permanent
@@ -453,6 +462,7 @@ export const MESSAGES = {
     'diagnostics.row.calibratedTilt': 'Kalibrerad lutning: {value}',
     'diagnostics.row.target': 'Aktivt mål: {value}',
     'diagnostics.row.battery': 'Batteri: {value}',
+    'diagnostics.row.temperature': 'Temperatur: {value}',
     'diagnostics.row.rssi': 'Signalstyrka: {value}',
     'diagnostics.row.version': 'Appversion: {value}',
     'diagnostics.roll': 'roll',

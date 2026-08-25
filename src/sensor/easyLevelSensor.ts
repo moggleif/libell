@@ -16,11 +16,12 @@
  * the full writeup):
  * - Service `faf52c20-...`; `faf52c21-...` (NOTIFY) carries the raw
  *   accel/gyro payload parsed by `easyLevelProtocol.ts`.
- * - `faf52c22-...` (NOTIFY/READ) carries firmware version, temperature
- *   and calibration bytes whose exact layout beyond byte 7 is NOT fully
- *   decoded (#116/#123 explicitly defer this) — subscribed best-effort
- *   and stored as raw bytes only, never parsed, and never required for
- *   this sensor to function.
+ * - `faf52c22-...` (NOTIFY/READ) carries firmware version, battery,
+ *   temperature and calibration bytes — fully decoded as of #123 (see
+ *   `easyLevelProtocol.ts`'s `parseEasyLevelStatus`). Still subscribed
+ *   best-effort: a firmware without this characteristic, or one that
+ *   rejects the subscription, must never prevent leveling from working,
+ *   since only `faf52c21-...` is actually required for that.
  * - No encryption, no WRITE characteristic (confirmed by decompiling the
  *   official apps — see #116).
  *
@@ -41,7 +42,7 @@
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
 import type { OrientationSensor, SensorState } from './orientation';
-import { parseAccelPacket } from './easyLevelProtocol';
+import { parseAccelPacket, parseEasyLevelStatus, type EasyLevelStatus } from './easyLevelProtocol';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -146,8 +147,15 @@ export function createWebBluetoothTransport(): EasyLevelTransport {
 
 /** `OrientationSensor` plus a couple of EasyLevel-specific extras not part of that shared interface. */
 export interface EasyLevelSensor extends OrientationSensor {
-  /** Raw `faf52c22-...` bytes, undecoded (#116) — for future diagnostics. */
+  /** Raw `faf52c22-...` bytes — kept alongside the parsed `getStatus()`
+   * below for diagnostics/debugging. */
   getStatusBytes(): Uint8Array | null;
+  /** `faf52c22-...` parsed into battery/temperature/firmware-tier (#123),
+   * or null before the first status notification arrives (or if none ever
+   * does — best-effort, see the module doc comment). Cleared, like
+   * `getGravity()`, when the connection is lost — never a stale reading
+   * shown as live. */
+  getStatus(): EasyLevelStatus | null;
   /** The connected device's Web Bluetooth id (#130), or null before a
    * successful `start()`/`reconnect()` — the caller remembers this to make
    * a later `reconnect()` possible. */
@@ -175,6 +183,7 @@ export function createEasyLevelSensor(
   let state: SensorState = 'idle';
   let gravity: GravityVector | null = null;
   let statusBytes: Uint8Array | null = null;
+  let status: EasyLevelStatus | null = null;
   let connection: EasyLevelConnection | null = null;
   // #132: stamped on every accepted accel notification — the only honest
   // signal that data is still actually arriving, as opposed to the GATT
@@ -188,6 +197,10 @@ export function createEasyLevelSensor(
     state = 'disconnected';
     gravity = null;
     lastSampleAt = null;
+    // Same "never show stale as live" rule R35 already applies to gravity
+    // (#132) — a battery/temperature reading from before the drop is not
+    // an honest "current" reading either.
+    status = null;
   }
 
   /** Shared by start() and reconnect(): wire a fresh EasyLevelConnection's
@@ -204,6 +217,7 @@ export function createEasyLevelSensor(
       // never prevent leveling from working.
       await connection.subscribeStatus((view) => {
         statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+        status = parseEasyLevelStatus(view);
       });
     } catch {
       // No status characteristic, or subscribe failed: accel alone is
@@ -259,12 +273,14 @@ export function createEasyLevelSensor(
     getSource: (): SensorSource => 'easylevel',
     getLastSampleAt: () => lastSampleAt,
     getStatusBytes: () => statusBytes,
+    getStatus: () => status,
     disconnect(): void {
       connection?.disconnect();
       connection = null;
       state = 'idle';
       gravity = null;
       lastSampleAt = null;
+      status = null;
     },
   };
 }

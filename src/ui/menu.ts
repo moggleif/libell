@@ -7,6 +7,7 @@
  */
 import type { Calibration, LevelSettings, SensorSource } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
+import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { isWebBluetoothSupported } from '../sensor/easyLevelSensor';
 import { createSettingsForm } from './settingsPanel';
@@ -86,6 +87,10 @@ export interface MenuOptions {
   getSensorState(): SensorState;
   connectEasyLevel(): Promise<SensorState>;
   disconnectEasyLevel(): void;
+  /** `faf52c22-...` parsed into battery/temperature/firmware-tier (#123) —
+   * see `SensorSourceOptions`/`DiagnosticsOptions`; shared by both the
+   * "External sensor" and "Diagnostics" pages. */
+  getEasyLevelStatus(): EasyLevelStatus | null;
   /**
    * The EasyLevel box's installation offset (#131, ADR 0014) — see
    * `SensorSourceOptions`. Its own independent stored value: never the

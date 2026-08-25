@@ -18,6 +18,7 @@ function makeOptions(overrides: Partial<DiagnosticsOptions> = {}): DiagnosticsOp
     getRawTilt: () => null,
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
+    getEasyLevelStatus: () => null,
     ...overrides,
   };
 }
@@ -39,10 +40,43 @@ describe('diagnostics snapshot (#133, R36)', () => {
     expect(s.rssi).toBe('—');
   });
 
-  it('reuses sensorSourceSection\'s exact "not available yet" wording for EasyLevel', () => {
+  it('reuses sensorSourceSection\'s exact "not available yet" wording for EasyLevel before the first status notification', () => {
     const s = buildSnapshot(makeOptions({ getSensorSource: () => 'easylevel' }), '1.2.0');
     expect(s.battery).toBe(t('sensorSource.detail.notAvailable'));
+    expect(s.temperature).toBe(t('sensorSource.detail.notAvailable'));
     expect(s.rssi).toBe(t('sensorSource.detail.notAvailable'));
+  });
+
+  it('shows real battery %/temperature once a status notification has arrived (#123) — RSSI stays "not available yet"', () => {
+    const s = buildSnapshot(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: 72,
+          temperatureCelsius: 19.5,
+        }),
+      }),
+      '1.2.0',
+    );
+    expect(s.battery).toBe('72%');
+    expect(s.temperature).toBe('19.5°C');
+    expect(s.rssi).toBe(t('sensorSource.detail.notAvailable'));
+  });
+
+  it('never reads getEasyLevelStatus for the phone source, matching the existing "—" rule', () => {
+    const getEasyLevelStatus = vi.fn(() => ({
+      firmwareTier: 3,
+      batteryPercent: 72,
+      temperatureCelsius: 19.5,
+    }));
+    const s = buildSnapshot(
+      makeOptions({ getSensorSource: () => 'phone', getEasyLevelStatus }),
+      '1.2.0',
+    );
+    expect(s.battery).toBe('—');
+    expect(s.temperature).toBe('—');
+    expect(getEasyLevelStatus).not.toHaveBeenCalled();
   });
 
   it('shows "—" for raw/calibrated tilt and last-sample age before the first sample', () => {
@@ -90,6 +124,7 @@ describe('formatDiagnosticsText (#133)', () => {
     expect(text).toContain('Connection state: disconnected');
     expect(text).toContain('Raw tilt:');
     expect(text).toContain('1.2');
+    expect(text).toContain('Temperature:');
     expect(text.split('\n').length).toBeGreaterThan(5);
   });
 });
@@ -111,6 +146,7 @@ describe('createDiagnosticsSection (#133) — DOM', () => {
     expect(section.element.textContent).not.toContain('undefined');
     expect(section.element.textContent).not.toContain('NaN');
     expect(section.element.textContent).toContain(t('diagnostics.row.battery', { value: '—' }));
+    expect(section.element.textContent).toContain(t('diagnostics.row.temperature', { value: '—' }));
   });
 
   it('re-reads live values on refresh() rather than freezing at creation time', () => {

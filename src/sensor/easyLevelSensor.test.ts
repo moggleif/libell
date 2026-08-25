@@ -17,6 +17,16 @@ function accelBytes(x: number, y: number, z: number): Uint8Array {
   return new Uint8Array(view.buffer);
 }
 
+/** An `faf52c22` status payload (#123): tier-2+ temperature bytes, battery
+ * rawMv, and the firmware-tier byte — matching `easyLevelProtocol.test.ts`'s
+ * layout. */
+function statusBytes(rawMv: number, firmwareByte: number): Uint8Array {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setUint16(2, rawMv, true);
+  view.setUint8(7, firmwareByte);
+  return new Uint8Array(view.buffer);
+}
+
 /** A controllable stand-in for `createWebBluetoothTransport()` (#116) — no
  * real `navigator.bluetooth` involved, so the state machine is fully
  * testable without hardware or a browser. `reconnect` defaults to
@@ -25,19 +35,20 @@ function accelBytes(x: number, y: number, z: number): Uint8Array {
 function fakeTransport(options?: { reconnect?: EasyLevelTransport['reconnect'] }): {
   transport: EasyLevelTransport;
   emitAccel(bytes: Uint8Array): void;
+  emitStatus(bytes: Uint8Array): void;
   emitDisconnect(): void;
   connection: EasyLevelConnection;
 } {
   let accelHandler: ((view: DataView) => void) | null = null;
+  let statusHandler: ((view: DataView) => void) | null = null;
   let disconnectHandler: (() => void) | null = null;
   const connection: EasyLevelConnection = {
     deviceId: 'fake-device-id',
     subscribeAccel: async (onData) => {
       accelHandler = onData;
     },
-    subscribeStatus: async () => {
-      // No status characteristic in this fake — exercises the
-      // best-effort try/catch path when it throws in other tests.
+    subscribeStatus: async (onData) => {
+      statusHandler = onData;
     },
     disconnect: vi.fn(),
   };
@@ -55,6 +66,7 @@ function fakeTransport(options?: { reconnect?: EasyLevelTransport['reconnect'] }
         }),
     },
     emitAccel: (bytes) => accelHandler?.(new DataView(bytes.buffer)),
+    emitStatus: (bytes) => statusHandler?.(new DataView(bytes.buffer)),
     emitDisconnect: () => disconnectHandler?.(),
     connection,
   };
@@ -229,6 +241,63 @@ describe('createEasyLevelSensor (#116)', () => {
 
     await sensor.start();
     expect(sensor.getDeviceId()).toBe('fake-device-id');
+  });
+
+  it('getStatus() is null until the first faf52c22 notification, then parses battery/temperature/firmware tier (#123)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitStatus } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+    expect(sensor.getStatus()).toBeNull();
+
+    emitStatus(statusBytes(2500, 32));
+    expect(sensor.getStatus()).toEqual({
+      firmwareTier: 2,
+      batteryPercent: 50,
+      temperatureCelsius: 0,
+    });
+
+    // A later notification replaces the previous status, same as gravity.
+    emitStatus(statusBytes(3000, 0));
+    expect(sensor.getStatus()).toEqual({
+      firmwareTier: 1,
+      batteryPercent: 100,
+      temperatureCelsius: 25,
+    });
+  });
+
+  it('clears getStatus() on an unexpected GATT disconnect, same as getGravity() (#123/#132)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitStatus, emitDisconnect } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+    emitStatus(statusBytes(2500, 32));
+    expect(sensor.getStatus()).not.toBeNull();
+
+    emitDisconnect();
+
+    expect(sensor.getStatus()).toBeNull();
+  });
+
+  it('clears getStatus() on an explicit disconnect()', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitStatus } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+    emitStatus(statusBytes(2500, 32));
+
+    sensor.disconnect();
+
+    expect(sensor.getStatus()).toBeNull();
   });
 });
 

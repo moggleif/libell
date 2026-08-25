@@ -24,11 +24,14 @@
  * more generous timeout), so it is described as such rather than given a
  * fabricated number.
  *
- * Battery/RSSI reuse `sensorSourceSection.ts`'s exact "not available yet"
- * wording (#123/#129) rather than a second, slightly different phrasing —
- * this page must never relax that honesty rule either.
+ * Battery/temperature reuse the same real values `sensorSourceSection.ts`
+ * shows (#123) — both read from the identical `getEasyLevelStatus()` seam,
+ * so the two pages can never disagree. RSSI still reuses that page's exact
+ * "not available yet" wording (#129) — this page must never relax that
+ * honesty rule.
  */
 import type { Calibration, SensorSource } from '../domain/settings';
+import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { t } from './i18n';
 import { showToast } from './toast';
@@ -48,6 +51,10 @@ export interface DiagnosticsOptions {
   getCalibratedTilt(): Calibration | null;
   /** The active target preset's name (#122), or null for "Normal". */
   getActiveTargetName(): string | null;
+  /** `faf52c22-...` parsed into battery/temperature/firmware-tier (#123),
+   * or null before the first status notification arrives (or when the
+   * phone's own sensor is active). */
+  getEasyLevelStatus(): EasyLevelStatus | null;
 }
 
 /** A fully-resolved, translated snapshot — the shape both the on-page rows
@@ -61,6 +68,7 @@ export interface DiagnosticsSnapshot {
   calibratedTilt: string;
   target: string;
   battery: string;
+  temperature: string;
   rssi: string;
   version: string;
 }
@@ -92,11 +100,16 @@ export function buildSnapshot(
   nowMs: number = performance.now(),
 ): DiagnosticsSnapshot {
   const source = options.getSensorSource();
-  // Battery/RSSI (#123/#129): always "not available" today, and only ever
-  // meaningful for an external source — an em dash for the phone, exactly
-  // like every other absent external-only field on this page (AC: "all
-  // external-only fields simply show '—'").
-  const availability = source === 'easylevel' ? t('sensorSource.detail.notAvailable') : '—';
+  // RSSI (#129): always "not available" — no reliable, cross-browser way to
+  // read it from Web Bluetooth — and only ever meaningful for an external
+  // source, an em dash for the phone, like every other absent
+  // external-only field on this page (AC: "all external-only fields simply
+  // show '—'"). Battery/temperature (#123) follow the same em-dash rule
+  // for the phone, but show real values for EasyLevel once available.
+  const notAvailable = t('sensorSource.detail.notAvailable');
+  const easyLevelStatus = source === 'easylevel' ? options.getEasyLevelStatus() : null;
+  const externalOnly = (value: string | null): string =>
+    source === 'easylevel' ? (value ?? notAvailable) : '—';
   return {
     source,
     state: options.getSensorState(),
@@ -105,8 +118,13 @@ export function buildSnapshot(
     rawTilt: tiltText(options.getRawTilt()),
     calibratedTilt: tiltText(options.getCalibratedTilt()),
     target: options.getActiveTargetName() ?? t('targets.normal'),
-    battery: availability,
-    rssi: availability,
+    battery: externalOnly(
+      easyLevelStatus ? `${Math.round(easyLevelStatus.batteryPercent)}%` : null,
+    ),
+    temperature: externalOnly(
+      easyLevelStatus ? `${easyLevelStatus.temperatureCelsius.toFixed(1)}°C` : null,
+    ),
+    rssi: externalOnly(null),
     version: version ?? t('diagnostics.version.unknown'),
   };
 }
@@ -128,6 +146,7 @@ export function formatDiagnosticsText(s: DiagnosticsSnapshot): string {
     `Calibrated tilt: ${s.calibratedTilt}`,
     `Target: ${s.target}`,
     `Battery: ${s.battery}`,
+    `Temperature: ${s.temperature}`,
     `RSSI: ${s.rssi}`,
   ].join('\n');
 }
@@ -167,6 +186,7 @@ export function createDiagnosticsSection(
   const calibratedRow = addRow();
   const targetRow = addRow();
   const batteryRow = addRow();
+  const temperatureRow = addRow();
   const rssiRow = addRow();
   const versionRow = addRow();
 
@@ -186,6 +206,7 @@ export function createDiagnosticsSection(
     calibratedRow.textContent = t('diagnostics.row.calibratedTilt', { value: s.calibratedTilt });
     targetRow.textContent = t('diagnostics.row.target', { value: s.target });
     batteryRow.textContent = t('diagnostics.row.battery', { value: s.battery });
+    temperatureRow.textContent = t('diagnostics.row.temperature', { value: s.temperature });
     rssiRow.textContent = t('diagnostics.row.rssi', { value: s.rssi });
     versionRow.textContent = t('diagnostics.row.version', { value: s.version });
   }

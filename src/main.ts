@@ -417,6 +417,7 @@ function bootstrap(root: HTMLElement): void {
       getSensorState: () => sensor.getState(),
       connectEasyLevel: () => connectEasyLevelNow(),
       disconnectEasyLevel: () => disconnectEasyLevelNow(),
+      getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
       getInstallCalibration: () => easyLevelCalibration,
       calibrateInstall: () => calibrateEasyLevelNow(),
       getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
@@ -502,6 +503,7 @@ function bootstrap(root: HTMLElement): void {
     getRawTilt: () => diagnosticsRawTilt(),
     getCalibratedTilt: () => diagnosticsCalibratedTilt(),
     getActiveTargetName: () => activeTargetName(),
+    getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
   });
   document.body.append(menu.element);
   const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');

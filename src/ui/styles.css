@@ -1001,6 +1001,13 @@ body {
   color: var(--on-surface);
 }
 
+/* Low-battery warning row (#123) — the same --warning tone the dashboard
+ * lamps and the disconnected sensor-status dot already use. */
+.menu__text--warning {
+  color: var(--warning);
+  font-weight: 600;
+}
+
 .menu__action {
   display: block;
   width: 100%;
