@@ -235,18 +235,58 @@ body {
   cursor: pointer;
 }
 
-.topbar__menu {
+/* ---- Bottom action bar (#161): settings / sound (primary) / help ---- */
+
+.bottombar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 6px 16px max(10px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--outline);
+}
+
+.bottombar__button {
   font: inherit;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   line-height: 1;
   color: var(--on-surface);
   background: none;
   border: 0;
+  border-radius: 999px;
   /* WCAG 2.5.8 / Apple HIG: at least 44x44 px hit area. */
   min-width: 44px;
   min-height: 44px;
-  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+}
+
+/* The primary, most-reached-for control (mute) — visually larger than
+   settings/help on either side of it. */
+.bottombar__button--primary {
+  min-width: 56px;
+  min-height: 56px;
+  background: var(--surface-raised);
+  border: 1.5px solid var(--outline);
+}
+
+.bottombar__button--muted {
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
+/* The UA stylesheet's [hidden] { display: none } rule doesn't reliably
+   apply to SVG shape children in every browser — spell it out so
+   toggling the `hidden` attribute on the waves/mute-slash paths above
+   (main.ts's updateSoundButton) always actually hides them. */
+.bottombar__icon path[hidden] {
+  display: none;
+}
+
+.bottombar__icon {
+  display: block;
 }
 
 .install-hint {

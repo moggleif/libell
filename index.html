@@ -26,10 +26,42 @@
       </button>
       <div id="indicators"></div>
       <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
-      <button id="menu-button" class="topbar__menu" type="button" aria-label="Menu">☰</button>
     </header>
     <p id="install-hint" class="install-hint" hidden></p>
     <main id="app" class="app"></main>
+    <nav class="bottombar" aria-label="Actions">
+      <button id="settings-button" class="bottombar__button" type="button" aria-label="Settings">
+        ☰
+      </button>
+      <button
+        id="sound-button"
+        class="bottombar__button bottombar__button--primary"
+        type="button"
+        aria-label="Mute sound"
+      >
+        <svg
+          id="sound-icon"
+          class="bottombar__icon"
+          viewBox="0 0 24 24"
+          width="26"
+          height="26"
+          aria-hidden="true"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 9v6h4l5 4V5L8 9H4Z" fill="currentColor" stroke="none" />
+            <path id="sound-icon-waves" d="M16.5 8.5a5 5 0 0 1 0 7M19.2 6a8.5 8.5 0 0 1 0 12" />
+            <path id="sound-icon-mute" d="M16 8.5 21 15.5M21 8.5 16 15.5" hidden />
+          </g>
+        </svg>
+      </button>
+      <button id="help-button" class="bottombar__button" type="button" aria-label="Help">?</button>
+    </nav>
     <footer class="site-footer">
       <p id="app-version" class="site-footer__version"></p>
     </footer>

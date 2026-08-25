@@ -45,6 +45,7 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
     getEasyLevelStatus: () => null,
+    getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false }),
     ...overrides,
   };
 }
@@ -291,5 +292,35 @@ describe('EasyLevel BLE sensor source (#116)', () => {
       (r) => r.textContent,
     );
     expect(rowTitles).toEqual([t('menu.sensorSource'), t('menu.targets')]);
+  });
+});
+
+describe('Settings form resyncs sound fields on every reopen (#161)', () => {
+  function soundCheckboxes(menu: ReturnType<typeof createMenu>): HTMLInputElement[] {
+    return [...menu.element.querySelectorAll<HTMLInputElement>('.settings__checkbox')];
+  }
+
+  it('reflects a mute toggled outside the menu (bottom bar) the next time Settings opens', () => {
+    let soundOnLevel = true;
+    let soundGuidance = true;
+    const menu = createMenu(
+      makeOptions({
+        initialSettings: modernSettings(),
+        getSoundPrefs: () => ({ soundOnLevel, soundGuidance }),
+      }),
+    );
+    menu.open('settings');
+    const [chime, guidance] = soundCheckboxes(menu);
+    expect(chime!.checked).toBe(true);
+    expect(guidance!.checked).toBe(true);
+
+    // Simulate the bottom bar's mute toggle running while the menu is
+    // closed — the host's getSoundPrefs() now answers differently.
+    soundOnLevel = false;
+    soundGuidance = false;
+    menu.open('settings');
+    const [chimeAfter, guidanceAfter] = soundCheckboxes(menu);
+    expect(chimeAfter!.checked).toBe(false);
+    expect(guidanceAfter!.checked).toBe(false);
   });
 });

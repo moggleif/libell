@@ -296,3 +296,29 @@ export function formatLength(mm: number, unit: 'mm' | 'cm'): string {
   }
   return `${Math.round(mm)} mm`;
 }
+
+/** The two sound preferences the bottom bar's mute toggle (#161) acts on
+ * together — a plain object rather than reusing LevelSettings so this
+ * stays obviously unrelated to every other field. */
+export type SoundPrefs = Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>;
+
+/**
+ * Mute/unmute (#161): a single toggle for `soundOnLevel` + `soundGuidance`
+ * together. Muting remembers their exact prior values; unmuting restores
+ * exactly those values — never forcing either back to `true` if the user
+ * had it off already before muting. `preMute` is that memory: `null` when
+ * not currently muted, otherwise what to restore. Pure, so the toggle and
+ * restore logic is unit-testable without any DOM/storage involved.
+ */
+export function toggleMute(
+  settings: SoundPrefs,
+  preMute: SoundPrefs | null,
+): { settings: SoundPrefs; preMute: SoundPrefs | null } {
+  if (preMute) {
+    return { settings: preMute, preMute: null };
+  }
+  return {
+    settings: { soundOnLevel: false, soundGuidance: false },
+    preMute: { soundOnLevel: settings.soundOnLevel, soundGuidance: settings.soundGuidance },
+  };
+}

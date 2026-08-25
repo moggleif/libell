@@ -754,3 +754,26 @@ unannounced switch could show a plausible-looking but wrong reading.
   hint already covered, and it is distinct from R35's stale-data overlay (data still
   arriving, just old) — that overlay is unaffected and keeps clearing itself
   automatically the moment fresh samples resume.
+
+## R38 — Bottom action bar: settings, sound, help (#161)
+
+- **Given** the app loads, on any screen width
+- **Then** the top bar shows only identity on the left (logo, title, share) and the
+  indicators cluster on the right (warning lamps, target badge, sensor status,
+  unchanged content and logic — only their row moved) — no menu button there. The
+  install prompt (R20) is unaffected, still using the `#install-hint` banner under the
+  top bar.
+- **Given** the app loads
+- **Then** a new bottom action bar shows exactly three controls, in order: settings
+  (opens the same full menu ☰ always has), sound (center, visually larger — the
+  primary, most-reached-for control), help (opens the menu directly on its Help
+  section, R28, instead of the default landing section).
+- **Given** I tap the sound button while "Chime when level" (R16) and/or "Continuous
+  audio guidance" (R30) are on
+- **Then** both turn off together and the button shows a muted state.
+- **Given** I tap the sound button again while muted
+- **Then** both settings return to exactly the values they held before muting — muting
+  never forces a setting back on that was already off before I muted.
+- **Given** I mute or unmute from the bottom bar, then later open ☰ → Settings
+- **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
+  never a stale display that could silently undo the mute on an unrelated Save.

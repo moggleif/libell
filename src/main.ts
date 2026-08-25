@@ -22,7 +22,13 @@ import {
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
-import { formatLength, type Calibration, type LevelSettings } from './domain/settings';
+import {
+  formatLength,
+  toggleMute,
+  type Calibration,
+  type LevelSettings,
+  type SoundPrefs,
+} from './domain/settings';
 import {
   clearCalibration,
   clearEasyLevelCalibration,
@@ -94,18 +100,15 @@ const shareButton = document.querySelector<HTMLButtonElement>('#share-button');
 if (shareButton) setupShareButton(shareButton);
 
 if (installButton) installButton.textContent = t('topbar.install');
-const menuButtonEl = document.querySelector<HTMLButtonElement>('#menu-button');
-if (menuButtonEl) menuButtonEl.setAttribute('aria-label', t('topbar.menu'));
+const settingsButtonEl = document.querySelector<HTMLButtonElement>('#settings-button');
+if (settingsButtonEl) settingsButtonEl.setAttribute('aria-label', t('bottombar.settings'));
+const helpButtonEl = document.querySelector<HTMLButtonElement>('#help-button');
+if (helpButtonEl) helpButtonEl.setAttribute('aria-label', t('bottombar.help'));
 if (installHint) installHint.textContent = t('install.hint');
 
 const versionFooter = document.querySelector<HTMLElement>('#app-version');
 if (versionFooter && __APP_VERSION__) {
   versionFooter.textContent = `v${__APP_VERSION__}`;
-}
-
-const app = document.querySelector<HTMLElement>('#app');
-if (app) {
-  bootstrap(app);
 }
 
 const RAD_TO_DEG = 180 / Math.PI;
@@ -178,6 +181,17 @@ function playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void 
   osc.connect(gain).connect(audioCtx.destination);
   osc.start(now);
   osc.stop(now + durationS + 0.02);
+}
+
+// Started only once every top-level const/function above it is actually
+// initialized — `bootstrap` (a hoisted function declaration) transitively
+// reads RAD_TO_DEG and friends the moment it runs (createDiagnosticsSection
+// calls refresh() synchronously at construction), so this call must stay
+// textually after their declarations, not just after their own hoisted
+// binding exists.
+const app = document.querySelector<HTMLElement>('#app');
+if (app) {
+  bootstrap(app);
 }
 
 function bootstrap(root: HTMLElement): void {
@@ -504,10 +518,47 @@ function bootstrap(root: HTMLElement): void {
     getCalibratedTilt: () => diagnosticsCalibratedTilt(),
     getActiveTargetName: () => activeTargetName(),
     getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
+    getSoundPrefs: () => ({
+      soundOnLevel: settings.soundOnLevel,
+      soundGuidance: settings.soundGuidance,
+    }),
   });
   document.body.append(menu.element);
-  const menuButton = document.querySelector<HTMLButtonElement>('#menu-button');
-  if (menuButton) menu.attach(menuButton);
+  const settingsButton = document.querySelector<HTMLButtonElement>('#settings-button');
+  if (settingsButton) menu.attach(settingsButton);
+  const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
+  helpButton?.addEventListener('click', () => menu.open('help'));
+
+  // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
+  // from the bottom bar without opening the menu. `preMuteSound` is the
+  // exact prior values to restore on unmute — see domain/settings.ts's
+  // toggleMute for why this is a pure, unit-tested function rather than
+  // logic inlined here.
+  let preMuteSound: SoundPrefs | null = null;
+  const soundButton = document.querySelector<HTMLButtonElement>('#sound-button');
+  const soundIconWaves = document.querySelector<SVGPathElement>('#sound-icon-waves');
+  const soundIconMute = document.querySelector<SVGPathElement>('#sound-icon-mute');
+  function updateSoundButton(): void {
+    const muted = preMuteSound !== null;
+    soundButton?.classList.toggle('bottombar__button--muted', muted);
+    soundButton?.setAttribute(
+      'aria-label',
+      t(muted ? 'bottombar.sound.unmute' : 'bottombar.sound.mute'),
+    );
+    soundIconWaves?.toggleAttribute('hidden', muted);
+    soundIconMute?.toggleAttribute('hidden', !muted);
+  }
+  soundButton?.addEventListener('click', () => {
+    const result = toggleMute(settings, preMuteSound);
+    settings = { ...settings, ...result.settings };
+    preMuteSound = result.preMute;
+    saveSettings(settings);
+    // Unmuting is itself a real user gesture — the same unlock the
+    // Settings-save path already performs when sound ends up on.
+    if (settings.soundOnLevel || settings.soundGuidance) unlockAudio();
+    updateSoundButton();
+  });
+  updateSoundButton();
 
   // Dashboard-style warning lamps. Demo mode presents as a configured
   // app (in memory only — nothing is written), so screenshots and demos

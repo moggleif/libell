@@ -212,6 +212,19 @@ diagram stays legible on a phone lying on a table. Settings, Calibration and Hel
 in the full-width hamburger menu; amber warning lamps in the top bar point to unsaved
 settings or a missing calibration. All user-facing strings go through the i18n dictionaries (sv/en) in `src/ui/i18n.ts`.
 
+Top bar / bottom action bar split (#161): the top bar holds only identity (logo, title,
+share) on the left and the indicators cluster (warning lamps, target badge, sensor
+status) on the right — no menu button there. A bottom action bar (`.bottombar`) holds
+three controls instead: settings (opens the same hamburger menu as before, just moved),
+sound (center, visually larger — a single mute/unmute toggle for `soundOnLevel` +
+`soundGuidance` together, restoring their exact prior values on unmute rather than
+forcing either back on), and help (opens the menu directly on its Help section). The
+install prompt is unaffected — it still renders via the `#install-hint` banner under the
+top bar. Because mute can change the two sound settings while the menu is closed, the
+Settings page's own checkboxes resync from the live values (`SettingsFormElement.
+resyncSoundFields`) every time the menu reopens, so a stale checkbox state can never
+silently overwrite a mute on the next unrelated Save.
+
 ## Build / CI notes
 
 The repository is text-only: PWA icons are rendered from `public/icons/icon.svg` by

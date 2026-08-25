@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
-import { setLanguage } from './i18n';
+import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
@@ -393,5 +393,48 @@ describe('settings form — compact mode (#156)', () => {
   it('defaults to the full (non-compact) render when no formOptions are passed', () => {
     const form = createSettingsForm(classic, vi.fn());
     expect(form.querySelector('select')).not.toBeNull();
+  });
+});
+
+describe('settings form — resyncSoundFields (#161)', () => {
+  function soundCheckboxes(form: HTMLFormElement): HTMLInputElement[] {
+    return [...form.querySelectorAll<HTMLInputElement>('.settings__checkbox')];
+  }
+
+  it('updates the Chime/Continuous-audio-guidance checkboxes from an external change', () => {
+    const settings: LevelSettings = { ...classic, soundOnLevel: true, soundGuidance: false };
+    const form = createSettingsForm(settings, vi.fn());
+    const [chime, guidance] = soundCheckboxes(form);
+    expect(chime!.checked).toBe(true);
+    expect(guidance!.checked).toBe(false);
+
+    form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: true });
+    expect(chime!.checked).toBe(false);
+    expect(guidance!.checked).toBe(true);
+  });
+
+  it('keeps Save disabled after a resync that matches the new baseline', () => {
+    const settings: LevelSettings = { ...classic, soundOnLevel: true, soundGuidance: true };
+    const form = createSettingsForm(settings, vi.fn());
+    const save = [...form.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent === t('settings.save'),
+    )!;
+    expect(save.disabled).toBe(true); // nothing edited yet
+
+    form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: false });
+    expect(save.disabled).toBe(true); // resync is not an unsaved edit
+
+    const [chime] = soundCheckboxes(form);
+    chime!.checked = true;
+    chime!.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(save.disabled).toBe(false); // a genuine edit still enables it
+  });
+
+  it('exists in Modern and compact too, not just Classic', () => {
+    const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
+    expect(typeof createSettingsForm(modern, vi.fn()).resyncSoundFields).toBe('function');
+    expect(
+      typeof createSettingsForm(classic, vi.fn(), undefined, { compact: true }).resyncSoundFields,
+    ).toBe('function');
   });
 });

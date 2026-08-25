@@ -80,7 +80,19 @@ function inertCalibrationOptions(): CalibrationOptions {
  * the Kalibrering tab of this same live instance instead of mounting a
  * second, independent `createCalibrationSection` (#155).
  */
-export type SettingsFormElement = HTMLFormElement & { selectCalibrationTab?: () => void };
+export type SettingsFormElement = HTMLFormElement & {
+  selectCalibrationTab?: () => void;
+  /**
+   * Resync the Chime/Continuous-audio-guidance checkboxes (and the
+   * Save/Undo baseline for just those two fields) from a value that
+   * changed outside this form — the bottom bar's mute toggle (#161).
+   * Called by the menu host every time it reopens; safe because nothing
+   * else can edit this form while the menu is closed (mute's button
+   * lives outside the fullscreen menu overlay), so there is never an
+   * in-progress unsaved edit to clobber.
+   */
+  resyncSoundFields?: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>) => void;
+};
 
 export interface SettingsFormOptions {
   /**
@@ -907,6 +919,13 @@ export function createSettingsForm(
 
   undo.addEventListener('click', () => populate(saved));
   reset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
+
+  form.resyncSoundFields = (sound) => {
+    soundInput.checked = sound.soundOnLevel;
+    soundGuidanceInput.checked = sound.soundGuidance;
+    saved = { ...saved, soundOnLevel: sound.soundOnLevel, soundGuidance: sound.soundGuidance };
+    notifyChanged();
+  };
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
