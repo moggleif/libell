@@ -160,6 +160,11 @@ export const MESSAGES = {
     'onboard.source.h': 'How do you want to measure?',
     'onboard.source.intro': 'Choose which sensor Libell should read tilt from.',
     'onboard.source.phone': 'This phone',
+    // Vehicle step: which vehicle every later step's imagery and field
+    // labels are drawn for. Reuses 'vehicle.motorhome'/'vehicle.caravan' —
+    // the exact same labels Settings uses — rather than separate copy.
+    'onboard.vehicle.h': 'What are you leveling?',
+    'onboard.vehicle.intro': 'Choose your vehicle — the rest of this guide matches it.',
     'onboard.step1.h': 'Place the phone like this',
     'onboard.next': 'Next',
     'onboard.close': 'Close the introduction',
@@ -169,6 +174,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
+    'onboard.legend.dim': 'Gray – — a low wheel your ramps don’t reach.',
     // Compact onboarding steps (#156): points to ☰ for everything the
     // reduced step doesn't show.
     'onboard.moreInMenu': 'More options are available later in Settings.',
@@ -339,7 +345,7 @@ export const MESSAGES = {
 
     'help.what.h': 'What Libell does',
     'help.what.t':
-      'Lay the phone flat inside the motorhome with the top toward the front. ' +
+      'Lay the phone flat inside the vehicle with the top toward the front. ' +
       'The screen shows your vehicle from above, and each wheel tells you what to do.',
     'help.first.h': 'Before the first use',
     'help.first.t':
@@ -544,6 +550,8 @@ export const MESSAGES = {
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro': 'Välj vilken sensor Libell ska läsa lutning från.',
     'onboard.source.phone': 'Den här telefonen',
+    'onboard.vehicle.h': 'Vad ska nivelleras?',
+    'onboard.vehicle.intro': 'Välj fordon — resten av guiden anpassas efter det.',
     'onboard.step1.h': 'Lägg telefonen så här',
     'onboard.next': 'Nästa',
     'onboard.close': 'Stäng introduktionen',
@@ -553,6 +561,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
+    'onboard.legend.dim': 'Grått – — ett lågt hjul som ramperna inte når.',
     'onboard.moreInMenu': 'Fler alternativ finns senare i Inställningar.',
     'onboard.audioGuidance.hint':
       'Tips: Inställningar → Allmänt har en valfri "Kontinuerlig ljudvägledning" — en ' +
@@ -714,7 +723,7 @@ export const MESSAGES = {
 
     'help.what.h': 'Vad Libell gör',
     'help.what.t':
-      'Lägg telefonen plant i husbilen med ovansidan mot fronten. Skärmen visar ' +
+      'Lägg telefonen plant i fordonet med ovansidan mot fronten. Skärmen visar ' +
       'fordonet ovanifrån, och varje hjul talar om vad du ska göra.',
     'help.first.h': 'Före första användningen',
     'help.first.t':

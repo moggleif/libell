@@ -68,15 +68,45 @@ function next(): void {
   nextButton.click();
 }
 
-describe('onboarding wizard — Classic (pixel-identical to pre-#110)', () => {
-  it('shows the "n / total" text progress, not bars', () => {
+function pickVehicle(value: 'motorhome' | 'caravan'): void {
+  const radio = card().querySelector<HTMLInputElement>(
+    `input[name="onboarding-vehicle"][value="${value}"]`,
+  )!;
+  radio.checked = true;
+  radio.dispatchEvent(new Event('change'));
+}
+
+describe('onboarding wizard — Classic (no Web Bluetooth): vehicle, placement, settings, calibration', () => {
+  it('shows the "n / total" text progress, not bars, and starts on the vehicle step', () => {
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 3');
+    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 4');
     expect(card().querySelector('.onboarding__bars')).toBeNull();
   });
 
-  it('renders the SVG legend illustration and caption on step 1, not legend rows', () => {
+  it('the vehicle step offers Motorhome/Caravan, motorhome pre-selected by default', () => {
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    const radios = [
+      ...card().querySelectorAll<HTMLInputElement>('input[name="onboarding-vehicle"]'),
+    ];
+    expect(radios.map((r) => r.value)).toEqual(['motorhome', 'caravan']);
+    expect(radios[0]!.checked).toBe(true);
+    expect(radios[1]!.checked).toBe(false);
+  });
+
+  it('pre-selects whatever vehicle type is already stored, not always motorhome', () => {
+    showOnboarding(
+      makeOptions({ initialSettings: { ...classicSettings(), vehicleType: 'caravan' } }),
+    );
+    const radios = [
+      ...card().querySelectorAll<HTMLInputElement>('input[name="onboarding-vehicle"]'),
+    ];
+    expect(radios[1]!.checked).toBe(true);
+  });
+
+  it('renders the SVG legend illustration and caption on the placement step, not legend rows', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement
     expect(card().querySelector('.illu')).not.toBeNull();
     expect(card().textContent).toContain(t('help.screen.t'));
     expect(card().querySelector('.onboarding__legend')).toBeNull();
@@ -89,15 +119,17 @@ describe('onboarding wizard — Classic (pixel-identical to pre-#110)', () => {
     expect(card().querySelector('.onboarding__nav--modern')).toBeNull();
   });
 
-  it('advances through steps and finishes on the last step’s button', () => {
+  it('advances through all four steps and finishes on the last step’s button', () => {
     let finished = false;
     showOnboarding(
       makeOptions({ initialSettings: classicSettings(), onFinished: () => (finished = true) }),
     );
-    next(); // step 1 -> 2
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
-    next(); // step 2 -> 3
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 3');
+    next(); // vehicle -> placement
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 4');
+    next(); // placement -> settings
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 4');
+    next(); // settings -> calibration
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('4 / 4');
     next(); // "Done" on the last step
     expect(finished).toBe(true);
   });
@@ -107,6 +139,84 @@ describe('onboarding wizard — Classic (pixel-identical to pre-#110)', () => {
     showOnboarding(makeOptions({ onFinished: () => (finished = true) }));
     card().querySelector<HTMLButtonElement>('.onboarding__close')!.click();
     expect(finished).toBe(true);
+  });
+});
+
+describe('onboarding wizard — vehicle type shapes the rest of the guide (#184)', () => {
+  it('picking Caravan and advancing shows the caravan placement illustration, not the motorhome one', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    expect(card().querySelector('.illu__drawbar')).not.toBeNull();
+  });
+
+  it('leaving Motorhome selected shows the motorhome placement illustration (no drawbar)', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement (motorhome stays checked)
+    expect(card().querySelector('.illu__drawbar')).toBeNull();
+  });
+
+  it("a caravan choice relabels the settings step's wheelbase field and hides front track width", () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    expect(card().textContent).toContain(t('settings.axleToJockey'));
+    const frontTrack = card().querySelector('input[name="trackWidthFrontMm"]')?.closest('label');
+    expect(frontTrack?.hidden).toBe(true);
+  });
+
+  it('saving from the settings step persists the chosen vehicle type, even though there is no select on this reduced step', () => {
+    let saved: LevelSettings | null = null;
+    showOnboarding(
+      makeOptions({
+        initialSettings: classicSettings(),
+        onSettingsSaved: (s) => (saved = s),
+      }),
+    );
+    expect(card().querySelector('select')).toBeNull();
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    expect(card().querySelector('select')).toBeNull();
+    const form = card().querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(saved).not.toBeNull();
+    expect(saved!.vehicleType).toBe('caravan');
+  });
+});
+
+describe('onboarding wizard — calibration step reuses the real calibration section as-is (#184)', () => {
+  it('shows the full calibration UI, not a reduced one — flip calibration and vehicle zero included', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    next(); // settings -> calibration
+    const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
+    expect(buttonTexts).toContain(t('calibration.now'));
+    expect(buttonTexts).toContain(t('calibration.flip.start'));
+    expect(buttonTexts).toContain(t('calibration.vehicle.now'));
+    expect(buttonTexts).toContain(t('calibration.clear'));
+    expect(card().textContent).toContain(t('calibration.vehicle.h'));
+  });
+
+  it('Modern appearance: the calibration step renders the two-card layout, same as Settings', () => {
+    showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    next(); // settings -> calibration
+    expect(card().querySelectorAll('.calibration-card')).toHaveLength(2);
+  });
+
+  it('is still skippable, same terms as before', () => {
+    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next();
+    next();
+    next(); // -> calibration
+    const skip = [...card().querySelectorAll('button')].find(
+      (b) => b.textContent === t('onboard.skipStep'),
+    )!;
+    expect(skip).not.toBeUndefined();
   });
 });
 
@@ -131,23 +241,24 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
   }
 
   describe('regression guard: no Web Bluetooth', () => {
-    it('never adds the source-choice step — byte-identical to the pre-#135 3-step wizard', () => {
+    it('never adds the source-choice step — the wizard starts straight on the vehicle step', () => {
       withoutBluetooth();
       showOnboarding(makeOptions({ initialSettings: classicSettings() }));
-      // Same first heading, same 3-step total, no radios anywhere.
-      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 3');
-      expect(card().querySelectorAll('input[type="radio"]')).toHaveLength(0);
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 4');
+      expect(card().querySelectorAll('input[name="onboarding-source"]')).toHaveLength(0);
       expect(card().textContent).not.toContain(t('onboard.source.h'));
 
-      next(); // step 1 -> 2 (settings)
+      next(); // vehicle -> placement
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
+      next(); // placement -> settings
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
-      next(); // step 2 -> 3 (calibration)
+      next(); // settings -> calibration
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.calibration'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 3');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('4 / 4');
     });
 
-    it('still finishes on the 3rd step’s "Done" button, same as before #135', () => {
+    it('still finishes on the 4th step’s "Done" button', () => {
       withoutBluetooth();
       let finished = false;
       showOnboarding(
@@ -155,18 +266,21 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       );
       next();
       next();
-      next(); // "Done" on the last (3rd) step
+      next();
+      next(); // "Done" on the last (4th) step
       expect(finished).toBe(true);
     });
   });
 
   describe('external sensor option available', () => {
-    it('adds "How do you want to measure?" as step 1 of 4, with two radios, phone pre-selected', () => {
+    it('adds "How do you want to measure?" as step 1 of 5, with two radios, phone pre-selected', () => {
       withBluetooth();
       showOnboarding(makeOptions({ initialSettings: classicSettings() }));
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.source.h'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 4');
-      const radios = [...card().querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('1 / 5');
+      const radios = [
+        ...card().querySelectorAll<HTMLInputElement>('input[name="onboarding-source"]'),
+      ];
       expect(radios).toHaveLength(2);
       expect(radios.map((r) => r.value)).toEqual(['phone', 'external']);
       expect(radios[0]!.checked).toBe(true);
@@ -177,20 +291,22 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(card().textContent).toContain(t('menu.sensorSource'));
     });
 
-    it('picking "This phone" (the default) and Next leads to the unchanged phone flow', () => {
+    it('picking "This phone" (the default) and Next leads to the vehicle step, then the unchanged phone flow', () => {
       withBluetooth();
       showOnboarding(makeOptions({ initialSettings: classicSettings() }));
-      next(); // source step -> placement (phone radio already checked)
+      next(); // source step -> vehicle (phone radio already checked)
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 5');
+      next(); // -> placement
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.step1.h'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 4');
       next(); // -> settings
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
       next(); // -> calibration
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.calibration'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('4 / 4');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 5');
     });
 
-    it('picking the external sensor branches to connect, then straight to settings', () => {
+    it('picking the external sensor branches to vehicle, then connect, then straight to settings', () => {
       withBluetooth();
       let finished = false;
       const connectEasyLevel = () => Promise.resolve<'granted'>('granted');
@@ -204,9 +320,11 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;
       external.checked = true;
       external.dispatchEvent(new Event('change'));
-      next(); // source step -> connect (embeds the real sensorSourceSection)
+      next(); // source step -> vehicle
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
+      next(); // vehicle -> connect (embeds the real sensorSourceSection)
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.sensorSource'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 4');
       // The real connect flow, not a wizard-only duplicate.
       expect(
         [...card().querySelectorAll('button')].some(
@@ -216,7 +334,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(card().textContent).toContain(t('sensorSource.install.h'));
       next(); // connect -> settings (dimensions), never the phone calibration step
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.settings'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 3');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('4 / 4');
       next(); // "Done" — no phone calibration step for the external path
       expect(finished).toBe(true);
     });
@@ -236,9 +354,10 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
   it('shows a bar per step, the current step highlighted, advancing on Next', () => {
     showOnboarding(makeOptions({ initialSettings: modernSettings() }));
     let bars = [...card().querySelectorAll('.onboarding__bar')];
-    expect(bars).toHaveLength(3);
+    expect(bars).toHaveLength(4);
     expect(bars.map((b) => b.classList.contains('onboarding__bar--active'))).toEqual([
       true,
+      false,
       false,
       false,
     ]);
@@ -250,14 +369,7 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
       false,
       true,
       false,
-    ]);
-
-    next();
-    bars = [...card().querySelectorAll('.onboarding__bar')];
-    expect(bars.map((b) => b.classList.contains('onboarding__bar--active'))).toEqual([
       false,
-      false,
-      true,
     ]);
   });
 
@@ -267,15 +379,17 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
     expect(heading.classList.contains('onboarding__title--modern')).toBe(true);
   });
 
-  it('renders three legend rows on step 1, each a color swatch + glyph + matching text', () => {
+  it('renders four legend rows on the placement step, each a color swatch + glyph + matching text', () => {
     showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    next(); // vehicle -> placement
     const rows = [...card().querySelectorAll('.onboarding__legend-row')];
-    expect(rows).toHaveLength(3);
+    expect(rows).toHaveLength(4);
 
     const expected: [string, string, string][] = [
       ['onboarding__legend-swatch--ok', '✓', t('onboard.legend.ok')],
       ['onboarding__legend-swatch--up', '↑', t('onboard.legend.up')],
       ['onboarding__legend-swatch--no', '✕', t('onboard.legend.no')],
+      ['onboarding__legend-swatch--dim', '–', t('onboard.legend.dim')],
     ];
     rows.forEach((row, i) => {
       const [swatchClass, glyph, text] = expected[i]!;
@@ -297,11 +411,12 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
         onFinished: () => (finished = true),
       }),
     );
-    // Step 1 has no skip button, same as Classic.
+    // The vehicle step has no skip button.
     expect(card().querySelector('.onboarding__nav--modern')).not.toBeNull();
     expect(card().querySelectorAll('.onboarding__skip--modern')).toHaveLength(0);
 
-    next(); // -> step 2, which does have a skip button
+    next(); // -> placement, which also has no skip button
+    next(); // -> settings, which does have a skip button
     const nav = card().querySelector('.onboarding__nav--modern')!;
     expect(nav.classList.contains('onboarding__nav--modern')).toBe(true);
     const skip = card().querySelector<HTMLButtonElement>('.onboarding__skip--modern')!;
@@ -312,6 +427,7 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
     skip.click(); // same skip-forward behavior as Classic
     const bars = [...card().querySelectorAll('.onboarding__bar')];
     expect(bars.map((b) => b.classList.contains('onboarding__bar--active'))).toEqual([
+      false,
       false,
       false,
       true,
@@ -325,12 +441,14 @@ describe('onboarding wizard — Modern appearance (#110)', () => {
 describe('onboarding wizard — compact steps (#156)', () => {
   it('Settings step shows only Wheelbase/Track width front/rear, not the full form', () => {
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
-    next(); // step 1 -> 2 (settings)
+    next(); // vehicle -> placement
+    next(); // placement -> settings
     expect(card().querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
     expect(card().querySelector('input[name="trackWidthFrontMm"]')).not.toBeNull();
     expect(card().querySelector('input[name="trackWidthRearMm"]')).not.toBeNull();
     // Nothing else from the full form: no tolerance/stability/appearance/
-    // audio fields, no Advanced disclosure, no vehicle-type/axle/theme selects.
+    // audio fields, no Advanced disclosure, no vehicle-type/axle selects
+    // (vehicle type was already asked on its own step).
     expect(card().querySelector('input[name="toleranceMm"]')).toBeNull();
     expect(card().querySelector('.settings__advanced')).toBeNull();
     expect(card().querySelector('select')).toBeNull();
@@ -345,6 +463,7 @@ describe('onboarding wizard — compact steps (#156)', () => {
         onSettingsSaved: (s) => (saved = s),
       }),
     );
+    next(); // -> placement
     next(); // -> settings
     const wheelbase = card().querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
     wheelbase.value = '4200';
@@ -360,50 +479,37 @@ describe('onboarding wizard — compact steps (#156)', () => {
     showOnboarding(
       makeOptions({ initialSettings: classicSettings(), onFinished: () => (finished = true) }),
     );
-    next(); // -> settings (step 2 of 3)
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
+    next(); // -> placement
+    next(); // -> settings (step 3 of 4)
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 4');
     const form = card().querySelector('form')!;
     form.dispatchEvent(new Event('submit', { cancelable: true }));
-    // Still open, still on step 2 — Save/Next stay fully independent here.
+    // Still open, still on the settings step — Save/Next stay fully independent here.
     expect(document.querySelector('.onboarding__card')).not.toBeNull();
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('2 / 3');
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('3 / 4');
     expect(finished).toBe(false);
-  });
-
-  it('Calibration step shows only "Calibrate now", not flip calibration or vehicle zero', () => {
-    showOnboarding(makeOptions({ initialSettings: classicSettings() }));
-    next(); // -> settings
-    next(); // -> calibration
-    const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
-    expect(buttonTexts).toContain(t('calibration.now'));
-    expect(buttonTexts).not.toContain(t('calibration.flip.start'));
-    expect(buttonTexts).not.toContain(t('calibration.vehicle.now'));
-    expect(buttonTexts).not.toContain(t('calibration.clear'));
-    expect(card().textContent).not.toContain(t('calibration.vehicle.h'));
-    expect(card().textContent).toContain(t('onboard.moreInMenu'));
   });
 
   it('Modern appearance: the same compact reduction applies', () => {
     showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    next(); // -> placement
     next(); // -> settings
     expect(card().querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
     expect(card().querySelector('.settings__tabs')).toBeNull();
     expect(card().querySelector('.settings__advanced')).toBeNull();
-    next(); // -> calibration
-    const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
-    expect(buttonTexts).toContain(t('calibration.now'));
-    expect(buttonTexts).not.toContain(t('calibration.vehicle.now'));
   });
 });
 
 describe('onboarding wizard — audio guidance discoverability (#154)', () => {
-  it('step 1 mentions Continuous audio guidance alongside the legend, in Classic', () => {
+  it('the placement step mentions Continuous audio guidance alongside the legend, in Classic', () => {
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    next(); // vehicle -> placement
     expect(card().textContent).toContain(t('onboard.audioGuidance.hint'));
   });
 
-  it('step 1 mentions Continuous audio guidance alongside the legend, in Modern', () => {
+  it('the placement step mentions Continuous audio guidance alongside the legend, in Modern', () => {
     showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    next(); // vehicle -> placement
     expect(card().textContent).toContain(t('onboard.audioGuidance.hint'));
   });
 
@@ -415,7 +521,8 @@ describe('onboarding wizard — audio guidance discoverability (#154)', () => {
         onSettingsSaved: (s) => (saved = s),
       }),
     );
-    next(); // step 1 -> 2 (settings) — the hint on step 1 doesn't touch settings
+    next(); // vehicle -> placement
+    next(); // placement -> settings — the hint on the placement step doesn't touch settings
     const form = card().querySelector('form')!;
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(saved).not.toBeNull();
@@ -425,6 +532,8 @@ describe('onboarding wizard — audio guidance discoverability (#154)', () => {
 
   it('is not shown on any other step', () => {
     showOnboarding(makeOptions({ initialSettings: classicSettings() }));
+    expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint')); // vehicle step
+    next(); // -> placement
     next(); // -> settings
     expect(card().textContent).not.toContain(t('onboard.audioGuidance.hint'));
     next(); // -> calibration
