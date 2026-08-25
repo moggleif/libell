@@ -172,7 +172,9 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(radios[0]!.checked).toBe(true);
       expect(radios[1]!.checked).toBe(false);
       expect(card().textContent).toContain(t('onboard.source.phone'));
-      expect(card().textContent).toContain(t('onboard.source.external'));
+      // "External sensor" (screen-cleanup follow-up), not a "Libell
+      // Sensor" product name that was never real.
+      expect(card().textContent).toContain(t('menu.sensorSource'));
     });
 
     it('picking "This phone" (the default) and Next leads to the unchanged phone flow', () => {

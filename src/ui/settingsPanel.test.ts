@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
 import { setLanguage, t } from './i18n';
+import { loadLanguage } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
@@ -103,8 +104,10 @@ describe('settings form', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
     const selects = form.querySelectorAll('select');
-    const themeSelect = selects[6] as HTMLSelectElement;
-    const appearanceSelect = selects[7] as HTMLSelectElement;
+    // Order: vehicle, axle, ramp model, ramp count, drain, unit, language
+    // (screen-cleanup follow-up), theme, appearance.
+    const themeSelect = selects[7] as HTMLSelectElement;
+    const appearanceSelect = selects[8] as HTMLSelectElement;
     expect(appearanceSelect.value).toBe('classic');
     appearanceSelect.value = 'modern';
     appearanceSelect.dispatchEvent(new Event('change'));
@@ -181,10 +184,10 @@ describe('settings form — Modern tabs (#108)', () => {
     return form.querySelector<HTMLButtonElement>(`.settings__tab[data-tab="${id}"]`)!;
   }
 
-  it('renders four tabs, Fordon active by default, and switches on click', () => {
+  it('renders five tabs, Fordon active by default, and switches on click', () => {
     const form = createSettingsForm(modern, vi.fn());
     const tabs = form.querySelectorAll('.settings__tab');
-    expect(tabs.length).toBe(4);
+    expect(tabs.length).toBe(5);
     const vehicleTab = tabButton(form, 'vehicle');
     const rampsTab = tabButton(form, 'ramps');
     const calibrationTab = tabButton(form, 'calibration');
@@ -231,6 +234,81 @@ describe('settings form — Modern tabs (#108)', () => {
     // The embedded targets section (targetsSection.ts, not a copy) renders
     // its "Normal" row even with no host wired (inertTargetsOptions).
     expect(panels[3]!.textContent).toContain('Normal');
+  });
+
+  // Language/Theme/Sound folded into a General tab (screen-cleanup
+  // follow-up) — promoted out of Vehicle/Advanced since they're common
+  // enough to want a visible home of their own.
+  it('renders a General tab with language, theme and sound — no longer inside Vehicle/Advanced', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const generalTab = tabButton(form, 'general');
+    expect(generalTab.textContent).toBe('General');
+
+    const vehiclePanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[0]!;
+    expect(vehiclePanel.textContent).not.toContain('Theme'); // moved to General
+
+    generalTab.click();
+    expect(generalTab.getAttribute('aria-selected')).toBe('true');
+    const generalPanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[4]!;
+    expect(generalPanel.hidden).toBe(false);
+    expect(generalPanel.textContent).toContain('Language');
+    expect(generalPanel.textContent).toContain('Theme');
+    expect(generalPanel.textContent).toContain('Chime when level');
+    // "Svenska"/"English" are literal, never translated (a language name
+    // names itself regardless of the current UI language).
+    expect(generalPanel.textContent).toContain('Svenska');
+    expect(generalPanel.textContent).toContain('English');
+  });
+
+  describe('the Language select persists the choice and reloads', () => {
+    // General is the 5th tabpanel; scope past it so we don't hit the
+    // Theme <select> that shares the same .settings__select class there.
+    function languageSelect(form: HTMLFormElement): HTMLSelectElement {
+      const generalPanel = form.querySelectorAll<HTMLElement>('.settings__tabpanel')[4]!;
+      return generalPanel.querySelector<HTMLSelectElement>('.settings__select')!;
+    }
+
+    beforeEach(() => {
+      localStorage.removeItem('libell.language');
+    });
+
+    it('picking Svenska saves "sv"', () => {
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      const form = createSettingsForm(modern, vi.fn());
+      const select = languageSelect(form);
+      select.value = 'sv';
+      select.dispatchEvent(new Event('change'));
+      expect(loadLanguage()).toBe('sv');
+      expect(reload).toHaveBeenCalledOnce();
+      reload.mockRestore();
+    });
+
+    it('picking English saves "en"', () => {
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      const form = createSettingsForm(modern, vi.fn());
+      const select = languageSelect(form);
+      select.value = 'en';
+      select.dispatchEvent(new Event('change'));
+      expect(loadLanguage()).toBe('en');
+      reload.mockRestore();
+    });
+
+    it('picking Automatic clears any stored override', () => {
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      localStorage.setItem('libell.language', 'sv');
+      const form = createSettingsForm(modern, vi.fn());
+      const select = languageSelect(form);
+      select.value = 'auto';
+      select.dispatchEvent(new Event('change'));
+      expect(loadLanguage()).toBeNull();
+      reload.mockRestore();
+    });
+
+    it('preselects the select to the currently stored language', () => {
+      localStorage.setItem('libell.language', 'en');
+      const form = createSettingsForm(modern, vi.fn());
+      expect(languageSelect(form).value).toBe('en');
+    });
   });
 
   it('shows the pinned card for the default (catalog) model, with its step count', () => {

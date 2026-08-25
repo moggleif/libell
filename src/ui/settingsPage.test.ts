@@ -68,7 +68,7 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     expect(page.isOpen()).toBe(true);
     expect(page.element.hasAttribute('hidden')).toBe(false);
     expect(page.element.querySelector('form.settings__form')).not.toBeNull();
-    expect(page.element.querySelectorAll('.settings__tab')).toHaveLength(4);
+    expect(page.element.querySelectorAll('.settings__tab')).toHaveLength(5);
 
     // Toggles fully closed on a second click.
     button.click();
