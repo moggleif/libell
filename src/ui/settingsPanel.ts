@@ -34,6 +34,7 @@ import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domai
 import { saveSettings } from '../data/settingsStore';
 import { applyAppearance, applyTheme } from './theme';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
+import { createTargetsSection, type TargetsOptions } from './targetsSection';
 import { t, type MessageKey } from './i18n';
 
 type NumberKey =
@@ -75,6 +76,25 @@ function inertCalibrationOptions(): CalibrationOptions {
 }
 
 /**
+ * Same fallback role as `inertCalibrationOptions` above, for the embedded
+ * Targets tab (screen-cleanup follow-up): a standalone harness or a unit
+ * test building a Modern-mode form directly still renders without a real
+ * host — just an always-empty, non-functional preset list.
+ */
+function inertTargetsOptions(): TargetsOptions {
+  return {
+    getTargetPresets: () => [],
+    getActiveTargetId: () => null,
+    selectTarget: () => {},
+    addTargetPreset: () => null,
+    deleteTargetPreset: () => {},
+    getCalibration: () => null,
+    getVehicleCalibration: () => null,
+    getActiveTargetName: () => null,
+  };
+}
+
+/**
  * The Modern tab bar exposes `selectCalibrationTab` (undefined in Classic,
  * which has no tabs) so the menu's Calibration entry can jump straight to
  * the Kalibrering tab of this same live instance instead of mounting a
@@ -82,6 +102,12 @@ function inertCalibrationOptions(): CalibrationOptions {
  */
 export type SettingsFormElement = HTMLFormElement & {
   selectCalibrationTab?: () => void;
+  /**
+   * Same shortcut as `selectCalibrationTab` above, for Targets
+   * (screen-cleanup follow-up, Modern only — Targets stays its own
+   * standalone page in Classic, which has no tabs at all).
+   */
+  selectTargetsTab?: () => void;
   /**
    * Resync the Chime/Continuous-audio-guidance checkboxes (and the
    * Save/Undo baseline for just those two fields) from a value that
@@ -113,6 +139,7 @@ export function createSettingsForm(
   onSave: (settings: LevelSettings) => void,
   calibrationOptions?: CalibrationOptions,
   formOptions?: SettingsFormOptions,
+  targetsOptions?: TargetsOptions,
 ): SettingsFormElement {
   const compact = formOptions?.compact ?? false;
   const form: SettingsFormElement = document.createElement('form');
@@ -534,7 +561,7 @@ export function createSettingsForm(
   // element above is reused as-is, just reparented into tab panels
   // instead of appended flat.
   // ============================================================
-  let selectTab: ((id: 'vehicle' | 'ramps' | 'calibration') => void) | null = null;
+  let selectTab: ((id: 'vehicle' | 'ramps' | 'calibration' | 'targets') => void) | null = null;
   /** Set by the Modern branch below; stays null (a no-op) in Classic. */
   let renderKlossarUiImpl: (() => void) | null = null;
   function renderKlossarUi(): void {
@@ -553,7 +580,7 @@ export function createSettingsForm(
       actions,
     );
   } else if (appearance === 'modern') {
-    type TabId = 'vehicle' | 'ramps' | 'calibration';
+    type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets';
     const tabsBar = document.createElement('div');
     tabsBar.className = 'settings__tabs';
     tabsBar.setAttribute('role', 'tablist');
@@ -575,6 +602,12 @@ export function createSettingsForm(
     const vehicleTab = makeTabButton('vehicle');
     const rampsTab = makeTabButton('ramps');
     const calibrationTab = makeTabButton('calibration');
+    // Targets (screen-cleanup follow-up): folded in as a 4th tab instead
+    // of its own drawer entry — an intentional non-level target (#122,
+    // ADR 0013) is just as much "how this vehicle is set up" as the
+    // other three. Classic keeps it as its own standalone page (see
+    // menu.ts) — it has no tabs to fold into.
+    const targetsTab = makeTabButton('targets');
 
     const vehiclePanel = document.createElement('div');
     vehiclePanel.className = 'settings__tabpanel';
@@ -582,9 +615,12 @@ export function createSettingsForm(
     rampsPanel.className = 'settings__tabpanel settings__tabpanel--klossar';
     const calibrationPanel = document.createElement('div');
     calibrationPanel.className = 'settings__tabpanel';
+    const targetsPanel = document.createElement('div');
+    targetsPanel.className = 'settings__tabpanel';
     tabPanels.set('vehicle', vehiclePanel);
     tabPanels.set('ramps', rampsPanel);
     tabPanels.set('calibration', calibrationPanel);
+    tabPanels.set('targets', targetsPanel);
 
     // --- Kalibrering tab: embeds the same calibration section the menu
     // uses standalone (#109) — not a reimplementation. Its status text
@@ -595,12 +631,18 @@ export function createSettingsForm(
     );
     calibrationPanel.append(embeddedCalibration.element);
 
+    // --- Targets tab: same reuse pattern as Kalibrering above.
+    const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
+    targetsPanel.append(embeddedTargets.element);
+
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
       for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
       if (id === 'calibration') embeddedCalibration.refresh();
+      if (id === 'targets') embeddedTargets.refresh();
     };
     form.selectCalibrationTab = () => selectTab?.('calibration');
+    form.selectTargetsTab = () => selectTab?.('targets');
 
     // --- Fordon tab: today's vehicle/axle/measurement fields visible by
     // default; tolerance/stability/appearance/audio behind Advanced (#157).
@@ -789,7 +831,7 @@ export function createSettingsForm(
       });
     };
 
-    form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel);
+    form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel);
     selectTab('vehicle');
 
     // applyUnitEverywhere sets tab-label text (needs unit/vehicle
@@ -798,6 +840,7 @@ export function createSettingsForm(
       vehicleTab.textContent = t('settings.tab.vehicle');
       rampsTab.textContent = t('settings.tab.ramps');
       calibrationTab.textContent = t('menu.calibration');
+      targetsTab.textContent = t('menu.targets');
     });
   } else {
     // --- Classic: one flat page. Tolerance/stability/appearance/audio

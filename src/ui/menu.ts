@@ -396,9 +396,11 @@ export function createMenu(options: MenuOptions): Menu {
     refreshDiagnostics();
     refreshModernCards();
     settingsForm.resyncSoundFields?.(options.getSoundPrefs());
-    // Modern's Calibration entry is a shortcut into Settings (#155) — jump
-    // its shared instance to the Kalibrering tab every time it's opened.
+    // Modern's Calibration/Targets entries are shortcuts into Settings
+    // (#155, screen-cleanup follow-up) — jump its shared instance to the
+    // matching tab every time either is opened.
     if (section === 'calibration') settingsForm.selectCalibrationTab?.();
+    if (section === 'targets') settingsForm.selectTargetsTab?.();
     render(section);
   }
 
@@ -461,6 +463,8 @@ export function createMenu(options: MenuOptions): Menu {
       closeAll();
     },
     options,
+    undefined,
+    options,
   );
   settingsBody.append(settingsForm);
   addSection('settings', t('menu.settings'), settingsBody, {
@@ -518,15 +522,21 @@ export function createMenu(options: MenuOptions): Menu {
   }
   // Targets (#122, ADR 0013): an intentional non-level target, on top of
   // the zero point set up above — never a third block inside Calibration
-  // (it's a *target*, not a calibration). Selecting a target is a
-  // deliberate optional choice, not part of first-run setup, so it
-  // carries no pending status and does not compete with Settings /
-  // Calibration / Help for top billing — still just a couple of taps
-  // away, and the main-screen badge (`targetBadge.ts`) jumps straight to
-  // this page once a target is active.
-  const targetsSection = createTargetsSection(options);
-  const refreshTargets = targetsSection.refresh;
-  addOtherSection('targets', t('menu.targets'), targetsSection.element, 'advanced');
+  // (it's a *target*, not a calibration). The main-screen badge
+  // (`targetBadge.ts`) jumps straight to it once a target is active.
+  //
+  // Modern (screen-cleanup follow-up): folded into Settings as a 4th tab
+  // (settingsPanel.ts), same shortcut pattern as Calibration above — never
+  // a second independent createTargetsSection render. Classic has no
+  // tabs, so it keeps its own standalone page exactly as before.
+  let refreshTargets: () => void = () => {};
+  if (isModern) {
+    addSection('targets', t('menu.targets'), settingsBody);
+  } else {
+    const targetsSection = createTargetsSection(options);
+    refreshTargets = targetsSection.refresh;
+    addOtherSection('targets', t('menu.targets'), targetsSection.element, 'advanced');
+  }
 
   // --- OTHER (reached rarely; Modern groups these under an "ÖVRIGT"
   // heading as plain rows instead of cards, #107) ---
@@ -541,6 +551,15 @@ export function createMenu(options: MenuOptions): Menu {
   const refreshDiagnostics = diagnosticsSection.refresh;
   addOtherSection('diagnostics', t('menu.diagnostics'), diagnosticsSection.element);
 
+  // ADVANCED now only ever holds External sensor (screen-cleanup
+  // follow-up: Targets moved into the Settings tabs above) — never show
+  // its heading over an empty list on a browser without Web Bluetooth.
+  if (isModern) {
+    const advancedEmpty = advancedList.children.length === 0;
+    advancedHeading.hidden = advancedEmpty;
+    advancedList.hidden = advancedEmpty;
+  }
+
   return {
     element: container,
     open(section) {
@@ -551,8 +570,26 @@ export function createMenu(options: MenuOptions): Menu {
     },
     attach(button) {
       button.addEventListener('click', () => {
-        if (depth === 0) showDrawer();
-        else goBack();
+        if (depth > 0) {
+          // Modern's gear icon jumps two levels in one tap below (drawer
+          // + Settings page) — undo both in one tap here too, so the SAME
+          // button always toggles fully open <-> fully closed, never
+          // stopping halfway on the drawer. Classic only ever opens one
+          // level via this button, so goBack() alone is still correct.
+          if (isModern) closeAll();
+          else goBack();
+          return;
+        }
+        // Modern (screen-cleanup follow-up): the gear icon jumps straight
+        // to the Settings tabs — Vehicle/Ramps/Kalibrering/Targets are all
+        // one tap away with no intermediate list to click through first.
+        // The drawer (External sensor, Diagnostics, Show introduction) is
+        // still exactly one ‹ back-tap away from there, same as it always
+        // was one tap from the drawer to any page — this just changes
+        // which end of that hop happens first. Classic has no tabs to
+        // land on, so it keeps opening the drawer first, as ever.
+        if (isModern) showPage('settings');
+        else showDrawer();
       });
     },
   };

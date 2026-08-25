@@ -181,10 +181,10 @@ describe('settings form — Modern tabs (#108)', () => {
     return form.querySelector<HTMLButtonElement>(`.settings__tab[data-tab="${id}"]`)!;
   }
 
-  it('renders three tabs, Fordon active by default, and switches on click', () => {
+  it('renders four tabs, Fordon active by default, and switches on click', () => {
     const form = createSettingsForm(modern, vi.fn());
     const tabs = form.querySelectorAll('.settings__tab');
-    expect(tabs.length).toBe(3);
+    expect(tabs.length).toBe(4);
     const vehicleTab = tabButton(form, 'vehicle');
     const rampsTab = tabButton(form, 'ramps');
     const calibrationTab = tabButton(form, 'calibration');
@@ -213,6 +213,24 @@ describe('settings form — Modern tabs (#108)', () => {
     form.selectCalibrationTab?.();
     expect(tabButton(form, 'calibration').getAttribute('aria-selected')).toBe('true');
     expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
+  });
+
+  // Targets folded in as a 4th tab (screen-cleanup follow-up), same
+  // embed-and-shortcut pattern as Kalibrering above.
+  it("renders a Targets tab with the embedded targets section, and exposes selectTargetsTab for the menu's shortcut", () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const targetsTab = tabButton(form, 'targets');
+    expect(targetsTab.textContent).toBe('Targets');
+    expect(typeof form.selectTargetsTab).toBe('function');
+
+    form.selectTargetsTab?.();
+    expect(targetsTab.getAttribute('aria-selected')).toBe('true');
+    expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
+    const panels = form.querySelectorAll<HTMLElement>('.settings__tabpanel');
+    expect(panels[3]!.hidden).toBe(false);
+    // The embedded targets section (targetsSection.ts, not a copy) renders
+    // its "Normal" row even with no host wired (inertTargetsOptions).
+    expect(panels[3]!.textContent).toContain('Normal');
   });
 
   it('shows the pinned card for the default (catalog) model, with its step count', () => {
