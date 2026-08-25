@@ -8,11 +8,20 @@
  *
  * #129 adds the connection-state text distinguishing a live connection from
  * one that dropped (previously both read as "connected", #116's original
- * minimal scope), plus battery/RSSI/temperature rows. Those are always
- * shown as "not available yet": `faf52c22-...`'s bytes beyond the firmware
- * version are undecoded (#116, deferred to #123) and there is no reliable,
- * cross-browser way to read RSSI from Web Bluetooth — this page must never
- * fabricate a number for any of the three.
+ * minimal scope), plus battery/RSSI/temperature rows. #123 decodes
+ * `faf52c22-...`'s battery and temperature bytes (`easyLevelProtocol.ts`'s
+ * `parseEasyLevelStatus`), so those two now show real values once the first
+ * status notification arrives — "not available yet" only in the brief
+ * window before that, or before EasyLevel has ever connected. Signal
+ * strength stays "not available yet": there is no reliable, cross-browser
+ * way to read RSSI from Web Bluetooth — this page must never fabricate a
+ * number for it.
+ *
+ * #123 also adds a low-battery warning here (not a leveling-screen
+ * interruption): a plain threshold with a hysteresis band
+ * (`easyLevelProtocol.ts`'s `isLowBattery`) so it doesn't flicker right at
+ * the line, shown only on this settings page and only while EasyLevel is
+ * the active source.
  *
  * #131 adds the installation-offset block below the health details: once
  * the box is permanently mounted, its own physical orientation stops
@@ -23,6 +32,7 @@
  * connected — same rule the health-detail block above already follows.
  */
 import type { Calibration, SensorSource } from '../domain/settings';
+import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
@@ -47,6 +57,9 @@ export interface SensorSourceOptions {
   connectEasyLevel(): Promise<SensorState>;
   /** Explicit disconnect — falls back to the phone sensor. */
   disconnectEasyLevel(): void;
+  /** `faf52c22-...` parsed into battery/temperature/firmware-tier (#123),
+   * or null before the first status notification arrives. */
+  getEasyLevelStatus(): EasyLevelStatus | null;
   /**
    * The box's installation offset (#131, ADR 0014) — where the
    * permanently-mounted enclosure physically sits, mirroring
@@ -101,24 +114,47 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   detailHeading.className = 'menu__heading';
   detailHeading.textContent = t('sensorSource.detail.heading');
   const notAvailable = t('sensorSource.detail.notAvailable');
-  function detailRow(
-    labelKey:
-      | 'sensorSource.detail.battery'
-      | 'sensorSource.detail.rssi'
-      | 'sensorSource.detail.temperature',
-  ): HTMLParagraphElement {
-    const row = document.createElement('p');
-    row.className = 'menu__text';
-    row.textContent = t(labelKey, { value: notAvailable });
-    return row;
-  }
-  detail.append(
-    detailHeading,
-    detailRow('sensorSource.detail.battery'),
-    detailRow('sensorSource.detail.rssi'),
-    detailRow('sensorSource.detail.temperature'),
-  );
+  const batteryRow = document.createElement('p');
+  batteryRow.className = 'menu__text';
+  const rssiRow = document.createElement('p');
+  rssiRow.className = 'menu__text';
+  // Signal strength genuinely never becomes available (no reliable,
+  // cross-browser way to read RSSI from Web Bluetooth) — set once, unlike
+  // battery/temperature below which `refresh()` keeps live.
+  rssiRow.textContent = t('sensorSource.detail.rssi', { value: notAvailable });
+  const temperatureRow = document.createElement('p');
+  temperatureRow.className = 'menu__text';
+  // Low-battery warning (#123): a plain threshold + hysteresis band, not a
+  // full dead-band/dwell stabilizer — see `isLowBattery`'s doc comment.
+  // Hidden whenever it doesn't apply, never removed from the layout.
+  const lowBatteryRow = document.createElement('p');
+  lowBatteryRow.className = 'menu__text menu__text--warning';
+  lowBatteryRow.hidden = true;
+  let wasLowBattery = false;
+  detail.append(detailHeading, batteryRow, rssiRow, temperatureRow, lowBatteryRow);
   body.append(detail);
+
+  /** Battery/temperature (#123) — refreshed every `refresh()` call, unlike
+   * the fixed rssiRow above, since a status notification can arrive at any
+   * time while this page is open. */
+  function refreshStatus(): void {
+    const easyLevelStatus = options.getEasyLevelStatus();
+    batteryRow.textContent = t('sensorSource.detail.battery', {
+      value: easyLevelStatus ? `${Math.round(easyLevelStatus.batteryPercent)}%` : notAvailable,
+    });
+    temperatureRow.textContent = t('sensorSource.detail.temperature', {
+      value: easyLevelStatus ? `${easyLevelStatus.temperatureCelsius.toFixed(1)}°C` : notAvailable,
+    });
+    wasLowBattery = easyLevelStatus
+      ? isLowBattery(easyLevelStatus.batteryPercent, wasLowBattery)
+      : false;
+    lowBatteryRow.hidden = !wasLowBattery;
+    if (wasLowBattery && easyLevelStatus) {
+      lowBatteryRow.textContent = t('sensorSource.lowBattery', {
+        value: `${Math.round(easyLevelStatus.batteryPercent)}%`,
+      });
+    }
+  }
 
   // Installation calibration (#131, ADR 0014): the same "vehicle zero"
   // concept R24 already gives the phone (ADR 0010), generalized to this
@@ -209,7 +245,14 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
         : t('sensorSource.status.connected');
     detail.hidden = !active;
     installSection.hidden = !active;
-    if (active) refreshInstall();
+    if (active) {
+      refreshInstall();
+      refreshStatus();
+    } else {
+      // Never carry a stale "low" latch into a future EasyLevel session.
+      wasLowBattery = false;
+      lowBatteryRow.hidden = true;
+    }
   }
 
   connectButton.addEventListener('click', () => {

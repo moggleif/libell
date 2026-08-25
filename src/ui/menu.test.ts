@@ -44,6 +44,7 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getRawTilt: () => null,
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
+    getEasyLevelStatus: () => null,
     ...overrides,
   };
 }

@@ -510,20 +510,35 @@ URL and must keep working with no signal.
   dot is the visible half of the "never leave apparently-live instructions on screen"
   guarantee; the freeze/stale-data logic that backs it is separate (#132).
 - **Given** the "External sensor" menu page, whether connected or disconnected
-- **Then** it spells out the connection state in full, and shows battery, signal
-  strength and temperature explicitly as "not available yet" — never silently
-  omitted, never a fabricated number — since none of the three is actually decoded
-  yet (see the `faf52c22-...` note below, and #123).
+- **Then** it spells out the connection state in full, and shows battery and
+  temperature as real decoded values once the first `faf52c22-...` status
+  notification has arrived — "not available yet" only in the brief window before
+  that, or before EasyLevel has ever connected (#123). Signal strength shows "not
+  available yet" always: there is no reliable, cross-browser way to read RSSI from
+  Web Bluetooth, and this page must never fabricate a number for it.
 - **Given** the box's `faf52c21-...` notification payload (6× signed int16,
   little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
 - **Then** only the accelerometer triplet is used, mapped directly into a
   `GravityVector` at whatever scale the box reports it — deliberately not
   reimplementing the box's own onboard filter, since the app's existing
   `atan2`-based roll/pitch math only depends on the ratio between the axes, not their
-  absolute unit (see `src/sensor/easyLevelProtocol.ts`). The `faf52c22-...`
-  characteristic (firmware version, temperature, calibration bytes) is read
-  best-effort and not required for leveling to work; its exact layout beyond the
-  firmware-version byte is undecoded and out of scope here.
+  absolute unit (see `src/sensor/easyLevelProtocol.ts`).
+- **Given** the box's `faf52c22-...` status payload (#123, decoded from the official
+  app's decompiled bytecode)
+- **Then** bytes 2–3 (little-endian uint16 `rawMv`) give battery via
+  `clamp(rawMv × 0.1 − 200, 0, 100)`; byte 7 gives the firmware tier (thresholds at
+  32/48/64/80/96/112 → tiers 1–7) and selects the temperature formula — tier 1
+  (byte7 < 32): `clamp(byte[0] / 16 + 25, −40, 80)`; tier 2+ (byte7 ≥ 32):
+  `clamp(int16LE(bytes[0..1]) / 100, −40, 80)`. Bytes 8–19 (six little-endian int16
+  zero/calibration values, tier ≥ 3 only) are unrelated to battery/temperature and
+  were already read and used in the leveling math since #116. This characteristic is
+  still read best-effort and never required for leveling to work.
+- **Given** the EasyLevel box is the active source and its battery is low
+- **When** its reported battery percentage drops below a threshold (20%, with a few
+  percentage points of hysteresis so it doesn't flicker right at the line — see
+  `easyLevelProtocol.ts`'s `isLowBattery`)
+- **Then** a warning is shown on the "External sensor" menu page (settings), never as
+  a leveling-screen interruption — the main leveling view is unaffected either way.
 
 ## R33 — EasyLevel box: remember the selection and auto-reconnect on open (#130)
 
@@ -653,12 +668,13 @@ R8's always-visible main-screen degree readout is unaffected.
   its connection state (R32/R33), sample rate, time since the last sample, raw
   (uncalibrated) roll/pitch, calibrated roll/pitch (the same effective calibration —
   sensor bias + vehicle zero + active target, R24/R31 — the leveling math itself
-  uses), the effective target preset's name or "Normal" (R31), battery/signal
-  strength when available, and the running app version (R28's About page value,
-  reused, not recomputed).
+  uses), the effective target preset's name or "Normal" (R31), battery/temperature/
+  signal strength when available, and the running app version (R28's About page
+  value, reused, not recomputed).
 - **Given** I have never connected an external sensor
-- **Then** every external-only field (battery, signal strength) reads "—" — never a
-  broken or undefined display — and the page works entirely from the phone sensor.
+- **Then** every external-only field (battery, temperature, signal strength) reads
+  "—" — never a broken or undefined display — and the page works entirely from the
+  phone sensor.
 - **Given** I want to report a problem
 - **When** I tap "Copy diagnostics"
 - **Then** a plain-text summary of everything on the page is copied to the clipboard,
@@ -674,7 +690,9 @@ R8's always-visible main-screen degree readout is unaffected.
   event-driven with no fixed clock (R32/R35), so it is described as such rather than
   given a fabricated precise number — an honest approximation, not a live
   measurement, for a support-only page that is opened rarely and briefly.
-- Battery/signal strength reuse R32's exact "not available yet" wording — never a
+- Battery/temperature show the same real decoded values R32 shows on the "External
+  sensor" page (#123), read from the identical seam so the two pages can never
+  disagree. Signal strength reuses R32's exact "not available yet" wording — never a
   second, slightly different phrasing, and never relaxed into a fabricated value.
 
 ## R37 — Sensor unavailable: an explicit Retry / "Use phone sensor" prompt (#134)

@@ -38,6 +38,7 @@ function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOpti
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('unsupported'),
     disconnectEasyLevel: () => {},
+    getEasyLevelStatus: () => null,
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,

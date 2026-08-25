@@ -11,6 +11,7 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('granted'),
     disconnectEasyLevel: () => {},
+    getEasyLevelStatus: () => null,
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
@@ -118,7 +119,7 @@ describe('createSensorSourceSection (#116)', () => {
     expect(detail?.hidden).toBe(true);
   });
 
-  it('shows battery/RSSI/temperature explicitly as "not available yet" once EasyLevel is (or was) active — never omitted, never fabricated', () => {
+  it('shows battery/RSSI/temperature explicitly as "not available yet" before the first faf52c22 notification — never omitted, never fabricated', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'granted' }),
     );
@@ -127,8 +128,32 @@ describe('createSensorSourceSection (#116)', () => {
     expect(detail?.textContent).toContain('Battery');
     expect(detail?.textContent).toContain('Signal strength');
     expect(detail?.textContent).toContain('Temperature');
+    // RSSI never becomes available; battery/temperature also read "not
+    // available yet" here since no status has arrived (getEasyLevelStatus
+    // returns null) — all three show it, distinctly from once real values
+    // arrive (below).
     const notAvailableCount = (detail?.textContent?.match(/Not available yet/g) ?? []).length;
     expect(notAvailableCount).toBe(3);
+  });
+
+  it('shows real battery %/temperature once a status notification has arrived (#123) — RSSI stays "not available yet"', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getSensorState: () => 'granted',
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: 72,
+          temperatureCelsius: 19.5,
+        }),
+      }),
+    );
+    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
+    expect(detail?.textContent).toContain('Battery: 72%');
+    expect(detail?.textContent).toContain('Temperature: 19.5°C');
+    expect(detail?.textContent).toContain('Signal strength: Not available yet');
+    const notAvailableCount = (detail?.textContent?.match(/Not available yet/g) ?? []).length;
+    expect(notAvailableCount).toBe(1);
   });
 
   it('still shows the detail block (as "not available yet") for a dropped connection — not omitted on disconnect', () => {
@@ -137,6 +162,71 @@ describe('createSensorSourceSection (#116)', () => {
     );
     const detail = section.element.querySelector<HTMLElement>('.menu__detail');
     expect(detail?.hidden).toBe(false);
+  });
+
+  // #123: a settings-page warning, not a leveling-screen interruption,
+  // with hysteresis so it doesn't flicker right at the threshold.
+  describe('low-battery warning', () => {
+    function warningRow(root: HTMLElement): HTMLElement | undefined {
+      return [...root.querySelectorAll<HTMLElement>('.menu__text--warning')].find(
+        (el) => !el.hidden,
+      );
+    }
+
+    it('is hidden while battery is comfortably above the threshold', () => {
+      const section = createSensorSourceSection(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getEasyLevelStatus: () => ({
+            firmwareTier: 3,
+            batteryPercent: 80,
+            temperatureCelsius: 20,
+          }),
+        }),
+      );
+      expect(warningRow(section.element)).toBeUndefined();
+    });
+
+    it('shows once battery drops below the threshold, and hides again once it recovers past the hysteresis band', () => {
+      let battery = 15;
+      const section = createSensorSourceSection(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getEasyLevelStatus: () => ({
+            firmwareTier: 3,
+            batteryPercent: battery,
+            temperatureCelsius: 20,
+          }),
+        }),
+      );
+      expect(warningRow(section.element)).toBeDefined();
+      expect(warningRow(section.element)?.textContent).toContain('Low battery');
+
+      // Back above the bare threshold, but still inside the hysteresis
+      // band — must not flicker off yet.
+      battery = 21;
+      section.refresh();
+      expect(warningRow(section.element)).toBeDefined();
+
+      // Clearly above the hysteresis band now.
+      battery = 30;
+      section.refresh();
+      expect(warningRow(section.element)).toBeUndefined();
+    });
+
+    it('never shows while the phone sensor is active, even with a stale low reading remembered', () => {
+      const section = createSensorSourceSection(
+        makeOptions({
+          getSensorSource: () => 'phone',
+          getEasyLevelStatus: () => ({
+            firmwareTier: 3,
+            batteryPercent: 5,
+            temperatureCelsius: 20,
+          }),
+        }),
+      );
+      expect(warningRow(section.element)).toBeUndefined();
+    });
   });
 });
 
