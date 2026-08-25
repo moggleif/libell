@@ -121,7 +121,8 @@ export const MESSAGES = {
     'status.almost': 'Almost level — {left} left',
     'status.one': '1 wheel to raise',
     'status.many': '{n} wheels to raise',
-    'status.cantLevel': 'Your ramps are not enough here — move the vehicle',
+    'status.cantLevel.close': 'Your ramps get close but not enough here — move the vehicle',
+    'status.cantLevel.far': 'Your ramps are way off here — move the vehicle',
 
     'calibration.intro':
       'Put the phone on a surface you know is level, then tap Calibrate now. ' +
@@ -379,7 +380,8 @@ export const MESSAGES = {
     'status.almost': 'Nästan i våg — {left} kvar',
     'status.one': '1 hjul att höja',
     'status.many': '{n} hjul att höja',
-    'status.cantLevel': 'Ramperna räcker inte här — flytta fordonet',
+    'status.cantLevel.close': 'Ramperna räcker nästan här — flytta fordonet',
+    'status.cantLevel.far': 'Ramperna räcker inte alls här — flytta fordonet',
 
     'calibration.intro':
       'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +

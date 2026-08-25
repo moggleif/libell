@@ -131,6 +131,22 @@ export function planRamps(lifts: Record<WheelId, number>, settings: LevelSetting
   return best!;
 }
 
+/** Rough sense of how far an unreachable plan leaves the vehicle (#125). */
+export type DeficitMagnitude = 'close' | 'far';
+
+/**
+ * Categorize `maxDeficitMm` for the "ramps not enough" status line, without
+ * ever claiming to know which way to move the vehicle — tilt data alone
+ * can't say that (#125). "close" covers a shortfall of up to one more
+ * tolerance-width past the pass/fail line (i.e. within twice `toleranceMm`
+ * of level) — plausibly closeable with a small nudge; beyond that the plan
+ * is "far" off and only relocating helps. Call only when `achievesLevel`
+ * is `false`; a deficit within tolerance never reaches here.
+ */
+export function deficitMagnitude(maxDeficitMm: number, toleranceMm: number): DeficitMagnitude {
+  return maxDeficitMm <= toleranceMm * 2 ? 'close' : 'far';
+}
+
 /**
  * Wheel color under a plan — "what should I do with this wheel?":
  * green (none) when it ends within the tolerance with no ramp, orange

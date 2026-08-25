@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { WHEEL_IDS, type WheelId } from './leveling';
-import { evaluateSteps, plannedSeverity, planRamps, rampCost } from './rampPlan';
+import { deficitMagnitude, evaluateSteps, plannedSeverity, planRamps, rampCost } from './rampPlan';
 import { DEFAULT_SETTINGS } from './settings';
 
 // Symmetric reference geometry and easy step arithmetic, independent of
@@ -131,6 +131,34 @@ describe('evaluateSteps', () => {
     expect(plan.deficits.rearRight).toBeCloseTo(0);
     expect(plan.deficits.frontLeft).toBeCloseTo(16);
     expect(plan.maxDeficitMm).toBeCloseTo(16);
+  });
+});
+
+describe('deficitMagnitude', () => {
+  // SETTINGS.toleranceMm is 20 mm throughout this file.
+  it('is "close" just barely short of the tolerance (#125)', () => {
+    expect(deficitMagnitude(21, SETTINGS.toleranceMm)).toBe('close');
+    expect(deficitMagnitude(30, SETTINGS.toleranceMm)).toBe('close');
+    // Right at the "close" boundary — twice the tolerance — still close.
+    expect(deficitMagnitude(40, SETTINGS.toleranceMm)).toBe('close');
+  });
+
+  it('is "far" well beyond the tolerance (#125)', () => {
+    expect(deficitMagnitude(41, SETTINGS.toleranceMm)).toBe('far');
+    expect(deficitMagnitude(100, SETTINGS.toleranceMm)).toBe('far');
+  });
+
+  it('categorizes an unreachable plan end to end', () => {
+    // Same steep tilt as the "unreachable" test above: 30 mm short with a
+    // 20 mm tolerance — just short of the "close" cutoff (40 mm).
+    const plan = planRamps(lifts(0, 30, 50, 80), SETTINGS);
+    expect(plan.achievesLevel).toBe(false);
+    expect(deficitMagnitude(plan.maxDeficitMm, SETTINGS.toleranceMm)).toBe('close');
+
+    // A wildly steeper tilt that no two-ramp placement gets anywhere near.
+    const farPlan = planRamps(lifts(0, 60, 150, 260), SETTINGS);
+    expect(farPlan.achievesLevel).toBe(false);
+    expect(deficitMagnitude(farPlan.maxDeficitMm, SETTINGS.toleranceMm)).toBe('far');
   });
 });
 

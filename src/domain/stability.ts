@@ -40,6 +40,10 @@ export interface DisplayResult {
   pitchDeg: number;
   isLevel: boolean;
   wheels: Record<WheelId, DisplayWheel>;
+  /** How un-level the *shown* plan leaves the vehicle (mm, ≥ 0) — the same
+   * stabilized plan the wheel steps/severities come from, so the status
+   * line's magnitude wording (#125) can never disagree with the diagram. */
+  maxDeficitMm: number;
 }
 
 /** A changed mm figure or ramp step must hold this long before it shows. */
@@ -251,6 +255,10 @@ export function createDisplayStabilizer(): (
     }
     // Level exactly when every wheel shows green — one source of truth.
     const isLevel = WHEEL_IDS.every((id) => severity[id] === 'none');
-    return { rollDeg: result.rollDeg, pitchDeg: result.pitchDeg, isLevel, wheels };
+    // What the *shown* plan (not necessarily `fresh`, mid-adoption) leaves
+    // un-level under the current lifts — the same plan the steps/severities
+    // above come from.
+    const maxDeficitMm = evaluateSteps(shownSteps, lifts, settings).maxDeficitMm;
+    return { rollDeg: result.rollDeg, pitchDeg: result.pitchDeg, isLevel, wheels, maxDeficitMm };
   };
 }

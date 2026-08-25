@@ -190,4 +190,15 @@ describe('two-ramp plan display (#93)', () => {
     const severities = WHEEL_IDS.map((id) => display.wheels[id].severity);
     expect(severities.every((s) => s === 'none' || s === 'small')).toBe(true);
   });
+
+  it("exposes the shown plan's residual deficit for the status line (#125)", () => {
+    // Same unreachable tilt as above: best two-ramp plan leaves 30 mm.
+    const display = createDisplayStabilizer()(resultFor(0, 30, 50, 80), planSettings, 0);
+    expect(display.wheels.frontRight.severity).toBe('unserved');
+    expect(display.maxDeficitMm).toBeCloseTo(30);
+    // With enough ramps the plan reaches level: no residual deficit.
+    const four = { ...planSettings, rampCount: 4 };
+    const level = createDisplayStabilizer()(resultFor(0, 30, 50, 80), four, 0);
+    expect(level.maxDeficitMm).toBeLessThanOrEqual(planSettings.toleranceMm);
+  });
 });

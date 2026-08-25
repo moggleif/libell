@@ -7,6 +7,7 @@ import { computeCaravanLeveling, createCaravanStabilizer } from './domain/carava
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
+import { deficitMagnitude } from './domain/rampPlan';
 import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
 import {
   offsetTooSteep,
@@ -519,7 +520,10 @@ function bootstrap(root: HTMLElement): void {
             left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
           });
         }
-        if (toRaise === 0) return t('status.cantLevel');
+        if (toRaise === 0) {
+          const magnitude = deficitMagnitude(result.maxDeficitMm, settings.toleranceMm);
+          return t(magnitude === 'close' ? 'status.cantLevel.close' : 'status.cantLevel.far');
+        }
         return toRaise === 1 ? t('status.one') : t('status.many', { n: toRaise });
       };
       engineElement = diagram.element;

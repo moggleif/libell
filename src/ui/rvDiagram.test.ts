@@ -15,6 +15,7 @@ function result(
     rollDeg: 0,
     pitchDeg: 0,
     isLevel: false,
+    maxDeficitMm: 0,
     wheels: {
       frontLeft: GREEN,
       frontRight: GREEN,
