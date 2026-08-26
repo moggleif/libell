@@ -661,6 +661,14 @@ URL and must keep working with no signal.
   the last reading, and the menu's "Connect" action offers to reconnect — during a live
   session this is always a fresh gesture-triggered pairing prompt (see #130 below for
   what "reconnect" means the next time the app is opened instead).
+- **Given** a connect or reconnect attempt that fails partway — GATT connected, but
+  service discovery, characteristic lookup or notification subscribe failed (#219)
+- **Then** the app actively releases the half-open GATT connection instead of leaving
+  it dangling (a BLE box stops advertising while it holds a connection, so a dangling
+  link would make it unfindable by the picker and by every silent reconnect until the
+  page reloads), and neither that cleanup nor an explicit user "Disconnect" is ever
+  reported as a _lost_ connection: the lost-connection state, its prompt (R37) and
+  the background auto-retry are reserved for genuinely unexpected drops.
 - **Given** the EasyLevel box is the active source and connected
 - **Then** the top bar shows only a small, distinctly-colored connection-state dot —
   no numbers, no clutter (#129). While the phone's own sensor is active instead, the

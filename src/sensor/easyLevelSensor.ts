@@ -173,26 +173,45 @@ export function createWebBluetoothTransport(
     onDisconnect: () => void,
   ): Promise<EasyLevelConnection> {
     device.addEventListener('gattserverdisconnected', onDisconnect);
-    const server = await device.gatt?.connect();
-    if (!server) throw new Error('EasyLevel: GATT connect failed');
-    const connectDelayMs = getConnectDelayMs();
-    if (connectDelayMs > 0) await delay(connectDelayMs);
-    const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
-
-    async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {
-      const characteristic = await service.getCharacteristic(uuid);
-      characteristic.addEventListener('characteristicvaluechanged', () => {
-        if (characteristic.value) onData(characteristic.value);
-      });
-      await characteristic.startNotifications();
-    }
-
-    return {
-      deviceId: device.id,
-      subscribeAccel: (onData) => subscribe(EASYLEVEL_ACCEL_CHARACTERISTIC_UUID, onData),
-      subscribeStatus: (onData) => subscribe(EASYLEVEL_STATUS_CHARACTERISTIC_UUID, onData),
-      disconnect: () => device.gatt?.disconnect(),
+    // One teardown for the explicit disconnect() AND every failure past
+    // this point (#219). The listener is removed FIRST: `gatt.disconnect()`
+    // fires `gattserverdisconnected` too, and a deliberate disconnect — or
+    // a failed-setup cleanup — must never be mis-reported as a *lost*
+    // connection (the 'disconnected' state, R32/R37, is reserved for
+    // unexpected drops). Actively disconnecting on failure matters with a
+    // real box: a BLE peripheral stops advertising while it holds a
+    // connection, so a half-open GATT link left dangling would make the
+    // box invisible to the picker and to every silent reconnect until the
+    // page is reloaded.
+    const teardown = () => {
+      device.removeEventListener('gattserverdisconnected', onDisconnect);
+      device.gatt?.disconnect();
     };
+    try {
+      const server = await device.gatt?.connect();
+      if (!server) throw new Error('EasyLevel: GATT connect failed');
+      const connectDelayMs = getConnectDelayMs();
+      if (connectDelayMs > 0) await delay(connectDelayMs);
+      const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
+
+      async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {
+        const characteristic = await service.getCharacteristic(uuid);
+        characteristic.addEventListener('characteristicvaluechanged', () => {
+          if (characteristic.value) onData(characteristic.value);
+        });
+        await characteristic.startNotifications();
+      }
+
+      return {
+        deviceId: device.id,
+        subscribeAccel: (onData) => subscribe(EASYLEVEL_ACCEL_CHARACTERISTIC_UUID, onData),
+        subscribeStatus: (onData) => subscribe(EASYLEVEL_STATUS_CHARACTERISTIC_UUID, onData),
+        disconnect: teardown,
+      };
+    } catch (error) {
+      teardown();
+      throw error;
+    }
   }
 
   return {
@@ -321,7 +340,10 @@ export function createEasyLevelSensor(
       // this characteristic, or one that rejects the subscription, must
       // never prevent leveling from working.
       await connection.subscribeStatus((view) => {
-        statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+        // A copy, not a view over the notification's own buffer (#219) —
+        // the debug page's hex dump must stay what actually arrived even
+        // if a transport reuses its buffer for the next notification.
+        statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength).slice();
         status = parseEasyLevelStatus(view);
         // Any status notification — even a too-short/unparseable one —
         // means we've learned what this characteristic has to say; nothing
@@ -333,22 +355,34 @@ export function createEasyLevelSensor(
       // could ever come from, so don't wait for it.
       awaitingInitialCalibration = false;
     }
-    await connection.subscribeAccel((view) => {
-      if (awaitingInitialCalibration) {
-        if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) {
-          return; // still within the grace window — drop this sample
+    try {
+      await connection.subscribeAccel((view) => {
+        if (awaitingInitialCalibration) {
+          if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) {
+            return; // still within the grace window — drop this sample
+          }
+          awaitingInitialCalibration = false; // give up waiting; best-effort from here on
         }
-        awaitingInitialCalibration = false; // give up waiting; best-effort from here on
-      }
-      // The most recent status notification's bytes-8-19 bias, if any
-      // (#215) — `status` is set by the subscribeStatus handler above, and
-      // read fresh on every accel sample so a later calibration (or a
-      // reconnect that loses it, clearing `status` back to null) takes
-      // effect immediately rather than needing its own plumbing.
-      const calibrated = parseAccelPacket(view, status?.calibration);
-      gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
-      lastSampleAt = now();
-    });
+        // The most recent status notification's bytes-8-19 bias, if any
+        // (#215) — `status` is set by the subscribeStatus handler above, and
+        // read fresh on every accel sample so a later calibration (or a
+        // reconnect that loses it, clearing `status` back to null) takes
+        // effect immediately rather than needing its own plumbing.
+        const calibrated = parseAccelPacket(view, status?.calibration);
+        gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
+        lastSampleAt = now();
+      });
+    } catch (error) {
+      // #219: this connection was made but could not be wired — release it
+      // rather than leaving the GATT link half-open (which would keep a
+      // real box captive and un-advertising; see `connectToDevice`'s
+      // teardown comment). The transport's disconnect() reports nothing
+      // through `onDisconnect`, so the caller's own catch still decides
+      // the surfaced state ('denied'/'disconnected').
+      next.disconnect();
+      connection = null;
+      throw error;
+    }
   }
 
   return {
