@@ -955,3 +955,35 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
   exists)
 - **Then** the ordinary External sensor page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
+
+## R40 — Share vehicle setup with family via link (#207)
+
+R19 already shares the app's own install URL; this shares one vehicle's actual
+setup, so a family member using the same RV/motorhome doesn't have to re-measure
+and retype everything. Only the fields that describe the physical vehicle are
+included — vehicle type, axle configuration, wheelbase, front/rear track width,
+ramp step heights, ramp count and drain position. Calibration (phone bias, vehicle
+zero, EasyLevel install offset — each tied to exactly where one phone/box sits in
+one vehicle, ADR 0010/0014) and every UI/behavior preference (tolerance, stability,
+dwell, unit, sound, theme, appearance, sensor source) are deliberately excluded.
+
+- **Given** I am on the Settings page's Vehicle section
+- **When** I tap "Share vehicle setup"
+- **Then** a link is generated encoding only the fields listed above in the URL
+  fragment (never sent to any server — no backend exists, `SECURITY.md`), and handed
+  to the same native share sheet / clipboard fallback the app-link share button
+  (R19) already uses.
+- **Given** a family member opens a received setup link
+- **When** the app loads with a setup fragment present
+- **Then** they see a preview of the incoming values before anything is applied, plus
+  a reminder that calibration is not included and still needs doing on their own
+  phone, and must explicitly tap to apply it — never automatic.
+- **Given** a family member confirms an incoming setup link
+- **When** it is applied
+- **Then** only the fields listed above are written to their settings; their own
+  calibration, EasyLevel pairing, and every UI/behavior preference are left
+  untouched.
+- **Given** the link's fragment is malformed, truncated, or from an unrecognized
+  schema version
+- **Then** the app shows a clear error and applies nothing — fail closed, never a
+  partial or guessed-at result.

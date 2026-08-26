@@ -117,6 +117,11 @@ export interface MenuOptions {
    * toggle can change these outside this form, so the Settings page
    * resyncs from here every time it (re)opens. */
   getSoundPrefs(): SoundPrefs;
+  /** "Share vehicle setup" (R40, #207) — forwarded to the settings form's
+   * own `onShareVehicleSetup`, see `settingsPanel.ts`. Optional so
+   * existing option fixtures (tests, `infoMenu.ts`'s reused shape) that
+   * predate this feature still satisfy the interface. */
+  onShareVehicleSetup?(settings: LevelSettings): void;
 }
 
 export interface Menu {
@@ -291,7 +296,7 @@ export function createMenu(options: MenuOptions): Menu {
       options.onSettingsSaved(settings);
     },
     options,
-    { splitPages: true },
+    { splitPages: true, onShareVehicleSetup: options.onShareVehicleSetup },
     options,
   );
   addSection('general', t('settings.general'), settingsForm);

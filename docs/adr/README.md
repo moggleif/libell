@@ -33,3 +33,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0012 | [Appearance is a second preset axis, independent of light/dark theme](0012-appearance-preset-independent-of-theme.md)         |
 | 0013 | [Target presets: a third additive term, on top of the two-layer calibration](0013-target-presets-as-third-additive-term.md)   |
 | 0014 | [Sensor source is an abstract seam; calibration split three ways](0014-sensor-source-seam-and-three-way-calibration-split.md) |
+| 0015 | [A shared "vehicle setup" link carries geometry only, never calibration](0015-vehicle-setup-link-excludes-calibration.md)     |

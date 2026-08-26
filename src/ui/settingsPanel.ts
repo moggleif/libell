@@ -197,6 +197,15 @@ export interface SettingsFormOptions {
    * use) keeps the original flat page below.
    */
   splitPages?: boolean;
+  /**
+   * "Share vehicle setup" (R40, #207): called with the form's current
+   * (committed on submit, live otherwise) settings when the button next to
+   * the vehicle fields is pressed — the host picks out the shareable
+   * geometry (`domain/vehicleShare.ts`) and hands off to the native share
+   * sheet. Omitted for the onboarding `compact` steps, where there is
+   * nothing meaningful yet to share.
+   */
+  onShareVehicleSetup?: (settings: LevelSettings) => void;
 }
 
 export function createSettingsForm(
@@ -341,6 +350,19 @@ export function createSettingsForm(
   const measureHint = document.createElement('p');
   measureHint.className = 'settings__hint';
   measureHint.textContent = t('settings.measureHint');
+
+  // --- Share vehicle setup (R40, #207): a link carrying only the vehicle-
+  // geometry fields on this page — never calibration, never UI/behavior
+  // preferences (`domain/vehicleShare.ts`) — for a family member using the
+  // same vehicle. Omitted from the onboarding `compact` steps below: there
+  // is nothing saved yet worth sharing at that point.
+  const shareVehicleButton = document.createElement('button');
+  shareVehicleButton.type = 'button';
+  shareVehicleButton.className = 'menu__action menu__action--secondary';
+  shareVehicleButton.textContent = t('settings.shareVehicle');
+  shareVehicleButton.addEventListener('click', () => {
+    formOptions?.onShareVehicleSetup?.(currentSettings());
+  });
 
   // --- Ramp steps: visual chip list + add + presets ---
   let steps = [...initial.rampStepHeightsMm];
@@ -934,6 +956,7 @@ export function createSettingsForm(
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
+      shareVehicleButton,
       unitField,
       advancedDetails,
       buildActionsRow(),
@@ -1202,6 +1225,7 @@ export function createSettingsForm(
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
+      shareVehicleButton,
       unitField,
       advancedDetails,
       buildActionsRow(),
@@ -1240,6 +1264,7 @@ export function createSettingsForm(
       fieldEls.get('trackWidthFrontMm')!,
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
+      shareVehicleButton,
       rampsHeading,
       stepsField,
       rampCountField,

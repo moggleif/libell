@@ -28,6 +28,27 @@ describe('settings form', () => {
     expect(form.selectCalibrationTab).toBeUndefined();
   });
 
+  it('"Share vehicle setup" (#207) hands the current form values to the host, unsaved edits included', () => {
+    const onShareVehicleSetup = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classic, vi.fn(), undefined, { onShareVehicleSetup });
+    input(form, 'wheelbaseMm').value = '4100';
+    form.dispatchEvent(new Event('input'));
+    const shareButton = [...form.querySelectorAll('button')].find(
+      (b) => b.textContent === t('settings.shareVehicle'),
+    )!;
+    shareButton.click();
+    expect(onShareVehicleSetup).toHaveBeenCalledTimes(1);
+    expect(onShareVehicleSetup.mock.calls[0]![0].wheelbaseMm).toBe(4100);
+  });
+
+  it('is a no-op when no onShareVehicleSetup host is wired', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    const shareButton = [...form.querySelectorAll('button')].find(
+      (b) => b.textContent === t('settings.shareVehicle'),
+    )!;
+    expect(() => shareButton.click()).not.toThrow();
+  });
+
   it('round-trips an edited field through save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
@@ -243,6 +264,12 @@ describe('settings form — Modern tabs (#108)', () => {
   function tabPanel(form: HTMLFormElement, id: string): HTMLElement {
     return form.querySelector<HTMLElement>(`.settings__tabpanel[data-tab="${id}"]`)!;
   }
+
+  it('puts "Share vehicle setup" (#207) on the Fordon tab', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const button = tabPanel(form, 'vehicle').querySelector('button');
+    expect(button?.textContent).toBe(t('settings.shareVehicle'));
+  });
 
   it('renders five tabs in order, General active by default, and switches on click', () => {
     const form = createSettingsForm(modern, vi.fn());
