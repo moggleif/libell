@@ -36,6 +36,7 @@ describe('createEasyLevelStatusPage', () => {
           firmwareTier: 3,
           batteryPercent: 72,
           temperatureCelsius: 19.5,
+          calibration: null,
         }),
       }),
     );
@@ -62,7 +63,12 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({ firmwareTier: 3, batteryPercent: 15, temperatureCelsius: 20 }),
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: 15,
+          temperatureCelsius: 20,
+          calibration: null,
+        }),
       }),
     );
     expect(page.element.textContent).toContain('Low battery');
@@ -72,7 +78,12 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({ firmwareTier: 3, batteryPercent: 90, temperatureCelsius: 20 }),
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: 90,
+          temperatureCelsius: 20,
+          calibration: null,
+        }),
       }),
     );
     expect(page.element.textContent).not.toContain('Low battery');
@@ -87,6 +98,7 @@ describe('createEasyLevelStatusPage', () => {
           firmwareTier: 3,
           batteryPercent: battery,
           temperatureCelsius: 20,
+          calibration: null,
         }),
       }),
     );
@@ -120,6 +132,7 @@ describe('createEasyLevelStatusPage', () => {
             firmwareTier: 3,
             batteryPercent: 80,
             temperatureCelsius: 20,
+            calibration: null,
           }),
           getEasyLevelStatusBytes: () => new Uint8Array([0, 10, 0x32, 0xff]),
         }),

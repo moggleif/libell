@@ -19,11 +19,14 @@
  *   the *scan* filter uses a different UUID. `faf52c21-...` (NOTIFY)
  *   carries the raw accel/gyro payload parsed by `easyLevelProtocol.ts`.
  * - `faf52c22-...` (NOTIFY/READ) carries firmware version, battery,
- *   temperature and calibration bytes — fully decoded as of #123 (see
+ *   temperature and calibration bytes — fully decoded as of #123/#215 (see
  *   `easyLevelProtocol.ts`'s `parseEasyLevelStatus`). Still subscribed
  *   best-effort: a firmware without this characteristic, or one that
  *   rejects the subscription, must never prevent leveling from working,
- *   since only `faf52c21-...` is actually required for that.
+ *   since only `faf52c21-...` is actually required for that — accel
+ *   readings simply go uncalibrated (#215) until/unless a status
+ *   notification arrives, exactly like today's firmware-without-tier-3
+ *   case.
  * - No encryption, no WRITE characteristic (confirmed by decompiling the
  *   official apps — see #116).
  *
@@ -264,7 +267,12 @@ export function createEasyLevelSensor(
   async function wireConnection(next: EasyLevelConnection): Promise<void> {
     connection = next;
     await connection.subscribeAccel((view) => {
-      gravity = parseAccelPacket(view);
+      // The most recent status notification's bytes-8-19 bias, if any
+      // (#215) — `status` is set by the subscribeStatus handler below, and
+      // read fresh on every accel sample so a later calibration (or a
+      // reconnect that loses it, clearing `status` back to null) takes
+      // effect immediately rather than needing its own plumbing.
+      gravity = parseAccelPacket(view, status?.calibration);
       lastSampleAt = performance.now();
     });
     try {

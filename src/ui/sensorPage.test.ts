@@ -99,6 +99,7 @@ describe('createSensorPage', () => {
             firmwareTier: 7,
             batteryPercent: battery,
             temperatureCelsius: 20,
+            calibration: null,
           }),
         }),
       );

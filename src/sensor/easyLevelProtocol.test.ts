@@ -60,6 +60,62 @@ describe('parseAccelPacket (#116)', () => {
     expect(Math.atan2(small.x, small.z)).toBeCloseTo(Math.atan2(large.x, large.z), 10);
     expect(Math.atan2(small.y, small.z)).toBeCloseTo(Math.atan2(large.y, large.z), 10);
   });
+
+  describe('calibration bias subtraction (#215)', () => {
+    // Ly0/a;->i()'s tier-≥-3 path computes `accelX_raw - bias.accelX` (and
+    // the same for Y/Z) BEFORE scaling and atan2 — an additive correction,
+    // matched here rather than the "atan2 only cares about ratios, so a
+    // shared scale factor would cancel out" argument the issue explicitly
+    // warned does not apply to an additive offset.
+    it('subtracts the bias from x/y/z when calibration is given', () => {
+      const bytes = le16(1000, -500, 9800);
+      const calibration = { accelX: 200, accelY: -50, accelZ: 100, gyroX: 0, gyroY: 0, gyroZ: 0 };
+      expect(parseAccelPacket(bytes, calibration)).toEqual({ x: 800, y: -450, z: 9700 });
+    });
+
+    it('passes raw values through unmodified when calibration is omitted, matching every existing call site untouched by #215', () => {
+      const bytes = le16(1000, -500, 9800);
+      expect(parseAccelPacket(bytes)).toEqual({ x: 1000, y: -500, z: 9800 });
+    });
+
+    it('passes raw values through unmodified when calibration is explicitly null (no faf52c22 status yet, or firmware tier < 3)', () => {
+      const bytes = le16(1000, -500, 9800);
+      expect(parseAccelPacket(bytes, null)).toEqual({ x: 1000, y: -500, z: 9800 });
+    });
+
+    it('never touches the gyro fields the calibration also carries — gyro is unused throughout this codebase', () => {
+      const bytes = le16(1000, -500, 9800);
+      const calibration = {
+        accelX: 0,
+        accelY: 0,
+        accelZ: 0,
+        gyroX: 9999,
+        gyroY: 9999,
+        gyroZ: 9999,
+      };
+      expect(parseAccelPacket(bytes, calibration)).toEqual({ x: 1000, y: -500, z: 9800 });
+    });
+
+    it('a bias that exactly matches the raw reading zeroes that axis out, the expected "box calibrated to its own zero point" case', () => {
+      const bytes = le16(42, -17, 9800);
+      const calibration = { accelX: 42, accelY: -17, accelZ: 0, gyroX: 0, gyroY: 0, gyroZ: 0 };
+      expect(parseAccelPacket(bytes, calibration)).toEqual({ x: 0, y: 0, z: 9800 });
+    });
+
+    it('demonstrates why the offset must be subtracted before atan2, not skipped as "only ratios matter" — an uncorrected bias changes the angle, a corrected one recovers the true one', () => {
+      // A box whose true tilt is x=0,y=0 (flat), but whose accelerometer
+      // has a manufacturing/mounting bias of +300 on X — exactly the
+      // scenario bytes 8-19 exist to correct for.
+      const bytes = le16(300, 0, 9800);
+      const trueFlatAngle = Math.atan2(0, 9800);
+      const uncorrected = parseAccelPacket(bytes)!;
+      expect(Math.atan2(uncorrected.x, uncorrected.z)).not.toBeCloseTo(trueFlatAngle, 5);
+
+      const calibration = { accelX: 300, accelY: 0, accelZ: 0, gyroX: 0, gyroY: 0, gyroZ: 0 };
+      const corrected = parseAccelPacket(bytes, calibration)!;
+      expect(Math.atan2(corrected.x, corrected.z)).toBeCloseTo(trueFlatAngle, 10);
+    });
+  });
 });
 
 /**
@@ -94,14 +150,70 @@ describe('parseEasyLevelStatus (#123)', () => {
 
   it('accepts exactly 8 bytes (no calibration bytes present, firmware tier < 3)', () => {
     const bytes = statusBytes(0, 0, 2500, 0);
-    expect(parseEasyLevelStatus(bytes)).not.toBeNull();
+    expect(parseEasyLevelStatus(bytes)?.calibration).toBeNull();
   });
 
-  it('ignores any trailing calibration bytes (tier ≥ 3, bytes 8–19) — only the first 8 matter here', () => {
-    const short = statusBytes(0, 0, 2500, 48);
-    const long = new Uint8Array(20);
-    long.set(short);
-    expect(parseEasyLevelStatus(long)).toEqual(parseEasyLevelStatus(short));
+  describe('calibration: bytes 8–19, six signed int16 LE (#215)', () => {
+    /** Appends bytes 8–19 (accelX/Y/Z, gyroX/Y/Z, in that order — the same
+     * axis order the `faf52c21-...` accel/gyro packet uses) to an 8-byte
+     * status payload, matching `Ly0/a;->i()`'s own decode. */
+    function withCalibration(
+      base: Uint8Array,
+      accelX: number,
+      accelY: number,
+      accelZ: number,
+      gyroX: number,
+      gyroY: number,
+      gyroZ: number,
+    ): Uint8Array {
+      const view = new DataView(new ArrayBuffer(20));
+      new Uint8Array(view.buffer).set(base);
+      view.setInt16(8, accelX, true);
+      view.setInt16(10, accelY, true);
+      view.setInt16(12, accelZ, true);
+      view.setInt16(14, gyroX, true);
+      view.setInt16(16, gyroY, true);
+      view.setInt16(18, gyroZ, true);
+      return new Uint8Array(view.buffer);
+    }
+
+    it('decodes bytes 8–19 when firmware tier ≥ 3 and the payload is long enough — this is the bug #215 fixed: neither this function nor parseAccelPacket read these bytes before', () => {
+      const bytes = withCalibration(statusBytes(0, 0, 2500, 48), 10, -20, 30, 1, -2, 3);
+      expect(parseEasyLevelStatus(bytes)?.calibration).toEqual({
+        accelX: 10,
+        accelY: -20,
+        accelZ: 30,
+        gyroX: 1,
+        gyroY: -2,
+        gyroZ: 3,
+      });
+    });
+
+    it('decodes negative values as two-s complement, not unsigned', () => {
+      const bytes = withCalibration(statusBytes(0, 0, 2500, 48), -1, -32768, 32767, 0, 0, 0);
+      expect(parseEasyLevelStatus(bytes)?.calibration).toEqual({
+        accelX: -1,
+        accelY: -32768,
+        accelZ: 32767,
+        gyroX: 0,
+        gyroY: 0,
+        gyroZ: 0,
+      });
+    });
+
+    it('stays null when the payload has bytes 8–19 but firmware tier < 3 — matches the official app: it never reads past byte 7 on that firmware either', () => {
+      // byte7 = 47 is the last raw value still below the tier-3 threshold
+      // (firmwareTierFromByte's own 48 boundary).
+      const bytes = withCalibration(statusBytes(0, 0, 2500, 47), 10, -20, 30, 1, -2, 3);
+      expect(parseEasyLevelStatus(bytes)?.firmwareTier).toBe(2);
+      expect(parseEasyLevelStatus(bytes)?.calibration).toBeNull();
+    });
+
+    it('stays null when firmware tier ≥ 3 but the payload is only 8 bytes long (no calibration block present at all)', () => {
+      const bytes = statusBytes(0, 0, 2500, 48);
+      expect(parseEasyLevelStatus(bytes)?.firmwareTier).toBe(3);
+      expect(parseEasyLevelStatus(bytes)?.calibration).toBeNull();
+    });
   });
 
   describe('battery: clamp(trunc(rawMv × 0.1 − 200), 0, 100)', () => {
