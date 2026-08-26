@@ -1,10 +1,15 @@
 /**
  * Info page (screen-cleanup follow-up): the bottom bar's "?" button opens
- * exactly one page — Help / About / Feedback / Diagnostics as tabs, the
- * same tab pattern the Settings page already uses for Vehicle/Ramps/
- * Kalibrering/Targets (`.settings__tabs`) — instead of the old ☰ Settings
- * menu's drawer-then-page navigation, which Diagnostics and the
- * introduction relaunch used to live behind.
+ * exactly one page — Help / About / Feedback as tabs, the same tab pattern
+ * the Settings page already uses for Vehicle/Ramps/Kalibrering/Targets
+ * (`.settings__tabs`) — instead of the old ☰ Settings menu's drawer-then-
+ * page navigation, which the introduction relaunch used to live behind.
+ *
+ * Diagnostics (#133, R36) used to be a fourth tab here — removed (design
+ * review): its generic phone-or-EasyLevel framing didn't earn its keep.
+ * Whatever EasyLevel-specific troubleshooting value it had now lives in
+ * `easyLevelStatusPage.ts`'s own "Debug info" disclosure instead, reading
+ * raw values straight off the box rather than a generic sensor snapshot.
  *
  * This page owns no shared navigation state (`standalonePage.ts`): a
  * previous version reused the ☰ menu's own history depth so this page
@@ -18,7 +23,6 @@
  */
 import { createAboutSection } from './about';
 import { createFeedbackSection } from './feedback';
-import { createDiagnosticsSection, type DiagnosticsOptions } from './diagnosticsSection';
 import { createStandalonePage, type StandalonePage } from './standalonePage';
 import { t, type MessageKey } from './i18n';
 import {
@@ -30,7 +34,6 @@ import {
 import type { VehicleType } from '../domain/settings';
 
 export interface InfoPageOptions {
-  diagnostics: DiagnosticsOptions;
   /** Relaunch the first-run wizard — the button at the top of the Help tab. */
   openOnboarding(): void;
   /**
@@ -49,7 +52,7 @@ export interface InfoPage {
   attach(button: HTMLButtonElement): void;
 }
 
-type InfoTab = 'help' | 'about' | 'feedback' | 'diagnostics';
+type InfoTab = 'help' | 'about' | 'feedback';
 
 // Design review: 'help.what.h' ("What Libell does") used to be paired with
 // 'help.what.t' — actually placement instructions, not a value pitch, so
@@ -165,7 +168,6 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   let refreshIntroButton: () => void = () => {};
   const page = createStandalonePage(t('menu.help'), () => {
     selectTab('help');
-    diagnosticsSection.refresh();
     // The wizard may have been completed (or not) since this page was
     // last open (design review, follow-up) — resync "Show introduction"'s
     // green/secondary look every reopen, same pattern as the mute
@@ -181,7 +183,6 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     help: t('menu.help'),
     about: t('menu.about.tab'),
     feedback: t('menu.feedback'),
-    diagnostics: t('menu.diagnostics'),
   };
   // The header title spells out the full section name (About Libell, not
   // just the tab's short "About") — reused verbatim, not a new string.
@@ -189,7 +190,6 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     help: t('menu.help'),
     about: t('menu.about'),
     feedback: t('menu.feedback'),
-    diagnostics: t('menu.diagnostics'),
   };
 
   const tabButtons = new Map<InfoTab, HTMLButtonElement>();
@@ -215,16 +215,11 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   addTab('help', buildHelpPanel(introButton.element));
   addTab('about', createAboutSection());
   addTab('feedback', createFeedbackSection());
-  // Diagnostics (#133, R36): to the right of Feedback (screen-cleanup
-  // follow-up) — dev/support detail, no longer behind the deleted ☰ menu.
-  const diagnosticsSection = createDiagnosticsSection(options.diagnostics);
-  addTab('diagnostics', diagnosticsSection.element);
 
   function selectTab(id: InfoTab): void {
     for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
     for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
     page.setTitle(TAB_TITLES[id]);
-    if (id === 'diagnostics') diagnosticsSection.refresh();
   }
   selectTab('help');
 

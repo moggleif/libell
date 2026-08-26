@@ -74,7 +74,7 @@ import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { createInfoPage } from './ui/infoMenu';
-import { createSensorPage } from './ui/sensorPage';
+import { createSensorPage, type EasyLevelSensorPage } from './ui/sensorPage';
 import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
 import { isIos } from './ui/platform';
 import { createTargetBadge } from './ui/targetBadge';
@@ -463,9 +463,9 @@ function bootstrap(root: HTMLElement): void {
   };
 
   // Shared options bag (#screen-cleanup follow-up): every field the ☰
-  // Classic menu, the Modern Settings page, the "?" info page's
-  // Diagnostics tab, and the External sensor page each need — reused
-  // as-is by whichever of those get constructed below, never duplicated.
+  // Classic menu, the Modern Settings page, and the External sensor page
+  // (including its nested status/debug page) each need — reused as-is by
+  // whichever of those get constructed below, never duplicated.
   const menuOptions = {
     initialSettings: settings,
     appearance: settings.appearance,
@@ -528,11 +528,13 @@ function bootstrap(root: HTMLElement): void {
       clearEasyLevelCalibration();
       updateIndicators();
     },
-    getLastSampleAt: () => sensor.getLastSampleAt(),
-    getRawTilt: () => diagnosticsRawTilt(),
-    getCalibratedTilt: () => diagnosticsCalibratedTilt(),
+    getCalibratedTilt: () => calibratedTiltNow(),
     getActiveTargetName: () => activeTargetName(),
     getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
+    getEasyLevelDeviceId: () => easyLevelSensor?.getDeviceId() ?? null,
+    getEasyLevelLastSampleAt: () => easyLevelSensor?.getLastSampleAt() ?? null,
+    getEasyLevelRawAccel: () => easyLevelSensor?.getGravity() ?? null,
+    getEasyLevelStatusBytes: () => easyLevelSensor?.getStatusBytes() ?? null,
     getSoundPrefs: () => ({
       soundOnLevel: settings.soundOnLevel,
       soundGuidance: settings.soundGuidance,
@@ -565,17 +567,13 @@ function bootstrap(root: HTMLElement): void {
   const isMenuOpen = () =>
     isModern ? (settingsPage?.isOpen() ?? false) : (menu?.isOpen() ?? false);
 
-  // "?" opens its own Help/About/Feedback/Diagnostics tabbed page
-  // (screen-cleanup follow-up), with the introduction relaunch at the top
-  // of the Help tab — a fully independent page (universal, both
-  // appearances), not a section of the ☰ Settings menu: sharing that
-  // menu's history depth let its back button pop through to reveal the
-  // Settings drawer underneath by mistake.
-  const infoPage = createInfoPage({
-    diagnostics: menuOptions,
-    openOnboarding,
-    hasDoneOnboarding,
-  });
+  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
+  // follow-up), with the introduction relaunch at the top of the Help tab
+  // — a fully independent page (universal, both appearances), not a
+  // section of the ☰ Settings menu: sharing that menu's history depth let
+  // its back button pop through to reveal the Settings drawer underneath
+  // by mistake.
+  const infoPage = createInfoPage({ openOnboarding, hasDoneOnboarding });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
   if (helpButton) infoPage.attach(helpButton);
@@ -590,12 +588,19 @@ function bootstrap(root: HTMLElement): void {
   // (`iosSensorGuidePage.ts`, docs/ios-easylevel-bluefy-guide.md).
   const easyLevelSupported = isWebBluetoothSupported();
   const showIosGuide = !easyLevelSupported && isIos();
-  const sensorPage = easyLevelSupported
+  // Held separately, typed as the fuller `EasyLevelSensorPage` (screen-
+  // cleanup follow-up to #133/#129): `sensorPage` below stays the narrower
+  // shared `SensorPage` type both this and `iosSensorGuidePage.ts` satisfy,
+  // but only this branch actually has a status sub-page to attach/refresh.
+  const easyLevelSensorPage: EasyLevelSensorPage | null = easyLevelSupported
     ? createSensorPage(menuOptions)
-    : showIosGuide
-      ? createIosSensorGuidePage()
-      : null;
+    : null;
+  const sensorPage = easyLevelSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
   if (sensorPage) document.body.append(sensorPage.element);
+  // Attached after `sensorPage.element` (see `sensorPage.ts`'s doc
+  // comment): the status page must paint on top of the External sensor
+  // list page when both happen to be open at once.
+  if (easyLevelSensorPage) document.body.append(easyLevelSensorPage.statusElement);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the
@@ -712,29 +717,19 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /** The active target preset's own name, or null for "Normal" — shared by
-   * the main-screen badge and the diagnostics page (#133) so the two can
-   * never disagree about what "effective target" means. */
+   * the main-screen badge and the Targets section so the two can never
+   * disagree about what "effective target" means. */
   function activeTargetName(): string | null {
     return targetPresets.find((preset) => preset.id === activeTargetId)?.name ?? null;
   }
 
-  /** Diagnostics page (#133, R36): raw (uncalibrated) roll/pitch, read
-   * directly from the active sensor — never `readTiltNow()`, which starts
+  /** The sensor status page's live reading row (`easyLevelStatusPage.ts`):
+   * the same effective calibration (sensor bias + vehicle zero + active
+   * target, #122) the leveling math itself subtracts — reused via
+   * `tiltFromGravity`, not recomputed. Never `readTiltNow()`, which starts
    * the sensor as a side effect when there is no reading yet; a passive
-   * diagnostics refresh must never itself trigger a permission prompt. */
-  function diagnosticsRawTilt(): Calibration | null {
-    const gravity = sensor.getGravity();
-    if (!gravity) return null;
-    return {
-      rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
-      pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
-    };
-  }
-
-  /** Calibrated roll/pitch: the same effective calibration (sensor bias +
-   * vehicle zero + active target, #122) the leveling math itself
-   * subtracts — reused via `tiltFromGravity`, not recomputed. */
-  function diagnosticsCalibratedTilt(): Calibration | null {
+   * status-page refresh must never itself trigger a permission prompt. */
+  function calibratedTiltNow(): Calibration | null {
     const gravity = sensor.getGravity();
     if (!gravity) return null;
     const tilt = tiltFromGravity(gravity, effectiveCalibration());
@@ -1038,6 +1033,12 @@ function bootstrap(root: HTMLElement): void {
       // has no separate callback into this module), the same way the
       // "waiting" hint below already discovers it.
       updateSensorStatus();
+      // Live battery/temperature/reading on the sensor status page
+      // (screen-cleanup follow-up to #133/#129): same "every frame,
+      // regardless of what's open" discipline as `updateSensorStatus()`
+      // above — `refreshLive()` itself is the no-op guard when that page
+      // isn't the one currently open.
+      easyLevelSensorPage?.refreshLive();
       // Settings, info page, sensor page, or wizard open: the user is
       // reading, phone in hand — no pose nagging, no overlays, no
       // celebration until they are back.

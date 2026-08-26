@@ -3,6 +3,8 @@ import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
   isWebBluetoothSupported,
+  EASYLEVEL_ADVERTISED_SERVICE_UUID,
+  EASYLEVEL_DEVICE_NAME_PREFIX,
   EASYLEVEL_SERVICE_UUID,
   type EasyLevelConnection,
   type EasyLevelTransport,
@@ -400,6 +402,37 @@ function fakeBluetoothDevice(id: string, options?: { connectFails?: boolean }): 
   if (!options?.connectFails) server.connect.mockResolvedValue(server);
   return { id, gatt: server, addEventListener: vi.fn() } as unknown as BluetoothDevice;
 }
+
+describe('createWebBluetoothTransport().connect() (the real Web Bluetooth transport)', () => {
+  it("requests devices by the advertised scan UUID and the CARATI name prefix, not the GATT service UUID — confirmed against the official app's own scan filter, not just faf52c20-...", async () => {
+    const device = fakeBluetoothDevice('device-1');
+    const requestDevice = vi.fn().mockResolvedValue(device);
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    expect(requestDevice).toHaveBeenCalledWith({
+      filters: [
+        { services: [EASYLEVEL_ADVERTISED_SERVICE_UUID] },
+        { namePrefix: EASYLEVEL_DEVICE_NAME_PREFIX },
+      ],
+      optionalServices: [EASYLEVEL_SERVICE_UUID],
+    });
+  });
+
+  it('still looks up the faf52c20-... GATT service post-connect, listed in optionalServices so the lookup is allowed', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    expect(device.gatt?.getPrimaryService).toHaveBeenCalledWith(EASYLEVEL_SERVICE_UUID);
+  });
+});
 
 describe('createWebBluetoothTransport().reconnect() (#130 — the real Web Bluetooth transport)', () => {
   it('resolves null when getDevices() does not exist on navigator.bluetooth', async () => {
