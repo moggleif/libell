@@ -1,6 +1,9 @@
 /**
- * Main-screen external-sensor indicator (#129): a small, neutral dot in
- * the top bar. Originally shown only while an external source (today:
+ * Main-screen external-sensor indicator (#129): a small electronics-chip
+ * icon in the top bar — a generic "sensor hardware" glyph rather than a
+ * Bluetooth symbol, since it also has to make sense for the iOS
+ * guide-only case below, where nothing is actually paired over
+ * Bluetooth. Originally shown only while an external source (today:
  * EasyLevel, #116/ADR 0014) was the active `OrientationSensor` — but the
  * ☰ Settings menu no longer carries an "External sensor" entry
  * (screen-cleanup follow-up), so this indicator is now the *only* way to
@@ -38,6 +41,44 @@ export interface SensorStatusIndicator {
   update(source: SensorSource, state: SensorState): void;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgEl<K extends keyof SVGElementTagNameMap>(
+  tag: K,
+  attrs: Record<string, string>,
+): SVGElementTagNameMap[K] {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  return node;
+}
+
+/** IC-chip glyph: a body plus four pins per side, unfilled and stroked
+ * only — `.sensor-status__icon` (styles.css) sets the stroke color, so
+ * the existing connected/disconnected/idle classes keep coloring it
+ * exactly as they colored the old plain dot. */
+function chipIcon(): SVGSVGElement {
+  const icon = svgEl('svg', {
+    viewBox: '0 0 24 24',
+    class: 'sensor-status__icon',
+    'aria-hidden': 'true',
+  });
+  icon.append(svgEl('rect', { x: '7', y: '7', width: '10', height: '10', rx: '2' }));
+  const pins: [number, number, number, number][] = [
+    [9, 2, 9, 7],
+    [15, 2, 15, 7],
+    [9, 17, 9, 22],
+    [15, 17, 15, 22],
+    [2, 9, 7, 9],
+    [2, 15, 7, 15],
+    [17, 9, 22, 9],
+    [17, 15, 22, 15],
+  ];
+  for (const [x1, y1, x2, y2] of pins) {
+    icon.append(svgEl('line', { x1: String(x1), y1: String(y1), x2: String(x2), y2: String(y2) }));
+  }
+  return icon;
+}
+
 export function createSensorStatusIndicator(
   easyLevelSupported: boolean,
   /** True only on iOS without Web Bluetooth (R39) — `onClick` still opens
@@ -56,10 +97,7 @@ export function createSensorStatusIndicator(
   // nothing this button could usefully open (#116's "never a silently
   // broken option").
   button.hidden = !visible;
-  const dot = document.createElement('span');
-  dot.className = 'sensor-status__dot';
-  dot.setAttribute('aria-hidden', 'true');
-  button.append(dot);
+  button.append(chipIcon());
   button.addEventListener('click', onClick);
 
   return {
