@@ -37,12 +37,10 @@ describe('createSensorSourceSection (#116)', () => {
 
   it('shows the connected status and a visible disconnect button once EasyLevel is active', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
-    // Connect/disconnect are always the first two buttons appended, ahead of
-    // the health-detail and installation-offset (#131) blocks below them.
-    const [connectButton, disconnectButton] = section.element.querySelectorAll('button');
-    expect(disconnectButton!.hidden).toBe(false);
-    expect(connectButton!.textContent).not.toBe('');
-    expect(findButton(section.element, 'Disconnect')).toBe(disconnectButton);
+    const disconnectButton = findButton(section.element, 'Disconnect');
+    expect(disconnectButton.hidden).toBe(false);
+    const connectButton = findButton(section.element, 'Reconnect EasyLevel sensor');
+    expect(connectButton.textContent).not.toBe('');
   });
 
   it('clicking connect calls connectEasyLevel() and reflects a successful result', async () => {
@@ -326,5 +324,33 @@ describe('createSensorSourceSection installation calibration (#131)', () => {
     section.refresh();
     expect(findButton(section.element, 'Check').disabled).toBe(false);
     expect(findButton(section.element, 'Clear installation offset').disabled).toBe(false);
+  });
+
+  // The sensor row's status text doubles as a button opening the deeper
+  // status page (`easyLevelStatusPage.ts`) — but only when a caller
+  // actually wants that wired up.
+  describe('onOpenStatus (status row opens the deeper status page)', () => {
+    function statusButton(root: HTMLElement): HTMLButtonElement {
+      return [...root.querySelectorAll('button')].find((b) =>
+        b.textContent?.includes('Using the phone'),
+      )!;
+    }
+
+    it('clicking the status row calls onOpenStatus when one is supplied', () => {
+      const onOpenStatus = vi.fn();
+      const section = createSensorSourceSection(makeOptions(), onOpenStatus);
+      statusButton(section.element).click();
+      expect(onOpenStatus).toHaveBeenCalledOnce();
+    });
+
+    it('never throws when no onOpenStatus is supplied — an inert row, not a broken one', () => {
+      const section = createSensorSourceSection(makeOptions());
+      expect(() => statusButton(section.element).click()).not.toThrow();
+    });
+
+    it('renders the status as a real button either way, so the deeper page stays reachable by keyboard', () => {
+      const section = createSensorSourceSection(makeOptions());
+      expect(statusButton(section.element).tagName).toBe('BUTTON');
+    });
   });
 });

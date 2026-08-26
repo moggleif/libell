@@ -86,7 +86,9 @@ function lastSampleAgeText(lastSampleAt: number | null, nowMs: number): string {
   return t('diagnostics.age', { s: seconds.toFixed(1) });
 }
 
-function tiltText(tilt: Calibration | null): string {
+/** Exported for reuse by `easyLevelStatusPage.ts`'s live reading row — the
+ * same "roll X°, pitch Y°" wording, never a second copy of it. */
+export function tiltText(tilt: Calibration | null): string {
   if (tilt === null) return '—';
   return `${t('diagnostics.roll')} ${tilt.rollDeg.toFixed(1)}°, ${t('diagnostics.pitch')} ${tilt.pitchDeg.toFixed(1)}°`;
 }

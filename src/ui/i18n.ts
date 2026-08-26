@@ -159,6 +159,14 @@ export const MESSAGES = {
     'diagnostics.copied': 'Diagnostics copied!',
     'diagnostics.copy.failed': 'Could not copy automatically.',
 
+    // Sensor status page: reached by tapping the sensor row on the
+    // External sensor page. `reading` is the same roll/pitch the main
+    // screen already computes, shown here too so a user checking the box
+    // itself doesn't have to leave this page to see it move.
+    'sensorStatus.title': 'Sensor status',
+    'sensorStatus.reading': 'Reading: {value}',
+    'sensorStatus.debug': 'Debug info',
+
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
       'already have — no bubble vials, no guessing.',
@@ -636,6 +644,10 @@ export const MESSAGES = {
     'diagnostics.copy': 'Kopiera diagnostik',
     'diagnostics.copied': 'Diagnostik kopierad!',
     'diagnostics.copy.failed': 'Kunde inte kopiera automatiskt.',
+
+    'sensorStatus.title': 'Sensorstatus',
+    'sensorStatus.reading': 'Mätvärde: {value}',
+    'sensorStatus.debug': 'Felsökningsinfo',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +

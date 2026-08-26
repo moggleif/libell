@@ -30,6 +30,12 @@
  * calibration split. It lives on this page, not inside the Calibration
  * menu section, because it only makes sense once EasyLevel is (or was)
  * connected — same rule the health-detail block above already follows.
+ *
+ * The sensor row's status text doubles as a button, opening a deeper
+ * `easyLevelStatusPage.ts` (live battery/temperature/reading plus a
+ * collapsible debug section) when `onOpenStatus` is supplied — optional
+ * purely so existing callers/tests that don't need that page can construct
+ * this section without threading a callback through.
  */
 import type { Calibration, SensorSource } from '../domain/settings';
 import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
@@ -91,7 +97,10 @@ export interface SensorSourceSection {
   refresh(): void;
 }
 
-export function createSensorSourceSection(options: SensorSourceOptions): SensorSourceSection {
+export function createSensorSourceSection(
+  options: SensorSourceOptions,
+  onOpenStatus?: () => void,
+): SensorSourceSection {
   const body = document.createElement('div');
   // Wraps intro/connect/health — the "get connected" half (design review).
   // A plain div changes nothing visually; see the return statement below.
@@ -114,8 +123,23 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   // sensor connected to disconnect (unchanged rule, just relocated).
   const sensorRow = document.createElement('div');
   sensorRow.className = 'sensor-row';
-  const status = document.createElement('p');
-  status.className = 'menu__text menu__text--status';
+  // A button, not a plain <p> (screen-cleanup follow-up): opens the deeper
+  // status page when one is wired. The status text itself lives in a
+  // nested span, not directly as the button's textContent, so `refresh()`
+  // below can update it without wiping the chevron appended once here.
+  const status = document.createElement('button');
+  status.type = 'button';
+  status.className = 'menu__text menu__text--status sensor-row__status-button';
+  const statusText = document.createElement('span');
+  status.append(statusText);
+  if (onOpenStatus) {
+    const chevron = document.createElement('span');
+    chevron.className = 'sensor-row__chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+    chevron.textContent = '›';
+    status.append(chevron);
+    status.addEventListener('click', onOpenStatus);
+  }
   const disconnectButton = document.createElement('button');
   disconnectButton.type = 'button';
   disconnectButton.className = 'menu__action menu__action--secondary menu__action--inline';
@@ -257,7 +281,7 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   function refresh(): void {
     refreshButtons();
     const active = options.getSensorSource() === 'easylevel';
-    status.textContent = !active
+    statusText.textContent = !active
       ? t('sensorSource.status.phone')
       : options.getSensorState() === 'disconnected'
         ? t('sensorSource.status.disconnected')
@@ -275,9 +299,9 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   }
 
   connectButton.addEventListener('click', () => {
-    status.textContent = t('sensorSource.status.connecting');
+    statusText.textContent = t('sensorSource.status.connecting');
     void options.connectEasyLevel().then((state) => {
-      status.textContent =
+      statusText.textContent =
         state === 'granted'
           ? t('sensorSource.status.connected')
           : state === 'unsupported'

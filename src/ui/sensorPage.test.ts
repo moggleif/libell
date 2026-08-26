@@ -2,11 +2,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSensorPage } from './sensorPage';
 import type { SensorSourceOptions } from './sensorSourceSection';
+import type { DiagnosticsOptions } from './diagnosticsSection';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSourceOptions {
+type Options = SensorSourceOptions & DiagnosticsOptions;
+
+function makeOptions(overrides: Partial<Options> = {}): Options {
   return {
     getSensorSource: () => 'phone',
     getSensorState: () => 'idle',
@@ -18,6 +21,10 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
+    getLastSampleAt: () => null,
+    getRawTilt: () => null,
+    getCalibratedTilt: () => null,
+    getActiveTargetName: () => null,
     ...overrides,
   };
 }
@@ -56,5 +63,50 @@ describe('createSensorPage', () => {
     )!;
     button.click();
     expect(connectEasyLevel).toHaveBeenCalledOnce();
+  });
+
+  // Sensor status page (screen-cleanup follow-up to #133/#129): tapping the
+  // sensor row opens a deeper, separately-attached page.
+  describe('the nested status page', () => {
+    it('starts closed, and clicking the sensor row opens it', () => {
+      const page = createSensorPage(makeOptions());
+      expect(page.statusElement.hasAttribute('hidden')).toBe(true);
+      const statusButton = [...page.element.querySelectorAll('button')].find((b) =>
+        b.textContent?.includes('Using the phone'),
+      )!;
+      statusButton.click();
+      expect(page.statusElement.hasAttribute('hidden')).toBe(false);
+      expect(page.statusElement.textContent).toContain('Sensor status');
+    });
+
+    it('refreshLive() is a no-op while the status page is closed', () => {
+      const getEasyLevelStatus = vi.fn(() => null);
+      const page = createSensorPage(makeOptions({ getEasyLevelStatus }));
+      getEasyLevelStatus.mockClear();
+      page.refreshLive();
+      expect(getEasyLevelStatus).not.toHaveBeenCalled();
+    });
+
+    it('refreshLive() re-reads live values once the status page is open', () => {
+      let battery = 80;
+      const page = createSensorPage(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getEasyLevelStatus: () => ({
+            firmwareTier: 7,
+            batteryPercent: battery,
+            temperatureCelsius: 20,
+          }),
+        }),
+      );
+      const statusButton = [...page.element.querySelectorAll('button')].find((b) =>
+        b.textContent?.includes('Connected to the EasyLevel sensor'),
+      )!;
+      statusButton.click();
+      expect(page.statusElement.textContent).toContain('Battery: 80%');
+      battery = 55;
+      page.refreshLive();
+      expect(page.statusElement.textContent).toContain('Battery: 55%');
+    });
   });
 });

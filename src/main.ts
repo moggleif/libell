@@ -74,7 +74,7 @@ import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { createInfoPage } from './ui/infoMenu';
-import { createSensorPage } from './ui/sensorPage';
+import { createSensorPage, type EasyLevelSensorPage } from './ui/sensorPage';
 import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
 import { isIos } from './ui/platform';
 import { createTargetBadge } from './ui/targetBadge';
@@ -590,12 +590,19 @@ function bootstrap(root: HTMLElement): void {
   // (`iosSensorGuidePage.ts`, docs/ios-easylevel-bluefy-guide.md).
   const easyLevelSupported = isWebBluetoothSupported();
   const showIosGuide = !easyLevelSupported && isIos();
-  const sensorPage = easyLevelSupported
+  // Held separately, typed as the fuller `EasyLevelSensorPage` (screen-
+  // cleanup follow-up to #133/#129): `sensorPage` below stays the narrower
+  // shared `SensorPage` type both this and `iosSensorGuidePage.ts` satisfy,
+  // but only this branch actually has a status sub-page to attach/refresh.
+  const easyLevelSensorPage: EasyLevelSensorPage | null = easyLevelSupported
     ? createSensorPage(menuOptions)
-    : showIosGuide
-      ? createIosSensorGuidePage()
-      : null;
+    : null;
+  const sensorPage = easyLevelSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
   if (sensorPage) document.body.append(sensorPage.element);
+  // Attached after `sensorPage.element` (see `sensorPage.ts`'s doc
+  // comment): the status page must paint on top of the External sensor
+  // list page when both happen to be open at once.
+  if (easyLevelSensorPage) document.body.append(easyLevelSensorPage.statusElement);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the
@@ -1038,6 +1045,12 @@ function bootstrap(root: HTMLElement): void {
       // has no separate callback into this module), the same way the
       // "waiting" hint below already discovers it.
       updateSensorStatus();
+      // Live battery/temperature/reading on the sensor status page
+      // (screen-cleanup follow-up to #133/#129): same "every frame,
+      // regardless of what's open" discipline as `updateSensorStatus()`
+      // above — `refreshLive()` itself is the no-op guard when that page
+      // isn't the one currently open.
+      easyLevelSensorPage?.refreshLive();
       // Settings, info page, sensor page, or wizard open: the user is
       // reading, phone in hand — no pose nagging, no overlays, no
       // celebration until they are back.

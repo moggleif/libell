@@ -961,3 +961,35 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
   exists)
 - **Then** the ordinary External sensor page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
+
+## R40 — Sensor status page: live values while it's open, plus a debug disclosure
+
+The External sensor page (R32) lists the one sensor Libell currently supports; tapping
+its status row opens a deeper, focused page for that sensor alone, refreshed
+continuously while it stays open — not just once when opened.
+
+- **Given** the External sensor page
+- **When** I tap the sensor's status row (the same text that already says "Using the
+  phone's own sensor" / "Connected to the EasyLevel sensor" / etc.)
+- **Then** a new page opens on top, showing that sensor's connection state, battery,
+  temperature (R32's exact values and wording) and a live reading — the same
+  calibrated roll/pitch (R36) the leveling math itself uses — so a box can be
+  confirmed alive by watching the number move, without leaving this page.
+- **Given** this status page is open
+- **Then** every value on it keeps refreshing every frame for as long as it stays
+  open — the same "runs every frame regardless of what else is open" discipline the
+  top-bar sensor-status dot already follows — so a battery/temperature notification
+  or a tilt change shows up immediately, never only after closing and reopening the
+  page.
+- **Given** I want more than the headline values
+- **When** I expand its "Debug info" disclosure (closed by default, a native
+  `<details>` — no separate tap-and-wait)
+- **Then** it shows everything the universal "?" → Diagnostics tab (R36) already
+  shows — sample rate, raw vs. calibrated tilt, the effective target, RSSI, app
+  version, "Copy diagnostics" — reusing that exact page rather than a second,
+  potentially-drifting implementation of the same rows.
+- **Given** the phone's own sensor is active instead of EasyLevel
+- **Then** this page still opens and still works: connection state reads "Using the
+  phone's own sensor", battery/temperature/RSSI read "not available yet" (R32's exact
+  wording), and the debug disclosure still shows the phone's own sample rate and tilt
+  — one page for whichever sensor is active, not an EasyLevel-only special case.
