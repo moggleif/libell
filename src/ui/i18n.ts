@@ -211,8 +211,10 @@ export const MESSAGES = {
     'onboard.skipStep': 'Skip',
     'onboard.skipDefaults': 'Skip — use defaults',
     // What skipping actually means (#189) — "Skip" alone never said a
-    // warning lamp (R11) stays lit until the step is done.
-    'onboard.skip.consequence': 'Skip for now — a warning lamp will remind you until it’s done.',
+    // warning lamp (R11) stays lit until the step is done, or that the
+    // shipped defaults are used meanwhile.
+    'onboard.skip.consequence':
+      'Skip for now — a warning lamp will remind you until it’s done. The defaults are used meanwhile, and they often work reasonably well.',
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
@@ -666,7 +668,8 @@ export const MESSAGES = {
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
-    'onboard.skip.consequence': 'Hoppa över nu — en varningslampa påminner dig tills det är klart.',
+    'onboard.skip.consequence':
+      'Hoppa över nu — en varningslampa påminner dig tills det är klart. Standardvärdena används under tiden, och de fungerar ofta någorlunda bra.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',

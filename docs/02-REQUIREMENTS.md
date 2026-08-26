@@ -363,9 +363,10 @@ URL and must keep working with no signal.
   them, since the step shows no separate Save button (see above).
 - **Given** a skippable step (measurements, ramps, sensor calibration, vehicle zero,
   connect)
-- **Then** its Skip control is paired with a one-line note that a warning lamp (R11)
-  will remind the user later if they skip — not just "Skip" with no stated consequence.
-  Its button reads plain "Skip", since skipping any of these does light that lamp; only
+- **Then** its Skip control is paired with a note that a warning lamp (R11) will remind
+  the user later if they skip, and that the shipped defaults are used meanwhile and
+  often work reasonably well — not just "Skip" with no stated consequence. Its button
+  reads plain "Skip", since skipping any of these does light that lamp; only
   the Language/Appearance/Sound steps' Skip reads "Skip — use defaults", since those are
   the skippable steps with no such consequence (style-consistency review follow-up).
 - **Given** Modern appearance
