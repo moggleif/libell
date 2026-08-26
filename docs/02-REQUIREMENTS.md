@@ -683,13 +683,23 @@ URL and must keep working with no signal.
   Web Bluetooth, and this page must never fabricate a number for it.
 - **Given** the box's `faf52c21-...` notification payload (6× signed int16,
   little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
-- **Then** only the accelerometer triplet is used, mapped directly into a
+- **Then** the accelerometer triplet is used, bias-corrected against the most recent
+  `faf52c22-...` calibration (see below, #215) when one is available and mapped into a
   `GravityVector` at whatever scale the box reports it — deliberately not
-  reimplementing the box's own onboard filter, since the app's existing
-  `atan2`-based roll/pitch math only depends on the ratio between the axes, not their
-  absolute unit (see `src/sensor/easyLevelProtocol.ts`).
-- **Given** the box's `faf52c22-...` status payload (#123, decoded from the official
-  app's decompiled bytecode)
+  reimplementing the box's own onboard complementary/low-pass filter, since the app's
+  existing `atan2`-based roll/pitch math only depends on the ratio between the
+  (now bias-corrected) axes, not their absolute unit (see
+  `src/sensor/easyLevelProtocol.ts`). #215 traced the official app's own equivalent
+  processing chain end to end (`faf52c21-...`'s NOTIFY handler through to its
+  displayed roll/pitch) and confirmed this axis mapping — accelX drives the app's own
+  Left/Right (roll) display, accelY drives Front/Back (pitch), matching Libell's
+  existing convention — for the app's default sensor-mounting setting; see that
+  module's doc comment for what #215 could and could not establish from app code
+  alone (notably: the box's absolute polarity, and which of two 90°-rotated physical
+  mountings a given installed box uses, are both hardware/installation facts no app
+  decompilation can recover).
+- **Given** the box's `faf52c22-...` status payload (#123/#215, decoded from the
+  official app's decompiled bytecode)
 - **Then** bytes 2–3 (little-endian uint16 `rawMv`) give battery via
   `clamp(trunc(rawMv × 0.1 − 200), 0, 100)` — a whole percent, never fractional,
   truncated the same way the official app's own `(int)` cast is; byte 7 gives the
@@ -697,10 +707,16 @@ URL and must keep working with no signal.
   temperature formula — tier 1 (byte7 < 32): `clamp(trunc(byte[0] / 16 + 25), −40, 80)`
   (also truncated to a whole degree); tier 2+ (byte7 ≥ 32):
   `clamp(int16LE(bytes[0..1]) / 100, −40, 80)` (kept fractional — the official app does
-  not truncate this branch). Bytes 8–19 (six little-endian int16
-  zero/calibration values, tier ≥ 3 only) are unrelated to battery/temperature and
-  were already read and used in the leveling math since #116. This characteristic is
-  still read best-effort and never required for leveling to work.
+  not truncate this branch). Bytes 8–19 (six little-endian int16 zero/calibration
+  values — accelX/Y/Z then gyroX/Y/Z, tier ≥ 3 only) are unrelated to
+  battery/temperature; #215 found the official app subtracts these (additively, per
+  axis) from the raw accel/gyro counts before any roll/pitch trig — an earlier version
+  of this requirement, and of a comment in `easyLevelProtocol.ts`, incorrectly claimed
+  this was "already read and used ... since #116," but neither `parseEasyLevelStatus`
+  nor `parseAccelPacket` did so before #215. This characteristic is still read
+  best-effort and never required for leveling to work — accel readings are simply
+  uncorrected (today's exact behavior) until/unless a tier-≥-3 status notification
+  arrives.
 - **Given** a status payload whose byte 7 is ≥ 128
 - **Then** the firmware tier (and the temperature formula it selects) resolves to
   tier 1, never tier 5–7, matching the official app exactly: it reads byte 7 into a

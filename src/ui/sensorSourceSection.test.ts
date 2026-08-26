@@ -143,6 +143,7 @@ describe('createSensorSourceSection (#116)', () => {
           firmwareTier: 3,
           batteryPercent: 72,
           temperatureCelsius: 19.5,
+          calibration: null,
         }),
       }),
     );
@@ -179,6 +180,7 @@ describe('createSensorSourceSection (#116)', () => {
             firmwareTier: 3,
             batteryPercent: 80,
             temperatureCelsius: 20,
+            calibration: null,
           }),
         }),
       );
@@ -194,6 +196,7 @@ describe('createSensorSourceSection (#116)', () => {
             firmwareTier: 3,
             batteryPercent: battery,
             temperatureCelsius: 20,
+            calibration: null,
           }),
         }),
       );
@@ -220,6 +223,7 @@ describe('createSensorSourceSection (#116)', () => {
             firmwareTier: 3,
             batteryPercent: 5,
             temperatureCelsius: 20,
+            calibration: null,
           }),
         }),
       );

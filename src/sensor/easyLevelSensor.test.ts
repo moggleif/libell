@@ -29,6 +29,24 @@ function statusBytes(rawMv: number, firmwareByte: number): Uint8Array {
   return new Uint8Array(view.buffer);
 }
 
+/** `statusBytes()` plus bytes 8–19: the six int16 LE calibration values
+ * (#215) — `firmwareByte` must be ≥ 48 (tier ≥ 3) for these to actually be
+ * decoded, matching the official app's own gate. */
+function statusBytesWithCalibration(
+  rawMv: number,
+  firmwareByte: number,
+  accelX: number,
+  accelY: number,
+  accelZ: number,
+): Uint8Array {
+  const view = new DataView(new ArrayBuffer(20));
+  new Uint8Array(view.buffer).set(statusBytes(rawMv, firmwareByte));
+  view.setInt16(8, accelX, true);
+  view.setInt16(10, accelY, true);
+  view.setInt16(12, accelZ, true);
+  return new Uint8Array(view.buffer);
+}
+
 /** A controllable stand-in for `createWebBluetoothTransport()` (#116) — no
  * real `navigator.bluetooth` involved, so the state machine is fully
  * testable without hardware or a browser. `reconnect` defaults to
@@ -119,6 +137,28 @@ describe('createEasyLevelSensor (#116)', () => {
     // A later notification replaces the previous reading.
     emitAccel(accelBytes(0, 0, 9810));
     expect(sensor.getGravity()).toEqual({ x: 0, y: 0, z: 9810 });
+  });
+
+  it("applies a status notification's bias to every accel reading from then on (#215) — the fix for the bug where these bytes were decoded nowhere", async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitStatus } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+
+    // No status yet: raw passthrough, today's exact behavior.
+    emitAccel(accelBytes(1000, -500, 9800));
+    expect(sensor.getGravity()).toEqual({ x: 1000, y: -500, z: 9800 });
+
+    // Tier-3 status arrives with a calibration block.
+    emitStatus(statusBytesWithCalibration(2500, 48, 200, -50, 100));
+
+    // The *next* accel sample is bias-corrected, without needing a new
+    // connection or any other trigger.
+    emitAccel(accelBytes(1000, -500, 9800));
+    expect(sensor.getGravity()).toEqual({ x: 800, y: -450, z: 9700 });
   });
 
   it('surfaces an unexpected GATT disconnect as "disconnected" and clears gravity, instead of freezing on the last value', async () => {
@@ -260,6 +300,7 @@ describe('createEasyLevelSensor (#116)', () => {
       firmwareTier: 2,
       batteryPercent: 50,
       temperatureCelsius: 0,
+      calibration: null,
     });
 
     // A later notification replaces the previous status, same as gravity.
@@ -268,6 +309,7 @@ describe('createEasyLevelSensor (#116)', () => {
       firmwareTier: 1,
       batteryPercent: 100,
       temperatureCelsius: 25,
+      calibration: null,
     });
   });
 
