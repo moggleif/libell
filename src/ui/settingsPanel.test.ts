@@ -117,6 +117,19 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0].theme).toBe(themeSelect.value);
   });
 
+  it('offers Glossy as a third appearance preset (chat-directed restyle)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classic, onSave);
+    const selects = form.querySelectorAll('select');
+    const appearanceSelect = selects[8] as HTMLSelectElement;
+    const values = Array.from(appearanceSelect.options).map((o) => o.value);
+    expect(values).toEqual(['classic', 'modern', 'glossy']);
+    appearanceSelect.value = 'glossy';
+    appearanceSelect.dispatchEvent(new Event('change'));
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].appearance).toBe('glossy');
+  });
+
   it('keeps math in mm while displaying cm', () => {
     const cmSettings: LevelSettings = { ...classic, displayUnit: 'cm' };
     const onSave = vi.fn<(s: LevelSettings) => void>();

@@ -490,14 +490,17 @@ URL and must keep working with no signal.
 - **Given** the Settings form
 - **When** I open the Appearance field
 - **Then** I can choose "Modern" (the redesigned surfaces and screens, ADR 0012 —
-  default) or "Classic" (today's original look, a permanent, fully-supported
-  choice, not just kept around for migration), combined freely with the Theme
-  field (R15) — choosing either does not change whether the app follows the
-  phone's light/dark scheme or a forced choice, and vice versa.
+  default), "Classic" (today's original look, a permanent, fully-supported
+  choice, not just kept around for migration), or "Glossy" (Classic's own
+  layout and screens, restyled only in CSS with mid-2000s gradients, bevels
+  and soft shadows), combined freely with the Theme field (R15) — choosing
+  any of the three does not change whether the app follows the phone's
+  light/dark scheme or a forced choice, and vice versa.
 - **Given** a choice is made and saved, or nothing has ever been chosen
 - **Then** the choice persists like every other setting and is restored on next
   launch; a fresh install, and settings stored before this preset existed, both
-  resolve to Modern (#136) — an explicit Classic choice is never overridden.
+  resolve to Modern (#136) — an explicit Classic or Glossy choice is never
+  overridden.
 - **Given** Modern is the preset in effect when the first-run wizard (R18) opens
 - **Then** every step shows a row of bars — one per step, the current step's bar
   filled — instead of the "n / total" text, and the step heading is larger; step
@@ -507,7 +510,9 @@ URL and must keep working with no signal.
   it — the same skip/next behavior as Classic, only restyled. Whichever preset was
   in effect when the wizard opened is what it keeps for that run, even if Modern is
   turned on or off from the embedded Settings step meanwhile; the next time the
-  wizard opens it picks up the current preset.
+  wizard opens it picks up the current preset. Glossy follows Classic's wizard
+  exactly (its own screens, only re-skinned), since only Modern gets the
+  restyled wizard above.
 
 ## R30 — Continuous audio leveling guidance (opt-in)
 

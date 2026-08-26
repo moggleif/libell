@@ -253,6 +253,7 @@ export const MESSAGES = {
     'settings.appearance': 'Appearance',
     'appearance.classic': 'Classic',
     'appearance.modern': 'Modern',
+    'appearance.glossy': 'Glossy',
     'settings.sound': 'Chime when level',
     'settings.soundGuidance': 'Continuous audio guidance',
     'settings.soundGuidance.help':
@@ -635,6 +636,7 @@ export const MESSAGES = {
     'settings.appearance': 'Utseende',
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',
+    'appearance.glossy': 'Glansig',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.soundGuidance': 'Kontinuerlig ljudvägledning',
     'settings.soundGuidance.help':

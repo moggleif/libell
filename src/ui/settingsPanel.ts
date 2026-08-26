@@ -534,6 +534,7 @@ export function createSettingsForm(
   const APPEARANCES: { value: AppearanceSetting; label: MessageKey }[] = [
     { value: 'classic', label: 'appearance.classic' },
     { value: 'modern', label: 'appearance.modern' },
+    { value: 'glossy', label: 'appearance.glossy' },
   ];
   const appearanceOptions: [HTMLOptionElement, MessageKey][] = [];
   for (const { value, label } of APPEARANCES) {
