@@ -1,80 +1,110 @@
 /**
- * First-run onboarding wizard (issue #43, reworked #184): how to place
- * the phone, which vehicle is being leveled, the vehicle measurements,
- * calibration. Every step but the sensor-source and vehicle-type ones
- * can be skipped; whatever is skipped stays flagged by the warning
- * lamps, so the wizard guides without ever blocking. Reuses the real
- * settings form, calibration section and illustrations — one source of
- * truth, never a wizard-only duplicate that can drift from the real
- * thing (#184's whole complaint about the pre-rework wizard).
+ * First-run onboarding wizard (issue #43, reworked #184, design-reviewed
+ * for #189 and again since): what Libell does, language/appearance/sound
+ * preferences, which vehicle is being leveled, how to place the phone,
+ * the vehicle measurements, the ramp model, calibration. Every step but
+ * welcome, sensor-source and vehicle-type can be skipped; whatever is
+ * skipped stays flagged by the warning lamps, so the wizard guides
+ * without ever blocking.
  *
- * Vehicle type (#184): a new step, "What are you leveling?" (motorhome
- * or caravan — the same two choices and labels Settings uses), always
- * shown once — right after the sensor-source step when that one exists,
- * otherwise first. `vehicleChoice` starts at whatever the stored settings
- * already say (not hardcoded to motorhome) and is read by every later
- * step: the placement and measurements illustrations pick the matching
- * shape (`helpIllustrations.ts`), and the measurements step is built with
- * `vehicleType` overridden to this choice so its field labels/visibility
- * (axle-to-jockey, hidden front track width, ...) already match — see
- * `settingsPanel.ts`'s existing vehicle-aware relabeling, reused as-is.
+ * Reuses the real settings form and calibration section for every
+ * step's actual FIELDS and LOGIC — one source of truth, never a
+ * wizard-only duplicate that can drift from the real thing (#184's whole
+ * complaint about the pre-rework wizard). It does not reuse those
+ * components' own persistent-state chrome (Save/Undo/Reset): a wizard
+ * step and a settings page are different interaction models — linear
+ * and disposable vs. persistent and revisitable — and stacking a
+ * settings page's CRUD controls under the wizard's own Next/Skip/Back
+ * just doubled the decisions a first-time user had to parse per screen.
+ * `createSettingsForm`'s compact modes render no `actions` row; Next
+ * alone submits the embedded form (see the nav handler below).
  *
- * Calibration (#184): embeds `createCalibrationSection` whole, exactly as
- * Settings → Calibration does — no more reduced/compact rendering of its
- * own, which used to look visibly older than the real Modern two-card
- * design (#109) it stood in for. "Use the same" is the point: one
- * calibration UI, not two that can drift apart.
+ * Welcome step (design-review follow-up): the very first thing shown,
+ * before any question or form — what Libell is for (reuses `about.text`)
+ * and that the guide ahead is short and skippable. No prior step existed
+ * before this that explained why the following questions matter.
+ *
+ * Vehicle type (#184): "What are you leveling?" (motorhome or caravan —
+ * the same two choices and labels Settings uses), always asked once —
+ * right after the sensor-source step when that one exists, otherwise
+ * right after the language/appearance/sound steps. `vehicleChoice` starts
+ * at whatever the stored settings already say (not hardcoded to
+ * motorhome) and is read by every
+ * later step: the placement and measurements illustrations pick the
+ * matching shape (`helpIllustrations.ts`), and the measurements step is
+ * built with `vehicleType` overridden to this choice so its field
+ * labels/visibility (axle-to-jockey, hidden front track width, ...)
+ * already match — see `settingsPanel.ts`'s existing vehicle-aware
+ * relabeling, reused as-is.
+ *
+ * Calibration (#184, split into two steps on a design review):
+ * `calibrationSection.ts` is still the single source of truth for both
+ * halves' copy and behavior — Settings → Calibration and the wizard show
+ * the exact same UI, never a wizard-only rebuild of either half. What
+ * changed is pacing: the two concepts (sensor calibration, vehicle zero)
+ * now get one wizard step each, `sensorElement`/`vehicleElement` from
+ * `createCalibrationSection`, instead of both stacked under one heading
+ * with up to seven buttons on screen at once. Splitting by step also
+ * replaces the ordering hint a combined step needed ("do the sensor
+ * first") — the steps are already in that order.
  *
  * Sensor source choice (#135, ADR 0014): when an external sensor option
  * actually exists (`isWebBluetoothSupported()` — the exact same gate
  * `menu.ts` already uses before offering the "External sensor" page), a
- * new first step asks "This phone" vs. "external sensor" and branches
- * the rest of the wizard:
+ * step asks "This phone" vs. "external sensor" and branches the rest of
+ * the wizard:
  *   - "This phone" (the default, and the only option when the gate is
  *     false): unchanged phone flow below.
- *   - external: connect + installation calibration (reusing
- *     `sensorSourceSection.ts`'s component whole — the same "Set vehicle
- *     level" block #131 added to the real menu page, never a wizard-only
- *     duplicate) followed directly by the settings/dimensions step.
- * `sensorChoice` starts at `'phone'` and is only read once, when Next is
- * pressed from the source step — closing the wizard (✕) before or during
- * that step never sets anything, so an unfinished choice always leaves
- * the app on the phone sensor (the existing `DEFAULT_SETTINGS.sensorSource`),
- * never an ambiguous state.
+ *   - external: connect, then installation offset (design review: split
+ *     into two steps — see the two steps' own doc comment below), reusing
+ *     `sensorSourceSection.ts`'s halves — the same "Set vehicle level"
+ *     block #131 added to the real menu page, never a wizard-only
+ *     duplicate — followed by the settings/dimensions and ramps steps.
+ * `sensorChoice` starts at `'phone'`; the step list re-resolves against it
+ * on every change on the source step, not just once when Next is pressed
+ * (#189 follow-up — otherwise the "n / total" progress readout could
+ * commit to a total that a later choice then falsified). Closing the
+ * wizard (✕) before or during that step never *saves* anything, so an
+ * unfinished choice always leaves the app on the phone sensor (the
+ * existing `DEFAULT_SETTINGS.sensorSource`), never an ambiguous state.
  *
  * Appearance (#110): whether this instance renders Classic or Modern
  * structure is decided once, up front, from `initialSettings.appearance`
  * — not re-evaluated while the wizard is open, even if the embedded
- * settings form (step 2) lets the user flip the preset mid-flow. A
- * fresh wizard picks up the new preset the next time it opens, since
- * `showOnboarding` is always called anew (see `main.ts`).
+ * settings form (appearance/measurements/ramps steps) lets the user flip
+ * the preset mid-flow. A fresh wizard picks up the new preset the next
+ * time it opens, since `showOnboarding` is always called anew (see
+ * `main.ts`).
  *
- * Usability pass for less tech-savvy users (#189, a devil's-advocate
- * review focused on personas like seniors leveling their first
- * motorhome): a "Back" button (only from the second step on) so a wrong
- * tap doesn't require finishing the wizard or restarting it; the
- * measurements/general steps' Next now also saves their form before
- * advancing (previously Next and a form's own Save were fully
- * independent, by design for #159 — that guard, that Save itself never
- * advances or closes the wizard, is unchanged, only Next now also
- * saves); every skippable step that can leave a warning lamp (R11) lit
- * pairs its Skip control with a note saying so; and the calibration step
- * gets a one-line steer on which of its two concepts (sensor calibration
- * vs. vehicle zero) to actually do first. `currentSettings` tracks the
- * wizard's own latest save (from either form) so a Back visit after Next
- * auto-saved shows what was just entered, not the wizard's original
- * snapshot.
+ * Usability pass for less tech-savvy users (#189: a persona like seniors
+ * leveling their first motorhome): a "Back" button (from the second step
+ * on) so a wrong tap doesn't require finishing the wizard or restarting
+ * it; every skippable step that can leave a warning lamp (R11) lit pairs
+ * its Skip control with a note saying so. `currentSettings` tracks the
+ * wizard's own latest save (from either embedded form) so a Back visit
+ * after Next auto-saved shows what was just entered, not the wizard's
+ * original snapshot.
  *
- * General step (#189, at the user's own suggestion): a new first step —
- * Language, Theme, Appearance, Chime, Continuous audio guidance, the
- * exact fields `createSettingsForm`'s new 'general' compact mode reuses
- * from the full form's General section (whatever that section currently
- * holds — Appearance joined it after #189 first shipped) — always shown,
- * right before everything else,
- * since being able to read the rest of the guide matters before any of
- * it. Skippable (the shipped defaults are already a complete choice);
- * unlike the other skippable steps it gets no warning-lamp hint, since
- * skipping it never lights one.
+ * Language / Appearance / Sound steps (#189 introduced these as one
+ * combined "General" step; a later design review split it): three steps,
+ * one per actual decision, not one step per what used to share a Settings
+ * section header. Language stands alone — being able to read the rest of
+ * the guide matters before anything else, a reason none of the other
+ * fields share. Theme + Appearance is one "how it looks" decision; Chime
+ * + Continuous audio guidance is one "what it sounds like" decision. All
+ * three reuse the exact fields/handlers the full form's General section
+ * has (`createSettingsForm`'s 'language'/'appearance'/'sound' compact
+ * modes). Skippable (the shipped defaults are already a complete choice);
+ * unlike the other skippable steps they get no warning-lamp hint, since
+ * skipping any of them never lights one.
+ *
+ * Ramps step (design review): the ready-made ramp model/custom
+ * step-height picker and ramp count — reachable from Settings before, but
+ * never from the wizard, even though it's what the ramp catalog and
+ * per-wheel step guidance actually run on. Reuses the same
+ * `createSettingsForm`'s 'ramps' compact mode as the measurements step
+ * pattern: skippable, with the warning-lamp consequence hint, since
+ * skipping it leaves the shipped default ramp model in place.
  */
 import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
@@ -92,7 +122,17 @@ import { t, type MessageKey } from './i18n';
 export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptions {
   initialSettings: LevelSettings;
   onSettingsSaved(settings: LevelSettings): void;
-  onFinished(): void;
+  /**
+   * Called whenever the wizard closes, either way — ✕ at any point, or
+   * reaching the end. `done` distinguishes the two (design review,
+   * follow-up): true only when every step was actually stepped through
+   * to the end (whatever individual steps the user chose to skip along
+   * the way), false for an early ✕. Both still count as "seen" for the
+   * auto-launch gate (`hasSeenOnboarding`) — only `done` decides whether
+   * "Show introduction" still reads as an unfinished first-run task
+   * (green) or a plain re-launch (secondary), see `infoMenu.ts`.
+   */
+  onFinished(done: boolean): void;
 }
 
 /** Which source the first step's radios currently have selected — 'phone'
@@ -219,7 +259,25 @@ export function showOnboarding(options: OnboardingOptions): void {
   close.className = 'onboarding__close';
   close.setAttribute('aria-label', t('onboard.close'));
   close.textContent = '✕';
-  close.addEventListener('click', () => finish());
+  close.addEventListener('click', () => finish(false));
+
+  // What Libell is for, before any question or form (design-review
+  // follow-up): the first-ever screen a new user sees used to be a
+  // language/theme form, with no "why" ahead of the "how". Reuses
+  // 'about.text' rather than separate welcome-only copy. Not skippable in
+  // the warning-lamp sense — there's nothing to configure here, just Next.
+  const welcomeStep: Step = {
+    title: t('onboard.welcome.h'),
+    build: () => {
+      const what = document.createElement('p');
+      what.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      what.textContent = t('about.text');
+      const guide = document.createElement('p');
+      guide.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      guide.textContent = t('onboard.welcome.t');
+      return [what, guide];
+    },
+  };
 
   const placementStep: Step = {
     title: t('onboard.step1.h'),
@@ -250,34 +308,31 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
-  // A short, visible note that the compact steps below don't hide these
-  // features from the app — they just aren't on this reduced screen
-  // (#156); the full forms stay reachable from Settings afterward.
-  function moreInMenuNote(): HTMLParagraphElement {
-    const note = document.createElement('p');
-    note.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-    note.textContent = t('onboard.moreInMenu');
-    return note;
-  }
-
   // A skippable step's consequence, spelled out (#189): "Skip" alone never
   // said what happens next — the warning lamp (R11) that stays lit is
   // documented in the requirements but was never shown to the user here.
   function skipConsequenceHint(): HTMLParagraphElement {
     const hint = document.createElement('p');
-    hint.className = isModern ? 'onboarding__text--modern' : 'settings__hint';
+    hint.className = isModern ? 'onboarding__text--modern' : 'menu__text';
     hint.textContent = t('onboard.skip.consequence');
     return hint;
   }
 
   const settingsStep: Step = {
-    title: t('menu.settings'),
-    skipLabel: t('onboard.skipDefaults'),
+    // 'help.settings.h' ("The measurements"), not 'menu.settings'
+    // ("Settings") — #189 follow-up. This step only ever shows wheelbase/
+    // track widths.
+    title: t('help.settings.h'),
+    // Plain "Skip" (#189 follow-up), not "Skip — use defaults": skipping
+    // this step does light a warning lamp (see skipConsequenceHint below),
+    // same as Calibration/External sensor — "use defaults" is reserved for
+    // the one step (General) that truly has no consequence.
+    skipLabel: t('onboard.skipStep'),
     build: () => [
       // vehicleType is overridden to the vehicle step's choice (#184) so
       // this reduced form's field labels/visibility already match —
       // settingsPanel.ts's own vehicle-aware relabeling does the rest.
-      measuresIllustration(t('menu.settings'), vehicleChoice),
+      measuresIllustration(t('help.settings.h'), vehicleChoice),
       createSettingsForm(
         // Built from currentSettings, not the static options.initialSettings
         // (#189): once Next has auto-saved this step (see the nav handler
@@ -291,25 +346,71 @@ export function showOnboarding(options: OnboardingOptions): void {
         undefined,
         { compact: 'measurements' },
       ),
-      moreInMenuNote(),
       skipConsequenceHint(),
     ],
   };
 
-  // Language, Theme, Chime, Continuous audio guidance (#189, at the
-  // user's suggestion): the same General section fields the full
-  // Settings form has (`createSettingsForm`'s 'general' compact mode),
-  // not a wizard-only reimplementation. Always the very first step —
-  // knowing the app is legible matters before anything else — and reads
-  // `currentSettings` like the measurements step, so a language change's
-  // immediate reload (unrelated to Next/Save; see settingsPanel.ts's own
-  // languageSelect handler) never fights with a value saved seconds
-  // earlier here. No skip-consequence hint: unlike measurements/
-  // calibration, skipping this step leaves no warning lamp (R11) lit —
-  // the shipped defaults are already a complete, valid choice.
-  const generalStep: Step = {
-    title: t('settings.general'),
+  // A skippable step with no real-world consequence — the shipped
+  // defaults are already a complete, valid choice, so skipping never
+  // lights a warning lamp (R11) — reused by the three steps below (#189,
+  // split by a design review into one step per actual decision: was one
+  // combined 'general' step covering all five fields just because they
+  // used to share a Settings section header, not because they're one
+  // decision). `onSave` always tracks `currentSettings`, same as the
+  // measurements step, so a language change's immediate reload (unrelated
+  // to Next; see settingsPanel.ts's own languageSelect handler) never
+  // fights with a value saved seconds earlier here.
+  function buildCosmeticStep(compact: 'language' | 'appearance' | 'sound'): Element[] {
+    return [
+      createSettingsForm(
+        currentSettings,
+        (settings) => {
+          currentSettings = settings;
+          options.onSettingsSaved(settings);
+        },
+        undefined,
+        { compact },
+      ),
+    ];
+  }
+
+  // Language alone (design review): the one field of the five that has to
+  // resolve before the rest of the guide is even legible — none of the
+  // other four share that reason to lead.
+  const languageStep: Step = {
+    title: t('settings.language'),
     skipLabel: t('onboard.skipDefaults'),
+    build: () => buildCosmeticStep('language'),
+  };
+
+  // Theme + Appearance together (design review): one "how it looks"
+  // decision, not two — Theme is a sub-choice of Appearance, not an
+  // unrelated setting that happened to share a header with it.
+  const appearanceStep: Step = {
+    title: t('settings.appearance'),
+    skipLabel: t('onboard.skipDefaults'),
+    build: () => buildCosmeticStep('appearance'),
+  };
+
+  // Chime + Continuous audio guidance together (design review): one "what
+  // it sounds like" decision.
+  const soundStep: Step = {
+    title: t('onboard.sound.h'),
+    skipLabel: t('onboard.skipDefaults'),
+    build: () => buildCosmeticStep('sound'),
+  };
+
+  // Ramp model/count (design review): what the ramp catalog and per-wheel
+  // step guidance actually run on — arguably the thing that most sets
+  // this app apart from a plain bubble-level or sensor-only competitor,
+  // yet it never had a wizard step of its own before. Same "vehicle
+  // setup" bucket as the measurements step: skippable, but skipping it
+  // does leave the shipped default ramp model in place, which may not
+  // match what the user actually owns — plain "Skip", with the same
+  // warning-lamp consequence hint measurements/calibration get.
+  const rampsStep: Step = {
+    title: t('settings.tab.ramps'),
+    skipLabel: t('onboard.skipStep'),
     build: () => [
       createSettingsForm(
         currentSettings,
@@ -318,48 +419,60 @@ export function showOnboarding(options: OnboardingOptions): void {
           options.onSettingsSaved(settings);
         },
         undefined,
-        { compact: 'general' },
+        { compact: 'ramps' },
       ),
-      moreInMenuNote(),
-    ],
-  };
-
-  // What to actually do first (#189): the embedded section below packs two
-  // distinct concepts (sensor calibration, vehicle zero) and a two-capture
-  // flip technique into one step with no priority order — a first-time
-  // user got no steer on which button matters. This one-line hint doesn't
-  // duplicate calibrationSection.ts's own copy, just orders it.
-  function calibrationGuidanceHint(): HTMLParagraphElement {
-    const hint = document.createElement('p');
-    hint.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-    hint.textContent = t('onboard.calibration.hint');
-    return hint;
-  }
-
-  // Embeds the exact same calibration UI Settings → Calibration shows —
-  // no reduced rendering of its own (#184; used to look visibly older
-  // than the real Modern two-card design, #109).
-  const calibrationStep: Step = {
-    title: t('menu.calibration'),
-    skipLabel: t('onboard.skipStep'),
-    build: () => [
-      calibrationGuidanceHint(),
-      createCalibrationSection(options).element,
       skipConsequenceHint(),
     ],
   };
 
-  // External path's calibration equivalent (#135, ADR 0014): the box's
-  // own connect flow already ends in its "Set vehicle level" block (#131)
-  // once connected, so a single embedded `sensorSourceSection` covers
-  // both "connect sensor" and "installation calibration" — reused whole,
-  // exactly as it already is on the real menu page, never split apart
-  // into wizard-only duplicates. Skippable on the same terms as the
-  // phone's calibration step above, which it stands in for.
+  // Split into two steps (design review): was one step embedding both
+  // calibration-card halves at once, up to seven buttons deep. Each half
+  // is still `calibrationSection.ts`'s own real UI, unmodified — only the
+  // wizard-level pacing changed, not the calibration UI itself. The step
+  // order (sensor, then vehicle zero) already says which to do first, so
+  // there's no separate ordering hint to write here the way the combined
+  // step needed one.
+  const sensorCalibrationStep: Step = {
+    title: t('calibration.sensor.h'),
+    skipLabel: t('onboard.skipStep'),
+    build: () => [createCalibrationSection(options).sensorElement, skipConsequenceHint()],
+  };
+
+  const vehicleZeroStep: Step = {
+    title: t('calibration.vehicle.h'),
+    skipLabel: t('onboard.skipStep'),
+    build: () => [createCalibrationSection(options).vehicleElement, skipConsequenceHint()],
+  };
+
+  // External path's calibration equivalent (#135, ADR 0014, split into two
+  // steps on a design review — same reasoning as the phone-sensor/
+  // vehicle-zero split above): the box's own connect flow and its
+  // "Set vehicle level" installation offset (#131) are two different
+  // moments — connect once, then separately verify the vehicle is level
+  // and set the offset — so each gets its own step,
+  // `connectElement`/`installElement` from `createSensorSourceSection`,
+  // still the exact same UI the real menu page shows, never a wizard-only
+  // rebuild of either half. Both skippable on the same terms as the
+  // phone's calibration steps, which this pair stands in for.
+  //
+  // `connectEasyLevel()` is asynchronous (a live Web Bluetooth device
+  // picker, then a GATT connect) — the picker itself is a native, modal
+  // UI that blocks interacting with this step while it's open, but the
+  // GATT connect afterward does not, so it's possible to tap Next before
+  // it resolves. The install step then simply shows its own "not
+  // running"/no-offset state, same as visiting it before ever connecting
+  // at all — no special guard, matching the wizard's "never block, always
+  // recoverable via Back" rule elsewhere (#189).
   const connectStep: Step = {
     title: t('menu.sensorSource'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createSensorSourceSection(options).element, skipConsequenceHint()],
+    build: () => [createSensorSourceSection(options).connectElement, skipConsequenceHint()],
+  };
+
+  const installOffsetStep: Step = {
+    title: t('sensorSource.install.h'),
+    skipLabel: t('onboard.skipStep'),
+    build: () => [createSensorSourceSection(options).installElement, skipConsequenceHint()],
   };
 
   // A labeled radio group for a single wizard choice — shared by the
@@ -378,6 +491,11 @@ export function showOnboarding(options: OnboardingOptions): void {
       label.className = 'onboarding__source-option';
       const radio = document.createElement('input');
       radio.type = 'radio';
+      // Themed like every other control in the app (.settings__checkbox
+      // does the same) — plain radios default to the browser's own accent
+      // color, off-brand and the one hex-free rule CLAUDE.md is strict
+      // about (#189 follow-up).
+      radio.className = 'onboarding__source-radio';
       radio.name = name;
       radio.value = value;
       radio.checked = current === value;
@@ -404,6 +522,14 @@ export function showOnboarding(options: OnboardingOptions): void {
         intro,
         buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, sensorChoice, (value) => {
           sensorChoice = value;
+          // Re-resolve immediately, not just when Next is pressed (#189
+          // follow-up): the "n / total" progress readout already commits to
+          // a total on this very step (6 for the phone path, the default),
+          // so picking "external" here must update it right away — a total
+          // that only turns out to have been wrong once you've moved on is
+          // worse than one that updates as you choose.
+          steps = resolveSteps();
+          renderStep();
         }),
       ];
     },
@@ -427,25 +553,46 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
-  const phoneSteps = [placementStep, settingsStep, calibrationStep];
-  const externalSteps = [connectStep, settingsStep];
+  const phoneSteps = [
+    placementStep,
+    settingsStep,
+    rampsStep,
+    sensorCalibrationStep,
+    vehicleZeroStep,
+  ];
+  const externalSteps = [connectStep, installOffsetStep, settingsStep, rampsStep];
 
-  // generalStep always leads (#189) — every branch below prepends it.
-  let steps: Step[] = sourceChoiceAvailable
-    ? [generalStep, sourceStep, vehicleStep, ...phoneSteps]
-    : [generalStep, vehicleStep, ...phoneSteps];
+  // welcomeStep, then languageStep/appearanceStep/soundStep, always lead
+  // (#189, design review) — every branch below prepends all four. Depends
+  // on `sensorChoice`, so it's re-run both up front and every time the
+  // source-step radio changes (see sourceStep above) — the displayed step
+  // count always matches the path the user has (currently) chosen, never
+  // a stale guess from before they picked.
+  function resolveSteps(): Step[] {
+    const leading = [welcomeStep, languageStep, appearanceStep, soundStep];
+    return sourceChoiceAvailable
+      ? [
+          ...leading,
+          sourceStep,
+          vehicleStep,
+          ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
+        ]
+      : [...leading, vehicleStep, ...phoneSteps];
+  }
+
+  let steps: Step[] = resolveSteps();
 
   let index = 0;
 
-  function finish(): void {
+  function finish(done: boolean): void {
     overlay.remove();
-    options.onFinished();
+    options.onFinished(done);
   }
 
   function renderStep(): void {
     const step = steps[index];
     if (!step) {
-      finish();
+      finish(true);
       return;
     }
     card.replaceChildren();
@@ -472,12 +619,12 @@ export function showOnboarding(options: OnboardingOptions): void {
     nav.className = isModern ? 'onboarding__nav onboarding__nav--modern' : 'onboarding__nav';
     // Back (#189): a wrong tap on vehicle type or sensor source used to be
     // fixable only by finishing the wizard and correcting it in Settings,
-    // or closing (✕) and restarting from step 1. Always appended first —
-    // in Classic's plain column that puts it furthest from the primary
-    // Next action at the bottom; in Modern's column-reverse nav (see the
-    // CSS) that puts it last/least prominent instead, below Skip. Never
-    // shown on the first step, matching Skip's own "not always present"
-    // convention.
+    // or closing (✕) and restarting from step 1. Always appended first, so
+    // in both appearances' plain (non-reversed) column it ends up furthest
+    // from the primary Next action at the true bottom edge — same order,
+    // same "closest to the thumb wins" rule, in Classic and Modern alike.
+    // Never shown on the first step, matching Skip's own "not always
+    // present" convention.
     if (index > 0) {
       const back = document.createElement('button');
       back.type = 'button';
@@ -509,28 +656,20 @@ export function showOnboarding(options: OnboardingOptions): void {
     next.className = isModern ? 'menu__action onboarding__next--modern' : 'menu__action';
     next.textContent = index === steps.length - 1 ? t('onboard.done') : t('onboard.next');
     next.addEventListener('click', () => {
-      // Leaving a step with its own embedded form — settings (measurements)
-      // or general (#189): Next used to be fully independent of the
-      // embedded form's own Save button (a deliberate choice for #159, so
-      // that Save's normal "return to main screen" behavior never fired
-      // inside the wizard) — but that meant a user who typed measurements
-      // or flipped a General toggle and tapped Next, the near-universal
-      // wizard convention, lost it silently. Submitting the form here
-      // saves whatever is currently in it without changing what Save
-      // itself does when pressed directly (#159's guard is untouched).
-      if (step === settingsStep || step === generalStep) {
-        body.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
-      }
-      // Leaving the source step: branch the rest of the wizard onto the
-      // chosen path — read once, here, never re-evaluated afterward.
-      if (step === sourceStep) {
-        steps = [
-          generalStep,
-          sourceStep,
-          vehicleStep,
-          ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
-        ];
-      }
+      // Leaving a step with its own embedded settings form (measurements,
+      // language, appearance, sound, ramps): its own Save/Undo/Reset row
+      // isn't mounted here at all (design review — see the file header
+      // comment), so Next is the only thing that persists it. Dispatching
+      // submit directly reuses the form's real save path (validation, the
+      // vehicle full-object merge, etc.) rather than re-deriving it here.
+      // No step-identity check needed — only these steps' body ever
+      // contains a <form> at all (calibration/connect never do), and the
+      // optional chaining below is already a no-op otherwise. #159's
+      // separate guard — that submitting this form directly, e.g. by
+      // pressing Enter in a field, never itself advances or closes the
+      // wizard — is unrelated and unaffected: only this Next click both
+      // submits and advances.
+      body.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
       index += 1;
       renderStep();
     });

@@ -1355,36 +1355,6 @@ body {
   white-space: pre-line;
 }
 
-.calibration-card__readings {
-  display: flex;
-  gap: 12px;
-}
-
-.calibration-card__reading {
-  flex: 1;
-  background: var(--surface-sunken);
-  border-radius: 10px;
-  padding: 8px 10px;
-}
-
-.calibration-card__reading-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--on-surface-muted);
-}
-
-.calibration-card__reading-value {
-  display: block;
-  margin-top: 2px;
-  font-size: 20px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--on-surface);
-}
-
 .calibration-card__row {
   display: flex;
   gap: 8px;
@@ -1741,18 +1711,32 @@ body {
   gap: 4px;
 }
 
-/* Save / Undo / Reset row at the bottom of the settings form. */
+/* Reset/Undo/Save at the bottom of the settings form (design review,
+ * two follow-ups): Reset and Undo side by side on top, Save full-width
+ * below covering both — Save (the only [type="submit"]) is the primary
+ * action and already green via the plain .menu__action base. */
 .settings__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
 }
 
-.settings__actions .menu__action {
+.settings__actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+.settings__actions-row .menu__action {
   display: inline-block;
   width: auto;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   padding: 10px 14px;
+}
+
+.settings__actions .menu__action[type='submit'] {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 1.05em;
 }
 
 .steps__ramp .settings__select {
@@ -2023,11 +2007,18 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Reset+Undo side by side on top, Save full-width below — same layout
+ * as `.settings__actions` above (design review, two follow-ups). */
 .klossar__footer-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 12px;
+}
+
+.klossar__footer-actions-row {
+  display: flex;
+  gap: 8px;
 }
 
 .klossar__footer-actions .menu__action {
@@ -2036,6 +2027,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.klossar__footer-actions-row .menu__action {
+  flex: 1 1 0;
+}
+
+/* Save (the only [type="submit"]) is the primary action here too — same
+ * "biggest" treatment as `.settings__actions` above. */
+.klossar__footer-actions .menu__action[type='submit'] {
+  min-height: 56px;
+  font-size: 1.05em;
 }
 
 /* Wrong-pose overlay: shown while the phone is not flat / rotated.
@@ -2207,6 +2209,35 @@ body {
   width: min(100%, 300px);
   height: auto;
   margin: 4px auto 8px;
+}
+
+/* Motorhome + caravan side by side (design review, follow-up: "The
+ * measurements" — #184's static Help tab default). Narrower than the
+ * single-illustration `.illu` above since two now share the row. */
+.illu-pair {
+  display: flex;
+  gap: 12px;
+}
+
+.illu-pair__item {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.illu-pair__caption {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
+}
+
+.illu-pair .illu {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto 4px;
 }
 
 .illu__body {
@@ -2452,13 +2483,12 @@ body {
   color: var(--on-surface);
 }
 
-/* Same buttons, same handlers, only reordered and restyled: the pill
- * "Next" first, the plain-text "Skip" below it (source order is
- * unchanged — skip is still appended before next). */
-.onboarding__nav--modern {
-  flex-direction: column-reverse;
-}
-
+/* Same buttons, same handlers and same top-to-bottom order as Classic
+ * (Back, Skip, Next) — so the pill "Next" lands at the true bottom edge,
+ * closest to the thumb, in both appearances. Only restyled: bigger/bolder
+ * here, plain-text there. (Reviewed away from an earlier column-reverse
+ * that put Next visually first but Skip/Back closest to the thumb —
+ * the opposite of Classic's order and of standard mobile ergonomics.) */
 .onboarding__next--modern {
   min-height: 50px;
 }
@@ -2468,8 +2498,7 @@ body {
   background: none;
 }
 
-/* Back (#189): same subordinate, link-like treatment as Skip — appended
- * first in the nav, so column-reverse puts it last/least prominent. */
+/* Back (#189): same subordinate, link-like treatment as Skip. */
 .onboarding__back--modern {
   border: 0;
   background: none;
@@ -2492,4 +2521,21 @@ body {
   border: 1px solid var(--outline);
   border-radius: 10px;
   cursor: pointer;
+}
+
+/* Chosen option gets the same visual language as the rest of the app's
+ * status-driven UI (calibration badges, severity colors) — until now the
+ * only feedback was the radio dot itself (#189 follow-up). */
+.onboarding__source-option:has(.onboarding__source-radio:checked) {
+  border-color: var(--level);
+  background: color-mix(in srgb, var(--level) 10%, transparent);
+}
+
+/* Same size and accent as .settings__checkbox — a plain radio otherwise
+ * falls back to the browser's own (off-brand) accent color, and a mismatched
+ * size would just trade one small inconsistency for another. */
+.onboarding__source-radio {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--level);
 }

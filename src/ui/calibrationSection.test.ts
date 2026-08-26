@@ -153,17 +153,25 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(pill.textContent).toBe('NOT DONE'); // calibrate() itself doesn't call applyCalibration
   });
 
-  it('shows the side/side and front/back readings once calibrated', () => {
+  // Design review, follow-up: a separate numeric readout box was tried
+  // for the phone card (and briefly added to the vehicle-zero card too)
+  // but rejected — the status sentence already states the numbers, so
+  // both cards now show them only there, matching the vehicle-zero
+  // card's original, simpler layout.
+  it('shows the side/side and front/back numbers only in each status sentence, no separate readout box', () => {
     const section = createCalibrationSection(
       makeOptions({
         appearance: 'modern',
         getCalibration: () => ({ rollDeg: 1.2, pitchDeg: -3.4 }),
+        getVehicleCalibration: () => ({ rollDeg: 0.4, pitchDeg: 0.2 }),
       }),
     );
-    const values = [...section.element.querySelectorAll('.calibration-card__reading-value')].map(
-      (v) => v.textContent,
+    expect(section.element.querySelector('.calibration-card__reading-value')).toBeNull();
+    const statuses = [...section.element.querySelectorAll('.menu__text--status')].map(
+      (s) => s.textContent,
     );
-    expect(values).toEqual(['1.2°', '-3.4°']);
+    expect(statuses.some((s) => s?.includes('side/side 1.2'))).toBe(true);
+    expect(statuses.some((s) => s?.includes('side/side 0.4'))).toBe(true);
   });
 
   it('wires every button to the same host callbacks as Classic mode', () => {
@@ -214,11 +222,15 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(applyCalibration).toHaveBeenCalledTimes(1);
   });
 
-  it('the vehicle-zero action button is secondary-styled, unlike the filled sensor button', () => {
-    const section = createCalibrationSection(makeOptions({ appearance: 'modern' }));
-    const calibrateBtn = buttonByText(section.element, 'Calibrate now');
-    const vehicleBtn = buttonByText(section.element, 'Set current position as level');
-    expect(calibrateBtn.className).not.toContain('menu__action--secondary');
-    expect(vehicleBtn.className).toContain('menu__action--secondary');
+  it('all three calibrate actions are equally primary-styled, in both appearances', () => {
+    for (const appearance of ['classic', 'modern'] as const) {
+      const section = createCalibrationSection(makeOptions({ appearance }));
+      const calibrateBtn = buttonByText(section.element, 'Calibrate now');
+      const vehicleBtn = buttonByText(section.element, 'Set current position as level');
+      const flipBtn = buttonByText(section.element, 'Calibrate by flipping');
+      expect(calibrateBtn.className).not.toContain('menu__action--secondary');
+      expect(vehicleBtn.className).not.toContain('menu__action--secondary');
+      expect(flipBtn.className).not.toContain('menu__action--secondary');
+    }
   });
 });

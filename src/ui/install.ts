@@ -8,6 +8,8 @@
  * the button never appears.
  */
 
+import { isIos } from './platform';
+
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -19,10 +21,6 @@ function isStandalone(): boolean {
     // iOS Safari's pre-standard flag for "launched from the home screen".
     ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true)
   );
-}
-
-function isIos(): boolean {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
 export function setupInstallButton(button: HTMLButtonElement, hint: HTMLElement): void {

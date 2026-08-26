@@ -29,7 +29,11 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
     return button;
   }
 
-  const settingsLamp = lamp(t('lamp.setup'), 'settings', t('lamp.setup.title'));
+  // Routes to the Vehicle page (screen-cleanup follow-up, #108 follow-up)
+  // — this lamp's own title ("Vehicle settings have never been saved")
+  // already named the destination; 'settings' stopped being a valid
+  // MenuSection once ☰ Settings split into General/Vehicle/Ramps pages.
+  const settingsLamp = lamp(t('lamp.setup'), 'vehicle', t('lamp.setup.title'));
   const calibrationLamp = lamp(t('lamp.calibrate'), 'calibration', t('lamp.calibrate.title'));
 
   // The very first update() call reflects state that was already true

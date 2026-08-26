@@ -125,9 +125,35 @@ export type VehicleType = 'motorhome' | 'caravan';
 
 export type AxleConfig = 'single' | 'boggie';
 
-export type DrainPosition = 'none' | 'left' | 'right' | 'front' | 'rear';
+/**
+ * `left`/`right`/`front`/`rear` target the middle of that edge (the mean
+ * of its two wheels) — a coarser preference than a single corner.
+ * `frontLeft`/`frontRight`/`rearLeft`/`rearRight` (design review) target
+ * one specific wheel, matching how a waste-water outlet actually sits at
+ * one corner of the vehicle, not spread across a whole side or axle.
+ */
+export type DrainPosition =
+  | 'none'
+  | 'left'
+  | 'right'
+  | 'front'
+  | 'rear'
+  | 'frontLeft'
+  | 'frontRight'
+  | 'rearLeft'
+  | 'rearRight';
 
-export const DRAIN_POSITIONS: readonly DrainPosition[] = ['none', 'left', 'right', 'front', 'rear'];
+export const DRAIN_POSITIONS: readonly DrainPosition[] = [
+  'none',
+  'left',
+  'right',
+  'front',
+  'rear',
+  'frontLeft',
+  'frontRight',
+  'rearLeft',
+  'rearRight',
+];
 
 /** More ramps than this cannot help a four-wheel vehicle. */
 export const MAX_RAMP_COUNT = 4;

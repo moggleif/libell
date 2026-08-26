@@ -36,6 +36,9 @@ export const MESSAGES = {
     // remaining entry point to External sensor now that the ☰ menu no
     // longer carries it.
     'sensorStatus.idle': 'External sensor — tap to connect',
+    // iOS Safari (R39): tapping this opens the Bluefy workaround guide
+    // instead of a connect flow that could never work there.
+    'sensorStatus.idle.guide': 'External sensor — tap for iPhone setup guide',
 
     'menu.title': 'Menu',
     'menu.close': 'Close menu',
@@ -76,6 +79,22 @@ export const MESSAGES = {
       'Connection to the EasyLevel sensor was lost — tap Reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     'sensorSource.err.failed': 'Could not connect to the EasyLevel sensor.',
+
+    // iOS Safari has no Web Bluetooth and Apple has no plans to add it
+    // (R39) — rather than hide this page outright there too, iOS shows a
+    // guide to a workaround: Bluefy, a third-party browser that adds Web
+    // Bluetooth, makes the page above work unchanged once Libell is opened
+    // inside it. See docs/ios-easylevel-bluefy-guide.md for the long form.
+    'sensorSource.ios.intro':
+      "Safari can't connect to Bluetooth sensors directly, but there's a workaround:",
+    'sensorSource.ios.step1': 'Install "Bluefy – Web Bluetooth Browser" from the App Store.',
+    'sensorSource.ios.step2': 'Open Bluefy and allow the Bluetooth permission.',
+    'sensorSource.ios.step3': 'In Bluefy, go to this same Libell address.',
+    'sensorSource.ios.step4': 'Open External sensor here again — it works like on Android.',
+    'sensorSource.ios.note':
+      'Bluefy is a third-party app, not built by Libell — reconnecting when you open ' +
+      'the app may need one manual tap there, instead of happening silently.',
+    'sensorSource.ios.bluefyLink': 'Find Bluefy in the App Store',
 
     // Detailed sensor health (#129). Battery/temperature show real decoded
     // values (#123) once the first `faf52c22-...` status notification
@@ -152,6 +171,19 @@ export const MESSAGES = {
     'about.source': 'Libell is free and open source (MIT license).',
     'about.source.link': 'Source code on GitHub',
 
+    // Welcome step (design-review follow-up): the very first thing a new
+    // user sees, before any question or form — what the app is for. Body
+    // reuses 'about.text' verbatim rather than separate copy.
+    'onboard.welcome.h': 'Welcome to Libell',
+    'onboard.welcome.t':
+      'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
+      'finished later from Settings.',
+    // Sound step (design review): Chime + Continuous audio guidance
+    // together, split out of #189's combined 'general' step. No existing
+    // section heading covers just these two (unlike 'settings.language'/
+    // 'settings.appearance', reused as-is for their own steps), so this is
+    // the one new short label the split needed.
+    'onboard.sound.h': 'Sound',
     // Sensor source choice (#135, ADR 0014): the wizard's first step,
     // shown only when an external sensor option actually exists
     // (`isWebBluetoothSupported()`). The external radio reuses
@@ -185,17 +217,6 @@ export const MESSAGES = {
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
     'onboard.legend.dim': 'Gray – — a low wheel your ramps don’t reach.',
-    // Compact onboarding steps (#156): points to ☰ for everything the
-    // reduced step doesn't show.
-    'onboard.moreInMenu': 'More options are available later in Settings.',
-    // Which part of the calibration step matters most (#189) — the step
-    // embeds the full sensor-calibration + vehicle-zero UI with no order
-    // of its own; this just points at it, calibrationSection.ts still
-    // owns all the actual how-to copy.
-    'onboard.calibration.hint':
-      'Two things below: calibrate the sensor first (use flip calibration if you don’t ' +
-      'have a known-level spot) — vehicle zero is optional, for extra precision.',
-
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
     'settings.trackRear': 'Track width rear',
@@ -227,9 +248,14 @@ export const MESSAGES = {
     'settings.ramp.custom': 'Custom set',
     'settings.rampCount': 'Number of ramps',
     'settings.drain': 'Drain side',
-    'settings.rampHint':
-      'The app picks where your ramps do the most good — and, within the ' +
-      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
+    'settings.rampHint': 'The app picks where your ramps do the most good.',
+    // Split out of the old combined rampHint (design review): only matters
+    // if the owner cares where sink/shower water drains, so it moved
+    // behind the Drain field's own Advanced disclosure instead of always
+    // showing next to the ramp steps.
+    'settings.drainHint':
+      'Matters only if you care where sink/shower water drains — within the ' +
+      'tolerance, the app then leaves this side lowest so it keeps draining.',
     'settings.section.vehicle': 'Vehicle & measurements',
     'settings.section.ramps': 'Ramps',
     'settings.section.display': 'Level & display',
@@ -240,11 +266,30 @@ export const MESSAGES = {
     'settings.language': 'Language',
     'settings.language.auto': 'Automatic (device language)',
     'settings.advanced': 'Advanced',
+    // Design review: the fields inside Advanced had labels but no
+    // explanation of what they actually do — this is why the disclosure
+    // "saknar beskrivning" (was missing a description). Split into one hint
+    // per field (follow-up), each placed right below its own field — the
+    // same pattern the response-delay hint below already uses — instead of
+    // one combined paragraph ahead of both fields.
+    'settings.tolerance.hint':
+      'Sets how close to level counts as "level" — tighter for a shower or fridge, ' +
+      'looser if close enough is fine.',
+    'settings.stability.hint': 'Smooths out small sensor jitter so the numbers do not flicker.',
     'drain.none': 'None / does not matter',
-    'drain.left': 'Left side',
-    'drain.right': 'Right side',
-    'drain.front': 'Front',
-    'drain.rear': 'Rear',
+    // "Middle" (design review): the mean of the two wheels on that edge —
+    // a coarser preference than a single corner, now that corners exist
+    // below as their own choice.
+    'drain.left': 'Left, middle',
+    'drain.right': 'Right, middle',
+    'drain.front': 'Front, middle',
+    'drain.rear': 'Rear, middle',
+    // Single-corner positions (design review): match a waste-water outlet
+    // that sits at one specific corner, not spread across a whole side.
+    'drain.frontLeft': 'Front left',
+    'drain.frontRight': 'Front right',
+    'drain.rearLeft': 'Rear left',
+    'drain.rearRight': 'Rear right',
     'settings.unit': 'Show lengths in',
     'settings.theme': 'Theme',
     'theme.system': 'Follow the phone',
@@ -254,12 +299,18 @@ export const MESSAGES = {
     'appearance.classic': 'Classic',
     'appearance.modern': 'Modern',
     'appearance.glossy': 'Glossy',
+    // Design review, follow-up: switching this now saves and reloads
+    // (matching Language above) so the whole app switches immediately,
+    // not just this form's colors.
+    'settings.appearance.hint':
+      'Switching this saves your changes and reloads Libell so the new layout applies everywhere.',
     'settings.sound': 'Chime when level',
     'settings.soundGuidance': 'Continuous audio guidance',
     'settings.soundGuidance.help':
       'A pulse speeds up and rises in pitch as you approach level, with a distinct ' +
       'signal for getting closer vs. moving the wrong way — so you can watch the ' +
-      'ramps instead of the screen. Pauses while the vehicle moves or is unsteady.',
+      'ramps instead of the screen. Silent when the reading is too unreliable to ' +
+      'trust — changing too fast, for instance.',
     'settings.save': 'Save',
     'settings.undo': 'Undo changes',
     'settings.reset': 'Reset to defaults',
@@ -290,8 +341,19 @@ export const MESSAGES = {
       'The tilt sensor is not running yet — tap Start on the main screen first.',
     'calibration.err.notFlat':
       'The phone does not look flat — place it on a level surface and try again.',
-    'calibration.sensor.h': 'Phone sensor',
-    'calibration.vehicle.h': 'Vehicle zero position',
+    // Design review: both card headings now lead with the verb "Calibrate"
+    // — they used to name what each card was about ("Phone sensor",
+    // "Vehicle zero position") without naming the shared action.
+    'calibration.sensor.h': 'Calibrate the phone',
+    'calibration.vehicle.h': 'Calibrate the vehicle zero',
+    // Design review: the two-layer overview used to live only on the Help
+    // page ('help.calibration.t' below) — moved to the top of the actual
+    // Kalibrering tab, where it is actionable, not just informational.
+    'calibration.guide.intro':
+      'Two layers:\n' +
+      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
+      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
+      'vehicle zero — then a slightly tilting table is cancelled out too.',
     'calibration.vehicle.intro':
       'The sensor calibration zeroes the phone — not the spot where it lies. If the ' +
       'table tilts slightly, the app would always show that tilt. Level the vehicle ' +
@@ -370,18 +432,34 @@ export const MESSAGES = {
       'Gray –: a low wheel your ramps do not stretch to.\n' +
       'When the bubble rests in the middle, you are level.',
     'help.settings.h': 'The measurements',
+    // Design review, two follow-ups: (1) used to say "L is the wheelbase,
+    // W the track width", but the illustration stopped drawing those
+    // letters (see `helpIllustrations.ts`'s `measuresIllustration`) — the
+    // text still promised letters the picture no longer shows; (2) this
+    // static Help tab isn't tied to any particular user's vehicle (see
+    // that file's own comment) but the text only ever described a
+    // motorhome — now covers both, matching the motorhome+caravan pair of
+    // illustrations shown above it.
     'help.settings.t':
-      'L is the wheelbase, W the track width (front and rear can differ) — usually ' +
-      'in the vehicle papers, or use a tape measure.\n' +
-      'Add your ramp steps with the + button or pick a preset.\n' +
-      'Tolerance = how strict "level" is.\n' +
-      'Stability keeps the numbers calm.',
+      'For a motorhome, wheelbase is the distance between the front and rear axles; a ' +
+      "caravan's is the axle-to-jockey-wheel distance instead. Track width is the distance " +
+      'between the left and right wheels — a motorhome can have a different width front and ' +
+      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.',
+    // Design review: used to be one sentence inside "The measurements"
+    // ("Add your ramp steps...") — moved to its own topic, matching Ramps'
+    // status elsewhere (its own wizard step, its own Settings tab).
+    'help.ramps.t':
+      'Pick a ready-made ramp model, or add your own step heights with the + button. ' +
+      'The app then picks where your ramps do the most good — and, within the ' +
+      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
     'help.calibration.h': 'Calibration',
+    // Design review: the step-by-step "how" moved to the actual
+    // Kalibrering tab ('calibration.guide.intro' above) where it is
+    // actionable — this stays the "why" instead of repeating it.
     'help.calibration.t':
-      'Two layers:\n' +
-      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
-      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
-      'vehicle zero — then a slightly tilting table is cancelled out too.',
+      "The phone reads its own tilt, not the ground's — and a vehicle floor is rarely " +
+      'perfectly flat either. Calibrating corrects for both, so what the app shows is ' +
+      'the actual ground, not just how the phone happens to sit.',
     'help.notes.h': 'Good to know',
     'help.notes.t':
       'Works fully offline once opened — add it to your home screen like an app.\n' +
@@ -456,6 +534,7 @@ export const MESSAGES = {
     'sensorStatus.connected': 'Extern sensor ansluten',
     'sensorStatus.disconnected': 'Extern sensor — anslutningen bröts, tryck för detaljer',
     'sensorStatus.idle': 'Extern sensor — tryck för att ansluta',
+    'sensorStatus.idle.guide': 'Extern sensor — tryck för guide till iPhone',
 
     'lamp.setup': '⚠ Mått',
     'lamp.setup.title':
@@ -494,6 +573,17 @@ export const MESSAGES = {
       'Anslutningen till EasyLevel-sensorn bröts — tryck på Återanslut.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
     'sensorSource.err.failed': 'Kunde inte ansluta till EasyLevel-sensorn.',
+
+    'sensorSource.ios.intro':
+      'Safari kan inte ansluta till Bluetooth-sensorer direkt, men det finns en lösning:',
+    'sensorSource.ios.step1': 'Installera "Bluefy – Web Bluetooth Browser" från App Store.',
+    'sensorSource.ios.step2': 'Öppna Bluefy och tillåt Bluetooth-behörigheten.',
+    'sensorSource.ios.step3': 'Gå till samma Libell-adress i Bluefy.',
+    'sensorSource.ios.step4': 'Öppna Extern sensor här igen — det fungerar som på Android.',
+    'sensorSource.ios.note':
+      'Bluefy är en tredjepartsapp som inte byggs av Libell — återanslutning när du öppnar ' +
+      'appen kan behöva en manuell tryckning där, istället för att ske tyst.',
+    'sensorSource.ios.bluefyLink': 'Hitta Bluefy i App Store',
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
@@ -558,6 +648,11 @@ export const MESSAGES = {
     'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
     'about.source.link': 'Källkoden på GitHub',
 
+    'onboard.welcome.h': 'Välkommen till Libell',
+    'onboard.welcome.t':
+      'Den här snabbguiden ställer in ditt fordon och din telefon. Varje steg går att ' +
+      'hoppa över och avsluta senare från Inställningar.',
+    'onboard.sound.h': 'Ljud',
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro':
       'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',
@@ -571,16 +666,11 @@ export const MESSAGES = {
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
     'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
-    'onboard.skip.consequence':
-      'Hoppar du över nu? En varningslampa påminner dig tills det är klart.',
+    'onboard.skip.consequence': 'Hoppa över nu — en varningslampa påminner dig tills det är klart.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
     'onboard.legend.dim': 'Grått – — ett lågt hjul som ramperna inte når.',
-    'onboard.moreInMenu': 'Fler alternativ finns senare i Inställningar.',
-    'onboard.calibration.hint':
-      'Två saker nedan: kalibrera sensorn först (använd flip-kalibrering om du inte har ' +
-      'en känd plan yta) — fordonets nollpunkt är valfri, för extra precision.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',
@@ -613,9 +703,10 @@ export const MESSAGES = {
     'settings.ramp.custom': 'Egen uppsättning',
     'settings.rampCount': 'Antal ramper',
     'settings.drain': 'Avloppssida',
-    'settings.rampHint':
-      'Appen väljer var ramperna gör mest nytta — och lämnar avloppssidan ' +
-      'lägst inom toleransen, så att disk- och duschvattnet rinner undan.',
+    'settings.rampHint': 'Appen väljer var ramperna gör mest nytta.',
+    'settings.drainHint':
+      'Spelar bara roll om det är viktigt var disk- eller duschvattnet rinner — inom ' +
+      'toleransen lämnas den här sidan lägst så att det fortsätter rinna undan.',
     'settings.section.vehicle': 'Fordon och mått',
     'settings.section.ramps': 'Ramper',
     'settings.section.display': 'Nivå och visning',
@@ -623,11 +714,19 @@ export const MESSAGES = {
     'settings.language': 'Språk',
     'settings.language.auto': 'Automatiskt (enhetens språk)',
     'settings.advanced': 'Avancerat',
+    'settings.tolerance.hint':
+      'Avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller kylskåp, ' +
+      'mer tillåtande om det bara ska vara tillräckligt bra.',
+    'settings.stability.hint': 'Jämnar ut små skakningar i sensorn så att siffrorna inte hoppar.',
     'drain.none': 'Inget / spelar ingen roll',
-    'drain.left': 'Vänster sida',
-    'drain.right': 'Höger sida',
-    'drain.front': 'Fram',
-    'drain.rear': 'Bak',
+    'drain.left': 'Vänster, mitt',
+    'drain.right': 'Höger, mitt',
+    'drain.front': 'Fram, mitt',
+    'drain.rear': 'Bak, mitt',
+    'drain.frontLeft': 'Vänster fram',
+    'drain.frontRight': 'Höger fram',
+    'drain.rearLeft': 'Vänster bak',
+    'drain.rearRight': 'Höger bak',
     'settings.unit': 'Visa längder i',
     'settings.theme': 'Tema',
     'theme.system': 'Följ telefonen',
@@ -637,13 +736,16 @@ export const MESSAGES = {
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',
     'appearance.glossy': 'Glansig',
+    'settings.appearance.hint':
+      'Att byta det här sparar dina ändringar och laddar om Libell så att den nya ' +
+      'layouten gäller överallt.',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.soundGuidance': 'Kontinuerlig ljudvägledning',
     'settings.soundGuidance.help':
       'En puls blir snabbare och stiger i tonhöjd ju närmare våg du kommer, med en ' +
       'tydlig signal för om du närmar dig eller rör dig åt fel håll — så att du kan ' +
-      'titta på klossarna istället för skärmen. Pausar medan fordonet rör sig eller ' +
-      'är ostadigt.',
+      'titta på klossarna istället för skärmen. Tyst vid osäker indata — till ' +
+      'exempel för snabba förändringar.',
     'settings.save': 'Spara',
     'settings.undo': 'Ångra ändringar',
     'settings.reset': 'Återställ standard',
@@ -674,8 +776,13 @@ export const MESSAGES = {
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
     'calibration.err.notFlat':
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
-    'calibration.sensor.h': 'Telefonens sensor',
-    'calibration.vehicle.h': 'Fordonets nolläge',
+    'calibration.sensor.h': 'Kalibrera telefonen',
+    'calibration.vehicle.h': 'Kalibrera fordonets nolläge',
+    'calibration.guide.intro':
+      'Två lager:\n' +
+      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
+      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
+      'fordonets nolläge — då räknas även ett lutande bord bort.',
     'calibration.vehicle.intro':
       'Sensorkalibreringen nollar telefonen — inte platsen där den ligger. Lutar ' +
       'bordet lite visar appen alltid den lutningen. Ställ fordonet verifierat ' +
@@ -753,17 +860,19 @@ export const MESSAGES = {
       'När bubblan vilar i mitten står du i våg.',
     'help.settings.h': 'Måtten',
     'help.settings.t':
-      'L är hjulbasen, W spårvidden (fram och bak kan skilja sig) — står oftast i ' +
-      'fordonspapperen, annars tumstock.\n' +
-      'Lägg till rampens steg med plusknappen eller välj en färdig ramp.\n' +
-      'Tolerans = hur strikt "i våg" är.\n' +
-      'Stabilitet håller siffrorna lugna.',
+      'För en husbil är hjulbasen avståndet mellan fram- och bakaxeln; för en husvagn är ' +
+      'det istället avståndet från axeln till stödhjulet. Spårvidden är avståndet mellan ' +
+      'vänster och höger hjul — en husbil kan ha olika bredd fram och bak, en husvagn har ' +
+      'bara en. Står oftast i fordonspapperen, annars tumstock.',
+    'help.ramps.t':
+      'Välj en färdig ramp, eller lägg till egna steghöjder med plusknappen. Appen ' +
+      'väljer sedan var ramperna gör mest nytta — och lämnar avloppssidan lägst ' +
+      'inom toleransen, så att disk- och duschvattnet rinner undan.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
-      'Två lager:\n' +
-      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
-      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
-      'fordonets nolläge — då räknas även ett lutande bord bort.',
+      'Telefonen läser sin egen lutning, inte markens — och fordonets golv är sällan ' +
+      'helt plant heller. Kalibrering rättar till båda delarna, så det appen visar är ' +
+      'den verkliga marken, inte bara hur telefonen råkar ligga.',
     'help.notes.h': 'Bra att veta',
     'help.notes.t':
       'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen ' +

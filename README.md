@@ -40,6 +40,10 @@ Two platform notes:
   shows a "Start" button. Android grants access silently.
 - **HTTPS is required.** Motion sensors are unavailable on plain HTTP origins.
 
+Want to use an external EasyLevel BLE sensor instead of the phone's own tilt sensor?
+That works today on Chrome/Android; on iPhone, Safari doesn't support Web Bluetooth at
+all, but [there's a supported workaround](docs/ios-easylevel-bluefy-guide.md).
+
 ## How leveling works
 
 The phone's gravity vector gives the vehicle's roll and pitch; from your wheelbase and

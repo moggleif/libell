@@ -7,8 +7,13 @@
  * reach that page: it stays visible whenever Web Bluetooth exists at all,
  * with a distinct neutral "tap to connect" look while the phone's own
  * sensor is still active, alongside its existing connected/disconnected
- * looks. Hidden only when Web Bluetooth doesn't exist in this browser —
- * never a silently broken option (#116's original acceptance criteria).
+ * looks. Hidden only when Web Bluetooth doesn't exist in this browser and
+ * no guide-only fallback applies — never a silently broken option (#116's
+ * original acceptance criteria). On iOS specifically (R39), Web Bluetooth
+ * never exists, but the dot stays visible anyway in a distinct "tap for
+ * setup guide" look: tapping it opens the Bluefy workaround guide
+ * (`iosSensorGuidePage.ts`) instead of a connect flow that could never
+ * work in Safari.
  *
  * Deliberately no numbers here — battery/RSSI/temperature live one tap
  * away on the External sensor page (`sensorPage.ts` /
@@ -35,14 +40,22 @@ export interface SensorStatusIndicator {
 
 export function createSensorStatusIndicator(
   easyLevelSupported: boolean,
+  /** True only on iOS without Web Bluetooth (R39) — `onClick` still opens
+   * `sensorPage`, but there it is `iosSensorGuidePage.ts`, not the ordinary
+   * connect flow. Mutually exclusive with `easyLevelSupported` in practice
+   * (iOS never has Web Bluetooth today), but read independently below so
+   * neither assumes the other. */
+  guideOnly: boolean,
   onClick: () => void,
 ): SensorStatusIndicator {
+  const visible = easyLevelSupported || guideOnly;
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'sensor-status';
-  // Never shown at all without Web Bluetooth — nothing this button could
-  // usefully open (#116's "never a silently broken option").
-  button.hidden = !easyLevelSupported;
+  // Never shown at all without Web Bluetooth or a guide to fall back to —
+  // nothing this button could usefully open (#116's "never a silently
+  // broken option").
+  button.hidden = !visible;
   const dot = document.createElement('span');
   dot.className = 'sensor-status__dot';
   dot.setAttribute('aria-hidden', 'true');
@@ -52,7 +65,16 @@ export function createSensorStatusIndicator(
   return {
     element: button,
     update(source, state) {
-      if (!easyLevelSupported) return;
+      if (!visible) return;
+      // The guide-only dot never reflects source/state — there is no
+      // `EasyLevelSensor` behind it to connect or disconnect, only a page
+      // explaining Bluefy (R39).
+      if (guideOnly) {
+        const label = t('sensorStatus.idle.guide');
+        button.setAttribute('aria-label', label);
+        button.title = label;
+        return;
+      }
       button.classList.remove('sensor-status--connected', 'sensor-status--disconnected');
       if (source === 'phone') {
         const label = t('sensorStatus.idle');

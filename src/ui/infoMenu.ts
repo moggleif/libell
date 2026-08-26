@@ -27,11 +27,20 @@ import {
   measuresIllustration,
   placementIllustration,
 } from './helpIllustrations';
+import type { VehicleType } from '../domain/settings';
 
 export interface InfoPageOptions {
   diagnostics: DiagnosticsOptions;
   /** Relaunch the first-run wizard — the button at the top of the Help tab. */
   openOnboarding(): void;
+  /**
+   * True once the wizard has actually been stepped through to the end —
+   * distinct from merely having been opened and dismissed early (design
+   * review, follow-up). Decides whether "Show introduction" still reads
+   * as an unfinished first-run task (green, `false`) or a plain
+   * re-launch (secondary, `true`) — see `buildIntroButton` below.
+   */
+  hasDoneOnboarding(): boolean;
 }
 
 export interface InfoPage {
@@ -42,43 +51,106 @@ export interface InfoPage {
 
 type InfoTab = 'help' | 'about' | 'feedback' | 'diagnostics';
 
+// Design review: 'help.what.h' ("What Libell does") used to be paired with
+// 'help.what.t' — actually placement instructions, not a value pitch, so
+// the heading promised one thing and delivered another. Split in two:
+// this row now pairs the heading with the real pitch ('about.text', the
+// same one the About tab and the onboarding wizard's welcome step use);
+// the placement instructions moved to their own row below, titled with
+// the wizard's own step heading for the same content ('onboard.step1.h').
+// A Ramps row was added too (reusing 'settings.tab.ramps', the same
+// heading the wizard step and the Settings tab use) — it used to be one
+// sentence inside "The measurements", the only place in the app that
+// still didn't give ramp configuration its own topic.
 const HELP: {
   h: MessageKey;
   text: MessageKey;
   illustration?: (label: string) => SVGSVGElement;
+  /** Motorhome + caravan side by side, one per vehicle type (design
+   * review, follow-up): this static Help tab isn't tied to any
+   * particular user's vehicle (see `helpIllustrations.ts`'s file
+   * comment) — it used to default to just showing the motorhome, as if
+   * a caravan owner's measurements didn't exist. Only "The measurements"
+   * needs this: it's the one topic whose picture and text actually
+   * differ by vehicle type (axle-to-jockey vs. front/rear axles, one
+   * track width vs. two) — every other illustrated topic (placement,
+   * the screen legend, calibration) looks and reads the same either way. */
+  vehiclePair?: boolean;
 }[] = [
-  { h: 'help.what.h', text: 'help.what.t', illustration: placementIllustration },
+  { h: 'help.what.h', text: 'about.text' },
+  { h: 'onboard.step1.h', text: 'help.what.t', illustration: placementIllustration },
   { h: 'help.first.h', text: 'help.first.t' },
   { h: 'help.screen.h', text: 'help.screen.t', illustration: legendIllustration },
-  { h: 'help.settings.h', text: 'help.settings.t', illustration: measuresIllustration },
+  { h: 'help.settings.h', text: 'help.settings.t', vehiclePair: true },
+  { h: 'settings.tab.ramps', text: 'help.ramps.t' },
   { h: 'help.calibration.h', text: 'help.calibration.t', illustration: calibrationIllustration },
   { h: 'help.notes.h', text: 'help.notes.t' },
 ];
 
 /** The introduction relaunch, at the top of the Help tab (screen-cleanup
  * follow-up) — the same action the old ☰ menu's "Show introduction" row
- * performed, closing this page first so the wizard isn't shown behind it. */
-function buildIntroButton(page: StandalonePage, openOnboarding: () => void): HTMLButtonElement {
+ * performed, closing this page first so the wizard isn't shown behind it.
+ *
+ * Styled green (the "still an open first-run task" look, same as the
+ * "not calibrated"/"settings not saved" lamps) until the wizard has
+ * actually been completed once — not merely opened and dismissed early,
+ * see `hasDoneOnboarding` (design review, follow-up: it used to be
+ * permanently secondary-styled, as if re-launching it were never more
+ * than an optional extra). `refresh()` re-checks the stored flag — call
+ * it whenever it might have changed underneath this button (the page
+ * reopening; the wizard just finished). */
+function buildIntroButton(
+  page: StandalonePage,
+  openOnboarding: () => void,
+  hasDoneOnboarding: () => boolean,
+): { element: HTMLButtonElement; refresh(): void } {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'menu__action menu__action--secondary';
   button.textContent = t('menu.intro');
   button.addEventListener('click', () => {
     page.close();
     openOnboarding();
   });
-  return button;
+  function refresh(): void {
+    button.className = hasDoneOnboarding()
+      ? 'menu__action menu__action--secondary'
+      : 'menu__action';
+  }
+  refresh();
+  return { element: button, refresh };
+}
+
+/** Motorhome + caravan illustrations side by side, each with its own
+ * small caption — see `vehiclePair` on `HELP` above. */
+function buildVehiclePair(heading: string): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'illu-pair';
+  const variants: [VehicleType, MessageKey][] = [
+    ['motorhome', 'vehicle.motorhome'],
+    ['caravan', 'vehicle.caravan'],
+  ];
+  for (const [vehicleType, labelKey] of variants) {
+    const item = document.createElement('div');
+    item.className = 'illu-pair__item';
+    const caption = document.createElement('p');
+    caption.className = 'illu-pair__caption';
+    caption.textContent = t(labelKey);
+    item.append(caption, measuresIllustration(`${heading} – ${t(labelKey)}`, vehicleType));
+    row.append(item);
+  }
+  return row;
 }
 
 function buildHelpPanel(introButton: HTMLButtonElement): HTMLElement {
   const panel = document.createElement('div');
   panel.append(introButton);
-  for (const { h, text, illustration } of HELP) {
+  for (const { h, text, illustration, vehiclePair } of HELP) {
     const heading = document.createElement('h3');
     heading.className = 'menu__heading';
     heading.textContent = t(h);
     panel.append(heading);
-    if (illustration) panel.append(illustration(t(h)));
+    if (vehiclePair) panel.append(buildVehiclePair(t(h)));
+    else if (illustration) panel.append(illustration(t(h)));
     const p = document.createElement('p');
     p.className = 'menu__text';
     p.textContent = t(text);
@@ -88,9 +160,17 @@ function buildHelpPanel(introButton: HTMLButtonElement): HTMLElement {
 }
 
 export function createInfoPage(options: InfoPageOptions): InfoPage {
+  // Assigned below, once `buildIntroButton` runs — referenced here only
+  // inside a callback that fires on a later reopen, well after that.
+  let refreshIntroButton: () => void = () => {};
   const page = createStandalonePage(t('menu.help'), () => {
     selectTab('help');
     diagnosticsSection.refresh();
+    // The wizard may have been completed (or not) since this page was
+    // last open (design review, follow-up) — resync "Show introduction"'s
+    // green/secondary look every reopen, same pattern as the mute
+    // toggle resyncing Settings' own sound checkboxes.
+    refreshIntroButton();
   });
 
   const tabsBar = document.createElement('div');
@@ -130,8 +210,9 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     tabPanels.set(id, panel);
   }
 
-  const introButton = buildIntroButton(page, options.openOnboarding);
-  addTab('help', buildHelpPanel(introButton));
+  const introButton = buildIntroButton(page, options.openOnboarding, options.hasDoneOnboarding);
+  refreshIntroButton = introButton.refresh;
+  addTab('help', buildHelpPanel(introButton.element));
   addTab('about', createAboutSection());
   addTab('feedback', createFeedbackSection());
   // Diagnostics (#133, R36): to the right of Feedback (screen-cleanup

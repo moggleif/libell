@@ -1,8 +1,8 @@
 /**
  * ☰ menu (Classic appearance only, screen-cleanup follow-up): a flat
- * navigation list — Settings, Calibration, Targets — each opening a
- * full-screen page with a ‹ Back header, the pattern users know from
- * every phone app. The History API is integrated so the Android back
+ * navigation list — General, Calibration, Vehicle, Ramps, Targets — each
+ * opening a full-screen page with a ‹ Back header, the pattern users know
+ * from every phone app. The History API is integrated so the Android back
  * button/gesture closes the page, then the drawer, and only then leaves
  * the app.
  *
@@ -11,9 +11,24 @@
  * tabs, no drawer). Help, About, Feedback, Diagnostics and the introduction
  * relaunch live on `infoMenu.ts`'s own page, reached from "?" — and
  * External sensor lives on `sensorPage.ts`'s, reached from the top-right
- * sensor-status icon — both universal, reachable from Classic too. Classic
- * has no tabs to fold Calibration/Targets into, so it keeps this drawer
- * for just those three, unchanged in spirit from before this cleanup.
+ * sensor-status icon — both universal, reachable from Classic too.
+ *
+ * General/Vehicle/Ramps/Targets (design review, following up on #108's
+ * Modern tabs and the onboarding wizard's own step split): one settings
+ * form used to cover General/Vehicle/Ramps at once as a single flat drawer
+ * page, with Targets as a wholly separate component — bundled because the
+ * fields historically shared a Settings section heading, not because
+ * they're one decision, and Targets was left out of the shared form
+ * entirely. `createSettingsForm`'s `splitPages` option builds the same
+ * four groupings Modern's tabs already use (General/Fordon/Klossar/
+ * Targets) and exposes them as `classicPages`; this drawer swaps whichever
+ * one is the shared form's mounted content right before showing it (see
+ * `showPage` below), so Save from any of the four still persists all
+ * four, same as switching Modern's tabs does — and Targets gets the same
+ * Reset/Undo/Save row the other three (and Modern's own Targets tab)
+ * already show. Same reuse principle as Calibration below — one real
+ * component, reparented, never a copy; Calibration alone stays fully
+ * standalone, the one page with no "unsaved" form state at all.
  */
 import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
@@ -21,11 +36,10 @@ import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
 import { createCalibrationSection } from './calibrationSection';
-import { createTargetsSection } from './targetsSection';
 import { t } from './i18n';
 import { setVisible } from './motion';
 
-export type MenuSection = 'settings' | 'calibration' | 'targets';
+export type MenuSection = 'general' | 'calibration' | 'vehicle' | 'ramps' | 'targets';
 
 export interface MenuOptions {
   initialSettings: LevelSettings;
@@ -182,11 +196,6 @@ export function createMenu(options: MenuOptions): Menu {
   // history.back() so the browser/Android back gesture and our buttons
   // share one code path.
   let depth = 0;
-  // Set right before a script-driven multi-step history.go() jump (#159),
-  // so the one popstate that jump produces on arrival doesn't also run
-  // the regular single-step-back handling below — the closing code has
-  // already applied the closed state itself.
-  let suppressNextPopstate = false;
 
   function render(section?: MenuSection): void {
     setVisible(backdrop, depth > 0);
@@ -212,7 +221,7 @@ export function createMenu(options: MenuOptions): Menu {
       depth = 1;
     }
     refreshCalibration();
-    refreshTargets();
+    settingsForm.refreshTargetsPage?.();
     // The bottom bar's mute toggle (#161) can change soundOnLevel/
     // soundGuidance while the menu is closed — resync every reopen.
     settingsForm.resyncSoundFields?.(options.getSoundPrefs());
@@ -228,6 +237,17 @@ export function createMenu(options: MenuOptions): Menu {
   // opened. Two pushState calls still land (0->1->2), so back/gesture
   // behavior is unchanged.
   function showPage(section: MenuSection): void {
+    // General/Vehicle/Ramps/Targets share one settingsForm instance (see
+    // the file header comment) — swap its mounted content to the
+    // requested page before it's shown, same as Modern's own tab switch.
+    if (
+      section === 'general' ||
+      section === 'vehicle' ||
+      section === 'ramps' ||
+      section === 'targets'
+    ) {
+      settingsForm.replaceChildren(settingsForm.classicPages![section]);
+    }
     if (depth === 0) {
       history.pushState({ libellMenu: 1 }, '');
       depth = 1;
@@ -237,16 +257,12 @@ export function createMenu(options: MenuOptions): Menu {
       depth = 2;
     }
     refreshCalibration();
-    refreshTargets();
+    settingsForm.refreshTargetsPage?.();
     settingsForm.resyncSoundFields?.(options.getSoundPrefs());
     render(section);
   }
 
   window.addEventListener('popstate', () => {
-    if (suppressNextPopstate) {
-      suppressNextPopstate = false;
-      return;
-    }
     if (depth > 0) {
       depth -= 1;
       render();
@@ -257,50 +273,38 @@ export function createMenu(options: MenuOptions): Menu {
     if (depth > 0) history.back();
   };
 
-  /** Return all the way to the main level screen (#159) — a successful
-   * Save reached via ☰ → Settings, from any depth. Unlike `goBack()`
-   * (one step, shared with the physical back gesture), this jumps
-   * straight to closed: the app's own state closes immediately, and the
-   * matching number of history entries this menu pushed to get here are
-   * unwound in the same script-driven step, so a later physical back
-   * press still lands exactly where it would have before this shortcut. */
-  const closeAll = () => {
-    const stepsBack = depth;
-    depth = 0;
-    render();
-    if (stepsBack > 0) {
-      suppressNextPopstate = true;
-      history.go(-stepsBack);
-    }
-  };
   close.addEventListener('click', goBack);
   back.addEventListener('click', goBack);
   backdrop.addEventListener('click', (event) => {
     if (event.target === backdrop) goBack();
   });
 
-  // --- Settings ---
+  // --- Settings: General / Vehicle / Ramps / Targets, one shared form
+  // split into four drawer pages (see the file header comment) — order
+  // matches Modern's tabs (General, Calibration, Fordon, Klossar, Targets).
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    // Return to the main screen after a successful Save reached via ☰
-    // (#159).
+    // Design review, follow-up: Save used to close the whole drawer back
+    // to the main screen (#159) — reversed, since the user may still want
+    // to change more right after saving. Only ✕/back actually close it.
     (settings) => {
       options.onSettingsSaved(settings);
-      closeAll();
     },
     options,
+    { splitPages: true },
+    options,
   );
-  addSection('settings', t('menu.settings'), settingsForm);
+  addSection('general', t('settings.general'), settingsForm);
 
-  // --- Calibration (one-shot + flip) ---
+  // --- Calibration (one-shot + flip) — the one page that stays fully
+  // standalone, outside the shared settingsForm (#122, ADR 0013 above).
   const calibrationSection = createCalibrationSection(options);
   const refreshCalibration = calibrationSection.refresh;
   addSection('calibration', t('menu.calibration'), calibrationSection.element);
 
-  // --- Targets (#122, ADR 0013) ---
-  const targetsSection = createTargetsSection(options);
-  const refreshTargets = targetsSection.refresh;
-  addSection('targets', t('menu.targets'), targetsSection.element);
+  addSection('vehicle', t('settings.tab.vehicle'), settingsForm);
+  addSection('ramps', t('settings.tab.ramps'), settingsForm);
+  addSection('targets', t('menu.targets'), settingsForm);
 
   return {
     element: container,

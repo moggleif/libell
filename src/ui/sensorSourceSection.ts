@@ -77,22 +77,35 @@ export interface SensorSourceOptions {
 }
 
 export interface SensorSourceSection {
+  /** Both halves together, as the standalone External sensor page shows them. */
   element: HTMLElement;
+  /** Connect + health-detail half alone (design review, following the same
+   * split `calibrationSection.ts` got): lets a caller — the onboarding
+   * wizard — place the two halves on separate steps instead of stacking
+   * both under one. Live in `element` too; moving either into a different
+   * parent re-parents it away from `element`, which is fine — nothing
+   * here reads from `element`'s children after construction. */
+  connectElement: HTMLElement;
+  /** Installation-offset half alone — see `connectElement`. */
+  installElement: HTMLElement;
   refresh(): void;
 }
 
 export function createSensorSourceSection(options: SensorSourceOptions): SensorSourceSection {
   const body = document.createElement('div');
+  // Wraps intro/connect/health — the "get connected" half (design review).
+  // A plain div changes nothing visually; see the return statement below.
+  const connectSection = document.createElement('div');
 
   const intro = document.createElement('p');
   intro.className = 'menu__text';
   intro.textContent = t('sensorSource.intro');
-  body.append(intro);
+  connectSection.append(intro);
 
   const connectButton = document.createElement('button');
   connectButton.type = 'button';
   connectButton.className = 'menu__action';
-  body.append(connectButton);
+  connectSection.append(connectButton);
 
   // The listed sensor + its disconnect action, side by side (screen-cleanup
   // follow-up): "Disconnect" now reads as belonging to the connected
@@ -108,7 +121,7 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   disconnectButton.className = 'menu__action menu__action--secondary menu__action--inline';
   disconnectButton.textContent = t('sensorSource.disconnect');
   sensorRow.append(status, disconnectButton);
-  body.append(sensorRow);
+  connectSection.append(sensorRow);
 
   // Detailed health (#129): only meaningful once the box is (or was) the
   // active source — hidden entirely while the phone's own sensor is
@@ -138,7 +151,7 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
   detail.append(detailHeading, batteryRow, rssiRow, temperatureRow, lowBatteryRow);
-  body.append(detail);
+  connectSection.append(detail);
 
   /** Battery/temperature (#123) — refreshed every `refresh()` call, unlike
    * the fixed rssiRow above, since a status notification can arrive at any
@@ -200,7 +213,7 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
     installCheckButton,
     installClearButton,
   );
-  body.append(installSection);
+  body.append(connectSection, installSection);
 
   /** Same status/age/disabled-buttons pattern as the phone's vehicle zero
    * (R26) — reused wording via `sensorSource.install.*` and the shared
@@ -280,5 +293,5 @@ export function createSensorSourceSection(options: SensorSourceOptions): SensorS
   });
 
   refresh();
-  return { element: body, refresh };
+  return { element: body, connectElement: connectSection, installElement: installSection, refresh };
 }
