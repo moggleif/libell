@@ -365,30 +365,34 @@ function createModernDiagram(): RvDiagram {
   // below it — same fill/stroke class as the box, overlapping it
   // seamlessly, so the two read as one silhouette. This narrow-cab/
   // wide-box shape is the strongest "motorhome" cue there is — stronger
-  // than the wheels it replaces.
+  // than the wheels it replaces. Widened from the original 80 to read
+  // less stubby against the box (small-adjustments follow-up).
   const cab = svgEl('rect', {
-    x: '90',
+    x: '80',
     y: '74',
-    width: '80',
+    width: '100',
     height: '60',
     rx: '28',
     class: 'rv-diagram__body',
   });
 
-  // Mirrors, hugging the cab.
+  // Mirrors sit right at the front corners, level with the windshield,
+  // overlapping the cab edge by a couple of units so they read as
+  // mounted onto it rather than floating beside it (small-adjustments
+  // follow-up). Sized down 30% from the original 14×18.
   const mirrorLeft = svgEl('rect', {
-    x: '76',
-    y: '100',
-    width: '12',
-    height: '18',
+    x: '72',
+    y: '85',
+    width: '10',
+    height: '13',
     rx: '4',
     class: 'rv-diagram__trim',
   });
   const mirrorRight = svgEl('rect', {
-    x: '172',
-    y: '100',
-    width: '12',
-    height: '18',
+    x: '178',
+    y: '85',
+    width: '10',
+    height: '13',
     rx: '4',
     class: 'rv-diagram__trim',
   });
@@ -413,7 +417,7 @@ function createModernDiagram(): RvDiagram {
     class: 'rv-diagram__roof',
   });
   const windshield = svgEl('path', {
-    d: 'M96 92 Q130 78 164 92 L158 122 Q130 110 102 122 Z',
+    d: 'M88 92 Q130 78 172 92 L166 122 Q130 110 94 122 Z',
     class: 'rv-diagram__windshield',
   });
 
