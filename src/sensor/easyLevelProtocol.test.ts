@@ -188,11 +188,35 @@ describe('parseEasyLevelStatus (#123)', () => {
       [96, 6],
       [111, 6],
       [112, 7],
-      [255, 7],
+      [127, 7],
     ])('byte7 = %i -> tier %i', (byte7, tier) => {
       expect(firmwareTierFromByte(byte7)).toBe(tier);
       expect(parseEasyLevelStatus(statusBytes(0, 0, 2500, byte7))?.firmwareTier).toBe(tier);
     });
+
+    // The official app reads byte7 into a Java `byte` (-128..127), not an
+    // unsigned value, and compares that signed reading against these same
+    // thresholds (confirmed by decompiling `EasyLevel 5.0.7` directly) — so
+    // any raw byte ≥ 128 is negative in its own comparison and always
+    // resolves to tier 1, never the tier a naive unsigned reading would
+    // suggest. 255 previously asserted tier 7 here, which matched an
+    // unsigned reading but not the app's own signed one.
+    it.each([
+      [128, 1],
+      [200, 1],
+      [255, 1],
+    ])('byte7 = %i (sign bit set) always resolves to tier 1, matching the app', (byte7, tier) => {
+      expect(firmwareTierFromByte(byte7)).toBe(tier);
+      expect(parseEasyLevelStatus(statusBytes(0, 0, 2500, byte7))?.firmwareTier).toBe(tier);
+    });
+  });
+
+  it('a byte7 ≥ 128 also selects the tier-1 temperature formula, not just the tier label', () => {
+    // byte[0] = 16 under the tier-1 formula (16 / 16 + 25 = 26) vs. the
+    // same two bytes read as a tier-2+ int16 would give a wildly different
+    // result — this confirms the temperature branch, not just
+    // `firmwareTier` itself, follows the same signed byte7 comparison.
+    expect(parseEasyLevelStatus(statusBytes(16, 0, 2500, 200))?.temperatureCelsius).toBeCloseTo(26);
   });
 });
 

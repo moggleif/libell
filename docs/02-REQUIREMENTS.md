@@ -701,6 +701,17 @@ URL and must keep working with no signal.
   zero/calibration values, tier ≥ 3 only) are unrelated to battery/temperature and
   were already read and used in the leveling math since #116. This characteristic is
   still read best-effort and never required for leveling to work.
+- **Given** a status payload whose byte 7 is ≥ 128
+- **Then** the firmware tier (and the temperature formula it selects) resolves to
+  tier 1, never tier 5–7, matching the official app exactly: it reads byte 7 into a
+  Java `byte` (-128..127), not an unsigned value, so any raw byte ≥ 128 is negative
+  in its own threshold comparison. Confirmed by decompiling `EasyLevel 5.0.7`
+  directly, not assumed — see `firmwareTierFromByte`'s doc comment in
+  `easyLevelProtocol.ts`. No real box is expected to ever send such a byte (tier
+  climbs by 16 per step, so 128 would already be an unheard-of tier 8+), but the
+  debug page's "unfamiliar firmware tier" case (above) exists precisely for values
+  nobody has seen yet, so this matches the app's actual behavior rather than a
+  plausible-looking guess.
 - **Given** the EasyLevel box is the active source and its battery is low
 - **When** its reported battery percentage drops below a threshold (20%, with a few
   percentage points of hysteresis so it doesn't flicker right at the line — see
