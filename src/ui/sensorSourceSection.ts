@@ -37,11 +37,63 @@
  * purely so existing callers/tests that don't need that page can construct
  * this section without threading a callback through.
  */
-import type { Calibration, SensorSource } from '../domain/settings';
+import type { Calibration, EasyLevelMounting, SensorSource } from '../domain/settings';
 import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgEl<K extends keyof SVGElementTagNameMap>(
+  tag: K,
+  attrs: Record<string, string>,
+): SVGElementTagNameMap[K] {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  return node;
+}
+
+/**
+ * Top-down box-mounting diagram (#217): a small upward arrow labeled
+ * "front" over a rectangle representing the sensor box, itself carrying an
+ * arrow of its own — the box's long axis runs left/right for `'standard'`,
+ * front/back for `'rotated90'`, the box's own arrow rotating along with
+ * it. Deliberately schematic, not a literal redraw of the official app's
+ * own illustrations (`top_wideside_rv.webp`/`top_shortside_rv.webp`) —
+ * just enough for a user to visually match "which way did I screw mine
+ * in" without needing to know that app's own terminology. Colors come
+ * from the existing CSS custom properties, same as every other icon in
+ * this codebase (no hex values here).
+ */
+function mountingIcon(mounting: EasyLevelMounting): SVGSVGElement {
+  const icon = svgEl('svg', {
+    viewBox: '0 0 64 64',
+    class: 'mounting-icon',
+    'aria-hidden': 'true',
+  });
+  // "Front of vehicle" arrow, fixed regardless of mounting.
+  icon.append(
+    svgEl('line', { x1: '32', y1: '4', x2: '32', y2: '16', class: 'mounting-icon__front' }),
+    svgEl('polygon', { points: '32,2 27,12 37,12', class: 'mounting-icon__front' }),
+  );
+  const rotated = mounting === 'rotated90';
+  // The box itself: a rectangle longer one way than the other, rotated 90°
+  // between the two mounting choices — plus a short arrow through it
+  // marking the same physical edge in both drawings, so the rotation
+  // reads as "the box turned", not "a different box".
+  const group = svgEl('g', {
+    transform: rotated ? 'rotate(90 32 40)' : '',
+    class: 'mounting-icon__box',
+  });
+  group.append(
+    svgEl('rect', { x: '14', y: '28', width: '36', height: '24', rx: '4' }),
+    svgEl('line', { x1: '32', y1: '46', x2: '32', y2: '34' }),
+    svgEl('polygon', { points: '32,30 28,38 36,38' }),
+  );
+  icon.append(group);
+  return icon;
+}
 
 export interface SensorSourceOptions {
   /** Which source is feeding gravity readings right now. */
@@ -80,6 +132,12 @@ export interface SensorSourceOptions {
   /** Compare the current reading against the installation offset's promise of zero — returns a verdict text (R26). */
   checkInstallCalibration(): string;
   clearInstallCalibration(): void;
+  /** Which of the box's two physical mounting orientations to use (#217) —
+   * mirrors the official app's own `"sensor_Placing"` setting. */
+  getEasyLevelMounting(): EasyLevelMounting;
+  /** Takes effect on the very next accel reading, no reconnect needed —
+   * same live-apply behavior `setEasyLevelConnectDelay` already has. */
+  setEasyLevelMounting(mounting: EasyLevelMounting): void;
 }
 
 export interface SensorSourceSection {
@@ -199,6 +257,51 @@ export function createSensorSourceSection(
     }
   }
 
+  // Mounting orientation (#217): the box can be physically mounted two
+  // ways, 90° apart — mirrors the official app's own `"sensor_Placing"`,
+  // exposed without that terminology (see `mountingIcon`'s doc comment).
+  // Same "shown once EasyLevel is (or was) the active source" visibility
+  // rule as the install-offset block below, folded into the same
+  // `installElement` half so onboarding's existing two-step split needs
+  // no changes.
+  const mountingSection = document.createElement('div');
+  const mountingHeading = document.createElement('h3');
+  mountingHeading.className = 'menu__heading';
+  mountingHeading.textContent = t('sensorSource.mounting.h');
+  const mountingIntro = document.createElement('p');
+  mountingIntro.className = 'menu__text';
+  mountingIntro.textContent = t('sensorSource.mounting.intro');
+  const mountingChoice = document.createElement('div');
+  mountingChoice.className = 'mounting-choice';
+  const mountingSelect = document.createElement('select');
+  // Reuses the settings panel's own select styling (`settingsPanel.ts`'s
+  // `drainSelect`) rather than inventing a menu-specific variant — this
+  // page has no select of its own to style otherwise.
+  mountingSelect.className = 'settings__select';
+  for (const value of ['standard', 'rotated90'] as const) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = t(`sensorSource.mounting.${value}`);
+    mountingSelect.append(option);
+  }
+  let mountingIconEl = mountingIcon(options.getEasyLevelMounting());
+  mountingChoice.append(mountingSelect, mountingIconEl);
+  mountingSection.append(mountingHeading, mountingIntro, mountingChoice);
+
+  function refreshMountingIcon(): void {
+    const mounting = options.getEasyLevelMounting();
+    mountingSelect.value = mounting;
+    const next = mountingIcon(mounting);
+    mountingIconEl.replaceWith(next);
+    mountingIconEl = next;
+  }
+
+  mountingSelect.addEventListener('change', () => {
+    const value = mountingSelect.value === 'rotated90' ? 'rotated90' : 'standard';
+    options.setEasyLevelMounting(value);
+    refreshMountingIcon();
+  });
+
   // Installation calibration (#131, ADR 0014): the same "vehicle zero"
   // concept R24 already gives the phone (ADR 0010), generalized to this
   // permanently-mounted external sensor — its own independent stored
@@ -209,6 +312,7 @@ export function createSensorSourceSection(
   // running" error `readTilt`-based captures already give elsewhere.
   const installSection = document.createElement('div');
   installSection.hidden = true;
+  installSection.append(mountingSection);
   const installHeading = document.createElement('h3');
   installHeading.className = 'menu__heading';
   installHeading.textContent = t('sensorSource.install.h');
@@ -289,6 +393,7 @@ export function createSensorSourceSection(
     detail.hidden = !active;
     installSection.hidden = !active;
     if (active) {
+      refreshMountingIcon();
       refreshInstall();
       refreshStatus();
     } else {

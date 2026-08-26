@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   EASYLEVEL_AUTO_RETRY_INTERVAL_MS,
+  EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS,
   isEasyLevelAutoRetryDue,
+  isEasyLevelInitialCalibrationWaitExpired,
   isSensorUnavailable,
 } from './sensorFallback';
 import type { SensorState } from './orientation';
@@ -51,5 +53,32 @@ describe('isEasyLevelAutoRetryDue (#211)', () => {
     expect(isEasyLevelAutoRetryDue(1000, 1000 + EASYLEVEL_AUTO_RETRY_INTERVAL_MS + 5000)).toBe(
       true,
     );
+  });
+});
+
+describe('isEasyLevelInitialCalibrationWaitExpired (#217)', () => {
+  it('is not expired the instant a connection is made', () => {
+    expect(isEasyLevelInitialCalibrationWaitExpired(1000, 1000)).toBe(false);
+  });
+
+  it('is not expired just before the wait elapses', () => {
+    expect(
+      isEasyLevelInitialCalibrationWaitExpired(
+        1000,
+        1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS - 1,
+      ),
+    ).toBe(false);
+  });
+
+  it('is expired exactly at the boundary, and past it', () => {
+    expect(
+      isEasyLevelInitialCalibrationWaitExpired(1000, 1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS),
+    ).toBe(true);
+    expect(
+      isEasyLevelInitialCalibrationWaitExpired(
+        1000,
+        1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS + 5000,
+      ),
+    ).toBe(true);
   });
 });

@@ -461,6 +461,42 @@ body {
   stroke: var(--warning);
 }
 
+/* EasyLevel mounting-orientation picker (#217): a small schematic diagram
+ * next to the choice, so it reads visually rather than requiring the
+ * user to translate a label into a physical orientation. */
+.mounting-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mounting-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.mounting-icon__front {
+  stroke: var(--on-surface-muted);
+  stroke-width: 2;
+  fill: var(--on-surface-muted);
+}
+
+.mounting-icon__box {
+  fill: none;
+  stroke: var(--on-surface);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.mounting-icon__box rect {
+  fill: var(--surface-raised);
+}
+
+.mounting-icon__box polygon {
+  fill: var(--on-surface);
+}
+
 .target-badge {
   font: inherit;
   font-size: 0.75rem;

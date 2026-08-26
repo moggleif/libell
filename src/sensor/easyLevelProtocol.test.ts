@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyEasyLevelMounting,
   firmwareTierFromByte,
   isLowBattery,
   LOW_BATTERY_HYSTERESIS_PERCENT,
@@ -114,6 +115,120 @@ describe('parseAccelPacket (#116)', () => {
       const calibration = { accelX: 300, accelY: 0, accelZ: 0, gyroX: 0, gyroY: 0, gyroZ: 0 };
       const corrected = parseAccelPacket(bytes, calibration)!;
       expect(Math.atan2(corrected.x, corrected.z)).toBeCloseTo(trueFlatAngle, 10);
+    });
+  });
+
+  describe('legacy firmware calibration: bytes 12-17 of the accel packet itself (#217)', () => {
+    /** An 18-byte accel packet: accelX/Y/Z, gyroX/Y/Z (bytes 0-11, as
+     * usual), then the legacy bias accelX/Y/Z at bytes 12-17 — matching
+     * `Ly0/a;->i()`'s tier-<3 branch. */
+    function legacyBytes(
+      accelX: number,
+      accelY: number,
+      accelZ: number,
+      biasX: number,
+      biasY: number,
+      biasZ: number,
+    ): number[] {
+      return le16(accelX, accelY, accelZ, 0, 0, 0, biasX, biasY, biasZ);
+    }
+
+    it('subtracts the packet-embedded bias when the payload is 18 bytes, ignoring any passed-in calibration', () => {
+      const bytes = legacyBytes(1000, -500, 9800, 200, -50, 100);
+      // A faf52c22-sourced calibration is passed too, to prove the
+      // embedded one takes priority — matching the official app, which
+      // only ever reaches this branch when it has decided (this.n < 48)
+      // that no faf52c22 calibration is coming at all.
+      const staleStatusCalibration = {
+        accelX: 9999,
+        accelY: 9999,
+        accelZ: 9999,
+        gyroX: 0,
+        gyroY: 0,
+        gyroZ: 0,
+      };
+      expect(parseAccelPacket(bytes, staleStatusCalibration)).toEqual({
+        x: 800,
+        y: -450,
+        z: 9700,
+      });
+    });
+
+    it('a 12-byte (accel+gyro, no legacy bias) payload still uses the passed-in calibration, not the legacy path', () => {
+      const bytes = le16(1000, -500, 9800, 0, 0, 0);
+      const calibration = { accelX: 200, accelY: -50, accelZ: 100, gyroX: 0, gyroY: 0, gyroZ: 0 };
+      expect(parseAccelPacket(bytes, calibration)).toEqual({ x: 800, y: -450, z: 9700 });
+    });
+
+    it('decodes negative legacy bias values as two-s complement, not unsigned', () => {
+      const bytes = legacyBytes(0, 0, 9800, -1, -32768, 32767);
+      expect(parseAccelPacket(bytes)).toEqual({ x: 1, y: 32768, z: -22967 });
+    });
+
+    it('a payload of exactly 17 bytes (one short of the legacy format) falls back to the passed-in calibration, never reading past the end', () => {
+      const seventeen = Uint8Array.from([...le16(1000, -500, 9800, 0, 0, 0), ...le16(200, -50), 0]);
+      expect(seventeen.length).toBe(17);
+      const calibration = { accelX: 1, accelY: 1, accelZ: 1, gyroX: 0, gyroY: 0, gyroZ: 0 };
+      expect(parseAccelPacket(seventeen, calibration)).toEqual({ x: 999, y: -501, z: 9799 });
+    });
+  });
+});
+
+describe('applyEasyLevelMounting (#217)', () => {
+  it("'standard' (the official app's own default sensor_Placing) is the identity — no transform", () => {
+    const gravity = { x: 123, y: -456, z: 9800 };
+    expect(applyEasyLevelMounting(gravity, 'standard')).toEqual(gravity);
+  });
+
+  describe("'rotated90' — the 90° box-rotation derived from LO0/e;->k()'s placement-1/2 branches: (x, y) -> (-y, x), z untouched", () => {
+    it('a positive-roll-only reading (tilted toward +x) becomes a positive-pitch-only reading', () => {
+      // -y where y is 0 gives JS's -0, not 0 — `toBe(0)` (Object.is-based)
+      // would fail on that alone, so x is checked with `toBeCloseTo`.
+      const result = applyEasyLevelMounting({ x: 500, y: 0, z: 9800 }, 'rotated90');
+      expect(result.x).toBeCloseTo(0);
+      expect(result.y).toBe(500);
+      expect(result.z).toBe(9800);
+    });
+
+    it('a negative-roll-only reading (tilted toward -x) becomes a negative-pitch-only reading', () => {
+      const result = applyEasyLevelMounting({ x: -500, y: 0, z: 9800 }, 'rotated90');
+      expect(result.x).toBeCloseTo(0);
+      expect(result.y).toBe(-500);
+      expect(result.z).toBe(9800);
+    });
+
+    it('a positive-pitch-only reading (tilted toward +y) becomes a negative-roll-only reading', () => {
+      expect(applyEasyLevelMounting({ x: 0, y: 500, z: 9800 }, 'rotated90')).toEqual({
+        x: -500,
+        y: 0,
+        z: 9800,
+      });
+    });
+
+    it('a negative-pitch-only reading (tilted toward -y) becomes a positive-roll-only reading', () => {
+      expect(applyEasyLevelMounting({ x: 0, y: -500, z: 9800 }, 'rotated90')).toEqual({
+        x: 500,
+        y: 0,
+        z: 9800,
+      });
+    });
+
+    it('a combined tilt (both axes, both signs) rotates as a whole, never dropping or scaling either component', () => {
+      expect(applyEasyLevelMounting({ x: 300, y: -700, z: 9700 }, 'rotated90')).toEqual({
+        x: 700,
+        y: 300,
+        z: 9700,
+      });
+    });
+
+    it('never touches z — no placement transform in the official app remaps or scales the up axis', () => {
+      expect(applyEasyLevelMounting({ x: 1, y: 2, z: 9800 }, 'rotated90').z).toBe(9800);
+    });
+
+    it('applying it four times returns to the original reading (a full 360° rotation), confirming this is a pure rotation and not a reflection', () => {
+      let gravity = { x: 111, y: -222, z: 9800 };
+      for (let i = 0; i < 4; i++) gravity = applyEasyLevelMounting(gravity, 'rotated90');
+      expect(gravity).toEqual({ x: 111, y: -222, z: 9800 });
     });
   });
 });
