@@ -1011,8 +1011,17 @@ off-by-default, adjustable connect delay reachable from the app's own UI.
   background auto-retry loop (#211))
 - **Then** it waits that many ms after GATT connect succeeds before discovering
   services/characteristics — one flat delay applied uniformly, not the official app's
-  own two-tier bonded/unbonded scheme, since Web Bluetooth exposes no bonding-state
-  hook to tell the two apart.
+  own two-tier scheme (1600ms once bonded, 300ms otherwise — its decompiled
+  `onConnectionStateChange` branches on `BluetoothDevice.getBondState()`), since Web
+  Bluetooth exposes no equivalent bonding-state read to tell the two apart.
+- **Given** the toggle has never been touched (a fresh install, or before the user
+  first enables it)
+- **Then** the default delay is 300ms, not 1600ms — the official app's own "not
+  bonded" branch, which is the one actually relevant to an EasyLevel box: its
+  protocol needs no encryption and has no WRITE characteristic (R32), so Android has
+  no reason to ever bond with it, making the bonded/1600ms branch essentially dead
+  code for this specific hardware regardless of what else that shared BLE-manager
+  class was written to handle.
 - **Given** a delay value typed into the field
 - **Then** it is clamped to a sane range (`MAX_EASYLEVEL_CONNECT_DELAY_MS`, 5000ms) so
   a mistyped huge number can't effectively hang every connect attempt.

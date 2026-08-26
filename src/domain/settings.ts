@@ -123,10 +123,18 @@ export interface LevelSettings {
    * `easyLevelConnectDelayEnabled` is true. Clamped to
    * `MAX_EASYLEVEL_CONNECT_DELAY_MS` so a mistyped huge value can't
    * effectively hang every connect attempt. One flat delay, not the
-   * official app's own two-tier bonded (1600ms) / unbonded (300ms) scheme
-   * (confirmed by decompile) — Web Bluetooth exposes no bonding-state hook
-   * to tell the two apart, so this app only ever has the one number to
-   * offer.
+   * official app's own two-tier scheme — its decompiled
+   * `onConnectionStateChange` branches on `BluetoothDevice.getBondState()`:
+   * 1600ms if bonded, 300ms ("Bonding not required") otherwise. Web
+   * Bluetooth exposes no equivalent bonding-state read to a web page, so
+   * this app genuinely cannot tell the two cases apart and only ever has
+   * one number to offer — but 300ms, not 1600ms, is the one actually worth
+   * defaulting to: EasyLevel's own protocol needs no encryption and has no
+   * WRITE characteristic (confirmed by decompile, `easyLevelSensor.ts`'s
+   * module doc comment), so Android has no reason to ever bond with this
+   * specific hardware — the official app's own bonded/1600ms branch is
+   * essentially dead code for an EasyLevel box specifically, whatever other
+   * devices that shared BLE-manager class might also handle.
    */
   easyLevelConnectDelayMs: number;
 }
@@ -214,9 +222,11 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   appearance: 'modern',
   sensorSource: 'phone',
   easyLevelConnectDelayEnabled: false,
-  // A starting point to experiment from once enabled, in the same
-  // ballpark as the official app's own shorter (unbonded) delay — not
-  // used at all while `easyLevelConnectDelayEnabled` is false.
+  // The official app's own "not bonded" delay (see
+  // `easyLevelConnectDelayMs`'s doc comment above), not its bonded 1600ms
+  // — an EasyLevel box has no reason to ever be bonded, so this is the
+  // branch that's actually relevant here. Not used at all while
+  // `easyLevelConnectDelayEnabled` is false.
   easyLevelConnectDelayMs: 300,
 };
 
