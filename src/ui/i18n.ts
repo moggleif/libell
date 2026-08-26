@@ -166,6 +166,13 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Copy debug info',
     'sensorStatus.debug.copied': 'Debug info copied!',
     'sensorStatus.debug.copy.failed': 'Could not copy automatically.',
+    // Connect-delay workaround (#212): an experimental, off-by-default
+    // hardware-compatibility knob, not a normal setting — only worth
+    // touching if the box's connection is actually unreliable.
+    'sensorStatus.debug.connectDelay.intro':
+      'Experimental: only try this if your box’s connection is unreliable. Adds a fixed pause after connecting, before the app starts reading from it.',
+    'sensorStatus.debug.connectDelay.enable': 'Enable connect delay',
+    'sensorStatus.debug.connectDelay.ms': 'Delay (ms)',
 
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
@@ -643,6 +650,10 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Kopiera felsökningsinfo',
     'sensorStatus.debug.copied': 'Felsökningsinfo kopierad!',
     'sensorStatus.debug.copy.failed': 'Kunde inte kopiera automatiskt.',
+    'sensorStatus.debug.connectDelay.intro':
+      'Experimentellt: prova bara om boxens anslutning är opålitlig. Lägger till en fast paus efter anslutning, innan appen börjar läsa av den.',
+    'sensorStatus.debug.connectDelay.enable': 'Aktivera anslutningsfördröjning',
+    'sensorStatus.debug.connectDelay.ms': 'Fördröjning (ms)',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
