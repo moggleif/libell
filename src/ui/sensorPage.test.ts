@@ -26,6 +26,8 @@ function makeOptions(overrides: Partial<Options> = {}): Options {
     getEasyLevelLastSampleAt: () => null,
     getEasyLevelRawAccel: () => null,
     getEasyLevelStatusBytes: () => null,
+    getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
+    setEasyLevelConnectDelay: () => {},
     ...overrides,
   };
 }

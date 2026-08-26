@@ -4,6 +4,7 @@ import {
   formatLength,
   formatLengthValue,
   formatStepHeightsList,
+  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   parseStepHeightsList,
   parseSettings,
   toggleMute,
@@ -30,6 +31,8 @@ describe('parseSettings', () => {
       theme: 'light' as const,
       appearance: 'modern' as const,
       sensorSource: 'phone' as const,
+      easyLevelConnectDelayEnabled: true,
+      easyLevelConnectDelayMs: 800,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -87,6 +90,8 @@ describe('parseSettings', () => {
       theme: 'system',
       appearance: DEFAULT_SETTINGS.appearance,
       sensorSource: DEFAULT_SETTINGS.sensorSource,
+      easyLevelConnectDelayEnabled: DEFAULT_SETTINGS.easyLevelConnectDelayEnabled,
+      easyLevelConnectDelayMs: DEFAULT_SETTINGS.easyLevelConnectDelayMs,
     });
   });
 
@@ -188,6 +193,40 @@ describe('parseSettings', () => {
     // Any other value, including a future one this build doesn't know
     // about yet, falls back rather than silently trusting unknown input.
     expect(parseSettings({ sensorSource: 'bluetooth-widget' }).sensorSource).toBe('phone');
+  });
+
+  it('the EasyLevel debug connect delay defaults off, and a present value is never overridden (#212)', () => {
+    expect(DEFAULT_SETTINGS.easyLevelConnectDelayEnabled).toBe(false);
+    expect(parseSettings({}).easyLevelConnectDelayEnabled).toBe(false);
+    expect(parseSettings({ easyLevelConnectDelayEnabled: true }).easyLevelConnectDelayEnabled).toBe(
+      true,
+    );
+    // Presence check, not truthiness (#212, same discipline as soundOnLevel):
+    // an explicit prior `false` is never coerced back to the default.
+    expect(
+      parseSettings({ easyLevelConnectDelayEnabled: false }).easyLevelConnectDelayEnabled,
+    ).toBe(false);
+    expect(
+      parseSettings({ easyLevelConnectDelayEnabled: 'yes' }).easyLevelConnectDelayEnabled,
+    ).toBe(false);
+  });
+
+  it('clamps the EasyLevel debug connect delay to MAX_EASYLEVEL_CONNECT_DELAY_MS (#212)', () => {
+    expect(parseSettings({}).easyLevelConnectDelayMs).toBe(
+      DEFAULT_SETTINGS.easyLevelConnectDelayMs,
+    );
+    expect(parseSettings({ easyLevelConnectDelayMs: 900 }).easyLevelConnectDelayMs).toBe(900);
+    expect(parseSettings({ easyLevelConnectDelayMs: 999999 }).easyLevelConnectDelayMs).toBe(
+      MAX_EASYLEVEL_CONNECT_DELAY_MS,
+    );
+    // Negative/garbage falls back to the default, same as every other
+    // numeric field's `nonNegativeNumber` guard.
+    expect(parseSettings({ easyLevelConnectDelayMs: -5 }).easyLevelConnectDelayMs).toBe(
+      DEFAULT_SETTINGS.easyLevelConnectDelayMs,
+    );
+    expect(parseSettings({ easyLevelConnectDelayMs: 'slow' }).easyLevelConnectDelayMs).toBe(
+      DEFAULT_SETTINGS.easyLevelConnectDelayMs,
+    );
   });
 });
 

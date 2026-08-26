@@ -27,6 +27,7 @@ import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import {
   formatLength,
+  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   toggleMute,
   type Calibration,
   type LevelSettings,
@@ -73,10 +74,11 @@ import {
 } from './sensor/orientation';
 import {
   createEasyLevelSensor,
+  createWebBluetoothTransport,
   isWebBluetoothSupported,
   type EasyLevelSensor,
 } from './sensor/easyLevelSensor';
-import { isSensorUnavailable } from './sensor/sensorFallback';
+import { isSensorUnavailable, isEasyLevelAutoRetryDue } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu } from './ui/menu';
@@ -278,6 +280,25 @@ function bootstrap(root: HTMLElement): void {
   // requires a live user gesture), and kept around afterward so
   // reconnecting reuses the same adapter instance.
   let easyLevelSensor: EasyLevelSensor | null = null;
+  // Background auto-retry (#211): tracks when `maybeAutoRetryEasyLevel`
+  // below last fired, and guards against overlapping `reconnect()` calls
+  // across animation frames while one is still in flight.
+  let lastEasyLevelAutoRetryAt: number | null = null;
+  let easyLevelAutoRetryInFlight = false;
+
+  /**
+   * Debug hardware-compatibility workaround (#212): reads `settings`
+   * live on every connect (never a value captured once at construction
+   * time), so flipping the toggle on the EasyLevel status page's debug
+   * disclosure takes effect on the very next connect/reconnect attempt —
+   * manual, silent auto-reconnect (#130), or the background auto-retry
+   * loop (#211) above — without needing to recreate `easyLevelSensor`.
+   */
+  function easyLevelTransport() {
+    return createWebBluetoothTransport(() =>
+      settings.easyLevelConnectDelayEnabled ? settings.easyLevelConnectDelayMs : 0,
+    );
+  }
 
   /** Persist which source is active (#130) — read back on the next app
    * open to decide whether a silent reconnect is even worth attempting. */
@@ -286,10 +307,32 @@ function bootstrap(root: HTMLElement): void {
     saveSettings(settings);
   }
 
+  /**
+   * Debug hardware-compatibility workaround (#212), set from the
+   * EasyLevel status page's debug disclosure — not a normal settings-form
+   * field, so it is persisted directly here rather than through the
+   * Settings page's own save flow. `easyLevelTransport()` above reads
+   * `settings` live, so this takes effect on the very next connect
+   * attempt with no further wiring needed.
+   */
+  function setEasyLevelConnectDelay(enabled: boolean, ms: number): void {
+    // Clamped here, not just trusted from the UI's own <input> bounds
+    // (#212): a value written straight into `settings` bypasses
+    // `parseSettings`'s own clamp until the next reload, so this call is
+    // the only guard until then.
+    const clampedMs = Math.min(MAX_EASYLEVEL_CONNECT_DELAY_MS, Math.max(0, Math.round(ms) || 0));
+    settings = {
+      ...settings,
+      easyLevelConnectDelayEnabled: enabled,
+      easyLevelConnectDelayMs: clampedMs,
+    };
+    saveSettings(settings);
+  }
+
   /** Menu action: connect (or reconnect) the EasyLevel box. Must run
    * synchronously inside the button's own click handler. */
   async function connectEasyLevelNow(): Promise<SensorState> {
-    easyLevelSensor ??= createEasyLevelSensor();
+    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport());
     const state = await easyLevelSensor.start();
     if (state === 'granted') {
       sensor = easyLevelSensor;
@@ -348,12 +391,16 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /**
-   * "Retry" (#134): one tap, one attempt — never a retry loop or
-   * backoff. Calls the existing silent `EasyLevelSensor.reconnect()`
-   * (#130) with whatever device id is available, exactly the same call
-   * the startup auto-reconnect already makes; on failure `reconnect()`
-   * itself already resolves back to `'disconnected'`, so the fallback
-   * prompt simply stays (or reappears) with no extra state to track here.
+   * "Retry" (#134): one tap, one immediate attempt. Calls the existing
+   * silent `EasyLevelSensor.reconnect()` (#130) with whatever device id is
+   * available, exactly the same call the startup auto-reconnect already
+   * makes; on failure `reconnect()` itself already resolves back to
+   * `'disconnected'`, so the fallback prompt simply stays (or reappears)
+   * with no extra state to track here. This is no longer the only path to
+   * `reconnect()`, though — see `maybeAutoRetryEasyLevel` right below,
+   * which fires the exact same call on its own background cadence (#211)
+   * so recovery does not depend on the user finding or understanding this
+   * button.
    */
   async function retryEasyLevelNow(): Promise<void> {
     const deviceId = easyLevelSensor?.getDeviceId() ?? loadRememberedEasyLevelDeviceId();
@@ -364,6 +411,28 @@ function bootstrap(root: HTMLElement): void {
       updateIndicators();
     }
     updateSensorStatus();
+  }
+
+  /**
+   * Background counterpart to the manual "Retry" button above (#211):
+   * fires the exact same `retryEasyLevelNow()` call on its own, on
+   * `isEasyLevelAutoRetryDue`'s cadence, whenever `frame()` observes
+   * EasyLevel unavailable — see `sensor/sensorFallback.ts`'s doc comment
+   * for why a silent loop replaced the original "no retry loop" design.
+   * Never switches source itself (ADR 0014 is unaffected): it only ever
+   * tries to reach the SAME already-known box back, exactly what a manual
+   * tap already did. `easyLevelAutoRetryInFlight` keeps this a no-op while
+   * a previous attempt is still resolving, since `frame()` calls this
+   * every animation frame.
+   */
+  function maybeAutoRetryEasyLevel(nowMs: number): void {
+    if (easyLevelAutoRetryInFlight) return;
+    if (!isEasyLevelAutoRetryDue(lastEasyLevelAutoRetryAt, nowMs)) return;
+    lastEasyLevelAutoRetryAt = nowMs;
+    easyLevelAutoRetryInFlight = true;
+    void retryEasyLevelNow().finally(() => {
+      easyLevelAutoRetryInFlight = false;
+    });
   }
 
   /**
@@ -389,7 +458,7 @@ function bootstrap(root: HTMLElement): void {
     if (settings.sensorSource !== 'easylevel') return false;
     const deviceId = loadRememberedEasyLevelDeviceId();
     if (!deviceId) return false;
-    easyLevelSensor ??= createEasyLevelSensor();
+    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport());
     const state = await easyLevelSensor.reconnect(deviceId);
     if (state === 'unsupported') return false; // behave exactly as if EasyLevel had never been selected
     sensor = easyLevelSensor;
@@ -549,6 +618,12 @@ function bootstrap(root: HTMLElement): void {
     getEasyLevelLastSampleAt: () => easyLevelSensor?.getLastSampleAt() ?? null,
     getEasyLevelRawAccel: () => easyLevelSensor?.getGravity() ?? null,
     getEasyLevelStatusBytes: () => easyLevelSensor?.getStatusBytes() ?? null,
+    getEasyLevelConnectDelay: () => ({
+      enabled: settings.easyLevelConnectDelayEnabled,
+      ms: settings.easyLevelConnectDelayMs,
+    }),
+    setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
+      setEasyLevelConnectDelay(enabled, ms),
     getSoundPrefs: () => ({
       soundOnLevel: settings.soundOnLevel,
       soundGuidance: settings.soundGuidance,
@@ -1083,7 +1158,15 @@ function bootstrap(root: HTMLElement): void {
         const unavailable = isSensorUnavailable(sensor.getState());
         fallbackPrompt.update(unavailable);
         waiting.hidden = unavailable;
-        if (!unavailable) waiting.textContent = t('main.waiting');
+        if (unavailable) {
+          // Background auto-retry (#211) — see `maybeAutoRetryEasyLevel`.
+          maybeAutoRetryEasyLevel(performance.now());
+        } else {
+          waiting.textContent = t('main.waiting');
+          // Reset so a *later* disconnect retries immediately rather than
+          // waiting out a stale interval left over from this one.
+          lastEasyLevelAutoRetryAt = null;
+        }
       } else {
         waiting.hidden = true;
         fallbackPrompt.update(false);

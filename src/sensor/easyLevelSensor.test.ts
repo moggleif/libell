@@ -478,6 +478,77 @@ describe('createWebBluetoothTransport().reconnect() (#130 — the real Web Bluet
   });
 });
 
+describe('createWebBluetoothTransport() connect delay (#212, debug hardware workaround)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('adds no delay at all by default — todays exact connect sequence, unaffected', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    expect(device.gatt?.getPrimaryService).toHaveBeenCalledWith(EASYLEVEL_SERVICE_UUID);
+  });
+
+  it('waits the configured delay after GATT connect before discovering the service', async () => {
+    vi.useFakeTimers();
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport(() => 300);
+    const connectPromise = transport.connect(vi.fn());
+
+    // GATT connect already resolved (a plain mock, no timer of its own),
+    // but the service lookup must not have happened yet — it's gated on
+    // the delay below.
+    await vi.advanceTimersByTimeAsync(0);
+    expect(device.gatt?.getPrimaryService).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(299);
+    expect(device.gatt?.getPrimaryService).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(device.gatt?.getPrimaryService).toHaveBeenCalledWith(EASYLEVEL_SERVICE_UUID);
+    await connectPromise;
+  });
+
+  it('re-reads the delay fresh on every connect, never caching the first value', async () => {
+    const device1 = fakeBluetoothDevice('device-1');
+    const device2 = fakeBluetoothDevice('device-2');
+    let currentDelay = 0;
+    const transport = createWebBluetoothTransport(() => currentDelay);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device1) } },
+      configurable: true,
+    });
+    await transport.connect(vi.fn());
+    expect(device1.gatt?.getPrimaryService).toHaveBeenCalled();
+
+    // Toggled on for the *next* connect — the reconnect path (#130) must
+    // see the new value too, not whatever was true when the transport was
+    // first created.
+    currentDelay = 50;
+    vi.useFakeTimers();
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { getDevices: vi.fn().mockResolvedValue([device2]) } },
+      configurable: true,
+    });
+    const reconnectPromise = transport.reconnect('device-2', vi.fn());
+    await vi.advanceTimersByTimeAsync(0);
+    expect(device2.gatt?.getPrimaryService).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(50);
+    expect(device2.gatt?.getPrimaryService).toHaveBeenCalled();
+    await reconnectPromise;
+  });
+});
+
 describe('isWebBluetoothSupported', () => {
   it('is false without navigator.bluetooth', () => {
     Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });

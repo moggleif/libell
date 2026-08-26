@@ -24,7 +24,11 @@
  * that doesn't require battery/temperature to share space with the
  * connect/disconnect controls.
  */
-import type { Calibration, SensorSource } from '../domain/settings';
+import {
+  MAX_EASYLEVEL_CONNECT_DELAY_MS,
+  type Calibration,
+  type SensorSource,
+} from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
 import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
@@ -56,6 +60,17 @@ export interface EasyLevelStatusOptions {
   getEasyLevelRawAccel(): GravityVector | null;
   /** Raw `faf52c22-...` bytes, or null. */
   getEasyLevelStatusBytes(): Uint8Array | null;
+  /**
+   * Debug hardware-compatibility workaround (#212): whether an extra fixed
+   * delay is inserted between GATT connect and service discovery, and
+   * what it's currently set to (only applied while `enabled`). Read once
+   * per page open, not every `refresh()` frame — see this file's own
+   * comment on `syncConnectDelay` for why.
+   */
+  getEasyLevelConnectDelay(): { enabled: boolean; ms: number };
+  /** Persists a new enabled/delay pair (#212) — takes effect on the very
+   * next EasyLevel connect attempt, by any path. */
+  setEasyLevelConnectDelay(enabled: boolean, ms: number): void;
 }
 
 export interface EasyLevelStatusPage {
@@ -86,7 +101,10 @@ function hexBytes(bytes: Uint8Array | null): string | null {
 export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): EasyLevelStatusPage {
   const notAvailable = t('sensorSource.detail.notAvailable');
 
-  const page = createStandalonePage(t('sensorStatus.title'), () => refresh());
+  const page = createStandalonePage(t('sensorStatus.title'), () => {
+    syncConnectDelay();
+    refresh();
+  });
   // Opened from within the (still-open) External sensor page — needs to
   // paint above it, not just rely on DOM append order elsewhere.
   page.element.classList.add('sensor-status-page');
@@ -134,6 +152,34 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   copyDebugButton.type = 'button';
   copyDebugButton.className = 'menu__action';
   copyDebugButton.textContent = t('sensorStatus.debug.copy');
+
+  // Connect-delay workaround (#212): an experimental hardware-
+  // compatibility knob, not a normal setting, so it lives here rather
+  // than the settings panel. Reuses `.settings__field`/`.settings__checkbox`
+  // as-is (same look as the settings form's own toggles) rather than
+  // inventing a parallel style for one control.
+  const connectDelayHint = document.createElement('p');
+  connectDelayHint.className = 'settings__hint';
+  connectDelayHint.textContent = t('sensorStatus.debug.connectDelay.intro');
+  const connectDelayEnableField = document.createElement('label');
+  connectDelayEnableField.className = 'settings__field';
+  const connectDelayEnableCaption = document.createElement('span');
+  connectDelayEnableCaption.textContent = t('sensorStatus.debug.connectDelay.enable');
+  const connectDelayEnableInput = document.createElement('input');
+  connectDelayEnableInput.type = 'checkbox';
+  connectDelayEnableInput.className = 'settings__checkbox';
+  connectDelayEnableField.append(connectDelayEnableCaption, connectDelayEnableInput);
+  const connectDelayMsField = document.createElement('label');
+  connectDelayMsField.className = 'settings__field';
+  const connectDelayMsCaption = document.createElement('span');
+  connectDelayMsCaption.textContent = t('sensorStatus.debug.connectDelay.ms');
+  const connectDelayMsInput = document.createElement('input');
+  connectDelayMsInput.type = 'number';
+  connectDelayMsInput.min = '0';
+  connectDelayMsInput.max = String(MAX_EASYLEVEL_CONNECT_DELAY_MS);
+  connectDelayMsInput.step = '50';
+  connectDelayMsField.append(connectDelayMsCaption, connectDelayMsInput);
+
   debugDetails.append(
     debugSummary,
     debugIntro,
@@ -143,8 +189,38 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     firmwareTierRow,
     rawStatusBytesRow,
     copyDebugButton,
+    connectDelayHint,
+    connectDelayEnableField,
+    connectDelayMsField,
   );
   page.body.append(debugDetails);
+
+  /**
+   * Reads the stored connect-delay setting into the two controls above —
+   * called once per page open (from `createStandalonePage`'s `onOpen`
+   * below), deliberately NOT from `refresh()`: `refresh()` runs every
+   * animation frame while this page is open, and re-asserting `.value`/
+   * `.checked` on every frame would fight the user mid-edit (a keystroke
+   * into the ms field getting reset before the next one lands). The
+   * read-only debug rows above have no such problem — nothing ever types
+   * into them — so only these two controls need this split.
+   */
+  function syncConnectDelay(): void {
+    const { enabled, ms } = options.getEasyLevelConnectDelay();
+    connectDelayEnableInput.checked = enabled;
+    connectDelayMsInput.value = String(ms);
+    connectDelayMsInput.disabled = !enabled;
+  }
+
+  function commitConnectDelay(): void {
+    connectDelayMsInput.disabled = !connectDelayEnableInput.checked;
+    options.setEasyLevelConnectDelay(
+      connectDelayEnableInput.checked,
+      Number(connectDelayMsInput.value),
+    );
+  }
+  connectDelayEnableInput.addEventListener('change', commitConnectDelay);
+  connectDelayMsInput.addEventListener('change', commitConnectDelay);
 
   function refresh(): void {
     const source = options.getSensorSource();
@@ -217,6 +293,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     );
   });
 
+  syncConnectDelay();
   refresh();
   return {
     element: page.element,

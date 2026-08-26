@@ -104,6 +104,39 @@ export interface LevelSettings {
    * time as they land, rather than this field being invented per-adapter.
    */
   sensorSource: SensorSource;
+  /**
+   * Debug-only EasyLevel hardware-compatibility workaround (#212), reached
+   * from the EasyLevel status page's "Debug info" disclosure, never the
+   * normal settings panel. Off by default — zero behavior change for
+   * anyone who never opens that disclosure. When on, `easyLevelSensor.ts`'s
+   * transport waits `easyLevelConnectDelayMs` after a GATT connect
+   * succeeds and before discovering services/characteristics, mirroring
+   * (loosely — see `easyLevelConnectDelayMs`'s own comment) a settle delay
+   * the official app's own decompiled connection handling applies that
+   * this app does not. No physical box has confirmed needing this; it
+   * exists so a box owner without a dev setup can experiment via the app's
+   * own UI instead of needing a code change.
+   */
+  easyLevelConnectDelayEnabled: boolean;
+  /**
+   * The delay itself (ms), only applied while
+   * `easyLevelConnectDelayEnabled` is true. Clamped to
+   * `MAX_EASYLEVEL_CONNECT_DELAY_MS` so a mistyped huge value can't
+   * effectively hang every connect attempt. One flat delay, not the
+   * official app's own two-tier scheme — its decompiled
+   * `onConnectionStateChange` branches on `BluetoothDevice.getBondState()`:
+   * 1600ms if bonded, 300ms ("Bonding not required") otherwise. Web
+   * Bluetooth exposes no equivalent bonding-state read to a web page, so
+   * this app genuinely cannot tell the two cases apart and only ever has
+   * one number to offer — but 300ms, not 1600ms, is the one actually worth
+   * defaulting to: EasyLevel's own protocol needs no encryption and has no
+   * WRITE characteristic (confirmed by decompile, `easyLevelSensor.ts`'s
+   * module doc comment), so Android has no reason to ever bond with this
+   * specific hardware — the official app's own bonded/1600ms branch is
+   * essentially dead code for an EasyLevel box specifically, whatever other
+   * devices that shared BLE-manager class might also handle.
+   */
+  easyLevelConnectDelayMs: number;
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
@@ -158,6 +191,11 @@ export const DRAIN_POSITIONS: readonly DrainPosition[] = [
 /** More ramps than this cannot help a four-wheel vehicle. */
 export const MAX_RAMP_COUNT = 4;
 
+/** Ceiling for `easyLevelConnectDelayMs` (#212) — long enough for any
+ * plausible settle-time experiment, short enough that a mistyped value
+ * can't turn every connect attempt into an effectively indefinite hang. */
+export const MAX_EASYLEVEL_CONNECT_DELAY_MS = 5000;
+
 export const DEFAULT_SETTINGS: LevelSettings = {
   vehicleType: 'motorhome',
   rearAxle: 'single',
@@ -183,6 +221,13 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   // permanently-supported choice for anyone who picks it.
   appearance: 'modern',
   sensorSource: 'phone',
+  easyLevelConnectDelayEnabled: false,
+  // The official app's own "not bonded" delay (see
+  // `easyLevelConnectDelayMs`'s doc comment above), not its bonded 1600ms
+  // — an EasyLevel box has no reason to ever be bonded, so this is the
+  // branch that's actually relevant here. Not used at all while
+  // `easyLevelConnectDelayEnabled` is false.
+  easyLevelConnectDelayMs: 300,
 };
 
 /**
@@ -343,6 +388,17 @@ export function parseSettings(value: unknown): LevelSettings {
     sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)
       ? (raw.sensorSource as SensorSource)
       : DEFAULT_SETTINGS.sensorSource,
+    // Presence check (#212), same discipline as soundOnLevel above: absent
+    // (never saved) falls back to the off default; an explicit prior
+    // choice, true or false, is never overridden.
+    easyLevelConnectDelayEnabled:
+      typeof raw.easyLevelConnectDelayEnabled === 'boolean'
+        ? raw.easyLevelConnectDelayEnabled
+        : DEFAULT_SETTINGS.easyLevelConnectDelayEnabled,
+    easyLevelConnectDelayMs: Math.min(
+      MAX_EASYLEVEL_CONNECT_DELAY_MS,
+      nonNegativeNumber(raw.easyLevelConnectDelayMs, DEFAULT_SETTINGS.easyLevelConnectDelayMs),
+    ),
   };
 }
 

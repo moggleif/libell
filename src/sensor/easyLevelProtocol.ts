@@ -105,14 +105,27 @@ function clamp(value: number, min: number, max: number): number {
  * temperature formula, tier 2+ (byte7 ≥ 32) another; the remaining
  * thresholds (48/64/80/96/112) only matter for the calibration-bytes gate
  * (tier ≥ 3) and diagnostics, not the temperature formula itself.
+ *
+ * `byte7` is the raw byte value (0–255), same as everywhere else in this
+ * file — but the official app reads it into a Java `byte` (-128..127) and
+ * compares *that* signed value against these thresholds, confirmed by
+ * decompiling `EasyLevel 5.0.7` directly. Sign extension means any raw
+ * byte ≥ 128 is always negative in the app's own comparison, and therefore
+ * always resolves to tier 1 — never tier 5–7, however high the raw byte
+ * is. Almost certainly never hit by any real box (tier climbs by 16 per
+ * step, so byte7 ≥ 128 would already be an unheard-of tier 8+), but this
+ * matches the app's own byte-for-byte behavior rather than a plausible-
+ * looking guess, for the exact "unfamiliar firmware tier" case the debug
+ * page (`easyLevelStatusPage.ts`) exists to surface honestly.
  */
 export function firmwareTierFromByte(byte7: number): number {
-  if (byte7 < 32) return 1;
-  if (byte7 < 48) return 2;
-  if (byte7 < 64) return 3;
-  if (byte7 < 80) return 4;
-  if (byte7 < 96) return 5;
-  if (byte7 < 112) return 6;
+  const signed = byte7 >= 128 ? byte7 - 256 : byte7;
+  if (signed < 32) return 1;
+  if (signed < 48) return 2;
+  if (signed < 64) return 3;
+  if (signed < 80) return 4;
+  if (signed < 96) return 5;
+  if (signed < 112) return 6;
   return 7;
 }
 
@@ -136,13 +149,18 @@ export function parseEasyLevelStatus(data: PacketBytes): EasyLevelStatus | null 
 
   // Firmware tier 1 boxes pack temperature into byte 0 alone (signed,
   // 1/16 °C per unit); tier 2+ upgraded to a full signed int16 LE across
-  // bytes 0–1 at 1/100 °C per unit. Branching on byte7 here, not just
+  // bytes 0–1 at 1/100 °C per unit. Branching on the tier here, not just
   // implementing the newer formula, matters: an old-firmware box would
   // otherwise report a wrong temperature. Tier 1 additionally truncates to
   // a whole degree (another `(int)` cast in the official app, applied only
   // on this branch — tier 2+ keeps the fractional 1/100 °C precision).
+  //
+  // Branches on `firmwareTier === 1` (not `byte7 < 32` directly) so this
+  // stays exactly in sync with `firmwareTierFromByte`'s own signed-byte
+  // comparison above — including its byte7 ≥ 128 quirk — with no risk of
+  // the two silently drifting apart.
   const temperatureCelsius =
-    byte7 < 32
+    firmwareTier === 1
       ? clamp(Math.trunc(view.getInt8(0) / 16 + 25), -40, 80)
       : clamp(view.getInt16(0, true) / 100, -40, 80);
 
