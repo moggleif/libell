@@ -108,6 +108,13 @@ export interface EasyLevelTransport {
   reconnect(deviceId: string, onDisconnect: () => void): Promise<EasyLevelConnection | null>;
 }
 
+/** `new Promise(resolve => setTimeout(resolve, ms))`, named for what it's for
+ * at the one call site below — real timers, since this only ever runs in a
+ * real browser against real Web Bluetooth, never inside `domain/`. */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * The real Web Bluetooth transport. `requestDevice()`'s picker matches a
  * device against ANY of its filters: `EASYLEVEL_ADVERTISED_SERVICE_UUID`
@@ -118,8 +125,20 @@ export interface EasyLevelTransport {
  * post-connect (`getPrimaryService()` below), so it must be listed in
  * `optionalServices` — Web Bluetooth blocks fetching any GATT service that
  * is neither in `filters` nor `optionalServices`.
+ *
+ * `getConnectDelayMs` (#212) — read fresh on every connect, never cached —
+ * is the debug hardware-compatibility workaround exposed on the EasyLevel
+ * status page's debug disclosure: an optional fixed pause after GATT
+ * connect succeeds and before service discovery, for a real box that might
+ * need a moment to settle, the way the official app's own decompiled
+ * connection handling applies a delay of its own that this transport
+ * otherwise does not. Defaults to always-zero (no delay, today's exact
+ * behavior) so every existing caller — including every test below — is
+ * unaffected unless it explicitly opts in.
  */
-export function createWebBluetoothTransport(): EasyLevelTransport {
+export function createWebBluetoothTransport(
+  getConnectDelayMs: () => number = () => 0,
+): EasyLevelTransport {
   async function connectToDevice(
     device: BluetoothDevice,
     onDisconnect: () => void,
@@ -127,6 +146,8 @@ export function createWebBluetoothTransport(): EasyLevelTransport {
     device.addEventListener('gattserverdisconnected', onDisconnect);
     const server = await device.gatt?.connect();
     if (!server) throw new Error('EasyLevel: GATT connect failed');
+    const connectDelayMs = getConnectDelayMs();
+    if (connectDelayMs > 0) await delay(connectDelayMs);
     const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
 
     async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {

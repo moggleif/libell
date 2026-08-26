@@ -986,3 +986,43 @@ better served by raw values read straight off the box.
   yet, or connected but no status/accel notification received yet)
 - **Then** it reads "not available yet" — the same wording every other not-yet-
   available field in this app already uses — never a broken or fabricated value.
+
+## R41 — EasyLevel debug connect-delay workaround (#212)
+
+No physical EasyLevel box has been available to test this app's Web Bluetooth
+connection sequence against. If a real box ever turns out to need a moment to settle
+after GATT connect before it responds correctly to service/characteristic discovery
+(the official app's own decompiled connection handling applies a delay of its own
+that this app's `easyLevelSensor.ts` does not — see #211's context), whoever owns
+that box needs to be able to try a fix without a dev setup: an experimental,
+off-by-default, adjustable connect delay reachable from the app's own UI.
+
+- **Given** the EasyLevel status page's "Debug info" disclosure (R40), while EasyLevel
+  is the active source
+- **Then** it additionally shows an "Enable connect delay" toggle and a "Delay (ms)"
+  number field, both labeled as experimental and only worth touching if the box's
+  connection is actually unreliable — never presented as a normal setting.
+- **Given** the toggle is off (the default for every install)
+- **Then** connecting behaves exactly as before this requirement — zero added delay,
+  the same connect sequence byte-for-byte.
+- **Given** the toggle is on with a chosen delay
+- **When** the app connects or reconnects to an EasyLevel box, by any path (manual
+  connect, manual Retry, the silent auto-reconnect at app open (R33), or the
+  background auto-retry loop (#211))
+- **Then** it waits that many ms after GATT connect succeeds before discovering
+  services/characteristics — one flat delay applied uniformly, not the official app's
+  own two-tier bonded/unbonded scheme, since Web Bluetooth exposes no bonding-state
+  hook to tell the two apart.
+- **Given** a delay value typed into the field
+- **Then** it is clamped to a sane range (`MAX_EASYLEVEL_CONNECT_DELAY_MS`, 5000ms) so
+  a mistyped huge number can't effectively hang every connect attempt.
+- **Given** the toggle/value have been set
+- **Then** they persist across closing and reopening the app, the same as every other
+  stored setting (`LevelSettings`) — but they are set directly from this debug
+  disclosure, not through the normal Settings page's save flow, since this is a
+  hardware-compatibility diagnostic, not a user preference.
+- **Given** the status page is refreshing continuously while open (R40)
+- **Then** the two controls are only re-synced from the stored value when the page is
+  freshly opened, never on every refresh frame — refreshing them continuously would
+  fight a user mid-edit (a keystroke into the ms field reset before the next one
+  lands).

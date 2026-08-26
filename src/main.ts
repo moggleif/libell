@@ -24,6 +24,7 @@ import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import {
   formatLength,
+  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   toggleMute,
   type Calibration,
   type LevelSettings,
@@ -65,6 +66,7 @@ import {
 } from './sensor/orientation';
 import {
   createEasyLevelSensor,
+  createWebBluetoothTransport,
   isWebBluetoothSupported,
   type EasyLevelSensor,
 } from './sensor/easyLevelSensor';
@@ -270,6 +272,20 @@ function bootstrap(root: HTMLElement): void {
   let lastEasyLevelAutoRetryAt: number | null = null;
   let easyLevelAutoRetryInFlight = false;
 
+  /**
+   * Debug hardware-compatibility workaround (#212): reads `settings`
+   * live on every connect (never a value captured once at construction
+   * time), so flipping the toggle on the EasyLevel status page's debug
+   * disclosure takes effect on the very next connect/reconnect attempt —
+   * manual, silent auto-reconnect (#130), or the background auto-retry
+   * loop (#211) above — without needing to recreate `easyLevelSensor`.
+   */
+  function easyLevelTransport() {
+    return createWebBluetoothTransport(() =>
+      settings.easyLevelConnectDelayEnabled ? settings.easyLevelConnectDelayMs : 0,
+    );
+  }
+
   /** Persist which source is active (#130) — read back on the next app
    * open to decide whether a silent reconnect is even worth attempting. */
   function rememberSensorSource(source: LevelSettings['sensorSource']): void {
@@ -277,10 +293,32 @@ function bootstrap(root: HTMLElement): void {
     saveSettings(settings);
   }
 
+  /**
+   * Debug hardware-compatibility workaround (#212), set from the
+   * EasyLevel status page's debug disclosure — not a normal settings-form
+   * field, so it is persisted directly here rather than through the
+   * Settings page's own save flow. `easyLevelTransport()` above reads
+   * `settings` live, so this takes effect on the very next connect
+   * attempt with no further wiring needed.
+   */
+  function setEasyLevelConnectDelay(enabled: boolean, ms: number): void {
+    // Clamped here, not just trusted from the UI's own <input> bounds
+    // (#212): a value written straight into `settings` bypasses
+    // `parseSettings`'s own clamp until the next reload, so this call is
+    // the only guard until then.
+    const clampedMs = Math.min(MAX_EASYLEVEL_CONNECT_DELAY_MS, Math.max(0, Math.round(ms) || 0));
+    settings = {
+      ...settings,
+      easyLevelConnectDelayEnabled: enabled,
+      easyLevelConnectDelayMs: clampedMs,
+    };
+    saveSettings(settings);
+  }
+
   /** Menu action: connect (or reconnect) the EasyLevel box. Must run
    * synchronously inside the button's own click handler. */
   async function connectEasyLevelNow(): Promise<SensorState> {
-    easyLevelSensor ??= createEasyLevelSensor();
+    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport());
     const state = await easyLevelSensor.start();
     if (state === 'granted') {
       sensor = easyLevelSensor;
@@ -406,7 +444,7 @@ function bootstrap(root: HTMLElement): void {
     if (settings.sensorSource !== 'easylevel') return false;
     const deviceId = loadRememberedEasyLevelDeviceId();
     if (!deviceId) return false;
-    easyLevelSensor ??= createEasyLevelSensor();
+    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport());
     const state = await easyLevelSensor.reconnect(deviceId);
     if (state === 'unsupported') return false; // behave exactly as if EasyLevel had never been selected
     sensor = easyLevelSensor;
@@ -566,6 +604,12 @@ function bootstrap(root: HTMLElement): void {
     getEasyLevelLastSampleAt: () => easyLevelSensor?.getLastSampleAt() ?? null,
     getEasyLevelRawAccel: () => easyLevelSensor?.getGravity() ?? null,
     getEasyLevelStatusBytes: () => easyLevelSensor?.getStatusBytes() ?? null,
+    getEasyLevelConnectDelay: () => ({
+      enabled: settings.easyLevelConnectDelayEnabled,
+      ms: settings.easyLevelConnectDelayMs,
+    }),
+    setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
+      setEasyLevelConnectDelay(enabled, ms),
     getSoundPrefs: () => ({
       soundOnLevel: settings.soundOnLevel,
       soundGuidance: settings.soundGuidance,

@@ -57,6 +57,8 @@ describe('settingsStore', () => {
       theme: 'dark' as const,
       appearance: 'modern' as const,
       sensorSource: 'phone' as const,
+      easyLevelConnectDelayEnabled: false,
+      easyLevelConnectDelayMs: 300,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);

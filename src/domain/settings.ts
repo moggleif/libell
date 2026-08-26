@@ -104,6 +104,31 @@ export interface LevelSettings {
    * time as they land, rather than this field being invented per-adapter.
    */
   sensorSource: SensorSource;
+  /**
+   * Debug-only EasyLevel hardware-compatibility workaround (#212), reached
+   * from the EasyLevel status page's "Debug info" disclosure, never the
+   * normal settings panel. Off by default — zero behavior change for
+   * anyone who never opens that disclosure. When on, `easyLevelSensor.ts`'s
+   * transport waits `easyLevelConnectDelayMs` after a GATT connect
+   * succeeds and before discovering services/characteristics, mirroring
+   * (loosely — see `easyLevelConnectDelayMs`'s own comment) a settle delay
+   * the official app's own decompiled connection handling applies that
+   * this app does not. No physical box has confirmed needing this; it
+   * exists so a box owner without a dev setup can experiment via the app's
+   * own UI instead of needing a code change.
+   */
+  easyLevelConnectDelayEnabled: boolean;
+  /**
+   * The delay itself (ms), only applied while
+   * `easyLevelConnectDelayEnabled` is true. Clamped to
+   * `MAX_EASYLEVEL_CONNECT_DELAY_MS` so a mistyped huge value can't
+   * effectively hang every connect attempt. One flat delay, not the
+   * official app's own two-tier bonded (1600ms) / unbonded (300ms) scheme
+   * (confirmed by decompile) — Web Bluetooth exposes no bonding-state hook
+   * to tell the two apart, so this app only ever has the one number to
+   * offer.
+   */
+  easyLevelConnectDelayMs: number;
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
@@ -158,6 +183,11 @@ export const DRAIN_POSITIONS: readonly DrainPosition[] = [
 /** More ramps than this cannot help a four-wheel vehicle. */
 export const MAX_RAMP_COUNT = 4;
 
+/** Ceiling for `easyLevelConnectDelayMs` (#212) — long enough for any
+ * plausible settle-time experiment, short enough that a mistyped value
+ * can't turn every connect attempt into an effectively indefinite hang. */
+export const MAX_EASYLEVEL_CONNECT_DELAY_MS = 5000;
+
 export const DEFAULT_SETTINGS: LevelSettings = {
   vehicleType: 'motorhome',
   rearAxle: 'single',
@@ -183,6 +213,11 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   // permanently-supported choice for anyone who picks it.
   appearance: 'modern',
   sensorSource: 'phone',
+  easyLevelConnectDelayEnabled: false,
+  // A starting point to experiment from once enabled, in the same
+  // ballpark as the official app's own shorter (unbonded) delay — not
+  // used at all while `easyLevelConnectDelayEnabled` is false.
+  easyLevelConnectDelayMs: 300,
 };
 
 /**
@@ -338,6 +373,17 @@ export function parseSettings(value: unknown): LevelSettings {
     sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)
       ? (raw.sensorSource as SensorSource)
       : DEFAULT_SETTINGS.sensorSource,
+    // Presence check (#212), same discipline as soundOnLevel above: absent
+    // (never saved) falls back to the off default; an explicit prior
+    // choice, true or false, is never overridden.
+    easyLevelConnectDelayEnabled:
+      typeof raw.easyLevelConnectDelayEnabled === 'boolean'
+        ? raw.easyLevelConnectDelayEnabled
+        : DEFAULT_SETTINGS.easyLevelConnectDelayEnabled,
+    easyLevelConnectDelayMs: Math.min(
+      MAX_EASYLEVEL_CONNECT_DELAY_MS,
+      nonNegativeNumber(raw.easyLevelConnectDelayMs, DEFAULT_SETTINGS.easyLevelConnectDelayMs),
+    ),
   };
 }
 

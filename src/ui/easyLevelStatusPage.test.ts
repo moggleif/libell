@@ -15,6 +15,8 @@ function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevel
     getEasyLevelLastSampleAt: () => null,
     getEasyLevelRawAccel: () => null,
     getEasyLevelStatusBytes: () => null,
+    getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
+    setEasyLevelConnectDelay: () => {},
     ...overrides,
   };
 }
@@ -156,6 +158,68 @@ describe('createEasyLevelStatusPage', () => {
       expect(writeText).toHaveBeenCalledOnce();
       expect(writeText.mock.calls[0]![0]).toContain('device-42');
       expect(writeText.mock.calls[0]![0]).toContain('01 02');
+    });
+
+    describe('connect-delay workaround (#212)', () => {
+      function checkboxAndNumberInput(page: ReturnType<typeof createEasyLevelStatusPage>) {
+        const checkbox = page.element.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+        const number = page.element.querySelector<HTMLInputElement>('input[type="number"]')!;
+        return { checkbox, number };
+      }
+
+      it('reflects the stored enabled/ms values once the page is opened', () => {
+        const page = createEasyLevelStatusPage(
+          makeOptions({ getEasyLevelConnectDelay: () => ({ enabled: true, ms: 750 }) }),
+        );
+        page.open();
+        const { checkbox, number } = checkboxAndNumberInput(page);
+        expect(checkbox.checked).toBe(true);
+        expect(number.value).toBe('750');
+        expect(number.disabled).toBe(false);
+      });
+
+      it('disables the ms field while the toggle is off', () => {
+        const page = createEasyLevelStatusPage(
+          makeOptions({ getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }) }),
+        );
+        page.open();
+        expect(checkboxAndNumberInput(page).number.disabled).toBe(true);
+      });
+
+      it('does not reset the ms field on every refresh() — only on open()', () => {
+        // Regression guard: refresh() runs every animation frame while the
+        // page is open (`sensorPage.ts`'s refreshLive()); if it also reset
+        // this field from the stored value, mid-edit keystrokes would be
+        // fought on the very next frame.
+        const page = createEasyLevelStatusPage(
+          makeOptions({ getEasyLevelConnectDelay: () => ({ enabled: true, ms: 300 }) }),
+        );
+        page.open();
+        const { number } = checkboxAndNumberInput(page);
+        number.value = '1234';
+        page.refresh();
+        expect(number.value).toBe('1234');
+      });
+
+      it('commits enabled + ms together, clamped/parsed by the caller, on either control changing', () => {
+        const setEasyLevelConnectDelay = vi.fn();
+        const page = createEasyLevelStatusPage(
+          makeOptions({
+            getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
+            setEasyLevelConnectDelay,
+          }),
+        );
+        page.open();
+        const { checkbox, number } = checkboxAndNumberInput(page);
+
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change'));
+        expect(setEasyLevelConnectDelay).toHaveBeenLastCalledWith(true, 300);
+
+        number.value = '900';
+        number.dispatchEvent(new Event('change'));
+        expect(setEasyLevelConnectDelay).toHaveBeenLastCalledWith(true, 900);
+      });
     });
   });
 
