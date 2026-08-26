@@ -174,6 +174,8 @@ describe('parseSettings', () => {
     // An explicit Classic choice — including settings saved from before
     // #136, when Classic was the default — is never overridden.
     expect(parseSettings({ appearance: 'classic' }).appearance).toBe('classic');
+    // Glossy (chat-directed third preset): a valid choice like the other two.
+    expect(parseSettings({ appearance: 'glossy' }).appearance).toBe('glossy');
     expect(parseSettings({ appearance: 'retro' }).appearance).toBe('modern');
   });
 

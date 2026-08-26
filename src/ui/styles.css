@@ -169,6 +169,14 @@ body {
 .topbar__icon {
   width: 28px;
   height: 28px;
+  border-radius: 0;
+}
+
+:root[data-appearance='glossy'] .topbar__icon {
+  border-radius: 6px;
+}
+
+:root[data-appearance='modern'] .topbar__icon {
   border-radius: 6px;
 }
 
@@ -207,8 +215,8 @@ body {
   padding: 10px 16px;
   color: var(--on-surface);
   background: var(--surface-raised);
-  border: 1px solid var(--outline);
-  border-radius: 10px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   font-size: 0.9rem;
   overflow-wrap: anywhere;
   opacity: 0;
@@ -217,22 +225,64 @@ body {
     transform var(--motion-base) var(--motion-ease);
 }
 
+:root[data-appearance='modern'] .toast {
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+}
+
+:root[data-appearance='glossy'] .toast {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-raised) 100%, white 10%),
+    var(--surface-raised)
+  );
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 15%);
+}
+
 .toast.is-visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 
+/* Classic's "unstyled HTML" restyle (chat-directed, no ADR): flat color
+ * plus the browser's own outset/inset border chrome, the way an
+ * uncustomized <button>/<input> looked before design systems — square
+ * corners, no gradients or shadows. Modern (below) resets each of these
+ * back to its current flat/rounded look so the restyle never leaks. */
 .topbar__install {
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--surface);
   background: var(--level);
-  border: 0;
-  border-radius: 999px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   min-height: 44px;
   padding: 8px 18px;
   cursor: pointer;
+}
+
+:root[data-appearance='modern'] .topbar__install {
+  border: 0;
+  border-radius: 999px;
+}
+
+:root[data-appearance='glossy'] .topbar__install {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--level) 100%, white 35%),
+    var(--level) 65%,
+    color-mix(in srgb, var(--level) 100%, black 12%)
+  );
+  border: 1px solid color-mix(in srgb, var(--level) 100%, black 20%);
+  border-radius: 999px;
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
 /* ---- Bottom action bar: settings (left) / sound (center) / help (right)
@@ -272,7 +322,26 @@ body {
   min-width: 56px;
   min-height: 56px;
   background: var(--surface-raised);
+  border: 2px outset var(--outline);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .bottombar__button--primary {
   border: 1.5px solid var(--outline);
+  border-radius: 999px;
+}
+
+:root[data-appearance='glossy'] .bottombar__button--primary {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-raised) 100%, white 20%),
+    var(--surface-raised)
+  );
+  border: 1.5px solid var(--outline);
+  border-radius: 999px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 25%),
+    inset 0 1px 0 rgb(255 255 255 / 30%);
 }
 
 .bottombar__button--muted {
@@ -314,8 +383,8 @@ body {
   letter-spacing: 0.03em;
   color: var(--warning);
   background: none;
-  border: 1.5px solid var(--warning);
-  border-radius: 8px;
+  border: 2px outset var(--warning);
+  border-radius: 0;
   min-height: 44px;
   padding: 4px 10px;
   cursor: pointer;
@@ -342,6 +411,11 @@ body {
   border-radius: 9px;
   border-color: color-mix(in srgb, var(--warning) 50%, transparent);
   background: color-mix(in srgb, var(--warning) 12%, transparent);
+}
+
+:root[data-appearance='glossy'] .indicators__lamp {
+  border: 1.5px solid var(--warning);
+  border-radius: 8px;
 }
 
 /* Target badge (#122, ADR 0013): a small, unobtrusive, purely
@@ -392,12 +466,23 @@ body {
   letter-spacing: 0.02em;
   color: var(--on-surface);
   background: var(--surface-sunken);
-  border: 1.5px solid var(--outline);
-  border-radius: 8px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   min-height: 44px;
   padding: 4px 10px;
   cursor: pointer;
   white-space: nowrap;
+}
+
+:root[data-appearance='modern'] .target-badge {
+  border: 1.5px solid var(--outline);
+  border-radius: 8px;
+}
+
+:root[data-appearance='glossy'] .target-badge {
+  border: 1.5px solid var(--outline);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 15%);
 }
 
 .app {
@@ -429,10 +514,29 @@ body {
   font-weight: 600;
   color: var(--surface);
   background: var(--level);
-  border: 0;
-  border-radius: 999px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   padding: 14px 48px;
   cursor: pointer;
+}
+
+:root[data-appearance='modern'] .app__start {
+  border: 0;
+  border-radius: 999px;
+}
+
+:root[data-appearance='glossy'] .app__start {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--level) 100%, white 35%),
+    var(--level) 65%,
+    color-mix(in srgb, var(--level) 100%, black 12%)
+  );
+  border: 1px solid color-mix(in srgb, var(--level) 100%, black 20%);
+  border-radius: 999px;
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
 /* ---- RV diagram (hero) ---- */
@@ -459,6 +563,15 @@ body {
   stroke-width: 2;
 }
 
+/* Glossy (chat-directed third preset, ADR-less): reuses Classic's SVG
+ * structure but with a rounder, softer outline plus a drop shadow —
+ * CSS `rx`/`ry` and `filter` override the plain-HTML shape and flat
+ * edges above without touching the shared diagram code. */
+[data-appearance='glossy'] .rv-diagram__body {
+  rx: 26px;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 35%));
+}
+
 .rv-diagram__windshield {
   fill: var(--outline);
 }
@@ -474,6 +587,11 @@ body {
   fill: var(--surface-raised);
   stroke: var(--outline);
   stroke-width: 2;
+}
+
+[data-appearance='glossy'] .rv-diagram__wheel {
+  rx: 9px;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 40%));
 }
 
 .rv-diagram__wheel--none {
@@ -863,11 +981,24 @@ body {
   font-weight: 600;
   text-align: left;
   color: var(--on-surface);
-  background: var(--surface);
-  border: 1px solid var(--outline);
-  border-radius: 10px;
+  background: var(--surface-raised);
+  border: 2px outset var(--outline);
+  border-radius: 0;
   padding: 12px 14px;
   cursor: pointer;
+}
+
+:root[data-appearance='glossy'] .menu__item {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-raised) 100%, white 12%),
+    var(--surface-raised)
+  );
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 20%),
+    inset 0 1px 0 rgb(255 255 255 / 20%);
 }
 
 .menu__item[aria-expanded='true'] {
@@ -1056,16 +1187,51 @@ body {
   font-weight: 600;
   color: var(--surface);
   background: var(--level);
-  border: 0;
-  border-radius: 999px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   padding: 10px 0;
   cursor: pointer;
 }
 
+:root[data-appearance='modern'] .menu__action {
+  border: 0;
+  border-radius: 999px;
+}
+
+:root[data-appearance='glossy'] .menu__action {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--level) 100%, white 35%),
+    var(--level) 65%,
+    color-mix(in srgb, var(--level) 100%, black 12%)
+  );
+  border: 1px solid color-mix(in srgb, var(--level) 100%, black 20%);
+  border-radius: 999px;
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
+}
+
 .menu__action--secondary {
   color: var(--on-surface);
+  background: var(--surface-raised);
+  border: 2px outset var(--outline);
+}
+
+:root[data-appearance='modern'] .menu__action--secondary {
   background: none;
   border: 1px solid var(--outline);
+}
+
+:root[data-appearance='glossy'] .menu__action--secondary {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-raised) 100%, white 15%),
+    var(--surface-raised)
+  );
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%);
 }
 
 .menu__action:disabled {
@@ -1118,9 +1284,27 @@ body {
   flex-direction: column;
   gap: 10px;
   background: var(--surface-raised);
+  border: 2px groove var(--outline);
+  border-radius: 0;
+  padding: 16px;
+}
+
+:root[data-appearance='modern'] .calibration-card {
   border: 1px solid var(--outline);
   border-radius: 18px;
-  padding: 16px;
+}
+
+:root[data-appearance='glossy'] .calibration-card {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-raised) 100%, white 8%),
+    var(--surface-raised)
+  );
+  border: 1px solid var(--outline);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 20%),
+    inset 0 1px 0 rgb(255 255 255 / 15%);
 }
 
 .calibration-card > .menu__action {
@@ -1209,10 +1393,21 @@ body {
   text-align: left;
   color: var(--on-surface);
   background: var(--surface-sunken);
-  border: 1px solid var(--outline);
-  border-radius: 12px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   padding: 10px 14px;
   cursor: pointer;
+}
+
+:root[data-appearance='modern'] .targets__row-select {
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+}
+
+:root[data-appearance='glossy'] .targets__row-select {
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 15%);
 }
 
 .targets__row-select--active {
@@ -1259,8 +1454,19 @@ body {
   padding: 8px 10px;
   color: var(--on-surface);
   background: var(--surface);
+  border: 2px inset var(--outline);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .targets__name-input {
   border: 1px solid var(--outline);
   border-radius: 8px;
+}
+
+:root[data-appearance='glossy'] .targets__name-input {
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
 }
 
 .targets__add .menu__action--secondary {
@@ -1306,8 +1512,19 @@ body {
   padding: 6px 8px;
   color: var(--on-surface);
   background: var(--surface);
+  border: 2px inset var(--outline);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .settings__field input {
   border: 1px solid var(--outline);
   border-radius: 8px;
+}
+
+:root[data-appearance='glossy'] .settings__field input {
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
 }
 
 .settings__hint {
@@ -1392,9 +1609,20 @@ body {
   padding: 6px 8px;
   color: var(--on-surface);
   background: var(--surface);
+  border: 2px inset var(--outline);
+  border-radius: 0;
+  resize: vertical;
+}
+
+:root[data-appearance='modern'] .feedback__description {
   border: 1px solid var(--outline);
   border-radius: 8px;
-  resize: vertical;
+}
+
+:root[data-appearance='glossy'] .feedback__description {
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
 }
 
 /* ---- Ramp step editor ---- */
@@ -1410,10 +1638,21 @@ body {
   align-items: center;
   gap: 6px;
   background: var(--surface);
-  border: 1px solid var(--outline);
-  border-radius: 999px;
+  border: 2px outset var(--outline);
+  border-radius: 0;
   padding: 4px 6px 4px 12px;
   font-variant-numeric: tabular-nums;
+}
+
+:root[data-appearance='glossy'] .steps__chip {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface) 100%, white 12%),
+    var(--surface)
+  );
+  border: 1px solid var(--outline);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%);
 }
 
 .steps__chip-remove {
@@ -1424,8 +1663,12 @@ body {
   border: 0;
   min-width: 32px;
   min-height: 32px;
-  border-radius: 999px;
+  border-radius: 0;
   cursor: pointer;
+}
+
+:root[data-appearance='glossy'] .steps__chip-remove {
+  border-radius: 999px;
 }
 
 .steps__add {
@@ -1441,8 +1684,19 @@ body {
   padding: 6px 8px;
   color: var(--on-surface);
   background: var(--surface);
+  border: 2px inset var(--outline);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .steps__add input {
   border: 1px solid var(--outline);
   border-radius: 8px;
+}
+
+:root[data-appearance='glossy'] .steps__add input {
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
 }
 
 .steps__add-btn {
@@ -1494,8 +1748,19 @@ body {
   padding: 6px 8px;
   color: var(--on-surface);
   background: var(--surface);
+  border: 2px inset var(--outline);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .settings__select {
   border: 1px solid var(--outline);
   border-radius: 8px;
+}
+
+:root[data-appearance='glossy'] .settings__select {
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
 }
 
 .settings__checkbox {

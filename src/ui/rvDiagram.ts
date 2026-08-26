@@ -148,7 +148,7 @@ export function wheelMarkers(x: number, y: number, pair: boolean): SVGRectElemen
       y: String(top),
       width: '28',
       height: String(height),
-      rx: '9',
+      rx: '1',
       class: 'rv-diagram__wheel',
     });
   return pair ? [rect(y - 24, 22), rect(y + 2, 22)] : [rect(y - 24, 48)];
@@ -170,13 +170,15 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
     class: 'rv-diagram__arrow',
   });
 
-  // RV body: rounded outline with a windshield hint at the front.
+  // RV body: a plain rectangular outline — Classic's "unstyled HTML"
+  // square-cornered counterpart to Modern's heavily rounded silhouette
+  // (rx: 28, buildModernDiagram below).
   const body = svgEl('rect', {
     x: '58',
     y: '72',
     width: '124',
     height: '196',
-    rx: '26',
+    rx: '2',
     class: 'rv-diagram__body',
   });
   const windshield = svgEl('path', {

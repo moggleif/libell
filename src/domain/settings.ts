@@ -89,8 +89,10 @@ export interface LevelSettings {
   /**
    * Visual preset, independent of light/dark (#104): 'classic' is today's
    * look; 'modern' is the redesigned surfaces, main view, menu, settings
-   * tabs, calibration and onboarding (#106–#110). Named `appearance`, not
-   * `theme` — that name is already the light/dark axis.
+   * tabs, calibration and onboarding (#106–#110); 'glossy' reuses classic's
+   * structure with a mid-2000s "Web 2.0" skin — gradients, bevels, soft
+   * shadows — layered on purely via CSS (chat-directed restyle). Named
+   * `appearance`, not `theme` — that name is already the light/dark axis.
    */
   appearance: AppearanceSetting;
   /**
@@ -106,7 +108,7 @@ export interface LevelSettings {
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
-export type AppearanceSetting = 'classic' | 'modern';
+export type AppearanceSetting = 'classic' | 'modern' | 'glossy';
 
 /**
  * The multi-source seam (#128, ADR 0014): identifies which
@@ -327,7 +329,7 @@ export function parseSettings(value: unknown): LevelSettings {
     soundGuidance: raw.soundGuidance === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
     appearance:
-      raw.appearance === 'classic' || raw.appearance === 'modern'
+      raw.appearance === 'classic' || raw.appearance === 'modern' || raw.appearance === 'glossy'
         ? raw.appearance
         : DEFAULT_SETTINGS.appearance,
     // Validated the same way every other enum-like field is (#128), so a

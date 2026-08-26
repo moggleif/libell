@@ -298,6 +298,7 @@ export const MESSAGES = {
     'settings.appearance': 'Appearance',
     'appearance.classic': 'Classic',
     'appearance.modern': 'Modern',
+    'appearance.glossy': 'Glossy',
     // Design review, follow-up: switching this now saves and reloads
     // (matching Language above) so the whole app switches immediately,
     // not just this form's colors.
@@ -734,6 +735,7 @@ export const MESSAGES = {
     'settings.appearance': 'Utseende',
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',
+    'appearance.glossy': 'Glansig',
     'settings.appearance.hint':
       'Att byta det här sparar dina ändringar och laddar om Libell så att den nya ' +
       'layouten gäller överallt.',
