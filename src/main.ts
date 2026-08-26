@@ -1,6 +1,9 @@
 import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
 import { setupShareButton } from './ui/share';
+import { shareVehicleSetup, takePendingVehicleSetupCode } from './ui/vehicleShare';
+import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
+import { showToast } from './ui/toast';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
@@ -29,6 +32,11 @@ import {
   type LevelSettings,
   type SoundPrefs,
 } from './domain/settings';
+import {
+  applyVehicleGeometry,
+  decodeVehicleGeometry,
+  pickVehicleGeometry,
+} from './domain/vehicleShare';
 import {
   clearCalibration,
   clearEasyLevelCalibration,
@@ -207,6 +215,12 @@ if (app) {
 
 function bootstrap(root: HTMLElement): void {
   keepScreenAwake();
+
+  // Incoming "share vehicle setup" link (R41, #207): consumed off the URL
+  // immediately (clears the fragment) so a later refresh never re-prompts;
+  // decoded and actually shown further down, once `updateIndicators` and
+  // `maybeRebuildScreen` exist to react to an applied setup.
+  const pendingVehicleSetupCode = takePendingVehicleSetupCode();
 
   let settings: LevelSettings = loadSettings();
   const storedSensor = loadCalibrationInfo();
@@ -539,6 +553,9 @@ function bootstrap(root: HTMLElement): void {
       soundOnLevel: settings.soundOnLevel,
       soundGuidance: settings.soundGuidance,
     }),
+    onShareVehicleSetup: (current: LevelSettings) => {
+      void shareVehicleSetup(pickVehicleGeometry(current));
+    },
   };
 
   // Modern (screen-cleanup follow-up): the gear icon opens the Settings
@@ -1147,7 +1164,32 @@ function bootstrap(root: HTMLElement): void {
     }
   };
 
-  if (!demo && !hasSeenOnboarding()) openOnboarding();
+  // Incoming "share vehicle setup" link (R41, #207): shown instead of the
+  // first-run wizard on this launch when present — malformed/truncated/
+  // future-version links fail closed (a toast, nothing applied) rather
+  // than a partial or guessed-at result (`decodeVehicleGeometry`).
+  const pendingVehicleGeometry =
+    pendingVehicleSetupCode !== null ? decodeVehicleGeometry(pendingVehicleSetupCode) : null;
+  if (pendingVehicleSetupCode !== null && pendingVehicleGeometry === null) {
+    showToast(t('setup.incoming.invalid'));
+  }
+  if (pendingVehicleGeometry !== null) {
+    showIncomingVehicleSetup({
+      geometry: pendingVehicleGeometry,
+      displayUnit: settings.displayUnit,
+      onApply: () => {
+        settings = applyVehicleGeometry(settings, pendingVehicleGeometry);
+        saveSettings(settings);
+        updateIndicators();
+        maybeRebuildScreen();
+      },
+      onDismiss: () => {
+        // Nothing to do — the link is already consumed off the URL.
+      },
+    });
+  } else if (!demo && !hasSeenOnboarding()) {
+    openOnboarding();
+  }
 
   if (demo) {
     showLevelScreen();

@@ -19,6 +19,19 @@ export const MESSAGES = {
     'share.text': 'Level your motorhome with your phone.',
     'share.copied': 'Link copied!',
     'install.hint': 'Tap Share, then "Add to Home Screen".',
+    // "Share vehicle setup" (R41, #207): a link carrying only the vehicle-
+    // geometry fields (never calibration, never UI/behavior preferences —
+    // see domain/vehicleShare.ts) so a family member using the same
+    // vehicle doesn't have to re-measure and retype everything by hand.
+    'share.vehicle.text': "My RV's vehicle setup for Libell — measurements and ramps.",
+    'settings.shareVehicle': 'Share vehicle setup',
+    'setup.incoming.h': 'Incoming vehicle setup',
+    'setup.incoming.intro': 'A family member shared these vehicle measurements with you:',
+    'setup.incoming.reminder':
+      "This does not include any calibration — you'll still need to calibrate on this phone.",
+    'setup.incoming.apply': 'Use these values',
+    'setup.incoming.dismiss': 'Not now',
+    'setup.incoming.invalid': "That vehicle-setup link couldn't be read — nothing was changed.",
 
     'lamp.setup': '⚠ Setup',
     'lamp.setup.title': 'Vehicle settings have never been saved — tap to open Settings',
@@ -525,6 +538,15 @@ export const MESSAGES = {
     'share.text': 'Få husbilen i våg med telefonen.',
     'share.copied': 'Länken kopierad!',
     'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',
+    'share.vehicle.text': 'Mina fordonsmått för Libell — mått och ramper.',
+    'settings.shareVehicle': 'Dela fordonsinställning',
+    'setup.incoming.h': 'Inkommande fordonsinställning',
+    'setup.incoming.intro': 'En familjemedlem har delat de här fordonsmåtten med dig:',
+    'setup.incoming.reminder':
+      'Ingen kalibrering följer med — du behöver fortfarande kalibrera den här telefonen.',
+    'setup.incoming.apply': 'Använd dessa värden',
+    'setup.incoming.dismiss': 'Inte nu',
+    'setup.incoming.invalid': 'Länken för fordonsinställning gick inte att läsa – inget ändrades.',
 
     // Main-screen external-sensor indicator (#129): shown only while an
     // external source (today: EasyLevel) is active — never in phone mode.
