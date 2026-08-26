@@ -1,5 +1,5 @@
 /**
- * Confirmation prompt for an incoming "share vehicle setup" link (R40,
+ * Confirmation prompt for an incoming "share vehicle setup" link (R41,
  * #207): shown once per received link, and only ever applies the geometry
  * it was given after an explicit tap — never automatically, and never
  * touching calibration, EasyLevel pairing, or any UI/behavior preference

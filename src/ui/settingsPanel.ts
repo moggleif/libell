@@ -198,7 +198,7 @@ export interface SettingsFormOptions {
    */
   splitPages?: boolean;
   /**
-   * "Share vehicle setup" (R40, #207): called with the form's current
+   * "Share vehicle setup" (R41, #207): called with the form's current
    * (committed on submit, live otherwise) settings when the button next to
    * the vehicle fields is pressed — the host picks out the shareable
    * geometry (`domain/vehicleShare.ts`) and hands off to the native share
@@ -351,7 +351,7 @@ export function createSettingsForm(
   measureHint.className = 'settings__hint';
   measureHint.textContent = t('settings.measureHint');
 
-  // --- Share vehicle setup (R40, #207): a link carrying only the vehicle-
+  // --- Share vehicle setup (R41, #207): a link carrying only the vehicle-
   // geometry fields on this page — never calibration, never UI/behavior
   // preferences (`domain/vehicleShare.ts`) — for a family member using the
   // same vehicle. Omitted from the onboarding `compact` steps below: there

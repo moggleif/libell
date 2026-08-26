@@ -40,19 +40,19 @@ function makeMenuOptions(): MenuOptions {
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
-    getLastSampleAt: () => null,
-    getRawTilt: () => null,
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
     getEasyLevelStatus: () => null,
+    getEasyLevelDeviceId: () => null,
+    getEasyLevelLastSampleAt: () => null,
+    getEasyLevelRawAccel: () => null,
+    getEasyLevelStatusBytes: () => null,
     getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false }),
   };
 }
 
 function makeOptions(openOnboarding = vi.fn(), hasDoneOnboarding = () => true): InfoPageOptions {
-  // MenuOptions is a superset of DiagnosticsOptions — reused as-is, same
-  // pattern main.ts uses for its one shared options bag.
-  return { diagnostics: makeMenuOptions(), openOnboarding, hasDoneOnboarding };
+  return { openOnboarding, hasDoneOnboarding };
 }
 
 describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
@@ -88,15 +88,10 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     expect(info.isOpen()).toBe(false);
   });
 
-  it('shows four tabs — Help, About, Feedback, Diagnostics, in that order (screen-cleanup follow-up)', () => {
+  it('shows three tabs — Help, About, Feedback, in that order (screen-cleanup follow-up)', () => {
     const info = createInfoPage(makeOptions());
     const tabs = [...info.element.querySelectorAll<HTMLElement>('.settings__tab')];
-    expect(tabs.map((tab) => tab.dataset.tab)).toEqual([
-      'help',
-      'about',
-      'feedback',
-      'diagnostics',
-    ]);
+    expect(tabs.map((tab) => tab.dataset.tab)).toEqual(['help', 'about', 'feedback']);
   });
 
   it('switching tabs shows the matching content and updates the header title', () => {
@@ -118,14 +113,6 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     feedbackTab.click();
     expect(info.element.querySelector('.menu-page__title')?.textContent).toBe(t('menu.feedback'));
     expect(info.element.querySelector('form')).not.toBeNull();
-
-    const diagnosticsTab = info.element.querySelector<HTMLButtonElement>(
-      '[data-tab="diagnostics"]',
-    )!;
-    diagnosticsTab.click();
-    expect(info.element.querySelector('.menu-page__title')?.textContent).toBe(
-      t('menu.diagnostics'),
-    );
   });
 
   it('reopening always lands back on the Help tab, even after leaving on a different one', () => {

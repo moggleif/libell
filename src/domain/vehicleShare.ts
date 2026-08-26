@@ -1,5 +1,5 @@
 /**
- * "Share vehicle setup" (R40, #207): encode/decode the minimal subset of
+ * "Share vehicle setup" (R41, #207): encode/decode the minimal subset of
  * `LevelSettings` that describes the physical vehicle, for a link a family
  * member can open to get the same wheel-raise guidance without re-typing
  * every dimension by hand.

@@ -14,6 +14,12 @@
  * original pass as "undecoded beyond byte 7," they were not — see
  * `parseEasyLevelStatus` below.
  *
+ * Battery and tier-1 temperature truncation (whole units, not fractional)
+ * were added after directly decompiling the official `EasyLevel 5.0.7`
+ * `.xapk` end to end (`y0/C1207a.java`'s `i()` NOTIFY handler) — #116/#123's
+ * earlier passes read the right formulas but missed the `(int)` casts the
+ * app applies before its own clamp.
+ *
  * Deliberate simplification — do not reimplement the box's own filter:
  * the box's firmware runs its own complementary/low-pass filter on top of
  * the raw accel+gyro values to produce its own roll/pitch. Libell does
@@ -79,8 +85,12 @@ export interface EasyLevelStatus {
    * formula applies, and how many calibration int16s (if any) follow. */
   firmwareTier: number;
   /** Bytes 2–3, little-endian uint16 "rawMv" run through
-   * `clamp(rawMv × 0.1 − 200, 0, 100)` — a clean 2.0–3.0 V window matching
-   * the CR2450 coin cell the EasyLevel manual specifies. */
+   * `clamp(trunc(rawMv × 0.1 − 200), 0, 100)` — a clean 2.0–3.0 V window
+   * matching the CR2450 coin cell the EasyLevel manual specifies. Truncated
+   * to a whole percent: the official app's own `(int)` cast does this
+   * before its clamp, confirmed by decompiling `EasyLevel 5.0.7`'s
+   * `y0/C1207a.java` `i()` handler directly (not just a bytecode fragment
+   * read, as #116's original pass was). */
   batteryPercent: number;
   /** Firmware-tier-dependent formula (see `parseEasyLevelStatus`). */
   temperatureCelsius: number;
@@ -119,17 +129,21 @@ export function parseEasyLevelStatus(data: PacketBytes): EasyLevelStatus | null 
   const byte7 = view.getUint8(7);
   const firmwareTier = firmwareTierFromByte(byte7);
 
+  // The official app truncates toward zero (a Java `(int)` cast) before
+  // clamping — battery is always a whole percent, never fractional.
   const rawMv = view.getUint16(2, true);
-  const batteryPercent = clamp(rawMv * 0.1 - 200, 0, 100);
+  const batteryPercent = clamp(Math.trunc(rawMv * 0.1 - 200), 0, 100);
 
   // Firmware tier 1 boxes pack temperature into byte 0 alone (signed,
   // 1/16 °C per unit); tier 2+ upgraded to a full signed int16 LE across
   // bytes 0–1 at 1/100 °C per unit. Branching on byte7 here, not just
   // implementing the newer formula, matters: an old-firmware box would
-  // otherwise report a wrong temperature.
+  // otherwise report a wrong temperature. Tier 1 additionally truncates to
+  // a whole degree (another `(int)` cast in the official app, applied only
+  // on this branch — tier 2+ keeps the fractional 1/100 °C precision).
   const temperatureCelsius =
     byte7 < 32
-      ? clamp(view.getInt8(0) / 16 + 25, -40, 80)
+      ? clamp(Math.trunc(view.getInt8(0) / 16 + 25), -40, 80)
       : clamp(view.getInt16(0, true) / 100, -40, 80);
 
   return { firmwareTier, batteryPercent, temperatureCelsius };

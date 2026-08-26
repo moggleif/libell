@@ -1254,6 +1254,64 @@ body {
   margin: 0;
 }
 
+/* The sensor row's status text doubles as a button opening the deeper
+ * status page — reset button chrome so it still reads as plain status
+ * text, plus a chevron affordance so it's clear it's tappable. */
+.sensor-row__status-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sensor-row__chevron {
+  color: var(--on-surface-muted);
+  font-size: 1.1rem;
+}
+
+/* Debug disclosure on the sensor status page — same native <details>
+ * pattern as the settings Advanced disclosure (#157): closed by default,
+ * no JS needed to track open/closed state. */
+.sensor-status__debug-summary {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
+  list-style: none;
+}
+
+.sensor-status__debug-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sensor-status__debug-summary::before {
+  content: '›';
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 0.15s ease;
+}
+
+.sensor-status__debug[open] > .sensor-status__debug-summary::before {
+  transform: rotate(90deg);
+}
+
+/* Opened from within the (still-open) External sensor page — one z-index
+ * above the base .menu-page so it reliably paints on top, regardless of
+ * DOM append order. */
+.sensor-status-page {
+  z-index: 13;
+}
+
 .menu__action--inline {
   display: inline-block;
   flex-shrink: 0;
@@ -2109,7 +2167,7 @@ body {
   font-weight: 600;
 }
 
-/* Incoming "share vehicle setup" link (R40, #207): a one-shot confirmation
+/* Incoming "share vehicle setup" link (R41, #207): a one-shot confirmation
    shown at most once per received link, above everything else including
    the toast (z-index 40) since a malformed-link toast can fire right
    alongside it. Buttons reuse `.menu__action`/`.menu__action--secondary`

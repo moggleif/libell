@@ -40,11 +40,13 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
-    getLastSampleAt: () => null,
-    getRawTilt: () => null,
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
     getEasyLevelStatus: () => null,
+    getEasyLevelDeviceId: () => null,
+    getEasyLevelLastSampleAt: () => null,
+    getEasyLevelRawAccel: () => null,
+    getEasyLevelStatusBytes: () => null,
     getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false }),
     ...overrides,
   };
@@ -76,13 +78,7 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     // Diagnostics, the introduction relaunch, External sensor, Feedback
     // and About are no longer here at all — moved to infoMenu.ts /
     // sensorPage.ts, both reached directly from the bottom bar / top bar.
-    for (const key of [
-      'menu.diagnostics',
-      'menu.intro',
-      'menu.sensorSource',
-      'menu.feedback',
-      'menu.about',
-    ] as const) {
+    for (const key of ['menu.intro', 'menu.sensorSource', 'menu.feedback', 'menu.about'] as const) {
       expect(menu.element.textContent).not.toContain(t(key));
     }
   });

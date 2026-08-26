@@ -1,5 +1,5 @@
 /**
- * "Share vehicle setup" (R40, #207): builds a link carrying only the
+ * "Share vehicle setup" (R41, #207): builds a link carrying only the
  * vehicle-geometry fields (`domain/vehicleShare.ts` — never calibration,
  * never UI/behavior preferences) and hands it to the same native share
  * sheet / clipboard fallback the plain app-link share button already uses.

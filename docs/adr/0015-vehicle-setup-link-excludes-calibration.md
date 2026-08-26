@@ -86,7 +86,7 @@ is about correctness (never silently apply wrong data) rather than confidentiali
   never re-prompts.
 - `src/ui/incomingVehicleSetup.ts` previews the decoded geometry and requires an
   explicit tap before `applyVehicleGeometry` ever runs — never automatic.
-- `docs/02-REQUIREMENTS.md` gains R40 for the user-visible behavior; this ADR covers
+- `docs/02-REQUIREMENTS.md` gains R41 for the user-visible behavior; this ADR covers
   only the payload-shape and fail-closed decisions behind it.
 - Extending `VehicleGeometry` to cover a new "this is part of the vehicle" field later
   is a one-line addition to the `Pick` (plus a schema-version bump if the change isn't
