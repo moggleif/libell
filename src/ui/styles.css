@@ -423,10 +423,10 @@ body {
  * active. Deliberately neutral (on-surface / outline), not the amber
  * warning lamp treatment above: an active target is a deliberate choice,
  * never something wrong. */
-/* External-sensor status indicator (#129): a small neutral dot, shown
- * only while an external source (EasyLevel) is active — deliberately no
- * text/numbers on the main screen (detail lives in the menu page). The
- * dot itself carries the state: muted/neutral while connected, the same
+/* External-sensor status indicator (#129): a small electronics-chip icon,
+ * shown only while an external source (EasyLevel) is active — deliberately
+ * no text/numbers on the main screen (detail lives in the menu page). The
+ * icon itself carries the state: muted/neutral while connected, the same
  * --warning tone the dashboard lamps use once the connection is lost. */
 .sensor-status {
   display: inline-flex;
@@ -440,23 +440,25 @@ body {
   cursor: pointer;
 }
 
-.sensor-status__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--on-surface-muted);
+.sensor-status__icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--on-surface-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 /* Idle (screen-cleanup follow-up: visible whenever Web Bluetooth exists,
- * not just once connected) stays the plain neutral dot above — connected
+ * not just once connected) stays the plain neutral icon above — connected
  * gets its own distinct color so the two are never mistaken for each
  * other now that both can show at once. */
-.sensor-status--connected .sensor-status__dot {
-  background: var(--level);
+.sensor-status--connected .sensor-status__icon {
+  stroke: var(--level);
 }
 
-.sensor-status--disconnected .sensor-status__dot {
-  background: var(--warning);
+.sensor-status--disconnected .sensor-status__icon {
+  stroke: var(--warning);
 }
 
 .target-badge {
@@ -1173,7 +1175,7 @@ body {
 }
 
 /* Low-battery warning row (#123) — the same --warning tone the dashboard
- * lamps and the disconnected sensor-status dot already use. */
+ * lamps and the disconnected sensor-status icon already use. */
 .menu__text--warning {
   color: var(--warning);
   font-weight: 600;
@@ -2142,7 +2144,7 @@ body {
    safety-critical, third state distinct from the wrong-pose overlay above
    (never confuse "no trustworthy data at all" with "flat but rotated").
    Same full-overlay layout, but the --warning tint (the same tone the
-   dashboard lamps and the disconnected sensor-status dot already use for
+   dashboard lamps and the disconnected sensor-status icon already use for
    "something needs attention") keeps the two from reading the same. */
 .stale-overlay {
   position: absolute;
