@@ -1563,7 +1563,7 @@ body {
   font-size: 0.9rem;
 }
 
-.settings__field input {
+.settings__field input:not(.settings__checkbox) {
   font: inherit;
   font-variant-numeric: tabular-nums;
   width: 6.5em;
@@ -1574,12 +1574,12 @@ body {
   border-radius: 0;
 }
 
-:root[data-appearance='modern'] .settings__field input {
+:root[data-appearance='modern'] .settings__field input:not(.settings__checkbox) {
   border: 1px solid var(--outline);
   border-radius: 8px;
 }
 
-:root[data-appearance='glossy'] .settings__field input {
+:root[data-appearance='glossy'] .settings__field input:not(.settings__checkbox) {
   border: 1px solid var(--outline);
   border-radius: 8px;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
