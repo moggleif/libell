@@ -14,8 +14,10 @@
  *
  * Protocol notes (from #116's reverse-engineering — see that issue for
  * the full writeup):
- * - Service `faf52c20-...`; `faf52c21-...` (NOTIFY) carries the raw
- *   accel/gyro payload parsed by `easyLevelProtocol.ts`.
+ * - GATT service `faf52c20-...`, discovered only after connecting —
+ *   `EASYLEVEL_ADVERTISED_SERVICE_UUID`'s doc comment below explains why
+ *   the *scan* filter uses a different UUID. `faf52c21-...` (NOTIFY)
+ *   carries the raw accel/gyro payload parsed by `easyLevelProtocol.ts`.
  * - `faf52c22-...` (NOTIFY/READ) carries firmware version, battery,
  *   temperature and calibration bytes — fully decoded as of #123 (see
  *   `easyLevelProtocol.ts`'s `parseEasyLevelStatus`). Still subscribed
@@ -47,6 +49,25 @@ import { parseAccelPacket, parseEasyLevelStatus, type EasyLevelStatus } from './
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_STATUS_CHARACTERISTIC_UUID = 'faf52c22-5078-11e9-b475-0800200c9a66';
+/**
+ * The service UUID modern boxes actually put in their BLE advertisement —
+ * `EASYLEVEL_SERVICE_UUID` above is only the GATT service discovered after
+ * connecting, never advertised itself. Confirmed by decompiling the
+ * official `EasyLevel 5.0.7` app's own scan filter
+ * (`ScanFilter.Builder().setServiceUuid(...)` in its `MainActivity`/
+ * `BleScanner`, `y0/C1213g.java`), not just #116's original protocol pass —
+ * that pass never had a physical box to verify the *scanning* half against
+ * (only the GATT/payload half), and #116 explicitly flagged this as the
+ * one thing left to confirm before trusting the scan filter.
+ */
+export const EASYLEVEL_ADVERTISED_SERVICE_UUID = '669a0c20-0008-a7ba-e311-0685c0f7978a';
+/**
+ * Name prefix of boxes too old to advertise `EASYLEVEL_ADVERTISED_SERVICE_UUID`
+ * — the official app's own fallback for "legacy sensor" boxes (same source
+ * as above: scans with no service filter at all, then accepts only devices
+ * whose advertised name starts with this).
+ */
+export const EASYLEVEL_DEVICE_NAME_PREFIX = 'CARATI';
 
 /** Web Bluetooth is Chrome/Android only — never Safari/iOS. */
 export function isWebBluetoothSupported(): boolean {
@@ -87,7 +108,17 @@ export interface EasyLevelTransport {
   reconnect(deviceId: string, onDisconnect: () => void): Promise<EasyLevelConnection | null>;
 }
 
-/** The real Web Bluetooth transport. Scans by service UUID (#116: more reliable than the `CARATI...` name prefix). */
+/**
+ * The real Web Bluetooth transport. `requestDevice()`'s picker matches a
+ * device against ANY of its filters: `EASYLEVEL_ADVERTISED_SERVICE_UUID`
+ * for modern boxes (the common case — see that constant's doc comment for
+ * why this is `669a0c20-...`, not `EASYLEVEL_SERVICE_UUID`), plus the
+ * `CARATI...` name prefix for older boxes that don't advertise a service
+ * UUID at all. `EASYLEVEL_SERVICE_UUID` itself is only ever discovered
+ * post-connect (`getPrimaryService()` below), so it must be listed in
+ * `optionalServices` — Web Bluetooth blocks fetching any GATT service that
+ * is neither in `filters` nor `optionalServices`.
+ */
 export function createWebBluetoothTransport(): EasyLevelTransport {
   async function connectToDevice(
     device: BluetoothDevice,
@@ -120,7 +151,11 @@ export function createWebBluetoothTransport(): EasyLevelTransport {
       // `navigator.bluetooth` exists (`start()` below) — the assertion
       // reflects that contract rather than re-checking it here.
       const device = await navigator.bluetooth!.requestDevice({
-        filters: [{ services: [EASYLEVEL_SERVICE_UUID] }],
+        filters: [
+          { services: [EASYLEVEL_ADVERTISED_SERVICE_UUID] },
+          { namePrefix: EASYLEVEL_DEVICE_NAME_PREFIX },
+        ],
+        optionalServices: [EASYLEVEL_SERVICE_UUID],
       });
       return connectToDevice(device, onDisconnect);
     },

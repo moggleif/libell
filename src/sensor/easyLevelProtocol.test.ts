@@ -104,7 +104,7 @@ describe('parseEasyLevelStatus (#123)', () => {
     expect(parseEasyLevelStatus(long)).toEqual(parseEasyLevelStatus(short));
   });
 
-  describe('battery: clamp(rawMv × 0.1 − 200, 0, 100)', () => {
+  describe('battery: clamp(trunc(rawMv × 0.1 − 200), 0, 100)', () => {
     it('maps the documented 2.0–3.0 V window linearly', () => {
       expect(parseEasyLevelStatus(statusBytes(0, 0, 2000, 0))?.batteryPercent).toBeCloseTo(0);
       expect(parseEasyLevelStatus(statusBytes(0, 0, 2500, 0))?.batteryPercent).toBeCloseTo(50);
@@ -118,16 +118,33 @@ describe('parseEasyLevelStatus (#123)', () => {
     it('clamps a very high rawMv to 100%, never over', () => {
       expect(parseEasyLevelStatus(statusBytes(0, 0, 65535, 0))?.batteryPercent).toBe(100);
     });
+
+    it("truncates toward zero, never rounds — matches the official app's own (int) cast", () => {
+      // rawMv = 2604 -> 2604 * 0.1 - 200 = 60.4 -> truncated to 60, not
+      // rounded to 60.4 or 60. A naive `Math.round` would also give 60
+      // here, so a value whose fraction rounds up is needed to actually
+      // distinguish truncation from rounding.
+      expect(parseEasyLevelStatus(statusBytes(0, 0, 2609, 0))?.batteryPercent).toBe(60);
+    });
   });
 
   describe('temperature: firmware-tier-dependent formula', () => {
-    it('firmware tier 1 (byte7 < 32): clamp(byte[0] / 16 + 25, -40, 80), byte[0] signed', () => {
+    it('firmware tier 1 (byte7 < 32): clamp(trunc(byte[0] / 16 + 25), -40, 80), byte[0] signed', () => {
       expect(parseEasyLevelStatus(statusBytes(0, 0, 2500, 0))?.temperatureCelsius).toBeCloseTo(25);
       expect(parseEasyLevelStatus(statusBytes(16, 0, 2500, 0))?.temperatureCelsius).toBeCloseTo(26);
       // byte[0] = -16 as an unsigned byte is 240.
       expect(parseEasyLevelStatus(statusBytes(240, 0, 2500, 31))?.temperatureCelsius).toBeCloseTo(
         24,
       );
+    });
+
+    it('truncates tier-1 fractional results toward zero, never rounds', () => {
+      // byte[0] = 10 -> 10 / 16 + 25 = 25.625 -> truncated to 25, not
+      // rounded to 26.
+      expect(parseEasyLevelStatus(statusBytes(10, 0, 2500, 0))?.temperatureCelsius).toBe(25);
+      // byte[0] = -10 (unsigned 246) -> -10 / 16 + 25 = 24.375 -> truncated
+      // to 24.
+      expect(parseEasyLevelStatus(statusBytes(246, 0, 2500, 0))?.temperatureCelsius).toBe(24);
     });
 
     it('firmware tier 2+ (byte7 >= 32): clamp(int16LE(bytes[0..1]) / 100, -40, 80)', () => {

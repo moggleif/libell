@@ -8,6 +8,7 @@
 
 interface BluetoothLEScanFilter {
   services?: string[];
+  namePrefix?: string;
 }
 
 interface RequestDeviceOptions {

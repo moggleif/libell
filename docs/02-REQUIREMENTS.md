@@ -641,12 +641,15 @@ URL and must keep working with no signal.
 - **Given** a phone with Chrome/Android and Web Bluetooth support
 - **When** the user opens the External sensor page and taps "Connect
   EasyLevel sensor"
-- **Then** the app pairs with the box over its `faf52c20-...` GATT service and the
-  wheel/bubble UI updates from the box's readings exactly as it does from the phone's
-  own sensor — same math, same diagram, same tolerance (ADR 0014's seam:
-  `OrientationSensor.getGravity()` returns one shape regardless of source). The phone's
-  own sensor is never replaced automatically; connecting is always an explicit,
-  reversible choice.
+- **Then** the app finds the box by scanning for its advertised `669a0c20-...` service
+  UUID (falling back to any device named `CARATI...`, for older boxes that don't
+  advertise a service UUID at all — both confirmed directly from the official
+  EasyLevel 5.0.7 app's own scan filter, not just inferred), pairs over its
+  `faf52c20-...` GATT service once connected, and the wheel/bubble UI updates from the
+  box's readings exactly as it does from the phone's own sensor — same math, same
+  diagram, same tolerance (ADR 0014's seam: `OrientationSensor.getGravity()` returns
+  one shape regardless of source). The phone's own sensor is never replaced
+  automatically; connecting is always an explicit, reversible choice.
 - **Given** a browser without Web Bluetooth (e.g. Safari/iOS, most desktop browsers)
 - **When** the user opens the menu
 - **Then** the "External sensor" page is not shown at all — never a silent failure or a
@@ -688,10 +691,13 @@ URL and must keep working with no signal.
 - **Given** the box's `faf52c22-...` status payload (#123, decoded from the official
   app's decompiled bytecode)
 - **Then** bytes 2–3 (little-endian uint16 `rawMv`) give battery via
-  `clamp(rawMv × 0.1 − 200, 0, 100)`; byte 7 gives the firmware tier (thresholds at
-  32/48/64/80/96/112 → tiers 1–7) and selects the temperature formula — tier 1
-  (byte7 < 32): `clamp(byte[0] / 16 + 25, −40, 80)`; tier 2+ (byte7 ≥ 32):
-  `clamp(int16LE(bytes[0..1]) / 100, −40, 80)`. Bytes 8–19 (six little-endian int16
+  `clamp(trunc(rawMv × 0.1 − 200), 0, 100)` — a whole percent, never fractional,
+  truncated the same way the official app's own `(int)` cast is; byte 7 gives the
+  firmware tier (thresholds at 32/48/64/80/96/112 → tiers 1–7) and selects the
+  temperature formula — tier 1 (byte7 < 32): `clamp(trunc(byte[0] / 16 + 25), −40, 80)`
+  (also truncated to a whole degree); tier 2+ (byte7 ≥ 32):
+  `clamp(int16LE(bytes[0..1]) / 100, −40, 80)` (kept fractional — the official app does
+  not truncate this branch). Bytes 8–19 (six little-endian int16
   zero/calibration values, tier ≥ 3 only) are unrelated to battery/temperature and
   were already read and used in the leveling math since #116. This characteristic is
   still read best-effort and never required for leveling to work.
