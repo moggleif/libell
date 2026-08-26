@@ -28,6 +28,8 @@ function makeOptions(overrides: Partial<Options> = {}): Options {
     getEasyLevelStatusBytes: () => null,
     getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
     setEasyLevelConnectDelay: () => {},
+    getEasyLevelMounting: () => 'standard',
+    setEasyLevelMounting: () => {},
     ...overrides,
   };
 }

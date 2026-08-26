@@ -684,20 +684,46 @@ URL and must keep working with no signal.
 - **Given** the box's `faf52c21-...` notification payload (6× signed int16,
   little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
 - **Then** the accelerometer triplet is used, bias-corrected against the most recent
-  `faf52c22-...` calibration (see below, #215) when one is available and mapped into a
-  `GravityVector` at whatever scale the box reports it — deliberately not
-  reimplementing the box's own onboard complementary/low-pass filter, since the app's
-  existing `atan2`-based roll/pitch math only depends on the ratio between the
-  (now bias-corrected) axes, not their absolute unit (see
-  `src/sensor/easyLevelProtocol.ts`). #215 traced the official app's own equivalent
-  processing chain end to end (`faf52c21-...`'s NOTIFY handler through to its
-  displayed roll/pitch) and confirmed this axis mapping — accelX drives the app's own
-  Left/Right (roll) display, accelY drives Front/Back (pitch), matching Libell's
-  existing convention — for the app's default sensor-mounting setting; see that
-  module's doc comment for what #215 could and could not establish from app code
-  alone (notably: the box's absolute polarity, and which of two 90°-rotated physical
-  mountings a given installed box uses, are both hardware/installation facts no app
-  decompilation can recover).
+  `faf52c22-...` calibration (see below, #215) — or, on legacy firmware (tier < 3, see
+  below, #217), against a bias embedded directly in this same packet at bytes 12–17 —
+  when one is available, then run through the user's chosen mounting-orientation
+  transform (see below, #217) and mapped into a `GravityVector` at whatever scale the
+  box reports it — deliberately not reimplementing the box's own onboard
+  complementary/low-pass filter, since the app's existing `atan2`-based roll/pitch
+  math only depends on the ratio between the (now bias-corrected) axes, not their
+  absolute unit (see `src/sensor/easyLevelProtocol.ts`). #215 traced the official
+  app's own equivalent processing chain end to end (`faf52c21-...`'s NOTIFY handler
+  through to its displayed roll/pitch) and confirmed this axis mapping — accelX
+  drives the app's own Left/Right (roll) display, accelY drives Front/Back (pitch),
+  matching Libell's existing convention — for the app's default sensor-mounting
+  setting; see that module's doc comment for what #215/#217 could and could not
+  establish from app code alone (notably: the box's absolute polarity is a hardware
+  fact no app decompilation can recover — see R43 below for the one thing #217 _did_
+  resolve here, which of the two mountings a given box uses).
+- **Given** firmware whose last-known status report is tier < 3 (byte7 < 48 —
+  including the very first accel packet after connecting, before any status
+  notification has arrived at all, since the app itself defaults to assuming legacy
+  firmware until told otherwise)
+- **Then** (#217) the accel packet is 18 bytes long, not 6 or 12, and bytes 12–17 are
+  decoded the same way as `faf52c22-...`'s bytes 8–19 above — three signed int16 LE
+  accelX/Y/Z bias values, subtracted additively, taking priority over any
+  `faf52c22-...`-sourced calibration (which this firmware tier never provides
+  anyway). Traced directly from the same decompiled `faf52c21-...` handler as the
+  tier-≥-3 case; `parseAccelPacket` recognizes this format purely from payload length
+  (≥ 18 bytes), needing no separate firmware-tier state of its own.
+- **Given** the EasyLevel box connects or reconnects, by any path
+- **Then** (#217) `faf52c22-...` (status) is subscribed before `faf52c21-...`
+  (accel) — matching the official app's own post-connect setup order, traced
+  directly from its decompiled bytecode — and accel readings are withheld from the
+  main screen (never shown as a leveling value known to be missing available
+  calibration) until either a status notification has been observed, the box's
+  firmware has no status characteristic at all (best-effort subscribe fails — nothing
+  to wait for), or a short bounded grace window elapses with no status notification
+  arriving. That window is Libell's own defensive choice, not derived from the
+  official app (which has no equivalent wait, only the subscribe ordering above) —
+  see `sensorFallback.ts`'s `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`. Firmware that
+  genuinely has no `faf52c22-...` characteristic is never held up by this: it starts
+  reporting as soon as the first accel sample arrives, exactly as before #217.
 - **Given** the box's `faf52c22-...` status payload (#123/#215, decoded from the
   official app's decompiled bytecode)
 - **Then** bytes 2–3 (little-endian uint16 `rawMv`) give battery via
@@ -1083,3 +1109,40 @@ off-by-default, adjustable connect delay reachable from the app's own UI.
   freshly opened, never on every refresh frame — refreshing them continuously would
   fight a user mid-edit (a keystroke into the ms field reset before the next one
   lands).
+
+## R43 — EasyLevel box: mounting-orientation setting (#217)
+
+The official EasyLevel app supports the box mounted two ways, 90° apart
+(`"sensor_Placing"` 1/2), and transforms its readings accordingly — traced in full by
+#215/#217 (see `easyLevelProtocol.ts`'s module doc comment). Libell had only ever
+implemented the default orientation; a box mounted the other way would connect and
+produce plausible-looking data while Libell computed the wrong wheel to raise.
+
+- **Given** the External sensor page, once EasyLevel is (or was) the active source
+  (same visibility rule as R34's installation offset, which this setting sits
+  alongside)
+- **Then** it shows a mounting-orientation choice — "Standard" and "Rotated 90°" —
+  described without the official app's own `"sensor_Placing"` terminology, plus a
+  small schematic diagram (a box-and-arrow icon, not a literal redraw of the official
+  app's own illustrations) that visually reflects the current selection, updating
+  live as the choice changes.
+- **Given** a box physically mounted the second way
+- **When** the user selects "Rotated 90°"
+- **Then** the exact 90° rotation the official app's own `sensor_Placing: 2` applies —
+  derived from its decompiled `LO0/e;->k()` placement branches, `(x, y) → (-y, x)`,
+  `z` untouched — is applied to every subsequent EasyLevel reading, taking effect on
+  the very next accel sample with no reconnect needed (the same live-settings-read
+  pattern R42's connect delay already uses).
+- **Given** "Standard" (the default, matching the official app's own default
+  `sensor_Placing: 1`)
+- **Then** behavior is byte-for-byte identical to every EasyLevel release before this
+  requirement — no transform applied.
+- **Given** the phone's own sensor, or `?demo`
+- **Then** this setting is never read at all — changing it cannot affect any other
+  `OrientationSensor` (ADR 0014's seam stays intact).
+- **Given** the choice has been made
+- **Then** it persists across closing and reopening the app, like every other stored
+  setting (`LevelSettings.easyLevelMounting`).
+- **Given** a corrupt or future-version stored value
+- **Then** it falls back to "Standard", the same validate-on-read discipline every
+  other enum-like setting (`sensorSource`, `appearance`, ...) already follows.

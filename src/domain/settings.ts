@@ -137,6 +137,19 @@ export interface LevelSettings {
    * devices that shared BLE-manager class might also handle.
    */
   easyLevelConnectDelayMs: number;
+  /**
+   * Which of the two physical orientations the EasyLevel box is mounted in
+   * (#217) — mirrors the official app's own `"sensor_Placing"` setting
+   * (see `easyLevelProtocol.ts`'s `EasyLevelMounting`/
+   * `applyEasyLevelMounting`), exposed as a normal settings-page choice
+   * rather than a debug-only one: unlike `easyLevelConnectDelayMs`, this
+   * is an ordinary physical-installation fact any user with the box
+   * mounted the second way needs, not a hardware-compatibility experiment.
+   * `'standard'` (the official app's own default) never changes any
+   * reading — the phone sensor and every other `OrientationSensor` never
+   * read this field at all.
+   */
+  easyLevelMounting: EasyLevelMounting;
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
@@ -153,6 +166,18 @@ export type AppearanceSetting = 'classic' | 'modern' | 'glossy';
 export type SensorSource = 'phone' | 'easylevel';
 
 export const SENSOR_SOURCES: readonly SensorSource[] = ['phone', 'easylevel'];
+
+/**
+ * The two physical mounting orientations the official EasyLevel app
+ * supports (`"sensor_Placing"` 1/2, #217) — the same physical box rotated
+ * 90°. Defined here, not in `sensor/easyLevelProtocol.ts` (which applies
+ * the transform this selects), so `domain/` stays the one place every
+ * settings-shaped type lives and `sensor/` depends on `domain/`, never the
+ * reverse (ADR 0002). `'standard'` is the official app's own default.
+ */
+export type EasyLevelMounting = 'standard' | 'rotated90';
+
+export const EASYLEVEL_MOUNTINGS: readonly EasyLevelMounting[] = ['standard', 'rotated90'];
 
 export type VehicleType = 'motorhome' | 'caravan';
 
@@ -228,6 +253,9 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   // branch that's actually relevant here. Not used at all while
   // `easyLevelConnectDelayEnabled` is false.
   easyLevelConnectDelayMs: 300,
+  // Matches the official app's own default `sensor_Placing` (#217) — most
+  // boxes are never touched by this setting at all.
+  easyLevelMounting: 'standard',
 };
 
 /**
@@ -399,6 +427,12 @@ export function parseSettings(value: unknown): LevelSettings {
       MAX_EASYLEVEL_CONNECT_DELAY_MS,
       nonNegativeNumber(raw.easyLevelConnectDelayMs, DEFAULT_SETTINGS.easyLevelConnectDelayMs),
     ),
+    // Validated the same enum-list way as sensorSource above (#217): a
+    // corrupt or future-version value falls back to the official app's own
+    // default rather than breaking startup.
+    easyLevelMounting: EASYLEVEL_MOUNTINGS.includes(raw.easyLevelMounting as EasyLevelMounting)
+      ? (raw.easyLevelMounting as EasyLevelMounting)
+      : DEFAULT_SETTINGS.easyLevelMounting,
   };
 }
 

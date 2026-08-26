@@ -17,6 +17,8 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => '',
     clearInstallCalibration: () => {},
+    getEasyLevelMounting: () => 'standard',
+    setEasyLevelMounting: () => {},
     ...overrides,
   };
 }
@@ -356,5 +358,56 @@ describe('createSensorSourceSection installation calibration (#131)', () => {
       const section = createSensorSourceSection(makeOptions());
       expect(statusButton(section.element).tagName).toBe('BUTTON');
     });
+  });
+});
+
+describe('createSensorSourceSection mounting orientation (#217)', () => {
+  function mountingSelect(root: HTMLElement): HTMLSelectElement {
+    const select = root.querySelector('select');
+    if (!select) throw new Error('mounting select not found');
+    return select;
+  }
+
+  it('hides the mounting picker (folded into the installation block) while the phone is the active source', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
+    const heading = [...section.element.querySelectorAll('h3')].find(
+      (h) => h.textContent === 'Sensor mounting',
+    );
+    expect(heading?.closest('[hidden]')).not.toBeNull();
+  });
+
+  it('reflects the stored mounting orientation once EasyLevel is active', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getEasyLevelMounting: () => 'rotated90' }),
+    );
+    expect(mountingSelect(section.element).value).toBe('rotated90');
+  });
+
+  it('calls setEasyLevelMounting() when the selection changes', () => {
+    const setEasyLevelMounting = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', setEasyLevelMounting }),
+    );
+    const select = mountingSelect(section.element);
+    select.value = 'rotated90';
+    select.dispatchEvent(new Event('change'));
+    expect(setEasyLevelMounting).toHaveBeenCalledWith('rotated90');
+  });
+
+  it('refresh() re-reads the stored orientation (changed elsewhere, e.g. another open page)', () => {
+    let mounting: 'standard' | 'rotated90' = 'standard';
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getEasyLevelMounting: () => mounting }),
+    );
+    expect(mountingSelect(section.element).value).toBe('standard');
+    mounting = 'rotated90';
+    section.refresh();
+    expect(mountingSelect(section.element).value).toBe('rotated90');
+  });
+
+  it('offers exactly the two supported orientations, both official-app-jargon-free', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
+    const labels = [...mountingSelect(section.element).options].map((o) => o.textContent);
+    expect(labels).toEqual(['Standard', 'Rotated 90°']);
   });
 });

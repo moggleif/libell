@@ -143,6 +143,17 @@ export const MESSAGES = {
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
     'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
 
+    // Mounting orientation (#217): the box can be physically mounted two
+    // ways, 90° apart — mirrors the official EasyLevel app's own setting,
+    // described here without that app's own "sensor_Placing" terminology.
+    'sensorSource.mounting.h': 'Sensor mounting',
+    'sensorSource.mounting.intro':
+      'The sensor box can be mounted two ways, a quarter turn apart. Pick whichever ' +
+      'matches how yours is installed — if Libell ever suggests raising the wrong ' +
+      'side, or shows front/back and left/right swapped, try the other option.',
+    'sensorSource.mounting.standard': 'Standard',
+    'sensorSource.mounting.rotated90': 'Rotated 90°',
+
     // Sensor status page: reached by tapping the sensor row on the
     // External sensor page. `reading` is the same roll/pitch the main
     // screen already computes, shown here too so a user checking the box
@@ -633,6 +644,19 @@ export const MESSAGES = {
     'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
     'sensorSource.install.status.none':
       'Inget installationsoffset — den råa avläsningen räknas som plan.',
+
+    // Monteringsriktning (#217): sensorboxen kan monteras på två sätt, ett
+    // kvarts varv från varandra — motsvarar den officiella EasyLevel-
+    // appens egen inställning, beskrivet här utan appens "sensor_Placing"-
+    // terminologi.
+    'sensorSource.mounting.h': 'Sensormontering',
+    'sensorSource.mounting.intro':
+      'Sensorboxen kan monteras på två sätt, ett kvarts varv från varandra. Välj det ' +
+      'som stämmer med hur din är monterad — om Libell någon gång föreslår att fel ' +
+      'sida ska höjas, eller visar fram/bak och vänster/höger omkastat, prova det ' +
+      'andra alternativet.',
+    'sensorSource.mounting.standard': 'Standard',
+    'sensorSource.mounting.rotated90': 'Vriden 90°',
 
     'sensorStatus.title': 'Sensorstatus',
     'sensorStatus.reading': 'Mätvärde: {value}',

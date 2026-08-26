@@ -30,6 +30,7 @@ import {
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
   toggleMute,
   type Calibration,
+  type EasyLevelMounting,
   type LevelSettings,
   type SoundPrefs,
 } from './domain/settings';
@@ -300,10 +301,33 @@ function bootstrap(root: HTMLElement): void {
     );
   }
 
+  /**
+   * Mounting orientation (#217): read live on every accel sample, never
+   * cached — same "settings read fresh, no reconnect needed" pattern as
+   * `easyLevelTransport()`'s connect delay above. Passed straight into
+   * `createEasyLevelSensor()` at both its construction sites below.
+   */
+  function currentEasyLevelMounting(): EasyLevelMounting {
+    return settings.easyLevelMounting;
+  }
+
   /** Persist which source is active (#130) — read back on the next app
    * open to decide whether a silent reconnect is even worth attempting. */
   function rememberSensorSource(source: LevelSettings['sensorSource']): void {
     settings = { ...settings, sensorSource: source };
+    saveSettings(settings);
+  }
+
+  /**
+   * Mounting orientation (#217), set from the External sensor page —
+   * an ordinary persisted setting (unlike `setEasyLevelConnectDelay`
+   * below, this is not a debug-only field), but set directly here rather
+   * than through the Settings page's own Save/Undo/Reset flow, matching
+   * how the install-offset calibration right next to it on that same page
+   * already behaves.
+   */
+  function setEasyLevelMounting(mounting: EasyLevelMounting): void {
+    settings = { ...settings, easyLevelMounting: mounting };
     saveSettings(settings);
   }
 
@@ -332,7 +356,7 @@ function bootstrap(root: HTMLElement): void {
   /** Menu action: connect (or reconnect) the EasyLevel box. Must run
    * synchronously inside the button's own click handler. */
   async function connectEasyLevelNow(): Promise<SensorState> {
-    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport());
+    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport(), currentEasyLevelMounting);
     const state = await easyLevelSensor.start();
     if (state === 'granted') {
       sensor = easyLevelSensor;
@@ -458,7 +482,7 @@ function bootstrap(root: HTMLElement): void {
     if (settings.sensorSource !== 'easylevel') return false;
     const deviceId = loadRememberedEasyLevelDeviceId();
     if (!deviceId) return false;
-    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport());
+    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport(), currentEasyLevelMounting);
     const state = await easyLevelSensor.reconnect(deviceId);
     if (state === 'unsupported') return false; // behave exactly as if EasyLevel had never been selected
     sensor = easyLevelSensor;
@@ -536,6 +560,8 @@ function bootstrap(root: HTMLElement): void {
         clearEasyLevelCalibration();
         updateIndicators();
       },
+      getEasyLevelMounting: () => settings.easyLevelMounting,
+      setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
       onFinished(done) {
         onboardingOpen = false;
         markOnboardingSeen();
@@ -611,6 +637,8 @@ function bootstrap(root: HTMLElement): void {
       clearEasyLevelCalibration();
       updateIndicators();
     },
+    getEasyLevelMounting: () => settings.easyLevelMounting,
+    setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
     getActiveTargetName: () => activeTargetName(),
     getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,

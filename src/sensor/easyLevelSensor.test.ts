@@ -51,8 +51,16 @@ function statusBytesWithCalibration(
  * real `navigator.bluetooth` involved, so the state machine is fully
  * testable without hardware or a browser. `reconnect` defaults to
  * succeeding the same way `connect` does (#130) — tests that want a failed
- * silent reconnect override it. */
-function fakeTransport(options?: { reconnect?: EasyLevelTransport['reconnect'] }): {
+ * silent reconnect override it. `subscribeStatusFails` (#217) simulates a
+ * box whose firmware never exposes `faf52c22-...` at all — the real
+ * transport's `subscribe()` rejects when `getCharacteristic()` can't find
+ * it. `callOrder` (#217) records `'status'`/`'accel'` as each is
+ * subscribed, for the tests asserting the official app's own ordering. */
+function fakeTransport(options?: {
+  reconnect?: EasyLevelTransport['reconnect'];
+  subscribeStatusFails?: boolean;
+  callOrder?: string[];
+}): {
   transport: EasyLevelTransport;
   emitAccel(bytes: Uint8Array): void;
   emitStatus(bytes: Uint8Array): void;
@@ -65,9 +73,12 @@ function fakeTransport(options?: { reconnect?: EasyLevelTransport['reconnect'] }
   const connection: EasyLevelConnection = {
     deviceId: 'fake-device-id',
     subscribeAccel: async (onData) => {
+      options?.callOrder?.push('accel');
       accelHandler = onData;
     },
     subscribeStatus: async (onData) => {
+      options?.callOrder?.push('status');
+      if (options?.subscribeStatusFails) throw new Error('no faf52c22 on this box');
       statusHandler = onData;
     },
     disconnect: vi.fn(),
@@ -125,11 +136,16 @@ describe('createEasyLevelSensor (#116)', () => {
       value: { bluetooth: {} },
       configurable: true,
     });
-    const { transport, emitAccel } = fakeTransport();
+    const { transport, emitAccel, emitStatus } = fakeTransport();
     const sensor = createEasyLevelSensor(transport);
 
     expect(await sensor.start()).toBe('granted');
     expect(sensor.getGravity()).toBeNull(); // nothing received yet
+
+    // A status notification (#217) — even one with no calibration block —
+    // is what unlocks getGravity(); see the dedicated "startup ordering"
+    // describe block below for the withheld-until-then behavior itself.
+    emitStatus(statusBytes(2500, 0));
 
     emitAccel(accelBytes(12, -34, 9800));
     expect(sensor.getGravity()).toEqual({ x: 12, y: -34, z: 9800 });
@@ -148,9 +164,10 @@ describe('createEasyLevelSensor (#116)', () => {
     const sensor = createEasyLevelSensor(transport);
     await sensor.start();
 
-    // No status yet: raw passthrough, today's exact behavior.
+    // No status yet (#217): withheld entirely, not exposed as an
+    // uncalibrated reading — see the "startup ordering" describe block.
     emitAccel(accelBytes(1000, -500, 9800));
-    expect(sensor.getGravity()).toEqual({ x: 1000, y: -500, z: 9800 });
+    expect(sensor.getGravity()).toBeNull();
 
     // Tier-3 status arrives with a calibration block.
     emitStatus(statusBytesWithCalibration(2500, 48, 200, -50, 100));
@@ -166,9 +183,10 @@ describe('createEasyLevelSensor (#116)', () => {
       value: { bluetooth: {} },
       configurable: true,
     });
-    const { transport, emitAccel, emitDisconnect } = fakeTransport();
+    const { transport, emitAccel, emitStatus, emitDisconnect } = fakeTransport();
     const sensor = createEasyLevelSensor(transport);
     await sensor.start();
+    emitStatus(statusBytes(2500, 0));
     emitAccel(accelBytes(1, 2, 3));
     expect(sensor.getGravity()).not.toBeNull();
 
@@ -250,13 +268,14 @@ describe('createEasyLevelSensor (#116)', () => {
       value: { bluetooth: {} },
       configurable: true,
     });
-    const { transport, emitAccel, emitDisconnect } = fakeTransport();
+    const { transport, emitAccel, emitStatus, emitDisconnect } = fakeTransport();
     const sensor = createEasyLevelSensor(transport);
     expect(sensor.getLastSampleAt()).toBeNull();
 
     await sensor.start();
     // Connected, but no notification has arrived yet — still no timestamp.
     expect(sensor.getLastSampleAt()).toBeNull();
+    emitStatus(statusBytes(2500, 0));
 
     const before = performance.now();
     emitAccel(accelBytes(1, 2, 3));
@@ -345,6 +364,123 @@ describe('createEasyLevelSensor (#116)', () => {
   });
 });
 
+describe('createEasyLevelSensor() startup ordering and initial-calibration gate (#217)', () => {
+  it('subscribes faf52c22 (status) before faf52c21 (accel) — matching the official app’s own connect-setup ordering', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const callOrder: string[] = [];
+    const { transport } = fakeTransport({ callOrder });
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+    expect(callOrder).toEqual(['status', 'accel']);
+  });
+
+  it('withholds getGravity()/getLastSampleAt() for accel samples received before the first status notification', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+
+    emitAccel(accelBytes(1, 2, 3));
+    expect(sensor.getGravity()).toBeNull();
+    expect(sensor.getLastSampleAt()).toBeNull();
+  });
+
+  it('starts exposing gravity from the very next accel sample once a status notification arrives, even one with no calibration block', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitStatus } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+
+    emitAccel(accelBytes(1, 2, 3));
+    expect(sensor.getGravity()).toBeNull();
+
+    emitStatus(statusBytes(2500, 0)); // tier 1, no calibration bytes present
+    emitAccel(accelBytes(4, 5, 6));
+    expect(sensor.getGravity()).toEqual({ x: 4, y: 5, z: 6 });
+  });
+
+  it('never waits at all when subscribeStatus itself fails — no faf52c22 characteristic on this box', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel } = fakeTransport({ subscribeStatusFails: true });
+    const sensor = createEasyLevelSensor(transport);
+    expect(await sensor.start()).toBe('granted'); // best-effort subscribe failure never fails start()
+
+    emitAccel(accelBytes(1, 2, 3));
+    expect(sensor.getGravity()).toEqual({ x: 1, y: 2, z: 3 });
+  });
+
+  it('gives up waiting once the initial-calibration grace window elapses, exposing best-effort (possibly uncalibrated) readings — never stuck forever', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel } = fakeTransport(); // subscribeStatus "succeeds" but never notifies
+    let currentTimeMs = 1000;
+    const sensor = createEasyLevelSensor(transport, undefined, () => currentTimeMs);
+    await sensor.start();
+
+    currentTimeMs += 1; // just after connecting: still within the grace window
+    emitAccel(accelBytes(1, 2, 3));
+    expect(sensor.getGravity()).toBeNull();
+
+    currentTimeMs += 5000; // well past EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS
+    emitAccel(accelBytes(1, 2, 3));
+    expect(sensor.getGravity()).toEqual({ x: 1, y: 2, z: 3 });
+  });
+
+  it('applies the same withholding rule to reconnect(), not just the initial start()', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    expect(await sensor.reconnect('fake-device-id')).toBe('granted');
+
+    emitAccel(accelBytes(1, 2, 3));
+    expect(sensor.getGravity()).toBeNull();
+  });
+
+  it("applies getMounting()'s transform to every accel reading, read fresh on each sample", async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitStatus } = fakeTransport();
+    let mounting: 'standard' | 'rotated90' = 'standard';
+    const sensor = createEasyLevelSensor(transport, () => mounting);
+    await sensor.start();
+    emitStatus(statusBytes(2500, 0));
+
+    emitAccel(accelBytes(500, 0, 9800));
+    expect(sensor.getGravity()).toEqual({ x: 500, y: 0, z: 9800 });
+
+    // Flipping the setting takes effect on the very next sample, no
+    // reconnect needed — matches `main.ts`'s live-settings-read pattern
+    // for the connect-delay workaround (#212).
+    mounting = 'rotated90';
+    emitAccel(accelBytes(500, 0, 9800));
+    // -y where y is 0 gives JS's -0, not 0 — checked field-by-field rather
+    // than with toEqual's Object.is-based comparison.
+    const rotated = sensor.getGravity();
+    expect(rotated?.x).toBeCloseTo(0);
+    expect(rotated?.y).toBe(500);
+    expect(rotated?.z).toBe(9800);
+  });
+});
+
 describe('createEasyLevelSensor().reconnect() (#130)', () => {
   it('reports unsupported when navigator.bluetooth does not exist, without calling the transport', async () => {
     Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
@@ -361,7 +497,7 @@ describe('createEasyLevelSensor().reconnect() (#130)', () => {
       value: { bluetooth: {} },
       configurable: true,
     });
-    const { transport, emitAccel } = fakeTransport();
+    const { transport, emitAccel, emitStatus } = fakeTransport();
     const connectSpy = vi.spyOn(transport, 'connect');
     const sensor = createEasyLevelSensor(transport);
 
@@ -369,6 +505,7 @@ describe('createEasyLevelSensor().reconnect() (#130)', () => {
     expect(connectSpy).not.toHaveBeenCalled();
     expect(sensor.getDeviceId()).toBe('fake-device-id');
 
+    emitStatus(statusBytes(2500, 0));
     emitAccel(accelBytes(5, 6, 7));
     expect(sensor.getGravity()).toEqual({ x: 5, y: 6, z: 7 });
   });

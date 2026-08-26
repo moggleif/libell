@@ -30,6 +30,26 @@
  * - No encryption, no WRITE characteristic (confirmed by decompiling the
  *   official apps — see #116).
  *
+ * **Startup ordering (#217):** `wireConnection()` below subscribes
+ * `faf52c22-...` (status) *before* `faf52c21-...` (accel) — re-decompiling
+ * the official app's own post-connect setup (`N0/a;->m()`, run once the
+ * device reaches its "READY" state) found it enables notifications on
+ * `faf52c22-...` before `faf52c21-...` too (no explicit characteristic
+ * *read* — just that ordering of the two notify-enable requests, executed
+ * serially by its own generic BLE-request queue). Matching that ordering
+ * increases the odds a box that proactively notifies its current status on
+ * subscribe is calibrated before its first accel sample is processed, but
+ * cannot guarantee it: enabling notifications is not the same as a value
+ * having arrived, and whether a given box proactively notifies on
+ * subscribe at all is real device firmware behavior, invisible in the
+ * app's own code. `getGravity()` therefore stays `null` (accel samples are
+ * accepted but not exposed) until either a status notification has been
+ * observed, `subscribeStatus()` itself fails or the characteristic doesn't
+ * exist (nothing to wait for), or
+ * `sensorFallback.ts`'s `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS` elapses —
+ * see that constant's doc comment for why this bound exists and is
+ * Libell's own choice, not evidence from the official app.
+ *
  * Remember-and-auto-reconnect (#130): once a box has been paired via
  * `connect()`'s `requestDevice()` picker, the browser remembers the grant
  * for that origin. `reconnect()` uses Web Bluetooth's persistent-
@@ -45,9 +65,15 @@
  * ordinary gesture-triggered `start()`/`connect()` path.
  */
 import type { GravityVector } from '../domain/leveling';
-import type { SensorSource } from '../domain/settings';
+import type { EasyLevelMounting, SensorSource } from '../domain/settings';
 import type { OrientationSensor, SensorState } from './orientation';
-import { parseAccelPacket, parseEasyLevelStatus, type EasyLevelStatus } from './easyLevelProtocol';
+import {
+  applyEasyLevelMounting,
+  parseAccelPacket,
+  parseEasyLevelStatus,
+  type EasyLevelStatus,
+} from './easyLevelProtocol';
+import { isEasyLevelInitialCalibrationWaitExpired } from './sensorFallback';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -238,6 +264,16 @@ export interface EasyLevelSensor extends OrientationSensor {
 
 export function createEasyLevelSensor(
   transport: EasyLevelTransport = createWebBluetoothTransport(),
+  /** Read live on every accel sample (#217), never cached — mirrors
+   * `main.ts`'s `easyLevelTransport()`/`getConnectDelayMs` pattern, so
+   * flipping the mounting setting on the External sensor page takes effect
+   * on the very next notification with no reconnect needed. Defaults to
+   * the official app's own default placement. */
+  getMounting: () => EasyLevelMounting = () => 'standard',
+  /** Clock seam (#217) purely for testability — real timers never run in
+   * Vitest/jsdom the way they would in a browser, so every timing decision
+   * here goes through this instead of calling `performance.now()` inline. */
+  now: () => number = () => performance.now(),
 ): EasyLevelSensor {
   let state: SensorState = 'idle';
   let gravity: GravityVector | null = null;
@@ -266,15 +302,20 @@ export function createEasyLevelSensor(
    * notify characteristics into this sensor's readings. */
   async function wireConnection(next: EasyLevelConnection): Promise<void> {
     connection = next;
-    await connection.subscribeAccel((view) => {
-      // The most recent status notification's bytes-8-19 bias, if any
-      // (#215) — `status` is set by the subscribeStatus handler below, and
-      // read fresh on every accel sample so a later calibration (or a
-      // reconnect that loses it, clearing `status` back to null) takes
-      // effect immediately rather than needing its own plumbing.
-      gravity = parseAccelPacket(view, status?.calibration);
-      lastSampleAt = performance.now();
-    });
+    const connectedAtMs = now();
+    // #217: true until either a status notification has been observed, no
+    // status is coming at all (subscribeStatus fails/absent below), or the
+    // grace window expires — see the module doc comment and
+    // `sensorFallback.ts`'s `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`. While
+    // true, accel notifications are received but not exposed through
+    // `getGravity()`/`getLastSampleAt()` — from the outside, as if they
+    // had not arrived yet, never as a value known to be missing available
+    // calibration.
+    let awaitingInitialCalibration = true;
+
+    // Subscribed before accel below — see the module doc comment's
+    // "Startup ordering" section for why this order matters and what it
+    // can and can't guarantee.
     try {
       // Best-effort only — see the module doc comment. A firmware without
       // this characteristic, or one that rejects the subscription, must
@@ -282,11 +323,32 @@ export function createEasyLevelSensor(
       await connection.subscribeStatus((view) => {
         statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
         status = parseEasyLevelStatus(view);
+        // Any status notification — even a too-short/unparseable one —
+        // means we've learned what this characteristic has to say; nothing
+        // further to wait for.
+        awaitingInitialCalibration = false;
       });
     } catch {
-      // No status characteristic, or subscribe failed: accel alone is
-      // everything this sensor needs.
+      // No status characteristic, or subscribe failed: nothing calibration
+      // could ever come from, so don't wait for it.
+      awaitingInitialCalibration = false;
     }
+    await connection.subscribeAccel((view) => {
+      if (awaitingInitialCalibration) {
+        if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) {
+          return; // still within the grace window — drop this sample
+        }
+        awaitingInitialCalibration = false; // give up waiting; best-effort from here on
+      }
+      // The most recent status notification's bytes-8-19 bias, if any
+      // (#215) — `status` is set by the subscribeStatus handler above, and
+      // read fresh on every accel sample so a later calibration (or a
+      // reconnect that loses it, clearing `status` back to null) takes
+      // effect immediately rather than needing its own plumbing.
+      const calibrated = parseAccelPacket(view, status?.calibration);
+      gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
+      lastSampleAt = now();
+    });
   }
 
   return {

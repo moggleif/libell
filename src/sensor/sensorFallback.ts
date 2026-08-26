@@ -70,3 +70,36 @@ export const EASYLEVEL_AUTO_RETRY_INTERVAL_MS = 5000;
 export function isEasyLevelAutoRetryDue(lastAttemptAtMs: number | null, nowMs: number): boolean {
   return lastAttemptAtMs === null || nowMs - lastAttemptAtMs >= EASYLEVEL_AUTO_RETRY_INTERVAL_MS;
 }
+
+/**
+ * How long `easyLevelSensor.ts` withholds `getGravity()` after connecting,
+ * waiting for the first `faf52c22-...` status notification, before giving
+ * up and reporting best-effort (possibly uncalibrated) readings anyway
+ * (#217). Unlike `EASYLEVEL_AUTO_RETRY_INTERVAL_MS` above, this is NOT
+ * derived from the official app: #217's decompile of its own post-connect
+ * setup (`N0/a;->m()`) found it enables status notifications before accel
+ * notifications (see `easyLevelSensor.ts`'s module doc comment), but found
+ * no equivalent explicit wait — the app has no analogous grace period, it
+ * just relies on that ordering (and, per that same decompile, defaults to
+ * *assuming legacy tier-<3 firmware* — `this.n = 16` — until a status
+ * notification says otherwise, which is itself not obviously safe against
+ * an accel notification arriving first on modern firmware). This constant
+ * is Libell's own defensive choice, a bound generous enough to cover a
+ * normal BLE notify round-trip without stalling a firmware that legitimately
+ * never sends a status characteristic at all.
+ */
+export const EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS = 2000;
+
+/**
+ * True once `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS` has passed since
+ * connecting — see `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`'s own doc
+ * comment. Same time-as-parameter discipline as `isEasyLevelAutoRetryDue`
+ * above and `domain/staleness.ts`'s `isSensorStale`, so this is fully
+ * unit-testable without real timers.
+ */
+export function isEasyLevelInitialCalibrationWaitExpired(
+  connectedAtMs: number,
+  nowMs: number,
+): boolean {
+  return nowMs - connectedAtMs >= EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS;
+}

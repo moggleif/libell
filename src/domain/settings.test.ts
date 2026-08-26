@@ -33,6 +33,7 @@ describe('parseSettings', () => {
       sensorSource: 'phone' as const,
       easyLevelConnectDelayEnabled: true,
       easyLevelConnectDelayMs: 800,
+      easyLevelMounting: 'rotated90' as const,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -92,6 +93,7 @@ describe('parseSettings', () => {
       sensorSource: DEFAULT_SETTINGS.sensorSource,
       easyLevelConnectDelayEnabled: DEFAULT_SETTINGS.easyLevelConnectDelayEnabled,
       easyLevelConnectDelayMs: DEFAULT_SETTINGS.easyLevelConnectDelayMs,
+      easyLevelMounting: DEFAULT_SETTINGS.easyLevelMounting,
     });
   });
 
@@ -193,6 +195,16 @@ describe('parseSettings', () => {
     // Any other value, including a future one this build doesn't know
     // about yet, falls back rather than silently trusting unknown input.
     expect(parseSettings({ sensorSource: 'bluetooth-widget' }).sensorSource).toBe('phone');
+  });
+
+  it('validates the EasyLevel mounting orientation, defaulting to standard (#217)', () => {
+    expect(DEFAULT_SETTINGS.easyLevelMounting).toBe('standard');
+    expect(parseSettings({}).easyLevelMounting).toBe('standard');
+    expect(parseSettings({ easyLevelMounting: 'standard' }).easyLevelMounting).toBe('standard');
+    expect(parseSettings({ easyLevelMounting: 'rotated90' }).easyLevelMounting).toBe('rotated90');
+    // Any other value, including a future one this build doesn't know about
+    // yet, falls back rather than silently trusting unknown input.
+    expect(parseSettings({ easyLevelMounting: 'upside-down' }).easyLevelMounting).toBe('standard');
   });
 
   it('the EasyLevel debug connect delay defaults off, and a present value is never overridden (#212)', () => {

@@ -59,6 +59,7 @@ describe('settingsStore', () => {
       sensorSource: 'phone' as const,
       easyLevelConnectDelayEnabled: false,
       easyLevelConnectDelayMs: 300,
+      easyLevelMounting: 'rotated90' as const,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
