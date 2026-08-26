@@ -39,7 +39,7 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
       options.onSettingsSaved(settings);
     },
     options,
-    undefined,
+    { onShareVehicleSetup: options.onShareVehicleSetup },
     options,
   );
   page.body.append(settingsForm);

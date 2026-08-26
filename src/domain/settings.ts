@@ -262,7 +262,11 @@ export function parseCalibration(value: unknown): Calibration | null {
   return { rollDeg, pitchDeg };
 }
 
-function positiveNumber(value: unknown, fallback: number): number {
+/** Exported for `domain/vehicleShare.ts` (#207), which validates the same
+ * shape of untrusted input (a received link) the same independent-fallback
+ * way this module already validates stored settings — reused, not
+ * reimplemented. */
+export function positiveNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
@@ -270,7 +274,8 @@ function nonNegativeNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
-function normalizeHeights(values: number[]): number[] {
+/** Exported for `domain/vehicleShare.ts` (#207) — see `positiveNumber` above. */
+export function normalizeHeights(values: number[]): number[] {
   const cleaned = values.filter((v) => Number.isFinite(v) && v > 0);
   return [...new Set(cleaned)].sort((a, b) => a - b);
 }

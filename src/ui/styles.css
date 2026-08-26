@@ -1563,7 +1563,7 @@ body {
   font-size: 0.9rem;
 }
 
-.settings__field input {
+.settings__field input:not(.settings__checkbox) {
   font: inherit;
   font-variant-numeric: tabular-nums;
   width: 6.5em;
@@ -1574,12 +1574,12 @@ body {
   border-radius: 0;
 }
 
-:root[data-appearance='modern'] .settings__field input {
+:root[data-appearance='modern'] .settings__field input:not(.settings__checkbox) {
   border: 1px solid var(--outline);
   border-radius: 8px;
 }
 
-:root[data-appearance='glossy'] .settings__field input {
+:root[data-appearance='glossy'] .settings__field input:not(.settings__checkbox) {
   border: 1px solid var(--outline);
   border-radius: 8px;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
@@ -2165,6 +2165,74 @@ body {
   color: var(--warning);
   font-size: 1.3rem;
   font-weight: 600;
+}
+
+/* Incoming "share vehicle setup" link (R41, #207): a one-shot confirmation
+   shown at most once per received link, above everything else including
+   the toast (z-index 40) since a malformed-link toast can fire right
+   alongside it. Buttons reuse `.menu__action`/`.menu__action--secondary`
+   rather than a one-off style, same reasoning as the sensor-fallback
+   prompt below. */
+.incoming-setup {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 45%);
+}
+
+.incoming-setup__card {
+  width: 100%;
+  max-width: 380px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  color: var(--on-surface);
+  background: var(--surface-raised);
+  border: 2px outset var(--outline);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .incoming-setup__card,
+:root[data-appearance='glossy'] .incoming-setup__card {
+  border: 1px solid var(--outline);
+  border-radius: 14px;
+}
+
+.incoming-setup__heading {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.incoming-setup__intro {
+  margin: 0 0 12px;
+  color: var(--on-surface-muted);
+}
+
+.incoming-setup__list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0 0 14px;
+}
+
+.incoming-setup__list dt {
+  color: var(--on-surface-muted);
+}
+
+.incoming-setup__list dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.incoming-setup__reminder {
+  margin: 0 0 4px;
+  color: var(--on-surface-muted);
+  font-size: 0.9rem;
 }
 
 /* Sensor unavailable fallback prompt (#134): the actionable Retry/"Use
