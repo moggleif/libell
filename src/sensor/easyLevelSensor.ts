@@ -74,6 +74,7 @@ import {
   type EasyLevelStatus,
 } from './easyLevelProtocol';
 import { isEasyLevelInitialCalibrationWaitExpired } from './sensorFallback';
+import { easyLevelSimulationMode } from './easyLevelSimulator';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -101,6 +102,21 @@ export const EASYLEVEL_DEVICE_NAME_PREFIX = 'CARATI';
 /** Web Bluetooth is Chrome/Android only — never Safari/iOS. */
 export function isWebBluetoothSupported(): boolean {
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
+}
+
+/**
+ * EasyLevel can work in this browser: real Web Bluetooth, or the simulated
+ * box (#220) standing in for it. This is the ONE gate every "does
+ * EasyLevel exist here at all" decision goes through — `main.ts`'s
+ * page/indicator construction, onboarding's sensor-source step, and
+ * `start()`/`reconnect()` below. `isWebBluetoothSupported()` stays the
+ * real transport's own narrower contract: `createWebBluetoothTransport()`
+ * is only ever constructed when it is true (`main.ts` picks the simulated
+ * transport instead whenever the flag is on), so its `navigator.bluetooth!`
+ * assertion is unaffected by this wider gate.
+ */
+export function isEasyLevelAvailable(): boolean {
+  return isWebBluetoothSupported() || easyLevelSimulationMode() !== 'off';
 }
 
 /** One connected box: subscribe to its notify characteristics, disconnect on request. */
@@ -388,7 +404,7 @@ export function createEasyLevelSensor(
   return {
     async start(): Promise<SensorState> {
       if (state === 'granted') return state;
-      if (!isWebBluetoothSupported()) {
+      if (!isEasyLevelAvailable()) {
         state = 'unsupported';
         return state;
       }
@@ -406,7 +422,7 @@ export function createEasyLevelSensor(
     },
     async reconnect(deviceId: string): Promise<SensorState> {
       if (state === 'granted') return state;
-      if (!isWebBluetoothSupported()) {
+      if (!isEasyLevelAvailable()) {
         state = 'unsupported';
         return state;
       }

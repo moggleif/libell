@@ -1154,3 +1154,42 @@ produce plausible-looking data while Libell computed the wrong wheel to raise.
 - **Given** a corrupt or future-version stored value
 - **Then** it falls back to "Standard", the same validate-on-read discipline every
   other enum-like setting (`sensorSource`, `appearance`, ...) already follows.
+
+## R44 — Simulated EasyLevel box (`?easylevel-sim`): the whole flow, no hardware (#220)
+
+Everything above `easyLevelProtocol.ts`'s byte parsing was previously exercised only
+by unit-test fakes; with no physical box available, the running app's EasyLevel
+experience could never be walked end to end. The same convention as `?demo` (a
+synthetic stand-in behind a query flag, driving the real code path), applied one seam
+lower: a simulated `EasyLevelTransport` (`easyLevelSimulator.ts`) producing payloads
+byte-for-byte in the real box's wire format, injected at the existing transport seam —
+everything above that seam is exactly the code a real box runs through.
+
+- **Given** any browser, with or without Web Bluetooth
+- **When** the app is opened with `?easylevel-sim`
+- **Then** EasyLevel presents as available everywhere it normally would (External
+  sensor page, sensor-status dot, onboarding's source step — one shared gate,
+  `isEasyLevelAvailable()`), and "Connect EasyLevel sensor" connects, with no picker,
+  to a simulated tier-3 box: `faf52c22-...` status payloads carrying plausible
+  battery/temperature and a deliberately **non-zero** bytes-8–19 calibration block,
+  and `faf52c21-...` accel payloads (12-byte tier-≥-3 shape, realistic notify rate)
+  whose raw counts carry that bias ADDED — so the leveling result is only right if
+  the R32 bias subtraction actually runs — resolving to a small fixed tilt in the
+  same spirit as `?demo`, plus a slight deterministic wobble (a pure function of the
+  sample index, no clock or randomness) so the UI visibly lives while staying still
+  (R25).
+- **Given** the simulated box was connected and the app is reopened with the flag
+- **Then** the remembered-device silent reconnect (R33) succeeds against the
+  simulator — the same stored-id `reconnect()` path a real box uses.
+- **Given** `?easylevel-sim=drop`
+- **Then** the simulated connection is lost a short while after (re)connecting, and
+  stays unreachable (silent reconnects fail, like a box out of range) for a few
+  seconds before recovering — over and over, so the lost-connection state (R32), the
+  Retry/"Use phone sensor" prompt (R37) and the background auto-retry can each be
+  watched, visibly, recovering repeatedly without hardware.
+- **Given** the flag is absent
+- **Then** nothing changes: the flag check is the only code on the normal path, the
+  simulator is never constructed, and `isEasyLevelAvailable()` degrades to exactly
+  the old Web Bluetooth check.
+- **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
+  the real transport is not even constructed.

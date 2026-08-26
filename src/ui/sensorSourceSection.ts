@@ -2,9 +2,10 @@
  * Sensor source menu page (#116, ADR 0014): "Connect EasyLevel sensor" plus
  * the detailed health status added by #129 — the only working
  * `sensorSource` choice beyond the phone's own built-in sensor. Only ever
- * added to the menu when Web Bluetooth exists (`menu.ts` checks
- * `isWebBluetoothSupported()` before calling `createSensorSourceSection`) —
- * never a silent failure on Safari/iOS, per #116's acceptance criteria.
+ * added to the menu when EasyLevel is available at all (`main.ts` checks
+ * `isEasyLevelAvailable()` before creating the pages that embed this
+ * section) — never a silent failure on Safari/iOS, per #116's acceptance
+ * criteria.
  *
  * #129 adds the connection-state text distinguishing a live connection from
  * one that dropped (previously both read as "connected", #116's original

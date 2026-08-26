@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
+  isEasyLevelAvailable,
   isWebBluetoothSupported,
   EASYLEVEL_ADVERTISED_SERVICE_UUID,
   EASYLEVEL_DEVICE_NAME_PREFIX,
@@ -873,5 +874,37 @@ describe('isWebBluetoothSupported', () => {
       configurable: true,
     });
     expect(isWebBluetoothSupported()).toBe(true);
+  });
+});
+
+describe('isEasyLevelAvailable (#220)', () => {
+  // Node test environment: no `location` global exists at all, so the
+  // simulation flag is stubbed by defining one — same technique the
+  // navigator stubs above use.
+  afterEach(() => {
+    delete (globalThis as { location?: unknown }).location;
+  });
+
+  it('is false with neither Web Bluetooth nor the simulation flag', () => {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    expect(isEasyLevelAvailable()).toBe(false);
+  });
+
+  it('is true with real Web Bluetooth, same as isWebBluetoothSupported', () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    expect(isEasyLevelAvailable()).toBe(true);
+  });
+
+  it('is true WITHOUT Web Bluetooth while ?easylevel-sim is in the URL — the simulated box (#220) stands in', () => {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    Object.defineProperty(globalThis, 'location', {
+      value: { search: '?easylevel-sim' },
+      configurable: true,
+    });
+    expect(isEasyLevelAvailable()).toBe(true);
+    expect(isWebBluetoothSupported()).toBe(false); // the narrower contract is untouched
   });
 });

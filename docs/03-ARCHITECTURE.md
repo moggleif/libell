@@ -117,7 +117,11 @@ phone sensor above, the fixed-tilt `?demo` stand-in in `main.ts`, and
 between implementations at one `let sensor` binding; `domain/` never learns which one is
 active. `easyLevelSensor.ts` keeps Web Bluetooth GATT transport separate from payload
 parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardware or
-`navigator.bluetooth` needed) and maps the box's raw accelerometer int16 triplet directly
+`navigator.bluetooth` needed); `easyLevelSimulator.ts` (#220, R44) plugs a simulated
+box into that same transport seam behind the `?easylevel-sim` query flag, emitting
+real-wire-format payloads on timers so the whole EasyLevel flow runs hardware-free in
+any browser (`isEasyLevelAvailable()` is the shared availability gate: real Web
+Bluetooth, or the flag). `easyLevelSensor.ts` maps the box's raw accelerometer int16 triplet directly
 into a `GravityVector` at whatever scale it reports, deliberately not reimplementing the
 box's own onboard filter: the app's `atan2`-based roll/pitch only depends on axis ratios,
 not absolute units. iOS gets no second `OrientationSensor` implementation (#119, closed
@@ -254,6 +258,8 @@ The repository is text-only: PWA icons are rendered from `public/icons/icon.svg`
 `scripts/generate-icons.mjs` during `npm run build` and are gitignored. The `?demo`
 flag replaces the sensor with a fixed tilt **and presents the app as configured** (no
 warning lamps, in memory only), so screenshots and demos show the product rather than
-the first-run state. CI runs
+the first-run state. The `?easylevel-sim` flag (R44) is its EasyLevel sibling: a
+simulated BLE box behind the transport seam, for exercising the external-sensor flow
+on machines (and CI screenshots) with no hardware. CI runs
 `format:check`, `typecheck`, `test` and `build` on every branch; pushes to `main` deploy
 `dist/` to GitHub Pages.

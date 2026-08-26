@@ -76,9 +76,13 @@ import {
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
-  isWebBluetoothSupported,
+  isEasyLevelAvailable,
   type EasyLevelSensor,
 } from './sensor/easyLevelSensor';
+import {
+  createSimulatedEasyLevelTransport,
+  easyLevelSimulationMode,
+} from './sensor/easyLevelSimulator';
 import { isSensorUnavailable, isEasyLevelAutoRetryDue } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
@@ -296,6 +300,12 @@ function bootstrap(root: HTMLElement): void {
    * loop (#211) above — without needing to recreate `easyLevelSensor`.
    */
   function easyLevelTransport() {
+    // Simulated box (#220): the `?easylevel-sim` flag swaps the transport
+    // at this one seam — everything above it (sensor state machine,
+    // calibration, UI) is exactly the code a real box runs through, and
+    // the real Web Bluetooth transport is never even constructed.
+    const simulation = easyLevelSimulationMode();
+    if (simulation !== 'off') return createSimulatedEasyLevelTransport(simulation);
     return createWebBluetoothTransport(() =>
       settings.easyLevelConnectDelayEnabled ? settings.easyLevelConnectDelayMs : 0,
     );
@@ -706,7 +716,7 @@ function bootstrap(root: HTMLElement): void {
   // plans to add Web Bluetooth there, so instead of hiding the entry point
   // outright, iOS gets a guide to the Bluefy workaround
   // (`iosSensorGuidePage.ts`, docs/ios-easylevel-bluefy-guide.md).
-  const easyLevelSupported = isWebBluetoothSupported();
+  const easyLevelSupported = isEasyLevelAvailable();
   const showIosGuide = !easyLevelSupported && isIos();
   // Held separately, typed as the fuller `EasyLevelSensorPage` (screen-
   // cleanup follow-up to #133/#129): `sensorPage` below stays the narrower

@@ -4,7 +4,7 @@
  * menu no longer carries an "External sensor" entry — its own standalone
  * page (`standalonePage.ts`), with a ✕ to close, never a ‹ back into a
  * drawer. Only ever constructed when Web Bluetooth exists
- * (`isWebBluetoothSupported()`, checked by the caller) — never a silently
+ * (`isEasyLevelAvailable()`, checked by the caller) — never a silently
  * broken option on Safari/iOS (#116's original acceptance criteria, still
  * true here).
  *
