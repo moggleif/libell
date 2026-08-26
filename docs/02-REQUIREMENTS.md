@@ -729,12 +729,15 @@ cross-platform goal — they are not this app's code and are not covered here.
   never a repeated pairing dance.
 - **Given** the same situation, but the box is out of range, powered off, or its GATT
   connect otherwise fails
-- **Then** the attempt fails cleanly — no retry loop, no repeated prompts — and the app
-  honestly shows the box as the active-but-disconnected source via the same
-  connection-lost UI a live drop uses (R32 above): the main-screen dot and the "External
-  sensor" menu page, both offering the existing one-tap manual reconnect. The app never
-  silently falls back to the phone's own sensor on the user's behalf — that is the
-  user's own explicit "Disconnect" action, same as ever.
+- **Then** the attempt fails cleanly and the app honestly shows the box as the
+  active-but-disconnected source via the same connection-lost UI a live drop uses (R32
+  above): the main-screen dot and the "External sensor" menu page, both offering the
+  existing one-tap manual reconnect. **Revised by #211:** a single failed attempt is
+  no longer the end of it — R37's automatic background retry keeps trying on the same
+  remembered box on its own, so recovery does not depend on the user noticing the
+  prompt or understanding what "Retry" does. The app still never silently falls back
+  to the phone's own sensor on the user's behalf — that is, and stays, the user's own
+  explicit "Disconnect" action.
 - **Given** a browser without `getDevices()` (Web Bluetooth's persistent-permissions API
   is not implemented everywhere `navigator.bluetooth` itself is) — or without Web
   Bluetooth at all
@@ -839,11 +842,21 @@ unannounced switch could show a plausible-looking but wrong reading.
   sensor" — never a frozen or ambiguous screen.
 - **Given** the fallback prompt is shown
 - **When** I tap "Retry"
-- **Then** the app makes exactly one silent reconnect attempt against the remembered
+- **Then** the app makes one immediate silent reconnect attempt against the remembered
   box (the same `EasyLevelSensor.reconnect()` R33's own auto-reconnect uses, not a
-  duplicate implementation) — no retry loop, no backoff. On success the prompt clears
-  and leveling resumes on the external source; on failure the prompt simply stays (or
-  reappears on the next frame), with nothing further attempted automatically.
+  duplicate implementation). On success the prompt clears and leveling resumes on the
+  external source; on failure the prompt simply stays (or reappears on the next
+  frame).
+- **Given** EasyLevel is unreachable and the fallback prompt is shown, and no one
+  taps anything (**#211**)
+- **Then** the app also retries the same reconnect call on its own, on a short fixed
+  interval (`sensor/sensorFallback.ts`'s `EASYLEVEL_AUTO_RETRY_INTERVAL_MS`), for as
+  long as the main screen is visible and the box stays unreachable — recovering
+  automatically the moment the box is back in range or powered on, with no tap
+  required. This never switches source on its own (ADR 0014's rule is unchanged): it
+  only ever retries reaching the same already-known box, exactly what the manual
+  button already did. The background loop and the manual button share one
+  implementation, never two.
 - **Given** the fallback prompt is shown
 - **When** I tap "Use phone sensor"
 - **Then** the app switches the active source to the phone sensor via the exact same
