@@ -130,42 +130,29 @@ export const MESSAGES = {
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
     'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
 
-    // Diagnostics page (#133, R36): development/support detail, never
-    // shown during normal leveling — see `diagnosticsSection.ts`.
-    'menu.diagnostics': 'Diagnostics',
-    'diagnostics.intro':
-      'Technical detail for development and support — not needed for everyday leveling.',
-    'diagnostics.row.source': 'Sensor source: {value}',
-    'diagnostics.row.state': 'Connection state: {value}',
-    'diagnostics.row.sampleRate': 'Sample rate: {value}',
-    'diagnostics.row.lastSampleAge': 'Last sample: {value}',
-    'diagnostics.row.rawTilt': 'Raw tilt: {value}',
-    'diagnostics.row.calibratedTilt': 'Calibrated tilt: {value}',
-    'diagnostics.row.target': 'Effective target: {value}',
-    'diagnostics.row.battery': 'Battery: {value}',
-    'diagnostics.row.temperature': 'Temperature: {value}',
-    'diagnostics.row.rssi': 'Signal strength: {value}',
-    'diagnostics.row.version': 'App version: {value}',
-    'diagnostics.roll': 'roll',
-    'diagnostics.pitch': 'pitch',
-    // Reported, not measured (see the file-level comment in
-    // `diagnosticsSection.ts` for why): honest, simple descriptions
-    // instead of a fabricated precise number.
-    'diagnostics.rate.phone': 'Continuous (device motion events, ≈60 Hz)',
-    'diagnostics.rate.easylevel': 'Event-driven (BLE notifications, no fixed rate)',
-    'diagnostics.age': '{s} s ago',
-    'diagnostics.version.unknown': 'unknown',
-    'diagnostics.copy': 'Copy diagnostics',
-    'diagnostics.copied': 'Diagnostics copied!',
-    'diagnostics.copy.failed': 'Could not copy automatically.',
-
     // Sensor status page: reached by tapping the sensor row on the
     // External sensor page. `reading` is the same roll/pitch the main
     // screen already computes, shown here too so a user checking the box
     // itself doesn't have to leave this page to see it move.
     'sensorStatus.title': 'Sensor status',
     'sensorStatus.reading': 'Reading: {value}',
+    'sensorStatus.roll': 'roll',
+    'sensorStatus.pitch': 'pitch',
+    // Debug info (EasyLevel only — hidden while the phone's own sensor is
+    // active): raw values straight off the box, for troubleshooting a box
+    // that isn't behaving as expected — not everyday reading material.
     'sensorStatus.debug': 'Debug info',
+    'sensorStatus.debug.intro':
+      'Raw values straight from the box — for troubleshooting if something isn’t working.',
+    'sensorStatus.debug.deviceId': 'Device ID: {value}',
+    'sensorStatus.debug.lastSample': 'Last sample: {value}',
+    'sensorStatus.debug.age': '{s} s ago',
+    'sensorStatus.debug.rawAccel': 'Raw accelerometer (x/y/z): {value}',
+    'sensorStatus.debug.firmwareTier': 'Firmware tier: {value}',
+    'sensorStatus.debug.rawStatusBytes': 'Raw status bytes: {value}',
+    'sensorStatus.debug.copy': 'Copy debug info',
+    'sensorStatus.debug.copied': 'Debug info copied!',
+    'sensorStatus.debug.copy.failed': 'Could not copy automatically.',
 
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
@@ -618,36 +605,22 @@ export const MESSAGES = {
     'sensorSource.install.status.none':
       'Inget installationsoffset — den råa avläsningen räknas som plan.',
 
-    // Diagnostikvy (#133, R36): utvecklings-/supportdetaljer, visas aldrig
-    // under vanlig nivellering — se `diagnosticsSection.ts`.
-    'menu.diagnostics': 'Diagnostik',
-    'diagnostics.intro':
-      'Teknisk detaljinformation för utveckling och support — behövs inte för ' +
-      'vardaglig nivellering.',
-    'diagnostics.row.source': 'Sensorkälla: {value}',
-    'diagnostics.row.state': 'Anslutningsstatus: {value}',
-    'diagnostics.row.sampleRate': 'Samplingsfrekvens: {value}',
-    'diagnostics.row.lastSampleAge': 'Senaste mätvärde: {value}',
-    'diagnostics.row.rawTilt': 'Rå lutning: {value}',
-    'diagnostics.row.calibratedTilt': 'Kalibrerad lutning: {value}',
-    'diagnostics.row.target': 'Aktivt mål: {value}',
-    'diagnostics.row.battery': 'Batteri: {value}',
-    'diagnostics.row.temperature': 'Temperatur: {value}',
-    'diagnostics.row.rssi': 'Signalstyrka: {value}',
-    'diagnostics.row.version': 'Appversion: {value}',
-    'diagnostics.roll': 'roll',
-    'diagnostics.pitch': 'pitch',
-    'diagnostics.rate.phone': 'Kontinuerlig (rörelsehändelser, ≈60 Hz)',
-    'diagnostics.rate.easylevel': 'Händelsestyrd (BLE-notiser, ingen fast frekvens)',
-    'diagnostics.age': '{s} s sedan',
-    'diagnostics.version.unknown': 'okänd',
-    'diagnostics.copy': 'Kopiera diagnostik',
-    'diagnostics.copied': 'Diagnostik kopierad!',
-    'diagnostics.copy.failed': 'Kunde inte kopiera automatiskt.',
-
     'sensorStatus.title': 'Sensorstatus',
     'sensorStatus.reading': 'Mätvärde: {value}',
+    'sensorStatus.roll': 'roll',
+    'sensorStatus.pitch': 'pitch',
     'sensorStatus.debug': 'Felsökningsinfo',
+    'sensorStatus.debug.intro':
+      'Råa värden direkt från boxen — för felsökning om något inte fungerar som det ska.',
+    'sensorStatus.debug.deviceId': 'Enhets-ID: {value}',
+    'sensorStatus.debug.lastSample': 'Senaste mätvärde: {value}',
+    'sensorStatus.debug.age': '{s} s sedan',
+    'sensorStatus.debug.rawAccel': 'Rå accelerometer (x/y/z): {value}',
+    'sensorStatus.debug.firmwareTier': 'Firmware-nivå: {value}',
+    'sensorStatus.debug.rawStatusBytes': 'Råa statusbytes: {value}',
+    'sensorStatus.debug.copy': 'Kopiera felsökningsinfo',
+    'sensorStatus.debug.copied': 'Felsökningsinfo kopierad!',
+    'sensorStatus.debug.copy.failed': 'Kunde inte kopiera automatiskt.',
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +

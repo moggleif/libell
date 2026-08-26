@@ -12,9 +12,9 @@
  * sensor row inside `sensorSourceSection`: composed here, alongside that
  * section, rather than main.ts wiring a third page directly — `main.ts`
  * only ever needs `refreshLive()` below, never the status page itself.
- * `options` already satisfies `DiagnosticsOptions` too (`main.ts`'s single
- * `menuOptions` bag covers every menu page's options interface), so no
- * extra wiring is needed to hand the status page what it needs.
+ * `options` already satisfies `EasyLevelStatusOptions` too (`main.ts`'s
+ * single `menuOptions` bag covers every menu page's options interface), so
+ * no extra wiring is needed to hand the status page what it needs.
  *
  * `statusElement` is returned rather than appended to `document.body`
  * here, matching how `main.ts` attaches every other top-level page itself
@@ -26,8 +26,7 @@
  * their shared z-index.
  */
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
-import { createEasyLevelStatusPage } from './easyLevelStatusPage';
-import type { DiagnosticsOptions } from './diagnosticsSection';
+import { createEasyLevelStatusPage, type EasyLevelStatusOptions } from './easyLevelStatusPage';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 
@@ -57,7 +56,7 @@ export interface EasyLevelSensorPage extends SensorPage {
 }
 
 export function createSensorPage(
-  options: SensorSourceOptions & DiagnosticsOptions,
+  options: SensorSourceOptions & EasyLevelStatusOptions,
 ): EasyLevelSensorPage {
   const statusPage = createEasyLevelStatusPage(options);
   const sensorSourceSection = createSensorSourceSection(options, () => statusPage.open());

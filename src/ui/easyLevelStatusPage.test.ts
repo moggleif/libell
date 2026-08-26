@@ -1,20 +1,20 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
-import { createEasyLevelStatusPage } from './easyLevelStatusPage';
-import type { DiagnosticsOptions } from './diagnosticsSection';
+import { describe, expect, it, vi } from 'vitest';
+import { createEasyLevelStatusPage, type EasyLevelStatusOptions } from './easyLevelStatusPage';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-function makeOptions(overrides: Partial<DiagnosticsOptions> = {}): DiagnosticsOptions {
+function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevelStatusOptions {
   return {
     getSensorSource: () => 'phone',
     getSensorState: () => 'granted',
-    getLastSampleAt: () => null,
-    getRawTilt: () => null,
-    getCalibratedTilt: () => null,
-    getActiveTargetName: () => null,
     getEasyLevelStatus: () => null,
+    getCalibratedTilt: () => null,
+    getEasyLevelDeviceId: () => null,
+    getEasyLevelLastSampleAt: () => null,
+    getEasyLevelRawAccel: () => null,
+    getEasyLevelStatusBytes: () => null,
     ...overrides,
   };
 }
@@ -48,7 +48,7 @@ describe('createEasyLevelStatusPage', () => {
     expect(page.element.textContent).toContain(t('sensorSource.status.disconnected'));
   });
 
-  it('shows the live calibrated reading, reusing diagnostics\' own "roll/pitch" wording', () => {
+  it('shows the live calibrated reading for either sensor source', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({ getCalibratedTilt: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }) }),
     );
@@ -94,17 +94,69 @@ describe('createEasyLevelStatusPage', () => {
     expect(page.element.textContent).toContain('Battery: 60%');
   });
 
-  it('embeds the debug info as a closed-by-default <details> disclosure, reusing createDiagnosticsSection verbatim', () => {
-    const page = createEasyLevelStatusPage(
-      makeOptions({ getActiveTargetName: () => 'Shower drain' }),
-    );
-    const details = page.element.querySelector('details');
-    expect(details).not.toBeNull();
-    expect(details?.open).toBe(false);
-    // The universal Diagnostics section's own rows (source/state/sample
-    // rate/target/version/"Copy diagnostics") live inside, not duplicated.
-    expect(details?.textContent).toContain('Shower drain');
-    expect(details?.textContent).toContain(t('diagnostics.copy'));
+  describe('debug info (EasyLevel only)', () => {
+    it('is hidden entirely while the phone sensor is active', () => {
+      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'phone' }));
+      const details = page.element.querySelector('details');
+      expect(details?.hidden).toBe(true);
+    });
+
+    it('shows, closed by default, once EasyLevel is the active source', () => {
+      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+      const details = page.element.querySelector('details');
+      expect(details?.hidden).toBe(false);
+      expect(details?.open).toBe(false);
+    });
+
+    it('shows the device id, raw accelerometer vector, firmware tier and raw status bytes as hex', () => {
+      const page = createEasyLevelStatusPage(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getEasyLevelDeviceId: () => 'device-42',
+          getEasyLevelRawAccel: () => ({ x: 120, y: -45, z: 980 }),
+          getEasyLevelStatus: () => ({
+            firmwareTier: 3,
+            batteryPercent: 80,
+            temperatureCelsius: 20,
+          }),
+          getEasyLevelStatusBytes: () => new Uint8Array([0, 10, 0x32, 0xff]),
+        }),
+      );
+      const text = page.element.textContent ?? '';
+      expect(text).toContain('device-42');
+      expect(text).toContain('120, -45, 980');
+      expect(text).toContain('Firmware tier: 3');
+      expect(text).toContain('00 0a 32 ff');
+    });
+
+    it('shows "not available yet" for every raw field before anything has arrived', () => {
+      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+      const text = page.element.textContent ?? '';
+      const notAvailableCount = (text.match(/Not available yet/g) ?? []).length;
+      // Device ID, raw accelerometer, firmware tier, raw status bytes — plus
+      // the battery/temperature rows above the disclosure.
+      expect(notAvailableCount).toBeGreaterThanOrEqual(6);
+    });
+
+    it('copies a plain-text debug summary to the clipboard', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+      const page = createEasyLevelStatusPage(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getEasyLevelDeviceId: () => 'device-42',
+          getEasyLevelStatusBytes: () => new Uint8Array([1, 2]),
+        }),
+      );
+      const copyButton = [...page.element.querySelectorAll('button')].find(
+        (b) => b.textContent === t('sensorStatus.debug.copy'),
+      )!;
+      copyButton.click();
+      await Promise.resolve();
+      expect(writeText).toHaveBeenCalledOnce();
+      expect(writeText.mock.calls[0]![0]).toContain('device-42');
+      expect(writeText.mock.calls[0]![0]).toContain('01 02');
+    });
   });
 
   it('open()/close()/isOpen() delegate to the underlying standalone page', () => {

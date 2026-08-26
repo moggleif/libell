@@ -32,6 +32,7 @@
  */
 import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
+import type { GravityVector } from '../domain/leveling';
 import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
@@ -105,14 +106,24 @@ export interface MenuOptions {
   checkInstallCalibration(): string;
   clearInstallCalibration(): void;
   /**
-   * Diagnostics (#133, R36). Unused by this Classic-only menu now (moved
-   * to `infoMenu.ts`); kept here since this options bag is shared.
+   * The sensor status page's live reading row (`easyLevelStatusPage.ts`) —
+   * the same effective calibration (sensor bias + vehicle zero + active
+   * target, #122) the leveling math itself uses. Unused by this
+   * Classic-only menu now; kept here since this options bag is shared.
    */
-  getLastSampleAt(): number | null;
-  getRawTilt(): Calibration | null;
   getCalibratedTilt(): Calibration | null;
   /** The active target preset's name (#122), or null for "Normal". */
   getActiveTargetName(): string | null;
+  /**
+   * EasyLevel-only debug info (`easyLevelStatusPage.ts`'s "Debug info"
+   * disclosure) — raw values straight off the box, for troubleshooting a
+   * box that isn't behaving as expected. Unused by this Classic-only menu
+   * now; kept here since this options bag is shared.
+   */
+  getEasyLevelDeviceId(): string | null;
+  getEasyLevelLastSampleAt(): number | null;
+  getEasyLevelRawAccel(): GravityVector | null;
+  getEasyLevelStatusBytes(): Uint8Array | null;
   /** Live soundOnLevel/soundGuidance (#161) — the bottom bar's mute
    * toggle can change these outside this form, so the Settings page
    * resyncs from here every time it (re)opens. */

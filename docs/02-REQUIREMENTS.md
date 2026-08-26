@@ -116,7 +116,7 @@ URL and must keep working with no signal.
   form/save state under the hood, same as Modern's tabs do — Save from any of the
   four still persists the current values of all four, not just the page on screen,
   and every one of the four shows the exact same Reset/Undo/Save row (Calibration
-  alone stays exempt, the one page with no "unsaved" form state at all). Diagnostics, the
+  alone stays exempt, the one page with no "unsaved" form state at all). The
   introduction relaunch and External sensor stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"
@@ -821,49 +821,6 @@ noisy samples to arrive; this fires when no new samples arrive at all).
   unit-testable without real timers — the same discipline R25's stillness detector
   and the display stabilizer's dwell timers already follow.
 
-## R36 — Sensor diagnostics page for development/support (#133)
-
-A deeper, technical view of what the active sensor is actually doing — for
-development and bug reports, never part of everyday leveling. It also absorbs the
-earlier separate "angle/engineering detail view" idea: raw vs. calibrated roll/pitch
-is a subset of what this page already shows, so it never became a second screen.
-R8's always-visible main-screen degree readout is unaffected.
-
-- **Given** I want to inspect what the app is actually measuring (development, or a
-  bug report)
-- **When** I open "?" (R38) and switch to the Diagnostics tab (screen-cleanup
-  follow-up: to the right of Feedback, no longer behind the ☰ menu)
-- **Then** a dedicated tab shows: the active sensor source (phone / EasyLevel) and
-  its connection state (R32/R33), sample rate, time since the last sample, raw
-  (uncalibrated) roll/pitch, calibrated roll/pitch (the same effective calibration —
-  sensor bias + vehicle zero + active target, R24/R31 — the leveling math itself
-  uses), the effective target preset's name or "Normal" (R31), battery/temperature/
-  signal strength when available, and the running app version (R28's About page
-  value, reused, not recomputed).
-- **Given** I have never connected an external sensor
-- **Then** every external-only field (battery, temperature, signal strength) reads
-  "—" — never a broken or undefined display — and the page works entirely from the
-  phone sensor.
-- **Given** I want to report a problem
-- **When** I tap "Copy diagnostics"
-- **Then** a plain-text summary of everything on the page is copied to the clipboard,
-  confirmed with a brief toast, ready to paste into a bug report — no network call of
-  its own (R12's no-backend philosophy, the same one the Feedback form already
-  follows).
-- **Given** this page is never shown during normal leveling
-- **Then** it is reachable only through the deliberate menu entry above — never a
-  main-screen element, never opened automatically.
-- Sample rate is reported, not measured: the phone sensor's `devicemotion`/
-  `deviceorientation` events fire continuously once granted (tens of Hz), so it is
-  described as "continuous (~60 Hz)"; the EasyLevel BLE box's notifications are
-  event-driven with no fixed clock (R32/R35), so it is described as such rather than
-  given a fabricated precise number — an honest approximation, not a live
-  measurement, for a support-only page that is opened rarely and briefly.
-- Battery/temperature show the same real decoded values R32 shows on the "External
-  sensor" page (#123), read from the identical seam so the two pages can never
-  disagree. Signal strength reuses R32's exact "not available yet" wording — never a
-  second, slightly different phrasing, and never relaxed into a fabricated value.
-
 ## R37 — Sensor unavailable: an explicit Retry / "Use phone sensor" prompt (#134)
 
 R32/R33 already report a lost or unreachable EasyLevel connection honestly (the
@@ -923,10 +880,10 @@ unannounced switch could show a plausible-looking but wrong reading.
   follow-up: not clustered together in the middle): settings (a gear icon, R9 —
   Help/About/Feedback are not part of this menu at all), sound (visually larger —
   the primary, most-reached-for control), help ("?", opens its own page with Help
-  (R28, "Show introduction" at the top of that tab), About (R28), Feedback (R12) and
-  Diagnostics (R36) as tabs, in that order — a fully independent component from the
-  Settings page/menu, never routed through its drawer or sharing its back-navigation
-  state, so its close (✕) can never reveal the Settings drawer underneath).
+  (R28, "Show introduction" at the top of that tab), About (R28) and Feedback (R12)
+  as tabs, in that order — a fully independent component from the Settings
+  page/menu, never routed through its drawer or sharing its back-navigation state,
+  so its close (✕) can never reveal the Settings drawer underneath).
 - **Given** I tap the sound button while "Chime when level" (R16) and/or "Continuous
   audio guidance" (R30) are on
 - **Then** both turn off together and the button shows a muted state.
@@ -962,34 +919,46 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 - **Then** the ordinary External sensor page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
 
-## R40 — Sensor status page: live values while it's open, plus a debug disclosure
+## R40 — Sensor status page: live values while it's open, plus an EasyLevel debug disclosure
 
 The External sensor page (R32) lists the one sensor Libell currently supports; tapping
 its status row opens a deeper, focused page for that sensor alone, refreshed
-continuously while it stays open — not just once when opened.
+continuously while it stays open — not just once when opened. This page replaces the
+earlier standalone Diagnostics tab (design review): that page's generic phone-or-
+EasyLevel framing didn't earn its keep, and whatever troubleshooting value it had is
+better served by raw values read straight off the box.
 
 - **Given** the External sensor page
 - **When** I tap the sensor's status row (the same text that already says "Using the
   phone's own sensor" / "Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state, battery,
   temperature (R32's exact values and wording) and a live reading — the same
-  calibrated roll/pitch (R36) the leveling math itself uses — so a box can be
-  confirmed alive by watching the number move, without leaving this page.
+  calibrated roll/pitch the leveling math itself uses — so a box can be confirmed
+  alive by watching the number move, without leaving this page. This much works for
+  either sensor source, the phone's own included.
 - **Given** this status page is open
 - **Then** every value on it keeps refreshing every frame for as long as it stays
   open — the same "runs every frame regardless of what else is open" discipline the
   top-bar sensor-status dot already follows — so a battery/temperature notification
   or a tilt change shows up immediately, never only after closing and reopening the
   page.
-- **Given** I want more than the headline values
+- **Given** EasyLevel is the active source
 - **When** I expand its "Debug info" disclosure (closed by default, a native
   `<details>` — no separate tap-and-wait)
-- **Then** it shows everything the universal "?" → Diagnostics tab (R36) already
-  shows — sample rate, raw vs. calibrated tilt, the effective target, RSSI, app
-  version, "Copy diagnostics" — reusing that exact page rather than a second,
-  potentially-drifting implementation of the same rows.
+- **Then** it shows raw values straight off the box, for troubleshooting a box that
+  isn't behaving as expected — not everyday reading material: the box's Web
+  Bluetooth device id, time since its last accepted accel notification, the raw
+  accelerometer int16 triplet (`easyLevelProtocol.ts`'s unscaled x/y/z — never run
+  through the leveling math), the firmware tier decoded from the status
+  characteristic (#123), and the status characteristic's raw bytes as hex — plus a
+  "Copy debug info" button producing a plain-text block of all of the above, ready
+  to paste into a bug report.
 - **Given** the phone's own sensor is active instead of EasyLevel
-- **Then** this page still opens and still works: connection state reads "Using the
-  phone's own sensor", battery/temperature/RSSI read "not available yet" (R32's exact
-  wording), and the debug disclosure still shows the phone's own sample rate and tilt
-  — one page for whichever sensor is active, not an EasyLevel-only special case.
+- **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
+  show — while the state/battery/temperature/reading rows above it still work,
+  reading "Using the phone's own sensor" and "not available yet" for
+  battery/temperature (R32's exact wording).
+- **Given** any raw debug field before its data has ever arrived (no box connected
+  yet, or connected but no status/accel notification received yet)
+- **Then** it reads "not available yet" — the same wording every other not-yet-
+  available field in this app already uses — never a broken or fabricated value.

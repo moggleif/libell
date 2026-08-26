@@ -2,12 +2,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSensorPage } from './sensorPage';
 import type { SensorSourceOptions } from './sensorSourceSection';
-import type { DiagnosticsOptions } from './diagnosticsSection';
+import type { EasyLevelStatusOptions } from './easyLevelStatusPage';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-type Options = SensorSourceOptions & DiagnosticsOptions;
+type Options = SensorSourceOptions & EasyLevelStatusOptions;
 
 function makeOptions(overrides: Partial<Options> = {}): Options {
   return {
@@ -21,10 +21,11 @@ function makeOptions(overrides: Partial<Options> = {}): Options {
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
-    getLastSampleAt: () => null,
-    getRawTilt: () => null,
     getCalibratedTilt: () => null,
-    getActiveTargetName: () => null,
+    getEasyLevelDeviceId: () => null,
+    getEasyLevelLastSampleAt: () => null,
+    getEasyLevelRawAccel: () => null,
+    getEasyLevelStatusBytes: () => null,
     ...overrides,
   };
 }

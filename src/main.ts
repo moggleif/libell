@@ -463,9 +463,9 @@ function bootstrap(root: HTMLElement): void {
   };
 
   // Shared options bag (#screen-cleanup follow-up): every field the ☰
-  // Classic menu, the Modern Settings page, the "?" info page's
-  // Diagnostics tab, and the External sensor page each need — reused
-  // as-is by whichever of those get constructed below, never duplicated.
+  // Classic menu, the Modern Settings page, and the External sensor page
+  // (including its nested status/debug page) each need — reused as-is by
+  // whichever of those get constructed below, never duplicated.
   const menuOptions = {
     initialSettings: settings,
     appearance: settings.appearance,
@@ -528,11 +528,13 @@ function bootstrap(root: HTMLElement): void {
       clearEasyLevelCalibration();
       updateIndicators();
     },
-    getLastSampleAt: () => sensor.getLastSampleAt(),
-    getRawTilt: () => diagnosticsRawTilt(),
-    getCalibratedTilt: () => diagnosticsCalibratedTilt(),
+    getCalibratedTilt: () => calibratedTiltNow(),
     getActiveTargetName: () => activeTargetName(),
     getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
+    getEasyLevelDeviceId: () => easyLevelSensor?.getDeviceId() ?? null,
+    getEasyLevelLastSampleAt: () => easyLevelSensor?.getLastSampleAt() ?? null,
+    getEasyLevelRawAccel: () => easyLevelSensor?.getGravity() ?? null,
+    getEasyLevelStatusBytes: () => easyLevelSensor?.getStatusBytes() ?? null,
     getSoundPrefs: () => ({
       soundOnLevel: settings.soundOnLevel,
       soundGuidance: settings.soundGuidance,
@@ -565,17 +567,13 @@ function bootstrap(root: HTMLElement): void {
   const isMenuOpen = () =>
     isModern ? (settingsPage?.isOpen() ?? false) : (menu?.isOpen() ?? false);
 
-  // "?" opens its own Help/About/Feedback/Diagnostics tabbed page
-  // (screen-cleanup follow-up), with the introduction relaunch at the top
-  // of the Help tab — a fully independent page (universal, both
-  // appearances), not a section of the ☰ Settings menu: sharing that
-  // menu's history depth let its back button pop through to reveal the
-  // Settings drawer underneath by mistake.
-  const infoPage = createInfoPage({
-    diagnostics: menuOptions,
-    openOnboarding,
-    hasDoneOnboarding,
-  });
+  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
+  // follow-up), with the introduction relaunch at the top of the Help tab
+  // — a fully independent page (universal, both appearances), not a
+  // section of the ☰ Settings menu: sharing that menu's history depth let
+  // its back button pop through to reveal the Settings drawer underneath
+  // by mistake.
+  const infoPage = createInfoPage({ openOnboarding, hasDoneOnboarding });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
   if (helpButton) infoPage.attach(helpButton);
@@ -719,29 +717,19 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /** The active target preset's own name, or null for "Normal" — shared by
-   * the main-screen badge and the diagnostics page (#133) so the two can
-   * never disagree about what "effective target" means. */
+   * the main-screen badge and the Targets section so the two can never
+   * disagree about what "effective target" means. */
   function activeTargetName(): string | null {
     return targetPresets.find((preset) => preset.id === activeTargetId)?.name ?? null;
   }
 
-  /** Diagnostics page (#133, R36): raw (uncalibrated) roll/pitch, read
-   * directly from the active sensor — never `readTiltNow()`, which starts
+  /** The sensor status page's live reading row (`easyLevelStatusPage.ts`):
+   * the same effective calibration (sensor bias + vehicle zero + active
+   * target, #122) the leveling math itself subtracts — reused via
+   * `tiltFromGravity`, not recomputed. Never `readTiltNow()`, which starts
    * the sensor as a side effect when there is no reading yet; a passive
-   * diagnostics refresh must never itself trigger a permission prompt. */
-  function diagnosticsRawTilt(): Calibration | null {
-    const gravity = sensor.getGravity();
-    if (!gravity) return null;
-    return {
-      rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
-      pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
-    };
-  }
-
-  /** Calibrated roll/pitch: the same effective calibration (sensor bias +
-   * vehicle zero + active target, #122) the leveling math itself
-   * subtracts — reused via `tiltFromGravity`, not recomputed. */
-  function diagnosticsCalibratedTilt(): Calibration | null {
+   * status-page refresh must never itself trigger a permission prompt. */
+  function calibratedTiltNow(): Calibration | null {
     const gravity = sensor.getGravity();
     if (!gravity) return null;
     const tilt = tiltFromGravity(gravity, effectiveCalibration());
