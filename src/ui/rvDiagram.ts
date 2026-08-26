@@ -376,23 +376,24 @@ function createModernDiagram(): RvDiagram {
     class: 'rv-diagram__body',
   });
 
-  // Mirrors sit right at the front corners, level with the windshield —
-  // not mid-cab — so they read as mounted where the glass meets the
-  // A-pillar (small-adjustments follow-up).
+  // Mirrors sit right at the front corners, level with the windshield,
+  // overlapping the cab edge by a couple of units so they read as
+  // mounted onto it rather than floating beside it (small-adjustments
+  // follow-up). Sized down 30% from the original 14×18.
   const mirrorLeft = svgEl('rect', {
-    x: '64',
-    y: '82',
-    width: '14',
-    height: '18',
-    rx: '5',
+    x: '72',
+    y: '85',
+    width: '10',
+    height: '13',
+    rx: '4',
     class: 'rv-diagram__trim',
   });
   const mirrorRight = svgEl('rect', {
-    x: '182',
-    y: '82',
-    width: '14',
-    height: '18',
-    rx: '5',
+    x: '178',
+    y: '85',
+    width: '10',
+    height: '13',
+    rx: '4',
     class: 'rv-diagram__trim',
   });
 
