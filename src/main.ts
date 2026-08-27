@@ -813,7 +813,14 @@ function bootstrap(root: HTMLElement): void {
   const sensorStatus = createSensorStatusIndicator(easyLevelSupported, showIosGuide, () =>
     sensorPage?.open(),
   );
-  document.querySelector('#indicators')?.append(sensorStatus.element);
+  // Into its own pinned top-bar slot — not the #indicators cluster — so
+  // the icon always owns the top-right corner and the other top-bar
+  // items wrap or shift left of it. The topbar class reserves the
+  // corner's width (styles.css) only while the icon is actually shown.
+  document.querySelector('#sensor-slot')?.append(sensorStatus.element);
+  document
+    .querySelector('.topbar')
+    ?.classList.toggle('topbar--has-sensor', !sensorStatus.element.hidden);
   const updateSensorStatus = () => sensorStatus.update(sensor.getSource(), sensor.getState());
   updateSensorStatus();
 

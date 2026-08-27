@@ -161,9 +161,21 @@ body {
 
 .topbar {
   display: flex;
+  /* When the right-side actions don't fit beside the identity group they
+   * wrap onto their own right-aligned row (.topbar__actions below) — the
+   * absolutely-pinned sensor-status slot never takes part in wrapping,
+   * so it keeps the top-right corner on every width. */
+  flex-wrap: wrap;
+  position: relative;
   align-items: center;
   gap: 12px;
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+}
+
+/* Set from main.ts while the sensor-status icon is visible: reserves the
+ * top-right corner (44px slot + gap) so no in-flow item slides under it. */
+.topbar--has-sensor {
+  padding-right: 72px;
 }
 
 .topbar__icon {
@@ -371,8 +383,53 @@ body {
 
 /* ---- Warning lamps (like a car dashboard) ---- */
 
+/* Everything on the top bar's right side EXCEPT the sensor-status icon:
+ * warning lamps, target badge and the Install button. When the bar gets
+ * too narrow this whole group wraps onto its own right-aligned row (and
+ * wraps further internally if needed), so these are the ones that move;
+ * the pinned sensor icon never gives up the top-right corner. */
+.topbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+/* The #indicators wrapper (index.html) holds the lamps cluster and the
+ * target badge — a flex row like the bar itself, so they line up beside
+ * each other instead of stacking as blocks. */
+.topbar__indicators {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The sensor-status icon's slot: pinned to the top-right corner of the
+ * bar, out of the flex flow entirely, so neither wrapping nor a taller
+ * bar ever moves it — everything else shifts around it instead. Empty
+ * (and .topbar--has-sensor absent, so no reserved space) whenever the
+ * icon is hidden. The top offset mirrors the bar's own top padding. */
+.topbar__sensor-slot {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  right: 16px;
+}
+
 .indicators {
   display: flex;
+  /* Wraps with its parent cluster (.topbar__indicators) on narrow
+   * screens — the lamps give way, never the sensor icon's corner. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
   gap: 8px;
 }
 

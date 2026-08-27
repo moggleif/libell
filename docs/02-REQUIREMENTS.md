@@ -941,8 +941,12 @@ unannounced switch could show a plausible-looking but wrong reading.
 
 - **Given** the app loads, on any screen width
 - **Then** the top bar shows only identity on the left (logo, title, share) and the
-  indicators cluster on the right (warning lamps, target badge, sensor status) — no
-  menu button there. The install prompt (R20) is unaffected, still using the
+  actions cluster on the right — no menu button there. The sensor-status icon always
+  keeps the top-right corner whenever it is visible; the warning lamps, target badge
+  and Install button (R20) sit in a row to its left and are the ones that move when
+  space runs out, wrapping onto further right-aligned rows below — never pushing the
+  sensor icon out of the corner and never overlapping the identity group. The install
+  prompt (R20) is otherwise unaffected, still using the
   `#install-hint` banner under the top bar. The sensor-status icon (R32/R33,
   screen-cleanup follow-up) is now the _only_ way to reach External sensor — it
   stays visible whenever Web Bluetooth exists at all (a neutral "tap to connect"

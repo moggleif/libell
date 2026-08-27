@@ -24,8 +24,14 @@
           </g>
         </svg>
       </button>
-      <div id="indicators"></div>
-      <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
+      <div class="topbar__actions">
+        <div id="indicators" class="topbar__indicators"></div>
+        <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
+      </div>
+      <!-- The sensor-status icon is appended here by main.ts — last on
+           purpose, so it always owns the top-right corner (everything
+           else, Install included, wraps or shifts to its left). -->
+      <div id="sensor-slot" class="topbar__sensor-slot"></div>
     </header>
     <p id="install-hint" class="install-hint" hidden></p>
     <main id="app" class="app"></main>
