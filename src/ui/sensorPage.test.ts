@@ -81,7 +81,22 @@ describe('createSensorPage', () => {
       )!;
       statusButton.click();
       expect(page.statusElement.hasAttribute('hidden')).toBe(false);
-      expect(page.statusElement.textContent).toContain('Sensor status');
+      expect(page.statusElement.textContent).toContain('EasyLevel sensor');
+    });
+
+    it('puts the connect half on the list page and the settings half on the sensor page (#226)', () => {
+      const page = createSensorPage(
+        makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'granted' }),
+      );
+      // The list page is only about picking/connecting a source.
+      expect(page.element.textContent).toContain('Connect');
+      expect(page.element.textContent).not.toContain('Sensor mounting');
+      expect(page.element.textContent).not.toContain('Installation offset');
+      expect(page.element.textContent).not.toContain('Battery');
+      // Per-device settings and health live on the sensor's own page.
+      expect(page.statusElement.textContent).toContain('Sensor mounting');
+      expect(page.statusElement.textContent).toContain('Installation offset');
+      expect(page.statusElement.textContent).toContain('Battery');
     });
 
     it('refreshLive() is a no-op while the status page is closed', () => {

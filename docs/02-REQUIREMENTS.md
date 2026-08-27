@@ -682,13 +682,15 @@ URL and must keep working with no signal.
 - **Then** the main-screen dot switches to a clearly different (warning) look — this
   dot is the visible half of the "never leave apparently-live instructions on screen"
   guarantee; the freeze/stale-data logic that backs it is separate (#132).
-- **Given** the External sensor page, whether connected or disconnected
+- **Given** the sensor's own page (R40), whether connected or disconnected
 - **Then** it spells out the connection state in full, and shows battery and
   temperature as real decoded values once the first `faf52c22-...` status
   notification has arrived — "not available yet" only in the brief window before
   that, or before EasyLevel has ever connected (#123). Signal strength shows "not
   available yet" always: there is no reliable, cross-browser way to read RSSI from
-  Web Bluetooth, and this page must never fabricate a number for it.
+  Web Bluetooth, and this page must never fabricate a number for it. These rows
+  lived on the External sensor page itself until #226 moved them here, so that
+  battery and temperature appear in exactly one place rather than on both pages.
 - **Given** the box's `faf52c21-...` notification payload (6× signed int16,
   little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
 - **Then** the accelerometer triplet is used, bias-corrected against the most recent
@@ -847,7 +849,9 @@ cross-platform goal — they are not this app's code and are not covered here.
 - The amber calibration lamp (R11) follows the same rule: it checks the phone's pair
   while the phone is active, or just the box's installation offset while EasyLevel
   is — never both pairs at once.
-- This installation-offset step lives on the External sensor page (#116, R32),
+- This installation-offset step lives on the EasyLevel sensor's own page (R40; the
+  External sensor page itself until #226 moved it, along with the mounting picker,
+  onto the page for the device it configures),
   not inside the Calibration menu section, since it only makes sense once an external
   source exists to calibrate.
 
@@ -997,7 +1001,7 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 - **Then** the ordinary External sensor page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
 
-## R40 — Sensor status page: live values while it's open, plus an EasyLevel debug disclosure
+## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
 
 The External sensor page (R32) lists the one sensor Libell currently supports; tapping
 its status row opens a deeper, focused page for that sensor alone, refreshed
@@ -1006,14 +1010,32 @@ earlier standalone Diagnostics tab (design review): that page's generic phone-or
 EasyLevel framing didn't earn its keep, and whatever troubleshooting value it had is
 better served by raw values read straight off the box.
 
+Since #226 it is also where that sensor is **configured**, not only observed: the
+mounting picker (R43) and the installation offset (R34) moved here from the list page,
+which had grown longer than the detail page its own chevron led to, and repeated
+battery and temperature on both. The division is now plain — the External sensor page
+answers "which source, and how do I connect it", and this page answers everything
+about one specific box. It is titled for that box ("EasyLevel sensor") rather than
+"Sensor status", since configuration lives here too.
+
 - **Given** the External sensor page
 - **When** I tap the sensor's status row (the same text that already says "Using the
   phone's own sensor" / "Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state, battery,
-  temperature (R32's exact values and wording) and a live reading — the same
-  calibrated roll/pitch the leveling math itself uses — so a box can be confirmed
-  alive by watching the number move, without leaving this page. This much works for
-  either sensor source, the phone's own included.
+  signal strength, temperature (R32's exact values and wording) and a live reading —
+  the same calibrated roll/pitch the leveling math itself uses — so a box can be
+  confirmed alive by watching the number move, without leaving this page. This much
+  works for either sensor source, the phone's own included.
+- **Given** EasyLevel is (or was) the active source
+- **Then** below those rows, and above the debug disclosure, the same page carries
+  this box's own settings: the mounting picker (R43) and the installation offset
+  (R34), each behaving exactly as specified in its own requirement and showing
+  current values whenever the page is opened. They are the very same components the
+  onboarding wizard embeds as steps — never a second, page-specific rebuild.
+- **Given** the External sensor page (R32)
+- **Then** it carries none of the above: only the intro, the Connect/Reconnect action
+  and the sensor row that leads here. A list of sources never grows longer than the
+  page it links to.
 - **Given** this status page is open
 - **Then** every value on it keeps refreshing every frame for as long as it stays
   open — the same "runs every frame regardless of what else is open" discipline the
@@ -1033,9 +1055,10 @@ better served by raw values read straight off the box.
   to paste into a bug report.
 - **Given** the phone's own sensor is active instead of EasyLevel
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
-  show — while the state/battery/temperature/reading rows above it still work,
-  reading "Using the phone's own sensor" and "not available yet" for
-  battery/temperature (R32's exact wording).
+  show — as are the EasyLevel-only mounting and installation-offset blocks, while the
+  state/battery/temperature/reading rows above them still work, reading "Using the
+  phone's own sensor" and "not available yet" for battery/temperature (R32's exact
+  wording).
 - **Given** any raw debug field before its data has ever arrived (no box connected
   yet, or connected but no status/accel notification received yet)
 - **Then** it reads "not available yet" — the same wording every other not-yet-
@@ -1140,9 +1163,9 @@ Mounting the box fully upside-down (inverted Z) stays out of scope and fails saf
 rather than silently: `domain/pose.ts` reads ~180° of total tilt and shows R17's
 "lay it flat" overlay instead of guidance.
 
-- **Given** the External sensor page, once EasyLevel is (or was) the active source
-  (same visibility rule as R34's installation offset, which this setting sits
-  alongside)
+- **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
+  active source (same visibility rule as R34's installation offset, which this
+  setting sits alongside — both moved here from the External sensor page by #226)
 - **Then** it shows a mounting-orientation choice — "Standard", "Rotated 90°",
   "Rotated 180°" and "Rotated 270°" — described without the official app's own
   `"sensor_Placing"` terminology, plus a small schematic diagram (a box-and-arrow

@@ -89,6 +89,82 @@ describe('createEasyLevelStatusPage', () => {
     expect(page.element.textContent).not.toContain('Low battery');
   });
 
+  // Relocated from `sensorSourceSection.test.ts` by #226, along with the
+  // block they cover: these are R32 behaviors that simply live on this
+  // page now instead of the External sensor list page.
+  it('always shows signal strength as "not available yet" — never fabricates an RSSI (#226)', () => {
+    const page = createEasyLevelStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getSensorState: () => 'granted',
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: 72,
+          temperatureCelsius: 19.5,
+          calibration: null,
+        }),
+      }),
+    );
+    // Battery and temperature are real; only signal strength is unknown.
+    expect(page.element.textContent).toContain('Battery: 72%');
+    expect(page.element.textContent).toContain('Temperature: 19.5°C');
+    expect(page.element.textContent).toContain('Signal strength: Not available yet');
+  });
+
+  it('still spells out battery/signal/temperature for a dropped connection — not omitted on disconnect (#226)', () => {
+    const page = createEasyLevelStatusPage(
+      makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
+    );
+    expect(page.element.textContent).toContain('Battery');
+    expect(page.element.textContent).toContain('Signal strength');
+    expect(page.element.textContent).toContain('Temperature');
+  });
+
+  it('holds the low-battery warning through the hysteresis band, hiding only once clearly recovered (#123, #226)', () => {
+    let battery = 15;
+    const page = createEasyLevelStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: battery,
+          temperatureCelsius: 20,
+          calibration: null,
+        }),
+      }),
+    );
+    // Checked by visibility, not textContent: the row keeps its last text
+    // while hidden, so only `hidden` distinguishes "recovered" from
+    // "still warning" (the same helper the relocated test used).
+    const visibleWarning = () =>
+      [...page.element.querySelectorAll<HTMLElement>('.menu__text--warning')].find(
+        (el) => !el.hidden,
+      );
+    expect(visibleWarning()?.textContent).toContain('Low battery');
+
+    // Back above the bare threshold, but still inside the hysteresis band
+    // — must not flicker off yet.
+    battery = 21;
+    page.refresh();
+    expect(visibleWarning()).toBeDefined();
+
+    // Clearly above the band now.
+    battery = 30;
+    page.refresh();
+    expect(visibleWarning()).toBeUndefined();
+  });
+
+  it('hosts this sensor\u2019s own settings — mounting and installation offset — via settingsSlot (#226)', () => {
+    const page = createEasyLevelStatusPage(makeOptions());
+    // Empty until `sensorPage.ts` fills it; the slot itself is the
+    // contract, and it sits above the debug disclosure.
+    expect(page.settingsSlot).toBeInstanceOf(HTMLElement);
+    const debugDetails = page.element.querySelector('details');
+    expect(
+      page.settingsSlot.compareDocumentPosition(debugDetails!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it('re-reads every value on refresh() — a live battery reading updates without reopening the page', () => {
     let battery = 80;
     const page = createEasyLevelStatusPage(

@@ -59,11 +59,22 @@ export function createSensorPage(
   options: SensorSourceOptions & EasyLevelStatusOptions,
 ): EasyLevelSensorPage {
   const statusPage = createEasyLevelStatusPage(options);
-  const sensorSourceSection = createSensorSourceSection(options, () => statusPage.open());
+  const sensorSourceSection = createSensorSourceSection(options, () => {
+    // The mounting/offset controls now live on the status page (#226) and
+    // are refreshed by this section, not by that page — so re-read them
+    // here, on the way in, exactly as opening the list page does for the
+    // half it still shows.
+    sensorSourceSection.refresh();
+    statusPage.open();
+  });
   const page = createStandalonePage(t('menu.sensorSource'), () => {
     sensorSourceSection.refresh();
   });
-  page.body.append(sensorSourceSection.element);
+  // A list of sources: just the connect half (#226). The per-device
+  // settings half goes on the device's own page below, so this page never
+  // grows longer than the detail page its chevron leads to.
+  page.body.append(sensorSourceSection.connectElement);
+  statusPage.settingsSlot.append(sensorSourceSection.installElement);
 
   return {
     element: page.element,

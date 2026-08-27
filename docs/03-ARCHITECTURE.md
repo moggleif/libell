@@ -168,8 +168,12 @@ pair to sum from the ACTIVE `sensor.getSource()`: the phone's sensor calibration
 vehicle zero while the phone is active, or just the EasyLevel installation offset
 while it is — there is no separate EasyLevel hardware-bias layer yet, so
 `vehicleZeroFromReading(reading, null)` (unmodified from R24) is reused directly for
-the capture. The UI lives in `sensorSourceSection.ts`'s "External sensor" page (not
-inside `calibrationSection.ts`), visible whenever EasyLevel is the active source,
+the capture. The UI is built by `sensorSourceSection.ts` (not inside `calibrationSection.ts`) and,
+since #226, placed by `sensorPage.ts` on the sensor's own page
+(`easyLevelStatusPage.ts`'s `settingsSlot`) rather than on the External sensor list
+page — that section returns its `connectElement`/`installElement` halves separately
+precisely so each caller can place them where they belong (the onboarding wizard puts
+them on separate steps). Visible whenever EasyLevel is the active source,
 reusing `calibrationAge.ts`'s shared `ageText()` (factored out of
 `calibrationSection.ts` by this change) and the `calibration.check.*`/`calibration.age.*`
 i18n keys for the Check/age copy rather than re-deriving that wording.

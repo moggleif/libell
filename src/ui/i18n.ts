@@ -160,7 +160,7 @@ export const MESSAGES = {
     // External sensor page. `reading` is the same roll/pitch the main
     // screen already computes, shown here too so a user checking the box
     // itself doesn't have to leave this page to see it move.
-    'sensorStatus.title': 'Sensor status',
+    'sensorStatus.title': 'EasyLevel sensor',
     'sensorStatus.reading': 'Reading: {value}',
     'sensorStatus.roll': 'roll',
     'sensorStatus.pitch': 'pitch',
@@ -662,7 +662,7 @@ export const MESSAGES = {
     'sensorSource.mounting.rotated180': 'Vriden 180°',
     'sensorSource.mounting.rotated270': 'Vriden 270°',
 
-    'sensorStatus.title': 'Sensorstatus',
+    'sensorStatus.title': 'EasyLevel-sensor',
     'sensorStatus.reading': 'Mätvärde: {value}',
     'sensorStatus.roll': 'roll',
     'sensorStatus.pitch': 'pitch',
