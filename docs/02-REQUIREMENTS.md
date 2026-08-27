@@ -1122,7 +1122,7 @@ off-by-default, adjustable connect delay reachable from the app's own UI.
   fight a user mid-edit (a keystroke into the ms field reset before the next one
   lands).
 
-## R43 — EasyLevel box: mounting-orientation setting (#217)
+## R43 — EasyLevel box: mounting-orientation setting (#217, all four rotations #222)
 
 The official EasyLevel app supports the box mounted two ways, 90° apart
 (`"sensor_Placing"` 1/2), and transforms its readings accordingly — traced in full by
@@ -1130,21 +1130,39 @@ The official EasyLevel app supports the box mounted two ways, 90° apart
 implemented the default orientation; a box mounted the other way would connect and
 produce plausible-looking data while Libell computed the wrong wheel to raise.
 
+#222 widens this past the official app: a rectangular box lying flat can be bolted in
+**four** ways, not two, and people mount hardware whichever way it fits. The two the
+official app omits (180°, 270°) are the dangerous ones, because the installation
+offset (R34) cannot rescue them — it subtracts a _constant_, while a half turn is a
+_sign inversion_. Level still reads level, so the calibration looks like it
+succeeded, and only then does the app start confidently naming the wrong wheel.
+Mounting the box fully upside-down (inverted Z) stays out of scope and fails safely
+rather than silently: `domain/pose.ts` reads ~180° of total tilt and shows R17's
+"lay it flat" overlay instead of guidance.
+
 - **Given** the External sensor page, once EasyLevel is (or was) the active source
   (same visibility rule as R34's installation offset, which this setting sits
   alongside)
-- **Then** it shows a mounting-orientation choice — "Standard" and "Rotated 90°" —
-  described without the official app's own `"sensor_Placing"` terminology, plus a
-  small schematic diagram (a box-and-arrow icon, not a literal redraw of the official
-  app's own illustrations) that visually reflects the current selection, updating
-  live as the choice changes.
-- **Given** a box physically mounted the second way
-- **When** the user selects "Rotated 90°"
-- **Then** the exact 90° rotation the official app's own `sensor_Placing: 2` applies —
-  derived from its decompiled `LO0/e;->k()` placement branches, `(x, y) → (-y, x)`,
-  `z` untouched — is applied to every subsequent EasyLevel reading, taking effect on
-  the very next accel sample with no reconnect needed (the same live-settings-read
-  pattern R42's connect delay already uses).
+- **Then** it shows a mounting-orientation choice — "Standard", "Rotated 90°",
+  "Rotated 180°" and "Rotated 270°" — described without the official app's own
+  `"sensor_Placing"` terminology, plus a small schematic diagram (a box-and-arrow
+  icon, not a literal redraw of the official app's own illustrations) drawn at that
+  same rotation, so the choice is made by matching the picture rather than by
+  understanding an axis convention; it updates live as the choice changes.
+- **Given** a box physically mounted any of the other three ways
+- **When** the user selects the matching option
+- **Then** that rotation of the (x, y) pair — `(-y, x)` at 90° (the exact transform
+  the official app's own `sensor_Placing: 2` applies, derived from its decompiled
+  `LO0/e;->k()` placement branches), `(-x, -y)` at 180°, `(y, -x)` at 270° — is
+  applied to every subsequent EasyLevel reading, taking effect on the very next accel
+  sample with no reconnect needed (the same live-settings-read pattern R42's connect
+  delay already uses). `z` is untouched by all four: no rotation in this set changes
+  which way is up.
+- **Given** the four options
+- **Then** they form one rotation group rather than four ad-hoc formulas — two
+  quarter turns equal the half turn, four return to the original reading — so the
+  two Libell adds are the plain continuation of the one #217 derived from the
+  official app, not separately reverse-engineered behavior.
 - **Given** "Standard" (the default, matching the official app's own default
   `sensor_Placing: 1`)
 - **Then** behavior is byte-for-byte identical to every EasyLevel release before this
@@ -1157,7 +1175,8 @@ produce plausible-looking data while Libell computed the wrong wheel to raise.
   setting (`LevelSettings.easyLevelMounting`).
 - **Given** a corrupt or future-version stored value
 - **Then** it falls back to "Standard", the same validate-on-read discipline every
-  other enum-like setting (`sensorSource`, `appearance`, ...) already follows.
+  other enum-like setting (`sensorSource`, `appearance`, ...) already follows — and a
+  `standard`/`rotated90` stored before #222 keeps working unchanged.
 
 ## R44 — Simulated EasyLevel box (`?easylevel-sim`): the whole flow, no hardware (#220)
 

@@ -57,6 +57,29 @@ export function easyLevelSimulationMode(
  * box's browser-assigned id. */
 export const SIMULATED_EASYLEVEL_DEVICE_ID = 'easylevel-simulated-box';
 
+/**
+ * Whether a remembered device id (#130) could possibly be reached in the
+ * current simulation mode (#223). A simulated id is only ever findable by
+ * the simulated transport, and a real one only by the real transport
+ * hunting through `getDevices()` — so attempting the mismatched pairing
+ * cannot succeed, and failing to check strands the app: `main.ts` adopts
+ * the EasyLevel sensor on a failed startup reconnect (by design, so the
+ * honest 'disconnected' UI shows), and the #211 background auto-retry
+ * then loops forever on a lookup guaranteed to fail. Left as "not
+ * reachable right now" rather than clearing the stored id, so returning
+ * to the matching mode reconnects normally.
+ *
+ * Pure, with the mode passed in — the same time-and-state-as-parameter
+ * discipline `sensorFallback.ts`'s `isEasyLevelAutoRetryDue` and
+ * `domain/staleness.ts`'s `isSensorStale` already follow.
+ */
+export function isRememberedEasyLevelDeviceUsable(
+  deviceId: string,
+  mode: EasyLevelSimulationMode = easyLevelSimulationMode(),
+): boolean {
+  return (deviceId === SIMULATED_EASYLEVEL_DEVICE_ID) === (mode !== 'off');
+}
+
 /** Accel notification cadence — the same order of magnitude as a real BLE
  * notify stream, and comfortably inside `STALE_TIMEOUT_EASYLEVEL_MS`. */
 export const SIMULATED_ACCEL_INTERVAL_MS = 100;

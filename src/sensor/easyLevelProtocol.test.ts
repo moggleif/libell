@@ -8,6 +8,7 @@ import {
   parseAccelPacket,
   parseEasyLevelStatus,
 } from './easyLevelProtocol';
+import { EASYLEVEL_MOUNTINGS } from '../domain/settings';
 
 /** Build a little-endian int16 byte array from signed values. */
 function le16(...values: number[]): number[] {
@@ -477,5 +478,62 @@ describe('isLowBattery (#123)', () => {
       low = isLowBattery(percent, low);
       expect(low).toBe(true);
     }
+  });
+});
+
+describe('applyEasyLevelMounting — all four physical rotations (#222)', () => {
+  // Both horizontal components non-zero on purpose: it keeps every
+  // expectation clear of JS's -0, which `toEqual`'s Object.is comparison
+  // would otherwise trip over (see the 'rotated90' block above).
+  const READING = { x: 500, y: 200, z: 9800 };
+
+  it("'rotated180' — the box bolted in end-for-end: (x, y) -> (-x, -y), z untouched", () => {
+    expect(applyEasyLevelMounting(READING, 'rotated180')).toEqual({ x: -500, y: -200, z: 9800 });
+  });
+
+  it("'rotated270' — the opposite quarter turn from 'rotated90': (x, y) -> (y, -x), z untouched", () => {
+    expect(applyEasyLevelMounting(READING, 'rotated270')).toEqual({ x: 200, y: -500, z: 9800 });
+  });
+
+  it('rotated180 inverts the side the vehicle leans toward — the silent-wrong-guidance case the installation offset cannot rescue', () => {
+    // "Set vehicle level" (R34) subtracts a CONSTANT offset, so it cannot
+    // undo a sign inversion: level still reads level, the calibration
+    // looks like it succeeded, and only picking the right mounting fixes
+    // the resulting "raise the wrong wheel" advice.
+    const leaningRight = { x: 500, y: 0, z: 9800 };
+    const asRead = applyEasyLevelMounting(leaningRight, 'rotated180');
+    expect(Math.sign(asRead.x)).toBe(-Math.sign(leaningRight.x));
+  });
+
+  it('two quarter turns equal the half turn — the four options really are one rotation group, not four ad-hoc formulas', () => {
+    const twice = applyEasyLevelMounting(applyEasyLevelMounting(READING, 'rotated90'), 'rotated90');
+    expect(twice).toEqual(applyEasyLevelMounting(READING, 'rotated180'));
+  });
+
+  it('three quarter turns equal the three-quarter turn', () => {
+    let g = READING;
+    for (let i = 0; i < 3; i += 1) g = applyEasyLevelMounting(g, 'rotated90');
+    expect(g).toEqual(applyEasyLevelMounting(READING, 'rotated270'));
+  });
+
+  it('four quarter turns return the original reading', () => {
+    let g: typeof READING = READING;
+    for (let i = 0; i < 4; i += 1) g = applyEasyLevelMounting(g, 'rotated90');
+    expect(g.x).toBeCloseTo(READING.x);
+    expect(g.y).toBeCloseTo(READING.y);
+    expect(g.z).toBe(READING.z);
+  });
+
+  it('no mounting ever alters z — none of these rotations changes which way is up', () => {
+    for (const mounting of EASYLEVEL_MOUNTINGS) {
+      expect(applyEasyLevelMounting(READING, mounting).z).toBe(READING.z);
+    }
+  });
+
+  it('every mounting produces a distinct reading, so each option is a real choice', () => {
+    const results = EASYLEVEL_MOUNTINGS.map((mounting) =>
+      JSON.stringify(applyEasyLevelMounting(READING, mounting)),
+    );
+    expect(new Set(results).size).toBe(EASYLEVEL_MOUNTINGS.length);
   });
 });

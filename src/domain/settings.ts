@@ -175,9 +175,22 @@ export const SENSOR_SOURCES: readonly SensorSource[] = ['phone', 'easylevel'];
  * settings-shaped type lives and `sensor/` depends on `domain/`, never the
  * reverse (ADR 0002). `'standard'` is the official app's own default.
  */
-export type EasyLevelMounting = 'standard' | 'rotated90';
+export type EasyLevelMounting = 'standard' | 'rotated90' | 'rotated180' | 'rotated270';
 
-export const EASYLEVEL_MOUNTINGS: readonly EasyLevelMounting[] = ['standard', 'rotated90'];
+/** All four ways a box lying flat can be bolted in (#222) — the official
+ * app only models the first two (`sensor_Placing` 1/2), but a real
+ * installation can just as easily end up a half or three-quarter turn
+ * round, and those two cases are precisely the ones the installation
+ * offset (R34) cannot rescue: they invert a sign rather than add one, so
+ * level still reads level and the wrong wheel gets flagged with full
+ * confidence. Order is the rotation order, and doubles as the picker's
+ * option order. */
+export const EASYLEVEL_MOUNTINGS: readonly EasyLevelMounting[] = [
+  'standard',
+  'rotated90',
+  'rotated180',
+  'rotated270',
+];
 
 export type VehicleType = 'motorhome' | 'caravan';
 

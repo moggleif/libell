@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
+  EASYLEVEL_MOUNTINGS,
   formatLength,
   formatLengthValue,
   formatStepHeightsList,
@@ -202,6 +203,12 @@ describe('parseSettings', () => {
     expect(parseSettings({}).easyLevelMounting).toBe('standard');
     expect(parseSettings({ easyLevelMounting: 'standard' }).easyLevelMounting).toBe('standard');
     expect(parseSettings({ easyLevelMounting: 'rotated90' }).easyLevelMounting).toBe('rotated90');
+    // All four physical rotations (#222) — the two added later must parse
+    // exactly like the original pair, and the original pair must keep
+    // working for anyone who stored one before that change.
+    expect(parseSettings({ easyLevelMounting: 'rotated180' }).easyLevelMounting).toBe('rotated180');
+    expect(parseSettings({ easyLevelMounting: 'rotated270' }).easyLevelMounting).toBe('rotated270');
+    expect(EASYLEVEL_MOUNTINGS).toEqual(['standard', 'rotated90', 'rotated180', 'rotated270']);
     // Any other value, including a future one this build doesn't know about
     // yet, falls back rather than silently trusting unknown input.
     expect(parseSettings({ easyLevelMounting: 'upside-down' }).easyLevelMounting).toBe('standard');
