@@ -19,7 +19,7 @@ and this guide has a bug — fix the guide in the same change. Clarity over clev
 | How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                      |
 | Security model and reporting                | `SECURITY.md`                                  |
 | Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts` |
-| User-facing strings                         | `src/ui/i18n.ts` (sv + en)                     |
+| User-facing strings                         | `src/ui/i18n.ts` (sv, en, fr, es, de)          |
 | Colors                                      | CSS custom properties in `src/ui/styles.css`   |
 
 Never restate another document's facts — link to them. A fact written twice is a bug
@@ -41,7 +41,8 @@ src/
 
 - `domain/` must stay pure: **no `window`, `document`, `navigator` or `localStorage`**
   (ADR 0002). All sensor, storage and DOM concerns live outside it.
-- All user-facing strings go through `t()` with **both Swedish and English** entries.
+- All user-facing strings go through `t()` with an entry in **every shipped language**
+  (`LANGUAGES` in `src/ui/i18n.ts`).
   Never hardcode UI text in components; the parity unit test must stay green.
 - Colors come from the CSS custom properties in `src/ui/styles.css` — no hex values in
   components. Both light and dark palettes must work.

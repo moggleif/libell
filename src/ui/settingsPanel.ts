@@ -36,7 +36,7 @@ import { saveSettings, loadLanguage, saveLanguage, clearLanguage } from '../data
 import { applyAppearance, applyTheme } from './theme';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createTargetsSection, type TargetsOptions } from './targetsSection';
-import { t, type MessageKey } from './i18n';
+import { isLanguage, LANGUAGE_NAMES, LANGUAGES, t, type MessageKey } from './i18n';
 
 type NumberKey =
   'wheelbaseMm' | 'trackWidthFrontMm' | 'trackWidthRearMm' | 'toleranceMm' | 'stabilityMm';
@@ -560,9 +560,9 @@ export function createSettingsForm(
   // separate from `LevelSettings` (see `settingsStore.ts`'s loadLanguage/
   // saveLanguage) — so it applies (and reloads, since `t()` isn't
   // reactive) immediately on change rather than waiting for Save/Undo.
-  // "Svenska"/"English" are deliberately literal, not translated via
-  // `t()` — a language picker always names each language in itself, so a
-  // Swedish reader can still find "English" and vice versa.
+  // Every shipped language is offered (#178), each named in itself via
+  // `LANGUAGE_NAMES` — deliberately literal, never translated via `t()`,
+  // so a Swedish reader can still find "Deutsch" and vice versa.
   const languageField = document.createElement('label');
   languageField.className = 'settings__field';
   const languageCaption = document.createElement('span');
@@ -570,19 +570,18 @@ export function createSettingsForm(
   languageSelect.className = 'settings__select';
   const languageAutoOption = document.createElement('option');
   languageAutoOption.value = 'auto';
-  const languageSvOption = document.createElement('option');
-  languageSvOption.value = 'sv';
-  languageSvOption.textContent = 'Svenska';
-  const languageEnOption = document.createElement('option');
-  languageEnOption.value = 'en';
-  languageEnOption.textContent = 'English';
-  languageSelect.append(languageAutoOption, languageSvOption, languageEnOption);
+  languageSelect.append(languageAutoOption);
+  for (const lang of LANGUAGES) {
+    const option = document.createElement('option');
+    option.value = lang;
+    option.textContent = LANGUAGE_NAMES[lang];
+    languageSelect.append(option);
+  }
   const storedLanguage = loadLanguage();
-  languageSelect.value =
-    storedLanguage === 'sv' || storedLanguage === 'en' ? storedLanguage : 'auto';
+  languageSelect.value = isLanguage(storedLanguage) ? storedLanguage : 'auto';
   languageSelect.addEventListener('change', () => {
     const value = languageSelect.value;
-    if (value === 'sv' || value === 'en') saveLanguage(value);
+    if (isLanguage(value)) saveLanguage(value);
     else clearLanguage();
     location.reload();
   });

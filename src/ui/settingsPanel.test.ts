@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
-import { setLanguage, t } from './i18n';
+import { LANGUAGES, setLanguage, t } from './i18n';
 import { loadLanguage, loadSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
@@ -347,10 +347,11 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(generalPanel.textContent).toContain('Language');
     expect(generalPanel.textContent).toContain('Theme');
     expect(generalPanel.textContent).toContain('Chime when level');
-    // "Svenska"/"English" are literal, never translated (a language name
-    // names itself regardless of the current UI language).
-    expect(generalPanel.textContent).toContain('Svenska');
-    expect(generalPanel.textContent).toContain('English');
+    // Language names are literal, never translated (a language name names
+    // itself regardless of the current UI language) — all five of them (#178).
+    for (const name of ['Svenska', 'English', 'Français', 'Español', 'Deutsch']) {
+      expect(generalPanel.textContent, name).toContain(name);
+    }
   });
 
   // Design review: every tab that edits form fields (General/Fordon/
@@ -434,6 +435,25 @@ describe('settings form — Modern tabs (#108)', () => {
       select.value = 'en';
       select.dispatchEvent(new Event('change'));
       expect(loadLanguage()).toBe('en');
+      reload.mockRestore();
+    });
+
+    // #178: the picker is built from `LANGUAGES`, so every shipped language
+    // is offered and saves its own code — not just the original sv/en pair.
+    it('offers every shipped language plus Automatic', () => {
+      const form = createSettingsForm(modern, vi.fn());
+      const values = [...languageSelect(form).options].map((option) => option.value);
+      expect(values).toEqual(['auto', ...LANGUAGES]);
+    });
+
+    it.each(LANGUAGES)('picking %s saves that language', (lang) => {
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      const form = createSettingsForm(modern, vi.fn());
+      const select = languageSelect(form);
+      select.value = lang;
+      select.dispatchEvent(new Event('change'));
+      expect(loadLanguage()).toBe(lang);
+      expect(reload).toHaveBeenCalledOnce();
       reload.mockRestore();
     });
 
