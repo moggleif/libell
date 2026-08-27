@@ -180,22 +180,24 @@ URL and must keep working with no signal.
 - Modeled on sbsommar's feedback feature (its 02-§73), adapted to a static site: no
   server, so no GitHub token ever ships in the client (ADR 0006).
 
-## R13 — The app speaks Swedish and English
+## R13 — The app speaks Swedish, English, French, Spanish and German
 
-- **Given** my phone's language is any `sv*` locale
+- **Given** my phone's language is any `sv*`, `fr*`, `es*` or `de*` locale
 - **When** I open Libell
-- **Then** every user-facing string is Swedish; any other locale gets English. A stored
-  override (from settings) wins over auto-detection; an invalid stored value falls back
-  to auto-detection.
-- **Given** the Language field in Settings → General (Svenska / English / "Automatic
-  (device language)", the last one being the default)
+- **Then** every user-facing string is Swedish, French, Spanish or German respectively —
+  the locale's language subtag decides, so `de-AT` is German too; any other locale gets
+  English. A stored override (from settings) wins over auto-detection; an invalid stored
+  value falls back to auto-detection.
+- **Given** the Language field in Settings → General (Svenska / English / Français /
+  Español / Deutsch / "Automatic (device language)", the last one being the default, and
+  each language named in itself rather than translated)
 - **When** I pick a language other than the one currently in effect
 - **Then** the choice is saved and the app reloads immediately — `t()` resolves its
   dictionary once at startup (not reactively), so a reload is the only way every
   already-built string picks up the change. Picking "Automatic" clears the stored
   override and reloads, going back to phone-locale detection.
-- All strings go through `t()` in `src/ui/i18n.ts`; both dictionaries cover the same
-  keys (enforced by a unit test).
+- All strings go through `t()` in `src/ui/i18n.ts`; every dictionary covers the same keys
+  with the same `{placeholders}` (both enforced by a unit test).
 
 ## R14 — Lengths display in mm or cm
 

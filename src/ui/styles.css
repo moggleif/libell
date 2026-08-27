@@ -828,7 +828,10 @@ body {
 
 .wheel-card__marker {
   flex-shrink: 0;
-  width: 40px;
+  /* 32px, not the glyph's own 22px plus a generous margin: every pixel here
+   * comes straight off the text column next to it, which the longest
+   * language has to fit "Step 1" into on one line (#178). */
+  width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -857,7 +860,7 @@ body {
 .wheel-card__text {
   flex: 1;
   min-width: 0;
-  padding: 8px 9px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -869,9 +872,11 @@ body {
   font-weight: 700;
   color: var(--on-surface-muted);
   min-height: 1.2em;
-  /* "No ramp" (screen-cleanup follow-up) doesn't fit the card's ~68px text
+  /* "No ramp" (screen-cleanup follow-up) doesn't fit the card's ~78px text
    * column on one line at this size — let it wrap to two instead of
-   * clipping; shorter text ("Done", "Step 1") never needed the nowrap. */
+   * clipping. The step label ("Step 1", "Stufe 1", "Palier 1") must fit on
+   * one line in every language though: it is the number you glance at while
+   * driving up the ramp, so the dictionaries keep that word short (#178). */
   line-height: 1.15;
 }
 

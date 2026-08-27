@@ -1,9 +1,10 @@
 /**
- * Minimal i18n layer (issue #42): one flat dictionary per language, keyed
- * by message id. Language comes from a stored override when present,
- * otherwise from `navigator.language` (any `sv*` locale → Swedish,
- * everything else → English). The dictionaries are plain data so a unit
- * test can assert both languages cover the same keys.
+ * Minimal i18n layer (issue #42, extended to five languages in #178): one
+ * flat dictionary per language, keyed by message id. Language comes from a
+ * stored override when present, otherwise from `navigator.language` (the
+ * locale's language subtag picks the dictionary; anything we don't ship
+ * → English). The dictionaries are plain data so a unit test can assert
+ * every language covers the same keys.
  */
 
 export const MESSAGES = {
@@ -972,21 +973,1309 @@ export const MESSAGES = {
     'sensorFallback.retry': 'Försök igen',
     'sensorFallback.usePhone': 'Använd telefonsensorn',
   },
+  fr: {
+    'topbar.install': 'Installer',
+    'topbar.share': 'Partager Libell',
+    'bottombar.settings': 'Réglages',
+    'bottombar.sound.mute': 'Couper le son',
+    'bottombar.sound.unmute': 'Activer le son',
+    'bottombar.help': 'Aide',
+    'share.text': 'Mettez votre camping-car de niveau avec votre téléphone.',
+    'share.copied': 'Lien copié !',
+    'install.hint': 'Touchez Partager, puis « Sur l’écran d’accueil ».',
+    'share.vehicle.text': 'La configuration de mon camping-car pour Libell — mesures et rampes.',
+    'settings.shareVehicle': 'Partager la configuration du véhicule',
+    'setup.incoming.h': 'Configuration de véhicule reçue',
+    'setup.incoming.intro': 'Un proche a partagé ces mesures de véhicule avec vous :',
+    'setup.incoming.reminder':
+      'Cela ne comprend aucun étalonnage — vous devrez tout de même étalonner sur ce téléphone.',
+    'setup.incoming.apply': 'Utiliser ces valeurs',
+    'setup.incoming.dismiss': 'Pas maintenant',
+    'setup.incoming.invalid': 'Ce lien de configuration n’a pas pu être lu — rien n’a été modifié.',
+
+    'lamp.setup': '⚠ Réglages',
+    'lamp.setup.title':
+      'Les réglages du véhicule n’ont jamais été enregistrés — touchez pour ouvrir les Réglages',
+    'lamp.calibrate': '⚠ Étalonner',
+    'lamp.calibrate.title': 'Le téléphone n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
+
+    'sensorStatus.connected': 'Capteur externe connecté',
+    'sensorStatus.disconnected': 'Connexion au capteur externe perdue — touchez pour les détails',
+    'sensorStatus.idle': 'Capteur externe — touchez pour connecter',
+    'sensorStatus.idle.guide': 'Capteur externe — touchez pour le guide iPhone',
+
+    'menu.title': 'Menu',
+    'menu.close': 'Fermer le menu',
+    'menu.settings': 'Réglages',
+    'menu.calibration': 'Étalonnage',
+    'menu.targets': 'Cibles',
+    'menu.feedback': 'Commentaires',
+    'menu.help': 'Aide',
+    'menu.intro': 'Afficher l’introduction',
+    'menu.about': 'À propos de Libell',
+    'menu.about.tab': 'À propos',
+    'menu.sensorSource': 'Capteur externe',
+    'menu.advanced': 'AVANCÉ',
+    'menu.others': 'AUTRES',
+    'menu.card.notSaved': 'Non enregistré',
+    'menu.card.notDone': 'Non fait',
+
+    'sensorSource.intro':
+      'Connectez un boîtier EasyLevel BLE comme alternative au capteur du téléphone. ' +
+      'Nécessite Chrome sur Android avec le Bluetooth activé.',
+    'sensorSource.connect': 'Connecter le capteur EasyLevel',
+    'sensorSource.reconnect': 'Reconnecter le capteur EasyLevel',
+    'sensorSource.disconnect': 'Déconnecter',
+    'sensorSource.status.phone': 'Utilise le capteur du téléphone.',
+    'sensorSource.status.connected': 'Connecté au capteur EasyLevel.',
+    'sensorSource.status.connecting': 'Connexion…',
+    'sensorSource.status.disconnected':
+      'La connexion au capteur EasyLevel a été perdue — touchez Reconnecter.',
+    'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
+    'sensorSource.err.failed': 'Impossible de se connecter au capteur EasyLevel.',
+
+    'sensorSource.ios.intro':
+      'Safari ne peut pas se connecter directement aux capteurs Bluetooth, mais il existe une solution :',
+    'sensorSource.ios.step1': 'Installez « Bluefy – Web Bluetooth Browser » depuis l’App Store.',
+    'sensorSource.ios.step2': 'Ouvrez Bluefy et autorisez l’accès au Bluetooth.',
+    'sensorSource.ios.step3': 'Dans Bluefy, ouvrez cette même adresse Libell.',
+    'sensorSource.ios.step4': 'Rouvrez Capteur externe ici — cela fonctionne comme sur Android.',
+    'sensorSource.ios.note':
+      'Bluefy est une application tierce, pas développée par Libell — la reconnexion à ' +
+      'l’ouverture peut y demander une touche manuelle au lieu de se faire toute seule.',
+    'sensorSource.ios.bluefyLink': 'Trouver Bluefy dans l’App Store',
+
+    'sensorSource.detail.heading': 'Détails du capteur',
+    'sensorSource.detail.battery': 'Batterie : {value}',
+    'sensorSource.detail.temperature': 'Température : {value}',
+    'sensorSource.detail.notAvailable': 'Pas encore disponible',
+    'sensorSource.lowBattery':
+      '⚠ Batterie faible ({value}) — pensez à remplacer bientôt la pile du boîtier.',
+
+    'sensorSource.install.h': 'Décalage d’installation',
+    'sensorSource.install.intro':
+      'Une fois le capteur monté à demeure, son emplacement exact dans le boîtier n’a ' +
+      'plus d’importance — seule compte la position du boîtier. Mettez le véhicule de ' +
+      'niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé avec vos ' +
+      'rampes), puis définissez la lecture actuelle comme niveau.',
+    'sensorSource.install.now': 'Définir le véhicule comme de niveau',
+    'sensorSource.install.clear': 'Effacer le décalage d’installation',
+    'sensorSource.install.status':
+      'Décalage d’installation : latéral {roll}°, longitudinal {pitch}°.',
+    'sensorSource.install.status.none':
+      'Aucun décalage d’installation — la lecture brute compte comme le niveau.',
+
+    'sensorSource.mounting.h': 'Montage du capteur',
+    'sensorSource.mounting.intro':
+      'Le boîtier peut être monté de quatre façons, chacune à un quart de tour de la ' +
+      'suivante. Choisissez l’image qui correspond au montage réel — si Libell propose ' +
+      'de soulever le mauvais côté, ou intervertit avant/arrière et gauche/droite, ' +
+      'essayez-en une autre.',
+    'sensorSource.mounting.standard': 'Standard',
+    'sensorSource.mounting.rotated90': 'Tourné à 90°',
+    'sensorSource.mounting.rotated180': 'Tourné à 180°',
+    'sensorSource.mounting.rotated270': 'Tourné à 270°',
+
+    'sensorStatus.title': 'Capteur EasyLevel',
+    'sensorStatus.reading': 'Lecture : {value}',
+    'sensorStatus.roll': 'roulis',
+    'sensorStatus.pitch': 'tangage',
+    'sensorStatus.debug': 'Infos de débogage',
+    'sensorStatus.debug.intro':
+      'Valeurs brutes directement du boîtier — pour le dépannage si quelque chose ne fonctionne pas.',
+    'sensorStatus.debug.deviceId': 'ID de l’appareil : {value}',
+    'sensorStatus.debug.lastSample': 'Dernière mesure : {value}',
+    'sensorStatus.debug.age': 'il y a {s} s',
+    'sensorStatus.debug.rawAccel': 'Accéléromètre brut (x/y/z) : {value}',
+    'sensorStatus.debug.firmwareTier': 'Niveau de micrologiciel : {value}',
+    'sensorStatus.debug.rawStatusBytes': 'Octets d’état bruts : {value}',
+    'sensorStatus.debug.copy': 'Copier les infos de débogage',
+    'sensorStatus.debug.copied': 'Infos de débogage copiées !',
+    'sensorStatus.debug.copy.failed': 'La copie automatique a échoué.',
+    'sensorStatus.debug.connectDelay.intro':
+      'Expérimental : à essayer seulement si la connexion de votre boîtier est instable. ' +
+      'Ajoute une pause fixe après la connexion, avant que l’application ne commence à lire.',
+    'sensorStatus.debug.connectDelay.enable': 'Activer le délai de connexion',
+    'sensorStatus.debug.connectDelay.ms': 'Délai (ms)',
+
+    'about.text':
+      'Libell vous aide à mettre de niveau votre camping-car ou votre caravane avec le ' +
+      'téléphone que vous avez déjà — sans niveau à bulle, sans deviner.',
+    'about.version': 'Version {v}',
+    'about.offline':
+      'Fonctionne entièrement hors ligne — le réseau ne sert qu’à télécharger les mises ' +
+      'à jour de l’application elle-même.',
+    'about.privacy':
+      'Tout reste sur votre téléphone — pas de compte, pas de suivi, et aucune donnée ne ' +
+      'quitte l’appareil.',
+    'about.source': 'Libell est gratuit et open source (licence MIT).',
+    'about.source.link': 'Code source sur GitHub',
+
+    'onboard.welcome.h': 'Bienvenue dans Libell',
+    'onboard.welcome.t':
+      'Ce guide rapide configure votre véhicule et votre téléphone. Chaque étape peut ' +
+      'être passée et terminée plus tard depuis les Réglages.',
+    'onboard.sound.h': 'Son',
+    'onboard.source.h': 'Comment voulez-vous mesurer ?',
+    'onboard.source.intro':
+      'Choisissez le capteur dont Libell doit lire l’inclinaison — la plupart des gens ' +
+      'utilisent simplement le téléphone.',
+    'onboard.source.phone': 'Ce téléphone',
+    'onboard.vehicle.h': 'Que mettez-vous de niveau ?',
+    'onboard.vehicle.intro': 'Choisissez votre véhicule — la suite du guide s’y adapte.',
+    'onboard.step1.h': 'Posez le téléphone comme ceci',
+    'onboard.next': 'Suivant',
+    'onboard.back': 'Retour',
+    'onboard.close': 'Fermer l’introduction',
+    'onboard.done': 'Terminé',
+    'onboard.skipStep': 'Passer',
+    'onboard.skipDefaults': 'Passer — utiliser les valeurs par défaut',
+    'onboard.skip.consequence':
+      'Passer pour l’instant — un voyant vous le rappellera jusqu’à ce que ce soit fait. ' +
+      'Les valeurs par défaut sont utilisées en attendant, et elles conviennent souvent assez bien.',
+    'onboard.legend.ok': 'Vert ✓ — cette roue est de niveau.',
+    'onboard.legend.up': 'Orange ↑ — montez cette roue sur le palier indiqué.',
+    'onboard.legend.no': 'Rouge ✕ — aucun palier ne suffit ; allez sur un endroit plus plat.',
+    'onboard.legend.dim': 'Gris – — une roue basse que vos rampes n’atteignent pas.',
+    'settings.wheelbase': 'Empattement',
+    'settings.trackFront': 'Voie avant',
+    'settings.trackRear': 'Voie arrière',
+    'settings.tolerance': 'Tolérance',
+    'settings.stability': 'Stabilité',
+    'settings.dwellRest': 'Délai de réponse (ms)',
+    'settings.dwellMotion': 'Délai de réponse pendant le réglage (ms)',
+    'settings.dwell.hint':
+      'Combien de temps une lecture doit rester stable avant que le nombre affiché ne ' +
+      'change. La seconde valeur ne s’applique que juste après un changement, pendant que ' +
+      'vous ajustez activement (en montant sur une rampe, par exemple), pour que le nombre ' +
+      'affiché ne soit pas en retard.',
+    'settings.vehicle': 'Véhicule',
+    'vehicle.motorhome': 'Camping-car',
+    'vehicle.caravan': 'Caravane',
+    'settings.axleToJockey': 'Essieu à la roue jockey',
+    'settings.rearAxle': 'Essieu arrière',
+    'settings.axle': 'Essieu',
+    'axle.single': 'Simple',
+    'axle.boggie': 'Tandem (double essieu)',
+    'settings.track': 'Voie',
+    'settings.measureHint':
+      'L’empattement et les voies figurent sur la carte grise ou dans le manuel — un ' +
+      'mètre ruban fait aussi l’affaire ; quelques cm d’erreur n’ont guère d’importance.',
+    'settings.measureHint.boggie':
+      'Avec un double essieu, mesurez jusqu’au centre de la paire d’essieux.',
+    'settings.steps': 'Hauteurs des paliers de rampe',
+    'settings.steps.add': 'Ajouter un palier',
+    'settings.steps.remove': 'Supprimer {value}',
+    'settings.ramp': 'Rampe toute faite',
+    'settings.ramp.custom': 'Jeu personnalisé',
+    'settings.rampCount': 'Nombre de rampes',
+    'settings.drain': 'Côté de l’évacuation',
+    'settings.rampHint': 'L’application choisit où vos rampes sont le plus utiles.',
+    'settings.drainHint':
+      'N’a d’importance que si vous tenez à l’endroit où l’eau de l’évier ou de la douche ' +
+      's’écoule — dans la tolérance, l’application laisse alors ce côté le plus bas pour ' +
+      'que l’écoulement continue.',
+    'settings.section.vehicle': 'Véhicule et mesures',
+    'settings.section.ramps': 'Rampes',
+    'settings.section.display': 'Niveau et affichage',
+    'settings.general': 'Général',
+    'settings.language': 'Langue',
+    'settings.language.auto': 'Automatique (langue de l’appareil)',
+    'settings.advanced': 'Avancé',
+    'settings.tolerance.hint':
+      'Définit à quel point il faut être proche du niveau pour compter comme « de niveau » ' +
+      '— plus strict pour une douche ou un réfrigérateur, plus souple si à peu près suffit.',
+    'settings.stability.hint':
+      'Lisse les petites variations du capteur pour que les nombres ne clignotent pas.',
+    'drain.none': 'Aucun / peu importe',
+    'drain.left': 'Gauche, milieu',
+    'drain.right': 'Droite, milieu',
+    'drain.front': 'Avant, milieu',
+    'drain.rear': 'Arrière, milieu',
+    'drain.frontLeft': 'Avant gauche',
+    'drain.frontRight': 'Avant droite',
+    'drain.rearLeft': 'Arrière gauche',
+    'drain.rearRight': 'Arrière droite',
+    'settings.unit': 'Afficher les longueurs en',
+    'settings.theme': 'Thème',
+    'theme.system': 'Suivre le téléphone',
+    'theme.light': 'Clair',
+    'theme.dark': 'Sombre',
+    'settings.appearance': 'Apparence',
+    'appearance.classic': 'Classique',
+    'appearance.modern': 'Moderne',
+    'appearance.glossy': 'Brillant',
+    'settings.appearance.hint':
+      'Changer ce réglage enregistre vos modifications et recharge Libell pour que la ' +
+      'nouvelle mise en page s’applique partout.',
+    'settings.sound': 'Carillon quand c’est de niveau',
+    'settings.soundGuidance': 'Guidage sonore continu',
+    'settings.soundGuidance.help':
+      'Une impulsion s’accélère et monte dans les aigus à mesure que vous approchez du ' +
+      'niveau, avec un signal distinct selon que vous vous rapprochez ou allez dans le ' +
+      'mauvais sens — vous pouvez ainsi regarder les rampes plutôt que l’écran. Silencieux ' +
+      'quand la lecture est trop peu fiable — par exemple quand elle change trop vite.',
+    'settings.save': 'Enregistrer',
+    'settings.undo': 'Annuler les modifications',
+    'settings.reset': 'Rétablir les valeurs par défaut',
+
+    'settings.tab.vehicle': 'Véhicule',
+    'settings.tab.ramps': 'Rampes',
+    'settings.klossar.brandAll': 'Toutes',
+    'settings.klossar.pinnedSub': '{lengths} · {steps}',
+    'settings.klossar.step.one': '1 palier',
+    'settings.klossar.step.many': '{n} paliers',
+    'settings.klossar.stepsHeading': 'Hauteurs des paliers',
+
+    'status.measuring': 'Mesure…',
+    'status.almost': 'Presque de niveau — il reste {left}',
+    'status.one': '1 roue à surélever',
+    'status.many': '{n} roues à surélever',
+    'status.cantLevel.close':
+      'Vos rampes approchent mais ne suffisent pas ici — déplacez le véhicule',
+    'status.cantLevel.far': 'Vos rampes sont loin du compte ici — déplacez le véhicule',
+
+    'calibration.intro':
+      'Posez le téléphone sur une surface dont vous savez qu’elle est de niveau, puis ' +
+      'touchez Étalonner maintenant. L’inclinaison actuelle devient le point zéro.',
+    'calibration.status': 'Étalonné : latéral {roll}°, longitudinal {pitch}°.',
+    'calibration.status.none': 'Non étalonné — capteur brut utilisé.',
+    'calibration.now': 'Étalonner maintenant',
+    'calibration.clear': 'Effacer l’étalonnage',
+    'calibration.err.notRunning':
+      'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
+      'l’écran principal.',
+    'calibration.err.notFlat':
+      'Le téléphone ne semble pas à plat — posez-le sur une surface de niveau et réessayez.',
+    'calibration.sensor.h': 'Étalonner le téléphone',
+    'calibration.vehicle.h': 'Étalonner le zéro du véhicule',
+    'calibration.guide.intro':
+      'Deux couches :\n' +
+      '1. Étalonnez le téléphone une fois sur une surface de niveau (ou avec le retournement à 180°).\n' +
+      '2. Le véhicule étant vérifiablement de niveau, définissez l’emplacement habituel du ' +
+      'téléphone comme zéro du véhicule — une table légèrement inclinée est alors compensée elle aussi.',
+    'calibration.vehicle.intro':
+      'L’étalonnage du capteur met le téléphone à zéro — pas l’endroit où il repose. Si la ' +
+      'table penche un peu, l’application afficherait toujours cette inclinaison. Mettez le ' +
+      'véhicule de niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé ' +
+      'avec vos rampes), posez le téléphone à sa place habituelle et définissez cela comme le niveau.',
+    'calibration.vehicle.now': 'Définir la position actuelle comme de niveau',
+    'calibration.vehicle.clear': 'Effacer le zéro du véhicule',
+    'calibration.vehicle.status': 'Zéro du véhicule : latéral {roll}°, longitudinal {pitch}°.',
+    'calibration.vehicle.status.none':
+      'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
+    'calibration.vehicle.err.notFlat':
+      'Cela ressemble à plus qu’une inclinaison de pose (>15°) — le véhicule est-il vraiment de niveau ?',
+    'calibration.age.today': '(aujourd’hui)',
+    'calibration.age.days': '(il y a {n} jours)',
+    'calibration.check': 'Vérifier',
+    'calibration.check.good': 'Toujours bon — écart de {off}°.',
+    'calibration.check.off': 'Écart de {off}° — pensez à réétalonner.',
+    'calibration.flip.intro':
+      'Pas de surface de niveau à proximité ? Utilisez l’étalonnage par retournement : posez ' +
+      'le téléphone n’importe où d’assez plat, capturez, faites-lui faire un demi-tour (180°) ' +
+      'au même endroit, capturez à nouveau — l’inclinaison de la surface s’annule d’elle-même.',
+    'calibration.flip.start': 'Étalonner par retournement',
+    'calibration.flip.rotate':
+      'Faites maintenant tourner le téléphone d’un demi-tour (180°) au même endroit, puis touchez Capturer.',
+    'calibration.flip.capture': 'Capturer',
+    'calibration.flip.done': 'Terminé ! Votre surface penche de {surface}° — compensé.',
+    'calibration.flip.err.moved':
+      'Les deux captures ne concordent pas — le téléphone a-t-il bougé ? Recommencez depuis le début.',
+    'calibration.pill.notDone': 'NON FAIT',
+    'calibration.pill.done': 'FAIT',
+    'calibration.pill.none': 'AUCUN',
+
+    'targets.intro':
+      'Enregistrez une inclinaison volontaire — pour la douche ou l’évacuation des eaux ' +
+      'grises — et passez-y en quelques touches. Normal (de niveau) est toujours disponible ' +
+      'et n’est jamais écrasé.',
+    'targets.normal': 'Normal (de niveau)',
+    'targets.name.placeholder': 'Nom (par ex. « Évacuation douche »)',
+    'targets.add': 'Enregistrer l’inclinaison actuelle comme nouvelle cible',
+    'targets.delete': 'Supprimer {name}',
+    'targets.err.tooSteep': 'Cela ressemble à plus qu’une cible volontaire (>15°) — réessayez.',
+    'targets.badge': 'Cible : {name}',
+    'menu.offsetSummary':
+      'Le niveau est calculé à partir de : capteur {sensor} · zéro véhicule {vehicleZero} · cible : {target}',
+
+    'feedback.intro':
+      'Un problème ou une idée ? Remplissez ceci et touchez le bouton — cela ouvre un ' +
+      'rapport prêt à l’emploi sur GitHub où vous le publiez (un compte GitHub gratuit est ' +
+      'nécessaire, créé en une minute).',
+    'feedback.category': 'De quoi s’agit-il ?',
+    'feedback.cat.bug': 'Bogue',
+    'feedback.cat.suggestion': 'Suggestion',
+    'feedback.cat.other': 'Autre',
+    'feedback.title': 'Titre court',
+    'feedback.desc': 'Que s’est-il passé, ou que souhaitez-vous ?',
+    'feedback.submit': 'Ouvrir le rapport sur GitHub',
+
+    'help.what.h': 'Ce que fait Libell',
+    'help.what.t':
+      'Posez le téléphone à plat dans le véhicule, le haut vers l’avant. L’écran montre ' +
+      'votre véhicule vu de dessus, et chaque roue vous dit quoi faire.',
+    'help.first.h': 'Avant la première utilisation',
+    'help.first.t':
+      'Remplissez les Réglages et étalonnez une fois — les panneaux jaunes de la barre du ' +
+      'haut vous le rappellent jusqu’à ce que les deux soient faits. Tout est mémorisé.',
+    'help.screen.h': 'Lire l’écran',
+    'help.screen.t':
+      'Vert ✓ : c’est fait.\n' +
+      'Orange ↑ : montez cette roue sur le palier indiqué au-dessus.\n' +
+      'Rouge ✕ : même votre palier le plus haut ne suffit pas ; allez sur un endroit plus plat.\n' +
+      'Gris – : une roue basse que vos rampes n’atteignent pas.\n' +
+      'Quand la bulle repose au milieu, vous êtes de niveau.',
+    'help.settings.h': 'Les mesures',
+    'help.settings.t':
+      'Pour un camping-car, l’empattement est la distance entre l’essieu avant et l’essieu ' +
+      'arrière ; pour une caravane, c’est la distance entre l’essieu et la roue jockey. La ' +
+      'voie est la distance entre les roues gauche et droite — un camping-car peut avoir une ' +
+      'largeur différente à l’avant et à l’arrière, une caravane n’en a qu’une. Cela figure ' +
+      'généralement sur les papiers du véhicule, sinon prenez un mètre ruban.',
+    'help.ramps.t':
+      'Choisissez un modèle de rampe tout fait, ou ajoutez vos propres hauteurs de palier ' +
+      'avec le bouton +. L’application choisit ensuite où vos rampes sont le plus utiles — ' +
+      'et, dans la tolérance, laisse le côté de l’évacuation le plus bas pour que l’évier et ' +
+      'la douche continuent de s’écouler.',
+    'help.calibration.h': 'Étalonnage',
+    'help.calibration.t':
+      'Le téléphone lit sa propre inclinaison, pas celle du sol — et le plancher d’un ' +
+      'véhicule est rarement parfaitement plat non plus. L’étalonnage corrige les deux, si ' +
+      'bien que ce que l’application affiche est le sol réel, et pas seulement la façon dont ' +
+      'le téléphone se trouve posé.',
+    'help.notes.h': 'Bon à savoir',
+    'help.notes.t':
+      'Fonctionne entièrement hors ligne une fois ouverte — ajoutez-la à votre écran ' +
+      'd’accueil comme une application.\n' +
+      'Sur iPhone, touchez Démarrer à chaque fois.\n' +
+      'Le numéro de version en bas est utile pour signaler un problème.',
+
+    'main.hint':
+      'Posez votre téléphone à plat dans votre camping-car, le bord supérieur vers l’avant.',
+    'main.start': 'Démarrer',
+    'main.waiting': 'En attente du capteur d’inclinaison…',
+    'main.level': 'Votre camping-car est de niveau !',
+    'main.denied':
+      'L’accès aux mouvements a été refusé, Libell ne peut donc pas lire l’inclinaison. ' +
+      'Autorisez l’accès au mouvement et à l’orientation pour ce site, puis rechargez.',
+    'main.noSensors':
+      'Cet appareil n’expose pas de capteurs de mouvement, Libell ne peut donc pas lire l’inclinaison.',
+    'main.https':
+      'Libell a besoin d’une connexion sécurisée (HTTPS) pour lire les capteurs ' +
+      'd’inclinaison. Ouvrez l’application en HTTPS et réessayez.',
+
+    'diagram.aria': 'Vue de dessus de votre camping-car montrant les roues à surélever',
+    'diagram.caravan.aria':
+      'Vue de dessus de votre caravane montrant les roues d’essieu et la roue jockey',
+    'diagram.front': 'Avant',
+    'diagram.step': 'Palier {n}',
+    'diagram.done': 'Terminé',
+    'diagram.noRamp': 'Aucune rampe',
+    'diagram.wheel.frontLeft': 'AVANT G',
+    'diagram.wheel.frontRight': 'AVANT D',
+    'diagram.wheel.rearLeft': 'ARRIÈRE G',
+    'diagram.wheel.rearRight': 'ARRIÈRE D',
+    'caravan.crankUp': 'Monter à la manivelle',
+    'caravan.crankDown': 'Descendre à la manivelle',
+    'status.crank.up': 'Montez la roue jockey à la manivelle',
+    'status.crank.down': 'Descendez la roue jockey à la manivelle',
+    'status.caravan.both': 'Rampez la roue, puis actionnez la manivelle de la roue jockey',
+
+    'tilt.frontBack': 'Longitudinal',
+    'tilt.sideSide': 'Latéral',
+
+    'pose.layFlat': 'Posez le téléphone à plat pour mesurer',
+    'pose.portrait':
+      'Tournez le téléphone à la verticale (portrait) — le bord supérieur doit pointer vers l’avant',
+
+    'stale.dataUnavailable':
+      'Aucune nouvelle donnée du capteur — le guidage est en pause jusqu’à son retour',
+
+    'sensorFallback.unavailable': 'Capteur externe indisponible.',
+    'sensorFallback.phoneHint':
+      'Le capteur du téléphone exige que le téléphone soit posé à plat dans le véhicule — ' +
+      'un boîtier monté à demeure, non.',
+    'sensorFallback.retry': 'Réessayer',
+    'sensorFallback.usePhone': 'Utiliser le capteur du téléphone',
+  },
+  es: {
+    'topbar.install': 'Instalar',
+    'topbar.share': 'Compartir Libell',
+    'bottombar.settings': 'Ajustes',
+    'bottombar.sound.mute': 'Silenciar el sonido',
+    'bottombar.sound.unmute': 'Activar el sonido',
+    'bottombar.help': 'Ayuda',
+    'share.text': 'Nivela tu autocaravana con el móvil.',
+    'share.copied': '¡Enlace copiado!',
+    'install.hint': 'Toca Compartir y luego «Añadir a pantalla de inicio».',
+    'share.vehicle.text': 'La configuración de mi autocaravana para Libell: medidas y rampas.',
+    'settings.shareVehicle': 'Compartir la configuración del vehículo',
+    'setup.incoming.h': 'Configuración de vehículo recibida',
+    'setup.incoming.intro':
+      'Alguien de tu familia ha compartido contigo estas medidas del vehículo:',
+    'setup.incoming.reminder':
+      'Esto no incluye ninguna calibración: tendrás que calibrar igualmente en este móvil.',
+    'setup.incoming.apply': 'Usar estos valores',
+    'setup.incoming.dismiss': 'Ahora no',
+    'setup.incoming.invalid':
+      'No se ha podido leer ese enlace de configuración: no se ha cambiado nada.',
+
+    'lamp.setup': '⚠ Ajustes',
+    'lamp.setup.title': 'Los ajustes del vehículo nunca se han guardado: toca para abrir Ajustes',
+    'lamp.calibrate': '⚠ Calibrar',
+    'lamp.calibrate.title': 'El móvil no está calibrado: toca para abrir Calibración',
+
+    'sensorStatus.connected': 'Sensor externo conectado',
+    'sensorStatus.disconnected':
+      'Se ha perdido la conexión con el sensor externo: toca para ver los detalles',
+    'sensorStatus.idle': 'Sensor externo: toca para conectar',
+    'sensorStatus.idle.guide': 'Sensor externo: toca para ver la guía de iPhone',
+
+    'menu.title': 'Menú',
+    'menu.close': 'Cerrar el menú',
+    'menu.settings': 'Ajustes',
+    'menu.calibration': 'Calibración',
+    'menu.targets': 'Objetivos',
+    'menu.feedback': 'Comentarios',
+    'menu.help': 'Ayuda',
+    'menu.intro': 'Mostrar la introducción',
+    'menu.about': 'Acerca de Libell',
+    'menu.about.tab': 'Acerca de',
+    'menu.sensorSource': 'Sensor externo',
+    'menu.advanced': 'AVANZADO',
+    'menu.others': 'OTROS',
+    'menu.card.notSaved': 'Sin guardar',
+    'menu.card.notDone': 'Sin hacer',
+
+    'sensorSource.intro':
+      'Conecta una caja EasyLevel BLE como alternativa al sensor del propio móvil. ' +
+      'Requiere Chrome en Android con el Bluetooth activado.',
+    'sensorSource.connect': 'Conectar el sensor EasyLevel',
+    'sensorSource.reconnect': 'Reconectar el sensor EasyLevel',
+    'sensorSource.disconnect': 'Desconectar',
+    'sensorSource.status.phone': 'Usando el sensor del propio móvil.',
+    'sensorSource.status.connected': 'Conectado al sensor EasyLevel.',
+    'sensorSource.status.connecting': 'Conectando…',
+    'sensorSource.status.disconnected':
+      'Se ha perdido la conexión con el sensor EasyLevel: toca Reconectar.',
+    'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
+    'sensorSource.err.failed': 'No se ha podido conectar con el sensor EasyLevel.',
+
+    'sensorSource.ios.intro':
+      'Safari no puede conectarse directamente a sensores Bluetooth, pero hay una solución:',
+    'sensorSource.ios.step1': 'Instala «Bluefy – Web Bluetooth Browser» desde la App Store.',
+    'sensorSource.ios.step2': 'Abre Bluefy y concede el permiso de Bluetooth.',
+    'sensorSource.ios.step3': 'En Bluefy, ve a esta misma dirección de Libell.',
+    'sensorSource.ios.step4': 'Vuelve a abrir Sensor externo aquí: funciona igual que en Android.',
+    'sensorSource.ios.note':
+      'Bluefy es una aplicación de terceros, no creada por Libell: puede que reconectar al ' +
+      'abrir la app requiera un toque manual allí en lugar de hacerse solo.',
+    'sensorSource.ios.bluefyLink': 'Buscar Bluefy en la App Store',
+
+    'sensorSource.detail.heading': 'Detalles del sensor',
+    'sensorSource.detail.battery': 'Batería: {value}',
+    'sensorSource.detail.temperature': 'Temperatura: {value}',
+    'sensorSource.detail.notAvailable': 'Aún no disponible',
+    'sensorSource.lowBattery':
+      '⚠ Batería baja ({value}): conviene cambiar pronto la pila de la caja del sensor.',
+
+    'sensorSource.install.h': 'Desfase de instalación',
+    'sensorSource.install.intro':
+      'Una vez el sensor está montado de forma permanente, su colocación exacta dentro de ' +
+      'la caja deja de importar: solo importa dónde está la caja. Nivela el vehículo de ' +
+      'forma verificable una vez (con un nivel de burbuja, o después de nivelar con tus ' +
+      'rampas) y luego fija la lectura actual como nivel.',
+    'sensorSource.install.now': 'Fijar el vehículo como nivelado',
+    'sensorSource.install.clear': 'Borrar el desfase de instalación',
+    'sensorSource.install.status':
+      'Desfase de instalación: lado/lado {roll}°, delante/detrás {pitch}°.',
+    'sensorSource.install.status.none':
+      'Sin desfase de instalación: la lectura en bruto cuenta como nivel.',
+
+    'sensorSource.mounting.h': 'Montaje del sensor',
+    'sensorSource.mounting.intro':
+      'La caja del sensor se puede montar de cuatro maneras, cada una a un cuarto de vuelta ' +
+      'de la siguiente. Elige la imagen que coincida con cómo está montada la tuya: si ' +
+      'Libell propone subir el lado equivocado, o intercambia delante/detrás e ' +
+      'izquierda/derecha, prueba otra.',
+    'sensorSource.mounting.standard': 'Estándar',
+    'sensorSource.mounting.rotated90': 'Girado 90°',
+    'sensorSource.mounting.rotated180': 'Girado 180°',
+    'sensorSource.mounting.rotated270': 'Girado 270°',
+
+    'sensorStatus.title': 'Sensor EasyLevel',
+    'sensorStatus.reading': 'Lectura: {value}',
+    'sensorStatus.roll': 'alabeo',
+    'sensorStatus.pitch': 'cabeceo',
+    'sensorStatus.debug': 'Información de depuración',
+    'sensorStatus.debug.intro':
+      'Valores en bruto directamente de la caja: para resolver problemas si algo no funciona.',
+    'sensorStatus.debug.deviceId': 'ID del dispositivo: {value}',
+    'sensorStatus.debug.lastSample': 'Última muestra: {value}',
+    'sensorStatus.debug.age': 'hace {s} s',
+    'sensorStatus.debug.rawAccel': 'Acelerómetro en bruto (x/y/z): {value}',
+    'sensorStatus.debug.firmwareTier': 'Nivel de firmware: {value}',
+    'sensorStatus.debug.rawStatusBytes': 'Bytes de estado en bruto: {value}',
+    'sensorStatus.debug.copy': 'Copiar la información de depuración',
+    'sensorStatus.debug.copied': '¡Información de depuración copiada!',
+    'sensorStatus.debug.copy.failed': 'No se ha podido copiar automáticamente.',
+    'sensorStatus.debug.connectDelay.intro':
+      'Experimental: pruébalo solo si la conexión de tu caja es inestable. Añade una pausa ' +
+      'fija después de conectar, antes de que la app empiece a leer.',
+    'sensorStatus.debug.connectDelay.enable': 'Activar la pausa de conexión',
+    'sensorStatus.debug.connectDelay.ms': 'Pausa (ms)',
+
+    'about.text':
+      'Libell te ayuda a nivelar tu autocaravana o caravana con el móvil que ya tienes: ' +
+      'sin niveles de burbuja y sin adivinar.',
+    'about.version': 'Versión {v}',
+    'about.offline':
+      'Funciona totalmente sin conexión: la red solo se usa para descargar actualizaciones ' +
+      'de la propia app.',
+    'about.privacy':
+      'Todo se queda en tu móvil: sin cuenta, sin seguimiento y sin que ningún dato salga ' +
+      'del dispositivo.',
+    'about.source': 'Libell es gratuita y de código abierto (licencia MIT).',
+    'about.source.link': 'Código fuente en GitHub',
+
+    'onboard.welcome.h': 'Te damos la bienvenida a Libell',
+    'onboard.welcome.t':
+      'Esta guía rápida configura tu vehículo y tu móvil. Puedes saltarte cualquier paso y ' +
+      'terminarlo más tarde desde Ajustes.',
+    'onboard.sound.h': 'Sonido',
+    'onboard.source.h': '¿Cómo quieres medir?',
+    'onboard.source.intro':
+      'Elige de qué sensor debe leer Libell la inclinación: la mayoría simplemente usa el móvil.',
+    'onboard.source.phone': 'Este móvil',
+    'onboard.vehicle.h': '¿Qué vas a nivelar?',
+    'onboard.vehicle.intro': 'Elige tu vehículo: el resto de la guía se adapta a él.',
+    'onboard.step1.h': 'Coloca el móvil así',
+    'onboard.next': 'Siguiente',
+    'onboard.back': 'Atrás',
+    'onboard.close': 'Cerrar la introducción',
+    'onboard.done': 'Listo',
+    'onboard.skipStep': 'Saltar',
+    'onboard.skipDefaults': 'Saltar: usar los valores predeterminados',
+    'onboard.skip.consequence':
+      'Saltar por ahora: un aviso te lo recordará hasta que esté hecho. Mientras tanto se ' +
+      'usan los valores predeterminados, que a menudo funcionan bastante bien.',
+    'onboard.legend.ok': 'Verde ✓: esa rueda está nivelada.',
+    'onboard.legend.up': 'Naranja ↑: sube esa rueda al nivel indicado.',
+    'onboard.legend.no': 'Rojo ✕: ningún nivel basta; muévete a un sitio más llano.',
+    'onboard.legend.dim': 'Gris –: una rueda baja a la que no llegan tus rampas.',
+    'settings.wheelbase': 'Distancia entre ejes',
+    'settings.trackFront': 'Ancho de vía delantero',
+    'settings.trackRear': 'Ancho de vía trasero',
+    'settings.tolerance': 'Tolerancia',
+    'settings.stability': 'Estabilidad',
+    'settings.dwellRest': 'Retardo de respuesta (ms)',
+    'settings.dwellMotion': 'Retardo de respuesta al ajustar (ms)',
+    'settings.dwell.hint':
+      'Cuánto tiempo debe mantenerse estable una lectura antes de que cambie el número ' +
+      'mostrado. El segundo valor solo se aplica justo después de un cambio, mientras ' +
+      'ajustas activamente (por ejemplo, subiendo por una rampa), para que el número en ' +
+      'vivo no se quede atrás.',
+    'settings.vehicle': 'Vehículo',
+    'vehicle.motorhome': 'Autocaravana',
+    'vehicle.caravan': 'Caravana',
+    'settings.axleToJockey': 'Del eje a la rueda jockey',
+    'settings.rearAxle': 'Eje trasero',
+    'settings.axle': 'Eje',
+    'axle.single': 'Simple',
+    'axle.boggie': 'Tándem (doble eje)',
+    'settings.track': 'Ancho de vía',
+    'settings.measureHint':
+      'La distancia entre ejes y los anchos de vía están en la documentación del vehículo o ' +
+      'en el manual; una cinta métrica también sirve: unos pocos cm de error apenas importan.',
+    'settings.measureHint.boggie': 'Con doble eje, mide hasta el centro del par de ejes.',
+    'settings.steps': 'Alturas de nivel de la rampa',
+    'settings.steps.add': 'Añadir nivel',
+    'settings.steps.remove': 'Quitar {value}',
+    'settings.ramp': 'Rampa prefabricada',
+    'settings.ramp.custom': 'Juego personalizado',
+    'settings.rampCount': 'Número de rampas',
+    'settings.drain': 'Lado del desagüe',
+    'settings.rampHint': 'La app elige dónde tus rampas hacen más falta.',
+    'settings.drainHint':
+      'Solo importa si te interesa por dónde desagua el fregadero o la ducha: dentro de la ' +
+      'tolerancia, la app deja ese lado lo más bajo posible para que siga desaguando.',
+    'settings.section.vehicle': 'Vehículo y medidas',
+    'settings.section.ramps': 'Rampas',
+    'settings.section.display': 'Nivel y visualización',
+    'settings.general': 'General',
+    'settings.language': 'Idioma',
+    'settings.language.auto': 'Automático (idioma del dispositivo)',
+    'settings.advanced': 'Avanzado',
+    'settings.tolerance.hint':
+      'Define cuánto hay que acercarse al nivel para contar como «nivelado»: más estricto ' +
+      'para una ducha o un frigorífico, más holgado si basta con aproximarse.',
+    'settings.stability.hint':
+      'Suaviza las pequeñas fluctuaciones del sensor para que los números no parpadeen.',
+    'drain.none': 'Ninguno / da igual',
+    'drain.left': 'Izquierda, centro',
+    'drain.right': 'Derecha, centro',
+    'drain.front': 'Delante, centro',
+    'drain.rear': 'Detrás, centro',
+    'drain.frontLeft': 'Delantero izquierdo',
+    'drain.frontRight': 'Delantero derecho',
+    'drain.rearLeft': 'Trasero izquierdo',
+    'drain.rearRight': 'Trasero derecho',
+    'settings.unit': 'Mostrar las longitudes en',
+    'settings.theme': 'Tema',
+    'theme.system': 'Seguir al móvil',
+    'theme.light': 'Claro',
+    'theme.dark': 'Oscuro',
+    'settings.appearance': 'Aspecto',
+    'appearance.classic': 'Clásico',
+    'appearance.modern': 'Moderno',
+    'appearance.glossy': 'Brillante',
+    'settings.appearance.hint':
+      'Cambiar esto guarda tus cambios y recarga Libell para que el nuevo diseño se aplique ' +
+      'en todas partes.',
+    'settings.sound': 'Sonido al quedar nivelado',
+    'settings.soundGuidance': 'Guía sonora continua',
+    'settings.soundGuidance.help':
+      'Un pulso se acelera y sube de tono a medida que te acercas al nivel, con una señal ' +
+      'distinta según si te acercas o vas en la dirección equivocada, de modo que puedes ' +
+      'mirar las rampas en vez de la pantalla. Se calla cuando la lectura es demasiado poco ' +
+      'fiable, por ejemplo si cambia demasiado deprisa.',
+    'settings.save': 'Guardar',
+    'settings.undo': 'Deshacer los cambios',
+    'settings.reset': 'Restablecer los valores predeterminados',
+
+    'settings.tab.vehicle': 'Vehículo',
+    'settings.tab.ramps': 'Rampas',
+    'settings.klossar.brandAll': 'Todas',
+    'settings.klossar.pinnedSub': '{lengths} · {steps}',
+    'settings.klossar.step.one': '1 nivel',
+    'settings.klossar.step.many': '{n} niveles',
+    'settings.klossar.stepsHeading': 'Alturas de nivel',
+
+    'status.measuring': 'Midiendo…',
+    'status.almost': 'Casi nivelado: faltan {left}',
+    'status.one': '1 rueda por subir',
+    'status.many': '{n} ruedas por subir',
+    'status.cantLevel.close': 'Tus rampas se acercan pero no bastan aquí: mueve el vehículo',
+    'status.cantLevel.far': 'Aquí tus rampas se quedan muy cortas: mueve el vehículo',
+
+    'calibration.intro':
+      'Pon el móvil sobre una superficie que sepas que está nivelada y toca Calibrar ahora. ' +
+      'La inclinación actual se convierte en el punto cero.',
+    'calibration.status': 'Calibrado: lado/lado {roll}°, delante/detrás {pitch}°.',
+    'calibration.status.none': 'Sin calibrar: se usa el sensor en bruto.',
+    'calibration.now': 'Calibrar ahora',
+    'calibration.clear': 'Borrar la calibración',
+    'calibration.err.notRunning':
+      'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
+    'calibration.err.notFlat':
+      'El móvil no parece estar plano: ponlo sobre una superficie nivelada e inténtalo de nuevo.',
+    'calibration.sensor.h': 'Calibrar el móvil',
+    'calibration.vehicle.h': 'Calibrar el cero del vehículo',
+    'calibration.guide.intro':
+      'Dos capas:\n' +
+      '1. Calibra el móvil una vez sobre una superficie nivelada (o con el giro de 180°).\n' +
+      '2. Con el vehículo verificablemente nivelado, fija el sitio habitual del móvil como ' +
+      'cero del vehículo: así también se compensa una mesa algo inclinada.',
+    'calibration.vehicle.intro':
+      'La calibración del sensor pone a cero el móvil, no el sitio donde está apoyado. Si la ' +
+      'mesa se inclina un poco, la app mostraría siempre esa inclinación. Nivela el vehículo ' +
+      'de forma verificable una vez (con un nivel de burbuja, o después de nivelar con tus ' +
+      'rampas), pon el móvil en su sitio habitual y fija eso como nivel.',
+    'calibration.vehicle.now': 'Fijar la posición actual como nivelada',
+    'calibration.vehicle.clear': 'Borrar el cero del vehículo',
+    'calibration.vehicle.status': 'Cero del vehículo: lado/lado {roll}°, delante/detrás {pitch}°.',
+    'calibration.vehicle.status.none':
+      'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
+    'calibration.vehicle.err.notFlat':
+      'Esto parece más que la inclinación del sitio (>15°): ¿está el vehículo realmente nivelado?',
+    'calibration.age.today': '(hoy)',
+    'calibration.age.days': '(hace {n} días)',
+    'calibration.check': 'Comprobar',
+    'calibration.check.good': 'Sigue bien: desviación de {off}°.',
+    'calibration.check.off': 'Desviación de {off}°: conviene recalibrar.',
+    'calibration.flip.intro':
+      '¿No tienes cerca ninguna superficie nivelada? Usa la calibración por giro: pon el ' +
+      'móvil en cualquier sitio razonablemente plano, captura, gíralo media vuelta (180°) en ' +
+      'el mismo sitio y captura otra vez: la inclinación de la superficie se cancela sola.',
+    'calibration.flip.start': 'Calibrar girando',
+    'calibration.flip.rotate':
+      'Ahora gira el móvil media vuelta (180°) en el mismo sitio y toca Capturar.',
+    'calibration.flip.capture': 'Capturar',
+    'calibration.flip.done': '¡Listo! Tu superficie se inclina {surface}°: compensado.',
+    'calibration.flip.err.moved':
+      'Las dos capturas no coinciden: ¿se ha movido el móvil? Empieza otra vez desde el principio.',
+    'calibration.pill.notDone': 'SIN HACER',
+    'calibration.pill.done': 'HECHO',
+    'calibration.pill.none': 'NINGUNO',
+
+    'targets.intro':
+      'Guarda una inclinación intencionada, para la ducha o el desagüe de aguas grises, y ' +
+      'cambia a ella en un par de toques. Normal (nivelado) siempre está disponible y nunca ' +
+      'se sobrescribe.',
+    'targets.normal': 'Normal (nivelado)',
+    'targets.name.placeholder': 'Nombre (p. ej. «Desagüe de la ducha»)',
+    'targets.add': 'Guardar la inclinación actual como nuevo objetivo',
+    'targets.delete': 'Eliminar {name}',
+    'targets.err.tooSteep':
+      'Esto parece más que un objetivo intencionado (>15°): inténtalo de nuevo.',
+    'targets.badge': 'Objetivo: {name}',
+    'menu.offsetSummary':
+      'El nivel se calcula a partir de: sensor {sensor} · cero del vehículo {vehicleZero} · objetivo: {target}',
+
+    'feedback.intro':
+      '¿Has encontrado un problema o tienes una idea? Rellena esto y toca el botón: se ' +
+      'abrirá un informe ya preparado en GitHub donde publicarlo (hace falta una cuenta ' +
+      'gratuita de GitHub, que se crea en un minuto).',
+    'feedback.category': '¿Sobre qué es?',
+    'feedback.cat.bug': 'Error',
+    'feedback.cat.suggestion': 'Sugerencia',
+    'feedback.cat.other': 'Otro',
+    'feedback.title': 'Título breve',
+    'feedback.desc': '¿Qué ha pasado, o qué te gustaría?',
+    'feedback.submit': 'Abrir el informe en GitHub',
+
+    'help.what.h': 'Qué hace Libell',
+    'help.what.t':
+      'Deja el móvil plano dentro del vehículo con la parte de arriba hacia delante. La ' +
+      'pantalla muestra tu vehículo visto desde arriba, y cada rueda te dice qué hacer.',
+    'help.first.h': 'Antes del primer uso',
+    'help.first.t':
+      'Rellena los Ajustes y calibra una vez: los avisos amarillos de la barra superior te ' +
+      'lo recuerdan hasta que ambas cosas estén hechas. Todo se guarda.',
+    'help.screen.h': 'Cómo leer la pantalla',
+    'help.screen.t':
+      'Verde ✓: hecho.\n' +
+      'Naranja ↑: sube esa rueda al nivel indicado encima.\n' +
+      'Rojo ✕: ni tu nivel más alto basta; muévete a un sitio más llano.\n' +
+      'Gris –: una rueda baja a la que no llegan tus rampas.\n' +
+      'Cuando la burbuja descansa en el centro, estás nivelado.',
+    'help.settings.h': 'Las medidas',
+    'help.settings.t':
+      'En una autocaravana, la distancia entre ejes es la que hay entre el eje delantero y ' +
+      'el trasero; en una caravana es, en cambio, la distancia del eje a la rueda jockey. El ' +
+      'ancho de vía es la distancia entre las ruedas izquierda y derecha: una autocaravana ' +
+      'puede tener anchos distintos delante y detrás, una caravana solo tiene uno. Suele ' +
+      'estar en la documentación del vehículo; si no, usa una cinta métrica.',
+    'help.ramps.t':
+      'Elige un modelo de rampa ya hecho, o añade tus propias alturas de nivel con el ' +
+      'botón +. Después la app elige dónde tus rampas hacen más falta y, dentro de la ' +
+      'tolerancia, deja el lado del desagüe lo más bajo posible para que el fregadero y la ' +
+      'ducha sigan desaguando.',
+    'help.calibration.h': 'Calibración',
+    'help.calibration.t':
+      'El móvil lee su propia inclinación, no la del suelo, y el piso de un vehículo tampoco ' +
+      'suele ser perfectamente plano. Calibrar corrige ambas cosas, de modo que lo que ' +
+      'muestra la app es el suelo real y no solo cómo está apoyado el móvil.',
+    'help.notes.h': 'Bueno saberlo',
+    'help.notes.t':
+      'Funciona totalmente sin conexión una vez abierta: añádela a tu pantalla de inicio ' +
+      'como una app.\n' +
+      'En iPhone hay que tocar Iniciar cada vez.\n' +
+      'El número de versión de abajo ayuda al informar de problemas.',
+
+    'main.hint':
+      'Deja el móvil plano dentro de la autocaravana, con el borde superior hacia delante.',
+    'main.start': 'Iniciar',
+    'main.waiting': 'Esperando al sensor de inclinación…',
+    'main.level': '¡Tu autocaravana está nivelada!',
+    'main.denied':
+      'Se ha denegado el acceso al movimiento, así que Libell no puede leer la inclinación. ' +
+      'Permite el acceso a movimiento y orientación para este sitio y recarga.',
+    'main.noSensors':
+      'Este dispositivo no expone sensores de movimiento, así que Libell no puede leer la inclinación.',
+    'main.https':
+      'Libell necesita una conexión segura (HTTPS) para leer los sensores de inclinación. ' +
+      'Abre la app por HTTPS e inténtalo de nuevo.',
+
+    'diagram.aria':
+      'Vista desde arriba de tu autocaravana con las ruedas que hay que subir marcadas',
+    'diagram.caravan.aria':
+      'Vista desde arriba de tu caravana con las ruedas del eje y la rueda jockey',
+    'diagram.front': 'Delante',
+    'diagram.step': 'Nivel {n}',
+    'diagram.done': 'Hecho',
+    'diagram.noRamp': 'Sin rampa',
+    'diagram.wheel.frontLeft': 'DEL IZQ',
+    'diagram.wheel.frontRight': 'DEL DER',
+    'diagram.wheel.rearLeft': 'TRAS IZQ',
+    'diagram.wheel.rearRight': 'TRAS DER',
+    'caravan.crankUp': 'Subir con la manivela',
+    'caravan.crankDown': 'Bajar con la manivela',
+    'status.crank.up': 'Sube la rueda jockey con la manivela',
+    'status.crank.down': 'Baja la rueda jockey con la manivela',
+    'status.caravan.both': 'Sube la rueda a la rampa y luego usa la manivela de la rueda jockey',
+
+    'tilt.frontBack': 'Delante/detrás',
+    'tilt.sideSide': 'Lado/lado',
+
+    'pose.layFlat': 'Deja el móvil plano para medir',
+    'pose.portrait':
+      'Pon el móvil en vertical (retrato): el borde superior debe apuntar hacia delante',
+
+    'stale.dataUnavailable':
+      'No llegan datos nuevos del sensor: la guía está en pausa hasta que vuelvan',
+
+    'sensorFallback.unavailable': 'Sensor externo no disponible.',
+    'sensorFallback.phoneHint':
+      'El sensor del móvil exige que el móvil esté plano dentro del vehículo; una caja ' +
+      'montada de forma permanente no lo necesita.',
+    'sensorFallback.retry': 'Reintentar',
+    'sensorFallback.usePhone': 'Usar el sensor del móvil',
+  },
+  de: {
+    'topbar.install': 'Installieren',
+    'topbar.share': 'Libell teilen',
+    'bottombar.settings': 'Einstellungen',
+    'bottombar.sound.mute': 'Ton stummschalten',
+    'bottombar.sound.unmute': 'Ton einschalten',
+    'bottombar.help': 'Hilfe',
+    'share.text': 'Richte dein Wohnmobil mit dem Handy waagerecht aus.',
+    'share.copied': 'Link kopiert!',
+    'install.hint': 'Auf Teilen tippen, dann „Zum Home-Bildschirm“.',
+    'share.vehicle.text':
+      'Die Fahrzeugkonfiguration meines Wohnmobils für Libell — Maße und Auffahrkeile.',
+    'settings.shareVehicle': 'Fahrzeugkonfiguration teilen',
+    'setup.incoming.h': 'Empfangene Fahrzeugkonfiguration',
+    'setup.incoming.intro': 'Jemand aus deiner Familie hat dir diese Fahrzeugmaße geschickt:',
+    'setup.incoming.reminder':
+      'Eine Kalibrierung ist nicht dabei — auf diesem Handy musst du trotzdem kalibrieren.',
+    'setup.incoming.apply': 'Diese Werte übernehmen',
+    'setup.incoming.dismiss': 'Jetzt nicht',
+    'setup.incoming.invalid':
+      'Dieser Konfigurationslink konnte nicht gelesen werden — es wurde nichts geändert.',
+
+    'lamp.setup': '⚠ Einrichten',
+    'lamp.setup.title':
+      'Die Fahrzeugeinstellungen wurden noch nie gespeichert — zum Öffnen der Einstellungen tippen',
+    'lamp.calibrate': '⚠ Kalibrieren',
+    'lamp.calibrate.title': 'Das Handy ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
+
+    'sensorStatus.connected': 'Externer Sensor verbunden',
+    'sensorStatus.disconnected': 'Verbindung zum externen Sensor verloren — für Details tippen',
+    'sensorStatus.idle': 'Externer Sensor — zum Verbinden tippen',
+    'sensorStatus.idle.guide': 'Externer Sensor — für die iPhone-Anleitung tippen',
+
+    'menu.title': 'Menü',
+    'menu.close': 'Menü schließen',
+    'menu.settings': 'Einstellungen',
+    'menu.calibration': 'Kalibrierung',
+    'menu.targets': 'Ziele',
+    'menu.feedback': 'Rückmeldung',
+    'menu.help': 'Hilfe',
+    'menu.intro': 'Einführung anzeigen',
+    'menu.about': 'Über Libell',
+    'menu.about.tab': 'Über',
+    'menu.sensorSource': 'Externer Sensor',
+    'menu.advanced': 'ERWEITERT',
+    'menu.others': 'SONSTIGES',
+    'menu.card.notSaved': 'Nicht gespeichert',
+    'menu.card.notDone': 'Nicht erledigt',
+
+    'sensorSource.intro':
+      'Verbinde eine EasyLevel-BLE-Box als Alternative zum Sensor des Handys. ' +
+      'Erfordert Chrome unter Android mit eingeschaltetem Bluetooth.',
+    'sensorSource.connect': 'EasyLevel-Sensor verbinden',
+    'sensorSource.reconnect': 'EasyLevel-Sensor neu verbinden',
+    'sensorSource.disconnect': 'Trennen',
+    'sensorSource.status.phone': 'Der Sensor des Handys wird verwendet.',
+    'sensorSource.status.connected': 'Mit dem EasyLevel-Sensor verbunden.',
+    'sensorSource.status.connecting': 'Verbinden…',
+    'sensorSource.status.disconnected':
+      'Die Verbindung zum EasyLevel-Sensor ist abgebrochen — auf Neu verbinden tippen.',
+    'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
+    'sensorSource.err.failed': 'Verbindung zum EasyLevel-Sensor nicht möglich.',
+
+    'sensorSource.ios.intro':
+      'Safari kann sich nicht direkt mit Bluetooth-Sensoren verbinden, aber es gibt einen Umweg:',
+    'sensorSource.ios.step1': 'Installiere „Bluefy – Web Bluetooth Browser“ aus dem App Store.',
+    'sensorSource.ios.step2': 'Öffne Bluefy und erlaube die Bluetooth-Berechtigung.',
+    'sensorSource.ios.step3': 'Rufe in Bluefy dieselbe Libell-Adresse auf.',
+    'sensorSource.ios.step4':
+      'Öffne hier wieder Externer Sensor — es funktioniert wie unter Android.',
+    'sensorSource.ios.note':
+      'Bluefy ist eine App von Dritten, nicht von Libell — das erneute Verbinden beim Öffnen ' +
+      'erfordert dort eventuell einen manuellen Tipp, statt still zu geschehen.',
+    'sensorSource.ios.bluefyLink': 'Bluefy im App Store finden',
+
+    'sensorSource.detail.heading': 'Sensordetails',
+    'sensorSource.detail.battery': 'Batterie: {value}',
+    'sensorSource.detail.temperature': 'Temperatur: {value}',
+    'sensorSource.detail.notAvailable': 'Noch nicht verfügbar',
+    'sensorSource.lowBattery':
+      '⚠ Batterie schwach ({value}) — die Batterie der Sensorbox sollte bald gewechselt werden.',
+
+    'sensorSource.install.h': 'Einbau-Offset',
+    'sensorSource.install.intro':
+      'Sobald der Sensor fest eingebaut ist, spielt seine genaue Lage im Gehäuse keine Rolle ' +
+      'mehr — nur noch, wie das Gehäuse sitzt. Stelle das Fahrzeug einmal nachweislich ' +
+      'waagerecht (Wasserwaage, oder nach dem Auffahren auf die Keile) und setze dann den ' +
+      'aktuellen Messwert als waagerecht.',
+    'sensorSource.install.now': 'Fahrzeug als waagerecht setzen',
+    'sensorSource.install.clear': 'Einbau-Offset löschen',
+    'sensorSource.install.status': 'Einbau-Offset: seitlich {roll}°, längs {pitch}°.',
+    'sensorSource.install.status.none': 'Kein Einbau-Offset — der Rohwert gilt als waagerecht.',
+
+    'sensorSource.mounting.h': 'Sensormontage',
+    'sensorSource.mounting.intro':
+      'Die Sensorbox lässt sich auf vier Arten montieren, jeweils um eine Vierteldrehung ' +
+      'versetzt. Wähle das Bild, das zu deiner tatsächlichen Montage passt — wenn Libell die ' +
+      'falsche Seite anheben will oder vorn/hinten und links/rechts vertauscht, probiere eine andere.',
+    'sensorSource.mounting.standard': 'Standard',
+    'sensorSource.mounting.rotated90': 'Um 90° gedreht',
+    'sensorSource.mounting.rotated180': 'Um 180° gedreht',
+    'sensorSource.mounting.rotated270': 'Um 270° gedreht',
+
+    'sensorStatus.title': 'EasyLevel-Sensor',
+    'sensorStatus.reading': 'Messwert: {value}',
+    'sensorStatus.roll': 'Querneigung',
+    'sensorStatus.pitch': 'Längsneigung',
+    'sensorStatus.debug': 'Debug-Infos',
+    'sensorStatus.debug.intro':
+      'Rohwerte direkt aus der Box — zur Fehlersuche, wenn etwas nicht funktioniert.',
+    'sensorStatus.debug.deviceId': 'Geräte-ID: {value}',
+    'sensorStatus.debug.lastSample': 'Letzte Messung: {value}',
+    'sensorStatus.debug.age': 'vor {s} s',
+    'sensorStatus.debug.rawAccel': 'Rohes Beschleunigungssignal (x/y/z): {value}',
+    'sensorStatus.debug.firmwareTier': 'Firmware-Stufe: {value}',
+    'sensorStatus.debug.rawStatusBytes': 'Rohe Status-Bytes: {value}',
+    'sensorStatus.debug.copy': 'Debug-Infos kopieren',
+    'sensorStatus.debug.copied': 'Debug-Infos kopiert!',
+    'sensorStatus.debug.copy.failed': 'Automatisches Kopieren nicht möglich.',
+    'sensorStatus.debug.connectDelay.intro':
+      'Experimentell: nur versuchen, wenn die Verbindung deiner Box unzuverlässig ist. Fügt ' +
+      'nach dem Verbinden eine feste Pause ein, bevor die App zu lesen beginnt.',
+    'sensorStatus.debug.connectDelay.enable': 'Verbindungspause aktivieren',
+    'sensorStatus.debug.connectDelay.ms': 'Pause (ms)',
+
+    'about.text':
+      'Libell hilft dir, dein Wohnmobil oder deinen Wohnwagen mit dem Handy auszurichten, ' +
+      'das du ohnehin dabeihast — ohne Libelle, ohne Raten.',
+    'about.version': 'Version {v}',
+    'about.offline':
+      'Funktioniert vollständig offline — das Netz wird nur für Updates der App selbst genutzt.',
+    'about.privacy':
+      'Alles bleibt auf deinem Handy — kein Konto, kein Tracking, und keine Daten verlassen das Gerät.',
+    'about.source': 'Libell ist kostenlos und quelloffen (MIT-Lizenz).',
+    'about.source.link': 'Quellcode auf GitHub',
+
+    'onboard.welcome.h': 'Willkommen bei Libell',
+    'onboard.welcome.t':
+      'Diese kurze Einführung richtet Fahrzeug und Handy ein. Jeder Schritt lässt sich ' +
+      'überspringen und später in den Einstellungen erledigen.',
+    'onboard.sound.h': 'Ton',
+    'onboard.source.h': 'Wie möchtest du messen?',
+    'onboard.source.intro':
+      'Wähle, von welchem Sensor Libell die Neigung lesen soll — die meisten nehmen einfach das Handy.',
+    'onboard.source.phone': 'Dieses Handy',
+    'onboard.vehicle.h': 'Was richtest du aus?',
+    'onboard.vehicle.intro':
+      'Wähle dein Fahrzeug — der Rest dieser Einführung richtet sich danach.',
+    'onboard.step1.h': 'Lege das Handy so hin',
+    'onboard.next': 'Weiter',
+    'onboard.back': 'Zurück',
+    'onboard.close': 'Einführung schließen',
+    'onboard.done': 'Fertig',
+    'onboard.skipStep': 'Überspringen',
+    'onboard.skipDefaults': 'Überspringen — Standardwerte nutzen',
+    'onboard.skip.consequence':
+      'Vorerst überspringen — eine Warnleuchte erinnert dich daran, bis es erledigt ist. So ' +
+      'lange gelten die Standardwerte, die oft schon ganz gut passen.',
+    'onboard.legend.ok': 'Grün ✓ — dieses Rad steht waagerecht.',
+    'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe fahren.',
+    'onboard.legend.no': 'Rot ✕ — keine Stufe reicht; such dir einen ebeneren Platz.',
+    'onboard.legend.dim': 'Grau – — ein tiefes Rad, das deine Keile nicht erreichen.',
+    'settings.wheelbase': 'Radstand',
+    'settings.trackFront': 'Spurweite vorn',
+    'settings.trackRear': 'Spurweite hinten',
+    'settings.tolerance': 'Toleranz',
+    'settings.stability': 'Stabilität',
+    'settings.dwellRest': 'Reaktionsverzögerung (ms)',
+    'settings.dwellMotion': 'Reaktionsverzögerung beim Ausrichten (ms)',
+    'settings.dwell.hint':
+      'Wie lange ein Messwert stabil bleiben muss, bevor sich die angezeigte Zahl ändert. ' +
+      'Der zweite Wert gilt nur direkt nach einer Änderung, während du aktiv ausrichtest ' +
+      '(etwa beim Auffahren auf einen Keil), damit die Anzeige nicht hinterherhinkt.',
+    'settings.vehicle': 'Fahrzeug',
+    'vehicle.motorhome': 'Wohnmobil',
+    'vehicle.caravan': 'Wohnwagen',
+    'settings.axleToJockey': 'Achse bis Stützrad',
+    'settings.rearAxle': 'Hinterachse',
+    'settings.axle': 'Achse',
+    'axle.single': 'Einzeln',
+    'axle.boggie': 'Tandem (Doppelachse)',
+    'settings.track': 'Spurweite',
+    'settings.measureHint':
+      'Radstand und Spurweiten stehen im Fahrzeugschein oder im Handbuch — ein Maßband tut ' +
+      'es auch; ein paar cm Abweichung machen kaum etwas aus.',
+    'settings.measureHint.boggie': 'Bei einer Doppelachse bis zur Mitte des Achspaars messen.',
+    'settings.steps': 'Stufenhöhen der Keile',
+    'settings.steps.add': 'Stufe hinzufügen',
+    'settings.steps.remove': '{value} entfernen',
+    'settings.ramp': 'Fertiger Auffahrkeil',
+    'settings.ramp.custom': 'Eigener Satz',
+    'settings.rampCount': 'Anzahl Keile',
+    'settings.drain': 'Abflussseite',
+    'settings.rampHint': 'Die App wählt, wo deine Keile am meisten bringen.',
+    'settings.drainHint':
+      'Wichtig nur, wenn dir wichtig ist, wohin das Wasser aus Spüle und Dusche abläuft — ' +
+      'innerhalb der Toleranz lässt die App diese Seite dann am tiefsten, damit es weiter abläuft.',
+    'settings.section.vehicle': 'Fahrzeug und Maße',
+    'settings.section.ramps': 'Auffahrkeile',
+    'settings.section.display': 'Ausrichtung und Anzeige',
+    'settings.general': 'Allgemein',
+    'settings.language': 'Sprache',
+    'settings.language.auto': 'Automatisch (Gerätesprache)',
+    'settings.advanced': 'Erweitert',
+    'settings.tolerance.hint':
+      'Legt fest, wie nah an der Waagerechten als „waagerecht“ gilt — enger für Dusche oder ' +
+      'Kühlschrank, großzügiger, wenn ungefähr reicht.',
+    'settings.stability.hint':
+      'Glättet kleine Schwankungen des Sensors, damit die Zahlen nicht flackern.',
+    'drain.none': 'Keine / egal',
+    'drain.left': 'Links, Mitte',
+    'drain.right': 'Rechts, Mitte',
+    'drain.front': 'Vorn, Mitte',
+    'drain.rear': 'Hinten, Mitte',
+    'drain.frontLeft': 'Vorn links',
+    'drain.frontRight': 'Vorn rechts',
+    'drain.rearLeft': 'Hinten links',
+    'drain.rearRight': 'Hinten rechts',
+    'settings.unit': 'Längen anzeigen in',
+    'settings.theme': 'Design',
+    'theme.system': 'Wie das Handy',
+    'theme.light': 'Hell',
+    'theme.dark': 'Dunkel',
+    'settings.appearance': 'Darstellung',
+    'appearance.classic': 'Klassisch',
+    'appearance.modern': 'Modern',
+    'appearance.glossy': 'Glänzend',
+    'settings.appearance.hint':
+      'Diese Änderung speichert deine Eingaben und lädt Libell neu, damit das neue Layout überall gilt.',
+    'settings.sound': 'Signalton bei waagerecht',
+    'settings.soundGuidance': 'Durchgehende Tonführung',
+    'settings.soundGuidance.help':
+      'Ein Puls wird schneller und höher, je näher du der Waagerechten kommst, mit ' +
+      'unterschiedlichem Signal je nachdem, ob du näher kommst oder in die falsche Richtung ' +
+      'fährst — so kannst du auf die Keile statt auf den Bildschirm schauen. Still, wenn der ' +
+      'Messwert zu unzuverlässig ist, etwa weil er sich zu schnell ändert.',
+    'settings.save': 'Speichern',
+    'settings.undo': 'Änderungen verwerfen',
+    'settings.reset': 'Auf Standardwerte zurücksetzen',
+
+    'settings.tab.vehicle': 'Fahrzeug',
+    'settings.tab.ramps': 'Keile',
+    'settings.klossar.brandAll': 'Alle',
+    'settings.klossar.pinnedSub': '{lengths} · {steps}',
+    'settings.klossar.step.one': '1 Stufe',
+    'settings.klossar.step.many': '{n} Stufen',
+    'settings.klossar.stepsHeading': 'Stufenhöhen',
+
+    'status.measuring': 'Messen…',
+    'status.almost': 'Fast waagerecht — noch {left}',
+    'status.one': '1 Rad anheben',
+    'status.many': '{n} Räder anheben',
+    'status.cantLevel.close':
+      'Deine Keile kommen nah heran, reichen hier aber nicht — stell das Fahrzeug um',
+    'status.cantLevel.far': 'Deine Keile reichen hier bei Weitem nicht — stell das Fahrzeug um',
+
+    'calibration.intro':
+      'Lege das Handy auf eine Fläche, von der du weißt, dass sie waagerecht ist, und tippe ' +
+      'auf Jetzt kalibrieren. Die aktuelle Neigung wird zum Nullpunkt.',
+    'calibration.status': 'Kalibriert: seitlich {roll}°, längs {pitch}°.',
+    'calibration.status.none': 'Nicht kalibriert — der Rohwert des Sensors wird verwendet.',
+    'calibration.now': 'Jetzt kalibrieren',
+    'calibration.clear': 'Kalibrierung löschen',
+    'calibration.err.notRunning':
+      'Der Neigungssensor läuft noch nicht — tippe zuerst auf dem Hauptbildschirm auf Start.',
+    'calibration.err.notFlat':
+      'Das Handy scheint nicht flach zu liegen — lege es auf eine waagerechte Fläche und ' +
+      'versuche es erneut.',
+    'calibration.sensor.h': 'Handy kalibrieren',
+    'calibration.vehicle.h': 'Fahrzeug-Nullpunkt kalibrieren',
+    'calibration.guide.intro':
+      'Zwei Ebenen:\n' +
+      '1. Kalibriere das Handy einmal auf einer waagerechten Fläche (oder mit der 180°-Drehung).\n' +
+      '2. Setze bei nachweislich waagerechtem Fahrzeug den gewohnten Platz des Handys als ' +
+      'Fahrzeug-Nullpunkt — dann wird auch ein leicht schiefer Tisch herausgerechnet.',
+    'calibration.vehicle.intro':
+      'Die Sensorkalibrierung stellt das Handy auf null — nicht den Platz, auf dem es liegt. ' +
+      'Steht der Tisch leicht schief, würde die App diese Neigung immer anzeigen. Stelle das ' +
+      'Fahrzeug einmal nachweislich waagerecht (Wasserwaage, oder nach dem Auffahren auf die ' +
+      'Keile), lege das Handy an seinen gewohnten Platz und setze das als waagerecht.',
+    'calibration.vehicle.now': 'Aktuelle Lage als waagerecht setzen',
+    'calibration.vehicle.clear': 'Fahrzeug-Nullpunkt löschen',
+    'calibration.vehicle.status': 'Fahrzeug-Nullpunkt: seitlich {roll}°, längs {pitch}°.',
+    'calibration.vehicle.status.none':
+      'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
+    'calibration.vehicle.err.notFlat':
+      'Das sieht nach mehr als nur Auflageneigung aus (>15°) — steht das Fahrzeug wirklich waagerecht?',
+    'calibration.age.today': '(heute)',
+    'calibration.age.days': '(vor {n} Tagen)',
+    'calibration.check': 'Prüfen',
+    'calibration.check.good': 'Immer noch gut — {off}° daneben.',
+    'calibration.check.off': '{off}° daneben — neu kalibrieren wäre sinnvoll.',
+    'calibration.flip.intro':
+      'Keine waagerechte Fläche in der Nähe? Nimm die Umdreh-Kalibrierung: Handy irgendwo ' +
+      'halbwegs eben hinlegen, erfassen, das Handy an derselben Stelle um eine halbe Drehung ' +
+      '(180°) drehen, erneut erfassen — die Neigung der Fläche hebt sich dabei selbst auf.',
+    'calibration.flip.start': 'Durch Umdrehen kalibrieren',
+    'calibration.flip.rotate':
+      'Drehe das Handy jetzt an derselben Stelle um eine halbe Drehung (180°) und tippe auf Erfassen.',
+    'calibration.flip.capture': 'Erfassen',
+    'calibration.flip.done': 'Fertig! Deine Fläche neigt sich um {surface}° — herausgerechnet.',
+    'calibration.flip.err.moved':
+      'Die beiden Erfassungen passen nicht zusammen — hat sich das Handy bewegt? Fang noch ' +
+      'einmal von vorn an.',
+    'calibration.pill.notDone': 'OFFEN',
+    'calibration.pill.done': 'ERLEDIGT',
+    'calibration.pill.none': 'KEINER',
+
+    'targets.intro':
+      'Speichere eine gewollte Neigung — für die Dusche oder den Grauwasserablauf — und ' +
+      'wechsle mit ein paar Tipps dorthin. Normal (waagerecht) ist immer verfügbar und wird ' +
+      'nie überschrieben.',
+    'targets.normal': 'Normal (waagerecht)',
+    'targets.name.placeholder': 'Name (z. B. „Duschablauf“)',
+    'targets.add': 'Aktuelle Neigung als neues Ziel speichern',
+    'targets.delete': '{name} löschen',
+    'targets.err.tooSteep':
+      'Das sieht nach mehr als einem gewollten Ziel aus (>15°) — versuche es erneut.',
+    'targets.badge': 'Ziel: {name}',
+    'menu.offsetSummary':
+      'Die Waagerechte wird berechnet aus: Sensor {sensor} · Fahrzeug-Nullpunkt {vehicleZero} · Ziel: {target}',
+
+    'feedback.intro':
+      'Ein Problem gefunden oder eine Idee? Fülle das hier aus und tippe auf den Knopf — es ' +
+      'öffnet sich ein fertiger Bericht auf GitHub, den du dort abschickst (ein kostenloses ' +
+      'GitHub-Konto ist nötig, in einer Minute angelegt).',
+    'feedback.category': 'Worum geht es?',
+    'feedback.cat.bug': 'Fehler',
+    'feedback.cat.suggestion': 'Vorschlag',
+    'feedback.cat.other': 'Sonstiges',
+    'feedback.title': 'Kurzer Titel',
+    'feedback.desc': 'Was ist passiert, oder was wünschst du dir?',
+    'feedback.submit': 'Den Bericht auf GitHub öffnen',
+
+    'help.what.h': 'Was Libell macht',
+    'help.what.t':
+      'Lege das Handy flach ins Fahrzeug, mit der Oberkante nach vorn. Der Bildschirm zeigt ' +
+      'dein Fahrzeug von oben, und jedes Rad sagt dir, was zu tun ist.',
+    'help.first.h': 'Vor der ersten Nutzung',
+    'help.first.t':
+      'Fülle die Einstellungen aus und kalibriere einmal — die gelben Schilder in der oberen ' +
+      'Leiste erinnern dich daran, bis beides erledigt ist. Alles wird gespeichert.',
+    'help.screen.h': 'Den Bildschirm lesen',
+    'help.screen.t':
+      'Grün ✓: erledigt.\n' +
+      'Orange ↑: dieses Rad auf die darüber angezeigte Stufe fahren.\n' +
+      'Rot ✕: selbst die höchste Stufe reicht nicht; such dir einen ebeneren Platz.\n' +
+      'Grau –: ein tiefes Rad, das deine Keile nicht erreichen.\n' +
+      'Wenn die Blase in der Mitte ruht, steht das Fahrzeug waagerecht.',
+    'help.settings.h': 'Die Maße',
+    'help.settings.t':
+      'Bei einem Wohnmobil ist der Radstand der Abstand zwischen Vorder- und Hinterachse; ' +
+      'bei einem Wohnwagen stattdessen der Abstand von der Achse zum Stützrad. Die Spurweite ' +
+      'ist der Abstand zwischen linkem und rechtem Rad — ein Wohnmobil kann vorn und hinten ' +
+      'unterschiedlich breit sein, ein Wohnwagen hat nur eine. Steht meist in den ' +
+      'Fahrzeugpapieren, sonst hilft ein Maßband.',
+    'help.ramps.t':
+      'Wähle ein fertiges Keilmodell, oder füge mit der Plus-Taste eigene Stufenhöhen hinzu. ' +
+      'Die App wählt dann, wo deine Keile am meisten bringen — und lässt innerhalb der ' +
+      'Toleranz die Abflussseite am tiefsten, damit Spüle und Dusche weiter ablaufen.',
+    'help.calibration.h': 'Kalibrierung',
+    'help.calibration.t':
+      'Das Handy misst seine eigene Neigung, nicht die des Bodens — und der Fahrzeugboden ist ' +
+      'selten perfekt eben. Die Kalibrierung korrigiert beides, sodass die App den ' +
+      'tatsächlichen Untergrund zeigt und nicht nur, wie das Handy gerade liegt.',
+    'help.notes.h': 'Gut zu wissen',
+    'help.notes.t':
+      'Funktioniert nach dem ersten Öffnen vollständig offline — lege sie wie eine App auf ' +
+      'den Home-Bildschirm.\n' +
+      'Auf dem iPhone musst du jedes Mal auf Start tippen.\n' +
+      'Die Versionsnummer unten hilft bei Fehlermeldungen.',
+
+    'main.hint': 'Lege dein Handy flach ins Wohnmobil, die Oberkante nach vorn.',
+    'main.start': 'Start',
+    'main.waiting': 'Warten auf den Neigungssensor…',
+    'main.level': 'Dein Wohnmobil steht waagerecht!',
+    'main.denied':
+      'Der Zugriff auf die Bewegungssensoren wurde verweigert, daher kann Libell die Neigung ' +
+      'nicht lesen. Erlaube Bewegung und Orientierung für diese Website und lade neu.',
+    'main.noSensors':
+      'Dieses Gerät bietet keine Bewegungssensoren, daher kann Libell die Neigung nicht lesen.',
+    'main.https':
+      'Libell braucht eine sichere Verbindung (HTTPS), um die Neigungssensoren zu lesen. ' +
+      'Öffne die App über HTTPS und versuche es erneut.',
+
+    'diagram.aria': 'Dein Wohnmobil von oben, mit den Rädern, die angehoben werden müssen',
+    'diagram.caravan.aria': 'Dein Wohnwagen von oben, mit den Achsrädern und dem Stützrad',
+    'diagram.front': 'Vorn',
+    'diagram.step': 'Stufe {n}',
+    'diagram.done': 'Fertig',
+    'diagram.noRamp': 'Kein Keil',
+    'diagram.wheel.frontLeft': 'VORN L',
+    'diagram.wheel.frontRight': 'VORN R',
+    'diagram.wheel.rearLeft': 'HINTEN L',
+    'diagram.wheel.rearRight': 'HINTEN R',
+    'caravan.crankUp': 'Hochkurbeln',
+    'caravan.crankDown': 'Herunterkurbeln',
+    'status.crank.up': 'Das Stützrad hochkurbeln',
+    'status.crank.down': 'Das Stützrad herunterkurbeln',
+    'status.caravan.both': 'Rad auf den Keil fahren, dann das Stützrad kurbeln',
+
+    'tilt.frontBack': 'Längs',
+    'tilt.sideSide': 'Quer',
+
+    'pose.layFlat': 'Zum Messen das Handy flach hinlegen',
+    'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',
+
+    'stale.dataUnavailable': 'Keine neuen Sensordaten — die Führung pausiert, bis sie zurückkommen',
+
+    'sensorFallback.unavailable': 'Externer Sensor nicht verfügbar.',
+    'sensorFallback.phoneHint':
+      'Der Handysensor verlangt, dass das Handy flach im Fahrzeug liegt — eine fest ' +
+      'eingebaute Box nicht.',
+    'sensorFallback.retry': 'Erneut versuchen',
+    'sensorFallback.usePhone': 'Handysensor verwenden',
+  },
 } as const;
 
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
 
-function detectLanguage(): Language {
-  if (typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('sv')) {
-    return 'sv';
-  }
-  return 'en';
+/** Every language Libell ships, in the order the Language picker lists them:
+ * Swedish first (the app's home audience), then English, then the rest.
+ * A unit test asserts this covers exactly the `MESSAGES` keys. */
+export const LANGUAGES: readonly Language[] = ['sv', 'en', 'fr', 'es', 'de'];
+
+/** Each language named in itself — a picker always names a language in its
+ * own language, never translated through `t()`, so a Swedish reader can
+ * still find "Deutsch" and vice versa. */
+export const LANGUAGE_NAMES: Record<Language, string> = {
+  sv: 'Svenska',
+  en: 'English',
+  fr: 'Français',
+  es: 'Español',
+  de: 'Deutsch',
+};
+
+export function isLanguage(value: unknown): value is Language {
+  return typeof value === 'string' && (LANGUAGES as readonly string[]).includes(value);
 }
 
-/** Stored override ('sv' | 'en'), validated; anything else → auto-detect. */
+/** The locale's language subtag decides — 'de-AT', 'de' and 'DE' all pick
+ * German; a region we ship no dictionary for falls back to English. */
+function detectLanguage(): Language {
+  const locale = typeof navigator !== 'undefined' ? navigator.language?.toLowerCase() : undefined;
+  const subtag = locale?.split('-')[0];
+  return isLanguage(subtag) ? subtag : 'en';
+}
+
+/** Stored override, validated against the shipped languages; anything else
+ * (missing, corrupt, a language we dropped) → auto-detect. */
 export function resolveLanguage(stored: unknown): Language {
-  return stored === 'sv' || stored === 'en' ? stored : detectLanguage();
+  return isLanguage(stored) ? stored : detectLanguage();
 }
 
 let current: Language = resolveLanguage(null);

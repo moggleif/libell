@@ -68,5 +68,5 @@ git config core.hookspath .githooks
 
 See `CLAUDE.md`. Key points: the `domain/` layer stays pure (no `window`, `document`,
 `navigator` or `localStorage`) so it is unit-testable in plain Node; all user-facing
-strings go through `t()` in `src/ui/i18n.ts` with Swedish and English coverage; colors
+strings go through `t()` in `src/ui/i18n.ts` with coverage in every shipped language; colors
 come from the CSS custom properties in `src/ui/styles.css`.
