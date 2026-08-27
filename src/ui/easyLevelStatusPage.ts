@@ -75,6 +75,11 @@ export interface EasyLevelStatusOptions {
 
 export interface EasyLevelStatusPage {
   element: HTMLElement;
+  /** Container for this sensor's own settings blocks (#226) — the
+   * mounting picker and installation offset, appended by `sensorPage.ts`
+   * from `sensorSourceSection.ts`'s `installElement`. Sits below the
+   * live detail rows and above the debug disclosure. */
+  settingsSlot: HTMLElement;
   isOpen(): boolean;
   open(): void;
   close(): void;
@@ -111,20 +116,51 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
 
   const stateRow = document.createElement('p');
   stateRow.className = 'menu__text menu__text--status';
+  const detailHeading = document.createElement('h3');
+  detailHeading.className = 'menu__heading';
+  detailHeading.textContent = t('sensorSource.detail.heading');
   const batteryRow = document.createElement('p');
   batteryRow.className = 'menu__text';
+  // Signal strength (#226, moved here from the External sensor list page
+  // along with the rest of this block): genuinely never becomes available
+  // — there is no reliable, cross-browser way to read RSSI from Web
+  // Bluetooth, and this page must never fabricate a number for it — so it
+  // is set once here, unlike battery/temperature which `refresh()` keeps
+  // live.
+  const rssiRow = document.createElement('p');
+  rssiRow.className = 'menu__text';
+  rssiRow.textContent = t('sensorSource.detail.rssi', { value: notAvailable });
   const temperatureRow = document.createElement('p');
   temperatureRow.className = 'menu__text';
   const readingRow = document.createElement('p');
   readingRow.className = 'menu__text';
-  // Same plain threshold + hysteresis band as the inline detail block
-  // (#123's `isLowBattery`) — its own latch here, never shared with that
-  // block's, so the two pages can't leave each other in a stale "low" state.
+  // A plain threshold + hysteresis band (#123's `isLowBattery`). Since
+  // #226 this is the only place battery is shown at all, so there is no
+  // second latch anywhere to leave in a stale "low" state.
   const lowBatteryRow = document.createElement('p');
   lowBatteryRow.className = 'menu__text menu__text--warning';
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
-  page.body.append(stateRow, batteryRow, temperatureRow, readingRow, lowBatteryRow);
+  page.body.append(
+    stateRow,
+    detailHeading,
+    batteryRow,
+    rssiRow,
+    temperatureRow,
+    readingRow,
+    lowBatteryRow,
+  );
+
+  // Where this sensor's own SETTINGS go (#226) — the mounting picker
+  // (R43) and installation offset (R34), built by
+  // `sensorSourceSection.ts` and placed here by `sensorPage.ts` rather
+  // than rebuilt: they are per-device configuration, so they belong on
+  // the device's page, not on the list of sources that links to it. A
+  // dedicated slot (rather than letting the caller append to `page.body`)
+  // keeps this page owning its own running order, with the debug
+  // disclosure below staying last.
+  const settingsSlot = document.createElement('div');
+  page.body.append(settingsSlot);
 
   // Debug info (EasyLevel only): closed by default, same native-<details>
   // discipline as the settings page's Advanced disclosure (#157) — no JS
@@ -297,6 +333,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   refresh();
   return {
     element: page.element,
+    settingsSlot,
     isOpen: page.isOpen,
     open: page.open,
     close: page.close,

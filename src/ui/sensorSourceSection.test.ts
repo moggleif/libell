@@ -113,131 +113,6 @@ describe('createSensorSourceSection (#116)', () => {
     expect(section.element.textContent).not.toContain('Connected to the EasyLevel sensor.');
   });
 
-  it('hides the battery/RSSI/temperature detail block while the phone is the active source', () => {
-    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
-    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
-    expect(detail?.hidden).toBe(true);
-  });
-
-  it('shows battery/RSSI/temperature explicitly as "not available yet" before the first faf52c22 notification — never omitted, never fabricated', () => {
-    const section = createSensorSourceSection(
-      makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'granted' }),
-    );
-    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
-    expect(detail?.hidden).toBe(false);
-    expect(detail?.textContent).toContain('Battery');
-    expect(detail?.textContent).toContain('Signal strength');
-    expect(detail?.textContent).toContain('Temperature');
-    // RSSI never becomes available; battery/temperature also read "not
-    // available yet" here since no status has arrived (getEasyLevelStatus
-    // returns null) — all three show it, distinctly from once real values
-    // arrive (below).
-    const notAvailableCount = (detail?.textContent?.match(/Not available yet/g) ?? []).length;
-    expect(notAvailableCount).toBe(3);
-  });
-
-  it('shows real battery %/temperature once a status notification has arrived (#123) — RSSI stays "not available yet"', () => {
-    const section = createSensorSourceSection(
-      makeOptions({
-        getSensorSource: () => 'easylevel',
-        getSensorState: () => 'granted',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
-          batteryPercent: 72,
-          temperatureCelsius: 19.5,
-          calibration: null,
-        }),
-      }),
-    );
-    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
-    expect(detail?.textContent).toContain('Battery: 72%');
-    expect(detail?.textContent).toContain('Temperature: 19.5°C');
-    expect(detail?.textContent).toContain('Signal strength: Not available yet');
-    const notAvailableCount = (detail?.textContent?.match(/Not available yet/g) ?? []).length;
-    expect(notAvailableCount).toBe(1);
-  });
-
-  it('still shows the detail block (as "not available yet") for a dropped connection — not omitted on disconnect', () => {
-    const section = createSensorSourceSection(
-      makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
-    );
-    const detail = section.element.querySelector<HTMLElement>('.menu__detail');
-    expect(detail?.hidden).toBe(false);
-  });
-
-  // #123: a settings-page warning, not a leveling-screen interruption,
-  // with hysteresis so it doesn't flicker right at the threshold.
-  describe('low-battery warning', () => {
-    function warningRow(root: HTMLElement): HTMLElement | undefined {
-      return [...root.querySelectorAll<HTMLElement>('.menu__text--warning')].find(
-        (el) => !el.hidden,
-      );
-    }
-
-    it('is hidden while battery is comfortably above the threshold', () => {
-      const section = createSensorSourceSection(
-        makeOptions({
-          getSensorSource: () => 'easylevel',
-          getEasyLevelStatus: () => ({
-            firmwareTier: 3,
-            batteryPercent: 80,
-            temperatureCelsius: 20,
-            calibration: null,
-          }),
-        }),
-      );
-      expect(warningRow(section.element)).toBeUndefined();
-    });
-
-    it('shows once battery drops below the threshold, and hides again once it recovers past the hysteresis band', () => {
-      let battery = 15;
-      const section = createSensorSourceSection(
-        makeOptions({
-          getSensorSource: () => 'easylevel',
-          getEasyLevelStatus: () => ({
-            firmwareTier: 3,
-            batteryPercent: battery,
-            temperatureCelsius: 20,
-            calibration: null,
-          }),
-        }),
-      );
-      expect(warningRow(section.element)).toBeDefined();
-      expect(warningRow(section.element)?.textContent).toContain('Low battery');
-
-      // Back above the bare threshold, but still inside the hysteresis
-      // band — must not flicker off yet.
-      battery = 21;
-      section.refresh();
-      expect(warningRow(section.element)).toBeDefined();
-
-      // Clearly above the hysteresis band now.
-      battery = 30;
-      section.refresh();
-      expect(warningRow(section.element)).toBeUndefined();
-    });
-
-    it('never shows while the phone sensor is active, even with a stale low reading remembered', () => {
-      const section = createSensorSourceSection(
-        makeOptions({
-          getSensorSource: () => 'phone',
-          getEasyLevelStatus: () => ({
-            firmwareTier: 3,
-            batteryPercent: 5,
-            temperatureCelsius: 20,
-            calibration: null,
-          }),
-        }),
-      );
-      expect(warningRow(section.element)).toBeUndefined();
-    });
-  });
-});
-
-// #131, ADR 0014: the installation-offset block generalizes R24's phone
-// "vehicle zero" to this external sensor — same capture/check/clear/age
-// pattern, its own independent state.
-describe('createSensorSourceSection installation calibration (#131)', () => {
   function installBlock(root: HTMLElement): HTMLElement {
     const heading = [...root.querySelectorAll('h3')].find(
       (h) => h.textContent === 'Installation offset',
@@ -245,14 +120,6 @@ describe('createSensorSourceSection installation calibration (#131)', () => {
     if (!heading?.parentElement) throw new Error('installation offset heading not found');
     return heading.parentElement;
   }
-
-  it('hides the installation-offset block while the phone is the active source', () => {
-    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
-    const heading = [...section.element.querySelectorAll('h3')].find(
-      (h) => h.textContent === 'Installation offset',
-    );
-    expect(heading?.parentElement?.hidden).toBe(true);
-  });
 
   it('shows "no installation offset" until one is captured, once EasyLevel is active', () => {
     const section = createSensorSourceSection(
@@ -358,6 +225,39 @@ describe('createSensorSourceSection installation calibration (#131)', () => {
       const section = createSensorSourceSection(makeOptions());
       expect(statusButton(section.element).tagName).toBe('BUTTON');
     });
+  });
+});
+
+describe('createSensorSourceSection halves (#226)', () => {
+  it('keeps the per-device health rows off the connect half — they belong on the sensor\u2019s own page now', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getSensorState: () => 'granted',
+        getEasyLevelStatus: () => ({
+          firmwareTier: 3,
+          batteryPercent: 72,
+          temperatureCelsius: 19.5,
+          calibration: null,
+        }),
+      }),
+    );
+    // The connect half is the whole of the External sensor list page.
+    const listPage = section.connectElement.textContent ?? '';
+    expect(listPage).not.toContain('Battery');
+    expect(listPage).not.toContain('Signal strength');
+    expect(listPage).not.toContain('Temperature');
+    // What it must still carry: the connect action and the sensor row.
+    expect(listPage).toContain('Reconnect EasyLevel sensor');
+    expect(listPage).toContain('Connected to the EasyLevel sensor.');
+  });
+
+  it('keeps mounting and installation offset on the install half, not the connect half', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
+    expect(section.connectElement.textContent).not.toContain('Sensor mounting');
+    expect(section.connectElement.textContent).not.toContain('Installation offset');
+    expect(section.installElement.textContent).toContain('Sensor mounting');
+    expect(section.installElement.textContent).toContain('Installation offset');
   });
 });
 

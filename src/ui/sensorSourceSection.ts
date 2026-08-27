@@ -1,42 +1,46 @@
 /**
- * Sensor source menu page (#116, ADR 0014): "Connect EasyLevel sensor" plus
- * the detailed health status added by #129 — the only working
- * `sensorSource` choice beyond the phone's own built-in sensor. Only ever
- * added to the menu when EasyLevel is available at all (`main.ts` checks
+ * Sensor source section (#116, ADR 0014): the "Connect EasyLevel sensor"
+ * controls and the sensor row that opens the box's own page — the only
+ * working `sensorSource` choice beyond the phone's built-in sensor. Only
+ * ever built when EasyLevel is available at all (`main.ts` checks
  * `isEasyLevelAvailable()` before creating the pages that embed this
  * section) — never a silent failure on Safari/iOS, per #116's acceptance
  * criteria.
  *
- * #129 adds the connection-state text distinguishing a live connection from
- * one that dropped (previously both read as "connected", #116's original
- * minimal scope), plus battery/RSSI/temperature rows. #123 decodes
- * `faf52c22-...`'s battery and temperature bytes (`easyLevelProtocol.ts`'s
- * `parseEasyLevelStatus`), so those two now show real values once the first
- * status notification arrives — "not available yet" only in the brief
- * window before that, or before EasyLevel has ever connected. Signal
- * strength stays "not available yet": there is no reliable, cross-browser
- * way to read RSSI from Web Bluetooth — this page must never fabricate a
- * number for it.
+ * #129 added the connection-state text distinguishing a live connection
+ * from one that dropped (previously both read as "connected", #116's
+ * original minimal scope).
  *
- * #123 also adds a low-battery warning here (not a leveling-screen
- * interruption): a plain threshold with a hysteresis band
- * (`easyLevelProtocol.ts`'s `isLowBattery`) so it doesn't flicker right at
- * the line, shown only on this settings page and only while EasyLevel is
- * the active source.
+ * **Where each half is shown (#226).** This factory builds two independent
+ * halves and the callers decide where they go, because they answer
+ * different questions:
+ *   - `connectElement` — "which source is feeding readings, and how do I
+ *     connect it": intro, Connect/Reconnect, and the sensor row. This is
+ *     the whole of the External sensor *list* page (`sensorPage.ts`).
+ *   - `installElement` — the mounting picker (#217/#222, R43) and the
+ *     installation offset (#131, R34): per-device *configuration*, so
+ *     `sensorPage.ts` places it on that device's own page
+ *     (`easyLevelStatusPage.ts`'s `settingsSlot`), alongside the live
+ *     battery/temperature/reading rows, rather than stacking it on the
+ *     list that merely links there. Before #226 both halves sat on the
+ *     list page, which left it longer than the detail page behind its own
+ *     chevron and showed battery/temperature twice; the health rows now
+ *     live only on that detail page.
+ * The onboarding wizard uses the same split for a different reason —
+ * connecting and setting the installation offset are two separate moments,
+ * so each gets its own step — reusing these exact elements rather than a
+ * wizard-only rebuild.
  *
- * #131 adds the installation-offset block below the health details: once
- * the box is permanently mounted, its own physical orientation stops
- * mattering — the same "vehicle zero" concept R24 already gives the phone
- * (ADR 0010), generalized to this external source per ADR 0014's three-way
- * calibration split. It lives on this page, not inside the Calibration
- * menu section, because it only makes sense once EasyLevel is (or was)
- * connected — same rule the health-detail block above already follows.
+ * #131's installation offset is here rather than inside the Calibration
+ * menu section because it only makes sense once EasyLevel is (or was)
+ * connected: the same "vehicle zero" concept R24 gives the phone (ADR
+ * 0010), generalized to this external source per ADR 0014's three-way
+ * calibration split.
  *
- * The sensor row's status text doubles as a button, opening a deeper
- * `easyLevelStatusPage.ts` (live battery/temperature/reading plus a
- * collapsible debug section) when `onOpenStatus` is supplied — optional
- * purely so existing callers/tests that don't need that page can construct
- * this section without threading a callback through.
+ * The sensor row's status text doubles as a button, opening
+ * `easyLevelStatusPage.ts` when `onOpenStatus` is supplied — optional
+ * purely so callers/tests that don't need that page (the onboarding
+ * wizard) can construct this section without threading a callback through.
  */
 import {
   EASYLEVEL_MOUNTINGS,
@@ -44,7 +48,7 @@ import {
   type EasyLevelMounting,
   type SensorSource,
 } from '../domain/settings';
-import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
+import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
@@ -159,16 +163,17 @@ export interface SensorSourceOptions {
 }
 
 export interface SensorSourceSection {
-  /** Both halves together, as the standalone External sensor page shows them. */
+  /** Both halves together — only useful to a caller that really wants
+   * them stacked; `sensorPage.ts` (#226) places the two on different
+   * pages instead, and the onboarding wizard on different steps. Moving
+   * either half into another parent re-parents it away from `element`,
+   * which is fine: nothing here reads `element`'s children after
+   * construction. */
   element: HTMLElement;
-  /** Connect + health-detail half alone (design review, following the same
-   * split `calibrationSection.ts` got): lets a caller — the onboarding
-   * wizard — place the two halves on separate steps instead of stacking
-   * both under one. Live in `element` too; moving either into a different
-   * parent re-parents it away from `element`, which is fine — nothing
-   * here reads from `element`'s children after construction. */
+  /** Connect half alone: intro, Connect/Reconnect, sensor row — see the
+   * module doc comment's "Where each half is shown". */
   connectElement: HTMLElement;
-  /** Installation-offset half alone — see `connectElement`. */
+  /** Mounting + installation-offset half alone — see `connectElement`. */
   installElement: HTMLElement;
   refresh(): void;
 }
@@ -223,58 +228,6 @@ export function createSensorSourceSection(
   sensorRow.append(status, disconnectButton);
   connectSection.append(sensorRow);
 
-  // Detailed health (#129): only meaningful once the box is (or was) the
-  // active source — hidden entirely while the phone's own sensor is
-  // active, same as the main-screen indicator this page is reached from.
-  const detail = document.createElement('div');
-  detail.className = 'menu__detail';
-  detail.hidden = true;
-  const detailHeading = document.createElement('h3');
-  detailHeading.className = 'menu__heading';
-  detailHeading.textContent = t('sensorSource.detail.heading');
-  const notAvailable = t('sensorSource.detail.notAvailable');
-  const batteryRow = document.createElement('p');
-  batteryRow.className = 'menu__text';
-  const rssiRow = document.createElement('p');
-  rssiRow.className = 'menu__text';
-  // Signal strength genuinely never becomes available (no reliable,
-  // cross-browser way to read RSSI from Web Bluetooth) — set once, unlike
-  // battery/temperature below which `refresh()` keeps live.
-  rssiRow.textContent = t('sensorSource.detail.rssi', { value: notAvailable });
-  const temperatureRow = document.createElement('p');
-  temperatureRow.className = 'menu__text';
-  // Low-battery warning (#123): a plain threshold + hysteresis band, not a
-  // full dead-band/dwell stabilizer — see `isLowBattery`'s doc comment.
-  // Hidden whenever it doesn't apply, never removed from the layout.
-  const lowBatteryRow = document.createElement('p');
-  lowBatteryRow.className = 'menu__text menu__text--warning';
-  lowBatteryRow.hidden = true;
-  let wasLowBattery = false;
-  detail.append(detailHeading, batteryRow, rssiRow, temperatureRow, lowBatteryRow);
-  connectSection.append(detail);
-
-  /** Battery/temperature (#123) — refreshed every `refresh()` call, unlike
-   * the fixed rssiRow above, since a status notification can arrive at any
-   * time while this page is open. */
-  function refreshStatus(): void {
-    const easyLevelStatus = options.getEasyLevelStatus();
-    batteryRow.textContent = t('sensorSource.detail.battery', {
-      value: easyLevelStatus ? `${Math.round(easyLevelStatus.batteryPercent)}%` : notAvailable,
-    });
-    temperatureRow.textContent = t('sensorSource.detail.temperature', {
-      value: easyLevelStatus ? `${easyLevelStatus.temperatureCelsius.toFixed(1)}°C` : notAvailable,
-    });
-    wasLowBattery = easyLevelStatus
-      ? isLowBattery(easyLevelStatus.batteryPercent, wasLowBattery)
-      : false;
-    lowBatteryRow.hidden = !wasLowBattery;
-    if (wasLowBattery && easyLevelStatus) {
-      lowBatteryRow.textContent = t('sensorSource.lowBattery', {
-        value: `${Math.round(easyLevelStatus.batteryPercent)}%`,
-      });
-    }
-  }
-
   // Mounting orientation (#217): the box can be physically mounted two
   // ways, 90° apart — mirrors the official app's own `"sensor_Placing"`,
   // exposed without that terminology (see `mountingIcon`'s doc comment).
@@ -327,8 +280,8 @@ export function createSensorSourceSection(
   // concept R24 already gives the phone (ADR 0010), generalized to this
   // permanently-mounted external sensor — its own independent stored
   // offset (`getInstallCalibration`/`calibrateInstall`/...), never the
-  // phone's. Visible under the same rule as the health-detail block above:
-  // whenever EasyLevel is (or was) the active source, connected or not —
+  // phone's. Visible whenever EasyLevel is (or was) the active source,
+  // connected or not —
   // capturing while disconnected simply surfaces the ordinary "not
   // running" error `readTilt`-based captures already give elsewhere.
   const installSection = document.createElement('div');
@@ -411,16 +364,10 @@ export function createSensorSourceSection(
       : options.getSensorState() === 'disconnected'
         ? t('sensorSource.status.disconnected')
         : t('sensorSource.status.connected');
-    detail.hidden = !active;
     installSection.hidden = !active;
     if (active) {
       refreshMountingIcon();
       refreshInstall();
-      refreshStatus();
-    } else {
-      // Never carry a stale "low" latch into a future EasyLevel session.
-      wasLowBattery = false;
-      lowBatteryRow.hidden = true;
     }
   }
 
