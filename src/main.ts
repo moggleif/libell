@@ -82,6 +82,7 @@ import {
 import {
   createSimulatedEasyLevelTransport,
   easyLevelSimulationMode,
+  isRememberedEasyLevelDeviceUsable,
 } from './sensor/easyLevelSimulator';
 import { isSensorUnavailable, isEasyLevelAutoRetryDue } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
@@ -492,6 +493,13 @@ function bootstrap(root: HTMLElement): void {
     if (settings.sensorSource !== 'easylevel') return false;
     const deviceId = loadRememberedEasyLevelDeviceId();
     if (!deviceId) return false;
+    // #223: a box remembered in the other simulation mode can never be
+    // reached in this one, and attempting it anyway would strand the app
+    // on R37's "unavailable" prompt with an auto-retry that can never
+    // succeed — see `isRememberedEasyLevelDeviceUsable`. Behaves exactly
+    // as if EasyLevel had never been the selected source, so the ordinary
+    // phone-sensor startup runs instead.
+    if (!isRememberedEasyLevelDeviceUsable(deviceId)) return false;
     easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport(), currentEasyLevelMounting);
     const state = await easyLevelSensor.reconnect(deviceId);
     if (state === 'unsupported') return false; // behave exactly as if EasyLevel had never been selected
