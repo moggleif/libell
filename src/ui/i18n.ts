@@ -111,12 +111,12 @@ export const MESSAGES = {
 
     // Detailed sensor health (#129). Battery/temperature show real decoded
     // values (#123) once the first `faf52c22-...` status notification
-    // arrives — "not available yet" only before that. Signal strength
-    // stays "not available yet": this app has no reliable, cross-browser
-    // RSSI reading — never fabricated.
+    // arrives — "not available yet" only before that, which is honest for
+    // these two: they really do arrive. There is deliberately no signal-
+    // strength string any more (#228) — see `easyLevelStatusPage.ts` for
+    // why RSSI can never be read for a connected device.
     'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
-    'sensorSource.detail.rssi': 'Signal strength: {value}',
     'sensorSource.detail.temperature': 'Temperature: {value}',
     'sensorSource.detail.notAvailable': 'Not available yet',
     // Low-battery warning (#123): a settings-page notice, not a
@@ -626,7 +626,6 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
-    'sensorSource.detail.rssi': 'Signalstyrka: {value}',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Inte tillgängligt ännu',
     'sensorSource.lowBattery':

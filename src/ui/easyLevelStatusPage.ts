@@ -116,20 +116,19 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
 
   const stateRow = document.createElement('p');
   stateRow.className = 'menu__text menu__text--status';
+  // No signal-strength row (#228). Web Bluetooth exposes RSSI only through
+  // `advertisementreceived` (via `watchAdvertisements()`), never for an
+  // established GATT connection — and a BLE peripheral generally stops
+  // advertising once connected, which is exactly the state this page is
+  // open in. So there is nothing to measure here, ever: this is how BLE
+  // and the API work, not a gap that closes with browser support. R32
+  // used to require a hard-coded "not available yet" row instead, but
+  // that wording promised a value that could never arrive.
   const detailHeading = document.createElement('h3');
   detailHeading.className = 'menu__heading';
   detailHeading.textContent = t('sensorSource.detail.heading');
   const batteryRow = document.createElement('p');
   batteryRow.className = 'menu__text';
-  // Signal strength (#226, moved here from the External sensor list page
-  // along with the rest of this block): genuinely never becomes available
-  // — there is no reliable, cross-browser way to read RSSI from Web
-  // Bluetooth, and this page must never fabricate a number for it — so it
-  // is set once here, unlike battery/temperature which `refresh()` keeps
-  // live.
-  const rssiRow = document.createElement('p');
-  rssiRow.className = 'menu__text';
-  rssiRow.textContent = t('sensorSource.detail.rssi', { value: notAvailable });
   const temperatureRow = document.createElement('p');
   temperatureRow.className = 'menu__text';
   const readingRow = document.createElement('p');
@@ -141,15 +140,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   lowBatteryRow.className = 'menu__text menu__text--warning';
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
-  page.body.append(
-    stateRow,
-    detailHeading,
-    batteryRow,
-    rssiRow,
-    temperatureRow,
-    readingRow,
-    lowBatteryRow,
-  );
+  page.body.append(stateRow, detailHeading, batteryRow, temperatureRow, readingRow, lowBatteryRow);
 
   // Where this sensor's own SETTINGS go (#226) — the mounting picker
   // (R43) and installation offset (R34), built by
