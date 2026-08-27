@@ -188,9 +188,11 @@ URL and must keep working with no signal.
   the locale's language subtag decides, so `de-AT` is German too; any other locale gets
   English. A stored override (from settings) wins over auto-detection; an invalid stored
   value falls back to auto-detection.
-- **Given** the Language field in Settings → General (Svenska / English / Français /
-  Español / Deutsch / "Automatic (device language)", the last one being the default, and
-  each language named in itself rather than translated)
+- **Given** the Language field in Settings → General ("Automatic (device language)"
+  first and the default, then Deutsch / English / Español / Français / Svenska — each
+  language named in itself rather than translated, and listed alphabetically by that
+  name, so the order is the same whichever language is in effect and Automatic is
+  always on top)
 - **When** I pick a language other than the one currently in effect
 - **Then** the choice is saved and the app reloads immediately — `t()` resolves its
   dictionary once at startup (not reactively), so a reload is the only way every

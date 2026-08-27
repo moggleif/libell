@@ -2244,14 +2244,10 @@ export const MESSAGES = {
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
 
-/** Every language Libell ships, in the order the Language picker lists them:
- * Swedish first (the app's home audience), then English, then the rest.
- * A unit test asserts this covers exactly the `MESSAGES` keys. */
-export const LANGUAGES: readonly Language[] = ['sv', 'en', 'fr', 'es', 'de'];
-
 /** Each language named in itself — a picker always names a language in its
  * own language, never translated through `t()`, so a Swedish reader can
- * still find "Deutsch" and vice versa. */
+ * still find "Deutsch" and vice versa. Typed against `Language`, so a new
+ * dictionary cannot ship without a name here. */
 export const LANGUAGE_NAMES: Record<Language, string> = {
   sv: 'Svenska',
   en: 'English',
@@ -2259,6 +2255,16 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   es: 'Español',
   de: 'Deutsch',
 };
+
+/** Every language Libell ships, in the order the Language picker lists them:
+ * alphabetical by the name each is shown under. Derived rather than written
+ * out, so a new dictionary lands in the right place on its own; sorted in a
+ * fixed locale rather than the viewer's, so the list reads the same on every
+ * phone and the order is testable. "Automatic" is deliberately not in here —
+ * `settingsPanel.ts` pins it above this list, never sorted into it. */
+export const LANGUAGES: readonly Language[] = (Object.keys(LANGUAGE_NAMES) as Language[]).sort(
+  (a, b) => LANGUAGE_NAMES[a].localeCompare(LANGUAGE_NAMES[b], 'en'),
+);
 
 export function isLanguage(value: unknown): value is Language {
   return typeof value === 'string' && (LANGUAGES as readonly string[]).includes(value);

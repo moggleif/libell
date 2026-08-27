@@ -11,6 +11,14 @@ describe('i18n dictionaries', () => {
     expect(Object.keys(LANGUAGE_NAMES).sort()).toEqual([...LANGUAGES].sort());
   });
 
+  // The picker shows this order verbatim, so it is asserted here rather
+  // than left to whatever order the dictionaries happen to be declared in.
+  it('lists the languages alphabetically by the name each is shown under', () => {
+    const names = LANGUAGES.map((lang) => LANGUAGE_NAMES[lang]);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
+    expect(names).toEqual(['Deutsch', 'English', 'Español', 'Français', 'Svenska']);
+  });
+
   it('every language covers exactly the same keys', () => {
     const reference = Object.keys(MESSAGES.en).sort();
     for (const lang of ALL) {
