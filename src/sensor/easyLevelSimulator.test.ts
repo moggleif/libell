@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createSimulatedEasyLevelTransport,
   easyLevelSimulationMode,
+  isRememberedEasyLevelDeviceUsable,
   SIMULATED_ACCEL_INTERVAL_MS,
   SIMULATED_DROP_AFTER_MS,
   SIMULATED_EASYLEVEL_DEVICE_ID,
@@ -173,5 +174,24 @@ describe('createSimulatedEasyLevelTransport (#220) — through the real sensor',
     expect(await sensor.reconnect(SIMULATED_EASYLEVEL_DEVICE_ID)).toBe('granted');
     await vi.advanceTimersByTimeAsync(1000);
     expect(sensor.getGravity()).not.toBeNull();
+  });
+});
+
+describe('isRememberedEasyLevelDeviceUsable (#223)', () => {
+  it('lets a simulated id auto-reconnect only while the simulation flag is on', () => {
+    expect(isRememberedEasyLevelDeviceUsable(SIMULATED_EASYLEVEL_DEVICE_ID, 'steady')).toBe(true);
+    expect(isRememberedEasyLevelDeviceUsable(SIMULATED_EASYLEVEL_DEVICE_ID, 'drop')).toBe(true);
+    // The bug this exists for: without the flag, the REAL transport would
+    // hunt for a device that cannot exist, stranding the app on the R37
+    // prompt with a background retry that can never succeed.
+    expect(isRememberedEasyLevelDeviceUsable(SIMULATED_EASYLEVEL_DEVICE_ID, 'off')).toBe(false);
+  });
+
+  it('lets a real device id auto-reconnect only while the simulation flag is off', () => {
+    const realId = 'aBc123-real-web-bluetooth-id';
+    expect(isRememberedEasyLevelDeviceUsable(realId, 'off')).toBe(true);
+    // The mirror case: the simulated transport rejects every id but its own.
+    expect(isRememberedEasyLevelDeviceUsable(realId, 'steady')).toBe(false);
+    expect(isRememberedEasyLevelDeviceUsable(realId, 'drop')).toBe(false);
   });
 });

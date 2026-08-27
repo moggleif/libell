@@ -148,11 +148,13 @@ export const MESSAGES = {
     // described here without that app's own "sensor_Placing" terminology.
     'sensorSource.mounting.h': 'Sensor mounting',
     'sensorSource.mounting.intro':
-      'The sensor box can be mounted two ways, a quarter turn apart. Pick whichever ' +
-      'matches how yours is installed — if Libell ever suggests raising the wrong ' +
-      'side, or shows front/back and left/right swapped, try the other option.',
+      'The sensor box can be mounted four ways, each a quarter turn apart. Pick the ' +
+      'picture that matches how yours actually sits — if Libell ever suggests raising ' +
+      'the wrong side, or shows front/back and left/right swapped, try another one.',
     'sensorSource.mounting.standard': 'Standard',
     'sensorSource.mounting.rotated90': 'Rotated 90°',
+    'sensorSource.mounting.rotated180': 'Rotated 180°',
+    'sensorSource.mounting.rotated270': 'Rotated 270°',
 
     // Sensor status page: reached by tapping the sensor row on the
     // External sensor page. `reading` is the same roll/pitch the main
@@ -651,12 +653,14 @@ export const MESSAGES = {
     // terminologi.
     'sensorSource.mounting.h': 'Sensormontering',
     'sensorSource.mounting.intro':
-      'Sensorboxen kan monteras på två sätt, ett kvarts varv från varandra. Välj det ' +
-      'som stämmer med hur din är monterad — om Libell någon gång föreslår att fel ' +
-      'sida ska höjas, eller visar fram/bak och vänster/höger omkastat, prova det ' +
-      'andra alternativet.',
+      'Sensorboxen kan monteras på fyra sätt, ett kvarts varv mellan varje. Välj den ' +
+      'bild som stämmer med hur din faktiskt sitter — om Libell någon gång föreslår ' +
+      'att fel sida ska höjas, eller visar fram/bak och vänster/höger omkastat, ' +
+      'prova ett annat alternativ.',
     'sensorSource.mounting.standard': 'Standard',
     'sensorSource.mounting.rotated90': 'Vriden 90°',
+    'sensorSource.mounting.rotated180': 'Vriden 180°',
+    'sensorSource.mounting.rotated270': 'Vriden 270°',
 
     'sensorStatus.title': 'Sensorstatus',
     'sensorStatus.reading': 'Mätvärde: {value}',
