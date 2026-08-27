@@ -99,6 +99,47 @@ describe('createSensorPage', () => {
       expect(page.statusElement.textContent).toContain('Battery');
     });
 
+    it('shows the settings blocks straight after connecting, with no close-and-reopen (#226)', async () => {
+      // The blocks are revealed by `sensorSourceSection.refresh()`, which
+      // the connect handler itself deliberately does not call (it only
+      // relabels its buttons). Opening the sensor page refreshes on the
+      // way in, so connecting and going straight there must already show
+      // them populated — pinned here because that ordering is easy to
+      // lose in a later refactor and fails only in the running app.
+      let source: 'phone' | 'easylevel' = 'phone';
+      const page = createSensorPage(
+        makeOptions({
+          getSensorSource: () => source,
+          getSensorState: () => 'granted',
+          connectEasyLevel: () => {
+            source = 'easylevel';
+            return Promise.resolve('granted');
+          },
+          getEasyLevelMounting: () => 'rotated180',
+        }),
+      );
+      const connect = [...page.element.querySelectorAll('button')].find(
+        (b) => b.textContent === 'Connect EasyLevel sensor',
+      )!;
+      connect.click();
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // Straight in via the sensor row — no closing the list page first.
+      const statusButton = [...page.element.querySelectorAll('button')].find((b) =>
+        b.textContent?.includes('Connected to the EasyLevel sensor'),
+      )!;
+      statusButton.click();
+
+      const mountingHeading = [...page.statusElement.querySelectorAll('h3')].find(
+        (h) => h.textContent === 'Sensor mounting',
+      );
+      expect(mountingHeading?.closest('[hidden]')).toBeNull();
+      // Populated from the current setting, not left at its initial value.
+      expect(page.statusElement.querySelector('select')?.value).toBe('rotated180');
+      expect(page.statusElement.textContent).toContain('No installation offset');
+    });
+
     it('refreshLive() is a no-op while the status page is closed', () => {
       const getEasyLevelStatus = vi.fn(() => null);
       const page = createSensorPage(makeOptions({ getEasyLevelStatus }));
