@@ -1134,8 +1134,8 @@ export const MESSAGES = {
       'Passer pour l’instant — un voyant vous le rappellera jusqu’à ce que ce soit fait. ' +
       'Les valeurs par défaut sont utilisées en attendant, et elles conviennent souvent assez bien.',
     'onboard.legend.ok': 'Vert ✓ — cette roue est de niveau.',
-    'onboard.legend.up': 'Orange ↑ — montez cette roue sur la marche indiquée.',
-    'onboard.legend.no': 'Rouge ✕ — aucune marche ne suffit ; allez sur un endroit plus plat.',
+    'onboard.legend.up': 'Orange ↑ — montez cette roue sur le palier indiqué.',
+    'onboard.legend.no': 'Rouge ✕ — aucun palier ne suffit ; allez sur un endroit plus plat.',
     'onboard.legend.dim': 'Gris – — une roue basse que vos rampes n’atteignent pas.',
     'settings.wheelbase': 'Empattement',
     'settings.trackFront': 'Voie avant',
@@ -1163,8 +1163,8 @@ export const MESSAGES = {
       'mètre ruban fait aussi l’affaire ; quelques cm d’erreur n’ont guère d’importance.',
     'settings.measureHint.boggie':
       'Avec un double essieu, mesurez jusqu’au centre de la paire d’essieux.',
-    'settings.steps': 'Hauteurs des marches de rampe',
-    'settings.steps.add': 'Ajouter une marche',
+    'settings.steps': 'Hauteurs des paliers de rampe',
+    'settings.steps.add': 'Ajouter un palier',
     'settings.steps.remove': 'Supprimer {value}',
     'settings.ramp': 'Rampe toute faite',
     'settings.ramp.custom': 'Jeu personnalisé',
@@ -1223,9 +1223,9 @@ export const MESSAGES = {
     'settings.tab.ramps': 'Rampes',
     'settings.klossar.brandAll': 'Toutes',
     'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 marche',
-    'settings.klossar.step.many': '{n} marches',
-    'settings.klossar.stepsHeading': 'Hauteurs des marches',
+    'settings.klossar.step.one': '1 palier',
+    'settings.klossar.step.many': '{n} paliers',
+    'settings.klossar.stepsHeading': 'Hauteurs des paliers',
 
     'status.measuring': 'Mesure…',
     'status.almost': 'Presque de niveau — il reste {left}',
@@ -1322,8 +1322,8 @@ export const MESSAGES = {
     'help.screen.h': 'Lire l’écran',
     'help.screen.t':
       'Vert ✓ : c’est fait.\n' +
-      'Orange ↑ : montez cette roue sur la marche indiquée au-dessus.\n' +
-      'Rouge ✕ : même votre marche la plus haute ne suffit pas ; allez sur un endroit plus plat.\n' +
+      'Orange ↑ : montez cette roue sur le palier indiqué au-dessus.\n' +
+      'Rouge ✕ : même votre palier le plus haut ne suffit pas ; allez sur un endroit plus plat.\n' +
       'Gris – : une roue basse que vos rampes n’atteignent pas.\n' +
       'Quand la bulle repose au milieu, vous êtes de niveau.',
     'help.settings.h': 'Les mesures',
@@ -1334,7 +1334,7 @@ export const MESSAGES = {
       'largeur différente à l’avant et à l’arrière, une caravane n’en a qu’une. Cela figure ' +
       'généralement sur les papiers du véhicule, sinon prenez un mètre ruban.',
     'help.ramps.t':
-      'Choisissez un modèle de rampe tout fait, ou ajoutez vos propres hauteurs de marche ' +
+      'Choisissez un modèle de rampe tout fait, ou ajoutez vos propres hauteurs de palier ' +
       'avec le bouton +. L’application choisit ensuite où vos rampes sont le plus utiles — ' +
       'et, dans la tolérance, laisse le côté de l’évacuation le plus bas pour que l’évier et ' +
       'la douche continuent de s’écouler.',
@@ -1369,7 +1369,7 @@ export const MESSAGES = {
     'diagram.caravan.aria':
       'Vue de dessus de votre caravane montrant les roues d’essieu et la roue jockey',
     'diagram.front': 'Avant',
-    'diagram.step': 'Marche {n}',
+    'diagram.step': 'Palier {n}',
     'diagram.done': 'Terminé',
     'diagram.noRamp': 'Aucune rampe',
     'diagram.wheel.frontLeft': 'AVANT G',
@@ -1561,8 +1561,8 @@ export const MESSAGES = {
       'Saltar por ahora: un aviso te lo recordará hasta que esté hecho. Mientras tanto se ' +
       'usan los valores predeterminados, que a menudo funcionan bastante bien.',
     'onboard.legend.ok': 'Verde ✓: esa rueda está nivelada.',
-    'onboard.legend.up': 'Naranja ↑: sube esa rueda al escalón indicado.',
-    'onboard.legend.no': 'Rojo ✕: ningún escalón basta; muévete a un sitio más llano.',
+    'onboard.legend.up': 'Naranja ↑: sube esa rueda al nivel indicado.',
+    'onboard.legend.no': 'Rojo ✕: ningún nivel basta; muévete a un sitio más llano.',
     'onboard.legend.dim': 'Gris –: una rueda baja a la que no llegan tus rampas.',
     'settings.wheelbase': 'Distancia entre ejes',
     'settings.trackFront': 'Ancho de vía delantero',
@@ -1589,8 +1589,8 @@ export const MESSAGES = {
       'La distancia entre ejes y los anchos de vía están en la documentación del vehículo o ' +
       'en el manual; una cinta métrica también sirve: unos pocos cm de error apenas importan.',
     'settings.measureHint.boggie': 'Con doble eje, mide hasta el centro del par de ejes.',
-    'settings.steps': 'Alturas de escalón de la rampa',
-    'settings.steps.add': 'Añadir escalón',
+    'settings.steps': 'Alturas de nivel de la rampa',
+    'settings.steps.add': 'Añadir nivel',
     'settings.steps.remove': 'Quitar {value}',
     'settings.ramp': 'Rampa prefabricada',
     'settings.ramp.custom': 'Juego personalizado',
@@ -1648,9 +1648,9 @@ export const MESSAGES = {
     'settings.tab.ramps': 'Rampas',
     'settings.klossar.brandAll': 'Todas',
     'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 escalón',
-    'settings.klossar.step.many': '{n} escalones',
-    'settings.klossar.stepsHeading': 'Alturas de escalón',
+    'settings.klossar.step.one': '1 nivel',
+    'settings.klossar.step.many': '{n} niveles',
+    'settings.klossar.stepsHeading': 'Alturas de nivel',
 
     'status.measuring': 'Midiendo…',
     'status.almost': 'Casi nivelado: faltan {left}',
@@ -1746,8 +1746,8 @@ export const MESSAGES = {
     'help.screen.h': 'Cómo leer la pantalla',
     'help.screen.t':
       'Verde ✓: hecho.\n' +
-      'Naranja ↑: sube esa rueda al escalón indicado encima.\n' +
-      'Rojo ✕: ni tu escalón más alto basta; muévete a un sitio más llano.\n' +
+      'Naranja ↑: sube esa rueda al nivel indicado encima.\n' +
+      'Rojo ✕: ni tu nivel más alto basta; muévete a un sitio más llano.\n' +
       'Gris –: una rueda baja a la que no llegan tus rampas.\n' +
       'Cuando la burbuja descansa en el centro, estás nivelado.',
     'help.settings.h': 'Las medidas',
@@ -1758,7 +1758,7 @@ export const MESSAGES = {
       'puede tener anchos distintos delante y detrás, una caravana solo tiene uno. Suele ' +
       'estar en la documentación del vehículo; si no, usa una cinta métrica.',
     'help.ramps.t':
-      'Elige un modelo de rampa ya hecho, o añade tus propias alturas de escalón con el ' +
+      'Elige un modelo de rampa ya hecho, o añade tus propias alturas de nivel con el ' +
       'botón +. Después la app elige dónde tus rampas hacen más falta y, dentro de la ' +
       'tolerancia, deja el lado del desagüe lo más bajo posible para que el fregadero y la ' +
       'ducha sigan desaguando.',
@@ -1793,7 +1793,7 @@ export const MESSAGES = {
     'diagram.caravan.aria':
       'Vista desde arriba de tu caravana con las ruedas del eje y la rueda jockey',
     'diagram.front': 'Delante',
-    'diagram.step': 'Escalón {n}',
+    'diagram.step': 'Nivel {n}',
     'diagram.done': 'Hecho',
     'diagram.noRamp': 'Sin rampa',
     'diagram.wheel.frontLeft': 'DEL IZQ',
