@@ -686,11 +686,21 @@ URL and must keep working with no signal.
 - **Then** it spells out the connection state in full, and shows battery and
   temperature as real decoded values once the first `faf52c22-...` status
   notification has arrived — "not available yet" only in the brief window before
-  that, or before EasyLevel has ever connected (#123). Signal strength shows "not
-  available yet" always: there is no reliable, cross-browser way to read RSSI from
-  Web Bluetooth, and this page must never fabricate a number for it. These rows
-  lived on the External sensor page itself until #226 moved them here, so that
-  battery and temperature appear in exactly one place rather than on both pages.
+  that, or before EasyLevel has ever connected (#123); that wording is honest for
+  these two, which really do arrive. These rows lived on the External sensor page
+  itself until #226 moved them here, so that battery and temperature appear in
+  exactly one place rather than on both pages.
+- **Given** signal strength (RSSI)
+- **Then** it is not shown at all (#228). Web Bluetooth exposes RSSI only through
+  `advertisementreceived` (via `watchAdvertisements()`), never for an established
+  GATT connection — and a BLE peripheral generally stops advertising once
+  connected, which is exactly the state this page is open in. So there is nothing
+  to measure, ever; this is how BLE and the API work, not a gap that closes with
+  browser support. Until #228 the page carried a hard-coded "Signal strength: not
+  available yet" row, which avoided fabricating a number (right instinct) but
+  promised a value that could never arrive (wrong wording), so the row is gone
+  rather than reworded. Recorded here so it does not read as an oversight worth
+  "fixing" later.
 - **Given** the box's `faf52c21-...` notification payload (6× signed int16,
   little-endian: accelX/Y/Z, then optionally gyroX/Y/Z)
 - **Then** the accelerometer triplet is used, bias-corrected against the most recent
@@ -1022,7 +1032,7 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 - **When** I tap the sensor's status row (the same text that already says "Using the
   phone's own sensor" / "Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state, battery,
-  signal strength, temperature (R32's exact values and wording) and a live reading —
+  temperature (R32's exact values and wording) and a live reading —
   the same calibrated roll/pitch the leveling math itself uses — so a box can be
   confirmed alive by watching the number move, without leaving this page. This much
   works for either sensor source, the phone's own included.

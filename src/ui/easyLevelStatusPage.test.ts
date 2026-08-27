@@ -92,7 +92,7 @@ describe('createEasyLevelStatusPage', () => {
   // Relocated from `sensorSourceSection.test.ts` by #226, along with the
   // block they cover: these are R32 behaviors that simply live on this
   // page now instead of the External sensor list page.
-  it('always shows signal strength as "not available yet" — never fabricates an RSSI (#226)', () => {
+  it('shows no signal-strength row at all — a field that can never be populated is not displayed (#228)', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
@@ -105,18 +105,20 @@ describe('createEasyLevelStatusPage', () => {
         }),
       }),
     );
-    // Battery and temperature are real; only signal strength is unknown.
+    // Battery and temperature are real values; signal strength is gone
+    // entirely rather than shown as a permanent "not available yet",
+    // which promised a reading Web Bluetooth cannot ever deliver for a
+    // connected device.
     expect(page.element.textContent).toContain('Battery: 72%');
     expect(page.element.textContent).toContain('Temperature: 19.5°C');
-    expect(page.element.textContent).toContain('Signal strength: Not available yet');
+    expect(page.element.textContent).not.toContain('Signal strength');
   });
 
-  it('still spells out battery/signal/temperature for a dropped connection — not omitted on disconnect (#226)', () => {
+  it('still spells out battery and temperature for a dropped connection — not omitted on disconnect (#226)', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
     expect(page.element.textContent).toContain('Battery');
-    expect(page.element.textContent).toContain('Signal strength');
     expect(page.element.textContent).toContain('Temperature');
   });
 
