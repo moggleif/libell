@@ -383,6 +383,29 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
     expect(mountingSelect(section.element).value).toBe('rotated90');
   });
 
+  it('offers all four physical rotations, not just the official app\u2019s two (#222)', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
+    const values = [...mountingSelect(section.element).options].map((option) => option.value);
+    expect(values).toEqual(['standard', 'rotated90', 'rotated180', 'rotated270']);
+  });
+
+  it('reflects a stored half-turn mounting, and applies a selected one (#222)', () => {
+    const setEasyLevelMounting = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getEasyLevelMounting: () => 'rotated180',
+        setEasyLevelMounting,
+      }),
+    );
+    const select = mountingSelect(section.element);
+    expect(select.value).toBe('rotated180');
+
+    select.value = 'rotated270';
+    select.dispatchEvent(new Event('change'));
+    expect(setEasyLevelMounting).toHaveBeenCalledWith('rotated270');
+  });
+
   it('calls setEasyLevelMounting() when the selection changes', () => {
     const setEasyLevelMounting = vi.fn();
     const section = createSensorSourceSection(
@@ -405,9 +428,17 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
     expect(mountingSelect(section.element).value).toBe('rotated90');
   });
 
-  it('offers exactly the two supported orientations, both official-app-jargon-free', () => {
+  it('offers exactly the four supported orientations, all official-app-jargon-free', () => {
+    // Was two before #222 — the official app's own pair. The count changed
+    // by design (a box can be bolted in any of four ways); the "described
+    // without that app's sensor_Placing terminology" half of this test is
+    // unchanged, and now asserted explicitly rather than only implied by
+    // the expected labels.
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
     const labels = [...mountingSelect(section.element).options].map((o) => o.textContent);
-    expect(labels).toEqual(['Standard', 'Rotated 90°']);
+    expect(labels).toEqual(['Standard', 'Rotated 90°', 'Rotated 180°', 'Rotated 270°']);
+    for (const label of labels) {
+      expect(label?.toLowerCase()).not.toMatch(/sensor_placing|placement|placing/);
+    }
   });
 });

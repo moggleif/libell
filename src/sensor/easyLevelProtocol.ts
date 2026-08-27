@@ -254,9 +254,24 @@ export function parseAccelPacket(
 }
 
 /**
- * Applies the official app's `"sensor_Placing"` mounting transform (#217)
- * to an already bias-corrected `GravityVector` — a 90° rotation of the
- * (x, y) pair for `'rotated90'`, `z` untouched; a no-op for `'standard'`.
+ * Applies the user's chosen mounting transform (#217, extended to all four
+ * rotations by #222) to an already bias-corrected `GravityVector` — a
+ * quarter, half or three-quarter turn of the (x, y) pair, `z` untouched in
+ * every case (no rotation in this set changes which way is up); a no-op
+ * for `'standard'`.
+ *
+ * **Why four, when the official app models two (#222):** its
+ * `"sensor_Placing"` 1/2 only covers 0° and 90° — wide-edge-forward or
+ * short-edge-forward. A rectangular box bolted into a real vehicle can
+ * just as easily end up 180° or 270° round, and those are the dangerous
+ * two: they invert a sign rather than add an offset, so the installation
+ * offset (R34, which subtracts a CONSTANT) cannot undo them. Level still
+ * reads level, the calibration looks like it succeeded, and then the app
+ * confidently names the wrong wheel. `'rotated180'`/`'rotated270'` are
+ * the plain continuations of the same rotation group `#217` derived from
+ * `LO0/e;->k()` (two quarter turns are the half turn, four return to the
+ * start — asserted in the tests), not separately reverse-engineered
+ * behavior: the official app simply never offers them.
  * See the module doc comment for the exact derivation from
  * `LO0/e;->k()`'s decompiled placement-1/2 branches. Deliberately a
  * separate step from `parseAccelPacket` (called after it, never inside
@@ -269,8 +284,16 @@ export function applyEasyLevelMounting(
   gravity: GravityVector,
   mounting: EasyLevelMounting,
 ): GravityVector {
-  if (mounting === 'standard') return gravity;
-  return { x: -gravity.y, y: gravity.x, z: gravity.z };
+  switch (mounting) {
+    case 'rotated90':
+      return { x: -gravity.y, y: gravity.x, z: gravity.z };
+    case 'rotated180':
+      return { x: -gravity.x, y: -gravity.y, z: gravity.z };
+    case 'rotated270':
+      return { x: gravity.y, y: -gravity.x, z: gravity.z };
+    default:
+      return gravity;
+  }
 }
 
 /**

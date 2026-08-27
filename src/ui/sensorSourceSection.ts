@@ -38,7 +38,12 @@
  * purely so existing callers/tests that don't need that page can construct
  * this section without threading a callback through.
  */
-import type { Calibration, EasyLevelMounting, SensorSource } from '../domain/settings';
+import {
+  EASYLEVEL_MOUNTINGS,
+  type Calibration,
+  type EasyLevelMounting,
+  type SensorSource,
+} from '../domain/settings';
 import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
@@ -54,6 +59,16 @@ function svgEl<K extends keyof SVGElementTagNameMap>(
   for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
   return node;
 }
+
+/** How far the icon's box is drawn round for each mounting (#222) — the
+ * same rotation `applyEasyLevelMounting` applies to the readings, so the
+ * picture and the maths can never drift apart. */
+const MOUNTING_ICON_DEGREES: Record<EasyLevelMounting, number> = {
+  standard: 0,
+  rotated90: 90,
+  rotated180: 180,
+  rotated270: 270,
+};
 
 /**
  * Top-down box-mounting diagram (#217): a small upward arrow labeled
@@ -78,13 +93,15 @@ function mountingIcon(mounting: EasyLevelMounting): SVGSVGElement {
     svgEl('line', { x1: '32', y1: '4', x2: '32', y2: '16', class: 'mounting-icon__front' }),
     svgEl('polygon', { points: '32,2 27,12 37,12', class: 'mounting-icon__front' }),
   );
-  const rotated = mounting === 'rotated90';
-  // The box itself: a rectangle longer one way than the other, rotated 90°
-  // between the two mounting choices — plus a short arrow through it
-  // marking the same physical edge in both drawings, so the rotation
-  // reads as "the box turned", not "a different box".
+  // The box itself: a rectangle longer one way than the other, drawn at
+  // the chosen rotation — plus a short arrow through it marking the same
+  // physical edge in every drawing, so the four options read as "the same
+  // box turned", not "four different boxes". The arrow is what makes the
+  // half turn (#222) distinguishable from 'standard' at a glance: the
+  // outline alone would look identical.
+  const degrees = MOUNTING_ICON_DEGREES[mounting];
   const group = svgEl('g', {
-    transform: rotated ? 'rotate(90 32 40)' : '',
+    transform: degrees === 0 ? '' : `rotate(${degrees} 32 40)`,
     class: 'mounting-icon__box',
   });
   group.append(
@@ -279,7 +296,7 @@ export function createSensorSourceSection(
   // `drainSelect`) rather than inventing a menu-specific variant — this
   // page has no select of its own to style otherwise.
   mountingSelect.className = 'settings__select';
-  for (const value of ['standard', 'rotated90'] as const) {
+  for (const value of EASYLEVEL_MOUNTINGS) {
     const option = document.createElement('option');
     option.value = value;
     option.textContent = t(`sensorSource.mounting.${value}`);
@@ -298,8 +315,11 @@ export function createSensorSourceSection(
   }
 
   mountingSelect.addEventListener('change', () => {
-    const value = mountingSelect.value === 'rotated90' ? 'rotated90' : 'standard';
-    options.setEasyLevelMounting(value);
+    // Validated against the canonical list rather than compared to one
+    // literal (#222): with four options a missed branch would silently
+    // store 'standard' and quietly undo the user's choice.
+    const value = EASYLEVEL_MOUNTINGS.find((candidate) => candidate === mountingSelect.value);
+    options.setEasyLevelMounting(value ?? 'standard');
     refreshMountingIcon();
   });
 
