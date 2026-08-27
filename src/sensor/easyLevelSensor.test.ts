@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
+  isEasyLevelAvailable,
   isWebBluetoothSupported,
   EASYLEVEL_ADVERTISED_SERVICE_UUID,
   EASYLEVEL_DEVICE_NAME_PREFIX,
@@ -562,7 +563,10 @@ describe('createEasyLevelSensor().reconnect() (#130)', () => {
 /** A minimal fake `BluetoothDevice`, enough to exercise
  * `createWebBluetoothTransport()`'s real GATT-wiring code (#130) — no
  * physical box or real `navigator.bluetooth` involved. */
-function fakeBluetoothDevice(id: string, options?: { connectFails?: boolean }): BluetoothDevice {
+function fakeBluetoothDevice(
+  id: string,
+  options?: { connectFails?: boolean; getPrimaryServiceFails?: boolean },
+): BluetoothDevice {
   const characteristic = {
     value: undefined,
     addEventListener: vi.fn(),
@@ -576,10 +580,17 @@ function fakeBluetoothDevice(id: string, options?: { connectFails?: boolean }): 
       ? vi.fn().mockRejectedValue(new Error('device out of range'))
       : vi.fn(),
     disconnect: vi.fn(),
-    getPrimaryService: vi.fn().mockResolvedValue(service),
+    getPrimaryService: options?.getPrimaryServiceFails
+      ? vi.fn().mockRejectedValue(new Error('service discovery failed'))
+      : vi.fn().mockResolvedValue(service),
   };
   if (!options?.connectFails) server.connect.mockResolvedValue(server);
-  return { id, gatt: server, addEventListener: vi.fn() } as unknown as BluetoothDevice;
+  return {
+    id,
+    gatt: server,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  } as unknown as BluetoothDevice;
 }
 
 describe('createWebBluetoothTransport().connect() (the real Web Bluetooth transport)', () => {
@@ -610,6 +621,129 @@ describe('createWebBluetoothTransport().connect() (the real Web Bluetooth transp
     const transport = createWebBluetoothTransport();
     await transport.connect(vi.fn());
     expect(device.gatt?.getPrimaryService).toHaveBeenCalledWith(EASYLEVEL_SERVICE_UUID);
+  });
+});
+
+describe('createWebBluetoothTransport() connection-lifecycle cleanup (#219)', () => {
+  it('releases the GATT connection when service discovery fails after a successful connect — the box must resume advertising, not stay captive to a half-open link', async () => {
+    const device = fakeBluetoothDevice('device-1', { getPrimaryServiceFails: true });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await expect(transport.connect(vi.fn())).rejects.toThrow();
+    expect(device.gatt?.disconnect).toHaveBeenCalled();
+  });
+
+  it('removes the gattserverdisconnected listener before that cleanup disconnect, so the failure is never mis-reported as a lost connection', async () => {
+    const device = fakeBluetoothDevice('device-1', { getPrimaryServiceFails: true });
+    const onDisconnect = vi.fn();
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await expect(transport.connect(onDisconnect)).rejects.toThrow();
+    const removeEventListener = device.removeEventListener as ReturnType<typeof vi.fn>;
+    expect(removeEventListener).toHaveBeenCalledWith('gattserverdisconnected', onDisconnect);
+    // Removed BEFORE gatt.disconnect() fires the event, not after.
+    const disconnect = (device.gatt as unknown as { disconnect: ReturnType<typeof vi.fn> })
+      .disconnect;
+    expect(removeEventListener.mock.invocationCallOrder[0]!).toBeLessThan(
+      disconnect.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('applies the same cleanup on the silent reconnect() path — resolves null, but never leaves the GATT link dangling', async () => {
+    const device = fakeBluetoothDevice('device-1', { getPrimaryServiceFails: true });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { getDevices: vi.fn().mockResolvedValue([device]) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    expect(await transport.reconnect('device-1', vi.fn())).toBeNull();
+    expect(device.gatt?.disconnect).toHaveBeenCalled();
+  });
+
+  it("an explicit connection.disconnect() removes the gattserverdisconnected listener first — a deliberate disconnect is not a 'lost connection'", async () => {
+    const device = fakeBluetoothDevice('device-1');
+    const onDisconnect = vi.fn();
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    const connection = await transport.connect(onDisconnect);
+
+    connection.disconnect();
+
+    const removeEventListener = device.removeEventListener as ReturnType<typeof vi.fn>;
+    expect(removeEventListener).toHaveBeenCalledWith('gattserverdisconnected', onDisconnect);
+    const disconnect = (device.gatt as unknown as { disconnect: ReturnType<typeof vi.fn> })
+      .disconnect;
+    expect(disconnect).toHaveBeenCalled();
+    expect(removeEventListener.mock.invocationCallOrder[0]!).toBeLessThan(
+      disconnect.mock.invocationCallOrder[0]!,
+    );
+  });
+});
+
+describe('createEasyLevelSensor() connection-lifecycle cleanup (#219)', () => {
+  function accelSubscribeFailsTransport(): {
+    transport: EasyLevelTransport;
+    connection: EasyLevelConnection;
+  } {
+    const connection: EasyLevelConnection = {
+      deviceId: 'fake-device-id',
+      subscribeAccel: () => Promise.reject(new Error('subscribe rejected by the box')),
+      subscribeStatus: async () => {},
+      disconnect: vi.fn(),
+    };
+    return {
+      transport: { connect: async () => connection, reconnect: async () => connection },
+      connection,
+    };
+  }
+
+  it('start() disconnects a connection it made but could not wire (subscribeAccel failed), then reports denied', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, connection } = accelSubscribeFailsTransport();
+    const sensor = createEasyLevelSensor(transport);
+    expect(await sensor.start()).toBe('denied');
+    expect(connection.disconnect).toHaveBeenCalled();
+    expect(sensor.getDeviceId()).toBeNull();
+  });
+
+  it('reconnect() disconnects a connection it made but could not wire, then reports disconnected', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, connection } = accelSubscribeFailsTransport();
+    const sensor = createEasyLevelSensor(transport);
+    expect(await sensor.reconnect('fake-device-id')).toBe('disconnected');
+    expect(connection.disconnect).toHaveBeenCalled();
+    expect(sensor.getDeviceId()).toBeNull();
+  });
+
+  it('getStatusBytes() returns a copy of the notification bytes, immune to the transport reusing its buffer (#219)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitStatus } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+
+    const bytes = statusBytes(2500, 32);
+    emitStatus(bytes);
+    bytes.fill(0xff); // a transport that reuses its buffer would corrupt the stored copy
+
+    expect(sensor.getStatusBytes()?.[7]).toBe(32);
   });
 });
 
@@ -740,5 +874,37 @@ describe('isWebBluetoothSupported', () => {
       configurable: true,
     });
     expect(isWebBluetoothSupported()).toBe(true);
+  });
+});
+
+describe('isEasyLevelAvailable (#220)', () => {
+  // Node test environment: no `location` global exists at all, so the
+  // simulation flag is stubbed by defining one — same technique the
+  // navigator stubs above use.
+  afterEach(() => {
+    delete (globalThis as { location?: unknown }).location;
+  });
+
+  it('is false with neither Web Bluetooth nor the simulation flag', () => {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    expect(isEasyLevelAvailable()).toBe(false);
+  });
+
+  it('is true with real Web Bluetooth, same as isWebBluetoothSupported', () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    expect(isEasyLevelAvailable()).toBe(true);
+  });
+
+  it('is true WITHOUT Web Bluetooth while ?easylevel-sim is in the URL — the simulated box (#220) stands in', () => {
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    Object.defineProperty(globalThis, 'location', {
+      value: { search: '?easylevel-sim' },
+      configurable: true,
+    });
+    expect(isEasyLevelAvailable()).toBe(true);
+    expect(isWebBluetoothSupported()).toBe(false); // the narrower contract is untouched
   });
 });

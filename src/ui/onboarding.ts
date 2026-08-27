@@ -49,8 +49,8 @@
  * first") — the steps are already in that order.
  *
  * Sensor source choice (#135, ADR 0014): when an external sensor option
- * actually exists (`isWebBluetoothSupported()` — the exact same gate
- * `menu.ts` already uses before offering the "External sensor" page), a
+ * actually exists (`isEasyLevelAvailable()` — the exact same gate
+ * `main.ts` already uses before offering the "External sensor" page), a
  * step asks "This phone" vs. "external sensor" and branches the rest of
  * the wizard:
  *   - "This phone" (the default, and the only option when the gate is
@@ -110,7 +110,7 @@ import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
-import { isWebBluetoothSupported } from '../sensor/easyLevelSensor';
+import { isEasyLevelAvailable } from '../sensor/easyLevelSensor';
 import {
   legendIllustration,
   measuresIllustration,
@@ -227,9 +227,10 @@ type Step = { title: string; build: () => Element[]; skipLabel?: string };
 
 export function showOnboarding(options: OnboardingOptions): void {
   const isModern = options.initialSettings.appearance === 'modern';
-  // Same gate `menu.ts` uses before ever offering the "External sensor"
-  // page (#116) — never a dead radio button on Safari/iOS or desktop.
-  const sourceChoiceAvailable = isWebBluetoothSupported();
+  // Same gate `main.ts` uses before ever offering the "External sensor"
+  // page (#116, widened by #220 to include the simulated box) — never a
+  // dead radio button on Safari/iOS or desktop.
+  const sourceChoiceAvailable = isEasyLevelAvailable();
 
   // Which vehicle every later step's imagery/labels are built for (#184)
   // — starts at whatever is already stored (not hardcoded to motorhome).

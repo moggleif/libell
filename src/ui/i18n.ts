@@ -212,7 +212,7 @@ export const MESSAGES = {
     'onboard.sound.h': 'Sound',
     // Sensor source choice (#135, ADR 0014): the wizard's first step,
     // shown only when an external sensor option actually exists
-    // (`isWebBluetoothSupported()`). The external radio reuses
+    // (`isEasyLevelAvailable()`). The external radio reuses
     // 'menu.sensorSource' ("External sensor") for its label, not a
     // separate name here.
     'onboard.source.h': 'How do you want to measure?',
