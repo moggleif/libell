@@ -562,7 +562,9 @@ export function createSettingsForm(
   // reactive) immediately on change rather than waiting for Save/Undo.
   // Every shipped language is offered (#178), each named in itself via
   // `LANGUAGE_NAMES` — deliberately literal, never translated via `t()`,
-  // so a Swedish reader can still find "Deutsch" and vice versa.
+  // so a Swedish reader can still find "Deutsch" and vice versa. Automatic
+  // is appended before the loop, so it stays pinned at the top whatever the
+  // current language is; `LANGUAGES` orders the rest alphabetically.
   const languageField = document.createElement('label');
   languageField.className = 'settings__field';
   const languageCaption = document.createElement('span');

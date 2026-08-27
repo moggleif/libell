@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
-import { LANGUAGES, setLanguage, t } from './i18n';
+import { LANGUAGE_NAMES, LANGUAGES, setLanguage, t } from './i18n';
 import { loadLanguage, loadSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
@@ -444,6 +444,23 @@ describe('settings form — Modern tabs (#108)', () => {
       const form = createSettingsForm(modern, vi.fn());
       const values = [...languageSelect(form).options].map((option) => option.value);
       expect(values).toEqual(['auto', ...LANGUAGES]);
+    });
+
+    // Automatic is pinned to the top and never sorted in among the
+    // languages, whichever language is in effect — the alphabetical order
+    // below it is asserted in i18n.test.ts.
+    it.each(LANGUAGES)('keeps Automatic first with the UI in %s', (lang) => {
+      setLanguage(lang);
+      try {
+        const options = [...languageSelect(createSettingsForm(modern, vi.fn())).options];
+        expect(options[0]!.value).toBe('auto');
+        expect(options[0]!.textContent).toBe(t('settings.language.auto'));
+        expect(options.slice(1).map((option) => option.textContent)).toEqual(
+          LANGUAGES.map((l) => LANGUAGE_NAMES[l]),
+        );
+      } finally {
+        setLanguage('en');
+      }
     });
 
     it.each(LANGUAGES)('picking %s saves that language', (lang) => {
