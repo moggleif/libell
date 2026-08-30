@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { showOnboarding, type OnboardingOptions } from './onboarding';
 import { setLanguage, t } from './i18n';
-import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
+import { DEFAULT_SETTINGS, type Calibration, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
 
@@ -896,5 +896,104 @@ describe('onboarding wizard — usability review fixes (#189)', () => {
     expect(card().querySelector('.onboarding__bars-text')?.textContent).toBe('1 / 10');
     next();
     expect(card().querySelector('.onboarding__bars-text')?.textContent).toBe('2 / 10');
+  });
+});
+
+// #239: the wizard has to fit one phone screen. Its chrome is pinned and
+// only the step body scrolls (CSS), and the DOM below is what makes the
+// steps short enough that on the phones tested nothing has to scroll at
+// all. These assert the structure that carries that; the heights
+// themselves are a layout concern, checked against real viewports.
+describe('onboarding wizard — one screen, no scrolling (#239)', () => {
+  it('Back and Skip share one row, with Next the full-width control at the bottom edge', () => {
+    open({ initialSettings: modernSettings() });
+    next(); // vehicle -> placement
+    next(); // placement -> settings (has Back, Skip and Next)
+    const nav = card().querySelector('.onboarding__nav')!;
+    const row = nav.querySelector('.onboarding__nav-row')!;
+    expect([...row.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
+      t('onboard.back'),
+      t('onboard.skipStep'),
+    ]);
+    // Next is the nav's own last child, not part of that row — it keeps
+    // the full width and the bottom edge closest to the thumb.
+    expect(nav.lastElementChild?.textContent).toBe(t('onboard.next'));
+    expect(row.contains(nav.lastElementChild)).toBe(false);
+  });
+
+  it('welcome renders no empty secondary row — it has neither Back nor Skip', () => {
+    showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.welcome.h'));
+    expect(card().querySelector('.onboarding__nav-row')).toBeNull();
+  });
+
+  it('the skip-consequence note sits in the nav beside the Skip it explains, not in the step body', () => {
+    open({ initialSettings: modernSettings() });
+    next(); // vehicle -> placement
+    next(); // placement -> settings
+    const hint = card().querySelector('.onboarding__skip-hint')!;
+    expect(hint.textContent).toBe(t('onboard.skip.consequence'));
+    expect(card().querySelector('.onboarding__nav')!.contains(hint)).toBe(true);
+    expect(card().querySelector('.onboarding__body')!.contains(hint)).toBe(false);
+  });
+
+  it('steps whose Skip lights no warning lamp still render no note at all', () => {
+    showOnboarding(makeOptions({ initialSettings: modernSettings() }));
+    for (const title of [t('settings.language'), t('settings.appearance'), t('onboard.sound.h')]) {
+      next();
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(title);
+      expect(card().querySelector('.onboarding__skip-hint')).toBeNull();
+    }
+  });
+
+  it('a calibration step folds the embedded card header into the step heading, pill and all', () => {
+    open({ initialSettings: modernSettings() });
+    next(); // vehicle -> placement
+    next(); // -> settings
+    next(); // -> ramps
+    next(); // -> phone sensor calibration
+    const heading = card().querySelector('.onboarding__title')!;
+    expect(heading.textContent).toContain(t('calibration.sensor.h'));
+    // The pill moved up next to the heading — the one thing the heading
+    // does not itself say — and the card's own header row is gone, along
+    // with its duplicate copy of that same heading.
+    expect(heading.querySelector('.calibration-card__pill')?.textContent).toBe(
+      t('calibration.pill.notDone'),
+    );
+    expect(card().querySelector('.calibration-card__header')).toBeNull();
+    expect(card().querySelector('.calibration-card__title')).toBeNull();
+  });
+
+  it('the pill in the heading is still the live one the calibration section keeps up to date', () => {
+    let calibration: Calibration | null = null;
+    open({
+      initialSettings: modernSettings(),
+      getCalibration: () => calibration,
+      calibrate: () => {
+        calibration = { rollDeg: 0, pitchDeg: 0 };
+        return null;
+      },
+    });
+    next(); // vehicle -> placement
+    next(); // -> settings
+    next(); // -> ramps
+    next(); // -> phone sensor calibration
+    const heading = card().querySelector('.onboarding__title')!;
+    expect(heading.querySelector('.calibration-card__pill')?.textContent).toBe(
+      t('calibration.pill.notDone'),
+    );
+    [...card().querySelectorAll('button')]
+      .find((b) => b.textContent === t('calibration.now'))!
+      .click();
+    expect(heading.querySelector('.calibration-card__pill')?.textContent).toBe(
+      t('calibration.pill.done'),
+    );
+  });
+
+  it('a step with no embedded calibration card leaves the heading a plain heading', () => {
+    open({ initialSettings: modernSettings() });
+    next(); // vehicle -> placement
+    const heading = card().querySelector('.onboarding__title')!;
+    expect(heading.childElementCount).toBe(0);
   });
 });

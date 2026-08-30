@@ -369,10 +369,30 @@ URL and must keep working with no signal.
   connect)
 - **Then** its Skip control is paired with a note that a warning lamp (R11) will remind
   the user later if they skip, and that the shipped defaults are used meanwhile and
-  often work reasonably well — not just "Skip" with no stated consequence. Its button
-  reads plain "Skip", since skipping any of these does light that lamp; only
-  the Language/Appearance/Sound steps' Skip reads "Skip — use defaults", since those are
-  the skippable steps with no such consequence (style-consistency review follow-up).
+  often work reasonably well — not just "Skip" with no stated consequence. The note sits
+  next to the Skip button it explains, above the wizard's own controls (#239), not at the
+  end of the step's content. Its button reads plain "Skip", since skipping any of these
+  does light that lamp; only the Language/Appearance/Sound steps' Skip reads
+  "Skip — use defaults", since those are the skippable steps with no such consequence
+  (style-consistency review follow-up).
+- **Given** any step of the wizard, on any phone (#239 — reported from an iPhone, where
+  the buttons sat below the fold on half the steps)
+- **Then** the step count, the ✕, the step heading and the Back/Skip/Next controls are on
+  screen at all times: they are never scrolled away, whatever the step contains. Only the
+  step's own content may scroll, inside its own region — and on the phone sizes tested
+  (375x553 upward, i.e. an iPhone SE in Safari and everything larger) no step needs even
+  that, in either appearance and in every shipped language. The wizard is sized to the
+  _small_ viewport (the height with the browser's toolbars showing) and its bottom padding
+  clears the home indicator, so the last control is never left under Safari's bottom bar.
+- **Given** a step that embeds the calibration card (sensor calibration, vehicle zero)
+- **Then** the card's own heading — word for word the step's heading directly above it —
+  is not repeated: its status pill ("NOT DONE" / "DONE") moves onto the step heading and
+  the duplicate row goes, and inside the wizard the card drops its frame, which the step
+  screen already provides (#239). Settings' own copy of the same card is unaffected.
+- **Given** the Modern step-progress bars, on a narrow screen or a long step list
+- **Then** the bars share out the width left over instead of claiming a fixed width each,
+  and the "n / total" text beside them stays on one line (#239: eleven bars overflowed a
+  375 px header and wrapped that text into a three-line stack).
 - **Given** Modern appearance
 - **Then** the step progress shows a visible "n / total" text next to the bars, not
   only an `aria-label` on them — legible at a glance, including for low-vision users.

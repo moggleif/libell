@@ -265,5 +265,8 @@ warning lamps, in memory only), so screenshots and demos show the product rather
 the first-run state. The `?easylevel-sim` flag (R44) is its EasyLevel sibling: a
 simulated BLE box behind the transport seam, for exercising the external-sensor flow
 on machines (and CI screenshots) with no hardware. CI runs
-`format:check`, `typecheck`, `test` and `build` on every branch; pushes to `main` deploy
-`dist/` to GitHub Pages.
+`format:check`, `typecheck`, `test` and `build` on every branch, then two Playwright
+checks against the built app: `smoke` (it renders at all) and `fit` (every first-run
+guide step fits a small phone screen — R18/#239; the unit tests run in happy-dom, which
+has no layout engine and measures every height as zero, so this is the only place a
+too-tall step can fail). Pushes to `main` deploy `dist/` to GitHub Pages.

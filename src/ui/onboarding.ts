@@ -223,7 +223,20 @@ function buildClassicProgress(current: number, total: number): HTMLElement {
   return progress;
 }
 
-type Step = { title: string; build: () => Element[]; skipLabel?: string };
+/**
+ * `skipConsequence` marks the skippable steps whose Skip lights a warning
+ * lamp (R11) — the note saying so is rendered once by `renderStep`, right
+ * above the nav buttons it explains, instead of each step appending its
+ * own copy to the end of its (scrollable) body. See #239: as the last
+ * element of the body it was both the first thing pushed out of view and
+ * three lines of the height budget on every one of those steps.
+ */
+type Step = {
+  title: string;
+  build: () => Element[];
+  skipLabel?: string;
+  skipConsequence?: true;
+};
 
 export function showOnboarding(options: OnboardingOptions): void {
   const isModern = options.initialSettings.appearance === 'modern';
@@ -312,9 +325,14 @@ export function showOnboarding(options: OnboardingOptions): void {
   // A skippable step's consequence, spelled out (#189): "Skip" alone never
   // said what happens next — the warning lamp (R11) that stays lit is
   // documented in the requirements but was never shown to the user here.
+  // Lives in the nav next to the Skip button it explains, not at the end
+  // of the step's body (#239): the note reads as a caption for that
+  // button, it stays visible when a tall step's body scrolls, and it no
+  // longer spends three body lines' worth of the height budget on every
+  // skippable step.
   function skipConsequenceHint(): HTMLParagraphElement {
     const hint = document.createElement('p');
-    hint.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+    hint.className = 'onboarding__skip-hint';
     hint.textContent = t('onboard.skip.consequence');
     return hint;
   }
@@ -329,6 +347,7 @@ export function showOnboarding(options: OnboardingOptions): void {
     // same as Calibration/External sensor — "use defaults" is reserved for
     // the one step (General) that truly has no consequence.
     skipLabel: t('onboard.skipStep'),
+    skipConsequence: true,
     build: () => [
       // vehicleType is overridden to the vehicle step's choice (#184) so
       // this reduced form's field labels/visibility already match —
@@ -347,7 +366,6 @@ export function showOnboarding(options: OnboardingOptions): void {
         undefined,
         { compact: 'measurements' },
       ),
-      skipConsequenceHint(),
     ],
   };
 
@@ -412,6 +430,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   const rampsStep: Step = {
     title: t('settings.tab.ramps'),
     skipLabel: t('onboard.skipStep'),
+    skipConsequence: true,
     build: () => [
       createSettingsForm(
         currentSettings,
@@ -422,7 +441,6 @@ export function showOnboarding(options: OnboardingOptions): void {
         undefined,
         { compact: 'ramps' },
       ),
-      skipConsequenceHint(),
     ],
   };
 
@@ -436,13 +454,15 @@ export function showOnboarding(options: OnboardingOptions): void {
   const sensorCalibrationStep: Step = {
     title: t('calibration.sensor.h'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createCalibrationSection(options).sensorElement, skipConsequenceHint()],
+    skipConsequence: true,
+    build: () => [createCalibrationSection(options).sensorElement],
   };
 
   const vehicleZeroStep: Step = {
     title: t('calibration.vehicle.h'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createCalibrationSection(options).vehicleElement, skipConsequenceHint()],
+    skipConsequence: true,
+    build: () => [createCalibrationSection(options).vehicleElement],
   };
 
   // External path's calibration equivalent (#135, ADR 0014, split into two
@@ -467,13 +487,15 @@ export function showOnboarding(options: OnboardingOptions): void {
   const connectStep: Step = {
     title: t('menu.sensorSource'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createSensorSourceSection(options).connectElement, skipConsequenceHint()],
+    skipConsequence: true,
+    build: () => [createSensorSourceSection(options).connectElement],
   };
 
   const installOffsetStep: Step = {
     title: t('sensorSource.install.h'),
     skipLabel: t('onboard.skipStep'),
-    build: () => [createSensorSourceSection(options).installElement, skipConsequenceHint()],
+    skipConsequence: true,
+    build: () => [createSensorSourceSection(options).installElement],
   };
 
   // A labeled radio group for a single wizard choice — shared by the
@@ -616,16 +638,41 @@ export function showOnboarding(options: OnboardingOptions): void {
     body.className = 'onboarding__body';
     body.append(...step.build());
 
+    // A calibration step embeds `calibrationSection.ts`'s real card, whose
+    // own header is [heading, status pill] — and that heading is word for
+    // word the step heading right above it. So the header row is folded
+    // into the step heading (#239): the pill, the one thing the heading
+    // does not say ("NOT DONE" / "DONE"), moves up beside it, and the
+    // duplicate heading goes. Worth ~23 px, which is the difference
+    // between this step fitting an iPhone SE screen and not. The pill is
+    // still the same element `refreshCalibration` holds a reference to and
+    // keeps up to date — only its place in the DOM changed. Settings'
+    // own copy of the card, where no such outer heading exists, is
+    // untouched.
+    const cardHeader = body.querySelector('.calibration-card__header');
+    if (cardHeader) {
+      const pill = cardHeader.lastElementChild;
+      if (pill && pill !== cardHeader.firstElementChild) heading.append(pill);
+      cardHeader.remove();
+    }
+
     const nav = document.createElement('div');
     nav.className = isModern ? 'onboarding__nav onboarding__nav--modern' : 'onboarding__nav';
+    // The consequence note first, so it reads as a caption for the Skip
+    // button right under it (#239 — see skipConsequenceHint above).
+    if (step.skipConsequence) nav.append(skipConsequenceHint());
+    // Back and Skip share one row above Next (#239): stacked full width
+    // they were three buttons and 174 px of a 553 px iPhone SE screen,
+    // spent entirely on navigation. Side by side they are one 43 px row,
+    // and Next keeps the full-width bottom edge — the same top-to-bottom
+    // order (Back, Skip, Next) and the same "closest to the thumb wins"
+    // rule as before, in Classic and Modern alike.
+    const secondaryRow = document.createElement('div');
+    secondaryRow.className = 'onboarding__nav-row';
     // Back (#189): a wrong tap on vehicle type or sensor source used to be
     // fixable only by finishing the wizard and correcting it in Settings,
-    // or closing (✕) and restarting from step 1. Always appended first, so
-    // in both appearances' plain (non-reversed) column it ends up furthest
-    // from the primary Next action at the true bottom edge — same order,
-    // same "closest to the thumb wins" rule, in Classic and Modern alike.
-    // Never shown on the first step, matching Skip's own "not always
-    // present" convention.
+    // or closing (✕) and restarting from step 1. Never shown on the first
+    // step, matching Skip's own "not always present" convention.
     if (index > 0) {
       const back = document.createElement('button');
       back.type = 'button';
@@ -637,7 +684,7 @@ export function showOnboarding(options: OnboardingOptions): void {
         index -= 1;
         renderStep();
       });
-      nav.append(back);
+      secondaryRow.append(back);
     }
     if (step.skipLabel) {
       const skip = document.createElement('button');
@@ -650,8 +697,10 @@ export function showOnboarding(options: OnboardingOptions): void {
         index += 1;
         renderStep();
       });
-      nav.append(skip);
+      secondaryRow.append(skip);
     }
+    // Welcome has neither, and an empty row would still cost its gap.
+    if (secondaryRow.childElementCount > 0) nav.append(secondaryRow);
     const next = document.createElement('button');
     next.type = 'button';
     next.className = isModern ? 'menu__action onboarding__next--modern' : 'menu__action';

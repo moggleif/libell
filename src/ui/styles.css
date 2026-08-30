@@ -2571,19 +2571,28 @@ body {
 
 /* ---- Onboarding wizard ---- */
 
+/* One screen, never a scrolling page (#239). The overlay is exactly as
+ * tall as the *small* viewport — `100svh`, the height with the browser's
+ * toolbars showing — so its bottom edge is never left under Safari's
+ * bottom bar the way `inset: 0` alone left it on iOS, and the padding
+ * clears the home indicator too. `100vh` stays as the fallback for
+ * browsers without the viewport units (`svh` is Safari 15.4+). */
 .onboarding {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100svh;
   z-index: 30;
   background: var(--surface);
   display: flex;
   justify-content: center;
-  overflow-y: auto;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 24px;
+  overflow: hidden;
+  padding: calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
 }
 
 .onboarding__card {
   width: min(100%, 420px);
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2598,11 +2607,13 @@ body {
 
 .onboarding__progress {
   margin: 0;
+  white-space: nowrap;
   color: var(--on-surface-muted);
   font-size: 0.8rem;
 }
 
 .onboarding__close {
+  flex: 0 0 auto;
   font: inherit;
   font-size: 1.2rem;
   line-height: 1;
@@ -2621,14 +2632,52 @@ body {
   outline: none;
 }
 
+/* The only thing that may ever scroll (#239): header, title and nav are
+ * pinned, so Back/Skip/Next are on screen on every step whatever the step
+ * contains. `min-height: 0` is what actually lets a flex child shrink
+ * below its content height and scroll instead of pushing the nav off the
+ * bottom. Every step is trimmed to fit without scrolling on the smallest
+ * current iPhone; this is the guard for the cases trimming can't reach —
+ * a huge text size, landscape, a future longer step. */
 .onboarding__body {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .onboarding__nav {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* Back and Skip side by side above the full-width Next (#239) — see the
+ * nav comment in onboarding.ts for why. Either can be absent: Back on the
+ * first step, Skip on the unskippable ones, and a lone button then simply
+ * takes the whole row. */
+.onboarding__nav-row {
+  display: flex;
+  gap: 8px;
+}
+
+.onboarding__nav-row .menu__action {
+  flex: 1;
+  min-width: 0;
+  /* The row is the spacing; a per-button top margin would only make it
+     taller than the single button it sits next to. */
+  margin-top: 0;
+}
+
+/* The warning-lamp note, as a caption for the Skip button below it
+ * (#239): the same words as before, at hint size rather than as three
+ * body-text lines at the end of the step. */
+.onboarding__skip-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--on-surface-muted);
 }
 
 /* ---- Modern onboarding (#110) ----
@@ -2641,15 +2690,25 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
+/* The bars share out whatever width is left, they don't claim a fixed
+ * 24px each (#239): eleven steps at 24px plus gaps overflowed a 375px
+ * header, which squeezed the "n / total" text next to them down to one
+ * character wide and wrapped it into a three-line stack. */
 .onboarding__bars {
   display: flex;
   gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .onboarding__bar {
-  width: 24px;
+  flex: 1 1 0;
+  min-width: 4px;
+  max-width: 24px;
   height: 4px;
   border-radius: 2px;
   background: var(--surface-sunken);
@@ -2663,25 +2722,27 @@ body {
  * carried that information in an aria-label, unreadable to a sighted
  * low-vision user at 24×4px. */
 .onboarding__bars-text {
+  flex: 0 0 auto;
+  white-space: nowrap;
   font-size: 0.75rem;
   color: var(--on-surface-muted);
 }
 
 .onboarding__title--modern {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .onboarding__text--modern {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--on-surface-muted);
 }
 
 .onboarding__legend {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .onboarding__legend-row {
@@ -2692,9 +2753,9 @@ body {
 
 .onboarding__legend-swatch {
   flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2779,4 +2840,156 @@ body {
   width: 22px;
   height: 22px;
   accent-color: var(--level);
+}
+
+/* ---- Fitting a step on one screen (#239) ----
+ * Everything below trims the wizard's own copy of shared components; none
+ * of it touches how those components look on their real pages. Measured
+ * against a 375x553 iPhone SE viewport in Safari, where five of the ten
+ * steps used to be taller than the screen. */
+
+/* An illustration takes at most a quarter of the screen, instead of the
+ * 225-240 px it took at its natural size. `height: auto` plus `max-height`
+ * on a replaced element scales the width down with it, so the drawing
+ * shrinks whole rather than being cropped or letterboxed. */
+.onboarding .illu {
+  max-height: 24svh;
+  margin: 0 auto 4px;
+}
+
+.onboarding .settings__hint,
+.onboarding .menu__text {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* The wizard step already *is* the card: its own h2 carries the exact same
+ * heading text as the embedded card's h3, and its own screen carries the
+ * frame. So inside the wizard the card sheds its border, background and
+ * padding; the duplicate heading and its row are folded into the step
+ * heading in onboarding.ts, which keeps the status pill. Nothing is
+ * dropped that isn't said twice, and Settings' own cards are untouched. */
+.onboarding .calibration-card,
+:root[data-appearance='modern'] .onboarding .calibration-card,
+:root[data-appearance='glossy'] .onboarding .calibration-card {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  gap: 8px;
+}
+
+/* The status pill, moved onto the step heading (see onboarding.ts): the
+ * heading takes the width it needs, the badge sits at the end of the row. */
+.onboarding__title:has(> span) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.onboarding .calibration-card__body {
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* Full-width action buttons stack tightly here — the step's own nav is
+ * what needs the breathing room, not each embedded control. The
+ * calibration card spaces its own children with `gap`, so a margin there
+ * would only double it (this rule has the same specificity as the
+ * `.calibration-card > .menu__action` one further up, and comes later). */
+.onboarding .menu__action {
+  margin-top: 6px;
+}
+
+.onboarding .calibration-card > .menu__action {
+  margin-top: 0;
+}
+
+.onboarding .calibration-card {
+  gap: 6px;
+}
+
+.onboarding .settings__form {
+  gap: 8px;
+}
+
+/* The check/clear pair reads as maintenance next to the two primary
+   calibrate actions — inline size is enough, and at full button height it
+   wrapped to two lines on a narrow screen. */
+.onboarding .calibration-card__row .menu__action {
+  padding: 7px 8px;
+  font-size: 0.875rem;
+}
+
+/* ---- Short screens (#239) ----
+ * An iPhone SE in Safari leaves 553 px. Everything above already fits a
+ * 745 px screen with room to spare; this tier trims the same elements a
+ * little further so the shortest phones fit too. Nothing is hidden or
+ * removed — only sizes and spacing change. */
+@media (max-height: 620px) {
+  .onboarding {
+    padding: calc(8px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .onboarding__card {
+    gap: 4px;
+  }
+
+  .onboarding .illu {
+    max-height: 20svh;
+  }
+
+  .onboarding__title--modern {
+    font-size: 18px;
+  }
+
+  .onboarding__legend {
+    gap: 6px;
+  }
+
+  .onboarding__legend-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    font-size: 14px;
+  }
+
+  .onboarding__skip-hint {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .onboarding .calibration-card__body {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .onboarding .menu__action {
+    padding: 8px 0;
+    margin-top: 4px;
+  }
+
+  .onboarding .calibration-card {
+    gap: 4px;
+  }
+
+  /* Three ramp-height chips wrapped to two rows at this width. */
+  .onboarding .steps__chips {
+    gap: 6px;
+  }
+
+  .onboarding .steps__chip {
+    padding: 2px 4px 2px 10px;
+  }
+
+  .onboarding .steps__chip-remove {
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .onboarding__next--modern {
+    min-height: 46px;
+  }
 }
