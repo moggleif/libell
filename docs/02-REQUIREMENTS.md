@@ -1336,3 +1336,37 @@ the incoming shared-setup dialog, the Classic settings drawer.
   defaults to `0,0`, which put it in the drawing's top-left corner with half of it clipped
   by the edge — a stray half-disc on screen with no relation to anything. This holds for
   the motorhome diagram in both appearances and for the caravan diagram.
+
+## R47 — The ramp tab: one picker, one answer, settings under it (#246)
+
+Reported from a phone, with the duplicates circled: the chosen ramp was on screen three
+times over — a pinned card above the catalogue, its own row inside the catalogue, and
+the footer, with the card and the footer both spelling out the same step heights.
+
+- **Given** the Ramps tab in Modern
+- **Then** the catalogue is the picker and exactly one place outside it says what is
+  chosen: a block directly under the catalogue reading top-down as a statement —
+  "Selected", the model's name, "Step heights (mm)", then the heights themselves. No
+  pinned card above the list, and the same numbers are never printed twice.
+- **Given** the choice "Custom set"
+- **Then** it is the last entry of the catalogue itself, not a separate control below it:
+  entering your own step heights is one of the choices. The brand filter never hides it —
+  narrowing to a brand says which ready-made models to show, it does not withdraw the
+  option of entering your own.
+- **Given** the settings that depend on the chosen ramp (number of ramps, the drain
+  position under Advanced)
+- **Then** they sit below the block naming that choice, not above the answer they belong
+  to. Save/Undo/Reset stay last.
+- **Given** the tab on any phone (usability review against #189's persona — someone
+  setting up their first motorhome, reading at arm's length in poor light)
+- **Then** the catalogue is not a scroll region inside the scrolling settings page: every
+  model is laid out in full and the page does the scrolling, so nothing is hidden behind
+  an inner scrollbar with no sign that more exists. Its labels are set at a size that
+  matches the app's own reason for 18px body text, not the 10px uppercase they were.
+  The brand filter is a disclosure below the catalogue rather than the first thing on the
+  tab: it helps whoever already knows the brand, and no longer stands in front of the
+  list for everyone who does not.
+- **Given** "Number of ramps"
+- **Then** it says what the number means — how many you have to put out, and that the app
+  never asks you to raise more wheels than that — rather than leaving a bare quantity
+  whose explanation lived under Advanced, below it.

@@ -494,6 +494,11 @@ export function createSettingsForm(
   }
   rampCountSelect.addEventListener('change', () => notifyChanged());
   rampCountField.append(rampCountCaption, rampCountSelect);
+  // What the number actually means (#246): it read as a bare quantity with
+  // no unit of meaning — how many you own? how many the app may use? —
+  // and the explanation that existed was under Advanced, below it.
+  const rampCountHint = document.createElement('p');
+  rampCountHint.className = 'settings__hint';
 
   // --- Drain position (#93): where the waste-water outlet sits. Within
   // the tolerance the plan leaves this side lowest so the drains keep
@@ -847,7 +852,8 @@ export function createSettingsForm(
     // Onboarding step (design review): the ready-made ramp model/custom
     // step-height picker + ramp count — the same elements/handlers
     // Classic mode's own Ramps section uses. `applyUnitEverywhere()` still
-    // hides rampCountField/rampHint for a caravan (it ramps one wheel),
+    // hides rampCountField/rampCountHint/rampHint for a caravan (it ramps
+    // one wheel),
     // exactly as it already does on the full form — no extra logic needed
     // here for that.
     form.append(rampHint, stepsField, rampCountField);
@@ -968,8 +974,22 @@ export function createSettingsForm(
     );
 
     // --- Klossar tab ---
+    // Behind a disclosure rather than first on the tab (#246): someone
+    // setting this up knows they own "three yellow wedges", not that they
+    // are Fiamma. Narrowing twelve models by brand helps the person who
+    // already knows; putting it ahead of the list asked everyone else to
+    // step over it. Collapsed, so the default path is simply the list.
+    const filterDetails = document.createElement('details');
+    filterDetails.className = 'settings__advanced klossar__filter-details';
+    const filterSummary = document.createElement('summary');
+    filterSummary.className = 'settings__advanced-summary';
+    // Set here rather than in the shared populate pass below: this element
+    // only exists in the Modern branch, and a language change rebuilds the
+    // whole form anyway.
+    filterSummary.textContent = t('settings.klossar.filterBrand');
     const filterRow = document.createElement('div');
     filterRow.className = 'klossar__filter';
+    filterDetails.append(filterSummary, filterRow);
     const brands = [...new Set(RAMP_MODELS.map((m) => m.name.split(' ')[0]!))];
     let brandFilter: string | null = null;
     const brandChips = new Map<string | null, HTMLButtonElement>();
@@ -1124,11 +1144,12 @@ export function createSettingsForm(
     // scroll with the rest of the tab's content instead of crowding the
     // footer's own Save/Undo.
     rampsPanel.append(
-      filterRow,
       modelList,
+      filterDetails,
       selectedBlock,
       customEditor,
       rampCountField,
+      rampCountHint,
       rampsAdvancedDetails,
       rampHint,
       footer,
@@ -1303,6 +1324,7 @@ export function createSettingsForm(
     customOption.textContent = t('settings.ramp.custom');
     // Ramp planning applies to the motorhome; a caravan ramps one wheel.
     rampCountField.hidden = vehicle === 'caravan';
+    rampCountHint.hidden = vehicle === 'caravan';
     rampsAdvancedDetails.hidden = vehicle === 'caravan';
     rampHint.hidden = vehicle === 'caravan';
     rampCountCaption.textContent = t('settings.rampCount');
@@ -1311,6 +1333,7 @@ export function createSettingsForm(
     rampsAdvancedSummary.textContent = t('settings.advanced');
     drainHint.textContent = t('settings.drainHint');
     rampHint.textContent = t('settings.rampHint');
+    rampCountHint.textContent = t('settings.rampCountHint');
     unitCaption.textContent = t('settings.unit');
     languageCaption.textContent = t('settings.language');
     languageAutoOption.textContent = t('settings.language.auto');

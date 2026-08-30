@@ -2115,19 +2115,18 @@ body {
 /* The Klossar tab is a column with a scrolling catalog and a footer
    that stays put — the list scrolls, the step-height summary and
    Save/Undo do not. */
-/* The catalogue scrolls, the rest does not — but never at the cost of the
- * catalogue itself. `height: calc(100dvh - 230px)` guessed how much room
- * everything around the list would need; when the guess was low (a 745px
- * phone, two rows of brand chips, a longer language) the list was the only
- * item that could shrink, so it absorbed the whole shortfall and collapsed
- * to nothing: the ramp picker, on the ramp tab, zero pixels tall (#246).
- * The height is now a ceiling rather than a fixed size, and the list keeps
- * a floor of its own below, so the panel gives back the space it does not
- * need and the picker cannot vanish. */
+/* One scroll, not two (#246). This panel used to be a fixed-height column
+ * with the catalogue scrolling inside it, on a settings page that scrolls
+ * too — a scroll region inside a scroll region, where four of twelve
+ * models showed with nothing to say the rest existed. Worse, the height
+ * was a guess (`calc(100dvh - 230px)`) and the list was the only item that
+ * could shrink, so on a 745px phone it absorbed the whole shortfall and
+ * collapsed to nothing: the ramp picker, on the ramp tab, zero pixels
+ * tall. The panel is now an ordinary block and the page does the
+ * scrolling, exactly like every other settings tab. */
 .settings__tabpanel--klossar {
   display: flex;
   flex-direction: column;
-  max-height: calc(100svh - 180px);
 }
 
 .klossar__filter {
@@ -2138,7 +2137,7 @@ body {
 
 .klossar__chip {
   font: inherit;
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--on-surface-muted);
   background: none;
@@ -2155,11 +2154,6 @@ body {
 }
 
 .klossar__list {
-  flex: 1 1 auto;
-  /* Roughly four rows: enough to read as a list you scroll, and the floor
-   * that stops it being squeezed out of existence (#246). */
-  min-height: 200px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -2196,7 +2190,7 @@ body {
 }
 
 .klossar__row-mm {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--on-surface-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -2254,10 +2248,13 @@ body {
   gap: 1px;
 }
 
+/* The app sets 18px body text because it is read at arm's length in poor
+ * light; these labels were 10px uppercase in muted grey, which contradicted
+ * that for the readers who need it most (#246). */
 .klossar__footer-label {
-  font-size: 10px;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--on-surface-muted);
 }
@@ -2270,10 +2267,10 @@ body {
 
 .klossar__footer-heading {
   display: block;
-  margin-top: 8px;
-  font-size: 10px;
+  margin-top: 10px;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--on-surface-muted);
 }
@@ -2291,7 +2288,7 @@ body {
 }
 
 .klossar__grid-label {
-  font-size: 10px;
+  font-size: 0.8125rem;
   color: var(--on-surface-muted);
 }
 
