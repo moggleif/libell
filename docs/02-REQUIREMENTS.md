@@ -1290,3 +1290,30 @@ everything above that seam is exactly the code a real box runs through.
   the old Web Bluetooth check.
 - **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
   the real transport is not even constructed.
+
+## R45 — Every view fits a phone screen (#239, #241, #243)
+
+R4 and R18 state this for the level view and the first-run guide. It holds for every
+other view too — settings, help, the external-sensor page, the iOS sensor guide (R39),
+the incoming shared-setup dialog, the Classic settings drawer.
+
+- **Given** any view, on any phone from 320 px wide upward, in either appearance and in
+  every shipped language
+- **Then** the page never scrolls sideways, and nothing is wider than the container it
+  sits in — except a deliberate horizontal scroller, which is what makes a tab strip
+  swipeable rather than a defect.
+- **Given** a view whose content is legitimately longer than the screen (settings, help)
+- **Then** it scrolls within itself, and scrolling it to the end brings its last content
+  fully into view: no container extends past the visible viewport, and nothing is
+  stranded behind a browser toolbar or the home indicator.
+- **Given** any full-screen container
+- **Then** it is sized to the _small_ viewport (the height with the browser's toolbars
+  showing) and pads its bottom by `env(safe-area-inset-bottom)`. On iOS a
+  `position: fixed; inset: 0` box is laid out against the toolbar-free large viewport
+  while the visible height is the small one, which strands its bottom behind Safari's
+  bar with nothing to scroll.
+- **Given** the checks that enforce all of the above (`npm run fit`)
+- **Then** they open each view the way a user reaches it — the incoming-setup dialog via
+  a share link the app itself produces — and the last requirement above is checked
+  against the stylesheet rather than at runtime, because no browser available in CI
+  reproduces the iOS viewport behaviour it guards against.
