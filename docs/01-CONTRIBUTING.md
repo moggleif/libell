@@ -21,16 +21,25 @@ npm run test          # Vitest unit tests
 npm run build         # icons + typecheck + production build into dist/
 npm run preview       # serve the production build locally
 npm run smoke         # Playwright: the built app renders (needs `build` first)
-npm run fit           # Playwright: the guide fits a phone screen (needs `build` first)
+npm run fit           # Playwright: it all fits a phone screen (needs `build` first)
 ```
 
 The two Playwright scripts need a build to serve, so they are not part of the
-pre-commit set — CI runs them after `build`. `fit` (#239) walks every step of the
-first-run wizard against small-phone viewports, in both appearances and all five
-languages, and fails on any step whose content does not fit or whose "Next" button
-lands below the fold. It exists because the unit tests cannot catch that: Vitest runs
-in happy-dom, which has no layout engine, so every height it measures is zero. When
-you add or grow a wizard step, this is the check that tells you it still fits.
+pre-commit set — CI runs them after `build`. `fit` (#239, #241) walks the level view
+and every step of the first-run wizard against small-phone viewports, in both
+appearances and all five languages, and fails on anything below the fold, any content
+that has to scroll, a diagram taller than the space it was given, or a wheel card that
+has drifted off its wheel. It exists because the unit tests cannot catch any of that:
+Vitest runs in happy-dom, which has no layout engine, so every height it measures is
+zero. When you add or grow a wizard step, or change the level view's layout, this is
+the check that tells you it still fits.
+
+Two things to know if you extend it. It seeds preferences through the **real**
+localStorage keys (`libell.settings` for the settings object, `libell.language` on its
+own — see `src/data/settingsStore.ts`); write anything else and every run silently
+falls back to the defaults, which quietly collapses the whole sweep to one combination
+tested many times. And the level view is only reachable with `?demo`, since a CI
+machine has no motion sensor.
 
 ## Testing on a real phone
 

@@ -137,10 +137,18 @@
   box-sizing: border-box;
 }
 
+/* The app is one screen: top bar, diagram, action bar and footer, with
+ * nothing below the fold. `100svh` is the *small* viewport — the height
+ * with the browser's toolbars showing — so on iOS the bottom action bar
+ * lands above Safari's bottom bar instead of behind it, the way plain
+ * `100%` (which resolves against the toolbar-free large viewport) left it
+ * (#241). `100%` stays as the fallback for browsers without the unit. */
 html,
 body {
   margin: 0;
   height: 100%;
+  height: 100svh;
+  overflow: hidden;
 }
 
 body {
@@ -581,7 +589,13 @@ body {
 }
 
 .app {
-  flex: 1;
+  flex: 1 1 auto;
+  /* Without this the level view cannot shrink below the diagram's own
+     height, and the diagram's own `flex`/`min-height` never gets a chance
+     to apply — a flex item's default `min-height: auto` is the whole
+     reason the action bar and footer used to end up below the fold
+     (#241). */
+  min-height: 0;
   /* Anchor for the pose/level overlays: they cover the app area only,
      so the top bar (menu) and the version footer stay reachable. */
   position: relative;
@@ -636,15 +650,48 @@ body {
 
 /* ---- RV diagram (hero) ---- */
 
+/* Read outdoors at arm's length: use the screen — but only the screen.
+ * The diagram is the one elastic thing on the level view: it takes the
+ * height the top bar, readouts, action bar and footer leave and no more
+ * (`flex` + `min-height: 0`, which is what actually lets a flex item
+ * shrink below its content).
+ *
+ * It used to be sized purely by width, `min(92vw, 58vh, 560px)`, with its
+ * height following from the drawing's proportions — so the `58vh` term,
+ * meant to keep the status line and tilt readout on screen (#68), yielded
+ * a diagram about 93vh TALL and pushed the readouts, the action bar and
+ * the footer below the fold on every phone size (#241).
+ *
+ * `aspect-ratio` comes from `--diagram-aspect`, set on the container from
+ * the drawing's own viewBox (rvDiagram.ts / caravanDiagram.ts). Sizing the
+ * box in the drawing's exact proportions is what keeps the floating wheel
+ * cards — positioned as a percentage of that box — pinned to the wheels
+ * they point at, whichever way the box is being squeezed. */
 .rv-diagram {
-  /* Read outdoors at arm's length: use the screen. The vh term keeps the
-   * status line and tilt readout on screen below the diagram (#68). */
-  width: min(92vw, 58vh, 560px);
+  /* Keeps the full width even when the drawing inside is narrower than
+   * that: on Modern the floating wheel cards live in the margins either
+   * side of the vehicle, and they have a fixed readable width. Shrinking
+   * this box to the drawing would leave the two cards overlapping each
+   * other across the middle of the screen. */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: min(92vw, 560px);
 }
 
+.rv-diagram__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Filling the box in both directions is what caps the drawing by height:
+ * the viewBox plus the default `preserveAspectRatio` then scales it to
+ * fit and centres it, so it never distorts and never overflows. On a box
+ * wider than the drawing needs it simply sits centred, which is exactly
+ * the room the wheel cards occupy. */
 .rv-diagram svg {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
 }
 
@@ -795,13 +842,23 @@ body {
 /* ---- Modern wheel cards (#106) — the step/lift text lives here
  * instead of on the SVG; the SVG wheel keeps only its glyph. */
 
-.rv-diagram__stage {
-  position: relative;
-}
-
+/* A card is placed against two different things at once, which is the
+ * whole subtlety here (#241): horizontally it hugs the outer edge of the
+ * full-width stage, because that margin beside the vehicle is the only
+ * room a 126px-wide card has — pull it in to the drawing and the left and
+ * right cards overlap across the middle of the screen. Vertically it has
+ * to sit on its wheel, which is in the *drawn* area, and the drawing
+ * letterboxes inside a stage that is wider than it.
+ *
+ * So the layer stays the full stage (horizontal reference) and publishes
+ * the drawn area's height as `--drawn-height` for the cards' own `top` to
+ * work from (see rvDiagram.ts). That expression is the same fit the SVG
+ * performs internally, written out: whichever binds first, the stage's
+ * height or the height a full-width drawing would need. */
 .wheel-card-layer {
   position: absolute;
   inset: 0;
+  --drawn-height: min(100%, calc(min(92vw, 560px) / var(--diagram-aspect, 0.774)));
 }
 
 .wheel-card {
@@ -2853,14 +2910,42 @@ body {
  * on a replaced element scales the width down with it, so the drawing
  * shrinks whole rather than being cropped or letterboxed. */
 .onboarding .illu {
-  max-height: 24svh;
+  max-height: 20svh;
   margin: 0 auto 4px;
 }
 
+/* Classic's placement step carries two of them — the drawing and the
+ * status legend — so each gets half the room rather than the pair
+ * getting twice it. */
+.onboarding__body .illu ~ .illu {
+  max-height: 14svh;
+}
+
+.onboarding__body:has(.illu ~ .illu) .illu {
+  max-height: 14svh;
+}
+
+/* Everything below is keyed on the wizard, not on Modern's class names:
+ * Classic embeds the very same calibration UI without the
+ * `.calibration-card` wrapper, so a rule that named that wrapper left
+ * Classic on the full-size type — and Classic in German was the worst
+ * overflow of the lot (#239 follow-up). */
 .onboarding .settings__hint,
 .onboarding .menu__text {
   font-size: 0.8125rem;
   line-height: 1.4;
+}
+
+.onboarding .menu__text--status {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+/* The wizard's embedded controls, at wizard scale rather than the 18px
+ * body text the app is read at from arm's length — a step here is read
+ * with the phone in hand. The step's own Next keeps the full size. */
+.onboarding__body .menu__action {
+  font-size: 1rem;
 }
 
 /* The wizard step already *is* the card: its own h2 carries the exact same
@@ -2923,12 +3008,16 @@ body {
   font-size: 0.875rem;
 }
 
-/* ---- Short screens (#239) ----
- * An iPhone SE in Safari leaves 553 px. Everything above already fits a
- * 745 px screen with room to spare; this tier trims the same elements a
- * little further so the shortest phones fit too. Nothing is hidden or
- * removed — only sizes and spacing change. */
-@media (max-height: 620px) {
+/* ---- Phone-height screens (#239) ----
+ * Every phone the fit test covers, from an iPhone SE in Safari (553 px)
+ * to an iPhone 15 in Safari (745 px), gets the compact treatment: the
+ * limit is not the shortest screen but the longest language, and a
+ * German or French calibration step needs the tighter spacing on all of
+ * them. (A 620 px cut-off was tried first and was worse than useless —
+ * it left a 667 px screen on the roomy styles, overflowing where a
+ * 553 px one fitted.) Nothing is hidden or removed here; only sizes and
+ * spacing change. */
+@media (max-height: 800px) {
   .onboarding {
     padding: calc(8px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));
   }
@@ -2938,7 +3027,12 @@ body {
   }
 
   .onboarding .illu {
-    max-height: 20svh;
+    max-height: 17svh;
+  }
+
+  .onboarding__body:has(.illu ~ .illu) .illu,
+  .onboarding__body .illu ~ .illu {
+    max-height: 12svh;
   }
 
   .onboarding__title--modern {
@@ -2971,6 +3065,18 @@ body {
     margin-top: 4px;
   }
 
+  .onboarding__body .menu__action {
+    font-size: 0.9375rem;
+    padding: 7px 0;
+  }
+
+  /* Secondary pairs ("Check" / "Clear calibration") wrap to two lines in
+   * German and French at full size, which costs more than the smaller
+   * type does. */
+  .onboarding__body .menu__action--secondary {
+    font-size: 0.8125rem;
+  }
+
   .onboarding .calibration-card {
     gap: 4px;
   }
@@ -2987,6 +3093,53 @@ body {
   .onboarding .steps__chip-remove {
     min-width: 28px;
     min-height: 28px;
+  }
+}
+
+/* The tightest screen we support — an iPhone SE in Safari, 553 px — with
+ * the longest languages in it. German and French calibration copy runs
+ * half again as long as the English, so this last tier exists for that
+ * combination specifically; everything in it is a size or a spacing, and
+ * every word, control and illustration is still there. */
+@media (max-height: 600px) {
+  .onboarding .illu {
+    max-height: 15svh;
+  }
+
+  .onboarding__body:has(.illu ~ .illu) .illu,
+  .onboarding__body .illu ~ .illu {
+    max-height: 10svh;
+  }
+
+  .onboarding .settings__hint,
+  .onboarding .menu__text {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .onboarding .menu__text--status,
+  .onboarding__skip-hint {
+    font-size: 0.6875rem;
+    line-height: 1.3;
+  }
+
+  .onboarding .calibration-card__body {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .onboarding__body .menu__action {
+    font-size: 0.875rem;
+    padding: 6px 0;
+    margin-top: 3px;
+  }
+
+  .onboarding__body .menu__action--secondary {
+    font-size: 0.75rem;
+  }
+
+  .onboarding .calibration-card {
+    gap: 3px;
   }
 
   .onboarding__next--modern {

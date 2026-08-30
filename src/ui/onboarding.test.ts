@@ -997,3 +997,44 @@ describe('onboarding wizard — one screen, no scrolling (#239)', () => {
     expect(heading.childElementCount).toBe(0);
   });
 });
+
+// #239 follow-up: the duplicate heading is dropped in Classic too, which
+// builds the same calibration UI without Modern's `.calibration-card__header`
+// wrapper — so the fold cannot key on that wrapper. Classic in German was
+// the worst overflow of the lot precisely because it kept both headings.
+describe('onboarding wizard — the embedded heading never repeats the step heading (#239)', () => {
+  for (const [name, settings] of [
+    ['Classic', classicSettings],
+    ['Modern', modernSettings],
+  ] as const) {
+    it(`${name}: a calibration step shows its heading once, not twice`, () => {
+      open({ initialSettings: settings() });
+      next(); // vehicle -> placement
+      next(); // -> settings
+      next(); // -> ramps
+      next(); // -> phone sensor calibration
+      expect(card().querySelector('.onboarding__title')?.textContent).toContain(
+        t('calibration.sensor.h'),
+      );
+      const body = card().querySelector('.onboarding__body')!;
+      const repeated = [...body.querySelectorAll('h3')].filter(
+        (h) => h.textContent?.trim() === t('calibration.sensor.h'),
+      );
+      expect(repeated).toHaveLength(0);
+    });
+  }
+
+  it('leaves an embedded heading that says something different alone', () => {
+    open({ initialSettings: classicSettings() });
+    next(); // vehicle -> placement
+    next(); // -> settings
+    next(); // -> ramps
+    next(); // -> phone sensor calibration
+    next(); // -> vehicle zero
+    const body = card().querySelector('.onboarding__body')!;
+    // The vehicle-zero step's own heading is folded away, but nothing else
+    // in that card's copy is touched — the flip/check wording included.
+    expect(body.textContent).toContain(t('calibration.vehicle.now'));
+    expect(body.textContent).toContain(t('calibration.check'));
+  });
+});

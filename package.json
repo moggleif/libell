@@ -17,7 +17,7 @@
     "format:check": "prettier --check .",
     "screenshots": "node scripts/generate-screenshots.mjs",
     "smoke": "node scripts/smoke-test.mjs",
-    "fit": "node scripts/onboarding-fit-test.mjs"
+    "fit": "node scripts/fit-test.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
