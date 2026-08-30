@@ -180,10 +180,12 @@ body {
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
 }
 
-/* Set from main.ts while the sensor-status icon is visible: reserves the
- * top-right corner (44px slot + gap) so no in-flow item slides under it. */
-.topbar--has-sensor {
-  padding-right: 72px;
+/* Set from main.ts while anything is in the pinned corner: reserves the
+ * corner's own measured width (`--topbar-corner`) so no in-flow item can
+ * slide under it. Measured rather than assumed because the corner now
+ * holds the Install button too, whose label differs per language. */
+.topbar--has-corner {
+  padding-right: calc(28px + var(--topbar-corner, 44px));
 }
 
 .topbar__icon {
@@ -418,17 +420,25 @@ body {
   min-width: 0;
 }
 
-/* The sensor-status icon's slot: pinned to the top-right corner of the
- * bar, out of the flex flow entirely, so neither wrapping nor a taller
- * bar ever moves it — everything else shifts around it instead. Empty
- * (and .topbar--has-sensor absent, so no reserved space) whenever the
- * icon is hidden. The top offset mirrors the bar's own top padding. */
-.topbar__sensor-slot {
+/* The pinned corner: Install, then the sensor-status icon (#244). Pinned
+ * as one group rather than in flow, so the pair always owns the top-right
+ * corner whatever else the bar holds — the warning lamps wrap onto their
+ * own row to the left of it, exactly as they did when the icon was pinned
+ * alone. `--topbar-corner` is the group's measured width, set by main.ts,
+ * and the bar reserves that much padding so no in-flow item can slide
+ * underneath it in any language. */
+.topbar__corner {
   display: flex;
   align-items: center;
+  gap: 8px;
   position: absolute;
   top: calc(10px + env(safe-area-inset-top));
   right: 16px;
+}
+
+.topbar__sensor-slot {
+  display: flex;
+  align-items: center;
 }
 
 .indicators {
@@ -1059,9 +1069,16 @@ body {
 
 /* ---- Hamburger menu ---- */
 
+/* Sized to the *small* viewport, like every other full-screen container
+ * here (#239, #241, #243): `inset: 0` alone resolves against iOS's
+ * toolbar-free large viewport, which puts the bottom of the drawer behind
+ * Safari's bottom bar with no way to scroll to it. `100vh` is the
+ * fallback for browsers without the unit. */
 .menu {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100svh;
   background: rgb(0 0 0 / 55%);
   z-index: 10;
   display: flex;
@@ -1091,7 +1108,7 @@ body {
   background: var(--surface-raised);
   border-bottom: 1px solid var(--outline);
   border-radius: 0 0 16px 16px;
-  padding: calc(10px + env(safe-area-inset-top)) 16px 20px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1404,7 +1421,10 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin: 6px 0;
+  /* Set apart from the Connect button above it (#244): at the old 6px it
+   * read as part of that button rather than as the sensor it found, which
+   * is a different thing on a different line. */
+  margin: 18px 0 6px;
 }
 
 .sensor-row .menu__text--status {
@@ -1424,6 +1444,14 @@ body {
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+/* The status row while the phone's own sensor is active: it says so and
+ * that is all — no chevron, no tap target, nothing that reads as a way
+ * into the EasyLevel box's status page (#244). */
+.sensor-row__status-button--plain {
+  cursor: default;
+  text-align: left;
 }
 
 .sensor-row__chevron {
@@ -1692,8 +1720,15 @@ body {
 
 /* ---- Settings form ---- */
 
+/* `minmax(0, 1fr)`, not the implicit `auto` track: an auto track is sized
+ * to its widest item's max-content and then overflows a narrower grid
+ * container rather than capping the item. The tab strip's five labels came
+ * to 344px, so on a 320px phone the whole settings page scrolled sideways
+ * — and `min-width: 0` on the item alone does not help, because it is the
+ * track that has to be told it may not exceed the container (#243). */
 .settings__form {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -1712,11 +1747,18 @@ body {
   color: var(--on-surface-muted);
 }
 
+/* Label on the left, control on the right — until the two together no
+ * longer fit, at which point the control drops to its own line rather
+ * than pushing the page sideways (#243: a German label plus its select
+ * came to 22px more than a 320px phone has). `min-width: 0` lets the
+ * label shrink and wrap instead of setting an unbreakable floor. */
 .settings__field {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
   font-size: 0.9rem;
 }
 
@@ -1951,15 +1993,22 @@ body {
   gap: 8px;
 }
 
+/* Wraps rather than overflows: "Änderungen verwerfen" next to two more
+ * buttons does not fit a 320px phone on one row (#243). */
 .settings__actions-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .settings__actions-row .menu__action {
   display: inline-block;
   width: auto;
-  flex: 1 1 0;
+  /* `1 1 auto` with a floor, not `1 1 0`: on one row they share the width
+   * evenly, and when a label needs more than a third of a narrow screen
+   * the row wraps instead of squeezing the text to nothing. */
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 10px 14px;
 }
 
@@ -1975,6 +2024,10 @@ body {
 
 .settings__select {
   font: inherit;
+  /* Never wider than the row it sits in — a long ramp-model name would
+   * otherwise set the width for the whole settings page (#243). */
+  max-width: 100%;
+  min-width: 0;
   padding: 6px 8px;
   color: var(--on-surface);
   background: var(--surface);
@@ -2001,13 +2054,32 @@ body {
 
 /* ---- Modern settings tabs (#108): Fordon / Klossar / Kalibrering ---- */
 
+/* A flex item's default `min-width: auto` is its content, so five
+ * uppercase tab labels set a floor the strip could not go below — on a
+ * 320px phone that floor was 344px, and the whole settings page scrolled
+ * sideways with it (#243). The strip now scrolls within itself instead,
+ * the standard tab-strip behaviour, so no label is shrunk or truncated
+ * and the page never moves horizontally. */
 .settings__tabs {
   display: flex;
   gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  /* The strip is short and self-evidently swipeable; a scrollbar across
+   * the tabs would cost more than it explains. */
+  scrollbar-width: none;
+}
+
+.settings__tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .settings__tab {
-  flex: 1;
+  /* Grow to share the width when they all fit, never shrink below the
+   * label when they do not. */
+  flex: 1 0 auto;
+  min-width: 0;
+  white-space: nowrap;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
@@ -2030,6 +2102,7 @@ body {
 .settings__tabpanel {
   padding-top: 12px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -2333,11 +2406,13 @@ body {
 .incoming-setup {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100svh;
   z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
   background: rgb(0 0 0 / 45%);
 }
 
@@ -2444,13 +2519,15 @@ body {
 .menu-page {
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100svh;
   z-index: 12;
   background: var(--surface);
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
-  padding: calc(6px + env(safe-area-inset-top)) 16px 24px;
+  padding: calc(6px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
   /* Pushes in from the side like the phone-app pattern it follows
    * (#105) — a fade alone would not read as "a page opened". */
   opacity: 0;

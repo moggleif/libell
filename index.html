@@ -26,12 +26,16 @@
       </button>
       <div class="topbar__actions">
         <div id="indicators" class="topbar__indicators"></div>
-        <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
       </div>
-      <!-- The sensor-status icon is appended here by main.ts — last on
-           purpose, so it always owns the top-right corner (everything
-           else, Install included, wraps or shifts to its left). -->
-      <div id="sensor-slot" class="topbar__sensor-slot"></div>
+      <!-- The pinned top-right corner: Install directly left of the
+           sensor-status icon (whose element main.ts appends into the slot
+           below). Pinned rather than in flow so the pair always owns the
+           corner and everything else wraps or shifts to its left — the
+           warning lamps above included, which keep their own place. -->
+      <div id="topbar-corner" class="topbar__corner">
+        <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
+        <div id="sensor-slot" class="topbar__sensor-slot"></div>
+      </div>
     </header>
     <p id="install-hint" class="install-hint" hidden></p>
     <main id="app" class="app"></main>

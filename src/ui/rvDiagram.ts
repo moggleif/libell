@@ -248,7 +248,18 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
     r: '11',
     class: 'rv-diagram__bubble-ring',
   });
-  const bubble = svgEl('circle', { r: '8', class: 'rv-diagram__bubble' });
+  // Starts in its dial, not at the SVG origin (#244): an SVG circle with
+  // no cx/cy defaults to 0,0, so until the first sensor reading arrived
+  // the bubble sat in the drawing's top-left corner, half of it clipped
+  // by the edge — a stray half-disc on screen every time a reading was
+  // slow (an EasyLevel box connecting, a sensor waking up). The state
+  // below already started at the centre; only the element did not.
+  const bubble = svgEl('circle', {
+    r: '8',
+    cx: String(CLASSIC_BUBBLE_CENTER.x),
+    cy: String(CLASSIC_BUBBLE_CENTER.y),
+    class: 'rv-diagram__bubble',
+  });
   svg.append(dial, ring, bubble);
 
   container.append(svg);
@@ -560,7 +571,14 @@ function createModernDiagram(): RvDiagram {
     r: '13',
     class: 'rv-diagram__bubble-ring',
   });
-  const bubble = svgEl('circle', { r: '10', class: 'rv-diagram__bubble' });
+  // Starts in its dial rather than at the SVG origin — see the Classic
+  // bubble above for why (#244).
+  const bubble = svgEl('circle', {
+    r: '10',
+    cx: String(MODERN_BUBBLE_CENTER.x),
+    cy: String(MODERN_BUBBLE_CENTER.y),
+    class: 'rv-diagram__bubble',
+  });
   svg.append(dial, ring, bubble);
 
   stage.append(svg, cardLayer);

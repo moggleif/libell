@@ -996,11 +996,13 @@ unannounced switch could show a plausible-looking but wrong reading.
 
 - **Given** the app loads, on any screen width
 - **Then** the top bar shows only identity on the left (logo, title, share) and the
-  actions cluster on the right — no menu button there. The sensor-status icon always
-  keeps the top-right corner whenever it is visible; the warning lamps, target badge
-  and Install button (R20) sit in a row to its left and are the ones that move when
-  space runs out, wrapping onto further right-aligned rows below — never pushing the
-  sensor icon out of the corner and never overlapping the identity group. The install
+  actions cluster on the right — no menu button there. The Install button (R20) and the
+  sensor-status icon keep the top-right corner together, Install immediately to the icon's
+  left (#244), and neither ever moves; the warning lamps and target badge sit to their
+  left and are the ones that move when space runs out, wrapping onto further
+  right-aligned rows below — never pushing the corner pair out of place and never
+  overlapping the identity group. The bar reserves the corner's own measured width, so
+  the reservation holds whatever language the Install label is in. The install
   prompt (R20) is otherwise unaffected, still using the
   `#install-hint` banner under the top bar. The sensor-status icon (R32/R33,
   screen-cleanup follow-up) is now the _only_ way to reach External sensor — it
@@ -1069,14 +1071,21 @@ answers "which source, and how do I connect it", and this page answers everythin
 about one specific box. It is titled for that box ("EasyLevel sensor") rather than
 "Sensor status", since configuration lives here too.
 
-- **Given** the External sensor page
-- **When** I tap the sensor's status row (the same text that already says "Using the
-  phone's own sensor" / "Connected to the EasyLevel sensor" / etc.)
+- **Given** the External sensor page with EasyLevel as the active source
+- **When** I tap the sensor's status row ("Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state, battery,
   temperature (R32's exact values and wording) and a live reading —
   the same calibrated roll/pitch the leveling math itself uses — so a box can be
-  confirmed alive by watching the number move, without leaving this page. This much
-  works for either sensor source, the phone's own included.
+  confirmed alive by watching the number move, without leaving this page.
+- **Given** the phone's own sensor is the active source (#244)
+- **Then** that row is plain text — it says "Using the phone's own sensor" and offers no
+  chevron and nothing to tap. The page behind it is one specific box's own, so a row that
+  has just said the phone is in use must not lead there; the way to a box is the Connect
+  button above it, not a status line about something else.
+- **Given** the row separating the two (#244)
+- **Then** it is set clearly apart from the Connect button above it, rather than sitting
+  tight underneath it where it reads as part of that button instead of as the sensor it
+  reports on.
 - **Given** EasyLevel is (or was) the active source
 - **Then** below those rows, and above the debug disclosure, the same page carries
   this box's own settings: the mounting picker (R43) and the installation offset
@@ -1290,3 +1299,40 @@ everything above that seam is exactly the code a real box runs through.
   the old Web Bluetooth check.
 - **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
   the real transport is not even constructed.
+
+## R45 — Every view fits a phone screen (#239, #241, #243)
+
+R4 and R18 state this for the level view and the first-run guide. It holds for every
+other view too — settings, help, the external-sensor page, the iOS sensor guide (R39),
+the incoming shared-setup dialog, the Classic settings drawer.
+
+- **Given** any view, on any phone from 320 px wide upward, in either appearance and in
+  every shipped language
+- **Then** the page never scrolls sideways, and nothing is wider than the container it
+  sits in — except a deliberate horizontal scroller, which is what makes a tab strip
+  swipeable rather than a defect.
+- **Given** a view whose content is legitimately longer than the screen (settings, help)
+- **Then** it scrolls within itself, and scrolling it to the end brings its last content
+  fully into view: no container extends past the visible viewport, and nothing is
+  stranded behind a browser toolbar or the home indicator.
+- **Given** any full-screen container
+- **Then** it is sized to the _small_ viewport (the height with the browser's toolbars
+  showing) and pads its bottom by `env(safe-area-inset-bottom)`. On iOS a
+  `position: fixed; inset: 0` box is laid out against the toolbar-free large viewport
+  while the visible height is the small one, which strands its bottom behind Safari's
+  bar with nothing to scroll.
+- **Given** the checks that enforce all of the above (`npm run fit`)
+- **Then** they open each view the way a user reaches it — the incoming-setup dialog via
+  a share link the app itself produces — and the last requirement above is checked
+  against the stylesheet rather than at runtime, because no browser available in CI
+  reproduces the iOS viewport behaviour it guards against.
+
+## R46 — The bubble starts in its dial (#244)
+
+- **Given** the level screen is drawn but no sensor reading has arrived yet — an EasyLevel
+  box still connecting, a phone sensor waking up, a permission prompt still open
+- **Then** the bubble is already in the middle of its dial, where a spirit level's bubble
+  sits at rest. It is never drawn at the diagram's origin: an SVG circle with no `cx`/`cy`
+  defaults to `0,0`, which put it in the drawing's top-left corner with half of it clipped
+  by the edge — a stray half-disc on screen with no relation to anything. This holds for
+  the motorhome diagram in both appearances and for the caravan diagram.

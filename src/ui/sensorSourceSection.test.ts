@@ -201,29 +201,60 @@ describe('createSensorSourceSection (#116)', () => {
 
   // The sensor row's status text doubles as a button opening the deeper
   // status page (`easyLevelStatusPage.ts`) — but only when a caller
-  // actually wants that wired up.
+  // actually wants that wired up, and only while the box that page
+  // describes is the active source (#244).
   describe('onOpenStatus (status row opens the deeper status page)', () => {
-    function statusButton(root: HTMLElement): HTMLButtonElement {
-      return [...root.querySelectorAll('button')].find((b) =>
-        b.textContent?.includes('Using the phone'),
-      )!;
+    // By class, not by wording: the row's text changes with the active
+    // source, which is the very thing these tests vary.
+    function statusRow(root: HTMLElement): HTMLButtonElement {
+      return root.querySelector<HTMLButtonElement>('.sensor-row__status-button')!;
     }
 
-    it('clicking the status row calls onOpenStatus when one is supplied', () => {
+    it('clicking the status row opens the status page while EasyLevel is the active source', () => {
+      const onOpenStatus = vi.fn();
+      const section = createSensorSourceSection(
+        makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'granted' }),
+        onOpenStatus,
+      );
+      statusRow(section.element).click();
+      expect(onOpenStatus).toHaveBeenCalledOnce();
+    });
+
+    it("is plain text while the phone is the active source — the page behind it is the box's (#244)", () => {
       const onOpenStatus = vi.fn();
       const section = createSensorSourceSection(makeOptions(), onOpenStatus);
-      statusButton(section.element).click();
+      const row = statusRow(section.element);
+      row.click();
+      expect(onOpenStatus).not.toHaveBeenCalled();
+      // And it does not offer itself as a way in, either.
+      expect(row.querySelector('.sensor-row__chevron')?.hasAttribute('hidden')).toBe(true);
+      expect(row.getAttribute('aria-disabled')).toBe('true');
+    });
+
+    it('becomes a link again as soon as the box is the active source', () => {
+      let source = 'phone';
+      const onOpenStatus = vi.fn();
+      const section = createSensorSourceSection(
+        makeOptions({ getSensorSource: () => source as 'phone' | 'easylevel' }),
+        onOpenStatus,
+      );
+      source = 'easylevel';
+      section.refresh();
+      const row = statusRow(section.element);
+      expect(row.querySelector('.sensor-row__chevron')?.hasAttribute('hidden')).toBe(false);
+      expect(row.hasAttribute('aria-disabled')).toBe(false);
+      row.click();
       expect(onOpenStatus).toHaveBeenCalledOnce();
     });
 
     it('never throws when no onOpenStatus is supplied — an inert row, not a broken one', () => {
       const section = createSensorSourceSection(makeOptions());
-      expect(() => statusButton(section.element).click()).not.toThrow();
+      expect(() => statusRow(section.element).click()).not.toThrow();
     });
 
     it('renders the status as a real button either way, so the deeper page stays reachable by keyboard', () => {
       const section = createSensorSourceSection(makeOptions());
-      expect(statusButton(section.element).tagName).toBe('BUTTON');
+      expect(statusRow(section.element).tagName).toBe('BUTTON');
     });
   });
 });

@@ -25,21 +25,35 @@ npm run fit           # Playwright: it all fits a phone screen (needs `build` fi
 ```
 
 The two Playwright scripts need a build to serve, so they are not part of the
-pre-commit set — CI runs them after `build`. `fit` (#239, #241) walks the level view
-and every step of the first-run wizard against small-phone viewports, in both
-appearances and all five languages, and fails on anything below the fold, any content
-that has to scroll, a diagram taller than the space it was given, or a wheel card that
-has drifted off its wheel. It exists because the unit tests cannot catch any of that:
-Vitest runs in happy-dom, which has no layout engine, so every height it measures is
-zero. When you add or grow a wizard step, or change the level view's layout, this is
-the check that tells you it still fits.
+pre-commit set — CI runs them after `build`. `fit` (#239, #241, #243) opens **every**
+view — level, first-run guide, settings, help, external sensor, the iOS sensor guide,
+the incoming shared-setup dialog — against small-phone viewports, in both appearances
+and all five languages, and fails on anything below the fold, a page that scrolls
+sideways, content wider than its container, a view whose end cannot be scrolled to, a
+diagram taller than the space it was given, or a wheel card that has drifted off its
+wheel. It exists because the unit tests cannot catch any of that: Vitest runs in
+happy-dom, which has no layout engine, so every height and width it measures is zero.
+Whenever you add a view, add a step, or change a layout, this is the check that tells
+you it still fits.
 
-Two things to know if you extend it. It seeds preferences through the **real**
-localStorage keys (`libell.settings` for the settings object, `libell.language` on its
-own — see `src/data/settingsStore.ts`); write anything else and every run silently
-falls back to the defaults, which quietly collapses the whole sweep to one combination
-tested many times. And the level view is only reachable with `?demo`, since a CI
-machine has no motion sensor.
+It ends with a **static** check over `styles.css`, which is not a stylistic
+preference: on iOS a `position: fixed; inset: 0` box is laid out against the
+toolbar-free _large_ viewport while `window.innerHeight` is the small one, so its
+bottom sits behind Safari's bar with nothing to scroll. Chromium makes the two
+identical, so the bug is invisible at runtime here — every full-screen container is
+therefore required, in the stylesheet, to set `height: 100svh` (with `100vh` above it
+as the fallback) and to pad its bottom by `env(safe-area-inset-bottom)`. Add a
+full-screen container and you must add it to `VIEW_CONTAINERS` in the script.
+
+Three more things to know if you extend it. It seeds preferences through the **real**
+localStorage keys (`libell.settings` for the settings object, `libell.language` and
+`libell.onboarded` on their own — see `src/data/settingsStore.ts`); write anything else
+and every run silently falls back to the defaults, which quietly collapses the whole
+sweep to one combination tested many times. The level view is only reachable with
+`?demo`, since a CI machine has no motion sensor. And the incoming-setup view is
+reached by pressing the app's own "share vehicle setup" button and opening the link it
+produces — `.settings__share-vehicle` is a stable hook for exactly that, so the test
+does not have to carry a copy of the i18n table.
 
 ## Testing on a real phone
 

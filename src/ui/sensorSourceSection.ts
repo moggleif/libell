@@ -213,13 +213,21 @@ export function createSensorSourceSection(
   status.className = 'menu__text menu__text--status sensor-row__status-button';
   const statusText = document.createElement('span');
   status.append(statusText);
+  // The chevron and the click only make sense while an EasyLevel box is
+  // the active source, since the page behind them is that box's own
+  // status page. While the phone's own sensor is active the row says so
+  // and is a plain status line — nothing to tap (#244): it used to offer
+  // a chevron into the EasyLevel status page from a row that had just
+  // said the phone was in use.
+  const chevron = document.createElement('span');
   if (onOpenStatus) {
-    const chevron = document.createElement('span');
     chevron.className = 'sensor-row__chevron';
     chevron.setAttribute('aria-hidden', 'true');
     chevron.textContent = '›';
     status.append(chevron);
-    status.addEventListener('click', onOpenStatus);
+    status.addEventListener('click', () => {
+      if (options.getSensorSource() === 'easylevel') onOpenStatus();
+    });
   }
   const disconnectButton = document.createElement('button');
   disconnectButton.type = 'button';
@@ -359,6 +367,14 @@ export function createSensorSourceSection(
   function refresh(): void {
     refreshButtons();
     const active = options.getSensorSource() === 'easylevel';
+    // Plain text, not a link, whenever the box is not the active source —
+    // see the chevron's own comment above (#244).
+    if (onOpenStatus) {
+      chevron.hidden = !active;
+      status.classList.toggle('sensor-row__status-button--plain', !active);
+      if (active) status.removeAttribute('aria-disabled');
+      else status.setAttribute('aria-disabled', 'true');
+    }
     statusText.textContent = !active
       ? t('sensorSource.status.phone')
       : options.getSensorState() === 'disconnected'

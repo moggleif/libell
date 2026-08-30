@@ -95,3 +95,14 @@ describe('caravanDiagram', () => {
     expect(diagram.element.querySelector('.rv-diagram__step-label')!.textContent).toBe('');
   });
 });
+
+// Same as the motorhome diagrams — see rvDiagram.test.ts (#244).
+describe('the caravan bubble starts in its dial, not at the SVG origin (#244)', () => {
+  it('has its dial coordinates before any reading is applied', () => {
+    const diagram = createCaravanDiagram();
+    const bubble = diagram.element.querySelector('.rv-diagram__bubble')!;
+    const dial = diagram.element.querySelector('.rv-diagram__bubble-dial')!;
+    expect(Number(bubble.getAttribute('cx'))).toBeCloseTo(Number(dial.getAttribute('cx')), 5);
+    expect(Number(bubble.getAttribute('cy'))).toBeCloseTo(Number(dial.getAttribute('cy')), 5);
+  });
+});
