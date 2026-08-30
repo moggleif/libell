@@ -20,7 +20,17 @@ npm run typecheck     # tsc --noEmit, app + tooling configs
 npm run test          # Vitest unit tests
 npm run build         # icons + typecheck + production build into dist/
 npm run preview       # serve the production build locally
+npm run smoke         # Playwright: the built app renders (needs `build` first)
+npm run fit           # Playwright: the guide fits a phone screen (needs `build` first)
 ```
+
+The two Playwright scripts need a build to serve, so they are not part of the
+pre-commit set — CI runs them after `build`. `fit` (#239) walks every step of the
+first-run wizard against small-phone viewports, in both appearances and all five
+languages, and fails on any step whose content does not fit or whose "Next" button
+lands below the fold. It exists because the unit tests cannot catch that: Vitest runs
+in happy-dom, which has no layout engine, so every height it measures is zero. When
+you add or grow a wizard step, this is the check that tells you it still fits.
 
 ## Testing on a real phone
 
