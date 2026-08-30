@@ -280,3 +280,30 @@ describe('rvDiagram — modern appearance (#106)', () => {
     expect(diagram.element.classList.contains('rv-diagram--modern')).toBe(false);
   });
 });
+
+// #244: the bubble is an SVG circle, and a circle with no cx/cy defaults
+// to 0,0 — the drawing's top-left corner. Until the first sensor reading
+// arrived it sat there, half of it clipped by the SVG's edge, showing as
+// a stray half-disc on screen. Every path that can delay a first reading
+// hit it: an EasyLevel box connecting, a phone sensor waking up, a
+// permission prompt still open.
+describe('the bubble starts in its dial, not at the SVG origin (#244)', () => {
+  for (const appearance of ['classic', 'modern'] as const) {
+    it(`${appearance}: has real coordinates before any reading is applied`, () => {
+      const diagram = createRvDiagram('single', appearance);
+      const bubble = diagram.element.querySelector('.rv-diagram__bubble')!;
+      const cx = Number(bubble.getAttribute('cx'));
+      const cy = Number(bubble.getAttribute('cy'));
+      expect(Number.isFinite(cx)).toBe(true);
+      expect(Number.isFinite(cy)).toBe(true);
+      expect(cx).toBeGreaterThan(0);
+      expect(cy).toBeGreaterThan(0);
+
+      // And it starts where its own dial is drawn, not merely somewhere
+      // on the canvas.
+      const dial = diagram.element.querySelector('.rv-diagram__bubble-dial')!;
+      expect(cx).toBeCloseTo(Number(dial.getAttribute('cx')), 5);
+      expect(cy).toBeCloseTo(Number(dial.getAttribute('cy')), 5);
+    });
+  }
+});

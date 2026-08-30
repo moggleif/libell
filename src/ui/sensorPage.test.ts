@@ -73,15 +73,26 @@ describe('createSensorPage', () => {
   // Sensor status page (screen-cleanup follow-up to #133/#129): tapping the
   // sensor row opens a deeper, separately-attached page.
   describe('the nested status page', () => {
-    it('starts closed, and clicking the sensor row opens it', () => {
-      const page = createSensorPage(makeOptions());
+    it('starts closed, and clicking the sensor row opens it once the box is the source', () => {
+      // The row only leads anywhere while EasyLevel is actually the active
+      // source — the page behind it is that box's own (#244).
+      const page = createSensorPage(
+        makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'granted' }),
+      );
       expect(page.statusElement.hasAttribute('hidden')).toBe(true);
-      const statusButton = [...page.element.querySelectorAll('button')].find((b) =>
-        b.textContent?.includes('Using the phone'),
+      const statusButton = page.element.querySelector<HTMLButtonElement>(
+        '.sensor-row__status-button',
       )!;
       statusButton.click();
       expect(page.statusElement.hasAttribute('hidden')).toBe(false);
       expect(page.statusElement.textContent).toContain('EasyLevel sensor');
+    });
+
+    it('stays closed while the phone is the source — that row is plain text (#244)', () => {
+      const page = createSensorPage(makeOptions());
+      const row = page.element.querySelector<HTMLButtonElement>('.sensor-row__status-button')!;
+      row.click();
+      expect(page.statusElement.hasAttribute('hidden')).toBe(true);
     });
 
     it('puts the connect half on the list page and the settings half on the sensor page (#226)', () => {

@@ -358,7 +358,11 @@ export function createSettingsForm(
   // is nothing saved yet worth sharing at that point.
   const shareVehicleButton = document.createElement('button');
   shareVehicleButton.type = 'button';
-  shareVehicleButton.className = 'menu__action menu__action--secondary';
+  // The trailing class is a stable hook for the fit test, which has to
+  // reach the incoming-setup view the way a real user does — by producing
+  // a real share link from this button (scripts/fit-test.mjs). Matching on
+  // the label instead would mean duplicating the i18n table in the test.
+  shareVehicleButton.className = 'menu__action menu__action--secondary settings__share-vehicle';
   shareVehicleButton.textContent = t('settings.shareVehicle');
   shareVehicleButton.addEventListener('click', () => {
     formOptions?.onShareVehicleSetup?.(currentSettings());
