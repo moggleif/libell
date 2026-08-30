@@ -1,13 +1,29 @@
-// Fit test (#239, #241): Libell is a one-screen app — the level view and
-// every step of the first-run guide have to fit a phone screen, with
-// nothing below the fold and no scrolling. This walks both against
-// small-phone viewports and fails on anything that does not fit.
+// Fit test (#239, #241, #243): Libell has to fit a phone screen. Every
+// view is opened against small-phone viewports, in both appearances and
+// all five languages, and checked for the ways a layout stops fitting —
+// content below the fold, a page that scrolls sideways, something that
+// cannot be reached at all.
 //
-// It exists because the unit tests cannot catch this class of bug at all:
-// they run in happy-dom, which has no layout engine, so every height they
-// measure is zero and a view that overflows an iPhone by 300 px passes
-// them happily. Run after `npm run build`; CI runs it on every branch.
-// Exits non-zero on the first thing that does not fit.
+// It exists because the unit tests cannot catch any of this: they run in
+// happy-dom, which has no layout engine, so every height and width they
+// measure is zero, and a view that overflows an iPhone by 300 px passes
+// them happily.
+//
+// Two kinds of check, because one browser cannot see everything:
+//
+//   * Runtime, below: what Chromium can measure — overflow, reachability,
+//     the level view's geometry, each guide step's fit.
+//   * Static, at the end: the one rule Chromium *cannot* reproduce. On iOS
+//     a `position: fixed; inset: 0` box is laid out against the
+//     toolbar-free LARGE viewport while `window.innerHeight` is the small
+//     one, so the bottom of such a box sits behind Safari's bar with
+//     nothing to scroll. In Chromium the two viewports are identical and
+//     the bug is invisible, so the rule is enforced against the
+//     stylesheet instead.
+//
+// Run after `npm run build`; CI runs it on every branch. Exits non-zero
+// on anything that does not fit.
+import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
@@ -19,31 +35,50 @@ const BASE = `http://localhost:${PORT}/libell/`;
 
 // CSS pixels actually visible to the page, not the phone's spec sheet:
 // Safari's own toolbars take ~114 px of an iPhone SE and ~107 px of an
-// iPhone 15. The SE in Safari is the tightest screen anyone can install
-// this on; if a view fits there it fits every current iPhone. Anything
-// taller than the 15 in Safari is strictly more room, so testing it would
-// only cost time.
+// iPhone 15. 320 px wide is the narrowest phone still in use and the one
+// that catches horizontal overflow; the SE in Safari is the tightest
+// height anyone can install this on. Anything taller or wider than the
+// iPhone 15 in Safari is strictly more room.
+// `fitsWhole` is the stricter promise — every view fits with no scrolling
+// at all — and it is made for the phones this app actually targets. The
+// 320x480 entry is an iPhone 5 / SE-1 in Safari: it is here for the
+// horizontal checks, which is where a 320px screen bites, and it still
+// gets every reachability check; it is simply not held to fitting the
+// longest German guide step without scrolling its body, which on that
+// screen would mean type too small to read. Its controls stay pinned
+// either way — that is what R18 guarantees everywhere.
 const VIEWPORTS = [
-  { name: 'iPhone SE, Safari', width: 375, height: 553 },
-  { name: 'iPhone SE, installed', width: 375, height: 667 },
-  { name: 'iPhone 15, Safari', width: 393, height: 745 },
+  { name: '320x480', width: 320, height: 480, fitsWhole: false },
+  { name: 'iPhone SE, Safari', width: 375, height: 553, fitsWhole: true },
+  { name: 'iPhone 15, Safari', width: 393, height: 745, fitsWhole: true },
 ];
+const TIGHTEST = VIEWPORTS[1];
 
-// Every shipped language: German and Swedish wrap to more lines than
-// English on the same button, and a view that fits in one language can
-// overflow in another.
+// Every shipped language: German and French wrap to more lines, and run
+// wider on a button, than the English — a view that fits in one language
+// can overflow in another.
 const LANGUAGES = ['sv', 'en', 'fr', 'es', 'de'];
 
-// Classic and Modern build different DOM for the same content (illustrated
-// legend vs. swatch rows, different type scale), so both are walked.
+// Classic and Modern build different DOM for the same content, and
+// Classic's settings is a drawer where Modern's is a page.
 const APPEARANCES = ['classic', 'modern'];
 
 // The real keys settingsStore.ts reads — settings as one JSON object,
-// language on its own. Writing anything else (a made-up ".v1" suffix, say)
-// silently leaves every run on the defaults, which would quietly reduce
-// this whole sweep to one combination tested many times.
+// language and the onboarding flag on their own. Writing anything else
+// (a made-up ".v1" suffix, say) silently leaves every run on the
+// defaults, which would quietly reduce this whole sweep to one
+// combination tested many times over.
 const SETTINGS_KEY = 'libell.settings';
 const LANGUAGE_KEY = 'libell.language';
+const ONBOARDED_KEY = 'libell.onboarded';
+
+const IOS_UA =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+
+// Every container that covers the screen in its own right. Anything open
+// gets the reachability checks below, and each is held to the iOS rule at
+// the end of this file.
+const VIEW_CONTAINERS = ['.menu-page', '.onboarding', '.menu', '.incoming-setup'];
 
 const failures = [];
 let checked = 0;
@@ -52,31 +87,90 @@ function fail(label, what) {
   failures.push(`${label} | ${what}`);
 }
 
-/** Loads the app with the given preferences already stored. */
-async function open(browser, viewport, appearance, language, query = '') {
-  const page = await browser.newPage({
-    viewport: { width: viewport.width, height: viewport.height },
-  });
-  await page.goto(BASE + query);
-  await page.evaluate(
-    ([settingsKey, languageKey, appearance, language]) => {
-      localStorage.clear();
-      localStorage.setItem(settingsKey, JSON.stringify({ appearance }));
-      localStorage.setItem(languageKey, language);
-    },
-    [SETTINGS_KEY, LANGUAGE_KEY, appearance, language],
-  );
-  await page.reload();
-  return page;
+/**
+ * The checks that apply to every view, whatever it contains: the page
+ * never moves sideways, nothing sits outside the screen it is drawn on,
+ * and anything that scrolls can be scrolled to its end.
+ */
+async function auditView(page, label) {
+  await page.waitForTimeout(250);
+  const r = await page.evaluate((selectors) => {
+    const de = document.documentElement;
+    const open = selectors
+      .flatMap((s) => [...document.querySelectorAll(s)])
+      .filter((e) => !e.hidden && e.getBoundingClientRect().height > 0);
+
+    // Content inside a deliberate horizontal scroller (a tab strip) is
+    // meant to overflow — that is what makes it swipeable — so it is not
+    // a defect. Anything else wider than its container is.
+    const inScroller = (el, stopAt) => {
+      for (let p = el.parentElement; p && p !== stopAt; p = p.parentElement) {
+        const ox = getComputedStyle(p).overflowX;
+        if (ox === 'auto' || ox === 'scroll') return true;
+      }
+      return false;
+    };
+
+    const containers = open.map((el) => {
+      const box = el.getBoundingClientRect();
+      // Scroll to the end and see whether the last thing in the view
+      // actually comes into sight.
+      const before = el.scrollTop;
+      el.scrollTop = el.scrollHeight;
+      const last = el.lastElementChild?.getBoundingClientRect();
+      const lastBottomAtEnd = last ? last.bottom : null;
+      el.scrollTop = before;
+
+      const wide = [...el.querySelectorAll('*')]
+        .filter((n) => {
+          const nb = n.getBoundingClientRect();
+          return nb.width > 0 && nb.right > box.left + el.clientWidth + 0.5 && !inScroller(n, el);
+        })
+        .map((n) => `${n.tagName.toLowerCase()}.${(n.getAttribute('class') ?? '').split(' ')[0]}`);
+
+      return {
+        cls: el.className.split(' ')[0],
+        bottom: box.bottom,
+        lastBottomAtEnd,
+        wide: [...new Set(wide)].slice(0, 3),
+      };
+    });
+
+    return {
+      pageSideways: de.scrollWidth - de.clientWidth,
+      innerHeight: window.innerHeight,
+      containers,
+    };
+  }, VIEW_CONTAINERS);
+  checked += 1;
+
+  if (r.pageSideways > 0) {
+    fail(label, `the page scrolls sideways by ${Math.round(r.pageSideways)}px`);
+  }
+  for (const c of r.containers) {
+    if (c.bottom > r.innerHeight + 0.5) {
+      fail(label, `${c.cls} extends ${Math.round(c.bottom - r.innerHeight)}px past the screen`);
+    }
+    if (c.lastBottomAtEnd !== null && c.lastBottomAtEnd > r.innerHeight + 0.5) {
+      fail(
+        label,
+        `${c.cls}: scrolled to the end, its last content is still ` +
+          `${Math.round(c.lastBottomAtEnd - r.innerHeight)}px below the screen`,
+      );
+    }
+    if (c.wide.length > 0) {
+      fail(label, `${c.cls}: ${c.wide.join(', ')} overflow it horizontally`);
+    }
+  }
 }
 
 /**
- * The level view: everything from the top bar to the version footer has
- * to be on screen at once, the page must not scroll, and the diagram has
- * to keep the drawing's proportions with each wheel card still sitting on
- * the wheel it describes (#241).
+ * The level view on top of that: it is the one view that must fit whole,
+ * with nothing below the fold and no scrolling at all, and its diagram
+ * has to keep the drawing's proportions with each wheel card still
+ * sitting on the wheel it describes (#241).
  */
-async function checkLevelScreen(page, label) {
+async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
   await page.waitForSelector('.rv-diagram svg');
   // The bubble settles and the wheel cards fill in after the first frame.
   await page.waitForTimeout(400);
@@ -116,10 +210,10 @@ async function checkLevelScreen(page, label) {
       innerHeight: window.innerHeight,
       footerBottom: footer ? footer.getBoundingClientRect().bottom : null,
       bottombarBottom: bottombar ? bottombar.getBoundingClientRect().bottom : null,
-      // The drawing's own top and bottom on screen, mapped through the
-      // SVG's transform: the box around it is deliberately wider than the
-      // drawing (the wheel cards live in that margin), so the box's shape
-      // says nothing — where the drawing actually lands does.
+      // The drawing's own top and bottom on screen: the box around it is
+      // deliberately wider than the drawing (the wheel cards live in that
+      // margin), so the box's shape says nothing — where the drawing
+      // actually lands does.
       drawingTop: screenY(0),
       drawingBottom: screenY(vb.height),
       boxTop: box.top,
@@ -128,16 +222,15 @@ async function checkLevelScreen(page, label) {
       wheelScreenYs: cards.map((c) => (c.wheelY === null ? null : screenY(c.wheelY))),
     };
   });
-  checked += 1;
 
-  if (result.pageOverflow > 0) {
+  if (fitsWhole && result.pageOverflow > 0) {
     fail(label, `level view: the page scrolls by ${Math.round(result.pageOverflow)}px`);
   }
   for (const [name, bottom] of [
     ['action bar', result.bottombarBottom],
     ['version footer', result.footerBottom],
   ]) {
-    if (bottom !== null && bottom > result.innerHeight + 0.5) {
+    if (fitsWhole && bottom !== null && bottom > result.innerHeight + 0.5) {
       fail(
         label,
         `level view: the ${name} is ${Math.round(bottom - result.innerHeight)}px below the fold`,
@@ -188,12 +281,13 @@ async function checkLevelScreen(page, label) {
 }
 
 /**
- * One pass through the whole first-run guide, one assertion per step
- * (#239). With `external`, the sensor-source step's second radio is picked
- * as that step comes up — the only way to reach the external path, since
- * the radios do not exist until that step renders.
+ * The first-run guide: every step has to fit whole, and Back/Skip/Next are
+ * never allowed to leave the screen (#239). With `external`, the
+ * sensor-source step's second radio is picked as that step comes up — the
+ * only way to reach the external path, since the radios do not exist until
+ * that step renders.
  */
-async function checkWizard(page, label, { external = false } = {}) {
+async function checkWizard(page, label, { external = false, fitsWhole = true } = {}) {
   await page.waitForSelector('.onboarding');
   // 12 is past the longest path (11 steps with an external sensor); the
   // loop stops on its own when the wizard closes.
@@ -226,7 +320,7 @@ async function checkWizard(page, label, { external = false } = {}) {
     });
     if (!info) return;
     checked += 1;
-    if (info.overflow > 0) {
+    if (fitsWhole && info.overflow > 0) {
       fail(label, `guide step "${info.title}": content overflows by ${info.overflow}px`);
     }
     if (info.nextOffScreen) {
@@ -234,6 +328,25 @@ async function checkWizard(page, label, { external = false } = {}) {
     }
     await page.locator('.onboarding__nav > button').last().click({ force: true });
   }
+}
+
+/** Opens the app with the given preferences already stored. */
+async function open(context, appearance, language, { query = '', onboarded = true } = {}) {
+  const page = await context.newPage();
+  await page.goto(BASE + query);
+  await page.evaluate(
+    ([settingsKey, languageKey, onboardedKey, appearance, language, onboarded]) => {
+      localStorage.clear();
+      localStorage.setItem(settingsKey, JSON.stringify({ appearance }));
+      localStorage.setItem(languageKey, language);
+      // Without this the first-run guide auto-opens over whatever view is
+      // under test.
+      if (onboarded) localStorage.setItem(onboardedKey, '1');
+    },
+    [SETTINGS_KEY, LANGUAGE_KEY, ONBOARDED_KEY, appearance, language, onboarded],
+  );
+  await page.reload();
+  return page;
 }
 
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
@@ -260,48 +373,193 @@ try {
   );
 
   for (const viewport of VIEWPORTS) {
+    const context = await browser.newContext({
+      viewport: { width: viewport.width, height: viewport.height },
+    });
     for (const appearance of APPEARANCES) {
       for (const language of LANGUAGES) {
-        const label = `${viewport.name} / ${appearance} / ${language}`;
+        const at = (view) => `${viewport.name} / ${appearance} / ${language} / ${view}`;
 
-        // ?demo replaces the sensor with a fixed tilt and presents the app
-        // as configured, which is the only way to reach the level view on
-        // a machine with no motion sensor.
-        const level = await open(browser, viewport, appearance, language, '?demo=1');
-        await checkLevelScreen(level, label);
+        // --- Level view. `?demo` replaces the sensor with a fixed tilt and
+        // presents the app as configured, which is the only way to reach
+        // this view on a machine with no motion sensor.
+        const level = await open(context, appearance, language, { query: '?demo=1' });
+        await level.waitForSelector('.rv-diagram svg');
+        await checkLevelScreen(level, at('level'), { fitsWhole: viewport.fitsWhole });
+        await auditView(level, at('level'));
+
+        // --- Settings: a page in Modern, a drawer in Classic.
+        await level.locator('#settings-button').click();
+        await auditView(level, at('settings'));
+        await level.reload();
+        await level.waitForSelector('.rv-diagram svg');
+
+        // --- Help / info, the longest scrolling page in the app.
+        await level.locator('#help-button').click();
+        await auditView(level, at('help'));
         await level.close();
 
-        // Without ?demo the wizard auto-opens, this being a first run.
-        const wizard = await open(browser, viewport, appearance, language);
-        await checkWizard(wizard, label);
+        // --- External sensor page, via the simulated box.
+        const sim = await open(context, appearance, language, { query: '?demo=1&easylevel-sim' });
+        await sim.waitForSelector('.rv-diagram svg');
+        const sensorButton = sim.locator('#sensor-slot button');
+        if ((await sensorButton.count()) > 0) {
+          await sensorButton.click();
+          await auditView(sim, at('external sensor'));
+        }
+        await sim.close();
+
+        // --- Incoming vehicle setup, reached the way a real one is: the
+        // share link this app itself produces, opened fresh.
+        const sharer = await open(context, appearance, language, { query: '?demo=1' });
+        await sharer.waitForSelector('.rv-diagram svg');
+        // The vehicle-setup link comes from Settings, not the top bar's
+        // share button (which shares the app itself). Open Settings and
+        // find the button wherever this appearance puts it — a tab panel
+        // in Modern, a separate page in Classic.
+        await sharer.locator('#settings-button').click();
+        await sharer.waitForTimeout(300);
+        const shareUrl = await sharer.evaluate(async () => {
+          let captured = null;
+          Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+          Object.defineProperty(navigator, 'clipboard', {
+            value: { writeText: async (text) => void (captured = text) },
+            configurable: true,
+          });
+          // Walk whatever tabs or sub-pages this appearance shows until
+          // the vehicle section, and its share button, is on screen.
+          // Modern lays the sections out as tabs on one page; Classic's
+          // drawer lists them as items that each open their own page. Try
+          // each in turn until the vehicle section is showing.
+          const findButton = () => document.querySelector('.settings__share-vehicle');
+          if (!findButton()) {
+            const steps = [...document.querySelectorAll('.settings__tab, .menu__item')];
+            for (const step of steps) {
+              step.click();
+              await new Promise((r) => setTimeout(r, 120));
+              if (findButton()) break;
+            }
+          }
+          const button = findButton();
+          if (!button) return null;
+          button.click();
+          await new Promise((r) => setTimeout(r, 300));
+          return captured;
+        });
+        if (shareUrl && shareUrl.includes('#setup=')) {
+          await sharer.goto(shareUrl.replace(/^https?:\/\/[^/]+/, `http://localhost:${PORT}`));
+          await sharer.waitForTimeout(500);
+          await auditView(sharer, at('incoming setup'));
+        } else {
+          fail(at('incoming setup'), 'could not produce a share link to open the view with');
+        }
+        await sharer.close();
+
+        // --- The first-run guide, the one view that opens on its own when
+        // nothing has been stored yet.
+        const wizard = await open(context, appearance, language, { onboarded: false });
+        await checkWizard(wizard, at('guide'), { fitsWhole: viewport.fitsWhole });
         await wizard.close();
       }
     }
+    await context.close();
   }
 
-  // The external-sensor path adds a step and swaps the calibration pair
-  // for connect + installation offset. Its extra steps are no taller than
-  // the phone path's, so it is walked on the tightest screen only —
-  // enough to catch a step that does not fit, without doubling the run.
-  // ?easylevel-sim puts a simulated box behind the same gate real hardware
-  // would satisfy, which is what makes the wizard offer that step at all.
+  // --- iOS-only view: the Bluefy workaround guide (R39), which exists
+  // only on an iOS browser without Web Bluetooth.
+  const iosContext = await browser.newContext({
+    viewport: { width: TIGHTEST.width, height: TIGHTEST.height },
+    userAgent: IOS_UA,
+  });
+  for (const language of LANGUAGES) {
+    const label = `iOS / modern / ${language} / sensor guide`;
+    const page = await open(iosContext, 'modern', language, { query: '?demo=1' });
+    await page.waitForSelector('.rv-diagram svg');
+    const guideButton = page.locator('#sensor-slot button');
+    if ((await guideButton.count()) > 0) {
+      await guideButton.click();
+      await auditView(page, label);
+    } else {
+      fail(label, 'the iOS sensor guide could not be opened');
+    }
+    await page.close();
+  }
+  await iosContext.close();
+
+  // --- The external-sensor path through the guide adds a step and swaps
+  // the calibration pair for connect + installation offset. Its extra
+  // steps are no taller than the phone path's, so it is walked on the
+  // tightest screen only.
+  const tightest = await browser.newContext({
+    viewport: { width: TIGHTEST.width, height: TIGHTEST.height },
+  });
   for (const appearance of APPEARANCES) {
     for (const language of LANGUAGES) {
-      const page = await open(browser, VIEWPORTS[0], appearance, language, '?easylevel-sim');
-      await checkWizard(page, `${VIEWPORTS[0].name} / ${appearance} / ${language} / external`, {
+      const page = await open(tightest, appearance, language, {
+        query: '?easylevel-sim',
+        onboarded: false,
+      });
+      await checkWizard(page, `${TIGHTEST.name} / ${appearance} / ${language} / guide, external`, {
         external: true,
       });
       await page.close();
     }
   }
+  await tightest.close();
 } finally {
   if (browser) await browser.close();
   preview.kill();
 }
 
+// ---------------------------------------------------------------------
+// The static half: the iOS rule no browser here can reproduce.
+//
+// On iOS a `position: fixed; inset: 0` box is laid out against the
+// toolbar-free LARGE viewport while `window.innerHeight` is the small
+// one, so the bottom of that box — and any control in it — sits behind
+// Safari's bottom bar with nothing to scroll. In Chromium the two
+// viewports are identical, so every runtime check above passes happily on
+// a layout that is broken on the device this app is built for. Hence
+// this: every full-screen container must say, in the stylesheet, that it
+// is sized to the small viewport and that its bottom padding clears the
+// home indicator.
+// ---------------------------------------------------------------------
+const css = readFileSync(resolve(root, 'src/ui/styles.css'), 'utf8');
+
+for (const container of VIEW_CONTAINERS) {
+  const start = css.indexOf(`\n${container} {`);
+  if (start === -1) {
+    fail('stylesheet', `no rule found for the full-screen container ${container}`);
+    continue;
+  }
+  const block = css.slice(start, css.indexOf('}', start));
+  checked += 1;
+  if (!/position:\s*fixed/.test(block)) continue;
+
+  if (!/height:\s*100svh/.test(block)) {
+    fail(
+      'stylesheet',
+      `${container} is a full-screen fixed container but is not sized to the small viewport ` +
+        `(needs "height: 100svh", with "height: 100vh" above it as the fallback) — on iOS its ` +
+        `bottom would sit behind Safari's toolbar`,
+    );
+  }
+  // The bottom padding may live on the container or on the single child
+  // that holds its content, so accept either.
+  const childStart = css.indexOf(`\n${container}__drawer {`);
+  const childBlock = childStart === -1 ? '' : css.slice(childStart, css.indexOf('}', childStart));
+  if (!/env\(safe-area-inset-bottom\)/.test(block + childBlock)) {
+    fail(
+      'stylesheet',
+      `${container} does not pad its bottom by env(safe-area-inset-bottom) — its last control ` +
+        `would sit under the home indicator`,
+    );
+  }
+}
+
 if (failures.length > 0) {
-  console.error(`fit test failed — ${failures.length} problem(s) across ${checked} views:`);
+  console.error(`fit test failed — ${failures.length} problem(s) across ${checked} checks:`);
   for (const failure of failures) console.error(`  ${failure}`);
   process.exit(1);
 }
-console.log(`fit test passed — ${checked} views, all fit on one screen`);
+console.log(`fit test passed — ${checked} checks, every view fits a phone screen`);
