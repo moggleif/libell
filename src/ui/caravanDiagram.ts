@@ -157,7 +157,14 @@ export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): Caravan
     r: '11',
     class: 'rv-diagram__bubble-ring',
   });
-  const bubble = svgEl('circle', { r: '8', class: 'rv-diagram__bubble' });
+  // Starts in its dial rather than at the SVG origin — see the Classic
+  // bubble in rvDiagram.ts for why (#244).
+  const bubble = svgEl('circle', {
+    r: '8',
+    cx: String(BUBBLE_CENTER.x),
+    cy: String(BUBBLE_CENTER.y),
+    class: 'rv-diagram__bubble',
+  });
   svg.append(dial, ring, bubble);
 
   container.append(svg);

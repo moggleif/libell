@@ -127,6 +127,33 @@ const shareButton = document.querySelector<HTMLButtonElement>('#share-button');
 if (shareButton) setupShareButton(shareButton);
 
 if (installButton) installButton.textContent = t('topbar.install');
+
+// The pinned top-right corner (Install, then the sensor-status icon) sits
+// out of the flex flow, so the bar has to reserve its width or an in-flow
+// item can slide underneath it. Measured rather than assumed (#244): the
+// Install label's width differs per language, and the corner holds one
+// control, two, or none depending on what this browser offers.
+const topbarCorner = document.querySelector<HTMLElement>('#topbar-corner');
+
+function syncTopbarCorner(): void {
+  const bar = document.querySelector<HTMLElement>('.topbar');
+  if (!bar || !topbarCorner) return;
+  const width = topbarCorner.getBoundingClientRect().width;
+  bar.style.setProperty('--topbar-corner', `${Math.ceil(width)}px`);
+  bar.classList.toggle('topbar--has-corner', width > 0);
+}
+
+// Install appears and disappears on its own schedule — the browser fires
+// its prompt event well after load, and the button hides itself once the
+// app is installed — so the reservation follows the attribute rather than
+// being computed once at startup.
+if (installButton) {
+  new MutationObserver(syncTopbarCorner).observe(installButton, {
+    attributes: true,
+    attributeFilter: ['hidden'],
+  });
+}
+syncTopbarCorner();
 const settingsButtonEl = document.querySelector<HTMLButtonElement>('#settings-button');
 if (settingsButtonEl) settingsButtonEl.setAttribute('aria-label', t('bottombar.settings'));
 const helpButtonEl = document.querySelector<HTMLButtonElement>('#help-button');
@@ -821,14 +848,11 @@ function bootstrap(root: HTMLElement): void {
   const sensorStatus = createSensorStatusIndicator(easyLevelSupported, showIosGuide, () =>
     sensorPage?.open(),
   );
-  // Into its own pinned top-bar slot — not the #indicators cluster — so
-  // the icon always owns the top-right corner and the other top-bar
-  // items wrap or shift left of it. The topbar class reserves the
-  // corner's width (styles.css) only while the icon is actually shown.
+  // Into the pinned top-bar corner — not the #indicators cluster — so the
+  // icon and the Install button beside it always own the top-right
+  // corner and the other top-bar items wrap or shift left of them (#244).
   document.querySelector('#sensor-slot')?.append(sensorStatus.element);
-  document
-    .querySelector('.topbar')
-    ?.classList.toggle('topbar--has-sensor', !sensorStatus.element.hidden);
+  syncTopbarCorner();
   const updateSensorStatus = () => sensorStatus.update(sensor.getSource(), sensor.getState());
   updateSensorStatus();
 
