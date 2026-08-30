@@ -44,12 +44,20 @@ interface AxleRefs {
   liftLabel: SVGTextElement;
 }
 
+/** Same proportions as the motorhome's Classic drawing, and declared here
+ * for the same reason — see `CLASSIC_VIEWBOX` in `rvDiagram.ts` (#241). */
+const CARAVAN_VIEWBOX = { width: 240, height: 310 };
+
 export function createCaravanDiagram(axleConfig: AxleConfig = 'single'): CaravanDiagram {
   const container = document.createElement('div');
   container.className = 'rv-diagram';
+  container.style.setProperty(
+    '--diagram-aspect',
+    String(CARAVAN_VIEWBOX.width / CARAVAN_VIEWBOX.height),
+  );
 
   const svg = svgEl('svg', {
-    viewBox: '0 0 240 310',
+    viewBox: `0 0 ${CARAVAN_VIEWBOX.width} ${CARAVAN_VIEWBOX.height}`,
     role: 'img',
     'aria-label': t('diagram.caravan.aria'),
   });

@@ -43,10 +43,10 @@ jobs:
           npx playwright install --with-deps chromium
           npm run smoke
 
-      # The one check that can fail on a guide step growing taller than a
-      # phone screen (#239) — the unit tests run in happy-dom, which has
+      # The one check that can fail on a view growing taller than a phone
+      # screen (#239, #241) — the unit tests run in happy-dom, which has
       # no layout engine and so measures every height as zero.
-      - name: Onboarding fits one phone screen
+      - name: Level view and guide fit one phone screen
         run: npm run fit
 
       - name: Upload built site

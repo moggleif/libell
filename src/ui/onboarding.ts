@@ -655,6 +655,15 @@ export function showOnboarding(options: OnboardingOptions): void {
       if (pill && pill !== cardHeader.firstElementChild) heading.append(pill);
       cardHeader.remove();
     }
+    // Classic builds the same card without that header wrapper — a bare
+    // `h3.menu__heading` and no pill — so the duplicate is dropped by what
+    // it says rather than by where it sits. Matching on the text is the
+    // point, not a shortcut: it removes a heading only when the step
+    // heading above already carries those exact words, whatever component
+    // put it there and whatever the appearance calls it.
+    for (const embedded of body.querySelectorAll('h3')) {
+      if (embedded.textContent?.trim() === step.title.trim()) embedded.remove();
+    }
 
     const nav = document.createElement('div');
     nav.className = isModern ? 'onboarding__nav onboarding__nav--modern' : 'onboarding__nav';

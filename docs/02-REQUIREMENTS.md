@@ -64,6 +64,20 @@ URL and must keep working with no signal.
   front, so I know how to place the phone — the arrow shape alone carries the
   direction, with no "Front" text label next to it (screen-cleanup follow-up: the
   shape already says it). The RV diagram is the focal element of the screen.
+- **Given** the level view on any phone from 375x553 CSS px upward, in either appearance
+  and in every shipped language (#241 — reported from an iPhone, where the diagram was
+  cut off mid-wheel and the action bar and footer were not visible at all)
+- **Then** the top bar, the diagram, the status line, the tilt readout, the bottom action
+  bar and the version footer are all on screen at once and the page does not scroll. The
+  diagram is the elastic element: it takes the height the rest leaves and no more. The
+  layout is sized to the _small_ viewport (the height with the browser's toolbars
+  showing), so the action bar clears Safari's bottom bar and the home indicator.
+- **Given** the diagram at any size it has been squeezed to
+- **Then** it keeps the drawing's own proportions exactly — never stretched, never taller
+  than the space it was given — and each floating wheel card still sits on the wheel it
+  describes. The box around the drawing is deliberately wider than the drawing on Modern:
+  that margin is where the wheel cards go, and they keep their readable width rather than
+  narrowing or overlapping each other as the screen gets smaller.
 
 ## R5 — Wheels that need raising are highlighted on the diagram
 
@@ -376,7 +390,8 @@ URL and must keep working with no signal.
   "Skip — use defaults", since those are the skippable steps with no such consequence
   (style-consistency review follow-up).
 - **Given** any step of the wizard, on any phone (#239 — reported from an iPhone, where
-  the buttons sat below the fold on half the steps)
+  the buttons sat below the fold on half the steps), in either appearance and in every
+  shipped language
 - **Then** the step count, the ✕, the step heading and the Back/Skip/Next controls are on
   screen at all times: they are never scrolled away, whatever the step contains. Only the
   step's own content may scroll, inside its own region — and on the phone sizes tested
@@ -384,11 +399,13 @@ URL and must keep working with no signal.
   that, in either appearance and in every shipped language. The wizard is sized to the
   _small_ viewport (the height with the browser's toolbars showing) and its bottom padding
   clears the home indicator, so the last control is never left under Safari's bottom bar.
-- **Given** a step that embeds the calibration card (sensor calibration, vehicle zero)
+- **Given** a step that embeds the calibration card (sensor calibration, vehicle zero),
+  in either appearance
 - **Then** the card's own heading — word for word the step's heading directly above it —
-  is not repeated: its status pill ("NOT DONE" / "DONE") moves onto the step heading and
-  the duplicate row goes, and inside the wizard the card drops its frame, which the step
-  screen already provides (#239). Settings' own copy of the same card is unaffected.
+  is not repeated: Modern's status pill ("NOT DONE" / "DONE") moves onto the step heading
+  and the duplicate row goes, Classic's bare heading goes the same way, and inside the
+  wizard the card drops its frame, which the step screen already provides (#239).
+  Settings' own copy of the same card is unaffected.
 - **Given** the Modern step-progress bars, on a narrow screen or a long step list
 - **Then** the bars share out the width left over instead of claiming a fixed width each,
   and the "n / total" text beside them stays on one line (#239: eleven bars overflowed a

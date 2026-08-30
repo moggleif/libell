@@ -154,12 +154,27 @@ export function wheelMarkers(x: number, y: number, pair: boolean): SVGRectElemen
   return pair ? [rect(y - 24, 22), rect(y + 2, 22)] : [rect(y - 24, 48)];
 }
 
+/**
+ * The drawing's own proportions, and the only place they are written
+ * down: the `<svg viewBox>` and the `--diagram-aspect` custom property
+ * the layout sizes the diagram with (styles.css) are both derived from
+ * this, so the box the diagram is fitted into can never drift out of
+ * proportion with the drawing inside it — which is what keeps the
+ * floating wheel cards, positioned as a percentage of that box, pinned
+ * to the wheels they point at (#241).
+ */
+const CLASSIC_VIEWBOX = { width: 240, height: 310 };
+
 function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
   const container = document.createElement('div');
   container.className = 'rv-diagram';
+  container.style.setProperty(
+    '--diagram-aspect',
+    String(CLASSIC_VIEWBOX.width / CLASSIC_VIEWBOX.height),
+  );
 
   const svg = svgEl('svg', {
-    viewBox: '0 0 240 310',
+    viewBox: `0 0 ${CLASSIC_VIEWBOX.width} ${CLASSIC_VIEWBOX.height}`,
     role: 'img',
     'aria-label': t('diagram.aria'),
   });
@@ -346,6 +361,10 @@ function buildWheelCard(
 function createModernDiagram(): RvDiagram {
   const container = document.createElement('div');
   container.className = 'rv-diagram rv-diagram--modern';
+  container.style.setProperty(
+    '--diagram-aspect',
+    String(MODERN_VIEWBOX.width / MODERN_VIEWBOX.height),
+  );
 
   const stage = document.createElement('div');
   stage.className = 'rv-diagram__stage';
@@ -511,7 +530,19 @@ function createModernDiagram(): RvDiagram {
   for (const id of WHEEL_IDS) {
     const side = id.endsWith('Left') ? 'left' : 'right';
     const { card, markerGlyph, step, mm } = buildWheelCard(id, side);
-    card.style.top = `${(MODERN_WHEEL_Y[id] / MODERN_VIEWBOX.height) * 100}%`;
+    // Measured from the centre of the *drawn* vehicle, not of the stage
+    // around it (#241): the stage is deliberately wider than the drawing
+    // so the cards have margins to sit in, and the drawing letterboxes
+    // within it, so a plain percentage of the stage no longer lands on
+    // the wheel. `--drawn-height` is the drawing's on-screen height, set
+    // by the card layer in styles.css.
+    const offsetFromCentre = MODERN_WHEEL_Y[id] / MODERN_VIEWBOX.height - 0.5;
+    card.style.top = `calc(50% + (${offsetFromCentre.toFixed(6)} * var(--drawn-height)))`;
+    // The wheel this card belongs to, in the drawing's own coordinates —
+    // read back by the fit test (scripts/fit-test.mjs), which maps it
+    // through the SVG's transform to check the card really did land on
+    // its wheel at whatever size the diagram was squeezed to (#241).
+    card.dataset.wheelY = String(MODERN_WHEEL_Y[id]);
     cardLayer.append(card);
 
     wheels[id] = { card, cardMarkerGlyph: markerGlyph, cardStep: step, cardMm: mm };
