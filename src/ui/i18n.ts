@@ -349,9 +349,10 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Vehicle',
     'settings.tab.ramps': 'Ramps',
     'settings.klossar.brandAll': 'All',
-    'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 step',
-    'settings.klossar.step.many': '{n} steps',
+    'settings.klossar.filterBrand': 'Filter by brand',
+    'settings.rampCountHint':
+      'How many ramps you have to put out. The app never asks you to raise more wheels than this.',
+    'settings.klossar.selected': 'Selected',
     'settings.klossar.stepsHeading': 'Step heights',
 
     'status.measuring': 'Measuring…',
@@ -802,9 +803,10 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Fordon',
     'settings.tab.ramps': 'Klossar',
     'settings.klossar.brandAll': 'Alla',
-    'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 steg',
-    'settings.klossar.step.many': '{n} steg',
+    'settings.klossar.filterBrand': 'Filtrera på märke',
+    'settings.rampCountHint':
+      'Hur många klossar du har att lägga ut. Appen ber dig aldrig höja fler hjul än så.',
+    'settings.klossar.selected': 'Vald',
     'settings.klossar.stepsHeading': 'Steghöjder',
 
     'status.measuring': 'Mäter…',
@@ -1222,9 +1224,10 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Véhicule',
     'settings.tab.ramps': 'Rampes',
     'settings.klossar.brandAll': 'Toutes',
-    'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 palier',
-    'settings.klossar.step.many': '{n} paliers',
+    'settings.klossar.filterBrand': 'Filtrer par marque',
+    'settings.rampCountHint':
+      "Combien de rampes vous avez à poser. L'application ne vous demandera jamais de lever plus de roues que cela.",
+    'settings.klossar.selected': 'Sélectionné',
     'settings.klossar.stepsHeading': 'Hauteurs des paliers',
 
     'status.measuring': 'Mesure…',
@@ -1647,9 +1650,10 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Vehículo',
     'settings.tab.ramps': 'Rampas',
     'settings.klossar.brandAll': 'Todas',
-    'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 nivel',
-    'settings.klossar.step.many': '{n} niveles',
+    'settings.klossar.filterBrand': 'Filtrar por marca',
+    'settings.rampCountHint':
+      'Cuántas rampas tienes para colocar. La aplicación nunca te pedirá levantar más ruedas que esas.',
+    'settings.klossar.selected': 'Seleccionado',
     'settings.klossar.stepsHeading': 'Alturas de nivel',
 
     'status.measuring': 'Midiendo…',
@@ -2066,9 +2070,10 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Fahrzeug',
     'settings.tab.ramps': 'Keile',
     'settings.klossar.brandAll': 'Alle',
-    'settings.klossar.pinnedSub': '{lengths} · {steps}',
-    'settings.klossar.step.one': '1 Stufe',
-    'settings.klossar.step.many': '{n} Stufen',
+    'settings.klossar.filterBrand': 'Nach Marke filtern',
+    'settings.rampCountHint':
+      'Wie viele Keile du auslegen kannst. Die App verlangt nie, mehr Räder anzuheben als das.',
+    'settings.klossar.selected': 'Ausgewählt',
     'settings.klossar.stepsHeading': 'Stufenhöhen',
 
     'status.measuring': 'Messen…',

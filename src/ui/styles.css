@@ -2115,10 +2115,18 @@ body {
 /* The Klossar tab is a column with a scrolling catalog and a footer
    that stays put — the list scrolls, the step-height summary and
    Save/Undo do not. */
+/* One scroll, not two (#246). This panel used to be a fixed-height column
+ * with the catalogue scrolling inside it, on a settings page that scrolls
+ * too — a scroll region inside a scroll region, where four of twelve
+ * models showed with nothing to say the rest existed. Worse, the height
+ * was a guess (`calc(100dvh - 230px)`) and the list was the only item that
+ * could shrink, so on a 745px phone it absorbed the whole shortfall and
+ * collapsed to nothing: the ramp picker, on the ramp tab, zero pixels
+ * tall. The panel is now an ordinary block and the page does the
+ * scrolling, exactly like every other settings tab. */
 .settings__tabpanel--klossar {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 230px);
 }
 
 .klossar__filter {
@@ -2129,7 +2137,7 @@ body {
 
 .klossar__chip {
   font: inherit;
-  font-size: 11px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--on-surface-muted);
   background: none;
@@ -2145,55 +2153,7 @@ body {
   border-color: var(--level);
 }
 
-.klossar__pinned {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
-  background: var(--surface-raised);
-  border: 1px solid var(--level);
-  border-radius: 10px;
-}
-
-/* Same guard as .menu[hidden] / .settings__tabpanel[hidden] above:
-   display: flex would otherwise win over the UA [hidden] rule and the
-   card would stay visible for a custom (non-catalog) step set. */
-.klossar__pinned[hidden] {
-  display: none;
-}
-
-.klossar__pinned-name {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.klossar__pinned-sub {
-  margin: 2px 0 0;
-  font-size: 11px;
-  color: var(--on-surface-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.klossar__check {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--surface);
-  background: var(--level);
-  font-size: 13px;
-  line-height: 1;
-}
-
 .klossar__list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -2230,7 +2190,7 @@ body {
 }
 
 .klossar__row-mm {
-  font-size: 11px;
+  font-size: 0.8125rem;
   color: var(--on-surface-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -2264,33 +2224,61 @@ body {
   display: none;
 }
 
+/* What you have chosen, immediately under the picker that chose it. */
+.klossar__selected {
+  flex-shrink: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--outline);
+  border-bottom: 1px solid var(--outline);
+}
+
+/* Save/Undo/Reset, last and always on screen. */
 .klossar__footer {
   flex-shrink: 0;
   padding-top: 10px;
-  border-top: 1px solid var(--outline);
 }
 
+/* The one place that answers "which ramp am I using" (#246), so it reads
+ * as a statement rather than as two labels at opposite ends of a row:
+ * a quiet "Selected", the model's name in full size under it, then the
+ * step heights it stands for. */
 .klossar__footer-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 10px;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* The app sets 18px body text because it is read at arm's length in poor
+ * light; these labels were 10px uppercase in muted grey, which contradicted
+ * that for the readers who need it most (#246). */
+.klossar__footer-label {
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--on-surface-muted);
 }
 
 .klossar__footer-model {
+  font-size: 16px;
+  font-weight: 700;
   color: var(--on-surface);
-  text-transform: none;
+}
+
+.klossar__footer-heading {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--on-surface-muted);
 }
 
 .klossar__grid {
   display: grid;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .klossar__grid-cell {
@@ -2300,7 +2288,7 @@ body {
 }
 
 .klossar__grid-label {
-  font-size: 10px;
+  font-size: 0.8125rem;
   color: var(--on-surface-muted);
 }
 
