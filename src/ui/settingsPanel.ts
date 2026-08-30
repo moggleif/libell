@@ -990,21 +990,12 @@ export function createSettingsForm(
     for (const brand of brands) makeBrandChip(brand, brand);
     brandChips.get(null)!.setAttribute('aria-pressed', 'true');
 
-    const pinnedCard = document.createElement('div');
-    pinnedCard.className = 'klossar__pinned';
-    pinnedCard.hidden = true;
-    const pinnedInfo = document.createElement('div');
-    const pinnedName = document.createElement('p');
-    pinnedName.className = 'klossar__pinned-name';
-    const pinnedSub = document.createElement('p');
-    pinnedSub.className = 'klossar__pinned-sub';
-    pinnedInfo.append(pinnedName, pinnedSub);
-    const pinnedCheck = document.createElement('span');
-    pinnedCheck.className = 'klossar__check';
-    pinnedCheck.textContent = '✓';
-    pinnedCheck.setAttribute('aria-hidden', 'true');
-    pinnedCard.append(pinnedInfo, pinnedCheck);
-
+    // No pinned "currently chosen" card above the list any more (#246).
+    // The chosen ramp was on the screen three times over: that card, its
+    // own row in the list right below it, and the footer — the card and
+    // the footer carrying the very same step heights. One picker, one
+    // answer: the list chooses, and the footer below it says what is
+    // chosen and stays put while the list scrolls.
     const modelList = document.createElement('div');
     modelList.className = 'klossar__list';
     const modelRows = new Map<
@@ -1055,6 +1046,11 @@ export function createSettingsForm(
     customRadio.setAttribute('aria-hidden', 'true');
     customRow.append(customName, customRadio);
     customRow.addEventListener('click', () => applyRampChoice(null));
+    // Inside the picker, as its last entry: choosing your own step heights
+    // is one of the options, not a separate mechanism (#246). It is never
+    // hidden by the brand filter — "Froli" narrows which ready-made models
+    // you see, it does not take away the option of entering your own.
+    modelList.append(customRow);
 
     // The existing chip editor (add/remove step heights), relocated
     // under the custom row — same elements as the classic <select>'s
@@ -1063,15 +1059,28 @@ export function createSettingsForm(
     customEditor.className = 'klossar__custom-editor';
     customEditor.append(stepsCaption, chipList, addRow);
 
+    // The chosen ramp, directly under the picker that chose it; the
+    // settings that depend on it below that; the Save/Undo/Reset row last
+    // (#246 — the settings used to sit above the answer they belong to).
+    const selectedBlock = document.createElement('div');
+    selectedBlock.className = 'klossar__selected';
+
     const footer = document.createElement('div');
     footer.className = 'klossar__footer';
+    // Reads top-down as one statement — "Selected: Thule Levelers, whose
+    // step heights are these" — instead of the old single line that put a
+    // "STEP HEIGHTS (MM)" heading and the model name at opposite ends of
+    // the same row and left it to the reader to connect them (#246).
     const footerHead = document.createElement('div');
     footerHead.className = 'klossar__footer-head';
-    const footerHeading = document.createElement('span');
-    footerHeading.className = 'klossar__footer-heading';
+    const footerLabel = document.createElement('span');
+    footerLabel.className = 'klossar__footer-label';
+    footerLabel.textContent = t('settings.klossar.selected');
     const footerModelName = document.createElement('span');
     footerModelName.className = 'klossar__footer-model';
-    footerHead.append(footerHeading, footerModelName);
+    footerHead.append(footerLabel, footerModelName);
+    const footerHeading = document.createElement('span');
+    footerHeading.className = 'klossar__footer-heading';
     const footerGrid = document.createElement('div');
     footerGrid.className = 'klossar__grid';
     // Same Reset+Undo-then-Save layout as `buildActionsRow()` above, just
@@ -1104,7 +1113,8 @@ export function createSettingsForm(
     saveButtons.push(footerSave);
     undoButtons.push(footerUndo);
     resetButtons.push(footerReset);
-    footer.append(footerHead, footerGrid, footerActions);
+    selectedBlock.append(footerHead, footerHeading, footerGrid);
+    footer.append(footerActions);
 
     // Number of ramps / Drain side (pre-existing gap, found during the
     // Classic split-pages review): these two were never appended anywhere
@@ -1115,9 +1125,8 @@ export function createSettingsForm(
     // footer's own Save/Undo.
     rampsPanel.append(
       filterRow,
-      pinnedCard,
       modelList,
-      customRow,
+      selectedBlock,
       customEditor,
       rampCountField,
       rampsAdvancedDetails,
@@ -1129,19 +1138,6 @@ export function createSettingsForm(
       const selectedModel = customChosen
         ? null
         : (RAMP_MODELS.find((m) => m.name === rampSelect.value) ?? null);
-
-      pinnedCard.hidden = !selectedModel;
-      if (selectedModel) {
-        pinnedName.textContent = selectedModel.name;
-        const stepWord =
-          selectedModel.stepsMm.length === 1
-            ? t('settings.klossar.step.one')
-            : t('settings.klossar.step.many', { n: selectedModel.stepsMm.length });
-        pinnedSub.textContent = t('settings.klossar.pinnedSub', {
-          lengths: `${selectedModel.stepsMm.map((mm) => formatLengthValue(mm, unit)).join(' / ')} ${unit}`,
-          steps: stepWord,
-        });
-      }
 
       for (const { row, radio } of modelRows.values()) {
         row.classList.remove('klossar__row--selected');

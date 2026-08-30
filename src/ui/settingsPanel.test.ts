@@ -532,13 +532,34 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(caravanDrainAdvanced.hidden).toBe(true);
   });
 
-  it('shows the pinned card for the default (catalog) model, with its step count', () => {
+  it('names the chosen model under the picker, labelled as the selection', () => {
     const form = createSettingsForm(modern, vi.fn());
-    const pinned = form.querySelector<HTMLElement>('.klossar__pinned')!;
-    expect(pinned.hidden).toBe(false);
-    expect(pinned.querySelector('.klossar__pinned-name')?.textContent).toBe('Thule Levelers');
-    expect(pinned.querySelector('.klossar__pinned-sub')?.textContent).toContain('44 / 78 / 112');
-    expect(pinned.querySelector('.klossar__pinned-sub')?.textContent).toContain('3 steps');
+    const selected = form.querySelector<HTMLElement>('.klossar__selected')!;
+    expect(selected.querySelector('.klossar__footer-label')?.textContent).toBe('Selected');
+    expect(selected.querySelector('.klossar__footer-model')?.textContent).toBe('Thule Levelers');
+  });
+
+  // #246: the chosen ramp used to be on screen three times over — a pinned
+  // card above the list, its own row inside the list, and the footer, with
+  // the card and the footer both spelling out the same step heights. The
+  // list is the picker; exactly one place outside it says what is chosen.
+  it('says what is chosen in exactly one place outside the picker', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    expect(form.querySelector('.klossar__pinned')).toBeNull();
+
+    const outsideThePicker = [
+      ...form.querySelectorAll('.klossar__selected, .klossar__footer, .klossar__pinned'),
+    ];
+    const namingTheModel = outsideThePicker.filter((el) =>
+      el.textContent?.includes('Thule Levelers'),
+    );
+    expect(namingTheModel).toHaveLength(1);
+
+    // And the step heights are spelled out once, in that same place.
+    const spellingOutTheSteps = outsideThePicker
+      .filter((el) => /44/.test(el.textContent ?? ''))
+      .filter((el) => /78/.test(el.textContent ?? ''));
+    expect(spellingOutTheSteps).toHaveLength(1);
   });
 
   it('the brand filter narrows the visible catalog rows', () => {
@@ -578,15 +599,12 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(footerModel?.textContent).toBe('Milenco Quattro Level');
     const values = [...form.querySelectorAll('.klossar__grid-value')].map((el) => el.textContent);
     expect(values).toEqual(['40', '80', '120', '160']);
-
-    // The pinned card follows the new selection too.
-    expect(form.querySelector('.klossar__pinned-name')?.textContent).toBe('Milenco Quattro Level');
   });
 
   // R14: every displayed length follows "Show lengths in" — the catalog
-  // preview, pinned subtitle and fixed footer had been stuck showing raw mm
-  // regardless of that setting; only the chip editor above them converted.
-  it('shows the catalog preview, pinned subtitle and footer grid in cm when displayUnit is cm (R14)', () => {
+  // preview and the fixed footer had been stuck showing raw mm regardless
+  // of that setting; only the chip editor above them converted.
+  it('shows the catalog preview and footer grid in cm when displayUnit is cm (R14)', () => {
     const cmModern: LevelSettings = { ...modern, displayUnit: 'cm' };
     const form = createSettingsForm(cmModern, vi.fn());
 
@@ -600,20 +618,54 @@ describe('settings form — Modern tabs (#108)', () => {
 
     milenco.click();
 
-    expect(form.querySelector('.klossar__pinned-sub')?.textContent).toContain('4 / 8 / 12 / 16 cm');
     expect(form.querySelector('.klossar__footer-heading')?.textContent).toBe('Step heights (cm)');
     const values = [...form.querySelectorAll('.klossar__grid-value')].map((el) => el.textContent);
     expect(values).toEqual(['4', '8', '12', '16']);
   });
 
-  it('picking "Egen uppsättning" reveals the chip editor and hides the pinned card', () => {
+  // #246: "Custom set" is one of the choices, so it lives in the list of
+  // choices — it used to sit outside and below the picker, as though it
+  // were a different kind of thing.
+  it('offers "Custom set" as the last entry of the picker itself', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const list = form.querySelector<HTMLElement>('.klossar__list')!;
+    const custom = form.querySelector<HTMLElement>('.klossar__row--custom')!;
+    expect(list.contains(custom)).toBe(true);
+    expect(list.lastElementChild).toBe(custom);
+  });
+
+  it('keeps "Custom set" offered when the brand filter narrows the models', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const custom = form.querySelector<HTMLElement>('.klossar__row--custom')!;
+    const froli = [...form.querySelectorAll<HTMLButtonElement>('.klossar__chip')].find(
+      (c) => c.textContent === 'Froli',
+    )!;
+    froli.click();
+    // Narrowing to a brand says which ready-made models to show; it does
+    // not withdraw the option of entering your own step heights.
+    expect(custom.hidden).toBe(false);
+  });
+
+  // #246: the settings that depend on the chosen ramp now sit under it,
+  // not above the answer they belong to.
+  it('puts the ramp settings below the block naming the selection', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const panel = form.querySelector<HTMLElement>('.settings__tabpanel--klossar')!;
+    const children = [...panel.children];
+    const selected = panel.querySelector('.klossar__selected')!;
+    const rampCount = panel.querySelector('.settings__field')!;
+    const indexOf = (el: Element) => children.findIndex((c) => c === el || c.contains(el));
+    expect(indexOf(panel.querySelector('.klossar__list')!)).toBeLessThan(indexOf(selected));
+    expect(indexOf(selected)).toBeLessThan(indexOf(rampCount));
+  });
+
+  it('picking "Egen uppsättning" reveals the chip editor, and the footer says so', () => {
     const form = createSettingsForm(modern, vi.fn());
     const customRow = form.querySelector<HTMLElement>('.klossar__row--custom')!;
     const editor = form.querySelector<HTMLElement>('.klossar__custom-editor')!;
     expect(editor.hidden).toBe(true);
     customRow.click();
     expect(editor.hidden).toBe(false);
-    expect(form.querySelector<HTMLElement>('.klossar__pinned')!.hidden).toBe(true);
     expect(form.querySelector('.klossar__footer-model')?.textContent).toBe('Custom set');
   });
 
