@@ -27,11 +27,18 @@ npm run fit           # Playwright: it all fits a phone screen (needs `build` fi
 The two Playwright scripts need a build to serve, so they are not part of the
 pre-commit set — CI runs them after `build`. `fit` (#239, #241, #243) opens **every**
 view — level, first-run guide, settings, help, external sensor, the iOS sensor guide,
-the incoming shared-setup dialog — against small-phone viewports, in both appearances
-and all five languages, and fails on anything below the fold, a page that scrolls
-sideways, content wider than its container, a view whose end cannot be scrolled to, a
-diagram taller than the space it was given, or a wheel card that has drifted off its
-wheel. It exists because the unit tests cannot catch any of that: Vitest runs in
+the incoming shared-setup dialog — against small-phone viewports in both appearances,
+and fails on anything below the fold, a page that scrolls sideways, content wider than
+its container, a view whose end cannot be scrolled to, a diagram taller than the space
+it was given, or a wheel card that has drifted off its wheel.
+
+Languages are walked per viewport rather than everywhere (`languages` on each entry of
+`VIEWPORTS`): the language dimension catches text that runs longer than its space, and
+the space is tightest on the iPhone SE, so all five are walked there. The 320px entry is
+about width, where German is the worst case and English the baseline; the roomiest
+screen is a structural sanity check where one language suffices. That is 8 language-runs
+per appearance instead of 15 — the sweep went from 3m40s to under 2 minutes without
+giving up a combination that has ever failed. If you widen the matrix, watch that number. It exists because the unit tests cannot catch any of that: Vitest runs in
 happy-dom, which has no layout engine, so every height and width it measures is zero.
 Whenever you add a view, add a step, or change a layout, this is the check that tells
 you it still fits.

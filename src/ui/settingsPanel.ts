@@ -1066,11 +1066,13 @@ export function createSettingsForm(
     customRadio.setAttribute('aria-hidden', 'true');
     customRow.append(customName, customRadio);
     customRow.addEventListener('click', () => applyRampChoice(null));
-    // Inside the picker, as its last entry: choosing your own step heights
-    // is one of the options, not a separate mechanism (#246). It is never
-    // hidden by the brand filter — "Froli" narrows which ready-made models
+    // Inside the picker, and first in it (#246): choosing your own step
+    // heights is one of the options, not a separate mechanism — and it is
+    // the one entry relevant whatever brand you own, so it leads rather
+    // than trailing eleven models you may already have ruled out. Never
+    // hidden by the brand filter: "Froli" narrows which ready-made models
     // you see, it does not take away the option of entering your own.
-    modelList.append(customRow);
+    modelList.prepend(customRow);
 
     // The existing chip editor (add/remove step heights), relocated
     // under the custom row — same elements as the classic <select>'s
@@ -1143,15 +1145,18 @@ export function createSettingsForm(
     // the custom-set editor and the fixed footer, not inside it, so they
     // scroll with the rest of the tab's content instead of crowding the
     // footer's own Save/Undo.
+    // Reads as a sequence: what the app will do with your ramps, how to
+    // narrow the list, the list itself, what you picked, then the settings
+    // that follow from it and Save (#246).
     rampsPanel.append(
-      modelList,
+      rampHint,
       filterDetails,
+      modelList,
       selectedBlock,
       customEditor,
       rampCountField,
       rampCountHint,
       rampsAdvancedDetails,
-      rampHint,
       footer,
     );
 

@@ -1348,11 +1348,16 @@ the footer, with the card and the footer both spelling out the same step heights
   chosen: a block directly under the catalogue reading top-down as a statement —
   "Selected", the model's name, "Step heights (mm)", then the heights themselves. No
   pinned card above the list, and the same numbers are never printed twice.
+- **Given** the tab's running order
+- **Then** it reads as a sequence: what the app will do with your ramps, how to narrow the
+  list, the list itself, what you picked, then the settings that follow from that pick,
+  and Save last.
 - **Given** the choice "Custom set"
-- **Then** it is the last entry of the catalogue itself, not a separate control below it:
-  entering your own step heights is one of the choices. The brand filter never hides it —
-  narrowing to a brand says which ready-made models to show, it does not withdraw the
-  option of entering your own.
+- **Then** it is the _first_ entry of the catalogue itself, not a separate control below
+  it: entering your own step heights is one of the choices, and the one that is relevant
+  whatever brand you own, so it leads rather than trailing eleven models you may already
+  have ruled out. The brand filter never hides it — narrowing to a brand says which
+  ready-made models to show, it does not withdraw the option of entering your own.
 - **Given** the settings that depend on the chosen ramp (number of ramps, the drain
   position under Advanced)
 - **Then** they sit below the block naming that choice, not above the answer they belong
@@ -1363,9 +1368,9 @@ the footer, with the card and the footer both spelling out the same step heights
   model is laid out in full and the page does the scrolling, so nothing is hidden behind
   an inner scrollbar with no sign that more exists. Its labels are set at a size that
   matches the app's own reason for 18px body text, not the 10px uppercase they were.
-  The brand filter is a disclosure below the catalogue rather than the first thing on the
-  tab: it helps whoever already knows the brand, and no longer stands in front of the
-  list for everyone who does not.
+  The brand filter is a collapsed disclosure directly above the catalogue it narrows: it
+  helps whoever already knows the brand without standing in front of the list, since a
+  collapsed line costs nothing to skip.
 - **Given** "Number of ramps"
 - **Then** it says what the number means — how many you have to put out, and that the app
   never asks you to raise more wheels than that — rather than leaving a bare quantity
