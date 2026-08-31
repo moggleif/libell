@@ -12,8 +12,17 @@
   </head>
   <body>
     <header class="topbar">
-      <img class="topbar__icon" src="icons/icon.svg" alt="" width="28" height="28" />
-      <h1 class="topbar__title">Libell</h1>
+      <!-- Identity, with the version tucked under it (#251): the version
+           used to sit in a footer of its own at the bottom of every
+           screen, a whole row spent on a line nobody reads until
+           something is wrong. It belongs with the name it qualifies. -->
+      <div class="topbar__identity">
+        <div class="topbar__identity-row">
+          <img class="topbar__icon" src="icons/icon.svg" alt="" width="28" height="28" />
+          <h1 class="topbar__title">Libell</h1>
+        </div>
+        <p id="app-version" class="topbar__version"></p>
+      </div>
       <button id="share-button" class="topbar__share" type="button" aria-label="Share">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -85,9 +94,6 @@
       </button>
       <button id="help-button" class="bottombar__button" type="button" aria-label="Help">?</button>
     </nav>
-    <footer class="site-footer">
-      <p id="app-version" class="site-footer__version"></p>
-    </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
