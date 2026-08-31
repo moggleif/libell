@@ -647,21 +647,25 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(custom.hidden).toBe(false);
   });
 
-  // #246: the settings that depend on the chosen ramp now sit under it,
-  // not above the answer they belong to.
-  it('puts the ramp settings below the block naming the selection', () => {
+  // #246: the answer comes first and the means of changing it below —
+  // what is set, the settings that follow from it, then the picker.
+  it('puts the selection first and the picker last', () => {
     const form = createSettingsForm(modern, vi.fn());
     const panel = form.querySelector<HTMLElement>('.settings__tabpanel--klossar')!;
     const children = [...panel.children];
-    const selected = panel.querySelector('.klossar__selected')!;
-    const rampCount = panel.querySelector('.settings__field')!;
     const indexOf = (el: Element) => children.findIndex((c) => c === el || c.contains(el));
-    const list = panel.querySelector('.klossar__list')!;
-    const filter = panel.querySelector('.klossar__filter-details')!;
-    // Intro, filter, list, what you picked, then the settings that follow.
-    expect(indexOf(filter)).toBeLessThan(indexOf(list));
-    expect(indexOf(list)).toBeLessThan(indexOf(selected));
-    expect(indexOf(selected)).toBeLessThan(indexOf(rampCount));
+    const order = [
+      panel.querySelector('.klossar__selected')!,
+      panel.querySelector('.settings__field')!,
+      panel.querySelector('.settings__advanced--drain')!,
+      panel.querySelector('.klossar__filter-details')!,
+      panel.querySelector('.klossar__list')!,
+      panel.querySelector('.klossar__footer')!,
+    ].map(indexOf);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    // And every one of them is actually on the panel, so a missing
+    // element cannot make the sequence trivially true.
+    expect(order.every((i) => i >= 0)).toBe(true);
   });
 
   it('picking "Egen uppsättning" reveals the chip editor, and the footer says so', () => {

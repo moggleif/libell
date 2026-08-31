@@ -1349,9 +1349,13 @@ the footer, with the card and the footer both spelling out the same step heights
   "Selected", the model's name, "Step heights (mm)", then the heights themselves. No
   pinned card above the list, and the same numbers are never printed twice.
 - **Given** the tab's running order
-- **Then** it reads as a sequence: what the app will do with your ramps, how to narrow the
-  list, the list itself, what you picked, then the settings that follow from that pick,
-  and Save last.
+- **Then** the answer comes first and the means of changing it below: what is set (the
+  model and its step heights), the settings that follow from it (number of ramps, drain
+  position under Advanced), what the app will do with them, then the picker for changing
+  your mind, and Save last. Someone opening this tab is usually checking what is set
+  rather than re-choosing; whoever is re-choosing scrolls to the list. The custom
+  step-height editor stays directly under the block showing those heights, since that is
+  what it edits.
 - **Given** the choice "Custom set"
 - **Then** it is the _first_ entry of the catalogue itself, not a separate control below
   it: entering your own step heights is one of the choices, and the one that is relevant
@@ -1368,9 +1372,9 @@ the footer, with the card and the footer both spelling out the same step heights
   model is laid out in full and the page does the scrolling, so nothing is hidden behind
   an inner scrollbar with no sign that more exists. Its labels are set at a size that
   matches the app's own reason for 18px body text, not the 10px uppercase they were.
-  The brand filter is a collapsed disclosure directly above the catalogue it narrows: it
-  helps whoever already knows the brand without standing in front of the list, since a
-  collapsed line costs nothing to skip.
+  The brand filter is a collapsed disclosure directly above the catalogue it narrows,
+  near the bottom of the tab: it helps whoever already knows the brand without standing
+  in front of anything, since a collapsed line costs nothing to skip.
 - **Given** "Number of ramps"
 - **Then** it says what the number means — how many you have to put out, and that the app
   never asks you to raise more wheels than that — rather than leaving a bare quantity

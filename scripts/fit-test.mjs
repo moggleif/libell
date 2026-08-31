@@ -33,20 +33,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4175;
 const BASE = `http://localhost:${PORT}/libell/`;
 
-// CSS pixels actually visible to the page, not the phone's spec sheet:
-// Safari's own toolbars take ~114 px of an iPhone SE and ~107 px of an
-// iPhone 15. 320 px wide is the narrowest phone still in use and the one
-// that catches horizontal overflow; the SE in Safari is the tightest
-// height anyone can install this on. Anything taller or wider than the
-// iPhone 15 in Safari is strictly more room.
-// `fitsWhole` is the stricter promise — every view fits with no scrolling
-// at all — and it is made for the phones this app actually targets. The
-// 320x480 entry is an iPhone 5 / SE-1 in Safari: it is here for the
-// horizontal checks, which is where a 320px screen bites, and it still
-// gets every reachability check; it is simply not held to fitting the
-// longest German guide step without scrolling its body, which on that
-// screen would mean type too small to read. Its controls stay pinned
-// either way — that is what R18 guarantees everywhere.
 // Every shipped language: German and French wrap to more lines, and run
 // wider on a button, than the English — a view that fits in one language
 // can overflow in another.
@@ -56,6 +42,22 @@ const LANGUAGES = ['sv', 'en', 'fr', 'es', 'de'];
 // failure so far; English is the baseline to compare it against.
 const LONGEST = ['de', 'en'];
 
+// CSS pixels actually visible to the page, not the phone's spec sheet:
+// Safari's own toolbars take ~114 px of an iPhone SE and ~107 px of an
+// iPhone 15. 320 px wide is the narrowest phone still in use and the one
+// that catches horizontal overflow; the SE in Safari is the tightest
+// height anyone can install this on. Anything taller or wider than the
+// iPhone 15 in Safari is strictly more room.
+//
+// `fitsWhole` is the stricter promise — every view fits with no scrolling
+// at all — and it is made for the phones this app actually targets. The
+// 320x480 entry is an iPhone 5 / SE-1 in Safari: it is here for the
+// horizontal checks, which is where a 320px screen bites, and it still
+// gets every reachability check; it is simply not held to fitting the
+// longest German guide step without scrolling its body, which on that
+// screen would mean type too small to read. Its controls stay pinned
+// either way — that is what R18 guarantees everywhere.
+//
 // `languages` is per viewport rather than the whole list everywhere,
 // because the language dimension is not equally informative at every
 // size: it exists to catch text that runs longer than the space it has,

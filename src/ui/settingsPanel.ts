@@ -1145,18 +1145,22 @@ export function createSettingsForm(
     // the custom-set editor and the fixed footer, not inside it, so they
     // scroll with the rest of the tab's content instead of crowding the
     // footer's own Save/Undo.
-    // Reads as a sequence: what the app will do with your ramps, how to
-    // narrow the list, the list itself, what you picked, then the settings
-    // that follow from it and Save (#246).
+    // Answer first, means of changing it below (#246): what you have set
+    // — the model and its step heights — then the settings that follow
+    // from it, then what the app will do with them, and only then the
+    // picker for changing your mind. Someone opening this tab is usually
+    // checking what is set, not re-choosing; whoever is re-choosing
+    // scrolls to the list. The custom step-height editor stays directly
+    // under the block showing those heights, since that is what it edits.
     rampsPanel.append(
-      rampHint,
-      filterDetails,
-      modelList,
       selectedBlock,
       customEditor,
       rampCountField,
       rampCountHint,
       rampsAdvancedDetails,
+      rampHint,
+      filterDetails,
+      modelList,
       footer,
     );
 
