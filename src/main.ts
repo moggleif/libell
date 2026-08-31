@@ -1032,11 +1032,21 @@ function bootstrap(root: HTMLElement): void {
     root.replaceChildren();
     root.classList.add('app--level');
 
-    // Always-visible status row: never empty, fixed height, so nothing
-    // pops in and out while the user is watching the wheels.
+    // The status row now speaks only when it has something the diagram
+    // cannot show (#252): "2 wheels to raise" and "level!" were the
+    // diagram's own wheel cards written out in words, so they are gone and
+    // the row is empty most of the time. What it still says — readings
+    // that cannot be trusted, ramps that do not reach and by how much, how
+    // little is left — has no icon, so it appears when it applies and the
+    // row hides itself otherwise rather than holding a blank line.
     const status = document.createElement('p');
     status.className = 'status-line';
     status.setAttribute('aria-live', 'polite');
+    const setStatus = (text: string): void => {
+      status.textContent = text;
+      status.hidden = text === '';
+    };
+    setStatus('');
     const tilt = createTiltReadout();
 
     const waiting = document.createElement('p');
@@ -1068,15 +1078,13 @@ function bootstrap(root: HTMLElement): void {
     if (settings.vehicleType === 'caravan') {
       const diagram = createCaravanDiagram(settings.rearAxle);
       const stabilize = createCaravanStabilizer();
-      const caravanStatusText = (result: ReturnType<typeof stabilize>): string => {
-        if (result.isLevel) return t('main.level');
-        const ramp = result.axle.left.severity !== 'none' || result.axle.right.severity !== 'none';
-        const crank = result.jockey.direction !== 'ok';
-        if (ramp && crank) return t('status.caravan.both');
-        if (crank)
-          return t(result.jockey.direction === 'up' ? 'status.crank.up' : 'status.crank.down');
-        return t('status.one');
-      };
+      // Nothing left to say here (#252): the caravan diagram draws the
+      // jockey wheel's direction, its action and its amount inside the
+      // drawing itself, and the axle wheels carry their own severity — so
+      // every message this used to produce was the picture in words. The
+      // "measuring" warning below is set on the row directly and is
+      // unaffected.
+      const caravanStatusText = (): string => '';
       engineElement = diagram.element;
       engineTick = (gravity, nowMs) => {
         const result = stabilize(
@@ -1085,7 +1093,7 @@ function bootstrap(root: HTMLElement): void {
           nowMs,
         );
         diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
-        status.textContent = caravanStatusText(result);
+        setStatus(caravanStatusText());
         status.classList.toggle('status-line--level', result.isLevel);
         tilt.update(result);
         const maxAxleMm = Math.max(result.axle.left.displayMm, result.axle.right.displayMm);
@@ -1096,23 +1104,29 @@ function bootstrap(root: HTMLElement): void {
       const diagram = createRvDiagram(settings.rearAxle, settings.appearance);
       const stabilize = createDisplayStabilizer();
       const statusText = (result: ReturnType<typeof stabilize>): string => {
-        if (result.isLevel) return t('main.level');
-        // Wheels the plan actually asks to drive up (#93) — a red wheel
-        // without a step is one the owned ramps cannot serve.
-        const toRaise = WHEEL_IDS.filter(
-          (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
-        ).length;
+        // Level, and which wheels to raise, are what the wheel cards say —
+        // in colour, glyph and step number, per wheel (#252). Saying it
+        // again in a sentence added nothing but a line.
+        if (result.isLevel) return '';
         const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
+        // How little is left, and whether the ramps reach at all, are the
+        // two things no wheel card can show: a grey wheel says the ramps
+        // do not reach, never by how much.
         if (maxMm <= settings.toleranceMm + 10) {
           return t('status.almost', {
             left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
           });
         }
+        // Wheels the plan actually asks to drive up (#93) — a red wheel
+        // without a step is one the owned ramps cannot serve.
+        const toRaise = WHEEL_IDS.filter(
+          (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
+        ).length;
         if (toRaise === 0) {
           const magnitude = deficitMagnitude(result.maxDeficitMm, settings.toleranceMm);
           return t(magnitude === 'close' ? 'status.cantLevel.close' : 'status.cantLevel.far');
         }
-        return toRaise === 1 ? t('status.one') : t('status.many', { n: toRaise });
+        return '';
       };
       engineElement = diagram.element;
       engineTick = (gravity, nowMs) => {
@@ -1122,7 +1136,7 @@ function bootstrap(root: HTMLElement): void {
           nowMs,
         );
         diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
-        status.textContent = statusText(result);
+        setStatus(statusText(result));
         status.classList.toggle('status-line--level', result.isLevel);
         tilt.update(result);
         const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
@@ -1281,7 +1295,7 @@ function bootstrap(root: HTMLElement): void {
         if (!still) {
           // Momentary readings are meaningless while the vehicle rocks —
           // say so instead of flickering advice, and never celebrate.
-          status.textContent = t('status.measuring');
+          setStatus(t('status.measuring'));
           status.classList.remove('status-line--level');
         }
         if (still && isLevel && !wasLevel) celebrate();

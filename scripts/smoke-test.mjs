@@ -40,8 +40,15 @@ try {
   await page.goto('http://localhost:4174/libell/?demo=1');
 
   await page.waitForSelector('.rv-diagram svg', { timeout: 10_000 });
-  const status = (await page.textContent('.status-line'))?.trim();
-  assert(status, 'status line is empty');
+  // The status row is deliberately silent when the wheel cards already say
+  // it (#252) — in ?demo's fixed tilt they do — so what is asserted here is
+  // that it stays out of the way, not that it speaks.
+  const statusRow = await page.$('.status-line');
+  const status = (await page.textContent('.status-line'))?.trim() ?? '';
+  assert(
+    status === '' && (await statusRow.isHidden()),
+    `status line should be silent and hidden when the wheels say it all, got "${status}"`,
+  );
   // Modern (the default appearance) shows per-wheel status only in the
   // floating wheel cards — no on-body SVG marker (#161 follow-up).
   const cards = await page.locator('.wheel-card').count();
@@ -52,7 +59,7 @@ try {
   assert(lamps === 0, `demo mode shows ${lamps} warning lamp(s) — it should present as configured`);
   assert(pageErrors.length === 0, `page errors: ${pageErrors.join('; ')}`);
 
-  console.log(`smoke test passed — status: "${status}", glyphs: ${glyphs}`);
+  console.log(`smoke test passed — glyphs: ${glyphs}, status row silent`);
 } finally {
   await browser?.close();
   preview.kill();

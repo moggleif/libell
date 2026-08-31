@@ -193,7 +193,6 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
   const result = await page.evaluate(() => {
     const svg = document.querySelector('.rv-diagram svg');
     const box = document.querySelector('.rv-diagram').getBoundingClientRect();
-    const footer = document.querySelector('.site-footer');
     const bottombar = document.querySelector('.bottombar');
     const vb = svg.viewBox.baseVal;
 
@@ -224,7 +223,6 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
     return {
       pageOverflow: document.documentElement.scrollHeight - window.innerHeight,
       innerHeight: window.innerHeight,
-      footerBottom: footer ? footer.getBoundingClientRect().bottom : null,
       bottombarBottom: bottombar ? bottombar.getBoundingClientRect().bottom : null,
       // The drawing's own top and bottom on screen: the box around it is
       // deliberately wider than the drawing (the wheel cards live in that
@@ -242,16 +240,19 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
   if (fitsWhole && result.pageOverflow > 0) {
     fail(label, `level view: the page scrolls by ${Math.round(result.pageOverflow)}px`);
   }
-  for (const [name, bottom] of [
-    ['action bar', result.bottombarBottom],
-    ['version footer', result.footerBottom],
-  ]) {
-    if (fitsWhole && bottom !== null && bottom > result.innerHeight + 0.5) {
-      fail(
-        label,
-        `level view: the ${name} is ${Math.round(bottom - result.innerHeight)}px below the fold`,
-      );
-    }
+  // The action bar is the last thing on the level view now — the version
+  // footer that used to sit under it moved up beside the logo (#251).
+  if (
+    fitsWhole &&
+    result.bottombarBottom !== null &&
+    result.bottombarBottom > result.innerHeight + 0.5
+  ) {
+    fail(
+      label,
+      `level view: the action bar is ${Math.round(
+        result.bottombarBottom - result.innerHeight,
+      )}px below the fold`,
+    );
   }
   // The whole of #241: the drawing used to be taller than the space it was
   // given, which is what pushed everything below it off the screen.

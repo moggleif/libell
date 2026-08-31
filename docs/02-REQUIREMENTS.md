@@ -67,8 +67,10 @@ URL and must keep working with no signal.
 - **Given** the level view on any phone from 375x553 CSS px upward, in either appearance
   and in every shipped language (#241 — reported from an iPhone, where the diagram was
   cut off mid-wheel and the action bar and footer were not visible at all)
-- **Then** the top bar, the diagram, the status line, the tilt readout, the bottom action
-  bar and the version footer are all on screen at once and the page does not scroll. The
+- **Then** the top bar, the diagram, the status row when it has something to say, the
+  tilt readout and the bottom action bar are all on screen at once and the page does not
+  scroll. The version sits under the logo in the top bar (#251), not in a footer of its
+  own beneath the action bar. The
   diagram is the elastic element: it takes the height the rest leaves and no more. The
   layout is sized to the _small_ viewport (the height with the browser's toolbars
   showing), so the action bar clears Safari's bottom bar and the home indicator.
@@ -101,7 +103,16 @@ URL and must keep working with no signal.
   smaller, and the missing height in whole mm below the wheel; wheels within
   tolerance are green and unlabeled.
 - **Given** all wheels are within tolerance
-- **Then** a large green "Your RV is level!" message is shown under the diagram.
+- **Then** every wheel reads green and ticked, and the level celebration (R16) fires
+  once. No sentence under the diagram says it as well (#252): "Your RV is level!" and
+  "2 wheels to raise" were the wheel cards written out in words, and a line that only
+  ever repeats the picture above it costs a row on every screen for nothing.
+- **Given** the status row under the diagram
+- **Then** it speaks only when it has something the diagram cannot show, and hides itself
+  otherwise rather than holding a blank line: that readings cannot be trusted right now
+  (R25's "Measuring…"), that the ramps do not reach and by how much, and how little is
+  left when nearly level. A grey wheel says _that_ the ramps fall short; only this row
+  says by how much.
 
 ## R7 — A live bubble level (secondary)
 

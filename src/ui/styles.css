@@ -1052,19 +1052,37 @@ body {
   white-space: pre;
 }
 
-/* ---- Footer ---- */
+/* ---- Version, under the name it qualifies (#251) ----
+ * It had a footer to itself at the bottom of every screen — a whole row,
+ * plus its own safe-area padding, spent on a line nobody reads until
+ * something is wrong. Under the logo it costs nothing: the identity
+ * block is already as tall as the icon beside it, so the line sits in
+ * space the bar had anyway. */
 
-.site-footer {
-  padding: 4px 16px max(8px, env(safe-area-inset-bottom));
-  text-align: center;
+.topbar__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
 }
 
-.site-footer__version {
+.topbar__identity-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.topbar__version {
   margin: 0;
+  /* Smaller than the footer's 0.75rem it replaces: this is a fingerprint
+     for a bug report, not something to read. */
+  font-size: 0.625rem;
+  line-height: 1.2;
   color: var(--on-surface-muted);
-  font-size: 0.75rem;
-  opacity: 0.75;
+  opacity: 0.7;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ---- Hamburger menu ---- */

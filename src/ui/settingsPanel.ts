@@ -1154,8 +1154,15 @@ export function createSettingsForm(
     // footer's own Save/Undo.
     // Answer first, means of changing it below (#246): what you have set
     // — the model and its step heights — then the settings that follow
-    // from it, then what the app will do with them, and last the one
-    // disclosure that changes the choice, filter and catalogue together.
+    // from it, then the one disclosure that changes the choice, filter and
+    // catalogue together, and the rarely-touched Advanced block last.
+    //
+    // "Change ramp" sits above Advanced rather than below it because of
+    // what picking "Custom set" does: the step-height editor appears up
+    // under the block showing those heights, and every row between the
+    // list you picked from and the editor that answers is distance the
+    // eye has to travel. Advanced is the one thing on this tab nobody
+    // needs while choosing, so it is what goes below.
     // The custom step-height editor stays directly under the block showing
     // those heights, since that is what it edits.
     filterDetails.append(modelList);
@@ -1164,8 +1171,8 @@ export function createSettingsForm(
       customEditor,
       rampCountField,
       rampCountHint,
-      rampsAdvancedDetails,
       filterDetails,
+      rampsAdvancedDetails,
       footer,
     );
 

@@ -680,8 +680,8 @@ describe('settings form — Modern tabs (#108)', () => {
     const order = [
       panel.querySelector('.klossar__selected')!,
       panel.querySelector('.settings__field')!,
-      panel.querySelector('.settings__advanced--drain')!,
       panel.querySelector('.klossar__picker-details')!,
+      panel.querySelector('.settings__advanced--drain')!,
       panel.querySelector('.klossar__footer')!,
     ].map(indexOf);
     expect(order).toEqual([...order].sort((a, b) => a - b));
