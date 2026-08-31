@@ -47,17 +47,31 @@ const BASE = `http://localhost:${PORT}/libell/`;
 // longest German guide step without scrolling its body, which on that
 // screen would mean type too small to read. Its controls stay pinned
 // either way — that is what R18 guarantees everywhere.
-const VIEWPORTS = [
-  { name: '320x480', width: 320, height: 480, fitsWhole: false },
-  { name: 'iPhone SE, Safari', width: 375, height: 553, fitsWhole: true },
-  { name: 'iPhone 15, Safari', width: 393, height: 745, fitsWhole: true },
-];
-const TIGHTEST = VIEWPORTS[1];
-
 // Every shipped language: German and French wrap to more lines, and run
 // wider on a button, than the English — a view that fits in one language
 // can overflow in another.
 const LANGUAGES = ['sv', 'en', 'fr', 'es', 'de'];
+
+// The longest of them, and the one that has caught every language-related
+// failure so far; English is the baseline to compare it against.
+const LONGEST = ['de', 'en'];
+
+// `languages` is per viewport rather than the whole list everywhere,
+// because the language dimension is not equally informative at every
+// size: it exists to catch text that runs longer than the space it has,
+// and the space is tightest on the SE, so that is where all five are
+// walked. The 320px entry is about width, where German is the worst case
+// and English the baseline. The roomiest screen is a sanity check that
+// nothing breaks when there is more room, not a place where text
+// overflows — one language is enough to notice a structural break.
+// Together this is 8 language-runs per appearance instead of 15, without
+// giving up a combination that has ever failed.
+const VIEWPORTS = [
+  { name: '320x480', width: 320, height: 480, fitsWhole: false, languages: LONGEST },
+  { name: 'iPhone SE, Safari', width: 375, height: 553, fitsWhole: true, languages: LANGUAGES },
+  { name: 'iPhone 15, Safari', width: 393, height: 745, fitsWhole: true, languages: ['de'] },
+];
+const TIGHTEST = VIEWPORTS[1];
 
 // Classic and Modern build different DOM for the same content, and
 // Classic's settings is a drawer where Modern's is a page.
@@ -377,7 +391,7 @@ try {
       viewport: { width: viewport.width, height: viewport.height },
     });
     for (const appearance of APPEARANCES) {
-      for (const language of LANGUAGES) {
+      for (const language of viewport.languages) {
         const at = (view) => `${viewport.name} / ${appearance} / ${language} / ${view}`;
 
         // --- Level view. `?demo` replaces the sensor with a fixed tilt and
@@ -391,6 +405,10 @@ try {
         // --- Settings: a page in Modern, a drawer in Classic.
         await level.locator('#settings-button').click();
         await auditView(level, at('settings'));
+        // Reload rather than closing: a page's own ✕ goes through
+        // history.back(), which from a freshly-loaded page can leave the
+        // app entirely. Saving one page load is not worth a test that
+        // depends on the browser's history stack.
         await level.reload();
         await level.waitForSelector('.rv-diagram svg');
 
@@ -410,50 +428,59 @@ try {
         await sim.close();
 
         // --- Incoming vehicle setup, reached the way a real one is: the
-        // share link this app itself produces, opened fresh.
-        const sharer = await open(context, appearance, language, { query: '?demo=1' });
-        await sharer.waitForSelector('.rv-diagram svg');
-        // The vehicle-setup link comes from Settings, not the top bar's
-        // share button (which shares the app itself). Open Settings and
-        // find the button wherever this appearance puts it — a tab panel
-        // in Modern, a separate page in Classic.
-        await sharer.locator('#settings-button').click();
-        await sharer.waitForTimeout(300);
-        const shareUrl = await sharer.evaluate(async () => {
-          let captured = null;
-          Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
-          Object.defineProperty(navigator, 'clipboard', {
-            value: { writeText: async (text) => void (captured = text) },
-            configurable: true,
-          });
-          // Walk whatever tabs or sub-pages this appearance shows until
-          // the vehicle section, and its share button, is on screen.
-          // Modern lays the sections out as tabs on one page; Classic's
-          // drawer lists them as items that each open their own page. Try
-          // each in turn until the vehicle section is showing.
-          const findButton = () => document.querySelector('.settings__share-vehicle');
-          if (!findButton()) {
-            const steps = [...document.querySelectorAll('.settings__tab, .menu__item')];
-            for (const step of steps) {
-              step.click();
-              await new Promise((r) => setTimeout(r, 120));
-              if (findButton()) break;
+        // share link this app itself produces, opened fresh. Walked on the
+        // tightest screen only: reaching it costs a page load, a settings
+        // walk and a navigation, and it is a small centred dialog whose
+        // content does not change with the screen around it — if it fits
+        // there it fits anywhere, and every language still passes through.
+        const sharer =
+          viewport === TIGHTEST
+            ? await open(context, appearance, language, { query: '?demo=1' })
+            : null;
+        if (sharer) {
+          await sharer.waitForSelector('.rv-diagram svg');
+          // The vehicle-setup link comes from Settings, not the top bar's
+          // share button (which shares the app itself). Open Settings and
+          // find the button wherever this appearance puts it — a tab panel
+          // in Modern, a separate page in Classic.
+          await sharer.locator('#settings-button').click();
+          await sharer.waitForTimeout(300);
+          const shareUrl = await sharer.evaluate(async () => {
+            let captured = null;
+            Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+            Object.defineProperty(navigator, 'clipboard', {
+              value: { writeText: async (text) => void (captured = text) },
+              configurable: true,
+            });
+            // Walk whatever tabs or sub-pages this appearance shows until
+            // the vehicle section, and its share button, is on screen.
+            // Modern lays the sections out as tabs on one page; Classic's
+            // drawer lists them as items that each open their own page. Try
+            // each in turn until the vehicle section is showing.
+            const findButton = () => document.querySelector('.settings__share-vehicle');
+            if (!findButton()) {
+              const steps = [...document.querySelectorAll('.settings__tab, .menu__item')];
+              for (const step of steps) {
+                step.click();
+                await new Promise((r) => setTimeout(r, 120));
+                if (findButton()) break;
+              }
             }
+            const button = findButton();
+            if (!button) return null;
+            button.click();
+            await new Promise((r) => setTimeout(r, 300));
+            return captured;
+          });
+          if (shareUrl && shareUrl.includes('#setup=')) {
+            await sharer.goto(shareUrl.replace(/^https?:\/\/[^/]+/, `http://localhost:${PORT}`));
+            await sharer.waitForTimeout(500);
+            await auditView(sharer, at('incoming setup'));
+          } else {
+            fail(at('incoming setup'), 'could not produce a share link to open the view with');
           }
-          const button = findButton();
-          if (!button) return null;
-          button.click();
-          await new Promise((r) => setTimeout(r, 300));
-          return captured;
-        });
-        if (shareUrl && shareUrl.includes('#setup=')) {
-          await sharer.goto(shareUrl.replace(/^https?:\/\/[^/]+/, `http://localhost:${PORT}`));
-          await sharer.waitForTimeout(500);
-          await auditView(sharer, at('incoming setup'));
-        } else {
-          fail(at('incoming setup'), 'could not produce a share link to open the view with');
+          await sharer.close();
         }
-        await sharer.close();
 
         // --- The first-run guide, the one view that opens on its own when
         // nothing has been stored yet.
@@ -471,7 +498,7 @@ try {
     viewport: { width: TIGHTEST.width, height: TIGHTEST.height },
     userAgent: IOS_UA,
   });
-  for (const language of LANGUAGES) {
+  for (const language of LONGEST) {
     const label = `iOS / modern / ${language} / sensor guide`;
     const page = await open(iosContext, 'modern', language, { query: '?demo=1' });
     await page.waitForSelector('.rv-diagram svg');

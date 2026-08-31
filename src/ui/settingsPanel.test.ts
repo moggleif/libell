@@ -626,12 +626,13 @@ describe('settings form — Modern tabs (#108)', () => {
   // #246: "Custom set" is one of the choices, so it lives in the list of
   // choices — it used to sit outside and below the picker, as though it
   // were a different kind of thing.
-  it('offers "Custom set" as the last entry of the picker itself', () => {
+  it('offers "Custom set" as the first entry of the picker itself', () => {
     const form = createSettingsForm(modern, vi.fn());
     const list = form.querySelector<HTMLElement>('.klossar__list')!;
     const custom = form.querySelector<HTMLElement>('.klossar__row--custom')!;
     expect(list.contains(custom)).toBe(true);
-    expect(list.lastElementChild).toBe(custom);
+    // It leads: the one entry relevant whatever brand you own.
+    expect(list.firstElementChild).toBe(custom);
   });
 
   it('keeps "Custom set" offered when the brand filter narrows the models', () => {
@@ -655,7 +656,11 @@ describe('settings form — Modern tabs (#108)', () => {
     const selected = panel.querySelector('.klossar__selected')!;
     const rampCount = panel.querySelector('.settings__field')!;
     const indexOf = (el: Element) => children.findIndex((c) => c === el || c.contains(el));
-    expect(indexOf(panel.querySelector('.klossar__list')!)).toBeLessThan(indexOf(selected));
+    const list = panel.querySelector('.klossar__list')!;
+    const filter = panel.querySelector('.klossar__filter-details')!;
+    // Intro, filter, list, what you picked, then the settings that follow.
+    expect(indexOf(filter)).toBeLessThan(indexOf(list));
+    expect(indexOf(list)).toBeLessThan(indexOf(selected));
     expect(indexOf(selected)).toBeLessThan(indexOf(rampCount));
   });
 
