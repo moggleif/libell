@@ -87,7 +87,7 @@ Actions** to be enabled once for the repository.
 The `VERSION` file holds the current **major.minor**. The first deploy of a new
 major.minor is the release — `vX.Y.0`, tagged and published as a GitHub Release; every
 later merge on the same minor is a QA/candidate build named after the release it builds
-on plus the merged pull request: shown as `X.Y.0 – CR<PR>` in the app's footer and
+on plus the merged pull request: shown as `X.Y.0 – CR<PR>` under the app's logo and
 tagged `vX.Y.0-CR<PR>`. Release texts live in `docs/releases/<tag>.md` and are applied
 automatically on push.
 

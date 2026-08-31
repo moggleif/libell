@@ -23,7 +23,7 @@ jobs:
   # and published as a GitHub Release. Every later merge on the same
   # minor is a QA build (Pages doubles as the QA server): the release it
   # builds on, plus the merged PR number — shown as "X.Y.0 – CR<PR>" and
-  # tagged "vX.Y.0-CR<PR>" (tag names take no spaces), so the footer
+  # tagged "vX.Y.0-CR<PR>" (tag names take no spaces), so the version
   # tells at a glance whether the build is the release or a candidate,
   # and which release it came from (ADR 0007).
   compute-version:
@@ -58,7 +58,7 @@ jobs:
             TAG="v${VERSION_STRING}"
           else
             # Already released: a QA/candidate build on top of that
-            # release. The footer shows "X.Y.0 – CR<PR>"; the tag drops
+            # release. The version line shows "X.Y.0 – CR<PR>"; the tag drops
             # the spaces to stay a valid ref.
             IS_NEW_MINOR=false
             VERSION_STRING="${BASE}.0 – CR${PATCH}"
