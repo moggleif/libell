@@ -349,7 +349,7 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Vehicle',
     'settings.tab.ramps': 'Ramps',
     'settings.klossar.brandAll': 'All',
-    'settings.klossar.filterBrand': 'Filter by brand',
+    'settings.klossar.changeRamp': 'Change ramp',
     'settings.rampCountHint':
       'How many ramps you have to put out. The app never asks you to raise more wheels than this.',
     'settings.klossar.selected': 'Selected',
@@ -803,7 +803,7 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Fordon',
     'settings.tab.ramps': 'Klossar',
     'settings.klossar.brandAll': 'Alla',
-    'settings.klossar.filterBrand': 'Filtrera på märke',
+    'settings.klossar.changeRamp': 'Byt ramp',
     'settings.rampCountHint':
       'Hur många klossar du har att lägga ut. Appen ber dig aldrig höja fler hjul än så.',
     'settings.klossar.selected': 'Vald',
@@ -1224,7 +1224,7 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Véhicule',
     'settings.tab.ramps': 'Rampes',
     'settings.klossar.brandAll': 'Toutes',
-    'settings.klossar.filterBrand': 'Filtrer par marque',
+    'settings.klossar.changeRamp': 'Changer de rampe',
     'settings.rampCountHint':
       "Combien de rampes vous avez à poser. L'application ne vous demandera jamais de lever plus de roues que cela.",
     'settings.klossar.selected': 'Sélectionné',
@@ -1650,7 +1650,7 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Vehículo',
     'settings.tab.ramps': 'Rampas',
     'settings.klossar.brandAll': 'Todas',
-    'settings.klossar.filterBrand': 'Filtrar por marca',
+    'settings.klossar.changeRamp': 'Cambiar rampa',
     'settings.rampCountHint':
       'Cuántas rampas tienes para colocar. La aplicación nunca te pedirá levantar más ruedas que esas.',
     'settings.klossar.selected': 'Seleccionado',
@@ -2070,7 +2070,7 @@ export const MESSAGES = {
     'settings.tab.vehicle': 'Fahrzeug',
     'settings.tab.ramps': 'Keile',
     'settings.klossar.brandAll': 'Alle',
-    'settings.klossar.filterBrand': 'Nach Marke filtern',
+    'settings.klossar.changeRamp': 'Keil wechseln',
     'settings.rampCountHint':
       'Wie viele Keile du auslegen kannst. Die App verlangt nie, mehr Räder anzuheben als das.',
     'settings.klossar.selected': 'Ausgewählt',

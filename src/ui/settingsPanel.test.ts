@@ -626,6 +626,19 @@ describe('settings form — Modern tabs (#108)', () => {
   // #246: "Custom set" is one of the choices, so it lives in the list of
   // choices — it used to sit outside and below the picker, as though it
   // were a different kind of thing.
+  // #246: the filter and the catalogue it narrows are one disclosure, not
+  // a filter on the tab and the thing it filters somewhere else. Closed by
+  // default, because the tab's common errand is checking what is set.
+  it('keeps the filter and the catalogue together in one collapsed disclosure', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const picker = form.querySelector<HTMLDetailsElement>('.klossar__picker-details')!;
+    expect(picker.open).toBe(false);
+    expect(picker.contains(form.querySelector('.klossar__filter')!)).toBe(true);
+    expect(picker.contains(form.querySelector('.klossar__list')!)).toBe(true);
+    // And it says what it does, rather than naming only the filter.
+    expect(picker.querySelector('summary')?.textContent).toBe('Change ramp');
+  });
+
   it('offers "Custom set" as the first entry of the picker itself', () => {
     const form = createSettingsForm(modern, vi.fn());
     const list = form.querySelector<HTMLElement>('.klossar__list')!;
@@ -658,8 +671,7 @@ describe('settings form — Modern tabs (#108)', () => {
       panel.querySelector('.klossar__selected')!,
       panel.querySelector('.settings__field')!,
       panel.querySelector('.settings__advanced--drain')!,
-      panel.querySelector('.klossar__filter-details')!,
-      panel.querySelector('.klossar__list')!,
+      panel.querySelector('.klossar__picker-details')!,
       panel.querySelector('.klossar__footer')!,
     ].map(indexOf);
     expect(order).toEqual([...order].sort((a, b) => a - b));

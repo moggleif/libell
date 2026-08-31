@@ -1357,8 +1357,8 @@ the footer, with the card and the footer both spelling out the same step heights
   step-height editor stays directly under the block showing those heights, since that is
   what it edits.
 - **Given** the choice "Custom set"
-- **Then** it is the _first_ entry of the catalogue itself, not a separate control below
-  it: entering your own step heights is one of the choices, and the one that is relevant
+- **Then** it is the _first_ entry of the catalogue inside that disclosure, not a
+  separate control below it: entering your own step heights is one of the choices, and the one that is relevant
   whatever brand you own, so it leads rather than trailing eleven models you may already
   have ruled out. The brand filter never hides it — narrowing to a brand says which
   ready-made models to show, it does not withdraw the option of entering your own.
@@ -1372,9 +1372,12 @@ the footer, with the card and the footer both spelling out the same step heights
   model is laid out in full and the page does the scrolling, so nothing is hidden behind
   an inner scrollbar with no sign that more exists. Its labels are set at a size that
   matches the app's own reason for 18px body text, not the 10px uppercase they were.
-  The brand filter is a collapsed disclosure directly above the catalogue it narrows,
-  near the bottom of the tab: it helps whoever already knows the brand without standing
-  in front of anything, since a collapsed line costs nothing to skip.
+  Changing the ramp is one collapsed disclosure at the foot of the tab, "Change ramp",
+  holding the brand filter and the catalogue it narrows together — not a filter on the
+  tab and the thing it filters somewhere else. Closed by default, so the tab shows the
+  answer and its settings on one screen; whoever is re-choosing opens it. The heading
+  names the action rather than the filter, since the filter is only part of what is
+  inside.
 - **Given** "Number of ramps"
 - **Then** it says what the number means — how many you have to put out, and that the app
   never asks you to raise more wheels than that — rather than leaving a bare quantity
