@@ -496,7 +496,11 @@ export function createSettingsForm(
   rampCountField.append(rampCountCaption, rampCountSelect);
   // What the number actually means (#246): it read as a bare quantity with
   // no unit of meaning — how many you own? how many the app may use? —
-  // and the explanation that existed was under Advanced, below it.
+  // and the explanation that existed was under Advanced, below it. It now
+  // carries both facts in one sentence: Modern used to show this and
+  // `rampHint` as two separate help texts a few lines apart, saying
+  // overlapping things and costing the tab a line it did not have.
+  // Classic still shows `rampHint` on its own, where it stands alone.
   const rampCountHint = document.createElement('p');
   rampCountHint.className = 'settings__hint';
 
@@ -1161,7 +1165,6 @@ export function createSettingsForm(
       rampCountField,
       rampCountHint,
       rampsAdvancedDetails,
-      rampHint,
       filterDetails,
       footer,
     );

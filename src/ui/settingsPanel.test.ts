@@ -521,8 +521,18 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(drainAdvanced.querySelector('select')?.closest('label')?.textContent).toContain(
       t('settings.drain'),
     );
-    // The general ramp-placement hint stays visible outside Advanced.
-    expect(rampsPanel.textContent).toContain(t('settings.rampHint'));
+    // What the app does with the ramps stays visible outside Advanced —
+    // but as part of the one sentence next to "Number of ramps" (#246),
+    // not as a second help text a few lines further down saying an
+    // overlapping thing.
+    expect(rampsPanel.textContent).toContain(t('settings.rampCountHint'));
+    expect(rampsPanel.textContent).not.toContain(t('settings.rampHint'));
+    // Exactly one help text out in the open — Advanced keeps its own for
+    // the drain, which is a different subject.
+    const hintsOutsideAdvanced = [...rampsPanel.querySelectorAll('.settings__hint')].filter(
+      (hint) => !hint.closest('.settings__advanced'),
+    );
+    expect(hintsOutsideAdvanced).toHaveLength(1);
 
     const caravanModern: LevelSettings = { ...modern, vehicleType: 'caravan' };
     const caravanForm = createSettingsForm(caravanModern, vi.fn());

@@ -1379,6 +1379,15 @@ the footer, with the card and the footer both spelling out the same step heights
   names the action rather than the filter, since the filter is only part of what is
   inside.
 - **Given** "Number of ramps"
-- **Then** it says what the number means — how many you have to put out, and that the app
-  never asks you to raise more wheels than that — rather than leaving a bare quantity
-  whose explanation lived under Advanced, below it.
+- **Then** it says what the number means, in one sentence beside the field: how many you
+  have to put out, and that the app places them where they help most. Modern used to
+  carry that as two separate help texts a few lines apart — this one and a general
+  ramp-placement note — saying overlapping things and costing the tab a line it did not
+  have. Classic still shows the placement note on its own, where it stands alone.
+- **Given** the tab on a 375x553 screen (an iPhone SE in Safari)
+- **Then** it does not fit whole: it is about 105 px too tall in Swedish, 126 px in French
+  and German, and scrolls by that much with everything reachable. The remaining space is
+  in the Reset/Undo/Save row and the block naming the choice and its step heights, and in
+  labels sized for readability — closing it would mean taking back type this tab was
+  given for exactly that reason. The one-screen promise is therefore made, and checked,
+  from 393x745 upward.

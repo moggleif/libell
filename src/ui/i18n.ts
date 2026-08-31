@@ -351,7 +351,7 @@ export const MESSAGES = {
     'settings.klossar.brandAll': 'All',
     'settings.klossar.changeRamp': 'Change ramp',
     'settings.rampCountHint':
-      'How many ramps you have to put out. The app never asks you to raise more wheels than this.',
+      'How many ramps you have to put out. The app places them where they help most.',
     'settings.klossar.selected': 'Selected',
     'settings.klossar.stepsHeading': 'Step heights',
 
@@ -805,7 +805,7 @@ export const MESSAGES = {
     'settings.klossar.brandAll': 'Alla',
     'settings.klossar.changeRamp': 'Byt ramp',
     'settings.rampCountHint':
-      'Hur många klossar du har att lägga ut. Appen ber dig aldrig höja fler hjul än så.',
+      'Hur många klossar du har att lägga ut. Appen placerar dem där de gör mest nytta.',
     'settings.klossar.selected': 'Vald',
     'settings.klossar.stepsHeading': 'Steghöjder',
 
@@ -1226,7 +1226,7 @@ export const MESSAGES = {
     'settings.klossar.brandAll': 'Toutes',
     'settings.klossar.changeRamp': 'Changer de rampe',
     'settings.rampCountHint':
-      "Combien de rampes vous avez à poser. L'application ne vous demandera jamais de lever plus de roues que cela.",
+      "Combien de rampes vous avez à poser. L'application les place au mieux.",
     'settings.klossar.selected': 'Sélectionné',
     'settings.klossar.stepsHeading': 'Hauteurs des paliers',
 
@@ -1652,7 +1652,7 @@ export const MESSAGES = {
     'settings.klossar.brandAll': 'Todas',
     'settings.klossar.changeRamp': 'Cambiar rampa',
     'settings.rampCountHint':
-      'Cuántas rampas tienes para colocar. La aplicación nunca te pedirá levantar más ruedas que esas.',
+      'Cuántas rampas tienes para colocar. La aplicación las coloca donde más ayudan.',
     'settings.klossar.selected': 'Seleccionado',
     'settings.klossar.stepsHeading': 'Alturas de nivel',
 
@@ -2072,7 +2072,7 @@ export const MESSAGES = {
     'settings.klossar.brandAll': 'Alle',
     'settings.klossar.changeRamp': 'Keil wechseln',
     'settings.rampCountHint':
-      'Wie viele Keile du auslegen kannst. Die App verlangt nie, mehr Räder anzuheben als das.',
+      'Wie viele Keile du auslegen kannst. Die App legt sie dorthin, wo sie am meisten bringen.',
     'settings.klossar.selected': 'Ausgewählt',
     'settings.klossar.stepsHeading': 'Stufenhöhen',
 
