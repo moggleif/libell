@@ -407,6 +407,59 @@ try {
         // --- Settings: a page in Modern, a drawer in Classic.
         await level.locator('#settings-button').click();
         await auditView(level, at('settings'));
+
+        // --- The Ramps tab specifically, which is meant to fit one screen
+        // with its picker collapsed (#246): what is set, its step heights,
+        // the ramp count and Save, all without scrolling. That is the
+        // point of collapsing the picker, so it is checked rather than
+        // left to hold by luck — a longer hint or one more setting would
+        // otherwise take it back silently.
+        //
+        // Held to the phones where it actually holds. On a 375x553 SE the
+        // tab is about 130px too tall (181px in French), and the space is
+        // in things put there on purpose: the Reset/Undo/Save row (150px),
+        // the block naming the choice and its step heights (125px), and
+        // labels sized up for readability. Closing that gap would mean
+        // shrinking the type this tab was just given for exactly the
+        // opposite reason, so the promise is stated where it is kept
+        // rather than asserted where it is not.
+        // Modern only; Classic splits these settings across drawer
+        // sub-pages with no tab bar.
+        if (viewport.height >= 745 && appearance === 'modern') {
+          const reached = await level.evaluate(() => {
+            const tab = [...document.querySelectorAll('.settings__tab')].find(
+              (t) => t.getAttribute('data-tab') === 'ramps',
+            );
+            if (!tab) return false;
+            tab.click();
+            return true;
+          });
+          if (!reached) {
+            fail(at('ramps tab'), 'could not reach the Ramps tab to check that it fits');
+          } else {
+            await level.waitForTimeout(250);
+            const overflow = await level.evaluate(() => {
+              const page = document.querySelector('.menu-page:not([hidden])');
+              const picker = document.querySelector('.klossar__picker-details');
+              return {
+                pickerOpen: picker ? picker.open : null,
+                scrollBy: page ? page.scrollHeight - page.clientHeight : 0,
+              };
+            });
+            if (overflow.pickerOpen !== false) {
+              fail(at('ramps tab'), 'the ramp picker is not collapsed by default');
+            } else if (overflow.scrollBy > 0) {
+              fail(
+                at('ramps tab'),
+                `does not fit one screen with the picker collapsed — scrolls by ${Math.round(
+                  overflow.scrollBy,
+                )}px`,
+              );
+            }
+            checked += 1;
+          }
+        }
+
         // Reload rather than closing: a page's own ✕ goes through
         // history.back(), which from a freshly-loaded page can leave the
         // app entirely. Saving one page load is not worth a test that

@@ -1357,8 +1357,8 @@ the footer, with the card and the footer both spelling out the same step heights
   step-height editor stays directly under the block showing those heights, since that is
   what it edits.
 - **Given** the choice "Custom set"
-- **Then** it is the _first_ entry of the catalogue itself, not a separate control below
-  it: entering your own step heights is one of the choices, and the one that is relevant
+- **Then** it is the _first_ entry of the catalogue inside that disclosure, not a
+  separate control below it: entering your own step heights is one of the choices, and the one that is relevant
   whatever brand you own, so it leads rather than trailing eleven models you may already
   have ruled out. The brand filter never hides it — narrowing to a brand says which
   ready-made models to show, it does not withdraw the option of entering your own.
@@ -1372,10 +1372,22 @@ the footer, with the card and the footer both spelling out the same step heights
   model is laid out in full and the page does the scrolling, so nothing is hidden behind
   an inner scrollbar with no sign that more exists. Its labels are set at a size that
   matches the app's own reason for 18px body text, not the 10px uppercase they were.
-  The brand filter is a collapsed disclosure directly above the catalogue it narrows,
-  near the bottom of the tab: it helps whoever already knows the brand without standing
-  in front of anything, since a collapsed line costs nothing to skip.
+  Changing the ramp is one collapsed disclosure at the foot of the tab, "Change ramp",
+  holding the brand filter and the catalogue it narrows together — not a filter on the
+  tab and the thing it filters somewhere else. Closed by default, so the tab shows the
+  answer and its settings on one screen; whoever is re-choosing opens it. The heading
+  names the action rather than the filter, since the filter is only part of what is
+  inside.
 - **Given** "Number of ramps"
-- **Then** it says what the number means — how many you have to put out, and that the app
-  never asks you to raise more wheels than that — rather than leaving a bare quantity
-  whose explanation lived under Advanced, below it.
+- **Then** it says what the number means, in one sentence beside the field: how many you
+  have to put out, and that the app places them where they help most. Modern used to
+  carry that as two separate help texts a few lines apart — this one and a general
+  ramp-placement note — saying overlapping things and costing the tab a line it did not
+  have. Classic still shows the placement note on its own, where it stands alone.
+- **Given** the tab on a 375x553 screen (an iPhone SE in Safari)
+- **Then** it does not fit whole: it is about 105 px too tall in Swedish, 126 px in French
+  and German, and scrolls by that much with everything reachable. The remaining space is
+  in the Reset/Undo/Save row and the block naming the choice and its step heights, and in
+  labels sized for readability — closing it would mean taking back type this tab was
+  given for exactly that reason. The one-screen promise is therefore made, and checked,
+  from 393x745 upward.

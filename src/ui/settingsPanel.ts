@@ -496,7 +496,11 @@ export function createSettingsForm(
   rampCountField.append(rampCountCaption, rampCountSelect);
   // What the number actually means (#246): it read as a bare quantity with
   // no unit of meaning — how many you own? how many the app may use? —
-  // and the explanation that existed was under Advanced, below it.
+  // and the explanation that existed was under Advanced, below it. It now
+  // carries both facts in one sentence: Modern used to show this and
+  // `rampHint` as two separate help texts a few lines apart, saying
+  // overlapping things and costing the tab a line it did not have.
+  // Classic still shows `rampHint` on its own, where it stands alone.
   const rampCountHint = document.createElement('p');
   rampCountHint.className = 'settings__hint';
 
@@ -974,21 +978,24 @@ export function createSettingsForm(
     );
 
     // --- Klossar tab ---
-    // Behind a disclosure rather than first on the tab (#246): someone
-    // setting this up knows they own "three yellow wedges", not that they
-    // are Fiamma. Narrowing twelve models by brand helps the person who
-    // already knows; putting it ahead of the list asked everyone else to
-    // step over it. Collapsed, so the default path is simply the list.
+    // The whole business of changing your ramp, behind one disclosure
+    // (#246): the brand filter and the catalogue it narrows. Collapsed,
+    // because the tab's common errand is checking what is set — which the
+    // block above answers — not re-choosing. Whoever is re-choosing opens
+    // this, and finds the filter and the list together rather than a
+    // filter here and the thing it filters somewhere else.
     const filterDetails = document.createElement('details');
-    filterDetails.className = 'settings__advanced klossar__filter-details';
+    filterDetails.className = 'settings__advanced klossar__picker-details';
     const filterSummary = document.createElement('summary');
     filterSummary.className = 'settings__advanced-summary';
     // Set here rather than in the shared populate pass below: this element
     // only exists in the Modern branch, and a language change rebuilds the
     // whole form anyway.
-    filterSummary.textContent = t('settings.klossar.filterBrand');
+    filterSummary.textContent = t('settings.klossar.changeRamp');
     const filterRow = document.createElement('div');
     filterRow.className = 'klossar__filter';
+    // `modelList` is appended below, once it exists — the picker lives
+    // inside this disclosure now, not beside it.
     filterDetails.append(filterSummary, filterRow);
     const brands = [...new Set(RAMP_MODELS.map((m) => m.name.split(' ')[0]!))];
     let brandFilter: string | null = null;
@@ -1147,20 +1154,18 @@ export function createSettingsForm(
     // footer's own Save/Undo.
     // Answer first, means of changing it below (#246): what you have set
     // — the model and its step heights — then the settings that follow
-    // from it, then what the app will do with them, and only then the
-    // picker for changing your mind. Someone opening this tab is usually
-    // checking what is set, not re-choosing; whoever is re-choosing
-    // scrolls to the list. The custom step-height editor stays directly
-    // under the block showing those heights, since that is what it edits.
+    // from it, then what the app will do with them, and last the one
+    // disclosure that changes the choice, filter and catalogue together.
+    // The custom step-height editor stays directly under the block showing
+    // those heights, since that is what it edits.
+    filterDetails.append(modelList);
     rampsPanel.append(
       selectedBlock,
       customEditor,
       rampCountField,
       rampCountHint,
       rampsAdvancedDetails,
-      rampHint,
       filterDetails,
-      modelList,
       footer,
     );
 
