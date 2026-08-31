@@ -357,8 +357,6 @@ export const MESSAGES = {
 
     'status.measuring': 'Measuring…',
     'status.almost': 'Almost level — {left} left',
-    'status.one': '1 wheel to raise',
-    'status.many': '{n} wheels to raise',
     'status.cantLevel.close': 'Your ramps get close but not enough here — move the vehicle',
     'status.cantLevel.far': 'Your ramps are way off here — move the vehicle',
 
@@ -526,9 +524,6 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'REAR R',
     'caravan.crankUp': 'Crank up',
     'caravan.crankDown': 'Crank down',
-    'status.crank.up': 'Crank the jockey wheel up',
-    'status.crank.down': 'Crank the jockey wheel down',
-    'status.caravan.both': 'Ramp the wheel, then crank the jockey wheel',
 
     'tilt.frontBack': 'Front/back',
     'tilt.sideSide': 'Side/side',
@@ -811,8 +806,6 @@ export const MESSAGES = {
 
     'status.measuring': 'Mäter…',
     'status.almost': 'Nästan i våg — {left} kvar',
-    'status.one': '1 hjul att höja',
-    'status.many': '{n} hjul att höja',
     'status.cantLevel.close': 'Ramperna räcker nästan här — flytta fordonet',
     'status.cantLevel.far': 'Ramperna räcker inte alls här — flytta fordonet',
 
@@ -955,9 +948,6 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'H BAK',
     'caravan.crankUp': 'Veva upp',
     'caravan.crankDown': 'Veva ner',
-    'status.crank.up': 'Veva upp stödhjulet',
-    'status.crank.down': 'Veva ner stödhjulet',
-    'status.caravan.both': 'Rampa hjulet, veva sedan stödhjulet',
 
     'tilt.frontBack': 'Längsled',
     'tilt.sideSide': 'Sidled',
@@ -1232,8 +1222,6 @@ export const MESSAGES = {
 
     'status.measuring': 'Mesure…',
     'status.almost': 'Presque de niveau — il reste {left}',
-    'status.one': '1 roue à surélever',
-    'status.many': '{n} roues à surélever',
     'status.cantLevel.close':
       'Vos rampes approchent mais ne suffisent pas ici — déplacez le véhicule',
     'status.cantLevel.far': 'Vos rampes sont loin du compte ici — déplacez le véhicule',
@@ -1381,9 +1369,6 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'ARRIÈRE D',
     'caravan.crankUp': 'Monter à la manivelle',
     'caravan.crankDown': 'Descendre à la manivelle',
-    'status.crank.up': 'Montez la roue jockey à la manivelle',
-    'status.crank.down': 'Descendez la roue jockey à la manivelle',
-    'status.caravan.both': 'Rampez la roue, puis actionnez la manivelle de la roue jockey',
 
     'tilt.frontBack': 'Longitudinal',
     'tilt.sideSide': 'Latéral',
@@ -1658,8 +1643,6 @@ export const MESSAGES = {
 
     'status.measuring': 'Midiendo…',
     'status.almost': 'Casi nivelado: faltan {left}',
-    'status.one': '1 rueda por subir',
-    'status.many': '{n} ruedas por subir',
     'status.cantLevel.close': 'Tus rampas se acercan pero no bastan aquí: mueve el vehículo',
     'status.cantLevel.far': 'Aquí tus rampas se quedan muy cortas: mueve el vehículo',
 
@@ -1806,9 +1789,6 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'TRAS DER',
     'caravan.crankUp': 'Subir con la manivela',
     'caravan.crankDown': 'Bajar con la manivela',
-    'status.crank.up': 'Sube la rueda jockey con la manivela',
-    'status.crank.down': 'Baja la rueda jockey con la manivela',
-    'status.caravan.both': 'Sube la rueda a la rampa y luego usa la manivela de la rueda jockey',
 
     'tilt.frontBack': 'Delante/detrás',
     'tilt.sideSide': 'Lado/lado',
@@ -2078,8 +2058,6 @@ export const MESSAGES = {
 
     'status.measuring': 'Messen…',
     'status.almost': 'Fast waagerecht — noch {left}',
-    'status.one': '1 Rad anheben',
-    'status.many': '{n} Räder anheben',
     'status.cantLevel.close':
       'Deine Keile kommen nah heran, reichen hier aber nicht — stell das Fahrzeug um',
     'status.cantLevel.far': 'Deine Keile reichen hier bei Weitem nicht — stell das Fahrzeug um',
@@ -2225,9 +2203,6 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'HINTEN R',
     'caravan.crankUp': 'Hochkurbeln',
     'caravan.crankDown': 'Herunterkurbeln',
-    'status.crank.up': 'Das Stützrad hochkurbeln',
-    'status.crank.down': 'Das Stützrad herunterkurbeln',
-    'status.caravan.both': 'Rad auf den Keil fahren, dann das Stützrad kurbeln',
 
     'tilt.frontBack': 'Längs',
     'tilt.sideSide': 'Quer',
