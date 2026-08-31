@@ -1356,17 +1356,21 @@ the footer, with the card and the footer both spelling out the same step heights
 
 - **Given** the Ramps tab in Modern
 - **Then** the catalogue is the picker and exactly one place outside it says what is
-  chosen: a block directly under the catalogue reading top-down as a statement —
-  "Selected", the model's name, "Step heights (mm)", then the heights themselves. No
-  pinned card above the list, and the same numbers are never printed twice.
+  chosen: a block reading top-down as a statement — "Selected", the model's name,
+  "Step heights (mm)", then the heights themselves. The same numbers are never printed
+  twice, and no second card repeats them next to the list.
 - **Given** the tab's running order
 - **Then** the answer comes first and the means of changing it below: what is set (the
-  model and its step heights), the settings that follow from it (number of ramps, drain
-  position under Advanced), what the app will do with them, then the picker for changing
-  your mind, and Save last. Someone opening this tab is usually checking what is set
-  rather than re-choosing; whoever is re-choosing scrolls to the list. The custom
-  step-height editor stays directly under the block showing those heights, since that is
-  what it edits.
+  model and its step heights), the settings that follow from it (number of ramps), the
+  picker for changing your mind, the Advanced disclosure (drain position), and Save
+  last. Someone opening this tab is usually checking what is set rather than
+  re-choosing; whoever is re-choosing opens the picker. "Change ramp" sits above
+  Advanced rather than below it because of what picking "Custom set" does — the
+  step-height editor appears up under the block showing those heights, and every row
+  between the list and the editor that answers it is distance the eye has to travel;
+  Advanced is the one block nobody needs while choosing, so it is what goes below. The
+  custom step-height editor stays directly under the block showing those heights, since
+  that is what it edits.
 - **Given** the choice "Custom set"
 - **Then** it is the _first_ entry of the catalogue inside that disclosure, not a
   separate control below it: entering your own step heights is one of the choices, and the one that is relevant
@@ -1383,9 +1387,9 @@ the footer, with the card and the footer both spelling out the same step heights
   model is laid out in full and the page does the scrolling, so nothing is hidden behind
   an inner scrollbar with no sign that more exists. Its labels are set at a size that
   matches the app's own reason for 18px body text, not the 10px uppercase they were.
-  Changing the ramp is one collapsed disclosure at the foot of the tab, "Change ramp",
-  holding the brand filter and the catalogue it narrows together — not a filter on the
-  tab and the thing it filters somewhere else. Closed by default, so the tab shows the
+  Changing the ramp is one collapsed disclosure, "Change ramp", holding the brand
+  filter and the catalogue it narrows together — not a filter on the tab and the thing
+  it filters somewhere else. Closed by default, so the tab shows the
   answer and its settings on one screen; whoever is re-choosing opens it. The heading
   names the action rather than the filter, since the filter is only part of what is
   inside.

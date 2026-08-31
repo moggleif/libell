@@ -49,3 +49,13 @@ this scheme existed (an old `v1.0.0` pointing at early history) made the first
 1.0 deploy come out as a candidate instead of the release. Before bumping
 `VERSION` to a new major.minor, check for — and remove — any pre-scheme tags in
 that namespace.
+
+## Note (2026-08-31) — the version is under the logo, not in a footer
+
+The version was shown in a footer row at the bottom of the level screen. That row
+cost a full line of a screen the app was simultaneously being trimmed to fit
+(R45), for text nobody reads while leveling, so it was removed and the version
+moved under the wordmark in the top bar. Nothing about this decision changes:
+release-vs-candidate, the `X.Y.0 – CR<PR>` form and the tag scheme are as above —
+only where the string is displayed. "The footer is the QA contract" now reads
+"the version line under the logo is the QA contract".
