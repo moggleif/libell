@@ -99,12 +99,71 @@ with actually inspecting the product — an APK/IPA teardown, official docs, or 
 testing — the same way #116 did for EasyLevel, rather than filling in this table from
 general impression.
 
+## Xparkle RVS01 "Smart RV Leveling Navigator" (SkyRC Technology)
+
+Sold in Sweden by Campingvaruhuset as "Smart Nivå Navigator för Fordon" (art. 84476),
+elsewhere as Xparkle RVS01 / XP-990008-01. Companion app: **Xparkle**
+(`com.skyrc.pbox`, Google Play and App Store) — a multi-product app that also drives
+SkyRC's PBOX GPS meter, their battery monitors and a gas-tank sensor; the RV leveler is
+one module inside it.
+
+Everything below comes from decompiling `Xparkle 1.4.6` (versionCode 20260414, the
+XAPK from APKCombo) with jadx 1.5.1. The leveler lives in `com.skyrc.balance.*` and the
+shared BLE layer in `com.storm.ble.*`. Unlike the EasyLevel apps, **this app is not
+obfuscated** — real class, method and field names throughout — so the claims below are
+read off named code rather than reconstructed from bytecode. No physical box has been
+tested, so nothing here is confirmed against hardware.
+
+### BLE protocol
+
+| Claim                                                    | Status                                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GATT service `0000fff0-0000-1000-8000-00805f9b34fb`      | **Verified** — `com.skyrc.balance.config.Constants`. A 16-bit-derived UUID, not a vendor-random one like EasyLevel's `faf52c20-...`, and not on Web Bluetooth's blocklist.                                                                                                                                                                  |
+| Characteristics                                          | **Verified** — `fff1` read SN/firmware + OTA write, `fff2` READ live tilt, `fff3` WRITE commands, `fff4` NOTIFY command replies, `fff6` read device name.                                                                                                                                                                                   |
+| Live tilt arrives by **polled READ, not notification**   | **Verified** — `ConnectListener.getRealtimeData()` does a GATT read of `fff2`; `RvBalanceMainViewModel` re-issues it every 500 ms (once the connect state machine reaches its last step) or 1000 ms, and the device-list screen every 2000 ms. `fff4`'s notifications carry only command replies.                                           |
+| Live payload (≥ 7 bytes, read from `fff2`)               | **Verified** — `[0]` front/back direction flag (1 = nose up), `[1..2]` big-endian uint16 magnitude in 1/100°, `[3]` left/right direction flag (1 = left low), `[4..5]` same encoding for the other axis, `[6]` battery percent. The app truncates: `raw / 10` as an int, then `/ 10f`, i.e. it displays 0.1° steps from a 0.01° wire value. |
+| The box reports **angles, not raw accelerometer counts** | **Verified** — the single biggest difference from EasyLevel: there is no accel/gyro triplet and no gravity vector on the wire, and no bias/calibration block. The box does its own fusion, its own zeroing and its own mounting transform, and hands over two finished angles plus a sign flag each.                                        |
+| Command frame                                            | **Verified** — `Cmd.base()`: `0x0F`, length (payload + 3), command byte, `0x00`, payload…, checksum `(1 + Σ bytes[2..]) & 0xFF`, then `0xFF 0xFF`. `ConnectListener.onNotify()` reassembles replies across notifications using the same `0x0F` + length header.                                                                             |
+| Command set                                              | **Verified** — `1` factory reset, `2` query parameters, `3` set parameters, `4` password, `5` reset zero, `-1` (0xFF) OTA.                                                                                                                                                                                                                  |
+| Parameter block (reply to command `2`)                   | **Verified** — `[4]` unit (0 = inch, else cm), `[5]` vehicle type, `[6..7]` vehicle width, `[8..9]` vehicle length (both big-endian uint16, in whole inches or cm per `[4]`), `[10]` installation orientation, `[11]` display resolution.                                                                                                   |
+| Installation orientation is stored **on the box**        | **Verified** — four choices (front / rear / left / right, `setup_3_activity.xml`), written with command `3` and read back with command `2`. Same concept as EasyLevel's `sensor_Placing`, except the box keeps it, so unlike EasyLevel it is recoverable over the wire rather than being a per-install fact only the user knows.            |
+| Display resolution                                       | **Verified** — `0`/`1`/`2`/`3` → 0.25 / 0.5 / 1.0 / 1.5 units; the app rounds its lift figures to that step. A display preference, not a sensor property.                                                                                                                                                                                   |
+| Connect sequence, including a password step              | **Verified as app behavior** — once notifications on `fff4` are enabled: read SN → command `4` with model byte 0, old password `"0000"` and the locally stored password → command `2` → then poll `fff2`. Default password is `"0000"` (`Constants.DEFAULT_PASSWORD`); the app prompts the user when the box rejects it.                    |
+| Whether the `fff2` read is refused before that password  | **Unknown** — the app always logs in first, so its code cannot answer this. Needs a physical box.                                                                                                                                                                                                                                           |
+| Encryption                                               | **Verified** — none. Plain reads/writes, no pairing/bonding requirement visible in the app's BLE layer.                                                                                                                                                                                                                                     |
+| Scan matching                                            | **Verified** — the app scans without a service filter and matches advertised names containing `RVLevel` or `RVbalance` (`BaseConstants.BALANCE`, `AppUtil.getDeviceMode()`).                                                                                                                                                                |
+| Whether the box advertises `fff0` in its advertisement   | **Unknown** — the app never filters on it, so nothing in the APK says. This is the same trap #116/#215 hit with EasyLevel's scan UUID, and it decides whether a Web Bluetooth `requestDevice()` filter can use the service UUID or must fall back to the name prefix.                                                                       |
+| Radio hardware                                           | **Inferred** — Telink TLSR8258 (the APK ships `assets/8258_ble*.bin` firmware images alongside the OTA path on `fff1`).                                                                                                                                                                                                                     |
+| The app's own lift math                                  | **Verified** — `sin(roll) × vehicle width` and `sin(pitch) × vehicle length`, rounded to the display-resolution step. No ramp-aware guidance, same gap as EasyLevel (see that section).                                                                                                                                                     |
+
+### What this would mean for Libell, if it were ever supported
+
+Nothing here is a decision — it is what the protocol above implies, recorded so a future
+issue doesn't re-derive it:
+
+- **No gravity vector.** `OrientationSensor` hands `domain/` a `GravityVector`, so an
+  adapter would have to synthesize one from the two angles (`x = tan(roll)`,
+  `y = tan(pitch)`, `z = 1` inverts `domain/leveling.ts`'s `atan2` exactly). That is a
+  new shape of source: EasyLevel and the phone both supply raw axes.
+- **The transport is read/write, not subscribe.** A polling loop plus command writes,
+  where EasyLevel's adapter only ever subscribes. Web Bluetooth does all of it, but none
+  of `easyLevelSensor.ts`'s transport carries over unchanged.
+- **The box owns its own zero and its own mounting orientation**, both readable and
+  writable over the wire. That overlaps R34's installation offset and `easyLevelMounting`
+  from two directions at once — a design question, not a blocker.
+- **Absolute polarity is not the open question it is for EasyLevel.** Direction comes as
+  an explicit flag rather than an accelerometer sign, so the one risk
+  `easyLevelProtocol.ts` still carries does not arise in the same form here; what a
+  physical box would still be needed for is the password gate and the advertising
+  behavior above.
+
 ## Other RV leveling products
 
-No other product has had any research effort spent on it yet. Rather than guess, this
-section is a placeholder: add a row (with the same Verified/Inferred/Unknown discipline)
-the first time a specific competitor becomes relevant to a decision, instead of trying
-to pre-populate a exhaustive market survey here.
+Beyond the three products above, no other one has had any research effort spent on it.
+Rather than guess, this section is a placeholder: add a row (with the same
+Verified/Inferred/Unknown discipline) the first time a specific competitor becomes
+relevant to a decision, instead of trying to pre-populate a exhaustive market survey
+here.
 
 ## How this feeds other issues
 
