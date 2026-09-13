@@ -11,16 +11,15 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
     sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'idle',
-    connectEasyLevel: () => Promise.resolve('granted'),
-    disconnectEasyLevel: () => {},
-    getEasyLevelStatus: () => null,
+    connectSensor: () => Promise.resolve('granted'),
+    disconnectSensor: () => {},
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => '',
     clearInstallCalibration: () => {},
-    getEasyLevelMounting: () => 'standard',
-    setEasyLevelMounting: () => {},
+    getMounting: () => 'standard',
+    setMounting: () => {},
     ...overrides,
   };
 }
@@ -47,20 +46,20 @@ describe('createSensorSourceSection (#116)', () => {
     expect(connectButton.textContent).not.toBe('');
   });
 
-  it('clicking connect calls connectEasyLevel() and reflects a successful result', async () => {
-    const connectEasyLevel = vi.fn(() => Promise.resolve<'granted'>('granted'));
-    const section = createSensorSourceSection(makeOptions({ connectEasyLevel }));
+  it('clicking connect calls connectSensor() and reflects a successful result', async () => {
+    const connectSensor = vi.fn(() => Promise.resolve<'granted'>('granted'));
+    const section = createSensorSourceSection(makeOptions({ connectSensor }));
     const button = findButton(section.element, 'Connect EasyLevel sensor');
     button.click();
-    expect(connectEasyLevel).toHaveBeenCalledOnce();
+    expect(connectSensor).toHaveBeenCalledOnce();
     await Promise.resolve();
     await Promise.resolve();
     expect(section.element.textContent).toContain('Connected');
   });
 
   it('clicking connect surfaces a denied/failed result as an error, not a silent no-op', async () => {
-    const connectEasyLevel = () => Promise.resolve<'denied'>('denied');
-    const section = createSensorSourceSection(makeOptions({ connectEasyLevel }));
+    const connectSensor = () => Promise.resolve<'denied'>('denied');
+    const section = createSensorSourceSection(makeOptions({ connectSensor }));
     const button = findButton(section.element, 'Connect EasyLevel sensor');
     button.click();
     await Promise.resolve();
@@ -69,8 +68,8 @@ describe('createSensorSourceSection (#116)', () => {
   });
 
   it('surfaces "unsupported" distinctly rather than a generic failure', async () => {
-    const connectEasyLevel = () => Promise.resolve<'unsupported'>('unsupported');
-    const section = createSensorSourceSection(makeOptions({ connectEasyLevel }));
+    const connectSensor = () => Promise.resolve<'unsupported'>('unsupported');
+    const section = createSensorSourceSection(makeOptions({ connectSensor }));
     const button = findButton(section.element, 'Connect EasyLevel sensor');
     button.click();
     await Promise.resolve();
@@ -78,21 +77,21 @@ describe('createSensorSourceSection (#116)', () => {
     expect(section.element.textContent).toContain('not supported');
   });
 
-  it('clicking disconnect calls disconnectEasyLevel() and refresh() flips back to the phone', () => {
-    const disconnectEasyLevel = vi.fn();
+  it('clicking disconnect calls disconnectSensor() and refresh() flips back to the phone', () => {
+    const disconnectSensor = vi.fn();
     let source: 'phone' | 'easylevel' = 'easylevel';
     const section = createSensorSourceSection(
       makeOptions({
         getSensorSource: () => source,
-        disconnectEasyLevel: () => {
-          disconnectEasyLevel();
+        disconnectSensor: () => {
+          disconnectSensor();
           source = 'phone';
         },
       }),
     );
     const disconnectButton = findButton(section.element, 'Disconnect');
     disconnectButton.click();
-    expect(disconnectEasyLevel).toHaveBeenCalledOnce();
+    expect(disconnectSensor).toHaveBeenCalledOnce();
     expect(disconnectButton.hidden).toBe(true);
   });
 
@@ -267,12 +266,6 @@ describe('createSensorSourceSection halves (#226)', () => {
       makeOptions({
         getSensorSource: () => 'easylevel',
         getSensorState: () => 'granted',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
-          batteryPercent: 72,
-          temperatureCelsius: 19.5,
-          calibration: null,
-        }),
       }),
     );
     // The connect half is the whole of the External sensor list page.
@@ -311,7 +304,7 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
 
   it('reflects the stored mounting orientation once EasyLevel is active', () => {
     const section = createSensorSourceSection(
-      makeOptions({ getSensorSource: () => 'easylevel', getEasyLevelMounting: () => 'rotated90' }),
+      makeOptions({ getSensorSource: () => 'easylevel', getMounting: () => 'rotated90' }),
     );
     expect(mountingSelect(section.element).value).toBe('rotated90');
   });
@@ -323,12 +316,12 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
   });
 
   it('reflects a stored half-turn mounting, and applies a selected one (#222)', () => {
-    const setEasyLevelMounting = vi.fn();
+    const setMounting = vi.fn();
     const section = createSensorSourceSection(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelMounting: () => 'rotated180',
-        setEasyLevelMounting,
+        getMounting: () => 'rotated180',
+        setMounting,
       }),
     );
     const select = mountingSelect(section.element);
@@ -336,24 +329,24 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
 
     select.value = 'rotated270';
     select.dispatchEvent(new Event('change'));
-    expect(setEasyLevelMounting).toHaveBeenCalledWith('rotated270');
+    expect(setMounting).toHaveBeenCalledWith('rotated270');
   });
 
-  it('calls setEasyLevelMounting() when the selection changes', () => {
-    const setEasyLevelMounting = vi.fn();
+  it('calls setMounting() when the selection changes', () => {
+    const setMounting = vi.fn();
     const section = createSensorSourceSection(
-      makeOptions({ getSensorSource: () => 'easylevel', setEasyLevelMounting }),
+      makeOptions({ getSensorSource: () => 'easylevel', setMounting }),
     );
     const select = mountingSelect(section.element);
     select.value = 'rotated90';
     select.dispatchEvent(new Event('change'));
-    expect(setEasyLevelMounting).toHaveBeenCalledWith('rotated90');
+    expect(setMounting).toHaveBeenCalledWith('rotated90');
   });
 
   it('refresh() re-reads the stored orientation (changed elsewhere, e.g. another open page)', () => {
     let mounting: 'standard' | 'rotated90' = 'standard';
     const section = createSensorSourceSection(
-      makeOptions({ getSensorSource: () => 'easylevel', getEasyLevelMounting: () => mounting }),
+      makeOptions({ getSensorSource: () => 'easylevel', getMounting: () => mounting }),
     );
     expect(mountingSelect(section.element).value).toBe('standard');
     mounting = 'rotated90';

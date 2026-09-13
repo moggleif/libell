@@ -60,16 +60,15 @@ function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOpti
     sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'idle',
-    connectEasyLevel: () => Promise.resolve('unsupported'),
-    disconnectEasyLevel: () => {},
-    getEasyLevelStatus: () => null,
+    connectSensor: () => Promise.resolve('unsupported'),
+    disconnectSensor: () => {},
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
     checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
-    getEasyLevelMounting: () => 'standard',
-    setEasyLevelMounting: () => {},
+    getMounting: () => 'standard',
+    setMounting: () => {},
     ...overrides,
   };
 }
@@ -548,10 +547,10 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
     it('picking the external sensor branches to vehicle, then connect, then installation offset, then settings, then ramps', () => {
       withBluetooth();
       let finished = false;
-      const connectEasyLevel = () => Promise.resolve<'granted'>('granted');
+      const connectSensor = () => Promise.resolve<'granted'>('granted');
       open({
         initialSettings: classicSettings(),
-        connectEasyLevel,
+        connectSensor,
         onFinished: () => (finished = true),
       });
       const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;

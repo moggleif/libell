@@ -74,7 +74,12 @@ import {
   type OrientationSensor,
   type SensorState,
 } from './sensor/orientation';
-import { externalSensorById, hasAvailableExternalSensor } from './sensor/externalSensors';
+import {
+  availableExternalSensors,
+  externalSensorById,
+  hasAvailableExternalSensor,
+  type ExternalSensorHealth,
+} from './sensor/externalSensors';
 import {
   createEasyLevelSensor,
   EASYLEVEL_DESCRIPTOR,
@@ -93,7 +98,7 @@ import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { createInfoPage } from './ui/infoMenu';
-import { createSensorPage, type EasyLevelSensorPage } from './ui/sensorPage';
+import { createSensorPage, type ExternalSensorPage } from './ui/sensorPage';
 import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
 import { isIos } from './ui/platform';
 import { createTargetBadge } from './ui/targetBadge';
@@ -381,6 +386,24 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /**
+   * A source's health in the shape the UI renders (#268): each adapter's
+   * own protocol struct is mapped here, so no UI module ever imports a
+   * protocol. A field left null reads as "nothing has arrived yet"; a
+   * field the device does not have at all is excluded by its descriptor's
+   * capabilities instead, so no row is drawn for it.
+   */
+  function healthOf(source: SensorSource): ExternalSensorHealth | null {
+    if (source !== 'easylevel') return null;
+    const status = externalSensors.getSensor('easylevel')?.getStatus() ?? null;
+    if (!status) return null;
+    return {
+      batteryPercent: status.batteryPercent,
+      temperatureCelsius: status.temperatureCelsius,
+      firmwareLabel: String(status.firmwareTier),
+    };
+  }
+
+  /**
    * The external-sensor lifecycle (#265) — connect, disconnect, the silent
    * auto-reconnect at open (#130), the background auto-retry (#211) and
    * the "use phone sensor" escape hatch (#134) all live in one place now,
@@ -462,12 +485,11 @@ function bootstrap(root: HTMLElement): void {
       // component the real menu page uses, never a duplicate.
       getSensorSource: () => sensor().getSource(),
       getSensorState: () => sensor().getState(),
-      // One descriptor for now; #268 makes the pages render one per
-      // registered source instead of assuming this one.
+      // The onboarding wizard offers one external source; #268's list
+      // page is where more than one becomes visible.
       sensor: EASYLEVEL_DESCRIPTOR,
-      connectEasyLevel: () => externalSensors.connect('easylevel'),
-      disconnectEasyLevel: () => externalSensors.disconnect(),
-      getEasyLevelStatus: () => externalSensors.getSensor('easylevel')?.getStatus() ?? null,
+      connectSensor: () => externalSensors.connect('easylevel'),
+      disconnectSensor: () => externalSensors.disconnect(),
       getInstallCalibration: () => easyLevelCalibration,
       calibrateInstall: () => calibrateEasyLevelNow(),
       getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
@@ -478,8 +500,8 @@ function bootstrap(root: HTMLElement): void {
         clearInstallCalibration('easylevel');
         updateIndicators();
       },
-      getEasyLevelMounting: () => easyLevelSettings(settings).mounting,
-      setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
+      getMounting: () => easyLevelSettings(settings).mounting,
+      setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
       onFinished(done) {
         onboardingOpen = false;
         markOnboardingSeen();
@@ -544,8 +566,8 @@ function bootstrap(root: HTMLElement): void {
     getSensorSource: () => sensor().getSource(),
     getSensorState: () => sensor().getState(),
     sensor: EASYLEVEL_DESCRIPTOR,
-    connectEasyLevel: () => externalSensors.connect('easylevel'),
-    disconnectEasyLevel: () => externalSensors.disconnect(),
+    connectSensor: () => externalSensors.connect('easylevel'),
+    disconnectSensor: () => externalSensors.disconnect(),
     getInstallCalibration: () => easyLevelCalibration,
     calibrateInstall: () => calibrateEasyLevelNow(),
     getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
@@ -556,11 +578,11 @@ function bootstrap(root: HTMLElement): void {
       clearInstallCalibration('easylevel');
       updateIndicators();
     },
-    getEasyLevelMounting: () => easyLevelSettings(settings).mounting,
-    setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
+    getMounting: () => easyLevelSettings(settings).mounting,
+    setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
     getActiveTargetName: () => activeTargetName(),
-    getEasyLevelStatus: () => externalSensors.getSensor('easylevel')?.getStatus() ?? null,
+    getHealth: () => healthOf('easylevel'),
     getEasyLevelDeviceId: () => externalSensors.getSensor('easylevel')?.getDeviceId() ?? null,
     getEasyLevelLastSampleAt: () =>
       externalSensors.getSensor('easylevel')?.getLastSampleAt() ?? null,
@@ -631,19 +653,28 @@ function bootstrap(root: HTMLElement): void {
   // added — the answer is unchanged while EasyLevel is the only one.
   const externalSensorSupported = hasAvailableExternalSensor();
   const showIosGuide = !externalSensorSupported && isIos();
-  // Held separately, typed as the fuller `EasyLevelSensorPage` (screen-
+  // Held separately, typed as the fuller `ExternalSensorPage` (screen-
   // cleanup follow-up to #133/#129): `sensorPage` below stays the narrower
   // shared `SensorPage` type both this and `iosSensorGuidePage.ts` satisfy,
-  // but only this branch actually has a status sub-page to attach/refresh.
-  const easyLevelSensorPage: EasyLevelSensorPage | null = externalSensorSupported
-    ? createSensorPage(menuOptions)
+  // but only this branch actually has device pages to attach/refresh.
+  const externalSensorPage: ExternalSensorPage | null = externalSensorSupported
+    ? // One section and one device page per available source (#268); the
+      // options bag is per source, so each renders its own name, rows and
+      // controls.
+      createSensorPage(availableExternalSensors(), (descriptor) => ({
+        ...menuOptions,
+        sensor: descriptor,
+        connectSensor: () => externalSensors.connect(descriptor.id),
+        disconnectSensor: () => externalSensors.disconnect(),
+        getHealth: () => healthOf(descriptor.id),
+      }))
     : null;
-  const sensorPage = easyLevelSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
+  const sensorPage = externalSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
   if (sensorPage) document.body.append(sensorPage.element);
   // Attached after `sensorPage.element` (see `sensorPage.ts`'s doc
-  // comment): the status page must paint on top of the External sensor
-  // list page when both happen to be open at once.
-  if (easyLevelSensorPage) document.body.append(easyLevelSensorPage.statusElement);
+  // comment): a device page must paint on top of the External sensor list
+  // page when both happen to be open at once.
+  if (externalSensorPage) document.body.append(...externalSensorPage.statusElements);
 
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the
@@ -1104,7 +1135,7 @@ function bootstrap(root: HTMLElement): void {
       // regardless of what's open" discipline as `updateSensorStatus()`
       // above — `refreshLive()` itself is the no-op guard when that page
       // isn't the one currently open.
-      easyLevelSensorPage?.refreshLive();
+      externalSensorPage?.refreshLive();
       // Settings, info page, sensor page, or wizard open: the user is
       // reading, phone in hand — no pose nagging, no overlays, no
       // celebration until they are back.

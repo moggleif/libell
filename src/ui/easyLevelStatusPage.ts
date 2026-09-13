@@ -30,7 +30,7 @@ import {
   type SensorSource,
 } from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
-import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
+import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import { createStandalonePage } from './standalonePage';
@@ -45,9 +45,10 @@ export interface EasyLevelStatusOptions {
   getSensorSource(): SensorSource;
   /** The active sensor's current state. */
   getSensorState(): SensorState;
-  /** `faf52c22-...` parsed into battery/temperature/firmware-tier (#123),
-   * or null before the first status notification arrives. */
-  getEasyLevelStatus(): EasyLevelStatus | null;
+  /** This source's own health — battery, temperature, firmware label
+   * (#268) — or null before anything has arrived. Which of its fields are
+   * rendered is decided by `sensor.capabilities`, not by the value. */
+  getHealth(): ExternalSensorHealth | null;
   /** Calibrated roll/pitch — the same effective calibration the leveling
    * math itself uses — or null before the first sample. Shown for either
    * sensor source, unlike the EasyLevel-only fields below. */
@@ -147,7 +148,16 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   lowBatteryRow.className = 'menu__text menu__text--warning';
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
-  page.body.append(stateRow, detailHeading, batteryRow, temperatureRow, readingRow, lowBatteryRow);
+  // Only the rows this device can actually fill (#268, ADR 0016). #228
+  // removed the signal-strength row for exactly this reason: a row that
+  // permanently reads "not available yet" promises a value that never
+  // arrives, which is worse than not showing it.
+  const capabilities = options.sensor.capabilities;
+  page.body.append(stateRow, detailHeading);
+  if (capabilities.battery) page.body.append(batteryRow);
+  if (capabilities.temperature) page.body.append(temperatureRow);
+  page.body.append(readingRow);
+  if (capabilities.battery) page.body.append(lowBatteryRow);
 
   // Where this sensor's own SETTINGS go (#226) — the mounting picker
   // (R43) and installation offset (R34), built by
@@ -214,14 +224,10 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   connectDelayMsInput.step = '50';
   connectDelayMsField.append(connectDelayMsCaption, connectDelayMsInput);
 
+  debugDetails.append(debugSummary, debugIntro, deviceIdRow, lastSampleRow, rawAccelRow);
+  if (capabilities.firmwareVersion) debugDetails.append(firmwareTierRow);
+  if (capabilities.debugBytes) debugDetails.append(rawStatusBytesRow);
   debugDetails.append(
-    debugSummary,
-    debugIntro,
-    deviceIdRow,
-    lastSampleRow,
-    rawAccelRow,
-    firmwareTierRow,
-    rawStatusBytesRow,
     copyDebugButton,
     connectDelayHint,
     connectDelayEnableField,
@@ -259,19 +265,23 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   function refresh(): void {
     const source = options.getSensorSource();
     const state = options.getSensorState();
-    stateRow.textContent =
-      source !== 'easylevel'
-        ? t('sensorSource.status.phone')
-        : state === 'disconnected'
-          ? t('sensorSource.status.disconnected')
-          : t('sensorSource.status.connected', { name: options.sensor.displayName });
+    const isActive = source === options.sensor.id;
+    stateRow.textContent = !isActive
+      ? t('sensorSource.status.phone')
+      : state === 'disconnected'
+        ? t('sensorSource.status.disconnected')
+        : t('sensorSource.status.connected', { name: options.sensor.displayName });
 
-    const status = source === 'easylevel' ? options.getEasyLevelStatus() : null;
+    const health = isActive ? options.getHealth() : null;
+    const batteryPercent = health?.batteryPercent ?? null;
     batteryRow.textContent = t('sensorSource.detail.battery', {
-      value: status ? `${Math.round(status.batteryPercent)}%` : notAvailable,
+      value: batteryPercent === null ? notAvailable : `${Math.round(batteryPercent)}%`,
     });
     temperatureRow.textContent = t('sensorSource.detail.temperature', {
-      value: status ? `${status.temperatureCelsius.toFixed(1)}°C` : notAvailable,
+      value:
+        health?.temperatureCelsius == null
+          ? notAvailable
+          : `${health.temperatureCelsius.toFixed(1)}°C`,
     });
     const tilt = options.getCalibratedTilt();
     readingRow.textContent = t('sensorStatus.reading', {
@@ -280,16 +290,16 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         : '—',
     });
 
-    wasLowBattery = status ? isLowBattery(status.batteryPercent, wasLowBattery) : false;
+    wasLowBattery = batteryPercent === null ? false : isLowBattery(batteryPercent, wasLowBattery);
     lowBatteryRow.hidden = !wasLowBattery;
-    if (wasLowBattery && status) {
+    if (wasLowBattery && batteryPercent !== null) {
       lowBatteryRow.textContent = t('sensorSource.lowBattery', {
-        value: `${Math.round(status.batteryPercent)}%`,
+        value: `${Math.round(batteryPercent)}%`,
       });
     }
 
-    debugDetails.hidden = source !== 'easylevel';
-    if (source === 'easylevel') {
+    debugDetails.hidden = !isActive;
+    if (isActive) {
       deviceIdRow.textContent = t('sensorStatus.debug.deviceId', {
         value: options.getEasyLevelDeviceId() ?? notAvailable,
       });
@@ -301,7 +311,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         value: rawAccel ? `${rawAccel.x}, ${rawAccel.y}, ${rawAccel.z}` : notAvailable,
       });
       firmwareTierRow.textContent = t('sensorStatus.debug.firmwareTier', {
-        value: status ? String(status.firmwareTier) : notAvailable,
+        value: health?.firmwareLabel ?? notAvailable,
       });
       rawStatusBytesRow.textContent = t('sensorStatus.debug.rawStatusBytes', {
         value: hexBytes(options.getEasyLevelStatusBytes()) ?? notAvailable,
@@ -310,15 +320,15 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   }
 
   copyDebugButton.addEventListener('click', () => {
-    const status = options.getEasyLevelStatus();
+    const health = options.getHealth();
     const rawAccel = options.getEasyLevelRawAccel();
     const text = [
-      'Libell EasyLevel debug info',
+      `Libell ${options.sensor.displayName} debug info`,
       `Connection state: ${options.getSensorState()}`,
       `Device ID: ${options.getEasyLevelDeviceId() ?? notAvailable}`,
       `Last sample: ${ageText(options.getEasyLevelLastSampleAt(), performance.now())}`,
       `Raw accelerometer (x/y/z): ${rawAccel ? `${rawAccel.x}, ${rawAccel.y}, ${rawAccel.z}` : notAvailable}`,
-      `Firmware tier: ${status ? status.firmwareTier : notAvailable}`,
+      `Firmware: ${health?.firmwareLabel ?? notAvailable}`,
       `Raw status bytes: ${hexBytes(options.getEasyLevelStatusBytes()) ?? notAvailable}`,
     ].join('\n');
     void navigator.clipboard.writeText(text).then(

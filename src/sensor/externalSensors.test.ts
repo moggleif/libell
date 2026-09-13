@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   availableExternalSensors,
+  isLowBattery,
+  LOW_BATTERY_HYSTERESIS_PERCENT,
+  LOW_BATTERY_PERCENT,
   EXTERNAL_SENSORS,
   externalSensorById,
   hasAvailableExternalSensor,
@@ -107,5 +110,38 @@ describe('the EasyLevel descriptor (#262)', () => {
       installCalibration: true,
       debugBytes: true,
     });
+  });
+});
+
+describe('isLowBattery (#123)', () => {
+  it('enters the low state once battery drops below LOW_BATTERY_PERCENT', () => {
+    expect(isLowBattery(LOW_BATTERY_PERCENT + 1, false)).toBe(false);
+    expect(isLowBattery(LOW_BATTERY_PERCENT, false)).toBe(false);
+    expect(isLowBattery(LOW_BATTERY_PERCENT - 1, false)).toBe(true);
+  });
+
+  it('does not leave the low state until back above the hysteresis band, not just the bare threshold', () => {
+    // Still below threshold + hysteresis — stays low even though it's
+    // technically back above the bare LOW_BATTERY_PERCENT threshold.
+    const justAboveThreshold = LOW_BATTERY_PERCENT + 1;
+    expect(justAboveThreshold).toBeLessThan(LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT);
+    expect(isLowBattery(justAboveThreshold, true)).toBe(true);
+  });
+
+  it('leaves the low state once clearly above the hysteresis band', () => {
+    expect(isLowBattery(LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT, true)).toBe(false);
+    expect(isLowBattery(LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT + 1, true)).toBe(
+      false,
+    );
+  });
+
+  it('never flickers right at the bare threshold while already low', () => {
+    // A reading oscillating around LOW_BATTERY_PERCENT itself must stay
+    // "low" throughout, since it never clears the hysteresis band.
+    let low = true;
+    for (const percent of [19, 21, 19, 20, 19]) {
+      low = isLowBattery(percent, low);
+      expect(low).toBe(true);
+    }
   });
 });

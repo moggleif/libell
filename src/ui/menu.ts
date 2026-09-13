@@ -33,7 +33,7 @@
 import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
 import type { GravityVector } from '../domain/leveling';
-import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
+import type { ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
 import { createCalibrationSection } from './calibrationSection';
@@ -86,15 +86,16 @@ export interface MenuOptions {
   addTargetPreset(name: string): string | null;
   deleteTargetPreset(id: string): void;
   /**
-   * EasyLevel BLE box (#116, ADR 0014) — an opt-in second `sensorSource`.
+   * An external sensor source (#116, ADR 0014) — an opt-in alternative to
+   * the phone's own sensor.
    * Unused by this Classic-only menu now (External sensor moved to
    * `sensorPage.ts`); kept here since this options bag is shared.
    */
   getSensorSource(): SensorSource;
   getSensorState(): SensorState;
-  connectEasyLevel(): Promise<SensorState>;
-  disconnectEasyLevel(): void;
-  getEasyLevelStatus(): EasyLevelStatus | null;
+  connectSensor(): Promise<SensorState>;
+  disconnectSensor(): void;
+  getHealth(): ExternalSensorHealth | null;
   /**
    * The EasyLevel box's installation offset (#131, ADR 0014). Unused by
    * this Classic-only menu now; kept here since this options bag is
