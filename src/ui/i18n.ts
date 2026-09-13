@@ -77,13 +77,18 @@ export const MESSAGES = {
 
     // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
     // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
-    'sensorSource.intro':
-      "Connect a {name} BLE box as an alternative to the phone's own sensor. " +
-      'Requires Chrome on Android with Bluetooth turned on.',
+    // The device sentence only — the browser requirement is the same for
+    // every box and is shown once per page (#272), not once per row.
+    'sensorSource.intro': "Connect the {name} BLE box as an alternative to the phone's own sensor.",
+    'sensorSource.intro.requirements': 'Requires Chrome on Android with Bluetooth turned on.',
     'sensorSource.connect': 'Connect {name} sensor',
     'sensorSource.reconnect': 'Reconnect {name} sensor',
     'sensorSource.disconnect': 'Disconnect',
     'sensorSource.status.phone': "Using the phone's own sensor.",
+    // Shown on a source's own row while a DIFFERENT external source is
+    // feeding readings (#272) — claiming the phone is active would be
+    // plainly wrong once there is more than one box to choose from.
+    'sensorSource.status.inactive': 'Not in use — another sensor is active.',
     'sensorSource.status.connected': 'Connected to the {name} sensor.',
     'sensorSource.status.connecting': 'Connecting…',
     // Connection lost while the box stays the selected source (#129) —
@@ -91,6 +96,11 @@ export const MESSAGES = {
     // never claims a live link that no longer exists.
     'sensorSource.status.disconnected': 'Connection to the {name} sensor was lost — tap Reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
+    // Some boxes ask for a password before they will talk (#272). Kept
+    // separate from the generic failure so the user knows the hardware is
+    // fine and only the password is wrong.
+    'sensorSource.err.password':
+      'The {name} box did not accept its password. Change it back in the manufacturer’s own app, or reset the box.',
     'sensorSource.err.failed': 'Could not connect to the {name} sensor.',
 
     // iOS Safari has no Web Bluetooth and Apple has no plans to add it
@@ -596,17 +606,20 @@ export const MESSAGES = {
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
     // sensor, visas bara när Web Bluetooth finns (`menu.ts`).
     'sensorSource.intro':
-      'Anslut en {name}-box via Bluetooth som alternativ till telefonens egen ' +
-      'sensor. Kräver Chrome på Android med Bluetooth påslaget.',
+      'Anslut {name}-boxen via Bluetooth som alternativ till telefonens egen sensor.',
+    'sensorSource.intro.requirements': 'Kräver Chrome på Android med Bluetooth påslaget.',
     'sensorSource.connect': 'Anslut {name}-sensor',
     'sensorSource.reconnect': 'Återanslut {name}-sensor',
     'sensorSource.disconnect': 'Koppla från',
     'sensorSource.status.phone': 'Använder telefonens egen sensor.',
+    'sensorSource.status.inactive': 'Används inte — en annan sensor är aktiv.',
     'sensorSource.status.connected': 'Ansluten till {name}-sensorn.',
     'sensorSource.status.connecting': 'Ansluter…',
     'sensorSource.status.disconnected':
       'Anslutningen till {name}-sensorn bröts — tryck på Återanslut.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
+    'sensorSource.err.password':
+      '{name}-boxen godtog inte lösenordet. Ändra tillbaka det i tillverkarens egen app, eller nollställ boxen.',
     'sensorSource.err.failed': 'Kunde inte ansluta till {name}-sensorn.',
 
     'sensorSource.ios.intro':
@@ -1012,17 +1025,20 @@ export const MESSAGES = {
     'menu.card.notDone': 'Non fait',
 
     'sensorSource.intro':
-      'Connectez un boîtier {name} BLE comme alternative au capteur du téléphone. ' +
-      'Nécessite Chrome sur Android avec le Bluetooth activé.',
+      'Connectez le boîtier {name} BLE comme alternative au capteur du téléphone.',
+    'sensorSource.intro.requirements': 'Nécessite Chrome sur Android avec le Bluetooth activé.',
     'sensorSource.connect': 'Connecter le capteur {name}',
     'sensorSource.reconnect': 'Reconnecter le capteur {name}',
     'sensorSource.disconnect': 'Déconnecter',
     'sensorSource.status.phone': 'Utilise le capteur du téléphone.',
+    'sensorSource.status.inactive': 'Non utilisé — un autre capteur est actif.',
     'sensorSource.status.connected': 'Connecté au capteur {name}.',
     'sensorSource.status.connecting': 'Connexion…',
     'sensorSource.status.disconnected':
       'La connexion au capteur {name} a été perdue — touchez Reconnecter.',
     'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
+    'sensorSource.err.password':
+      'Le boîtier {name} n’a pas accepté son mot de passe. Rétablissez-le dans l’application du fabricant, ou réinitialisez le boîtier.',
     'sensorSource.err.failed': 'Impossible de se connecter au capteur {name}.',
 
     'sensorSource.ios.intro':
@@ -1435,18 +1451,20 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Sin guardar',
     'menu.card.notDone': 'Sin hacer',
 
-    'sensorSource.intro':
-      'Conecta una caja {name} BLE como alternativa al sensor del propio móvil. ' +
-      'Requiere Chrome en Android con el Bluetooth activado.',
+    'sensorSource.intro': 'Conecta la caja {name} BLE como alternativa al sensor del propio móvil.',
+    'sensorSource.intro.requirements': 'Requiere Chrome en Android con el Bluetooth activado.',
     'sensorSource.connect': 'Conectar el sensor {name}',
     'sensorSource.reconnect': 'Reconectar el sensor {name}',
     'sensorSource.disconnect': 'Desconectar',
     'sensorSource.status.phone': 'Usando el sensor del propio móvil.',
+    'sensorSource.status.inactive': 'No se usa: hay otro sensor activo.',
     'sensorSource.status.connected': 'Conectado al sensor {name}.',
     'sensorSource.status.connecting': 'Conectando…',
     'sensorSource.status.disconnected':
       'Se ha perdido la conexión con el sensor {name}: toca Reconectar.',
     'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
+    'sensorSource.err.password':
+      'La caja {name} no ha aceptado su contraseña. Restablécela en la aplicación del fabricante o reinicia la caja.',
     'sensorSource.err.failed': 'No se ha podido conectar con el sensor {name}.',
 
     'sensorSource.ios.intro':
@@ -1855,18 +1873,21 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Nicht gespeichert',
     'menu.card.notDone': 'Nicht erledigt',
 
-    'sensorSource.intro':
-      'Verbinde eine {name}-BLE-Box als Alternative zum Sensor des Handys. ' +
+    'sensorSource.intro': 'Verbinde die {name}-BLE-Box als Alternative zum Sensor des Handys.',
+    'sensorSource.intro.requirements':
       'Erfordert Chrome unter Android mit eingeschaltetem Bluetooth.',
     'sensorSource.connect': '{name}-Sensor verbinden',
     'sensorSource.reconnect': '{name}-Sensor neu verbinden',
     'sensorSource.disconnect': 'Trennen',
     'sensorSource.status.phone': 'Der Sensor des Handys wird verwendet.',
+    'sensorSource.status.inactive': 'Nicht in Verwendung — ein anderer Sensor ist aktiv.',
     'sensorSource.status.connected': 'Mit dem {name}-Sensor verbunden.',
     'sensorSource.status.connecting': 'Verbinden…',
     'sensorSource.status.disconnected':
       'Die Verbindung zum {name}-Sensor ist abgebrochen — auf Neu verbinden tippen.',
     'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
+    'sensorSource.err.password':
+      'Die {name}-Box hat ihr Passwort nicht akzeptiert. Stelle es in der App des Herstellers zurück, oder setze die Box zurück.',
     'sensorSource.err.failed': 'Verbindung zum {name}-Sensor nicht möglich.',
 
     'sensorSource.ios.intro':

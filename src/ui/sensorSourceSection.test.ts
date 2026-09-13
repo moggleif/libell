@@ -368,3 +368,53 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
     }
   });
 });
+
+describe('a source with something to say about why it is not working (#272)', () => {
+  it('shows the note under the row, so the user knows what to fix', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorState: () => 'denied',
+        getSensorNote: () => 'The box did not accept its password.',
+      }),
+    );
+    expect(section.connectElement.textContent).toContain('did not accept its password');
+  });
+
+  it('says nothing when there is nothing to say, which is nearly always', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorNote: () => null }));
+    const warnings = [...section.connectElement.querySelectorAll('.menu__text--warning')];
+    expect(warnings.every((row) => (row as HTMLElement).hidden)).toBe(true);
+  });
+
+  it('works for a source that offers no note at all', () => {
+    expect(() => createSensorSourceSection(makeOptions())).not.toThrow();
+  });
+});
+
+describe('one row per source, each answering for itself (#272)', () => {
+  it('is active only for its OWN source, not for any external source', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'xparkle', getSensorState: () => 'granted' }),
+    );
+    // The bag's descriptor is EasyLevel's, and a different box is active.
+    expect(section.connectElement.textContent).toContain('Not in use');
+  });
+
+  it('says "using the phone" only when the phone really is active', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
+    expect(section.connectElement.textContent).toContain("phone's own sensor");
+  });
+
+  it('tells the caller when connecting here makes the other rows stale', async () => {
+    const onSourceChanged = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({ connectSensor: () => Promise.resolve('granted') }),
+      undefined,
+      onSourceChanged,
+    );
+    findButton(section.connectElement, 'Connect EasyLevel sensor').click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onSourceChanged).toHaveBeenCalled();
+  });
+});

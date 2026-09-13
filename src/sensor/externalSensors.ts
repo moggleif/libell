@@ -27,6 +27,7 @@
  */
 import type { SensorSource } from '../domain/settings';
 import { EASYLEVEL_DESCRIPTOR } from './easyLevelSensor';
+import { XPARKLE_DESCRIPTOR } from './xparkleSensor';
 
 /**
  * What a source can actually tell the user about itself, so its page can
@@ -100,7 +101,10 @@ export interface ExternalSensorDescriptor {
  * be offered. The phone's own sensor is not here: it is not external, is
  * always the fallback, and has no page of its own.
  */
-export const EXTERNAL_SENSORS: readonly ExternalSensorDescriptor[] = [EASYLEVEL_DESCRIPTOR];
+export const EXTERNAL_SENSORS: readonly ExternalSensorDescriptor[] = [
+  EASYLEVEL_DESCRIPTOR,
+  XPARKLE_DESCRIPTOR,
+];
 
 /** Those that could actually work in this browser right now. */
 export function availableExternalSensors(): ExternalSensorDescriptor[] {

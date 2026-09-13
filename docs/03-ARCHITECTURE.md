@@ -149,6 +149,15 @@ accessors (`easyLevelSettings`, `withEasyLevelSettings`) that validate field by 
 the point of use. `parseSettings` migrates #212/#217's flat `easyLevel*` fields into it
 once.
 
+`src/sensor/xparkleSensor.ts` (#270, R49) is the second adapter: the Xparkle RVS01,
+whose protocol (`xparkleProtocol.ts`) differs from EasyLevel's in two ways that shape the
+code — it is **polled** (a read of `fff2` twice a second, where EasyLevel is notify-driven)
+and it is **written to** (a password and a parameter query on connect, where EasyLevel
+never writes at all). It reports finished angles rather than accelerometer axes, so the
+adapter synthesizes the `GravityVector` the seam takes; it applies its own stored mounting
+orientation, so Libell applies none. `xparkleSimulator.ts` (#271, R48) plugs a simulated
+box into that same transport seam behind `?xparkle-sim`.
+
 **The registry** (`src/sensor/externalSensors.ts`, #262, ADR 0016) is what everything
 above the seam asks instead of naming a device: each external source publishes a
 descriptor with its `id` (the `SensorSource` member, and the key its storage and

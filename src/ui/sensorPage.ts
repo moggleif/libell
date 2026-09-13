@@ -74,21 +74,35 @@ export function createSensorPage(
   // Declared before the page so its `onOpen` can close over it; filled
   // immediately below, and never read until the page is actually opened.
   const sources: { statusPage: EasyLevelStatusPage; section: SensorSourceSection }[] = [];
-  const page = createStandalonePage(t('menu.sensorSource'), () => {
+  const refreshAll = () => {
     for (const source of sources) source.section.refresh();
-  });
+  };
+  const page = createStandalonePage(t('menu.sensorSource'), refreshAll);
+
+  // The browser requirement is the same for every box, so it is said once
+  // here rather than repeated in each source's own intro (#272).
+  const requirements = document.createElement('p');
+  requirements.className = 'menu__text';
+  requirements.textContent = t('sensorSource.intro.requirements');
+  page.body.append(requirements);
 
   for (const sensor of sensors) {
     const options = optionsFor(sensor);
     const statusPage = createEasyLevelStatusPage(options);
-    const section = createSensorSourceSection(options, () => {
-      // The mounting/offset controls live on the device page (#226) and
-      // are refreshed by this section, not by that page — so re-read them
-      // here, on the way in, exactly as opening the list page does for the
-      // half it still shows.
-      section.refresh();
-      statusPage.open();
-    });
+    const section = createSensorSourceSection(
+      options,
+      () => {
+        // The mounting/offset controls live on the device page (#226) and
+        // are refreshed by this section, not by that page — so re-read them
+        // here, on the way in, exactly as opening the list page does for
+        // the half it still shows.
+        section.refresh();
+        statusPage.open();
+      },
+      // Connecting one source changes what every other row should say
+      // (#272) — none of them is "using the phone's own sensor" any more.
+      () => refreshAll(),
+    );
     // A list of sources: just the connect half (#226). The per-device
     // settings half goes on that device's own page below, so this page
     // never grows longer than the detail pages its chevrons lead to.

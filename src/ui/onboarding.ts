@@ -110,7 +110,11 @@ import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
-import { hasAvailableExternalSensor } from '../sensor/externalSensors';
+import {
+  availableExternalSensors,
+  hasAvailableExternalSensor,
+  type ExternalSensorDescriptor,
+} from '../sensor/externalSensors';
 import {
   legendIllustration,
   measuresIllustration,
@@ -120,6 +124,14 @@ import { SEVERITY_GLYPH } from './rvDiagram';
 import { t, type MessageKey } from './i18n';
 
 export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptions {
+  /**
+   * The per-source options for each available external sensor (#272).
+   * With more than one available the wizard offers them all rather than
+   * silently picking one, so a user who owns the other box is not quietly
+   * steered to the first. Optional: callers with a single source can leave
+   * it out and the wizard uses this bag as it always did.
+   */
+  sensorOptionsFor?(sensor: ExternalSensorDescriptor): SensorSourceOptions;
   initialSettings: LevelSettings;
   onSettingsSaved(settings: LevelSettings): void;
   /**
@@ -485,18 +497,29 @@ export function showOnboarding(options: OnboardingOptions): void {
   // running"/no-offset state, same as visiting it before ever connecting
   // at all — no special guard, matching the wizard's "never block, always
   // recoverable via Back" rule elsewhere (#189).
+  /** One section per available source (#272) — the same real components
+   * the External sensor page uses, never a wizard-only rebuild. Falls back
+   * to this bag alone when the caller supplies no per-source factory. */
+  function sectionsFor(half: 'connectElement' | 'installElement'): HTMLElement[] {
+    const perSource = options.sensorOptionsFor;
+    if (!perSource) return [createSensorSourceSection(options)[half]];
+    return availableExternalSensors().map(
+      (sensor) => createSensorSourceSection(perSource(sensor))[half],
+    );
+  }
+
   const connectStep: Step = {
     title: t('menu.sensorSource'),
     skipLabel: t('onboard.skipStep'),
     skipConsequence: true,
-    build: () => [createSensorSourceSection(options).connectElement],
+    build: () => sectionsFor('connectElement'),
   };
 
   const installOffsetStep: Step = {
     title: t('sensorSource.install.h'),
     skipLabel: t('onboard.skipStep'),
     skipConsequence: true,
-    build: () => [createSensorSourceSection(options).installElement],
+    build: () => sectionsFor('installElement'),
   };
 
   // A labeled radio group for a single wizard choice — shared by the
