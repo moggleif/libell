@@ -9,6 +9,7 @@ import {
   hasAvailableExternalSensor,
 } from './externalSensors';
 import { EASYLEVEL_DESCRIPTOR } from './easyLevelSensor';
+import { XPARKLE_DESCRIPTOR } from './xparkleSensor';
 import { SENSOR_SOURCES } from '../domain/settings';
 
 const originalNavigator = globalThis.navigator;
@@ -29,9 +30,9 @@ afterEach(() => {
 });
 
 describe('the external sensor registry (#262)', () => {
-  it('lists EasyLevel, and only sources that are genuinely external', () => {
-    expect(EXTERNAL_SENSORS).toHaveLength(1);
-    expect(EXTERNAL_SENSORS[0]).toBe(EASYLEVEL_DESCRIPTOR);
+  it('lists the supported boxes, and only sources that are genuinely external', () => {
+    expect(EXTERNAL_SENSORS).toContain(EASYLEVEL_DESCRIPTOR);
+    expect(EXTERNAL_SENSORS).toContain(XPARKLE_DESCRIPTOR);
     // The phone is the always-available fallback, not an external source:
     // it has no page, nothing to connect and nothing to remember.
     expect(EXTERNAL_SENSORS.some((sensor) => sensor.id === 'phone')).toBe(false);
@@ -62,9 +63,9 @@ describe('availability (#262)', () => {
     expect(hasAvailableExternalSensor()).toBe(false);
   });
 
-  it('reports EasyLevel available once Web Bluetooth exists', () => {
+  it('reports both boxes available once Web Bluetooth exists', () => {
     setWebBluetooth(true);
-    expect(availableExternalSensors()).toEqual([EASYLEVEL_DESCRIPTOR]);
+    expect(availableExternalSensors()).toEqual([EASYLEVEL_DESCRIPTOR, XPARKLE_DESCRIPTOR]);
     expect(hasAvailableExternalSensor()).toBe(true);
   });
 

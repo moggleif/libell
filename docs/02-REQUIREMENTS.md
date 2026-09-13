@@ -1447,3 +1447,40 @@ and the login handshake is answered with real reply frames.
 - **Then** it is not stranded on "external sensor unavailable": a simulated device id is
   only reachable in simulation mode, and that mismatch is checked rather than retried
   forever (the defect #223 found in R44's own simulator, not repeated here).
+
+## R49 — Xparkle RVS01 as a second external measurement source (opt-in, unverified)
+
+The second box Libell speaks to (#272). Everything R32–R37 promises about an external
+source applies to it — opt-in, never a silent switch, its own installation offset, the
+lost-connection prompt, the staleness overlay — so this requirement states only what is
+specific to this device.
+
+**Nothing here has been tested against a physical box.** The protocol was read off the
+vendor app's own unobfuscated source (`docs/competitor-notes.md`), which is as solid as
+a decompile gets, but two things it structurally cannot answer are tracked in #273.
+Until that is closed, the app must not present this source as more proven than it is.
+
+- **Given** a phone with Chrome/Android and Web Bluetooth support (or `?xparkle-sim`)
+- **When** the user connects the Xparkle box from the External sensor page
+- **Then** the app finds it by its advertised name (`RVLevel`/`RVbalance`, what the
+  vendor app itself matches on) or its `0000fff0-...` service, runs the vendor app's own
+  connect handshake — password, then a parameter query — and the wheel/bubble UI updates
+  from the box's readings, polled twice a second.
+- **Given** the box reports its tilt as two finished angles rather than accelerometer
+  axes
+- **Then** Libell synthesizes the gravity vector its own leveling math takes, so the
+  guidance, the ramp plan, the stillness detection and the staleness overlay are the
+  same code every other source runs through — never a second leveling path.
+- **Given** the box applies its own stored mounting orientation before reporting angles
+- **Then** Libell offers no mounting picker for it and applies no rotation of its own:
+  doing both would double-correct and name the wrong wheel while looking plausible. The
+  orientation the box reports is shown, and the manufacturer's app remains where it is
+  changed.
+- **Given** the box rejects the password it is offered
+- **Then** the External sensor page says so specifically, and says where to fix it —
+  never the generic "could not connect", which would point the user at the hardware
+  rather than at the setting that is actually wrong.
+- **Given** any command that would change what the box has stored (its zero, its vehicle
+  dimensions, its orientation)
+- **Then** Libell never sends it. The box remembers its own configuration, and silently
+  rewriting a user's setup is worse than not supporting it.

@@ -91,6 +91,11 @@ export const MESSAGES = {
     // never claims a live link that no longer exists.
     'sensorSource.status.disconnected': 'Connection to the {name} sensor was lost — tap Reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
+    // Some boxes ask for a password before they will talk (#272). Kept
+    // separate from the generic failure so the user knows the hardware is
+    // fine and only the password is wrong.
+    'sensorSource.err.password':
+      'The {name} box did not accept its password. Change it back in the manufacturer’s own app, or reset the box.',
     'sensorSource.err.failed': 'Could not connect to the {name} sensor.',
 
     // iOS Safari has no Web Bluetooth and Apple has no plans to add it
@@ -607,6 +612,8 @@ export const MESSAGES = {
     'sensorSource.status.disconnected':
       'Anslutningen till {name}-sensorn bröts — tryck på Återanslut.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
+    'sensorSource.err.password':
+      '{name}-boxen godtog inte lösenordet. Ändra tillbaka det i tillverkarens egen app, eller nollställ boxen.',
     'sensorSource.err.failed': 'Kunde inte ansluta till {name}-sensorn.',
 
     'sensorSource.ios.intro':
@@ -1023,6 +1030,8 @@ export const MESSAGES = {
     'sensorSource.status.disconnected':
       'La connexion au capteur {name} a été perdue — touchez Reconnecter.',
     'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
+    'sensorSource.err.password':
+      'Le boîtier {name} n’a pas accepté son mot de passe. Rétablissez-le dans l’application du fabricant, ou réinitialisez le boîtier.',
     'sensorSource.err.failed': 'Impossible de se connecter au capteur {name}.',
 
     'sensorSource.ios.intro':
@@ -1447,6 +1456,8 @@ export const MESSAGES = {
     'sensorSource.status.disconnected':
       'Se ha perdido la conexión con el sensor {name}: toca Reconectar.',
     'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
+    'sensorSource.err.password':
+      'La caja {name} no ha aceptado su contraseña. Restablécela en la aplicación del fabricante o reinicia la caja.',
     'sensorSource.err.failed': 'No se ha podido conectar con el sensor {name}.',
 
     'sensorSource.ios.intro':
@@ -1867,6 +1878,8 @@ export const MESSAGES = {
     'sensorSource.status.disconnected':
       'Die Verbindung zum {name}-Sensor ist abgebrochen — auf Neu verbinden tippen.',
     'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
+    'sensorSource.err.password':
+      'Die {name}-Box hat ihr Passwort nicht akzeptiert. Stelle es in der App des Herstellers zurück, oder setze die Box zurück.',
     'sensorSource.err.failed': 'Verbindung zum {name}-Sensor nicht möglich.',
 
     'sensorSource.ios.intro':

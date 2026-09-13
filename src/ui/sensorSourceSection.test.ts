@@ -368,3 +368,25 @@ describe('createSensorSourceSection mounting orientation (#217)', () => {
     }
   });
 });
+
+describe('a source with something to say about why it is not working (#272)', () => {
+  it('shows the note under the row, so the user knows what to fix', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorState: () => 'denied',
+        getSensorNote: () => 'The box did not accept its password.',
+      }),
+    );
+    expect(section.connectElement.textContent).toContain('did not accept its password');
+  });
+
+  it('says nothing when there is nothing to say, which is nearly always', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorNote: () => null }));
+    const warnings = [...section.connectElement.querySelectorAll('.menu__text--warning')];
+    expect(warnings.every((row) => (row as HTMLElement).hidden)).toBe(true);
+  });
+
+  it('works for a source that offers no note at all', () => {
+    expect(() => createSensorSourceSection(makeOptions())).not.toThrow();
+  });
+});

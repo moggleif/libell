@@ -29,6 +29,7 @@ import {
   withEasyLevelSettings,
   type Calibration,
   type EasyLevelMounting,
+  SENSOR_SOURCES,
   type LevelSettings,
   type SensorSource,
   type SoundPrefs,
@@ -48,6 +49,7 @@ import {
   loadActiveTargetId,
   loadCalibrationInfo,
   loadInstallCalibrationInfo,
+  type StoredCalibration,
   migrateLegacyInstallCalibration,
   loadLanguage,
   loadSettings,
@@ -78,6 +80,7 @@ import {
   availableExternalSensors,
   externalSensorById,
   hasAvailableExternalSensor,
+  type ExternalSensorDescriptor,
   type ExternalSensorHealth,
 } from './sensor/externalSensors';
 import {
@@ -86,6 +89,12 @@ import {
   createWebBluetoothTransport,
   type EasyLevelSensor,
 } from './sensor/easyLevelSensor';
+import {
+  createXparkleSensor,
+  createXparkleTransport,
+  type XparkleSensor,
+} from './sensor/xparkleSensor';
+import { isRememberedXparkleDeviceUsable } from './sensor/xparkleSimulator';
 import {
   createSimulatedEasyLevelTransport,
   easyLevelSimulationMode,
@@ -288,18 +297,26 @@ function bootstrap(root: HTMLElement): void {
   // with, or overwriting, the phone's. There is no separate EasyLevel
   // hardware-bias layer yet (unlike the phone's own `calibration`), so
   // this offset alone is everything "level" means while it is the source.
-  const storedEasyLevel = loadInstallCalibrationInfo('easylevel');
-  let easyLevelCalibration: Calibration | null = storedEasyLevel?.value ?? null;
-  let easyLevelCalibrationCapturedAt: number | null = storedEasyLevel?.capturedAt ?? null;
+  // One per external source (#263/#272): each box sits in its own place in
+  // the vehicle, so two sources can never share a value — ADR 0014's
+  // "never conflate" rule, held here the same way it is held in storage.
+  const installOffsets = new Map<SensorSource, StoredCalibration | null>(
+    SENSOR_SOURCES.filter((source) => source !== 'phone').map((source) => [
+      source,
+      loadInstallCalibrationInfo(source),
+    ]),
+  );
+  const installOffsetOf = (source: SensorSource) => installOffsets.get(source)?.value ?? null;
+  const activeInstallOffset = () => installOffsetOf(sensor().getSource());
   // The two-layer calibration sum — what "level" means, untouched by
   // target presets below (#122, ADR 0013). Selected per the ACTIVE sensor
   // source (#131, ADR 0014): each source supplies its own sensor-bias/
   // installation-offset pair, so switching sources never mixes one
   // source's calibration into the other's readings.
   const zeroCalibration = () =>
-    sensor().getSource() === 'easylevel'
-      ? easyLevelCalibration
-      : combineCalibrations(calibration, vehicleCalibration);
+    sensor().getSource() === 'phone'
+      ? combineCalibrations(calibration, vehicleCalibration)
+      : activeInstallOffset();
   // Target presets (#122, ADR 0013): an intentional NON-level target,
   // applied as a THIRD additive term on top of the two-layer sum above —
   // never conflated with it, never stored in the same field. "Normal"
@@ -368,7 +385,8 @@ function bootstrap(root: HTMLElement): void {
    * (#212) and the mounting orientation (#217) both take effect on the
    * very next attempt without recreating anything.
    */
-  function createExternalSensor(source: SensorSource): EasyLevelSensor | null {
+  function createExternalSensor(source: SensorSource): LibellExternalSensor | null {
+    if (source === 'xparkle') return createXparkleSensor(createXparkleTransport());
     if (source !== 'easylevel') return null;
     // Simulated box (#220): the `?easylevel-sim` flag swaps the transport
     // at this one seam — everything above it (sensor state machine,
@@ -393,15 +411,51 @@ function bootstrap(root: HTMLElement): void {
    * capabilities instead, so no row is drawn for it.
    */
   function healthOf(source: SensorSource): ExternalSensorHealth | null {
-    if (source !== 'easylevel') return null;
-    const status = externalSensors.getSensor('easylevel')?.getStatus() ?? null;
-    if (!status) return null;
-    return {
-      batteryPercent: status.batteryPercent,
-      temperatureCelsius: status.temperatureCelsius,
-      firmwareLabel: String(status.firmwareTier),
-    };
+    const sensor = externalSensors.getSensor(source);
+    if (!sensor) return null;
+    if (source === 'easylevel') {
+      const status = (sensor as EasyLevelSensor).getStatus();
+      return status
+        ? {
+            batteryPercent: status.batteryPercent,
+            temperatureCelsius: status.temperatureCelsius,
+            firmwareLabel: String(status.firmwareTier),
+          }
+        : null;
+    }
+    if (source === 'xparkle') {
+      // This box reports battery and nothing else; its descriptor says so,
+      // so no temperature or firmware row is drawn to be left empty.
+      const reading = (sensor as XparkleSensor).getReading();
+      return reading
+        ? { batteryPercent: reading.batteryPercent, temperatureCelsius: null, firmwareLabel: null }
+        : null;
+    }
+    return null;
   }
+
+  /**
+   * A short, actionable line about why a source is not working, or null
+   * (#272). Today the one case is the Xparkle box rejecting its password:
+   * without this the user would see the ordinary "could not connect" and
+   * have no way to know the box is fine and the password is not.
+   */
+  function sensorNoteFor(source: SensorSource): string | null {
+    if (source !== 'xparkle') return null;
+    const sensor = externalSensors.getSensor('xparkle');
+    return sensor && (sensor as XparkleSensor).isPasswordRejected()
+      ? t('sensorSource.err.password')
+      : null;
+  }
+
+  /**
+   * Every adapter this build can construct. A union rather than the bare
+   * `ExternalSensor` so `healthOf` above can reach each one's own extras
+   * after narrowing on the source it asked for — the casts are safe
+   * because `createExternalSensor` is the only thing that ever builds
+   * these, one branch per source.
+   */
+  type LibellExternalSensor = EasyLevelSensor | XparkleSensor;
 
   /**
    * The external-sensor lifecycle (#265) — connect, disconnect, the silent
@@ -410,13 +464,15 @@ function bootstrap(root: HTMLElement): void {
    * for every source rather than one device. `main.ts` keeps only the
    * wiring: which screen to build, and which indicators to refresh.
    */
-  const externalSensors = createExternalSensorController<EasyLevelSensor>({
+  const externalSensors = createExternalSensorController<LibellExternalSensor>({
     phoneSensor,
     createSensor: createExternalSensor,
     loadDeviceId: loadRememberedDeviceId,
     saveDeviceId: saveRememberedDeviceId,
-    isRememberedDeviceUsable: (_source: SensorSource, deviceId: string) =>
-      isRememberedEasyLevelDeviceUsable(deviceId),
+    isRememberedDeviceUsable: (source: SensorSource, deviceId: string) =>
+      source === 'xparkle'
+        ? isRememberedXparkleDeviceUsable(deviceId)
+        : isRememberedEasyLevelDeviceUsable(deviceId),
     getPreferredSource: () => settings.sensorSource,
     rememberSource: (source) => {
       settings = { ...settings, sensorSource: source };
@@ -488,18 +544,28 @@ function bootstrap(root: HTMLElement): void {
       // The onboarding wizard offers one external source; #268's list
       // page is where more than one becomes visible.
       sensor: EASYLEVEL_DESCRIPTOR,
+      // With more than one box available the wizard offers them all
+      // rather than picking one for the user (#272).
+      sensorOptionsFor: (descriptor: ExternalSensorDescriptor) => ({
+        ...menuOptions,
+        sensor: descriptor,
+        connectSensor: () => externalSensors.connect(descriptor.id),
+        disconnectSensor: () => externalSensors.disconnect(),
+        getSensorNote: () => sensorNoteFor(descriptor.id),
+        getInstallCalibration: () => installOffsetOf(descriptor.id),
+        calibrateInstall: () => calibrateInstallNow(descriptor.id),
+        getInstallCalibrationCapturedAt: () =>
+          installOffsets.get(descriptor.id)?.capturedAt ?? null,
+        checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
+        clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+      }),
       connectSensor: () => externalSensors.connect('easylevel'),
       disconnectSensor: () => externalSensors.disconnect(),
-      getInstallCalibration: () => easyLevelCalibration,
-      calibrateInstall: () => calibrateEasyLevelNow(),
-      getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
-      checkInstallCalibration: () => checkAgainst(easyLevelCalibration),
-      clearInstallCalibration() {
-        easyLevelCalibration = null;
-        easyLevelCalibrationCapturedAt = null;
-        clearInstallCalibration('easylevel');
-        updateIndicators();
-      },
+      getInstallCalibration: () => installOffsetOf('easylevel'),
+      calibrateInstall: () => calibrateInstallNow('easylevel'),
+      getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
+      checkInstallCalibration: () => checkAgainst(installOffsetOf('easylevel')),
+      clearInstallCalibration: () => clearInstallOffset('easylevel'),
       getMounting: () => easyLevelSettings(settings).mounting,
       setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
       onFinished(done) {
@@ -568,16 +634,11 @@ function bootstrap(root: HTMLElement): void {
     sensor: EASYLEVEL_DESCRIPTOR,
     connectSensor: () => externalSensors.connect('easylevel'),
     disconnectSensor: () => externalSensors.disconnect(),
-    getInstallCalibration: () => easyLevelCalibration,
-    calibrateInstall: () => calibrateEasyLevelNow(),
-    getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
-    checkInstallCalibration: () => checkAgainst(easyLevelCalibration),
-    clearInstallCalibration() {
-      easyLevelCalibration = null;
-      easyLevelCalibrationCapturedAt = null;
-      clearInstallCalibration('easylevel');
-      updateIndicators();
-    },
+    getInstallCalibration: () => installOffsetOf('easylevel'),
+    calibrateInstall: () => calibrateInstallNow('easylevel'),
+    getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
+    checkInstallCalibration: () => checkAgainst(installOffsetOf('easylevel')),
+    clearInstallCalibration: () => clearInstallOffset('easylevel'),
     getMounting: () => easyLevelSettings(settings).mounting,
     setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
@@ -587,7 +648,15 @@ function bootstrap(root: HTMLElement): void {
     getEasyLevelLastSampleAt: () =>
       externalSensors.getSensor('easylevel')?.getLastSampleAt() ?? null,
     getEasyLevelRawAccel: () => externalSensors.getSensor('easylevel')?.getGravity() ?? null,
-    getEasyLevelStatusBytes: () => externalSensors.getSensor('easylevel')?.getStatusBytes() ?? null,
+    // Raw status bytes are EasyLevel's own debug surface, gated by its
+    // descriptor's `debugBytes` capability (#268) — a source without them
+    // never draws the row.
+    getEasyLevelStatusBytes: () => {
+      const sensor = externalSensors.getSensor('easylevel');
+      return sensor && sensor.getSource() === 'easylevel'
+        ? (sensor as EasyLevelSensor).getStatusBytes()
+        : null;
+    },
     getEasyLevelConnectDelay: () => ({
       enabled: easyLevelSettings(settings).connectDelayEnabled,
       ms: easyLevelSettings(settings).connectDelayMs,
@@ -667,6 +736,15 @@ function bootstrap(root: HTMLElement): void {
         connectSensor: () => externalSensors.connect(descriptor.id),
         disconnectSensor: () => externalSensors.disconnect(),
         getHealth: () => healthOf(descriptor.id),
+        getSensorNote: () => sensorNoteFor(descriptor.id),
+        // Each source's installation offset is its own (#263): where one
+        // box is bolted in says nothing about where another is.
+        getInstallCalibration: () => installOffsetOf(descriptor.id),
+        calibrateInstall: () => calibrateInstallNow(descriptor.id),
+        getInstallCalibrationCapturedAt: () =>
+          installOffsets.get(descriptor.id)?.capturedAt ?? null,
+        checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
+        clearInstallCalibration: () => clearInstallOffset(descriptor.id),
       }))
     : null;
   const sensorPage = externalSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
@@ -729,9 +807,9 @@ function bootstrap(root: HTMLElement): void {
       settingsSaved: demo || hasStoredSettings(),
       calibrated:
         demo ||
-        (sensor().getSource() === 'easylevel'
-          ? easyLevelCalibration !== null
-          : calibration !== null || vehicleCalibration !== null),
+        (sensor().getSource() === 'phone'
+          ? calibration !== null || vehicleCalibration !== null
+          : activeInstallOffset() !== null),
     });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
@@ -885,7 +963,7 @@ function bootstrap(root: HTMLElement): void {
    * simply means "none yet", the same shape `vehicleZeroFromReading`
    * already handles, so a future hardware-bias layer could subtract from
    * it without migrating anything already stored. */
-  function calibrateEasyLevelNow(): string | null {
+  function calibrateInstallNow(source: SensorSource): string | null {
     const reading = readTiltNow();
     if (typeof reading === 'string') return reading;
     if (
@@ -894,16 +972,18 @@ function bootstrap(root: HTMLElement): void {
     ) {
       return t('calibration.vehicle.err.notFlat');
     }
-    easyLevelCalibration = vehicleZeroFromReading(reading, null);
-    easyLevelCalibrationCapturedAt = Date.now();
-    saveInstallCalibration(
-      'easylevel',
-      easyLevelCalibration,
-      undefined,
-      easyLevelCalibrationCapturedAt,
-    );
+    const value = vehicleZeroFromReading(reading, null);
+    const capturedAt = Date.now();
+    installOffsets.set(source, { value, capturedAt });
+    saveInstallCalibration(source, value, undefined, capturedAt);
     updateIndicators();
     return null;
+  }
+
+  function clearInstallOffset(source: SensorSource): void {
+    installOffsets.set(source, null);
+    clearInstallCalibration(source);
+    updateIndicators();
   }
 
   const showMessage = (text: string) => {

@@ -136,10 +136,11 @@ tested, so nothing here is confirmed against hardware.
 | Radio hardware                                           | **Inferred** — Telink TLSR8258 (the APK ships `assets/8258_ble*.bin` firmware images alongside the OTA path on `fff1`).                                                                                                                                                                                                                     |
 | The app's own lift math                                  | **Verified** — `sin(roll) × vehicle width` and `sin(pitch) × vehicle length`, rounded to the display-resolution step. No ramp-aware guidance, same gap as EasyLevel (see that section).                                                                                                                                                     |
 
-### What this would mean for Libell, if it were ever supported
+### What this meant for Libell
 
-Nothing here is a decision — it is what the protocol above implies, recorded so a future
-issue doesn't re-derive it:
+Libell now speaks this protocol (#269–#272, R49); the points below were the design
+consequences, recorded when they were still predictions and left here as the reasoning
+behind what was built:
 
 - **No gravity vector.** `OrientationSensor` hands `domain/` a `GravityVector`, so an
   adapter would have to synthesize one from the two angles (`x = tan(roll)`,

@@ -145,6 +145,13 @@ export interface SensorSourceOptions {
   /** Explicit disconnect — falls back to the phone sensor. */
   disconnectSensor(): void;
   /**
+   * A short, actionable line about why this source is not working, or null
+   * (#272) — a wrong box password, say. Shown under the status text, so a
+   * user is told what to fix rather than left with a generic failure.
+   * Optional: most sources have nothing to add.
+   */
+  getSensorNote?(): string | null;
+  /**
    * The box's installation offset (#131, ADR 0014) — where the
    * permanently-mounted enclosure physically sits, mirroring
    * `CalibrationOptions.getVehicleCalibration()` but stored completely
@@ -238,6 +245,13 @@ export function createSensorSourceSection(
   disconnectButton.textContent = t('sensorSource.disconnect');
   sensorRow.append(status, disconnectButton);
   connectSection.append(sensorRow);
+  // An actionable line under the row when a source has something specific
+  // to say about why it is not working (#272) — hidden the rest of the
+  // time, which is nearly always.
+  const noteRow = document.createElement('p');
+  noteRow.className = 'menu__text menu__text--warning';
+  noteRow.hidden = true;
+  connectSection.append(noteRow);
 
   // Mounting orientation (#217): the box can be physically mounted two
   // ways, 90° apart — mirrors the official app's own `"sensor_Placing"`,
@@ -392,6 +406,9 @@ export function createSensorSourceSection(
       : options.getSensorState() === 'disconnected'
         ? t('sensorSource.status.disconnected', { name: options.sensor.displayName })
         : t('sensorSource.status.connected', { name: options.sensor.displayName });
+    const note = options.getSensorNote?.() ?? null;
+    noteRow.hidden = note === null;
+    if (note !== null) noteRow.textContent = note;
     installSection.hidden = !active;
     if (active) {
       if (capabilities.mounting) refreshMountingIcon();
