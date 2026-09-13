@@ -121,7 +121,16 @@ parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardwar
 box into that same transport seam behind the `?easylevel-sim` query flag, emitting
 real-wire-format payloads on timers so the whole EasyLevel flow runs hardware-free in
 any browser (`isEasyLevelAvailable()` is that adapter's own availability rule: real Web
-Bluetooth, or the flag). **The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
+Bluetooth, or the flag). **The pages** (`src/ui/sensorPage.ts`, #268) are a list, not a device: one section and
+one device page per available descriptor, built from the same components parameterised
+by that source's descriptor. Which rows and controls a device page draws comes from that
+descriptor's `capabilities` — battery, temperature, firmware, mounting picker,
+installation offset, debug bytes — so a box that reports no temperature has no
+temperature row, rather than one permanently reading "not available yet" (#228). The UI
+imports no protocol module: each adapter's own struct is mapped in `main.ts` into the
+source-neutral `ExternalSensorHealth`.
+
+**The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
 external-sensor lifecycle for every source: lazy adapter construction, connect and
 disconnect, the silent auto-reconnect at app open (#130), the background auto-retry
 (#211) and the "use phone sensor" escape hatch (#134). `main.ts` holds no device-named

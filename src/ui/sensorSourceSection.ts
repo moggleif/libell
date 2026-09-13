@@ -48,7 +48,6 @@ import {
   type EasyLevelMounting,
   type SensorSource,
 } from '../domain/settings';
-import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
@@ -142,12 +141,9 @@ export interface SensorSourceOptions {
    * 'denied' if the picker was cancelled or GATT connect failed,
    * 'unsupported' if Web Bluetooth vanished between page-open and click.
    */
-  connectEasyLevel(): Promise<SensorState>;
+  connectSensor(): Promise<SensorState>;
   /** Explicit disconnect — falls back to the phone sensor. */
-  disconnectEasyLevel(): void;
-  /** `faf52c22-...` parsed into battery/temperature/firmware-tier (#123),
-   * or null before the first status notification arrives. */
-  getEasyLevelStatus(): EasyLevelStatus | null;
+  disconnectSensor(): void;
   /**
    * The box's installation offset (#131, ADR 0014) — where the
    * permanently-mounted enclosure physically sits, mirroring
@@ -162,12 +158,11 @@ export interface SensorSourceOptions {
   /** Compare the current reading against the installation offset's promise of zero — returns a verdict text (R26). */
   checkInstallCalibration(): string;
   clearInstallCalibration(): void;
-  /** Which of the box's two physical mounting orientations to use (#217) —
-   * mirrors the official app's own `"sensor_Placing"` setting. */
-  getEasyLevelMounting(): EasyLevelMounting;
-  /** Takes effect on the very next accel reading, no reconnect needed —
-   * same live-apply behavior `setEasyLevelConnectDelay` already has. */
-  setEasyLevelMounting(mounting: EasyLevelMounting): void;
+  /** Which physical mounting orientation this box is installed in (#217,
+   * R43) — only rendered when the descriptor declares `mounting`. */
+  getMounting(): EasyLevelMounting;
+  /** Takes effect on the very next reading, no reconnect needed. */
+  setMounting(mounting: EasyLevelMounting): void;
 }
 
 export interface SensorSourceSection {
@@ -271,12 +266,12 @@ export function createSensorSourceSection(
     option.textContent = t(`sensorSource.mounting.${value}`);
     mountingSelect.append(option);
   }
-  let mountingIconEl = mountingIcon(options.getEasyLevelMounting());
+  let mountingIconEl = mountingIcon(options.getMounting());
   mountingChoice.append(mountingSelect, mountingIconEl);
   mountingSection.append(mountingHeading, mountingIntro, mountingChoice);
 
   function refreshMountingIcon(): void {
-    const mounting = options.getEasyLevelMounting();
+    const mounting = options.getMounting();
     mountingSelect.value = mounting;
     const next = mountingIcon(mounting);
     mountingIconEl.replaceWith(next);
@@ -288,7 +283,7 @@ export function createSensorSourceSection(
     // literal (#222): with four options a missed branch would silently
     // store 'standard' and quietly undo the user's choice.
     const value = EASYLEVEL_MOUNTINGS.find((candidate) => candidate === mountingSelect.value);
-    options.setEasyLevelMounting(value ?? 'standard');
+    options.setMounting(value ?? 'standard');
     refreshMountingIcon();
   });
 
@@ -302,7 +297,11 @@ export function createSensorSourceSection(
   // running" error `readTilt`-based captures already give elsewhere.
   const installSection = document.createElement('div');
   installSection.hidden = true;
-  installSection.append(mountingSection);
+  // Only the controls this device actually has (#268): a box whose
+  // orientation it reports itself, or one with no installation offset of
+  // its own, must not be given a control that does nothing.
+  const capabilities = options.sensor.capabilities;
+  if (capabilities.mounting) installSection.append(mountingSection);
   const installHeading = document.createElement('h3');
   installHeading.className = 'menu__heading';
   installHeading.textContent = t('sensorSource.install.h');
@@ -323,14 +322,16 @@ export function createSensorSourceSection(
   installClearButton.type = 'button';
   installClearButton.className = 'menu__action menu__action--secondary';
   installClearButton.textContent = t('sensorSource.install.clear');
-  installSection.append(
-    installHeading,
-    installIntro,
-    installButton,
-    installStatus,
-    installCheckButton,
-    installClearButton,
-  );
+  if (capabilities.installCalibration) {
+    installSection.append(
+      installHeading,
+      installIntro,
+      installButton,
+      installStatus,
+      installCheckButton,
+      installClearButton,
+    );
+  }
   body.append(connectSection, installSection);
 
   /** Same status/age/disabled-buttons pattern as the phone's vehicle zero
@@ -393,14 +394,14 @@ export function createSensorSourceSection(
         : t('sensorSource.status.connected', { name: options.sensor.displayName });
     installSection.hidden = !active;
     if (active) {
-      refreshMountingIcon();
-      refreshInstall();
+      if (capabilities.mounting) refreshMountingIcon();
+      if (capabilities.installCalibration) refreshInstall();
     }
   }
 
   connectButton.addEventListener('click', () => {
     statusText.textContent = t('sensorSource.status.connecting');
-    void options.connectEasyLevel().then((state) => {
+    void options.connectSensor().then((state) => {
       statusText.textContent =
         state === 'granted'
           ? t('sensorSource.status.connected', { name: options.sensor.displayName })
@@ -412,7 +413,7 @@ export function createSensorSourceSection(
   });
 
   disconnectButton.addEventListener('click', () => {
-    options.disconnectEasyLevel();
+    options.disconnectSensor();
     refresh();
   });
 

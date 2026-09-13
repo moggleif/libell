@@ -1070,9 +1070,12 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 
 ## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
 
-The External sensor page (R32) lists the one sensor Libell currently supports; tapping
-its status row opens a deeper, focused page for that sensor alone, refreshed
-continuously while it stays open — not just once when opened. This page replaces the
+The External sensor page (R32) lists every external sensor Libell supports that can
+work in this browser — one row each, one today (#268); tapping a row's status opens a
+deeper, focused page for that sensor alone, refreshed continuously while it stays open
+— not just once when opened. Each page draws only the rows its own device can fill:
+a source that reports no temperature has no temperature row rather than one reading
+"not available yet" (#228's rule, generalized). This page replaces the
 earlier standalone Diagnostics tab (design review): that page's generic phone-or-
 EasyLevel framing didn't earn its keep, and whatever troubleshooting value it had is
 better served by raw values read straight off the box.

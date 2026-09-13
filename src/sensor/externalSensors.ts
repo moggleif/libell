@@ -126,3 +126,41 @@ export function hasAvailableExternalSensor(): boolean {
 export function externalSensorById(id: SensorSource): ExternalSensorDescriptor | null {
   return EXTERNAL_SENSORS.find((sensor) => sensor.id === id) ?? null;
 }
+
+/**
+ * What a source can report about its own health, in a shape no protocol
+ * owns (#268). Each adapter fills in what it has; a field left null is
+ * "nothing has arrived yet", and a capability left false in the
+ * descriptor means the row is never drawn at all.
+ *
+ * This exists so the UI never imports a device's protocol module: before
+ * #268, `sensorSourceSection.ts` took EasyLevel's own
+ * battery/temperature/firmware-tier struct, which a box shaped differently
+ * could not fill.
+ */
+export interface ExternalSensorHealth {
+  /** Whole percent, or null before anything has been reported. */
+  batteryPercent: number | null;
+  temperatureCelsius: number | null;
+  /** Whatever this device calls its firmware — a tier, a version string. */
+  firmwareLabel: string | null;
+}
+
+/**
+ * Low-battery warning threshold + hysteresis band (#123; source-neutral
+ * since #268 — any box with a battery gets the same treatment) — a plain
+ * two-state flag, not a full dead-band/dwell stabilizer: this feeds a
+ * single indicator on the device page, not a continuously-redrawn live
+ * value like `domain/stability.ts`'s wheel readouts, so a simple sustain
+ * band is enough to keep it from flickering right at the threshold.
+ * Enters the "low" state below `LOW_BATTERY_PERCENT`, and only leaves it
+ * once back above `LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT`.
+ */
+export const LOW_BATTERY_PERCENT = 20;
+export const LOW_BATTERY_HYSTERESIS_PERCENT = 3;
+
+export function isLowBattery(batteryPercent: number, wasLow: boolean): boolean {
+  return wasLow
+    ? batteryPercent < LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT
+    : batteryPercent < LOW_BATTERY_PERCENT;
+}

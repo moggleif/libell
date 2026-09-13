@@ -425,22 +425,3 @@ export function parseEasyLevelStatus(data: PacketBytes): EasyLevelStatus | null 
 
   return { firmwareTier, batteryPercent, temperatureCelsius, calibration };
 }
-
-/**
- * Low-battery warning threshold + hysteresis band (#123) — a plain
- * two-state flag, not a full dead-band/dwell stabilizer: this feeds a
- * single settings-page indicator refreshed on menu open
- * (`sensorSourceSection.ts`), not a continuously-redrawn live value like
- * `domain/stability.ts`'s wheel readouts, so a simple sustain band is
- * enough to keep it from flickering right at the threshold. Enters the
- * "low" state below `LOW_BATTERY_PERCENT`, and only leaves it once back
- * above `LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT`.
- */
-export const LOW_BATTERY_PERCENT = 20;
-export const LOW_BATTERY_HYSTERESIS_PERCENT = 3;
-
-export function isLowBattery(batteryPercent: number, wasLow: boolean): boolean {
-  return wasLow
-    ? batteryPercent < LOW_BATTERY_PERCENT + LOW_BATTERY_HYSTERESIS_PERCENT
-    : batteryPercent < LOW_BATTERY_PERCENT;
-}

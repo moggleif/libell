@@ -11,7 +11,7 @@ function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevel
     sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'granted',
-    getEasyLevelStatus: () => null,
+    getHealth: () => null,
     getCalibratedTilt: () => null,
     getEasyLevelDeviceId: () => null,
     getEasyLevelLastSampleAt: () => null,
@@ -34,11 +34,10 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
+        getHealth: () => ({
           batteryPercent: 72,
           temperatureCelsius: 19.5,
-          calibration: null,
+          firmwareLabel: '3',
         }),
       }),
     );
@@ -65,11 +64,10 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
+        getHealth: () => ({
           batteryPercent: 15,
           temperatureCelsius: 20,
-          calibration: null,
+          firmwareLabel: '3',
         }),
       }),
     );
@@ -80,11 +78,10 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
+        getHealth: () => ({
           batteryPercent: 90,
           temperatureCelsius: 20,
-          calibration: null,
+          firmwareLabel: '3',
         }),
       }),
     );
@@ -99,11 +96,10 @@ describe('createEasyLevelStatusPage', () => {
       makeOptions({
         getSensorSource: () => 'easylevel',
         getSensorState: () => 'granted',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
+        getHealth: () => ({
           batteryPercent: 72,
           temperatureCelsius: 19.5,
-          calibration: null,
+          firmwareLabel: '3',
         }),
       }),
     );
@@ -129,11 +125,10 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
+        getHealth: () => ({
           batteryPercent: battery,
           temperatureCelsius: 20,
-          calibration: null,
+          firmwareLabel: '3',
         }),
       }),
     );
@@ -174,11 +169,10 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
-        getEasyLevelStatus: () => ({
-          firmwareTier: 3,
+        getHealth: () => ({
           batteryPercent: battery,
           temperatureCelsius: 20,
-          calibration: null,
+          firmwareLabel: '3',
         }),
       }),
     );
@@ -208,11 +202,10 @@ describe('createEasyLevelStatusPage', () => {
           getSensorSource: () => 'easylevel',
           getEasyLevelDeviceId: () => 'device-42',
           getEasyLevelRawAccel: () => ({ x: 120, y: -45, z: 980 }),
-          getEasyLevelStatus: () => ({
-            firmwareTier: 3,
+          getHealth: () => ({
             batteryPercent: 80,
             temperatureCelsius: 20,
-            calibration: null,
+            firmwareLabel: '3',
           }),
           getEasyLevelStatusBytes: () => new Uint8Array([0, 10, 0x32, 0xff]),
         }),
