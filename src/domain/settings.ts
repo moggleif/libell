@@ -105,51 +105,68 @@ export interface LevelSettings {
    */
   sensorSource: SensorSource;
   /**
-   * Debug-only EasyLevel hardware-compatibility workaround (#212), reached
-   * from the EasyLevel status page's "Debug info" disclosure, never the
-   * normal settings panel. Off by default — zero behavior change for
-   * anyone who never opens that disclosure. When on, `easyLevelSensor.ts`'s
-   * transport waits `easyLevelConnectDelayMs` after a GATT connect
-   * succeeds and before discovering services/characteristics, mirroring
-   * (loosely — see `easyLevelConnectDelayMs`'s own comment) a settle delay
-   * the official app's own decompiled connection handling applies that
-   * this app does not. No physical box has confirmed needing this; it
-   * exists so a box owner without a dev setup can experiment via the app's
-   * own UI instead of needing a code change.
+   * Settings that belong to one external sensor rather than to the app or
+   * the vehicle, keyed by source id (#264, ADR 0016).
+   *
+   * Flat `easyLevel*` fields used to sit here instead, which meant a
+   * device's worth of new fields — and of `parseSettings` branches — every
+   * time a source was added, on an object that is otherwise the vehicle's
+   * geometry and the UI's preferences.
+   *
+   * Held as an untyped bag on purpose: entries for sources this build does
+   * not know are carried through a load/save round trip untouched, so
+   * moving between builds cannot destroy the other build's device
+   * settings. Read it through the typed accessors below
+   * (`easyLevelSettings`), never directly — they are what validates a
+   * field and falls back to its default, the same discipline every other
+   * setting gets from `parseSettings`.
    */
-  easyLevelConnectDelayEnabled: boolean;
+  sensorDevices: SensorDeviceSettings;
+}
+
+/**
+ * The raw per-source settings bag (#264). Values are validated when read
+ * by a typed accessor rather than at parse time, which is what lets an
+ * unknown source's entry survive this build without being understood by
+ * it.
+ */
+export type SensorDeviceSettings = Record<string, unknown>;
+
+/** Settings belonging to the EasyLevel box specifically (#212, #217). */
+export interface EasyLevelSettings {
   /**
-   * The delay itself (ms), only applied while
-   * `easyLevelConnectDelayEnabled` is true. Clamped to
-   * `MAX_EASYLEVEL_CONNECT_DELAY_MS` so a mistyped huge value can't
-   * effectively hang every connect attempt. One flat delay, not the
-   * official app's own two-tier scheme — its decompiled
-   * `onConnectionStateChange` branches on `BluetoothDevice.getBondState()`:
-   * 1600ms if bonded, 300ms ("Bonding not required") otherwise. Web
-   * Bluetooth exposes no equivalent bonding-state read to a web page, so
-   * this app genuinely cannot tell the two cases apart and only ever has
-   * one number to offer — but 300ms, not 1600ms, is the one actually worth
-   * defaulting to: EasyLevel's own protocol needs no encryption and has no
-   * WRITE characteristic (confirmed by decompile, `easyLevelSensor.ts`'s
-   * module doc comment), so Android has no reason to ever bond with this
-   * specific hardware — the official app's own bonded/1600ms branch is
-   * essentially dead code for an EasyLevel box specifically, whatever other
-   * devices that shared BLE-manager class might also handle.
+   * Which of the four physical orientations the box is mounted in (#217,
+   * #222) — mirrors the official app's own `"sensor_Placing"` setting (see
+   * `sensor/easyLevelProtocol.ts`'s `applyEasyLevelMounting`). An ordinary
+   * physical-installation fact any user whose box is not mounted the
+   * default way needs. `'standard'` never changes any reading, and no
+   * other `OrientationSensor` reads this at all.
    */
-  easyLevelConnectDelayMs: number;
+  mounting: EasyLevelMounting;
   /**
-   * Which of the two physical orientations the EasyLevel box is mounted in
-   * (#217) — mirrors the official app's own `"sensor_Placing"` setting
-   * (see `easyLevelProtocol.ts`'s `EasyLevelMounting`/
-   * `applyEasyLevelMounting`), exposed as a normal settings-page choice
-   * rather than a debug-only one: unlike `easyLevelConnectDelayMs`, this
-   * is an ordinary physical-installation fact any user with the box
-   * mounted the second way needs, not a hardware-compatibility experiment.
-   * `'standard'` (the official app's own default) never changes any
-   * reading — the phone sensor and every other `OrientationSensor` never
-   * read this field at all.
+   * Debug-only hardware-compatibility workaround (#212), reached from the
+   * EasyLevel status page's "Debug info" disclosure, never the normal
+   * settings panel. Off by default — zero behavior change for anyone who
+   * never opens that disclosure. When on, `easyLevelSensor.ts`'s transport
+   * waits `connectDelayMs` after a GATT connect succeeds and before
+   * discovering services, mirroring (loosely) a settle delay the official
+   * app's own decompiled connection handling applies. No physical box has
+   * confirmed needing it; it exists so a box owner without a dev setup can
+   * experiment through the app's own UI.
    */
-  easyLevelMounting: EasyLevelMounting;
+  connectDelayEnabled: boolean;
+  /**
+   * The delay itself (ms), only applied while `connectDelayEnabled` is
+   * true, clamped to `MAX_EASYLEVEL_CONNECT_DELAY_MS` so a mistyped huge
+   * value cannot effectively hang every connect attempt. One flat delay,
+   * not the official app's two-tier scheme: its decompiled
+   * `onConnectionStateChange` waits 1600ms if the device is bonded and
+   * 300ms otherwise, and Web Bluetooth exposes no bonding-state read to a
+   * web page — but 300ms is the branch that matters, since EasyLevel's own
+   * protocol needs no encryption and has no WRITE characteristic, so
+   * Android has no reason to bond with this hardware at all.
+   */
+  connectDelayMs: number;
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
@@ -234,6 +251,23 @@ export const MAX_RAMP_COUNT = 4;
  * can't turn every connect attempt into an effectively indefinite hang. */
 export const MAX_EASYLEVEL_CONNECT_DELAY_MS = 5000;
 
+/**
+ * The EasyLevel box's own defaults (#264). Lives beside `DEFAULT_SETTINGS`
+ * rather than inside the adapter so `CLAUDE.md`'s "default setting values
+ * live in `DEFAULT_SETTINGS`" rule still has one place to point at — the
+ * record below embeds this.
+ */
+export const DEFAULT_EASYLEVEL_SETTINGS: EasyLevelSettings = {
+  // Matches the official app's own default `sensor_Placing` (#217) — most
+  // boxes are never touched by this setting at all.
+  mounting: 'standard',
+  connectDelayEnabled: false,
+  // The official app's own "not bonded" delay (see `connectDelayMs`'s doc
+  // comment), not its bonded 1600ms — an EasyLevel box has no reason to
+  // ever be bonded. Not used at all while `connectDelayEnabled` is false.
+  connectDelayMs: 300,
+};
+
 export const DEFAULT_SETTINGS: LevelSettings = {
   vehicleType: 'motorhome',
   rearAxle: 'single',
@@ -259,16 +293,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   // permanently-supported choice for anyone who picks it.
   appearance: 'modern',
   sensorSource: 'phone',
-  easyLevelConnectDelayEnabled: false,
-  // The official app's own "not bonded" delay (see
-  // `easyLevelConnectDelayMs`'s doc comment above), not its bonded 1600ms
-  // — an EasyLevel box has no reason to ever be bonded, so this is the
-  // branch that's actually relevant here. Not used at all while
-  // `easyLevelConnectDelayEnabled` is false.
-  easyLevelConnectDelayMs: 300,
-  // Matches the official app's own default `sensor_Placing` (#217) — most
-  // boxes are never touched by this setting at all.
-  easyLevelMounting: 'standard',
+  sensorDevices: { easylevel: DEFAULT_EASYLEVEL_SETTINGS },
 };
 
 /**
@@ -429,23 +454,101 @@ export function parseSettings(value: unknown): LevelSettings {
     sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)
       ? (raw.sensorSource as SensorSource)
       : DEFAULT_SETTINGS.sensorSource,
-    // Presence check (#212), same discipline as soundOnLevel above: absent
+    sensorDevices: parseSensorDevices(raw),
+  };
+}
+
+/**
+ * The per-source settings bag (#264).
+ *
+ * Unlike every other field, entries are **not** validated here: a source
+ * this build has never heard of has no schema to validate against, and
+ * dropping it would destroy another build's device settings on the first
+ * save. Each entry is kept as-is if it is an object, and read through a
+ * typed accessor (`easyLevelSettings`) that validates field by field at
+ * the point of use.
+ *
+ * Also migrates #212/#217's flat `easyLevel*` fields into the bag, once:
+ * the next save writes the new shape, and a blob that already has an
+ * `easylevel` entry is left alone.
+ */
+function parseSensorDevices(raw: Record<string, unknown>): SensorDeviceSettings {
+  const stored = isRecord(raw.sensorDevices) ? raw.sensorDevices : {};
+  // Starts from the defaults, so a missing entry behaves like every other
+  // missing setting rather than being absent entirely.
+  const devices: SensorDeviceSettings = { ...DEFAULT_SETTINGS.sensorDevices };
+  for (const [source, value] of Object.entries(stored)) {
+    if (isRecord(value)) devices[source] = value;
+  }
+  // Only when the blob carries no entry of its own: an existing entry is
+  // newer than the flat fields it replaced, so it always wins.
+  if (!isRecord(stored.easylevel)) {
+    const legacy = legacyEasyLevelSettings(raw);
+    if (legacy) devices.easylevel = legacy;
+  }
+  return devices;
+}
+
+/** #212/#217's flat fields, if this blob predates #264 and carries any. */
+function legacyEasyLevelSettings(raw: Record<string, unknown>): Record<string, unknown> | null {
+  const hasAny =
+    raw.easyLevelMounting !== undefined ||
+    raw.easyLevelConnectDelayEnabled !== undefined ||
+    raw.easyLevelConnectDelayMs !== undefined;
+  if (!hasAny) return null;
+  return {
+    mounting: raw.easyLevelMounting,
+    connectDelayEnabled: raw.easyLevelConnectDelayEnabled,
+    connectDelayMs: raw.easyLevelConnectDelayMs,
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Read the EasyLevel box's settings out of the bag (#264), validating each
+ * field the way `parseSettings` validates its own: an enum checked against
+ * its list, a presence-checked boolean, a clamped non-negative number. A
+ * missing, corrupt or partly-corrupt entry yields defaults per field
+ * rather than failing — the rest of the settings must still load.
+ */
+export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
+  const stored = settings.sensorDevices.easylevel;
+  const raw = isRecord(stored) ? stored : {};
+  return {
+    mounting: EASYLEVEL_MOUNTINGS.includes(raw.mounting as EasyLevelMounting)
+      ? (raw.mounting as EasyLevelMounting)
+      : DEFAULT_EASYLEVEL_SETTINGS.mounting,
+    // Presence check (#212), same discipline as soundOnLevel: absent
     // (never saved) falls back to the off default; an explicit prior
     // choice, true or false, is never overridden.
-    easyLevelConnectDelayEnabled:
-      typeof raw.easyLevelConnectDelayEnabled === 'boolean'
-        ? raw.easyLevelConnectDelayEnabled
-        : DEFAULT_SETTINGS.easyLevelConnectDelayEnabled,
-    easyLevelConnectDelayMs: Math.min(
+    connectDelayEnabled:
+      typeof raw.connectDelayEnabled === 'boolean'
+        ? raw.connectDelayEnabled
+        : DEFAULT_EASYLEVEL_SETTINGS.connectDelayEnabled,
+    connectDelayMs: Math.min(
       MAX_EASYLEVEL_CONNECT_DELAY_MS,
-      nonNegativeNumber(raw.easyLevelConnectDelayMs, DEFAULT_SETTINGS.easyLevelConnectDelayMs),
+      nonNegativeNumber(raw.connectDelayMs, DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs),
     ),
-    // Validated the same enum-list way as sensorSource above (#217): a
-    // corrupt or future-version value falls back to the official app's own
-    // default rather than breaking startup.
-    easyLevelMounting: EASYLEVEL_MOUNTINGS.includes(raw.easyLevelMounting as EasyLevelMounting)
-      ? (raw.easyLevelMounting as EasyLevelMounting)
-      : DEFAULT_SETTINGS.easyLevelMounting,
+  };
+}
+
+/**
+ * Settings with the EasyLevel entry patched (#264) — every other source's
+ * entry, known or not, is carried through untouched.
+ */
+export function withEasyLevelSettings(
+  settings: LevelSettings,
+  patch: Partial<EasyLevelSettings>,
+): LevelSettings {
+  return {
+    ...settings,
+    sensorDevices: {
+      ...settings.sensorDevices,
+      easylevel: { ...easyLevelSettings(settings), ...patch },
+    },
   };
 }
 

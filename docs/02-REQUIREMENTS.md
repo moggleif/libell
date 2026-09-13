@@ -1268,7 +1268,7 @@ rather than silently: `domain/pose.ts` reads ~180° of total tilt and shows R17'
   `OrientationSensor` (ADR 0014's seam stays intact).
 - **Given** the choice has been made
 - **Then** it persists across closing and reopening the app, like every other stored
-  setting (`LevelSettings.easyLevelMounting`).
+  setting (`LevelSettings.sensorDevices.easylevel.mounting`, read via `easyLevelSettings()`).
 - **Given** a corrupt or future-version stored value
 - **Then** it falls back to "Standard", the same validate-on-read discipline every
   other enum-like setting (`sensorSource`, `appearance`, ...) already follows — and a

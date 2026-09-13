@@ -121,7 +121,14 @@ parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardwar
 box into that same transport seam behind the `?easylevel-sim` query flag, emitting
 real-wire-format payloads on timers so the whole EasyLevel flow runs hardware-free in
 any browser (`isEasyLevelAvailable()` is that adapter's own availability rule: real Web
-Bluetooth, or the flag). **The registry** (`src/sensor/externalSensors.ts`, #262, ADR 0016) is what everything
+Bluetooth, or the flag). Settings that belong to one source rather than to the app or the vehicle live in
+`LevelSettings.sensorDevices`, keyed by source id (#264): an untyped bag so an entry for
+a source this build does not know survives a load/save round trip, read through typed
+accessors (`easyLevelSettings`, `withEasyLevelSettings`) that validate field by field at
+the point of use. `parseSettings` migrates #212/#217's flat `easyLevel*` fields into it
+once.
+
+**The registry** (`src/sensor/externalSensors.ts`, #262, ADR 0016) is what everything
 above the seam asks instead of naming a device: each external source publishes a
 descriptor with its `id` (the `SensorSource` member, and the key its storage and
 settings are filed under), its `displayName` (the product name — never translated), its
