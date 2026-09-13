@@ -41,14 +41,15 @@ import {
 } from './domain/vehicleShare';
 import {
   clearCalibration,
-  clearEasyLevelCalibration,
+  clearInstallCalibration,
   clearVehicleCalibration,
   hasDoneOnboarding,
   hasSeenOnboarding,
   hasStoredSettings,
   loadActiveTargetId,
   loadCalibrationInfo,
-  loadEasyLevelCalibrationInfo,
+  loadInstallCalibrationInfo,
+  migrateLegacyInstallCalibration,
   loadLanguage,
   loadSettings,
   loadTargetPresets,
@@ -57,15 +58,16 @@ import {
   markOnboardingSeen,
   saveActiveTargetId,
   saveCalibration,
-  saveEasyLevelCalibration,
+  saveInstallCalibration,
   saveSettings,
   saveTargetPresets,
   saveVehicleCalibration,
 } from './data/settingsStore';
 import {
-  loadRememberedEasyLevelDeviceId,
-  saveRememberedEasyLevelDeviceId,
-} from './data/easyLevelDeviceStore';
+  loadRememberedDeviceId,
+  migrateLegacyRememberedDeviceId,
+  saveRememberedDeviceId,
+} from './data/sensorDeviceStore';
 import {
   createOrientationSensor,
   isSensorSupported,
@@ -251,6 +253,14 @@ if (app) {
 function bootstrap(root: HTMLElement): void {
   keepScreenAwake();
 
+  // External-sensor storage moved from device-named keys to per-source
+  // ones (#263, ADR 0016). Both copies run before anything reads either
+  // value, exactly once each (they carry their own markers), and never
+  // overwrite or resurrect anything — see the two functions for why the
+  // legacy keys are copied rather than moved.
+  migrateLegacyInstallCalibration();
+  migrateLegacyRememberedDeviceId();
+
   // Incoming "share vehicle setup" link (R41, #207): consumed off the URL
   // immediately (clears the fragment) so a later refresh never re-prompts;
   // decoded and actually shown further down, once `updateIndicators` and
@@ -272,7 +282,7 @@ function bootstrap(root: HTMLElement): void {
   // with, or overwriting, the phone's. There is no separate EasyLevel
   // hardware-bias layer yet (unlike the phone's own `calibration`), so
   // this offset alone is everything "level" means while it is the source.
-  const storedEasyLevel = loadEasyLevelCalibrationInfo();
+  const storedEasyLevel = loadInstallCalibrationInfo('easylevel');
   let easyLevelCalibration: Calibration | null = storedEasyLevel?.value ?? null;
   let easyLevelCalibrationCapturedAt: number | null = storedEasyLevel?.capturedAt ?? null;
   // The two-layer calibration sum — what "level" means, untouched by
@@ -403,7 +413,7 @@ function bootstrap(root: HTMLElement): void {
       // a later app open can try a silent `getDevices()` reconnect instead
       // of showing the picker again.
       const deviceId = easyLevelSensor.getDeviceId();
-      if (deviceId) saveRememberedEasyLevelDeviceId(deviceId);
+      if (deviceId) saveRememberedDeviceId('easylevel', deviceId);
       // The level screen may never have been built yet (e.g. a desktop
       // without phone motion sensors) — build it now that a real source
       // is feeding readings; harmless to rebuild if it already exists.
@@ -465,7 +475,7 @@ function bootstrap(root: HTMLElement): void {
    * button.
    */
   async function retryEasyLevelNow(): Promise<void> {
-    const deviceId = easyLevelSensor?.getDeviceId() ?? loadRememberedEasyLevelDeviceId();
+    const deviceId = easyLevelSensor?.getDeviceId() ?? loadRememberedDeviceId('easylevel');
     if (!easyLevelSensor || !deviceId) return;
     const state = await easyLevelSensor.reconnect(deviceId);
     if (state === 'granted') {
@@ -518,7 +528,7 @@ function bootstrap(root: HTMLElement): void {
    */
   async function attemptEasyLevelAutoReconnect(): Promise<boolean> {
     if (settings.sensorSource !== 'easylevel') return false;
-    const deviceId = loadRememberedEasyLevelDeviceId();
+    const deviceId = loadRememberedDeviceId('easylevel');
     if (!deviceId) return false;
     // #223: a box remembered in the other simulation mode can never be
     // reached in this one, and attempting it anyway would strand the app
@@ -602,7 +612,7 @@ function bootstrap(root: HTMLElement): void {
       clearInstallCalibration() {
         easyLevelCalibration = null;
         easyLevelCalibrationCapturedAt = null;
-        clearEasyLevelCalibration();
+        clearInstallCalibration('easylevel');
         updateIndicators();
       },
       getEasyLevelMounting: () => settings.easyLevelMounting,
@@ -679,7 +689,7 @@ function bootstrap(root: HTMLElement): void {
     clearInstallCalibration() {
       easyLevelCalibration = null;
       easyLevelCalibrationCapturedAt = null;
-      clearEasyLevelCalibration();
+      clearInstallCalibration('easylevel');
       updateIndicators();
     },
     getEasyLevelMounting: () => settings.easyLevelMounting,
@@ -990,7 +1000,12 @@ function bootstrap(root: HTMLElement): void {
     }
     easyLevelCalibration = vehicleZeroFromReading(reading, null);
     easyLevelCalibrationCapturedAt = Date.now();
-    saveEasyLevelCalibration(easyLevelCalibration, undefined, easyLevelCalibrationCapturedAt);
+    saveInstallCalibration(
+      'easylevel',
+      easyLevelCalibration,
+      undefined,
+      easyLevelCalibrationCapturedAt,
+    );
     updateIndicators();
     return null;
   }

@@ -169,11 +169,15 @@ ADR 0010, generalizable per source), and the desired vehicle target (ADR 0013,
 source-independent) — see ADR 0014 for the full rule.
 
 Installation calibration for a mounted external sensor (#131, R34) fills in the
-concrete storage shape ADR 0014 deferred: `settingsStore.ts` gains
-`loadEasyLevelCalibration`/`saveEasyLevelCalibration`/`clearEasyLevelCalibration`
-under their own `libell.easyLevelInstallCalibration` key — the same shape and
-`>15°` implausible-capture guard as `libell.vehicleCalibration`, just never the same
-key, so the two can never be conflated. `main.ts`'s `zeroCalibration()` picks which
+concrete storage shape ADR 0014 deferred, keyed per source by #263 (ADR 0016):
+`settingsStore.ts`'s `loadInstallCalibration`/`saveInstallCalibration`/
+`clearInstallCalibration` all take a `SensorSource` and file it under
+`libell.installCalibration.<source>` — the same shape and `>15°` implausible-capture
+guard as `libell.vehicleCalibration`, just never the same key, so no two sources (and
+never a source and the phone) can be conflated. `sensorDeviceStore.ts` keys the
+remembered device id the same way (`libell.sensorDevice.<source>`). Both carry a
+one-shot migration from the device-named keys #130/#131 used, which copies rather than
+moves, so a rolled-back build still finds the user's pairing and offset. `main.ts`'s `zeroCalibration()` picks which
 pair to sum from the ACTIVE `sensor.getSource()`: the phone's sensor calibration +
 vehicle zero while the phone is active, or just the EasyLevel installation offset
 while it is — there is no separate EasyLevel hardware-bias layer yet, so

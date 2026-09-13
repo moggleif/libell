@@ -15,10 +15,11 @@ import {
   saveVehicleCalibration,
   loadCalibrationInfo,
   loadVehicleCalibrationInfo,
-  clearEasyLevelCalibration,
-  loadEasyLevelCalibration,
-  loadEasyLevelCalibrationInfo,
-  saveEasyLevelCalibration,
+  clearInstallCalibration,
+  loadInstallCalibration,
+  loadInstallCalibrationInfo,
+  migrateLegacyInstallCalibration,
+  saveInstallCalibration,
   loadActiveTargetId,
   loadTargetPresets,
   saveActiveTargetId,
@@ -152,31 +153,31 @@ describe('vehicle calibration store (#83)', () => {
   });
 });
 
-describe('EasyLevel installation calibration store (#131, ADR 0014)', () => {
+describe('per-source installation calibration store (#131, ADR 0014; keyed per source by #263)', () => {
   it('round-trips the installation offset and clears it', () => {
     const storage = memoryStorage();
-    expect(loadEasyLevelCalibration(storage)).toBeNull();
-    saveEasyLevelCalibration({ rollDeg: 1.1, pitchDeg: -0.6 }, storage);
-    expect(loadEasyLevelCalibration(storage)).toEqual({ rollDeg: 1.1, pitchDeg: -0.6 });
-    clearEasyLevelCalibration(storage);
-    expect(loadEasyLevelCalibration(storage)).toBeNull();
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
+    saveInstallCalibration('easylevel', { rollDeg: 1.1, pitchDeg: -0.6 }, storage);
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 1.1, pitchDeg: -0.6 });
+    clearInstallCalibration('easylevel', storage);
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
   });
 
   it('rejects corrupt or implausible stored installation offsets', () => {
     const storage = memoryStorage();
-    storage.setItem('libell.easyLevelInstallCalibration', 'not json');
-    expect(loadEasyLevelCalibration(storage)).toBeNull();
+    storage.setItem('libell.installCalibration.easylevel', 'not json');
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
     storage.setItem(
-      'libell.easyLevelInstallCalibration',
+      'libell.installCalibration.easylevel',
       JSON.stringify({ rollDeg: 40, pitchDeg: 0 }),
     );
-    expect(loadEasyLevelCalibration(storage)).toBeNull();
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
   });
 
   it('stores its capture timestamp independently of the other calibration layers', () => {
     const storage = memoryStorage();
-    saveEasyLevelCalibration({ rollDeg: 0.3, pitchDeg: 0.1 }, storage, 1700000000002);
-    expect(loadEasyLevelCalibrationInfo(storage)).toEqual({
+    saveInstallCalibration('easylevel', { rollDeg: 0.3, pitchDeg: 0.1 }, storage, 1700000000002);
+    expect(loadInstallCalibrationInfo('easylevel', storage)).toEqual({
       value: { rollDeg: 0.3, pitchDeg: 0.1 },
       capturedAt: 1700000000002,
     });
@@ -185,15 +186,15 @@ describe('EasyLevel installation calibration store (#131, ADR 0014)', () => {
   it('never shares a key, or gets touched by clearing, the phone vehicle zero', () => {
     const storage = memoryStorage();
     saveVehicleCalibration({ rollDeg: 2, pitchDeg: -1 }, storage);
-    saveEasyLevelCalibration({ rollDeg: 5, pitchDeg: 3 }, storage);
+    saveInstallCalibration('easylevel', { rollDeg: 5, pitchDeg: 3 }, storage);
     expect(loadVehicleCalibration(storage)).toEqual({ rollDeg: 2, pitchDeg: -1 });
-    expect(loadEasyLevelCalibration(storage)).toEqual({ rollDeg: 5, pitchDeg: 3 });
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 5, pitchDeg: 3 });
     // Clearing one must leave the other completely intact.
-    clearEasyLevelCalibration(storage);
+    clearInstallCalibration('easylevel', storage);
     expect(loadVehicleCalibration(storage)).toEqual({ rollDeg: 2, pitchDeg: -1 });
     clearVehicleCalibration(storage);
-    saveEasyLevelCalibration({ rollDeg: 5, pitchDeg: 3 }, storage);
-    expect(loadEasyLevelCalibration(storage)).toEqual({ rollDeg: 5, pitchDeg: 3 });
+    saveInstallCalibration('easylevel', { rollDeg: 5, pitchDeg: 3 }, storage);
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 5, pitchDeg: 3 });
   });
 });
 
@@ -278,5 +279,74 @@ describe('target preset store (#122, ADR 0013)', () => {
     expect(() => saveTargetPresets([preset], null)).not.toThrow();
     expect(() => saveActiveTargetId('a', null)).not.toThrow();
     expect(loadActiveTargetId([], null)).toBeNull();
+  });
+});
+
+describe('one installation offset per source (#263)', () => {
+  it('never lets two sources share a value, however they are cleared', () => {
+    // ADR 0014's "never conflate" rule, made concrete: an installation
+    // offset describes where one box sits in one vehicle, so a shared
+    // value would produce confidently wrong guidance, not a visible fault.
+    const storage = memoryStorage();
+    saveInstallCalibration('easylevel', { rollDeg: 1, pitchDeg: 2 }, storage);
+    saveInstallCalibration('phone' as never, { rollDeg: -3, pitchDeg: -4 }, storage);
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 1, pitchDeg: 2 });
+    clearInstallCalibration('phone' as never, storage);
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 1, pitchDeg: 2 });
+  });
+});
+
+describe('migrating #131’s installation offset to its per-source key (#263)', () => {
+  const LEGACY_KEY = 'libell.easyLevelInstallCalibration';
+  const NEW_KEY = 'libell.installCalibration.easylevel';
+
+  it('carries the offset and its capture timestamp over, so nobody re-levels', () => {
+    const storage = memoryStorage();
+    storage.setItem(
+      LEGACY_KEY,
+      JSON.stringify({ rollDeg: 1.5, pitchDeg: -0.5, capturedAt: 1700000000003 }),
+    );
+    migrateLegacyInstallCalibration(storage);
+    expect(loadInstallCalibrationInfo('easylevel', storage)).toEqual({
+      value: { rollDeg: 1.5, pitchDeg: -0.5 },
+      capturedAt: 1700000000003,
+    });
+  });
+
+  it('leaves the legacy key in place, so a rolled-back build still finds it', () => {
+    const storage = memoryStorage();
+    storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 1.5, pitchDeg: -0.5 }));
+    migrateLegacyInstallCalibration(storage);
+    expect(storage.getItem(LEGACY_KEY)).not.toBeNull();
+  });
+
+  it('never runs twice, and never resurrects an offset the user has cleared', () => {
+    const storage = memoryStorage();
+    storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 1.5, pitchDeg: -0.5 }));
+    migrateLegacyInstallCalibration(storage);
+    clearInstallCalibration('easylevel', storage);
+    migrateLegacyInstallCalibration(storage);
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
+  });
+
+  it('never overwrites a newer offset already stored under the new key', () => {
+    const storage = memoryStorage();
+    storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 9, pitchDeg: 9 }));
+    storage.setItem(NEW_KEY, JSON.stringify({ rollDeg: 1, pitchDeg: 1 }));
+    migrateLegacyInstallCalibration(storage);
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 1, pitchDeg: 1 });
+  });
+
+  it('is a no-op on a fresh install with nothing stored', () => {
+    const storage = memoryStorage();
+    migrateLegacyInstallCalibration(storage);
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
+  });
+
+  it('still validates what it copied — a corrupt legacy value reads as none', () => {
+    const storage = memoryStorage();
+    storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
+    migrateLegacyInstallCalibration(storage);
+    expect(loadInstallCalibration('easylevel', storage)).toBeNull();
   });
 });

@@ -9,6 +9,7 @@ import {
   parseSettings,
   type Calibration,
   type LevelSettings,
+  type SensorSource,
 } from '../domain/settings';
 import {
   parseActiveTargetId,
@@ -24,7 +25,30 @@ const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
 // as VEHICLE_CALIBRATION_KEY above but for a different sensor source — its
 // own distinctly-named key so it can never be read as, or overwrite, the
 // phone's vehicle zero, and switching sensors never mixes the two.
-const EASYLEVEL_CALIBRATION_KEY = 'libell.easyLevelInstallCalibration';
+/**
+ * An external source's installation offset is keyed by the source id
+ * (#263, ADR 0016) rather than named after one device: `libell
+ * .installCalibration.easylevel`, `...xparkle`, and so on. ADR 0014
+ * committed to the rule — a second source's value is its own, never
+ * written into another's — and left the shape to whoever built a second
+ * source; this is that shape.
+ */
+const INSTALL_CALIBRATION_KEY_PREFIX = 'libell.installCalibration.';
+
+/**
+ * Where #131 stored the EasyLevel box's installation offset before #263.
+ * Read once by `migrateLegacyInstallCalibration` and then left alone —
+ * see that function for why it is copied rather than moved.
+ */
+const LEGACY_EASYLEVEL_CALIBRATION_KEY = 'libell.easyLevelInstallCalibration';
+
+/** Set once the legacy copy above has been done, so it never runs twice
+ * and can never resurrect a value the user has since cleared. */
+const INSTALL_CALIBRATION_MIGRATED_KEY = 'libell.installCalibration.migrated';
+
+function installCalibrationKey(source: SensorSource): string {
+  return `${INSTALL_CALIBRATION_KEY_PREFIX}${source}`;
+}
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
 // Distinct from ONBOARDED_KEY (design review, follow-up): that one means
@@ -174,40 +198,84 @@ export function clearVehicleCalibration(storage: KeyValueStorage | null = defaul
 }
 
 /**
- * The EasyLevel box's installation offset (#131, ADR 0014): the mechanism
- * is identical to the phone's vehicle zero above (capture with the vehicle
- * verified level, validated the same >15° implausible-capture guard via
- * `parseCalibration`), but stored under its own key so it is a completely
- * independent value — clearing or redoing it never touches, and is never
- * touched by, the phone's own `libell.vehicleCalibration`.
+ * An external source's installation offset (#131/R34, ADR 0014, keyed per
+ * source by #263): the mechanism is identical to the phone's vehicle zero
+ * above (capture with the vehicle verified level, validated by the same
+ * >15° implausible-capture guard in `parseCalibration`), but each source
+ * gets its own key, so clearing or redoing one never touches — and is
+ * never touched by — another source's, or the phone's own
+ * `libell.vehicleCalibration`.
+ *
+ * That independence is not a nicety: an installation offset describes
+ * where one particular box is bolted into one particular vehicle, so
+ * letting two sources share a value would produce confidently wrong
+ * guidance rather than an obvious failure.
  */
-export function loadEasyLevelCalibration(
+export function loadInstallCalibration(
+  source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
-  return readCalibration(EASYLEVEL_CALIBRATION_KEY, storage)?.value ?? null;
+  return readCalibration(installCalibrationKey(source), storage)?.value ?? null;
 }
 
-export function loadEasyLevelCalibrationInfo(
+export function loadInstallCalibrationInfo(
+  source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): StoredCalibration | null {
-  return readCalibration(EASYLEVEL_CALIBRATION_KEY, storage);
+  return readCalibration(installCalibrationKey(source), storage);
 }
 
-export function saveEasyLevelCalibration(
+export function saveInstallCalibration(
+  source: SensorSource,
   calibration: Calibration,
   storage: KeyValueStorage | null = defaultStorage(),
   capturedAt: number = Date.now(),
 ): void {
-  writeCalibration(EASYLEVEL_CALIBRATION_KEY, calibration, capturedAt, storage);
+  writeCalibration(installCalibrationKey(source), calibration, capturedAt, storage);
 }
 
-export function clearEasyLevelCalibration(
+export function clearInstallCalibration(
+  source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
   try {
-    storage?.removeItem(EASYLEVEL_CALIBRATION_KEY);
+    storage?.removeItem(installCalibrationKey(source));
   } catch {
     // Nothing to do — the in-memory state is cleared by the caller.
+  }
+}
+
+/**
+ * Copy #131's EasyLevel installation offset to its per-source key (#263).
+ * Runs once, guarded by its own marker key, and only when the new key is
+ * empty — so it can never overwrite a newer value, and can never bring
+ * back one the user has cleared since.
+ *
+ * **Copied, not moved.** The legacy key is left exactly as it was, so a
+ * build rolled back to before #263 still finds the user's offset instead
+ * of asking them to re-level. The cost is that an offset recaptured after
+ * this migration would not be seen by such a rollback — it would find the
+ * older value, which is "the keys as it left them", and is a far better
+ * failure than a rolled-back build silently using no offset at all. A few
+ * stale bytes in `localStorage` are cheap; making somebody re-level their
+ * motorhome is not.
+ */
+export function migrateLegacyInstallCalibration(
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    if (storage === null) return;
+    if (storage.getItem(INSTALL_CALIBRATION_MIGRATED_KEY) !== null) return;
+    const legacy = storage.getItem(LEGACY_EASYLEVEL_CALIBRATION_KEY);
+    const target = installCalibrationKey('easylevel');
+    if (legacy !== null && storage.getItem(target) === null) {
+      storage.setItem(target, legacy);
+    }
+    storage.setItem(INSTALL_CALIBRATION_MIGRATED_KEY, '1');
+  } catch {
+    // Storage unavailable (private mode, quota): the user keeps whatever
+    // the legacy key holds and is asked to set the offset again at worst.
+    // Never fatal, and never half-migrated — the marker is written last.
   }
 }
 
