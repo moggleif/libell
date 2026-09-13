@@ -19,6 +19,13 @@ interface RequestDeviceOptions {
 interface BluetoothRemoteGATTCharacteristic extends EventTarget {
   readonly value?: DataView;
   startNotifications(): Promise<BluetoothRemoteGATTCharacteristic>;
+  /** Polled reads (#270): the Xparkle box reports its live tilt on a READ
+   * characteristic rather than by notification. */
+  readValue(): Promise<DataView>;
+  /** Command writes (#270) — `writeValue` rather than
+   * `writeValueWithResponse`, matching what the vendor app's own BLE layer
+   * uses and what every current implementation supports. */
+  writeValue(value: ArrayBufferView | ArrayBuffer): Promise<void>;
 }
 
 interface BluetoothRemoteGATTService extends EventTarget {

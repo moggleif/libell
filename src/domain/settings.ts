@@ -178,11 +178,12 @@ export type AppearanceSetting = 'classic' | 'modern' | 'glossy';
  * `OrientationSensor` implementation produced a reading. Every
  * implementation returns a fixed member of this union from `getSource()`.
  * `'phone'` covers the built-in sensor and its `?demo` stand-in;
- * `'easylevel'` is the EasyLevel BLE box (#116, `src/sensor/easyLevelSensor.ts`).
+ * `'easylevel'` is the EasyLevel BLE box (#116, `src/sensor/easyLevelSensor.ts`);
+ * `'xparkle'` the Xparkle RVS01 (#270, `src/sensor/xparkleSensor.ts`).
  */
-export type SensorSource = 'phone' | 'easylevel';
+export type SensorSource = 'phone' | 'easylevel' | 'xparkle';
 
-export const SENSOR_SOURCES: readonly SensorSource[] = ['phone', 'easylevel'];
+export const SENSOR_SOURCES: readonly SensorSource[] = ['phone', 'easylevel', 'xparkle'];
 
 /**
  * The two physical mounting orientations the official EasyLevel app
