@@ -1,5 +1,7 @@
 /**
- * External-sensor fallback prompt state (#134) — the interactive
+ * External-sensor fallback and retry policy (#134, #211; device-neutral
+ * since #266 — anything that is one protocol's business, like EasyLevel's
+ * wait for its first status notification, lives with that adapter) — the interactive
  * Retry / "Use phone sensor" recovery UX layered on top of #116/#130's
  * existing 'disconnected' `SensorState`, per ADR 0014's "never silently
  * switch source" rule (different sources have different calibration
@@ -19,7 +21,7 @@
  * reports false again; there is no separate flag for `main.ts` to clear
  * itself.
  *
- * `EASYLEVEL_AUTO_RETRY_INTERVAL_MS`/`isEasyLevelAutoRetryDue` (#211)
+ * `EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS`/`isExternalSensorAutoRetryDue` (#211)
  * revise #134's original "one tap, one attempt, no retry loop" choice —
  * that rule was about never *switching source* automatically (ADR 0014:
  * phone vs. EasyLevel have independent calibration references, so an
@@ -39,7 +41,7 @@
 import type { SensorState } from './orientation';
 
 /**
- * True only for an EasyLevel connection that cannot be reached right now.
+ * True only for an external connection that cannot be reached right now.
  * Never true for the phone sensor — it has no equivalent lost-connection
  * state (see `orientation.ts`'s `SensorState` doc comment) — and never
  * true merely for "no reading yet" while still connecting or before the
@@ -50,56 +52,33 @@ export function isSensorUnavailable(state: SensorState): boolean {
 }
 
 /**
- * How often the background loop retries a reachable-but-lost EasyLevel box
- * (#211). Cheap by construction: `reconnect()` is a `getDevices()` lookup
- * plus a GATT connect, never a fresh BLE scan, so a short interval costs
- * nothing worth guarding against — short enough that a box coming back
- * into range or being powered back on resolves within a few seconds, not
- * "whenever someone notices and taps Retry."
+ * How often the background loop retries a reachable-but-lost external
+ * source (#211, generalized by #266). Cheap by construction: an adapter's
+ * `reconnect()` is a lookup plus a connect, never a fresh scan, so a short
+ * interval costs nothing worth guarding against — short enough that a box
+ * coming back into range or being powered back on resolves within a few
+ * seconds, not "whenever someone notices and taps Retry."
+ *
+ * Shared rather than per-source: nothing suggests a second device wants a
+ * different cadence, and ADR 0014's "extend again when a concrete need
+ * exists" applies. What is genuinely per-source — how long a silence means
+ * trouble — is the descriptor's `staleTimeoutMs` instead.
  */
-export const EASYLEVEL_AUTO_RETRY_INTERVAL_MS = 5000;
+export const EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS = 5000;
 
 /**
  * True the moment an automatic retry is due: immediately when none has
  * ever been attempted yet (`null`), or once
- * `EASYLEVEL_AUTO_RETRY_INTERVAL_MS` has passed since the last one. Time is
- * always a parameter, never read from the wall clock here — the same
- * discipline `domain/staleness.ts`'s `isSensorStale` follows — so this is
- * fully unit-testable without real timers.
+ * `EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS` has passed since the last one.
+ * Time is always a parameter, never read from the wall clock here — the
+ * same discipline `domain/staleness.ts`'s `isSensorStale` follows — so
+ * this is fully unit-testable without real timers.
  */
-export function isEasyLevelAutoRetryDue(lastAttemptAtMs: number | null, nowMs: number): boolean {
-  return lastAttemptAtMs === null || nowMs - lastAttemptAtMs >= EASYLEVEL_AUTO_RETRY_INTERVAL_MS;
-}
-
-/**
- * How long `easyLevelSensor.ts` withholds `getGravity()` after connecting,
- * waiting for the first `faf52c22-...` status notification, before giving
- * up and reporting best-effort (possibly uncalibrated) readings anyway
- * (#217). Unlike `EASYLEVEL_AUTO_RETRY_INTERVAL_MS` above, this is NOT
- * derived from the official app: #217's decompile of its own post-connect
- * setup (`N0/a;->m()`) found it enables status notifications before accel
- * notifications (see `easyLevelSensor.ts`'s module doc comment), but found
- * no equivalent explicit wait — the app has no analogous grace period, it
- * just relies on that ordering (and, per that same decompile, defaults to
- * *assuming legacy tier-<3 firmware* — `this.n = 16` — until a status
- * notification says otherwise, which is itself not obviously safe against
- * an accel notification arriving first on modern firmware). This constant
- * is Libell's own defensive choice, a bound generous enough to cover a
- * normal BLE notify round-trip without stalling a firmware that legitimately
- * never sends a status characteristic at all.
- */
-export const EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS = 2000;
-
-/**
- * True once `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS` has passed since
- * connecting — see `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`'s own doc
- * comment. Same time-as-parameter discipline as `isEasyLevelAutoRetryDue`
- * above and `domain/staleness.ts`'s `isSensorStale`, so this is fully
- * unit-testable without real timers.
- */
-export function isEasyLevelInitialCalibrationWaitExpired(
-  connectedAtMs: number,
+export function isExternalSensorAutoRetryDue(
+  lastAttemptAtMs: number | null,
   nowMs: number,
 ): boolean {
-  return nowMs - connectedAtMs >= EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS;
+  return (
+    lastAttemptAtMs === null || nowMs - lastAttemptAtMs >= EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS
+  );
 }

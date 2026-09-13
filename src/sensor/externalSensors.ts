@@ -80,6 +80,19 @@ export interface ExternalSensorDescriptor {
    */
   isAvailable(): boolean;
   capabilities: ExternalSensorCapabilities;
+  /**
+   * How long a silence from this source means its readings can no longer
+   * be trusted (#266, R35) — fed to `domain/staleness.ts`'s `isSensorStale`
+   * as its `timeoutMs`.
+   *
+   * A property of this adapter's own cadence, which is why it lives here
+   * rather than in the pure domain layer: a notify-driven stream and a
+   * poll loop have completely different natural gaps, and only the adapter
+   * knows which it is. Set generously enough above that cadence that
+   * ordinary jitter never false-triggers, and tightly enough that stale
+   * data is never mistaken for live guidance.
+   */
+  staleTimeoutMs: number;
 }
 
 /**

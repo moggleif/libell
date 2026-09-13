@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { isSensorStale, STALE_TIMEOUT_EASYLEVEL_MS, STALE_TIMEOUT_PHONE_MS } from './staleness';
+import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from './staleness';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
+
+/** An external source's own timeout now lives on its descriptor (#266);
+ * EasyLevel's is the one this file's BLE-jitter cases are about. */
+const STALE_TIMEOUT_EASYLEVEL_MS = EASYLEVEL_DESCRIPTOR.staleTimeoutMs;
 
 describe('isSensorStale (#132)', () => {
   it('is stale when no sample has ever arrived, regardless of the timeout', () => {

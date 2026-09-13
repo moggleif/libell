@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  EASYLEVEL_AUTO_RETRY_INTERVAL_MS,
-  EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS,
-  isEasyLevelAutoRetryDue,
-  isEasyLevelInitialCalibrationWaitExpired,
+  EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS,
+  isExternalSensorAutoRetryDue,
   isSensorUnavailable,
 } from './sensorFallback';
 import type { SensorState } from './orientation';
@@ -39,46 +37,23 @@ describe('isSensorUnavailable (#134)', () => {
   });
 });
 
-describe('isEasyLevelAutoRetryDue (#211)', () => {
+describe('isExternalSensorAutoRetryDue (#211)', () => {
   it('is due immediately when no attempt has ever been made', () => {
-    expect(isEasyLevelAutoRetryDue(null, 0)).toBe(true);
+    expect(isExternalSensorAutoRetryDue(null, 0)).toBe(true);
   });
 
   it('is not due before the interval has passed since the last attempt', () => {
-    expect(isEasyLevelAutoRetryDue(1000, 1000 + EASYLEVEL_AUTO_RETRY_INTERVAL_MS - 1)).toBe(false);
-  });
-
-  it('is due exactly at the interval boundary, and past it', () => {
-    expect(isEasyLevelAutoRetryDue(1000, 1000 + EASYLEVEL_AUTO_RETRY_INTERVAL_MS)).toBe(true);
-    expect(isEasyLevelAutoRetryDue(1000, 1000 + EASYLEVEL_AUTO_RETRY_INTERVAL_MS + 5000)).toBe(
-      true,
-    );
-  });
-});
-
-describe('isEasyLevelInitialCalibrationWaitExpired (#217)', () => {
-  it('is not expired the instant a connection is made', () => {
-    expect(isEasyLevelInitialCalibrationWaitExpired(1000, 1000)).toBe(false);
-  });
-
-  it('is not expired just before the wait elapses', () => {
     expect(
-      isEasyLevelInitialCalibrationWaitExpired(
-        1000,
-        1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS - 1,
-      ),
+      isExternalSensorAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS - 1),
     ).toBe(false);
   });
 
-  it('is expired exactly at the boundary, and past it', () => {
+  it('is due exactly at the interval boundary, and past it', () => {
+    expect(isExternalSensorAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS)).toBe(
+      true,
+    );
     expect(
-      isEasyLevelInitialCalibrationWaitExpired(1000, 1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS),
-    ).toBe(true);
-    expect(
-      isEasyLevelInitialCalibrationWaitExpired(
-        1000,
-        1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS + 5000,
-      ),
+      isExternalSensorAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS + 5000),
     ).toBe(true);
   });
 });

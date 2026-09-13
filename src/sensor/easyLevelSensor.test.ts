@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
+  EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS,
   isEasyLevelAvailable,
+  isEasyLevelInitialCalibrationWaitExpired,
   isWebBluetoothSupported,
   EASYLEVEL_ADVERTISED_SERVICE_UUID,
   EASYLEVEL_DEVICE_NAME_PREFIX,
@@ -906,5 +908,32 @@ describe('isEasyLevelAvailable (#220)', () => {
     });
     expect(isEasyLevelAvailable()).toBe(true);
     expect(isWebBluetoothSupported()).toBe(false); // the narrower contract is untouched
+  });
+});
+
+describe('isEasyLevelInitialCalibrationWaitExpired (#217)', () => {
+  it('is not expired the instant a connection is made', () => {
+    expect(isEasyLevelInitialCalibrationWaitExpired(1000, 1000)).toBe(false);
+  });
+
+  it('is not expired just before the wait elapses', () => {
+    expect(
+      isEasyLevelInitialCalibrationWaitExpired(
+        1000,
+        1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS - 1,
+      ),
+    ).toBe(false);
+  });
+
+  it('is expired exactly at the boundary, and past it', () => {
+    expect(
+      isEasyLevelInitialCalibrationWaitExpired(1000, 1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS),
+    ).toBe(true);
+    expect(
+      isEasyLevelInitialCalibrationWaitExpired(
+        1000,
+        1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS + 5000,
+      ),
+    ).toBe(true);
   });
 });
