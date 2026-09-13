@@ -30,6 +30,7 @@ import {
   type Calibration,
   type EasyLevelMounting,
   type LevelSettings,
+  type SensorSource,
   type SoundPrefs,
 } from './domain/settings';
 import {
@@ -85,7 +86,8 @@ import {
   easyLevelSimulationMode,
   isRememberedEasyLevelDeviceUsable,
 } from './sensor/easyLevelSimulator';
-import { isSensorUnavailable, isExternalSensorAutoRetryDue } from './sensor/sensorFallback';
+import { isSensorUnavailable } from './sensor/sensorFallback';
+import { createExternalSensorController } from './sensor/externalSensorController';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu } from './ui/menu';
@@ -290,7 +292,7 @@ function bootstrap(root: HTMLElement): void {
   // installation-offset pair, so switching sources never mixes one
   // source's calibration into the other's readings.
   const zeroCalibration = () =>
-    sensor.getSource() === 'easylevel'
+    sensor().getSource() === 'easylevel'
       ? easyLevelCalibration
       : combineCalibrations(calibration, vehicleCalibration);
   // Target presets (#122, ADR 0013): an intentional NON-level target,
@@ -311,68 +313,22 @@ function bootstrap(root: HTMLElement): void {
   const demo = new URLSearchParams(location.search).has('demo');
   // The phone sensor stays alive for the whole session (never recreated)
   // so switching back from an external source needs no re-permissioning.
-  // `sensor` is the ONE injection point (#128, ADR 0014) the rest of this
-  // function reads from — `frame()` below closes over this binding, so
-  // reassigning it (on a successful EasyLevel connect, or a fallback on
-  // disconnect) takes effect on the very next animation frame.
   const phoneSensor = demo ? createDemoSensor() : createOrientationSensor();
-  let sensor: OrientationSensor = phoneSensor;
-  // EasyLevel BLE box (#116): created lazily, on the first connect
-  // attempt (a real click handler — Web Bluetooth's `requestDevice`
-  // requires a live user gesture), and kept around afterward so
-  // reconnecting reuses the same adapter instance.
-  let easyLevelSensor: EasyLevelSensor | null = null;
-  // Background auto-retry (#211): tracks when `maybeAutoRetryEasyLevel`
-  // below last fired, and guards against overlapping `reconnect()` calls
-  // across animation frames while one is still in flight.
-  let lastEasyLevelAutoRetryAt: number | null = null;
-  let easyLevelAutoRetryInFlight = false;
-
   /**
-   * Debug hardware-compatibility workaround (#212): reads `settings`
-   * live on every connect (never a value captured once at construction
-   * time), so flipping the toggle on the EasyLevel status page's debug
-   * disclosure takes effect on the very next connect/reconnect attempt —
-   * manual, silent auto-reconnect (#130), or the background auto-retry
-   * loop (#211) above — without needing to recreate `easyLevelSensor`.
+   * The source feeding readings right now — the ONE injection point (#128,
+   * ADR 0014). Read fresh on every use rather than cached in a binding
+   * (#265): the controller below owns the switch, so a connect or a
+   * fallback takes effect on the very next animation frame with nothing
+   * here to keep in sync.
    */
-  function easyLevelTransport() {
-    // Simulated box (#220): the `?easylevel-sim` flag swaps the transport
-    // at this one seam — everything above it (sensor state machine,
-    // calibration, UI) is exactly the code a real box runs through, and
-    // the real Web Bluetooth transport is never even constructed.
-    const simulation = easyLevelSimulationMode();
-    if (simulation !== 'off') return createSimulatedEasyLevelTransport(simulation);
-    return createWebBluetoothTransport(() => {
-      const device = easyLevelSettings(settings);
-      return device.connectDelayEnabled ? device.connectDelayMs : 0;
-    });
-  }
-
+  const sensor = (): OrientationSensor => externalSensors.getActiveSensor();
   /**
-   * Mounting orientation (#217): read live on every accel sample, never
-   * cached — same "settings read fresh, no reconnect needed" pattern as
-   * `easyLevelTransport()`'s connect delay above. Passed straight into
-   * `createEasyLevelSensor()` at both its construction sites below.
-   */
-  function currentEasyLevelMounting(): EasyLevelMounting {
-    return easyLevelSettings(settings).mounting;
-  }
-
-  /** Persist which source is active (#130) — read back on the next app
-   * open to decide whether a silent reconnect is even worth attempting. */
-  function rememberSensorSource(source: LevelSettings['sensorSource']): void {
-    settings = { ...settings, sensorSource: source };
-    saveSettings(settings);
-  }
-
-  /**
-   * Mounting orientation (#217), set from the External sensor page —
-   * an ordinary persisted setting (unlike `setEasyLevelConnectDelay`
-   * below, this is not a debug-only field), but set directly here rather
-   * than through the Settings page's own Save/Undo/Reset flow, matching
-   * how the install-offset calibration right next to it on that same page
-   * already behaves.
+   * Mounting orientation (#217), set from the External sensor page — an
+   * ordinary persisted setting (unlike `setEasyLevelConnectDelay` below,
+   * this is not a debug-only field), but set directly here rather than
+   * through the Settings page's own Save/Undo/Reset flow, matching how the
+   * install-offset calibration right next to it on that same page already
+   * behaves.
    */
   function setEasyLevelMounting(mounting: EasyLevelMounting): void {
     settings = withEasyLevelSettings(settings, { mounting });
@@ -380,12 +336,12 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /**
-   * Debug hardware-compatibility workaround (#212), set from the
-   * EasyLevel status page's debug disclosure — not a normal settings-form
-   * field, so it is persisted directly here rather than through the
-   * Settings page's own save flow. `easyLevelTransport()` above reads
-   * `settings` live, so this takes effect on the very next connect
-   * attempt with no further wiring needed.
+   * Debug hardware-compatibility workaround (#212), set from the EasyLevel
+   * status page's debug disclosure — not a normal settings-form field, so
+   * it is persisted directly here rather than through the Settings page's
+   * own save flow. The transport factory below reads `settings` live, so
+   * this takes effect on the very next connect attempt with no further
+   * wiring needed.
    */
   function setEasyLevelConnectDelay(enabled: boolean, ms: number): void {
     // Clamped here, not just trusted from the UI's own <input> bounds
@@ -400,153 +356,58 @@ function bootstrap(root: HTMLElement): void {
     saveSettings(settings);
   }
 
-  /** Menu action: connect (or reconnect) the EasyLevel box. Must run
-   * synchronously inside the button's own click handler. */
-  async function connectEasyLevelNow(): Promise<SensorState> {
-    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport(), currentEasyLevelMounting);
-    const state = await easyLevelSensor.start();
-    if (state === 'granted') {
-      sensor = easyLevelSensor;
-      rememberSensorSource('easylevel');
-      // Remember this specific device (#130), not just "some sensor", so
-      // a later app open can try a silent `getDevices()` reconnect instead
-      // of showing the picker again.
-      const deviceId = easyLevelSensor.getDeviceId();
-      if (deviceId) saveRememberedDeviceId('easylevel', deviceId);
-      // The level screen may never have been built yet (e.g. a desktop
-      // without phone motion sensors) — build it now that a real source
-      // is feeding readings; harmless to rebuild if it already exists.
-      showLevelScreen();
-      // The amber calibration lamp now checks the EasyLevel installation
-      // offset instead of the phone's pair (#131) — refresh immediately so
-      // switching source alone (no calibration action) still updates it.
-      updateIndicators();
-    }
-    return state;
-  }
-
-  /** Menu action: explicit disconnect — falls back to the phone sensor.
-   * Deliberately does NOT forget the remembered device id (#130): this is
-   * "not right now", not "never again" — only `sensorSource` flips back to
-   * 'phone', so the next app open skips auto-reconnect until the user
-   * connects again, while the box itself stays one tap away. */
-  function disconnectEasyLevelNow(): void {
-    easyLevelSensor?.disconnect();
-    sensor = phoneSensor;
-    rememberSensorSource('phone');
-    // See the matching comment in `connectEasyLevelNow` (#131).
-    updateIndicators();
+  /**
+   * Build the adapter for an external source (#265): the one place a
+   * source id becomes a live adapter. Reads `settings` live on every
+   * connect rather than capturing values once, so the debug connect delay
+   * (#212) and the mounting orientation (#217) both take effect on the
+   * very next attempt without recreating anything.
+   */
+  function createExternalSensor(source: SensorSource): EasyLevelSensor | null {
+    if (source !== 'easylevel') return null;
+    // Simulated box (#220): the `?easylevel-sim` flag swaps the transport
+    // at this one seam — everything above it (sensor state machine,
+    // calibration, UI) is exactly the code a real box runs through, and
+    // the real Web Bluetooth transport is never even constructed.
+    const simulation = easyLevelSimulationMode();
+    const transport =
+      simulation !== 'off'
+        ? createSimulatedEasyLevelTransport(simulation)
+        : createWebBluetoothTransport(() => {
+            const device = easyLevelSettings(settings);
+            return device.connectDelayEnabled ? device.connectDelayMs : 0;
+          });
+    return createEasyLevelSensor(transport, () => easyLevelSettings(settings).mounting);
   }
 
   /**
-   * "Use phone sensor" (#134): the fallback prompt's explicit, tap-only
-   * escape hatch from an unreachable EasyLevel connection. Reuses
-   * `disconnectEasyLevelNow` verbatim — the exact same real switch the
-   * menu's own "Disconnect" button already performs, never a parallel
-   * implementation, and never automatic (ADR 0014: phone and EasyLevel
-   * have different calibration references, so an unannounced switch could
-   * show a plausible-looking but wrong reading).
-   *
-   * The one thing added on top: this tap is itself a genuine user
-   * gesture, which is also the only thing `phoneSensor.start()` ever
-   * needs (iOS included). That start may never have happened yet — e.g.
-   * EasyLevel auto-reconnected (#130) at app open and took over the
-   * startup flow, so the ordinary phone-sensor flow never ran — and
-   * without it the phone sensor would sit silently at `getGravity() ===
-   * null` forever. Calling it here is a no-op once already granted, so
-   * this stays safe to call from every path that can reach this state.
+   * The external-sensor lifecycle (#265) — connect, disconnect, the silent
+   * auto-reconnect at open (#130), the background auto-retry (#211) and
+   * the "use phone sensor" escape hatch (#134) all live in one place now,
+   * for every source rather than one device. `main.ts` keeps only the
+   * wiring: which screen to build, and which indicators to refresh.
    */
-  function usePhoneSensorNow(): void {
-    disconnectEasyLevelNow();
-    void phoneSensor.start();
-  }
-
-  /**
-   * "Retry" (#134): one tap, one immediate attempt. Calls the existing
-   * silent `EasyLevelSensor.reconnect()` (#130) with whatever device id is
-   * available, exactly the same call the startup auto-reconnect already
-   * makes; on failure `reconnect()` itself already resolves back to
-   * `'disconnected'`, so the fallback prompt simply stays (or reappears)
-   * with no extra state to track here. This is no longer the only path to
-   * `reconnect()`, though — see `maybeAutoRetryEasyLevel` right below,
-   * which fires the exact same call on its own background cadence (#211)
-   * so recovery does not depend on the user finding or understanding this
-   * button.
-   */
-  async function retryEasyLevelNow(): Promise<void> {
-    const deviceId = easyLevelSensor?.getDeviceId() ?? loadRememberedDeviceId('easylevel');
-    if (!easyLevelSensor || !deviceId) return;
-    const state = await easyLevelSensor.reconnect(deviceId);
-    if (state === 'granted') {
-      sensor = easyLevelSensor;
-      updateIndicators();
-    }
-    updateSensorStatus();
-  }
-
-  /**
-   * Background counterpart to the manual "Retry" button above (#211):
-   * fires the exact same `retryEasyLevelNow()` call on its own, on
-   * `isEasyLevelAutoRetryDue`'s cadence, whenever `frame()` observes
-   * EasyLevel unavailable — see `sensor/sensorFallback.ts`'s doc comment
-   * for why a silent loop replaced the original "no retry loop" design.
-   * Never switches source itself (ADR 0014 is unaffected): it only ever
-   * tries to reach the SAME already-known box back, exactly what a manual
-   * tap already did. `easyLevelAutoRetryInFlight` keeps this a no-op while
-   * a previous attempt is still resolving, since `frame()` calls this
-   * every animation frame.
-   */
-  function maybeAutoRetryEasyLevel(nowMs: number): void {
-    if (easyLevelAutoRetryInFlight) return;
-    if (!isExternalSensorAutoRetryDue(lastEasyLevelAutoRetryAt, nowMs)) return;
-    lastEasyLevelAutoRetryAt = nowMs;
-    easyLevelAutoRetryInFlight = true;
-    void retryEasyLevelNow().finally(() => {
-      easyLevelAutoRetryInFlight = false;
-    });
-  }
-
-  /**
-   * Silent reconnect on open (#130): only when the last session left
-   * EasyLevel as the active source, and only a remembered device id (not a
-   * fresh device picker) — see `easyLevelSensor.ts`'s `reconnect()` for
-   * exactly which platform conditions this can and can't succeed under.
-   *
-   * Resolves true the moment EasyLevel has taken over the startup flow —
-   * whether the box actually reconnected or not. A failed attempt
-   * (`getDevices()` missing, box unreachable, ...) still adopts
-   * `easyLevelSensor` as `sensor` and builds the level screen: its
-   * existing per-frame loop already renders a 'disconnected' state
-   * honestly (the same "connection lost" hint and status dot #116/#129
-   * show for a live BLE drop), which is exactly the "fail cleanly, offer a
-   * one-tap manual reconnect, never a silent failure" behavior this issue
-   * asks for — reused rather than duplicated. Resolves false only when
-   * there was nothing to even attempt (EasyLevel wasn't the last source,
-   * nothing is remembered, or `navigator.bluetooth` itself doesn't exist),
-   * in which case the caller runs the ordinary phone-sensor flow instead.
-   */
-  async function attemptEasyLevelAutoReconnect(): Promise<boolean> {
-    if (settings.sensorSource !== 'easylevel') return false;
-    const deviceId = loadRememberedDeviceId('easylevel');
-    if (!deviceId) return false;
-    // #223: a box remembered in the other simulation mode can never be
-    // reached in this one, and attempting it anyway would strand the app
-    // on R37's "unavailable" prompt with an auto-retry that can never
-    // succeed — see `isRememberedEasyLevelDeviceUsable`. Behaves exactly
-    // as if EasyLevel had never been the selected source, so the ordinary
-    // phone-sensor startup runs instead.
-    if (!isRememberedEasyLevelDeviceUsable(deviceId)) return false;
-    easyLevelSensor ??= createEasyLevelSensor(easyLevelTransport(), currentEasyLevelMounting);
-    const state = await easyLevelSensor.reconnect(deviceId);
-    if (state === 'unsupported') return false; // behave exactly as if EasyLevel had never been selected
-    sensor = easyLevelSensor;
-    showLevelScreen();
-    updateSensorStatus();
-    // See the matching comment in `connectEasyLevelNow` (#131): the amber
-    // lamp's condition follows the active source.
-    updateIndicators();
-    return true;
-  }
+  const externalSensors = createExternalSensorController<EasyLevelSensor>({
+    phoneSensor,
+    createSensor: createExternalSensor,
+    loadDeviceId: loadRememberedDeviceId,
+    saveDeviceId: saveRememberedDeviceId,
+    isRememberedDeviceUsable: (_source: SensorSource, deviceId: string) =>
+      isRememberedEasyLevelDeviceUsable(deviceId),
+    getPreferredSource: () => settings.sensorSource,
+    rememberSource: (source) => {
+      settings = { ...settings, sensorSource: source };
+      saveSettings(settings);
+    },
+    // The level screen may never have been built yet (e.g. a desktop
+    // without phone motion sensors) — build it now that a real source is
+    // feeding readings; harmless to rebuild if it already exists.
+    onLevelScreenNeeded: () => showLevelScreen(),
+    // The amber calibration lamp checks whichever source is active (#131),
+    // so switching source alone still has to refresh it.
+    onIndicatorsChanged: () => updateIndicators(),
+    onStatusChanged: () => updateSensorStatus(),
+  });
 
   // While the menu or the wizard is open the user is reading, phone in
   // hand — pause the guidance loop so the pose guard and the level
@@ -599,14 +460,14 @@ function bootstrap(root: HTMLElement): void {
       // callbacks as `createMenu` below wires up — the wizard's
       // external-sensor step embeds the exact same `sensorSourceSection`
       // component the real menu page uses, never a duplicate.
-      getSensorSource: () => sensor.getSource(),
-      getSensorState: () => sensor.getState(),
+      getSensorSource: () => sensor().getSource(),
+      getSensorState: () => sensor().getState(),
       // One descriptor for now; #268 makes the pages render one per
       // registered source instead of assuming this one.
       sensor: EASYLEVEL_DESCRIPTOR,
-      connectEasyLevel: () => connectEasyLevelNow(),
-      disconnectEasyLevel: () => disconnectEasyLevelNow(),
-      getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
+      connectEasyLevel: () => externalSensors.connect('easylevel'),
+      disconnectEasyLevel: () => externalSensors.disconnect(),
+      getEasyLevelStatus: () => externalSensors.getSensor('easylevel')?.getStatus() ?? null,
       getInstallCalibration: () => easyLevelCalibration,
       calibrateInstall: () => calibrateEasyLevelNow(),
       getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
@@ -680,11 +541,11 @@ function bootstrap(root: HTMLElement): void {
     selectTarget: (id: string | null) => selectTargetNow(id),
     addTargetPreset: (name: string) => addTargetPresetNow(name),
     deleteTargetPreset: (id: string) => deleteTargetPresetNow(id),
-    getSensorSource: () => sensor.getSource(),
-    getSensorState: () => sensor.getState(),
+    getSensorSource: () => sensor().getSource(),
+    getSensorState: () => sensor().getState(),
     sensor: EASYLEVEL_DESCRIPTOR,
-    connectEasyLevel: () => connectEasyLevelNow(),
-    disconnectEasyLevel: () => disconnectEasyLevelNow(),
+    connectEasyLevel: () => externalSensors.connect('easylevel'),
+    disconnectEasyLevel: () => externalSensors.disconnect(),
     getInstallCalibration: () => easyLevelCalibration,
     calibrateInstall: () => calibrateEasyLevelNow(),
     getInstallCalibrationCapturedAt: () => easyLevelCalibrationCapturedAt,
@@ -699,11 +560,12 @@ function bootstrap(root: HTMLElement): void {
     setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
     getActiveTargetName: () => activeTargetName(),
-    getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
-    getEasyLevelDeviceId: () => easyLevelSensor?.getDeviceId() ?? null,
-    getEasyLevelLastSampleAt: () => easyLevelSensor?.getLastSampleAt() ?? null,
-    getEasyLevelRawAccel: () => easyLevelSensor?.getGravity() ?? null,
-    getEasyLevelStatusBytes: () => easyLevelSensor?.getStatusBytes() ?? null,
+    getEasyLevelStatus: () => externalSensors.getSensor('easylevel')?.getStatus() ?? null,
+    getEasyLevelDeviceId: () => externalSensors.getSensor('easylevel')?.getDeviceId() ?? null,
+    getEasyLevelLastSampleAt: () =>
+      externalSensors.getSensor('easylevel')?.getLastSampleAt() ?? null,
+    getEasyLevelRawAccel: () => externalSensors.getSensor('easylevel')?.getGravity() ?? null,
+    getEasyLevelStatusBytes: () => externalSensors.getSensor('easylevel')?.getStatusBytes() ?? null,
     getEasyLevelConnectDelay: () => ({
       enabled: easyLevelSettings(settings).connectDelayEnabled,
       ms: easyLevelSettings(settings).connectDelayMs,
@@ -836,7 +698,7 @@ function bootstrap(root: HTMLElement): void {
       settingsSaved: demo || hasStoredSettings(),
       calibrated:
         demo ||
-        (sensor.getSource() === 'easylevel'
+        (sensor().getSource() === 'easylevel'
           ? easyLevelCalibration !== null
           : calibration !== null || vehicleCalibration !== null),
     });
@@ -869,7 +731,7 @@ function bootstrap(root: HTMLElement): void {
   // corner and the other top-bar items wrap or shift left of them (#244).
   document.querySelector('#sensor-slot')?.append(sensorStatus.element);
   syncTopbarCorner();
-  const updateSensorStatus = () => sensorStatus.update(sensor.getSource(), sensor.getState());
+  const updateSensorStatus = () => sensorStatus.update(sensor().getSource(), sensor().getState());
   updateSensorStatus();
 
   function selectTargetNow(id: string | null): void {
@@ -915,7 +777,7 @@ function bootstrap(root: HTMLElement): void {
    * the sensor as a side effect when there is no reading yet; a passive
    * status-page refresh must never itself trigger a permission prompt. */
   function calibratedTiltNow(): Calibration | null {
-    const gravity = sensor.getGravity();
+    const gravity = sensor().getGravity();
     if (!gravity) return null;
     const tilt = tiltFromGravity(gravity, effectiveCalibration());
     return { rollDeg: tilt.roll * RAD_TO_DEG, pitchDeg: tilt.pitch * RAD_TO_DEG };
@@ -925,9 +787,9 @@ function bootstrap(root: HTMLElement): void {
   // demand makes calibration work from the wizard before the main screen
   // (the tap itself is the iOS permission gesture).
   function readTiltNow(): Calibration | string {
-    const gravity = sensor.getGravity();
+    const gravity = sensor().getGravity();
     if (!gravity) {
-      void sensor.start();
+      void sensor().start();
       return t('calibration.err.notRunning');
     }
     return {
@@ -1079,8 +941,8 @@ function bootstrap(root: HTMLElement): void {
     // EasyLevel connection is unreachable (`isSensorUnavailable`,
     // `sensor/sensorFallback.ts`) — never both at once, see `frame()`.
     const fallbackPrompt = createSensorFallbackPrompt(
-      () => void retryEasyLevelNow(),
-      () => usePhoneSensorNow(),
+      () => void externalSensors.retry(),
+      () => externalSensors.usePhoneSensor(),
     );
 
     // Full-screen confirmation shown briefly when level is reached (#124:
@@ -1254,7 +1116,7 @@ function bootstrap(root: HTMLElement): void {
         requestAnimationFrame(frame);
         return;
       }
-      const gravity = sensor.getGravity();
+      const gravity = sensor().getGravity();
       if (!gravity) {
         // No reading yet — or, for an external source (#116), no longer:
         // an EasyLevel disconnect clears `getGravity()` back to null after
@@ -1267,17 +1129,16 @@ function bootstrap(root: HTMLElement): void {
         // phone sensor" prompt instead of the plain text — never both at
         // once. Every other case here (first load, still connecting) is
         // unchanged: the plain "waiting for the tilt sensor" hint.
-        const unavailable = isSensorUnavailable(sensor.getState());
+        const unavailable = isSensorUnavailable(sensor().getState());
         fallbackPrompt.update(unavailable);
         waiting.hidden = unavailable;
         if (unavailable) {
           // Background auto-retry (#211) — see `maybeAutoRetryEasyLevel`.
-          maybeAutoRetryEasyLevel(performance.now());
+          externalSensors.maybeAutoRetry(performance.now());
         } else {
           waiting.textContent = t('main.waiting');
           // Reset so a *later* disconnect retries immediately rather than
           // waiting out a stale interval left over from this one.
-          lastEasyLevelAutoRetryAt = null;
         }
       } else {
         waiting.hidden = true;
@@ -1293,8 +1154,8 @@ function bootstrap(root: HTMLElement): void {
         // Each external source declares its own timeout (#266); the phone
         // is not an external source and keeps the domain layer's own.
         const staleTimeoutMs =
-          externalSensorById(sensor.getSource())?.staleTimeoutMs ?? STALE_TIMEOUT_PHONE_MS;
-        if (isSensorStale(sensor.getLastSampleAt(), now, staleTimeoutMs)) {
+          externalSensorById(sensor().getSource())?.staleTimeoutMs ?? STALE_TIMEOUT_PHONE_MS;
+        if (isSensorStale(sensor().getLastSampleAt(), now, staleTimeoutMs)) {
           staleOverlay.hidden = false;
           poseOverlay.hidden = true;
           levelOverlay.hideNow();
@@ -1413,11 +1274,11 @@ function bootstrap(root: HTMLElement): void {
       start.className = 'app__start';
       start.textContent = t('main.start');
       start.addEventListener('click', () => {
-        void sensor.start().then(handleState);
+        void sensor().start().then(handleState);
       });
       root.append(hint, start);
     } else {
-      void sensor.start().then(handleState);
+      void sensor().start().then(handleState);
     }
   }
 
@@ -1429,7 +1290,7 @@ function bootstrap(root: HTMLElement): void {
   // phone-sensor flow below must NOT also run: it would call
   // `easyLevelSensor.start()`, whose `requestDevice()` picker needs a live
   // user gesture this automatic, page-load-time path does not have.
-  void attemptEasyLevelAutoReconnect().then((tookOver) => {
+  void externalSensors.attemptAutoReconnect().then((tookOver) => {
     if (!tookOver) startDefaultSensorFlow();
   });
 }

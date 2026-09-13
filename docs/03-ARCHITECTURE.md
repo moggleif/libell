@@ -121,7 +121,19 @@ parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardwar
 box into that same transport seam behind the `?easylevel-sim` query flag, emitting
 real-wire-format payloads on timers so the whole EasyLevel flow runs hardware-free in
 any browser (`isEasyLevelAvailable()` is that adapter's own availability rule: real Web
-Bluetooth, or the flag). Settings that belong to one source rather than to the app or the vehicle live in
+Bluetooth, or the flag). **The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
+external-sensor lifecycle for every source: lazy adapter construction, connect and
+disconnect, the silent auto-reconnect at app open (#130), the background auto-retry
+(#211) and the "use phone sensor" escape hatch (#134). `main.ts` holds no device-named
+closure of its own — it supplies the adapter factory and three callbacks (build the
+level screen, refresh the indicators, refresh the status row) and reads
+`getActiveSensor()` fresh on every use. ADR 0014's "never silently switch source" rule
+is enforced by one `adopt()`/`fallBackToPhone()` pair rather than by a dozen call sites,
+and connecting a second source disconnects the first rather than leaving two adapters
+delivering samples. Everything is injected, so the whole state machine is unit-tested
+with fake adapters and fake time.
+
+Settings that belong to one source rather than to the app or the vehicle live in
 `LevelSettings.sensorDevices`, keyed by source id (#264): an untyped bag so an entry for
 a source this build does not know survives a load/save round trip, read through typed
 accessors (`easyLevelSettings`, `withEasyLevelSettings`) that validate field by field at
