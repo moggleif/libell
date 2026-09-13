@@ -73,7 +73,6 @@ import {
   parseEasyLevelStatus,
   type EasyLevelStatus,
 } from './easyLevelProtocol';
-import { isEasyLevelInitialCalibrationWaitExpired } from './sensorFallback';
 import { easyLevelSimulationMode } from './easyLevelSimulator';
 import type { ExternalSensorDescriptor } from './externalSensors';
 
@@ -99,6 +98,43 @@ export const EASYLEVEL_ADVERTISED_SERVICE_UUID = '669a0c20-0008-a7ba-e311-0685c0
  * whose advertised name starts with this).
  */
 export const EASYLEVEL_DEVICE_NAME_PREFIX = 'CARATI';
+
+/**
+ * How long this adapter withholds `getGravity()` after connecting,
+ * waiting for the first `faf52c22-...` status notification, before giving
+ * up and reporting best-effort (possibly uncalibrated) readings anyway
+ * (#217). Unlike `sensorFallback.ts`'s shared auto-retry cadence, this is
+ * NOT derived from the official app, and is not shared policy at all —
+ * it exists only because `faf52c22-...` carries the bias bytes
+ * `parseAccelPacket` needs, which is this protocol's business and no
+ * other source's (#266 moved it here from `sensorFallback.ts` for exactly
+ * that reason): #217's decompile of its own post-connect
+ * setup (`N0/a;->m()`) found it enables status notifications before accel
+ * notifications (see `easyLevelSensor.ts`'s module doc comment), but found
+ * no equivalent explicit wait — the app has no analogous grace period, it
+ * just relies on that ordering (and, per that same decompile, defaults to
+ * *assuming legacy tier-<3 firmware* — `this.n = 16` — until a status
+ * notification says otherwise, which is itself not obviously safe against
+ * an accel notification arriving first on modern firmware). This constant
+ * is Libell's own defensive choice, a bound generous enough to cover a
+ * normal BLE notify round-trip without stalling a firmware that legitimately
+ * never sends a status characteristic at all.
+ */
+export const EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS = 2000;
+
+/**
+ * True once `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS` has passed since
+ * connecting — see that constant's own doc comment. Same
+ * time-as-parameter discipline as `sensorFallback.ts`'s retry check and
+ * `domain/staleness.ts`'s `isSensorStale`, so this is fully unit-testable
+ * without real timers.
+ */
+export function isEasyLevelInitialCalibrationWaitExpired(
+  connectedAtMs: number,
+  nowMs: number,
+): boolean {
+  return nowMs - connectedAtMs >= EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS;
+}
 
 /** Web Bluetooth is Chrome/Android only — never Safari/iOS. */
 export function isWebBluetoothSupported(): boolean {
@@ -147,6 +183,13 @@ export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
     installCalibration: true,
     debugBytes: true,
   },
+  // Notifications are event-driven, not a fixed clock — a connection-
+  // interval hiccup or a slow packet can legitimately create a larger gap
+  // than a dropped animation frame ever would. Set generously above the
+  // phone's own 2s so natural BLE jitter never false-triggers, while still
+  // catching a box whose notifications have stopped with the GATT link
+  // technically still open. Unchanged from #132's own value, only moved.
+  staleTimeoutMs: 4000,
 };
 
 /** One connected box: subscribe to its notify characteristics, disconnect on request. */

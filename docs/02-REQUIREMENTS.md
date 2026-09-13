@@ -927,9 +927,10 @@ safety state: never R17's "wrong phone pose" overlay (the phone is flat, but the
 _data itself_ can no longer be trusted), never R25's "Measuring…" (that needs new,
 noisy samples to arrive; this fires when no new samples arrive at all).
 
-- **Given** the active sensor (phone or EasyLevel box) has not delivered a fresh
-  reading within its timeout — 2 seconds for the continuously-sampling phone sensor,
-  4 seconds for the event-driven EasyLevel BLE box, whose notifications can
+- **Given** the active sensor has not delivered a fresh reading within its own timeout
+  — 2 seconds for the continuously-sampling phone sensor (`STALE_TIMEOUT_PHONE_MS`),
+  and for an external source whatever its registry descriptor declares (#266), which
+  is 4 seconds for the event-driven EasyLevel BLE box, whose notifications can
   legitimately have larger natural gaps — while `getGravity()` still returns its last
   non-null value
 - **When** I look at the main screen
@@ -979,7 +980,7 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** EasyLevel is unreachable and the fallback prompt is shown, and no one
   taps anything (**#211**)
 - **Then** the app also retries the same reconnect call on its own, on a short fixed
-  interval (`sensor/sensorFallback.ts`'s `EASYLEVEL_AUTO_RETRY_INTERVAL_MS`), for as
+  interval (`sensor/sensorFallback.ts`'s `EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS`), for as
   long as the main screen is visible and the box stays unreachable — recovering
   automatically the moment the box is back in range or powered on, with no tap
   required. This never switches source on its own (ADR 0014's rule is unchanged): it

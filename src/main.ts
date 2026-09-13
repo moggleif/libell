@@ -10,11 +10,7 @@ import { computeCaravanLeveling, createCaravanStabilizer } from './domain/carava
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
-import {
-  isSensorStale,
-  STALE_TIMEOUT_EASYLEVEL_MS,
-  STALE_TIMEOUT_PHONE_MS,
-} from './domain/staleness';
+import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from './domain/staleness';
 import { deficitMagnitude } from './domain/rampPlan';
 import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
 import {
@@ -77,7 +73,7 @@ import {
   type OrientationSensor,
   type SensorState,
 } from './sensor/orientation';
-import { hasAvailableExternalSensor } from './sensor/externalSensors';
+import { externalSensorById, hasAvailableExternalSensor } from './sensor/externalSensors';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
@@ -88,7 +84,7 @@ import {
   easyLevelSimulationMode,
   isRememberedEasyLevelDeviceUsable,
 } from './sensor/easyLevelSimulator';
-import { isSensorUnavailable, isEasyLevelAutoRetryDue } from './sensor/sensorFallback';
+import { isSensorUnavailable, isExternalSensorAutoRetryDue } from './sensor/sensorFallback';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu } from './ui/menu';
@@ -501,7 +497,7 @@ function bootstrap(root: HTMLElement): void {
    */
   function maybeAutoRetryEasyLevel(nowMs: number): void {
     if (easyLevelAutoRetryInFlight) return;
-    if (!isEasyLevelAutoRetryDue(lastEasyLevelAutoRetryAt, nowMs)) return;
+    if (!isExternalSensorAutoRetryDue(lastEasyLevelAutoRetryAt, nowMs)) return;
     lastEasyLevelAutoRetryAt = nowMs;
     easyLevelAutoRetryInFlight = true;
     void retryEasyLevelNow().finally(() => {
@@ -1289,8 +1285,10 @@ function bootstrap(root: HTMLElement): void {
         // before the pose guard below: a reading old enough to be untrusted
         // isn't safe to judge the pose from either, and the two overlays
         // must never both fight for the screen at once.
+        // Each external source declares its own timeout (#266); the phone
+        // is not an external source and keeps the domain layer's own.
         const staleTimeoutMs =
-          sensor.getSource() === 'easylevel' ? STALE_TIMEOUT_EASYLEVEL_MS : STALE_TIMEOUT_PHONE_MS;
+          externalSensorById(sensor.getSource())?.staleTimeoutMs ?? STALE_TIMEOUT_PHONE_MS;
         if (isSensorStale(sensor.getLastSampleAt(), now, staleTimeoutMs)) {
           staleOverlay.hidden = false;
           poseOverlay.hidden = true;

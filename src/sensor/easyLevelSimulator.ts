@@ -81,7 +81,8 @@ export function isRememberedEasyLevelDeviceUsable(
 }
 
 /** Accel notification cadence — the same order of magnitude as a real BLE
- * notify stream, and comfortably inside `STALE_TIMEOUT_EASYLEVEL_MS`. */
+ * notify stream, and comfortably inside the EasyLevel descriptor's own
+ * `staleTimeoutMs` (#266). */
 export const SIMULATED_ACCEL_INTERVAL_MS = 100;
 /** First status notification lands shortly after subscribing — like a box
  * that proactively notifies on subscribe (#217's best case), and well

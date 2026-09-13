@@ -15,12 +15,19 @@
  * left frozen mid-display.
  *
  * One pure function, shared by every `OrientationSensor` implementation
- * (the phone sensor and the EasyLevel BLE box alike) instead of two
- * bespoke timers: given the timestamp of the last real sample and the
- * current time, has too long passed with nothing new? Time is always a
- * parameter, never read from the wall clock in here, so this is fully
- * unit-testable without real timers — the same discipline `stability.ts`'s
- * dwell windows and `stillness.ts`'s calm window already follow.
+ * instead of a bespoke timer each: given the timestamp of the last real
+ * sample and the current time, has too long passed with nothing new? Time
+ * is always a parameter, never read from the wall clock in here, so this
+ * is fully unit-testable without real timers — the same discipline
+ * `stability.ts`'s dwell windows and `stillness.ts`'s calm window already
+ * follow.
+ *
+ * The phone's own timeout lives here because the phone sensor is not an
+ * external source and has no descriptor. Every external source declares
+ * its own instead (#266, ADR 0016): how long a silence is suspicious is a
+ * property of that adapter's cadence — a notify stream and a poll loop
+ * are not the same thing — and enumerating devices in the pure domain
+ * layer was the wrong place to keep that knowledge.
  */
 
 /**
@@ -32,16 +39,6 @@
  * is caught well before stale data could be mistaken for live guidance.
  */
 export const STALE_TIMEOUT_PHONE_MS = 2000;
-
-/**
- * EasyLevel BLE box timeout: notifications are event-driven, not a fixed
- * clock — a connection-interval hiccup or a slow packet can legitimately
- * create a larger gap than a dropped animation frame ever would. Set
- * generously above the phone timeout so that natural BLE jitter never
- * false-triggers, while still catching a box whose notifications have
- * stopped (GATT technically still open) well within a few seconds.
- */
-export const STALE_TIMEOUT_EASYLEVEL_MS = 4000;
 
 /**
  * True once more than `timeoutMs` has passed since `lastSampleAtMs` —
