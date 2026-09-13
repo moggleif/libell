@@ -1412,3 +1412,38 @@ the footer, with the card and the footer both spelling out the same step heights
   labels sized for readability — closing it would mean taking back type this tab was
   given for exactly that reason. The one-screen promise is therefore made, and checked,
   from 393x745 upward.
+
+## R48 — Simulated Xparkle box (`?xparkle-sim`): the whole flow, no hardware (#271)
+
+The Xparkle sibling of R44, and for the same reason: nobody has the box, so without a
+simulator its flow could only ever be exercised by unit-test fakes. Same convention, same
+seam — a simulated `XparkleTransport` (`xparkleSimulator.ts`) answering in the real wire
+format, with everything above the seam exactly the code a real box runs through.
+
+Two things it has to model that R44's does not, because the two boxes genuinely differ:
+the reading is answered **on demand** from a polled read rather than pushed on a timer,
+and the login handshake is answered with real reply frames.
+
+- **Given** any browser, with or without Web Bluetooth
+- **When** the app is opened with `?xparkle-sim`
+- **Then** the Xparkle box presents as available everywhere it normally would (the
+  External sensor page, the sensor-status dot, onboarding's source step — one shared
+  gate, `isXparkleAvailable()`), and connecting reaches a simulated box with no picker:
+  live payloads in the real 1/100° format resolving to the same small fixed tilt `?demo`
+  and R44 use, plus a slight deterministic wobble (a pure function of the sample index,
+  no clock or randomness) so the UI visibly lives while staying still (R25).
+- **Then** the simulated box answers the password command and the parameter query with
+  real reply frames, so the connect handshake is exercised end to end rather than
+  short-circuited, and the orientation the device page shows comes from a real reply.
+- **Given** `?xparkle-sim=badpassword`
+- **Then** the box rejects the password, so the "wrong password" state can be reached
+  deliberately — the case most likely to reach a real user first (a box whose password
+  was changed in the vendor app) and the least likely to be right on the first try.
+- **Given** `?xparkle-sim=drop`
+- **Then** the simulated connection is lost a short while after (re)connecting and stays
+  unreachable for a few seconds before recovering — over and over, so the lost-connection
+  state, the R37 prompt and the background auto-retry are all watchable.
+- **Given** the simulated box was connected and the app is reopened **without** the flag
+- **Then** it is not stranded on "external sensor unavailable": a simulated device id is
+  only reachable in simulation mode, and that mismatch is checked rather than retried
+  forever (the defect #223 found in R44's own simulator, not repeated here).

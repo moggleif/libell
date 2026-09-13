@@ -52,6 +52,7 @@ import type { SensorSource } from '../domain/settings';
 import type { ExternalSensor } from './externalSensorController';
 import type { SensorState } from './orientation';
 import type { ExternalSensorDescriptor } from './externalSensors';
+import { createSimulatedXparkleTransport, xparkleSimulationMode } from './xparkleSimulator';
 import {
   buildPasswordFrame,
   buildQueryParameters,
@@ -435,10 +436,33 @@ export function createXparkleWebBluetoothTransport(): XparkleTransport {
   };
 }
 
-/** Web Bluetooth is Chrome/Android only — never Safari/iOS, exactly as for
- * EasyLevel, where iOS is pointed at Bluefy instead (R39). */
-export function isXparkleAvailable(): boolean {
+/** Real Web Bluetooth — Chrome/Android only, never Safari/iOS, exactly as
+ * for EasyLevel, where iOS is pointed at Bluefy instead (R39). */
+export function isXparkleWebBluetoothSupported(): boolean {
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
+}
+
+/**
+ * This box can work in this browser: real Web Bluetooth, or the simulated
+ * box (#271) standing in for it. The ONE gate every "does this source
+ * exist here at all" decision goes through, mirroring
+ * `isEasyLevelAvailable()`.
+ */
+export function isXparkleAvailable(): boolean {
+  return isXparkleWebBluetoothSupported() || xparkleSimulationMode() !== 'off';
+}
+
+/**
+ * The transport this environment should use (#271): the simulated box
+ * whenever its flag is on, the real Web Bluetooth one otherwise. One seam,
+ * chosen in one place, so everything above it is the code a real box runs
+ * through.
+ */
+export function createXparkleTransport(): XparkleTransport {
+  const simulation = xparkleSimulationMode();
+  return simulation !== 'off'
+    ? createSimulatedXparkleTransport(simulation)
+    : createXparkleWebBluetoothTransport();
 }
 
 /**

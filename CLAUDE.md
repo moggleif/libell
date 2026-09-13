@@ -79,9 +79,10 @@ src/
 
 - **`?demo` query flag**: replaces the sensor with a fixed tilt — the way to run,
   screenshot or test the app on any sensorless machine.
-- **`?easylevel-sim` query flag**: simulated EasyLevel BLE box at the transport seam
-  (`=drop` adds periodic connection loss) — the way to exercise the external-sensor
-  flow with no hardware and no Web Bluetooth.
+- **`?easylevel-sim` / `?xparkle-sim` query flags**: a simulated BLE box at that
+  device's transport seam (`=drop` adds periodic connection loss; `?xparkle-sim=badpassword`
+  a box that rejects the password) — the way to exercise the external-sensor flow with no
+  hardware and no Web Bluetooth.
 - **Versioning**: `VERSION` holds major.minor; first deploy of a minor is the release
   (`vX.Y.0`), later merges deploy as QA candidates shown as `X.Y.0 – CR<PR>` and tagged
   `vX.Y.0-CR<PR>`. Details in ADR 0007.
