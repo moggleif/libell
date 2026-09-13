@@ -58,9 +58,9 @@ describe('settingsStore', () => {
       theme: 'dark' as const,
       appearance: 'modern' as const,
       sensorSource: 'phone' as const,
-      easyLevelConnectDelayEnabled: false,
-      easyLevelConnectDelayMs: 300,
-      easyLevelMounting: 'rotated90' as const,
+      sensorDevices: {
+        easylevel: { mounting: 'rotated90', connectDelayEnabled: false, connectDelayMs: 300 },
+      },
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);

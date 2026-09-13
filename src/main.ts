@@ -26,9 +26,11 @@ import {
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createPoseDetector } from './domain/pose';
 import {
+  easyLevelSettings,
   formatLength,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
   toggleMute,
+  withEasyLevelSettings,
   type Calibration,
   type EasyLevelMounting,
   type LevelSettings,
@@ -344,9 +346,10 @@ function bootstrap(root: HTMLElement): void {
     // the real Web Bluetooth transport is never even constructed.
     const simulation = easyLevelSimulationMode();
     if (simulation !== 'off') return createSimulatedEasyLevelTransport(simulation);
-    return createWebBluetoothTransport(() =>
-      settings.easyLevelConnectDelayEnabled ? settings.easyLevelConnectDelayMs : 0,
-    );
+    return createWebBluetoothTransport(() => {
+      const device = easyLevelSettings(settings);
+      return device.connectDelayEnabled ? device.connectDelayMs : 0;
+    });
   }
 
   /**
@@ -356,7 +359,7 @@ function bootstrap(root: HTMLElement): void {
    * `createEasyLevelSensor()` at both its construction sites below.
    */
   function currentEasyLevelMounting(): EasyLevelMounting {
-    return settings.easyLevelMounting;
+    return easyLevelSettings(settings).mounting;
   }
 
   /** Persist which source is active (#130) — read back on the next app
@@ -375,7 +378,7 @@ function bootstrap(root: HTMLElement): void {
    * already behaves.
    */
   function setEasyLevelMounting(mounting: EasyLevelMounting): void {
-    settings = { ...settings, easyLevelMounting: mounting };
+    settings = withEasyLevelSettings(settings, { mounting });
     saveSettings(settings);
   }
 
@@ -393,11 +396,10 @@ function bootstrap(root: HTMLElement): void {
     // `parseSettings`'s own clamp until the next reload, so this call is
     // the only guard until then.
     const clampedMs = Math.min(MAX_EASYLEVEL_CONNECT_DELAY_MS, Math.max(0, Math.round(ms) || 0));
-    settings = {
-      ...settings,
-      easyLevelConnectDelayEnabled: enabled,
-      easyLevelConnectDelayMs: clampedMs,
-    };
+    settings = withEasyLevelSettings(settings, {
+      connectDelayEnabled: enabled,
+      connectDelayMs: clampedMs,
+    });
     saveSettings(settings);
   }
 
@@ -615,7 +617,7 @@ function bootstrap(root: HTMLElement): void {
         clearInstallCalibration('easylevel');
         updateIndicators();
       },
-      getEasyLevelMounting: () => settings.easyLevelMounting,
+      getEasyLevelMounting: () => easyLevelSettings(settings).mounting,
       setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
       onFinished(done) {
         onboardingOpen = false;
@@ -692,7 +694,7 @@ function bootstrap(root: HTMLElement): void {
       clearInstallCalibration('easylevel');
       updateIndicators();
     },
-    getEasyLevelMounting: () => settings.easyLevelMounting,
+    getEasyLevelMounting: () => easyLevelSettings(settings).mounting,
     setEasyLevelMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
     getActiveTargetName: () => activeTargetName(),
@@ -702,8 +704,8 @@ function bootstrap(root: HTMLElement): void {
     getEasyLevelRawAccel: () => easyLevelSensor?.getGravity() ?? null,
     getEasyLevelStatusBytes: () => easyLevelSensor?.getStatusBytes() ?? null,
     getEasyLevelConnectDelay: () => ({
-      enabled: settings.easyLevelConnectDelayEnabled,
-      ms: settings.easyLevelConnectDelayMs,
+      enabled: easyLevelSettings(settings).connectDelayEnabled,
+      ms: easyLevelSettings(settings).connectDelayMs,
     }),
     setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
       setEasyLevelConnectDelay(enabled, ms),

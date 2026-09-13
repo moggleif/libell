@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_EASYLEVEL_SETTINGS,
   DEFAULT_SETTINGS,
+  easyLevelSettings,
   EASYLEVEL_MOUNTINGS,
   formatLength,
   formatLengthValue,
@@ -9,6 +11,7 @@ import {
   parseStepHeightsList,
   parseSettings,
   toggleMute,
+  withEasyLevelSettings,
 } from './settings';
 
 describe('parseSettings', () => {
@@ -32,9 +35,9 @@ describe('parseSettings', () => {
       theme: 'light' as const,
       appearance: 'modern' as const,
       sensorSource: 'phone' as const,
-      easyLevelConnectDelayEnabled: true,
-      easyLevelConnectDelayMs: 800,
-      easyLevelMounting: 'rotated90' as const,
+      sensorDevices: {
+        easylevel: { mounting: 'rotated90', connectDelayEnabled: true, connectDelayMs: 800 },
+      },
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -92,9 +95,7 @@ describe('parseSettings', () => {
       theme: 'system',
       appearance: DEFAULT_SETTINGS.appearance,
       sensorSource: DEFAULT_SETTINGS.sensorSource,
-      easyLevelConnectDelayEnabled: DEFAULT_SETTINGS.easyLevelConnectDelayEnabled,
-      easyLevelConnectDelayMs: DEFAULT_SETTINGS.easyLevelConnectDelayMs,
-      easyLevelMounting: DEFAULT_SETTINGS.easyLevelMounting,
+      sensorDevices: DEFAULT_SETTINGS.sensorDevices,
     });
   });
 
@@ -199,53 +200,129 @@ describe('parseSettings', () => {
   });
 
   it('validates the EasyLevel mounting orientation, defaulting to standard (#217)', () => {
-    expect(DEFAULT_SETTINGS.easyLevelMounting).toBe('standard');
-    expect(parseSettings({}).easyLevelMounting).toBe('standard');
-    expect(parseSettings({ easyLevelMounting: 'standard' }).easyLevelMounting).toBe('standard');
-    expect(parseSettings({ easyLevelMounting: 'rotated90' }).easyLevelMounting).toBe('rotated90');
+    // Read through the per-source accessor since #264; the stored inputs
+    // below are #217's own flat fields, which must still be understood.
+    const mountingOf = (raw: Record<string, unknown>) =>
+      easyLevelSettings(parseSettings(raw)).mounting;
+    expect(DEFAULT_EASYLEVEL_SETTINGS.mounting).toBe('standard');
+    expect(mountingOf({})).toBe('standard');
+    expect(mountingOf({ easyLevelMounting: 'standard' })).toBe('standard');
+    expect(mountingOf({ easyLevelMounting: 'rotated90' })).toBe('rotated90');
     // All four physical rotations (#222) — the two added later must parse
     // exactly like the original pair, and the original pair must keep
     // working for anyone who stored one before that change.
-    expect(parseSettings({ easyLevelMounting: 'rotated180' }).easyLevelMounting).toBe('rotated180');
-    expect(parseSettings({ easyLevelMounting: 'rotated270' }).easyLevelMounting).toBe('rotated270');
+    expect(mountingOf({ easyLevelMounting: 'rotated180' })).toBe('rotated180');
+    expect(mountingOf({ easyLevelMounting: 'rotated270' })).toBe('rotated270');
     expect(EASYLEVEL_MOUNTINGS).toEqual(['standard', 'rotated90', 'rotated180', 'rotated270']);
     // Any other value, including a future one this build doesn't know about
     // yet, falls back rather than silently trusting unknown input.
-    expect(parseSettings({ easyLevelMounting: 'upside-down' }).easyLevelMounting).toBe('standard');
+    expect(mountingOf({ easyLevelMounting: 'upside-down' })).toBe('standard');
+    expect(mountingOf({ sensorDevices: { easylevel: { mounting: 'upside-down' } } })).toBe(
+      'standard',
+    );
   });
 
   it('the EasyLevel debug connect delay defaults off, and a present value is never overridden (#212)', () => {
-    expect(DEFAULT_SETTINGS.easyLevelConnectDelayEnabled).toBe(false);
-    expect(parseSettings({}).easyLevelConnectDelayEnabled).toBe(false);
-    expect(parseSettings({ easyLevelConnectDelayEnabled: true }).easyLevelConnectDelayEnabled).toBe(
-      true,
-    );
+    const enabledOf = (raw: Record<string, unknown>) =>
+      easyLevelSettings(parseSettings(raw)).connectDelayEnabled;
+    expect(DEFAULT_EASYLEVEL_SETTINGS.connectDelayEnabled).toBe(false);
+    expect(enabledOf({})).toBe(false);
+    expect(enabledOf({ easyLevelConnectDelayEnabled: true })).toBe(true);
     // Presence check, not truthiness (#212, same discipline as soundOnLevel):
     // an explicit prior `false` is never coerced back to the default.
-    expect(
-      parseSettings({ easyLevelConnectDelayEnabled: false }).easyLevelConnectDelayEnabled,
-    ).toBe(false);
-    expect(
-      parseSettings({ easyLevelConnectDelayEnabled: 'yes' }).easyLevelConnectDelayEnabled,
-    ).toBe(false);
+    expect(enabledOf({ easyLevelConnectDelayEnabled: false })).toBe(false);
+    expect(enabledOf({ easyLevelConnectDelayEnabled: 'yes' })).toBe(false);
+    expect(enabledOf({ sensorDevices: { easylevel: { connectDelayEnabled: true } } })).toBe(true);
   });
 
   it('clamps the EasyLevel debug connect delay to MAX_EASYLEVEL_CONNECT_DELAY_MS (#212)', () => {
-    expect(parseSettings({}).easyLevelConnectDelayMs).toBe(
-      DEFAULT_SETTINGS.easyLevelConnectDelayMs,
-    );
-    expect(parseSettings({ easyLevelConnectDelayMs: 900 }).easyLevelConnectDelayMs).toBe(900);
-    expect(parseSettings({ easyLevelConnectDelayMs: 999999 }).easyLevelConnectDelayMs).toBe(
-      MAX_EASYLEVEL_CONNECT_DELAY_MS,
-    );
+    const msOf = (raw: Record<string, unknown>) =>
+      easyLevelSettings(parseSettings(raw)).connectDelayMs;
+    expect(msOf({})).toBe(DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs);
+    expect(msOf({ easyLevelConnectDelayMs: 900 })).toBe(900);
+    expect(msOf({ easyLevelConnectDelayMs: 999999 })).toBe(MAX_EASYLEVEL_CONNECT_DELAY_MS);
     // Negative/garbage falls back to the default, same as every other
     // numeric field's `nonNegativeNumber` guard.
-    expect(parseSettings({ easyLevelConnectDelayMs: -5 }).easyLevelConnectDelayMs).toBe(
-      DEFAULT_SETTINGS.easyLevelConnectDelayMs,
+    expect(msOf({ easyLevelConnectDelayMs: -5 })).toBe(DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs);
+    expect(msOf({ easyLevelConnectDelayMs: 'slow' })).toBe(
+      DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs,
     );
-    expect(parseSettings({ easyLevelConnectDelayMs: 'slow' }).easyLevelConnectDelayMs).toBe(
-      DEFAULT_SETTINGS.easyLevelConnectDelayMs,
+    expect(msOf({ sensorDevices: { easylevel: { connectDelayMs: 999999 } } })).toBe(
+      MAX_EASYLEVEL_CONNECT_DELAY_MS,
     );
+  });
+});
+
+describe('per-source device settings (#264)', () => {
+  it('keeps an entry for a source this build has never heard of', () => {
+    // Moving between builds must not destroy the other build's device
+    // settings, which is why the bag is not validated entry by entry.
+    const parsed = parseSettings({
+      sensorDevices: { 'some-future-box': { mounting: 'sideways', pollMs: 750 } },
+    });
+    expect(parsed.sensorDevices['some-future-box']).toEqual({
+      mounting: 'sideways',
+      pollMs: 750,
+    });
+  });
+
+  it('drops an entry that is not an object at all, rather than carrying junk', () => {
+    const parsed = parseSettings({ sensorDevices: { easylevel: 'not an object', other: 42 } });
+    // A known source falls back to its defaults; an unknown one that is
+    // not even an object is dropped rather than carried as junk.
+    expect(parsed.sensorDevices.easylevel).toEqual(DEFAULT_EASYLEVEL_SETTINGS);
+    expect(parsed.sensorDevices.other).toBeUndefined();
+  });
+
+  it('survives a corrupt bag without taking the rest of the settings down', () => {
+    const parsed = parseSettings({ sensorDevices: 'nonsense', wheelbaseMm: 4200 });
+    expect(parsed.wheelbaseMm).toBe(4200);
+    expect(easyLevelSettings(parsed)).toEqual(DEFAULT_EASYLEVEL_SETTINGS);
+  });
+
+  it('falls back per field, so one corrupt value does not lose the others', () => {
+    const parsed = parseSettings({
+      sensorDevices: { easylevel: { mounting: 'rotated180', connectDelayMs: 'slow' } },
+    });
+    expect(easyLevelSettings(parsed)).toEqual({
+      mounting: 'rotated180',
+      connectDelayEnabled: DEFAULT_EASYLEVEL_SETTINGS.connectDelayEnabled,
+      connectDelayMs: DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs,
+    });
+  });
+
+  it('migrates #212/#217’s flat fields, so a stored mounting choice survives', () => {
+    // A wrong mounting silently names the wrong wheel (#222), so losing
+    // this one in an upgrade would be worse than a visible failure.
+    const parsed = parseSettings({
+      easyLevelMounting: 'rotated270',
+      easyLevelConnectDelayEnabled: true,
+      easyLevelConnectDelayMs: 1200,
+    });
+    expect(easyLevelSettings(parsed)).toEqual({
+      mounting: 'rotated270',
+      connectDelayEnabled: true,
+      connectDelayMs: 1200,
+    });
+  });
+
+  it('prefers an existing entry over the legacy flat fields', () => {
+    const parsed = parseSettings({
+      easyLevelMounting: 'rotated90',
+      sensorDevices: { easylevel: { mounting: 'rotated180' } },
+    });
+    expect(easyLevelSettings(parsed).mounting).toBe('rotated180');
+  });
+
+  it('patches one source without touching another’s entry', () => {
+    const before = parseSettings({
+      sensorDevices: { easylevel: { mounting: 'rotated90' }, 'some-future-box': { pollMs: 500 } },
+    });
+    const after = withEasyLevelSettings(before, { mounting: 'rotated180' });
+    expect(easyLevelSettings(after).mounting).toBe('rotated180');
+    expect(after.sensorDevices['some-future-box']).toEqual({ pollMs: 500 });
+    // And the patch leaves the fields it did not name alone.
+    expect(easyLevelSettings(after).connectDelayMs).toBe(DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs);
   });
 });
 
