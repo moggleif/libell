@@ -842,7 +842,8 @@ cross-platform goal — they are not this app's code and are not covered here.
 
 - **Given** the user has successfully connected to an EasyLevel box at least once
 - **Then** the app remembers that specific box's identity (its Web Bluetooth device id,
-  `libell.easyLevelDeviceId`) and that EasyLevel was the active source
+  `libell.sensorDevice.easylevel` — keyed by source id since #263) and that EasyLevel
+  was the active source
   (`sensorSource` in `libell.settings`), not merely "an EasyLevel box was used once" —
   both survive closing and reopening the app.
 - **Given** a browser that implements Web Bluetooth's persistent-permissions API
@@ -903,7 +904,8 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Given** the phone's own sensor calibration and vehicle zero (R24), and the
   EasyLevel box's installation offset above
 - **Then** they are stored completely independently (`libell.vehicleCalibration` vs.
-  `libell.easyLevelInstallCalibration`): clearing or redoing one never touches, and is
+  `libell.installCalibration.<source>`, one key per external source since #263):
+  clearing or redoing one never touches, and is
   never touched by, the other, and switching the active source between the phone and
   the box switches which pair of offsets "level" is measured against without losing
   or corrupting either — mirroring how a target preset (R31) is never conflated with
