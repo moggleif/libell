@@ -77,13 +77,18 @@ export const MESSAGES = {
 
     // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
     // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
-    'sensorSource.intro':
-      "Connect a {name} BLE box as an alternative to the phone's own sensor. " +
-      'Requires Chrome on Android with Bluetooth turned on.',
+    // The device sentence only — the browser requirement is the same for
+    // every box and is shown once per page (#272), not once per row.
+    'sensorSource.intro': "Connect the {name} BLE box as an alternative to the phone's own sensor.",
+    'sensorSource.intro.requirements': 'Requires Chrome on Android with Bluetooth turned on.',
     'sensorSource.connect': 'Connect {name} sensor',
     'sensorSource.reconnect': 'Reconnect {name} sensor',
     'sensorSource.disconnect': 'Disconnect',
     'sensorSource.status.phone': "Using the phone's own sensor.",
+    // Shown on a source's own row while a DIFFERENT external source is
+    // feeding readings (#272) — claiming the phone is active would be
+    // plainly wrong once there is more than one box to choose from.
+    'sensorSource.status.inactive': 'Not in use — another sensor is active.',
     'sensorSource.status.connected': 'Connected to the {name} sensor.',
     'sensorSource.status.connecting': 'Connecting…',
     // Connection lost while the box stays the selected source (#129) —
@@ -601,12 +606,13 @@ export const MESSAGES = {
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
     // sensor, visas bara när Web Bluetooth finns (`menu.ts`).
     'sensorSource.intro':
-      'Anslut en {name}-box via Bluetooth som alternativ till telefonens egen ' +
-      'sensor. Kräver Chrome på Android med Bluetooth påslaget.',
+      'Anslut {name}-boxen via Bluetooth som alternativ till telefonens egen sensor.',
+    'sensorSource.intro.requirements': 'Kräver Chrome på Android med Bluetooth påslaget.',
     'sensorSource.connect': 'Anslut {name}-sensor',
     'sensorSource.reconnect': 'Återanslut {name}-sensor',
     'sensorSource.disconnect': 'Koppla från',
     'sensorSource.status.phone': 'Använder telefonens egen sensor.',
+    'sensorSource.status.inactive': 'Används inte — en annan sensor är aktiv.',
     'sensorSource.status.connected': 'Ansluten till {name}-sensorn.',
     'sensorSource.status.connecting': 'Ansluter…',
     'sensorSource.status.disconnected':
@@ -1019,12 +1025,13 @@ export const MESSAGES = {
     'menu.card.notDone': 'Non fait',
 
     'sensorSource.intro':
-      'Connectez un boîtier {name} BLE comme alternative au capteur du téléphone. ' +
-      'Nécessite Chrome sur Android avec le Bluetooth activé.',
+      'Connectez le boîtier {name} BLE comme alternative au capteur du téléphone.',
+    'sensorSource.intro.requirements': 'Nécessite Chrome sur Android avec le Bluetooth activé.',
     'sensorSource.connect': 'Connecter le capteur {name}',
     'sensorSource.reconnect': 'Reconnecter le capteur {name}',
     'sensorSource.disconnect': 'Déconnecter',
     'sensorSource.status.phone': 'Utilise le capteur du téléphone.',
+    'sensorSource.status.inactive': 'Non utilisé — un autre capteur est actif.',
     'sensorSource.status.connected': 'Connecté au capteur {name}.',
     'sensorSource.status.connecting': 'Connexion…',
     'sensorSource.status.disconnected':
@@ -1444,13 +1451,13 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Sin guardar',
     'menu.card.notDone': 'Sin hacer',
 
-    'sensorSource.intro':
-      'Conecta una caja {name} BLE como alternativa al sensor del propio móvil. ' +
-      'Requiere Chrome en Android con el Bluetooth activado.',
+    'sensorSource.intro': 'Conecta la caja {name} BLE como alternativa al sensor del propio móvil.',
+    'sensorSource.intro.requirements': 'Requiere Chrome en Android con el Bluetooth activado.',
     'sensorSource.connect': 'Conectar el sensor {name}',
     'sensorSource.reconnect': 'Reconectar el sensor {name}',
     'sensorSource.disconnect': 'Desconectar',
     'sensorSource.status.phone': 'Usando el sensor del propio móvil.',
+    'sensorSource.status.inactive': 'No se usa: hay otro sensor activo.',
     'sensorSource.status.connected': 'Conectado al sensor {name}.',
     'sensorSource.status.connecting': 'Conectando…',
     'sensorSource.status.disconnected':
@@ -1866,13 +1873,14 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Nicht gespeichert',
     'menu.card.notDone': 'Nicht erledigt',
 
-    'sensorSource.intro':
-      'Verbinde eine {name}-BLE-Box als Alternative zum Sensor des Handys. ' +
+    'sensorSource.intro': 'Verbinde die {name}-BLE-Box als Alternative zum Sensor des Handys.',
+    'sensorSource.intro.requirements':
       'Erfordert Chrome unter Android mit eingeschaltetem Bluetooth.',
     'sensorSource.connect': '{name}-Sensor verbinden',
     'sensorSource.reconnect': '{name}-Sensor neu verbinden',
     'sensorSource.disconnect': 'Trennen',
     'sensorSource.status.phone': 'Der Sensor des Handys wird verwendet.',
+    'sensorSource.status.inactive': 'Nicht in Verwendung — ein anderer Sensor ist aktiv.',
     'sensorSource.status.connected': 'Mit dem {name}-Sensor verbunden.',
     'sensorSource.status.connecting': 'Verbinden…',
     'sensorSource.status.disconnected':

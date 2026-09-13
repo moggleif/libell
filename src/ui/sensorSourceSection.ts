@@ -191,6 +191,13 @@ export interface SensorSourceSection {
 export function createSensorSourceSection(
   options: SensorSourceOptions,
   onOpenStatus?: () => void,
+  /**
+   * Called after this section connects or disconnects (#272). With more
+   * than one source listed, the OTHER rows are now stale — one of them was
+   * showing "using the phone's own sensor" and no longer is — and nothing
+   * else would refresh them until the page is reopened.
+   */
+  onSourceChanged?: () => void,
 ): SensorSourceSection {
   const body = document.createElement('div');
   // Wraps intro/connect/health — the "get connected" half (design review).
@@ -236,7 +243,7 @@ export function createSensorSourceSection(
     chevron.textContent = '›';
     status.append(chevron);
     status.addEventListener('click', () => {
-      if (options.getSensorSource() === 'easylevel') onOpenStatus();
+      if (options.getSensorSource() === options.sensor.id) onOpenStatus();
     });
   }
   const disconnectButton = document.createElement('button');
@@ -382,7 +389,7 @@ export function createSensorSourceSection(
   /** Button labels/visibility only — never touches `status`, so an
    * in-flight connect's status text survives a `refresh()` call. */
   function refreshButtons(): void {
-    const connected = options.getSensorSource() === 'easylevel';
+    const connected = options.getSensorSource() === options.sensor.id;
     const name = { name: options.sensor.displayName };
     connectButton.textContent = connected
       ? t('sensorSource.reconnect', name)
@@ -392,7 +399,9 @@ export function createSensorSourceSection(
 
   function refresh(): void {
     refreshButtons();
-    const active = options.getSensorSource() === 'easylevel';
+    // This section's own source, not "any external source" (#272): with
+    // more than one listed, each row answers for itself.
+    const active = options.getSensorSource() === options.sensor.id;
     // Plain text, not a link, whenever the box is not the active source —
     // see the chevron's own comment above (#244).
     if (onOpenStatus) {
@@ -402,7 +411,11 @@ export function createSensorSourceSection(
       else status.setAttribute('aria-disabled', 'true');
     }
     statusText.textContent = !active
-      ? t('sensorSource.status.phone')
+      ? // With more than one source listed, "using the phone" is only true
+        // when the phone really is the active one (#272).
+        options.getSensorSource() === 'phone'
+        ? t('sensorSource.status.phone')
+        : t('sensorSource.status.inactive')
       : options.getSensorState() === 'disconnected'
         ? t('sensorSource.status.disconnected', { name: options.sensor.displayName })
         : t('sensorSource.status.connected', { name: options.sensor.displayName });
@@ -426,12 +439,14 @@ export function createSensorSourceSection(
             ? t('sensorSource.err.unsupported')
             : t('sensorSource.err.failed', { name: options.sensor.displayName });
       refreshButtons();
+      onSourceChanged?.();
     });
   });
 
   disconnectButton.addEventListener('click', () => {
     options.disconnectSensor();
     refresh();
+    onSourceChanged?.();
   });
 
   refresh();

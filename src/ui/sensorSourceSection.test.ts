@@ -390,3 +390,31 @@ describe('a source with something to say about why it is not working (#272)', ()
     expect(() => createSensorSourceSection(makeOptions())).not.toThrow();
   });
 });
+
+describe('one row per source, each answering for itself (#272)', () => {
+  it('is active only for its OWN source, not for any external source', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'xparkle', getSensorState: () => 'granted' }),
+    );
+    // The bag's descriptor is EasyLevel's, and a different box is active.
+    expect(section.connectElement.textContent).toContain('Not in use');
+  });
+
+  it('says "using the phone" only when the phone really is active', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
+    expect(section.connectElement.textContent).toContain("phone's own sensor");
+  });
+
+  it('tells the caller when connecting here makes the other rows stale', async () => {
+    const onSourceChanged = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({ connectSensor: () => Promise.resolve('granted') }),
+      undefined,
+      onSourceChanged,
+    );
+    findButton(section.connectElement, 'Connect EasyLevel sensor').click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onSourceChanged).toHaveBeenCalled();
+  });
+});

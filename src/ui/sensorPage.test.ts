@@ -187,23 +187,25 @@ describe('createSensorPage', () => {
   });
 });
 
+/** A second, differently-shaped box: no temperature, no firmware row, no
+ * mounting picker, no debug bytes — the shape the Xparkle RVS01 has. */
+const SECOND_BOX: ExternalSensorDescriptor = {
+  id: 'phone' as never,
+  displayName: 'Second Box',
+  isAvailable: () => true,
+  capabilities: {
+    battery: true,
+    temperature: false,
+    firmwareVersion: false,
+    mounting: false,
+    installCalibration: true,
+    debugBytes: false,
+  },
+  staleTimeoutMs: 4000,
+};
+
 describe('createSensorPage with more than one source (#268)', () => {
-  /** A second, differently-shaped box: no temperature, no firmware row,
-   * no mounting picker — the shape the Xparkle RVS01 will have. */
-  const SECOND: ExternalSensorDescriptor = {
-    id: 'phone' as never,
-    displayName: 'Second Box',
-    isAvailable: () => true,
-    capabilities: {
-      battery: true,
-      temperature: false,
-      firmwareVersion: false,
-      mounting: false,
-      installCalibration: true,
-      debugBytes: false,
-    },
-    staleTimeoutMs: 4000,
-  };
+  const SECOND = SECOND_BOX;
 
   it('lists one row per source, each with its own device page', () => {
     const page = createSensorPage([EASYLEVEL_DESCRIPTOR, SECOND], (sensor) =>
@@ -241,5 +243,30 @@ describe('createSensorPage with more than one source (#268)', () => {
     health.mockClear();
     page.refreshLive();
     expect(health).not.toHaveBeenCalled();
+  });
+});
+
+describe('a device page shows only its own device (#272)', () => {
+  it('hides the debug disclosure for a source with no raw bytes of its own', () => {
+    const page = createSensorPage([SECOND_BOX], (sensor) =>
+      makeOptions({ sensor, getSensorSource: () => 'phone' }),
+    );
+    // Its contents are one protocol's debug surface plus the #212
+    // connect-delay workaround — a disclosure full of dashes and a control
+    // that does nothing would be worse than no disclosure.
+    expect(page.statusElements[0]!.textContent).not.toContain('Debug');
+  });
+
+  it('keeps it for a source that does have them', () => {
+    const page = createSensorPage([EASYLEVEL_DESCRIPTOR], (sensor) => makeOptions({ sensor }));
+    expect(page.statusElements[0]!.textContent?.toLowerCase()).toContain('debug');
+  });
+
+  it('says the browser requirement once, not once per source', () => {
+    const page = createSensorPage([EASYLEVEL_DESCRIPTOR, SECOND_BOX], (sensor) =>
+      makeOptions({ sensor }),
+    );
+    const text = page.element.textContent ?? '';
+    expect(text.split('Requires Chrome').length - 1).toBe(1);
   });
 });

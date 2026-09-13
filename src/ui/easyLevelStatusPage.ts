@@ -233,7 +233,12 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     connectDelayEnableField,
     connectDelayMsField,
   );
-  page.body.append(debugDetails);
+  // The whole disclosure, not just its rows: its contents — raw protocol
+  // bytes, the raw accelerometer triplet, the #212 connect-delay
+  // workaround — are one device's own debug surface, and a source without
+  // them would show a disclosure full of dashes and a control that does
+  // nothing (#272).
+  if (capabilities.debugBytes) page.body.append(debugDetails);
 
   /**
    * Reads the stored connect-delay setting into the two controls above —
@@ -267,7 +272,9 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     const state = options.getSensorState();
     const isActive = source === options.sensor.id;
     stateRow.textContent = !isActive
-      ? t('sensorSource.status.phone')
+      ? source === 'phone'
+        ? t('sensorSource.status.phone')
+        : t('sensorSource.status.inactive')
       : state === 'disconnected'
         ? t('sensorSource.status.disconnected')
         : t('sensorSource.status.connected', { name: options.sensor.displayName });
