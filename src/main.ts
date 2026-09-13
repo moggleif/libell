@@ -76,6 +76,7 @@ import {
 import { externalSensorById, hasAvailableExternalSensor } from './sensor/externalSensors';
 import {
   createEasyLevelSensor,
+  EASYLEVEL_DESCRIPTOR,
   createWebBluetoothTransport,
   type EasyLevelSensor,
 } from './sensor/easyLevelSensor';
@@ -600,6 +601,9 @@ function bootstrap(root: HTMLElement): void {
       // component the real menu page uses, never a duplicate.
       getSensorSource: () => sensor.getSource(),
       getSensorState: () => sensor.getState(),
+      // One descriptor for now; #268 makes the pages render one per
+      // registered source instead of assuming this one.
+      sensor: EASYLEVEL_DESCRIPTOR,
       connectEasyLevel: () => connectEasyLevelNow(),
       disconnectEasyLevel: () => disconnectEasyLevelNow(),
       getEasyLevelStatus: () => easyLevelSensor?.getStatus() ?? null,
@@ -678,6 +682,7 @@ function bootstrap(root: HTMLElement): void {
     deleteTargetPreset: (id: string) => deleteTargetPresetNow(id),
     getSensorSource: () => sensor.getSource(),
     getSensorState: () => sensor.getState(),
+    sensor: EASYLEVEL_DESCRIPTOR,
     connectEasyLevel: () => connectEasyLevelNow(),
     disconnectEasyLevel: () => disconnectEasyLevelNow(),
     getInstallCalibration: () => easyLevelCalibration,

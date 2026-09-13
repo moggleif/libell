@@ -78,21 +78,20 @@ export const MESSAGES = {
     // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
     // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
     'sensorSource.intro':
-      "Connect an EasyLevel BLE box as an alternative to the phone's own sensor. " +
+      "Connect a {name} BLE box as an alternative to the phone's own sensor. " +
       'Requires Chrome on Android with Bluetooth turned on.',
-    'sensorSource.connect': 'Connect EasyLevel sensor',
-    'sensorSource.reconnect': 'Reconnect EasyLevel sensor',
+    'sensorSource.connect': 'Connect {name} sensor',
+    'sensorSource.reconnect': 'Reconnect {name} sensor',
     'sensorSource.disconnect': 'Disconnect',
     'sensorSource.status.phone': "Using the phone's own sensor.",
-    'sensorSource.status.connected': 'Connected to the EasyLevel sensor.',
+    'sensorSource.status.connected': 'Connected to the {name} sensor.',
     'sensorSource.status.connecting': 'Connecting…',
     // Connection lost while the box stays the selected source (#129) —
     // distinct from the plain "connected" text above so the settings page
     // never claims a live link that no longer exists.
-    'sensorSource.status.disconnected':
-      'Connection to the EasyLevel sensor was lost — tap Reconnect.',
+    'sensorSource.status.disconnected': 'Connection to the {name} sensor was lost — tap Reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
-    'sensorSource.err.failed': 'Could not connect to the EasyLevel sensor.',
+    'sensorSource.err.failed': 'Could not connect to the {name} sensor.',
 
     // iOS Safari has no Web Bluetooth and Apple has no plans to add it
     // (R39) — rather than hide this page outright there too, iOS shows a
@@ -161,7 +160,7 @@ export const MESSAGES = {
     // External sensor page. `reading` is the same roll/pitch the main
     // screen already computes, shown here too so a user checking the box
     // itself doesn't have to leave this page to see it move.
-    'sensorStatus.title': 'EasyLevel sensor',
+    'sensorStatus.title': '{name} sensor',
     'sensorStatus.reading': 'Reading: {value}',
     'sensorStatus.roll': 'roll',
     'sensorStatus.pitch': 'pitch',
@@ -597,18 +596,18 @@ export const MESSAGES = {
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
     // sensor, visas bara när Web Bluetooth finns (`menu.ts`).
     'sensorSource.intro':
-      'Anslut en EasyLevel-box via Bluetooth som alternativ till telefonens egen ' +
+      'Anslut en {name}-box via Bluetooth som alternativ till telefonens egen ' +
       'sensor. Kräver Chrome på Android med Bluetooth påslaget.',
-    'sensorSource.connect': 'Anslut EasyLevel-sensor',
-    'sensorSource.reconnect': 'Återanslut EasyLevel-sensor',
+    'sensorSource.connect': 'Anslut {name}-sensor',
+    'sensorSource.reconnect': 'Återanslut {name}-sensor',
     'sensorSource.disconnect': 'Koppla från',
     'sensorSource.status.phone': 'Använder telefonens egen sensor.',
-    'sensorSource.status.connected': 'Ansluten till EasyLevel-sensorn.',
+    'sensorSource.status.connected': 'Ansluten till {name}-sensorn.',
     'sensorSource.status.connecting': 'Ansluter…',
     'sensorSource.status.disconnected':
-      'Anslutningen till EasyLevel-sensorn bröts — tryck på Återanslut.',
+      'Anslutningen till {name}-sensorn bröts — tryck på Återanslut.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
-    'sensorSource.err.failed': 'Kunde inte ansluta till EasyLevel-sensorn.',
+    'sensorSource.err.failed': 'Kunde inte ansluta till {name}-sensorn.',
 
     'sensorSource.ios.intro':
       'Safari kan inte ansluta till Bluetooth-sensorer direkt, men det finns en lösning:',
@@ -658,7 +657,7 @@ export const MESSAGES = {
     'sensorSource.mounting.rotated180': 'Vriden 180°',
     'sensorSource.mounting.rotated270': 'Vriden 270°',
 
-    'sensorStatus.title': 'EasyLevel-sensor',
+    'sensorStatus.title': '{name}-sensor',
     'sensorStatus.reading': 'Mätvärde: {value}',
     'sensorStatus.roll': 'roll',
     'sensorStatus.pitch': 'pitch',
@@ -1013,18 +1012,18 @@ export const MESSAGES = {
     'menu.card.notDone': 'Non fait',
 
     'sensorSource.intro':
-      'Connectez un boîtier EasyLevel BLE comme alternative au capteur du téléphone. ' +
+      'Connectez un boîtier {name} BLE comme alternative au capteur du téléphone. ' +
       'Nécessite Chrome sur Android avec le Bluetooth activé.',
-    'sensorSource.connect': 'Connecter le capteur EasyLevel',
-    'sensorSource.reconnect': 'Reconnecter le capteur EasyLevel',
+    'sensorSource.connect': 'Connecter le capteur {name}',
+    'sensorSource.reconnect': 'Reconnecter le capteur {name}',
     'sensorSource.disconnect': 'Déconnecter',
     'sensorSource.status.phone': 'Utilise le capteur du téléphone.',
-    'sensorSource.status.connected': 'Connecté au capteur EasyLevel.',
+    'sensorSource.status.connected': 'Connecté au capteur {name}.',
     'sensorSource.status.connecting': 'Connexion…',
     'sensorSource.status.disconnected':
-      'La connexion au capteur EasyLevel a été perdue — touchez Reconnecter.',
+      'La connexion au capteur {name} a été perdue — touchez Reconnecter.',
     'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
-    'sensorSource.err.failed': 'Impossible de se connecter au capteur EasyLevel.',
+    'sensorSource.err.failed': 'Impossible de se connecter au capteur {name}.',
 
     'sensorSource.ios.intro':
       'Safari ne peut pas se connecter directement aux capteurs Bluetooth, mais il existe une solution :',
@@ -1068,7 +1067,7 @@ export const MESSAGES = {
     'sensorSource.mounting.rotated180': 'Tourné à 180°',
     'sensorSource.mounting.rotated270': 'Tourné à 270°',
 
-    'sensorStatus.title': 'Capteur EasyLevel',
+    'sensorStatus.title': 'Capteur {name}',
     'sensorStatus.reading': 'Lecture : {value}',
     'sensorStatus.roll': 'roulis',
     'sensorStatus.pitch': 'tangage',
@@ -1437,18 +1436,18 @@ export const MESSAGES = {
     'menu.card.notDone': 'Sin hacer',
 
     'sensorSource.intro':
-      'Conecta una caja EasyLevel BLE como alternativa al sensor del propio móvil. ' +
+      'Conecta una caja {name} BLE como alternativa al sensor del propio móvil. ' +
       'Requiere Chrome en Android con el Bluetooth activado.',
-    'sensorSource.connect': 'Conectar el sensor EasyLevel',
-    'sensorSource.reconnect': 'Reconectar el sensor EasyLevel',
+    'sensorSource.connect': 'Conectar el sensor {name}',
+    'sensorSource.reconnect': 'Reconectar el sensor {name}',
     'sensorSource.disconnect': 'Desconectar',
     'sensorSource.status.phone': 'Usando el sensor del propio móvil.',
-    'sensorSource.status.connected': 'Conectado al sensor EasyLevel.',
+    'sensorSource.status.connected': 'Conectado al sensor {name}.',
     'sensorSource.status.connecting': 'Conectando…',
     'sensorSource.status.disconnected':
-      'Se ha perdido la conexión con el sensor EasyLevel: toca Reconectar.',
+      'Se ha perdido la conexión con el sensor {name}: toca Reconectar.',
     'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
-    'sensorSource.err.failed': 'No se ha podido conectar con el sensor EasyLevel.',
+    'sensorSource.err.failed': 'No se ha podido conectar con el sensor {name}.',
 
     'sensorSource.ios.intro':
       'Safari no puede conectarse directamente a sensores Bluetooth, pero hay una solución:',
@@ -1492,7 +1491,7 @@ export const MESSAGES = {
     'sensorSource.mounting.rotated180': 'Girado 180°',
     'sensorSource.mounting.rotated270': 'Girado 270°',
 
-    'sensorStatus.title': 'Sensor EasyLevel',
+    'sensorStatus.title': 'Sensor {name}',
     'sensorStatus.reading': 'Lectura: {value}',
     'sensorStatus.roll': 'alabeo',
     'sensorStatus.pitch': 'cabeceo',
@@ -1857,18 +1856,18 @@ export const MESSAGES = {
     'menu.card.notDone': 'Nicht erledigt',
 
     'sensorSource.intro':
-      'Verbinde eine EasyLevel-BLE-Box als Alternative zum Sensor des Handys. ' +
+      'Verbinde eine {name}-BLE-Box als Alternative zum Sensor des Handys. ' +
       'Erfordert Chrome unter Android mit eingeschaltetem Bluetooth.',
-    'sensorSource.connect': 'EasyLevel-Sensor verbinden',
-    'sensorSource.reconnect': 'EasyLevel-Sensor neu verbinden',
+    'sensorSource.connect': '{name}-Sensor verbinden',
+    'sensorSource.reconnect': '{name}-Sensor neu verbinden',
     'sensorSource.disconnect': 'Trennen',
     'sensorSource.status.phone': 'Der Sensor des Handys wird verwendet.',
-    'sensorSource.status.connected': 'Mit dem EasyLevel-Sensor verbunden.',
+    'sensorSource.status.connected': 'Mit dem {name}-Sensor verbunden.',
     'sensorSource.status.connecting': 'Verbinden…',
     'sensorSource.status.disconnected':
-      'Die Verbindung zum EasyLevel-Sensor ist abgebrochen — auf Neu verbinden tippen.',
+      'Die Verbindung zum {name}-Sensor ist abgebrochen — auf Neu verbinden tippen.',
     'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
-    'sensorSource.err.failed': 'Verbindung zum EasyLevel-Sensor nicht möglich.',
+    'sensorSource.err.failed': 'Verbindung zum {name}-Sensor nicht möglich.',
 
     'sensorSource.ios.intro':
       'Safari kann sich nicht direkt mit Bluetooth-Sensoren verbinden, aber es gibt einen Umweg:',
@@ -1910,7 +1909,7 @@ export const MESSAGES = {
     'sensorSource.mounting.rotated180': 'Um 180° gedreht',
     'sensorSource.mounting.rotated270': 'Um 270° gedreht',
 
-    'sensorStatus.title': 'EasyLevel-Sensor',
+    'sensorStatus.title': '{name}-Sensor',
     'sensorStatus.reading': 'Messwert: {value}',
     'sensorStatus.roll': 'Querneigung',
     'sensorStatus.pitch': 'Längsneigung',

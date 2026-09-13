@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { createIosSensorGuidePage } from './iosSensorGuidePage';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
@@ -32,7 +33,8 @@ describe('createIosSensorGuidePage (R39)', () => {
     expect(page.element.textContent).toContain('Bluefy');
     expect(
       [...page.element.querySelectorAll('button')].some(
-        (b) => b.textContent === t('sensorSource.connect'),
+        (b) =>
+          b.textContent === t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
       ),
     ).toBe(false);
   });

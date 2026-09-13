@@ -49,6 +49,7 @@ import {
   type SensorSource,
 } from '../domain/settings';
 import type { EasyLevelStatus } from '../sensor/easyLevelProtocol';
+import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
@@ -118,6 +119,13 @@ function mountingIcon(mounting: EasyLevelMounting): SVGSVGElement {
 }
 
 export interface SensorSourceOptions {
+  /**
+   * The external source this section is about (#262, ADR 0016). Its
+   * `displayName` is substituted into the shipped strings, which name no
+   * brand themselves (#267) — a product name is identical in every
+   * language, so it comes from here rather than from a catalogue.
+   */
+  sensor: ExternalSensorDescriptor;
   /** Which source is feeding gravity readings right now. */
   getSensorSource(): SensorSource;
   /**
@@ -189,7 +197,7 @@ export function createSensorSourceSection(
 
   const intro = document.createElement('p');
   intro.className = 'menu__text';
-  intro.textContent = t('sensorSource.intro');
+  intro.textContent = t('sensorSource.intro', { name: options.sensor.displayName });
   connectSection.append(intro);
 
   const connectButton = document.createElement('button');
@@ -360,7 +368,10 @@ export function createSensorSourceSection(
    * in-flight connect's status text survives a `refresh()` call. */
   function refreshButtons(): void {
     const connected = options.getSensorSource() === 'easylevel';
-    connectButton.textContent = connected ? t('sensorSource.reconnect') : t('sensorSource.connect');
+    const name = { name: options.sensor.displayName };
+    connectButton.textContent = connected
+      ? t('sensorSource.reconnect', name)
+      : t('sensorSource.connect', name);
     disconnectButton.hidden = !connected;
   }
 
@@ -378,8 +389,8 @@ export function createSensorSourceSection(
     statusText.textContent = !active
       ? t('sensorSource.status.phone')
       : options.getSensorState() === 'disconnected'
-        ? t('sensorSource.status.disconnected')
-        : t('sensorSource.status.connected');
+        ? t('sensorSource.status.disconnected', { name: options.sensor.displayName })
+        : t('sensorSource.status.connected', { name: options.sensor.displayName });
     installSection.hidden = !active;
     if (active) {
       refreshMountingIcon();
@@ -392,10 +403,10 @@ export function createSensorSourceSection(
     void options.connectEasyLevel().then((state) => {
       statusText.textContent =
         state === 'granted'
-          ? t('sensorSource.status.connected')
+          ? t('sensorSource.status.connected', { name: options.sensor.displayName })
           : state === 'unsupported'
             ? t('sensorSource.err.unsupported')
-            : t('sensorSource.err.failed');
+            : t('sensorSource.err.failed', { name: options.sensor.displayName });
       refreshButtons();
     });
   });

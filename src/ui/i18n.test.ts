@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LANGUAGE_NAMES, LANGUAGES, MESSAGES, isLanguage, resolveLanguage } from './i18n';
+import { EXTERNAL_SENSORS } from '../sensor/externalSensors';
 
 /** Every shipped dictionary, so adding a language (#178) automatically
  * brings it under all the checks below instead of needing a new case. */
@@ -77,5 +78,37 @@ describe('i18n dictionaries', () => {
     expect(isLanguage('xx')).toBe(false);
     expect([...ALL]).toContain(resolveLanguage('xx'));
     expect([...ALL]).toContain(resolveLanguage(null));
+  });
+});
+
+describe('product names never live in a catalogue (#267)', () => {
+  it('ships no external sensor’s brand inside a translated string', () => {
+    // A brand is identical in every language, so translating it is a bug —
+    // and duplicating a whole string set per device is how five-language
+    // edits multiply. The name is substituted from the registry
+    // descriptor instead.
+    for (const sensor of EXTERNAL_SENSORS) {
+      for (const lang of ALL) {
+        for (const [key, value] of Object.entries(MESSAGES[lang])) {
+          expect(value, `${lang}:${key} must not name ${sensor.displayName}`).not.toContain(
+            sensor.displayName,
+          );
+        }
+      }
+    }
+  });
+
+  it('leaves no {name} placeholder unfilled in the strings that carry one', () => {
+    // A placeholder that reaches the screen looks like a bug to the user,
+    // so every string that has one must be called with it.
+    const withPlaceholder = Object.entries(MESSAGES.en)
+      .filter(([, value]) => value.includes('{name}'))
+      .map(([key]) => key);
+    expect(withPlaceholder.length).toBeGreaterThan(0);
+    for (const key of withPlaceholder) {
+      for (const lang of ALL) {
+        expect(MESSAGES[lang][key as keyof (typeof MESSAGES)[typeof lang]]).toContain('{name}');
+      }
+    }
   });
 });
