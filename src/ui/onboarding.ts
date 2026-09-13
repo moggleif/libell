@@ -49,7 +49,7 @@
  * first") — the steps are already in that order.
  *
  * Sensor source choice (#135, ADR 0014): when an external sensor option
- * actually exists (`isEasyLevelAvailable()` — the exact same gate
+ * actually exists (`hasAvailableExternalSensor()` — the exact same gate
  * `main.ts` already uses before offering the "External sensor" page), a
  * step asks "This phone" vs. "external sensor" and branches the rest of
  * the wizard:
@@ -110,7 +110,7 @@ import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
-import { isEasyLevelAvailable } from '../sensor/easyLevelSensor';
+import { hasAvailableExternalSensor } from '../sensor/externalSensors';
 import {
   legendIllustration,
   measuresIllustration,
@@ -241,9 +241,10 @@ type Step = {
 export function showOnboarding(options: OnboardingOptions): void {
   const isModern = options.initialSettings.appearance === 'modern';
   // Same gate `main.ts` uses before ever offering the "External sensor"
-  // page (#116, widened by #220 to include the simulated box) — never a
-  // dead radio button on Safari/iOS or desktop.
-  const sourceChoiceAvailable = isEasyLevelAvailable();
+  // page (#116, widened by #220 to include the simulated box, and by #262
+  // to ask the registry rather than one device) — never a dead radio
+  // button on Safari/iOS or desktop.
+  const sourceChoiceAvailable = hasAvailableExternalSensor();
 
   // Which vehicle every later step's imagery/labels are built for (#184)
   // — starts at whatever is already stored (not hardcoded to motorhome).

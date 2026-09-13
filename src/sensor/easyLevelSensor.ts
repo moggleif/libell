@@ -75,6 +75,7 @@ import {
 } from './easyLevelProtocol';
 import { isEasyLevelInitialCalibrationWaitExpired } from './sensorFallback';
 import { easyLevelSimulationMode } from './easyLevelSimulator';
+import type { ExternalSensorDescriptor } from './externalSensors';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -118,6 +119,35 @@ export function isWebBluetoothSupported(): boolean {
 export function isEasyLevelAvailable(): boolean {
   return isWebBluetoothSupported() || easyLevelSimulationMode() !== 'off';
 }
+
+/**
+ * This box as the registry (#262, ADR 0016) sees it: its id, its product
+ * name, whether it can work in this browser, and which rows its own page
+ * has something to put in. This is the one place any of those four facts
+ * is stated — in particular the string "EasyLevel", which used to be
+ * repeated inside the shipped sentences of five language catalogues
+ * (#267).
+ *
+ * Capabilities are what this protocol actually reports: battery,
+ * temperature and firmware tier all come from `faf52c22-...`
+ * (`parseEasyLevelStatus`), the mounting picker is R43/#222, the
+ * installation offset is R34/#131, and the debug disclosure shows the raw
+ * status bytes. Signal strength is deliberately absent — #228 removed
+ * that row precisely because no browser can fill it.
+ */
+export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
+  id: 'easylevel',
+  displayName: 'EasyLevel',
+  isAvailable: isEasyLevelAvailable,
+  capabilities: {
+    battery: true,
+    temperature: true,
+    firmwareVersion: true,
+    mounting: true,
+    installCalibration: true,
+    debugBytes: true,
+  },
+};
 
 /** One connected box: subscribe to its notify characteristics, disconnect on request. */
 export interface EasyLevelConnection {

@@ -3,7 +3,7 @@
  * controls and the sensor row that opens the box's own page — the only
  * working `sensorSource` choice beyond the phone's built-in sensor. Only
  * ever built when EasyLevel is available at all (`main.ts` checks
- * `isEasyLevelAvailable()` before creating the pages that embed this
+ * `hasAvailableExternalSensor()` before creating the pages that embed this
  * section) — never a silent failure on Safari/iOS, per #116's acceptance
  * criteria.
  *
