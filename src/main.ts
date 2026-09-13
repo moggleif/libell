@@ -73,10 +73,10 @@ import {
   type OrientationSensor,
   type SensorState,
 } from './sensor/orientation';
+import { hasAvailableExternalSensor } from './sensor/externalSensors';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
-  isEasyLevelAvailable,
   type EasyLevelSensor,
 } from './sensor/easyLevelSensor';
 import {
@@ -751,13 +751,16 @@ function bootstrap(root: HTMLElement): void {
   // plans to add Web Bluetooth there, so instead of hiding the entry point
   // outright, iOS gets a guide to the Bluefy workaround
   // (`iosSensorGuidePage.ts`, docs/ios-easylevel-bluefy-guide.md).
-  const easyLevelSupported = isEasyLevelAvailable();
-  const showIosGuide = !easyLevelSupported && isIos();
+  // Asked of the registry (#262, ADR 0016) rather than of one device, so
+  // the question stays "is any external source usable here" as sources are
+  // added — the answer is unchanged while EasyLevel is the only one.
+  const externalSensorSupported = hasAvailableExternalSensor();
+  const showIosGuide = !externalSensorSupported && isIos();
   // Held separately, typed as the fuller `EasyLevelSensorPage` (screen-
   // cleanup follow-up to #133/#129): `sensorPage` below stays the narrower
   // shared `SensorPage` type both this and `iosSensorGuidePage.ts` satisfy,
   // but only this branch actually has a status sub-page to attach/refresh.
-  const easyLevelSensorPage: EasyLevelSensorPage | null = easyLevelSupported
+  const easyLevelSensorPage: EasyLevelSensorPage | null = externalSensorSupported
     ? createSensorPage(menuOptions)
     : null;
   const sensorPage = easyLevelSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
@@ -845,7 +848,7 @@ function bootstrap(root: HTMLElement): void {
   // only entry point to `sensorPage` now that the ☰ menu no longer
   // carries "External sensor" — visible whenever Web Bluetooth exists at
   // all, not just once connected (`sensorStatusIndicator.ts`).
-  const sensorStatus = createSensorStatusIndicator(easyLevelSupported, showIosGuide, () =>
+  const sensorStatus = createSensorStatusIndicator(externalSensorSupported, showIosGuide, () =>
     sensorPage?.open(),
   );
   // Into the pinned top-bar corner — not the #indicators cluster — so the

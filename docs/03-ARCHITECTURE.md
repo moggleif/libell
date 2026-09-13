@@ -120,8 +120,18 @@ parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardwar
 `navigator.bluetooth` needed); `easyLevelSimulator.ts` (#220, R44) plugs a simulated
 box into that same transport seam behind the `?easylevel-sim` query flag, emitting
 real-wire-format payloads on timers so the whole EasyLevel flow runs hardware-free in
-any browser (`isEasyLevelAvailable()` is the shared availability gate: real Web
-Bluetooth, or the flag). `easyLevelSensor.ts` maps the box's raw accelerometer int16 triplet directly
+any browser (`isEasyLevelAvailable()` is that adapter's own availability rule: real Web
+Bluetooth, or the flag). **The registry** (`src/sensor/externalSensors.ts`, #262, ADR 0016) is what everything
+above the seam asks instead of naming a device: each external source publishes a
+descriptor with its `id` (the `SensorSource` member, and the key its storage and
+settings are filed under), its `displayName` (the product name — never translated), its
+`isAvailable()` and its `capabilities` (which rows its own page has something to put
+in). `hasAvailableExternalSensor()` is the single gate for "should the external-sensor
+UI exist here at all", used by `main.ts` and the onboarding wizard. The descriptor is
+data only: connecting and reconnecting belong elsewhere, and `domain/` never sees any of
+it — it keeps just the `SensorSource` union (ADR 0002).
+
+`easyLevelSensor.ts` maps the box's raw accelerometer int16 triplet directly
 into a `GravityVector` at whatever scale it reports, deliberately not reimplementing the
 box's own onboard filter: the app's `atan2`-based roll/pitch only depends on axis ratios,
 not absolute units. iOS gets no second `OrientationSensor` implementation (#119, closed
