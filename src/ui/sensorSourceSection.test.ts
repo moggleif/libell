@@ -1,12 +1,14 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage } from './i18n';
 
 setLanguage('en');
 
 function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSourceOptions {
   return {
+    sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('granted'),

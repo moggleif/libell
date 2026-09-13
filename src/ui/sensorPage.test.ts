@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createSensorPage } from './sensorPage';
 import type { SensorSourceOptions } from './sensorSourceSection';
 import type { EasyLevelStatusOptions } from './easyLevelStatusPage';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
@@ -11,6 +12,7 @@ type Options = SensorSourceOptions & EasyLevelStatusOptions;
 
 function makeOptions(overrides: Partial<Options> = {}): Options {
   return {
+    sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('unsupported'),
@@ -64,7 +66,8 @@ describe('createSensorPage', () => {
     const page = createSensorPage(makeOptions({ connectEasyLevel }));
     page.open();
     const button = [...page.element.querySelectorAll('button')].find(
-      (b) => b.textContent === t('sensorSource.connect'),
+      (b) =>
+        b.textContent === t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
     )!;
     button.click();
     expect(connectEasyLevel).toHaveBeenCalledOnce();

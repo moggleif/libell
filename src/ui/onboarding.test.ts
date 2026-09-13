@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest';
 import { showOnboarding, type OnboardingOptions } from './onboarding';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type Calibration, type LevelSettings } from '../domain/settings';
 
@@ -56,6 +57,7 @@ function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOpti
     checkVehicleCalibration: () => 'checked',
     // SensorSourceOptions (#135) — same fixture values menu.test.ts uses,
     // since main.ts wires both from the same set of real callbacks.
+    sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'idle',
     connectEasyLevel: () => Promise.resolve('unsupported'),
@@ -563,7 +565,8 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       // The real connect flow, not a wizard-only duplicate.
       expect(
         [...card().querySelectorAll('button')].some(
-          (b) => b.textContent === t('sensorSource.connect'),
+          (b) =>
+            b.textContent === t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
         ),
       ).toBe(true);
       // Split into its own step (design review) — not shown alongside Connect.

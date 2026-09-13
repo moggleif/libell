@@ -32,11 +32,15 @@ import {
 import type { GravityVector } from '../domain/leveling';
 import { isLowBattery, type EasyLevelStatus } from '../sensor/easyLevelProtocol';
 import type { SensorState } from '../sensor/orientation';
+import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import { showToast } from './toast';
 
 export interface EasyLevelStatusOptions {
+  /** The external source this page describes (#262) — its `displayName`
+   * fills the page title and the connection text (#267). */
+  sensor: ExternalSensorDescriptor;
   /** Which source is feeding gravity readings right now. */
   getSensorSource(): SensorSource;
   /** The active sensor's current state. */
@@ -106,10 +110,13 @@ function hexBytes(bytes: Uint8Array | null): string | null {
 export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): EasyLevelStatusPage {
   const notAvailable = t('sensorSource.detail.notAvailable');
 
-  const page = createStandalonePage(t('sensorStatus.title'), () => {
-    syncConnectDelay();
-    refresh();
-  });
+  const page = createStandalonePage(
+    t('sensorStatus.title', { name: options.sensor.displayName }),
+    () => {
+      syncConnectDelay();
+      refresh();
+    },
+  );
   // Opened from within the (still-open) External sensor page — needs to
   // paint above it, not just rely on DOM append order elsewhere.
   page.element.classList.add('sensor-status-page');
@@ -257,7 +264,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         ? t('sensorSource.status.phone')
         : state === 'disconnected'
           ? t('sensorSource.status.disconnected')
-          : t('sensorSource.status.connected');
+          : t('sensorSource.status.connected', { name: options.sensor.displayName });
 
     const status = source === 'easylevel' ? options.getEasyLevelStatus() : null;
     batteryRow.textContent = t('sensorSource.detail.battery', {

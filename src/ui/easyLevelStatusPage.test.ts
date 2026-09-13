@@ -1,12 +1,14 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
 import { createEasyLevelStatusPage, type EasyLevelStatusOptions } from './easyLevelStatusPage';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
 function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevelStatusOptions {
   return {
+    sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
     getSensorState: () => 'granted',
     getEasyLevelStatus: () => null,
