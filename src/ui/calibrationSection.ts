@@ -48,6 +48,12 @@ export interface CalibrationOptions {
   checkCalibration(): string;
   checkVehicleCalibration(): string;
   clearVehicleCalibration(): void;
+  /**
+   * Whether the phone itself is the active sensor (#285). Every action here
+   * calibrates the phone, which an external sensor never reads, so while one
+   * is active the section is disabled with an explanation. Omitted = phone.
+   */
+  isPhoneActive?(): boolean;
 }
 
 export interface CalibrationSection {
@@ -78,6 +84,10 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   const guideIntro = document.createElement('p');
   guideIntro.className = modern ? 'calibration-card__body' : 'menu__text';
   guideIntro.textContent = t('calibration.guide.intro');
+  const phoneOnlyNotice = document.createElement('p');
+  phoneOnlyNotice.className = 'menu__text menu__text--status calibration-phone-only';
+  phoneOnlyNotice.textContent = t('calibration.phoneOnly');
+  phoneOnlyNotice.hidden = true;
   const sensorHeading = document.createElement('h3');
   sensorHeading.className = modern ? 'calibration-card__title' : 'menu__heading';
   sensorHeading.textContent = t('calibration.sensor.h');
@@ -139,6 +149,31 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   vehicleCheckButton.className = 'menu__action menu__action--secondary';
   vehicleCheckButton.textContent = t('calibration.check');
 
+  // Greys out every phone-calibration action while an external sensor is
+  // the active source (#285) — run last in both refreshes so it wins over
+  // their own "nothing to clear/check" logic.
+  function applyPhoneGate(): void {
+    const phoneActive = options.isPhoneActive?.() ?? true;
+    phoneOnlyNotice.hidden = phoneActive;
+    if (phoneActive) {
+      // Clear/Check are re-derived by the refreshes; the capture actions
+      // are only ever disabled by this gate, so lift it here.
+      for (const button of [calibrateButton, flipButton, vehicleButton]) button.disabled = false;
+      return;
+    }
+    for (const button of [
+      calibrateButton,
+      clearButton,
+      checkButton,
+      flipButton,
+      vehicleButton,
+      vehicleClearButton,
+      vehicleCheckButton,
+    ]) {
+      button.disabled = true;
+    }
+  }
+
   function refreshCalibration(error?: string): void {
     const calibration = options.getCalibration();
     if (error) {
@@ -164,6 +199,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
         : 'calibration-card__pill calibration-card__pill--pending';
     }
     refreshVehicle();
+    applyPhoneGate();
   }
 
   function refreshVehicle(error?: string): void {
@@ -187,6 +223,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
         ? 'calibration-card__pill calibration-card__pill--done'
         : 'calibration-card__pill';
     }
+    applyPhoneGate();
   }
   vehicleButton.addEventListener('click', () => {
     refreshVehicle(options.calibrateVehicle() ?? undefined);
@@ -298,7 +335,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     vehicleCard.append(vehicleHeader, vehicleIntro, vehicleButton, vehicleRow, vehicleStatus);
 
     calibrationBody.className = 'calibration-cards';
-    calibrationBody.append(guideIntro, sensorCard, vehicleCard);
+    calibrationBody.append(phoneOnlyNotice, guideIntro, sensorCard, vehicleCard);
     sensorElement = sensorCard;
     vehicleElement = vehicleCard;
   } else {
@@ -327,7 +364,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       vehicleCheckButton,
       vehicleClearButton,
     );
-    calibrationBody.append(guideIntro, sensorSection, vehicleSection);
+    calibrationBody.append(phoneOnlyNotice, guideIntro, sensorSection, vehicleSection);
     sensorElement = sensorSection;
     vehicleElement = vehicleSection;
   }

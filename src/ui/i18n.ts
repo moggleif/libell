@@ -458,7 +458,7 @@ export const MESSAGES = {
     'help.what.h': 'What Libell does',
     'help.what.t':
       'Lay the phone flat inside the vehicle with the top toward the front. ' +
-      'The screen shows your vehicle from above, and each wheel tells you what to do.',
+      'The screen shows your vehicle from above, and each wheel tells you what to do. With an external sensor box the phone can be anywhere — the box does the measuring.',
     'help.first.h': 'Before the first use',
     'help.first.t':
       'Fill in Settings and calibrate once — the yellow signs in the top bar remind ' +
@@ -538,6 +538,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Side/side',
 
     'pose.layFlat': 'Lay the phone flat to measure',
+    'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
+    'calibration.phoneOnly':
+      "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
 
     'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
@@ -902,7 +905,7 @@ export const MESSAGES = {
     'help.what.h': 'Vad Libell gör',
     'help.what.t':
       'Lägg telefonen plant i fordonet med ovansidan mot fronten. Skärmen visar ' +
-      'fordonet ovanifrån, och varje hjul talar om vad du ska göra.',
+      'fordonet ovanifrån, och varje hjul talar om vad du ska göra. Med en extern sensorbox kan telefonen ligga var som helst — boxen gör mätningen.',
     'help.first.h': 'Före första användningen',
     'help.first.t':
       'Fyll i Inställningar och kalibrera en gång — de gula skyltarna i listen ' +
@@ -965,6 +968,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Sidled',
 
     'pose.layFlat': 'Lägg telefonen plant för att mäta',
+    'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
+    'calibration.phoneOnly':
+      'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
 
     'stale.dataUnavailable':
@@ -1320,7 +1326,7 @@ export const MESSAGES = {
     'help.what.h': 'Ce que fait Libell',
     'help.what.t':
       'Posez le téléphone à plat dans le véhicule, le haut vers l’avant. L’écran montre ' +
-      'votre véhicule vu de dessus, et chaque roue vous dit quoi faire.',
+      'votre véhicule vu de dessus, et chaque roue vous dit quoi faire. Avec un boîtier de capteur externe, le téléphone peut être n’importe où — c’est le boîtier qui mesure.',
     'help.first.h': 'Avant la première utilisation',
     'help.first.t':
       'Remplissez les Réglages et étalonnez une fois — les panneaux jaunes de la barre du ' +
@@ -1389,6 +1395,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Latéral',
 
     'pose.layFlat': 'Posez le téléphone à plat pour mesurer',
+    'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
+    'calibration.phoneOnly':
+      'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
     'pose.portrait':
       'Tournez le téléphone à la verticale (portrait) — le bord supérieur doit pointer vers l’avant',
 
@@ -1742,7 +1751,7 @@ export const MESSAGES = {
     'help.what.h': 'Qué hace Libell',
     'help.what.t':
       'Deja el móvil plano dentro del vehículo con la parte de arriba hacia delante. La ' +
-      'pantalla muestra tu vehículo visto desde arriba, y cada rueda te dice qué hacer.',
+      'pantalla muestra tu vehículo visto desde arriba, y cada rueda te dice qué hacer. Con una caja de sensor externa el móvil puede estar en cualquier sitio: mide la caja.',
     'help.first.h': 'Antes del primer uso',
     'help.first.t':
       'Rellena los Ajustes y calibra una vez: los avisos amarillos de la barra superior te ' +
@@ -1811,6 +1820,10 @@ export const MESSAGES = {
     'tilt.sideSide': 'Lado/lado',
 
     'pose.layFlat': 'Deja el móvil plano para medir',
+    'pose.sensorUpsideDown':
+      'El sensor parece estar montado boca abajo — móntalo con la cara hacia arriba',
+    'calibration.phoneOnly':
+      'Hay un sensor externo activo, así que no se usa la calibración del móvil. Cambia al sensor del móvil para modificarla.',
     'pose.portrait':
       'Pon el móvil en vertical (retrato): el borde superior debe apuntar hacia delante',
 
@@ -2163,7 +2176,7 @@ export const MESSAGES = {
     'help.what.h': 'Was Libell macht',
     'help.what.t':
       'Lege das Handy flach ins Fahrzeug, mit der Oberkante nach vorn. Der Bildschirm zeigt ' +
-      'dein Fahrzeug von oben, und jedes Rad sagt dir, was zu tun ist.',
+      'dein Fahrzeug von oben, und jedes Rad sagt dir, was zu tun ist. Mit einer externen Sensorbox kann das Handy überall liegen — die Box misst.',
     'help.first.h': 'Vor der ersten Nutzung',
     'help.first.t':
       'Fülle die Einstellungen aus und kalibriere einmal — die gelben Schilder in der oberen ' +
@@ -2228,6 +2241,10 @@ export const MESSAGES = {
     'tilt.sideSide': 'Quer',
 
     'pose.layFlat': 'Zum Messen das Handy flach hinlegen',
+    'pose.sensorUpsideDown':
+      'Der Sensor scheint verkehrt herum montiert — mit der Oberseite nach oben montieren',
+    'calibration.phoneOnly':
+      'Ein externer Sensor ist aktiv, daher wird die Kalibrierung des Handys nicht verwendet. Wechsle zum Handy-Sensor, um sie zu ändern.',
     'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',
 
     'stale.dataUnavailable': 'Keine neuen Sensordaten — die Führung pausiert, bis sie zurückkommen',

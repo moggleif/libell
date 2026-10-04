@@ -33,3 +33,13 @@ export function createPoseDetector(): (gravity: GravityVector) => Pose {
     return pose;
   };
 }
+
+/**
+ * A permanently-mounted external sensor (#285) is never "picked up", so the
+ * phone's 25° pose rule does not apply to it. The one mount that still
+ * produces confident wrong guidance is fully upside-down (R43): its face
+ * points down, so gravity's z component is negative.
+ */
+export function isUpsideDown(gravity: GravityVector): boolean {
+  return gravity.z < 0;
+}

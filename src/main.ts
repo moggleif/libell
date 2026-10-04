@@ -20,7 +20,7 @@ import {
   type TargetPreset,
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
-import { createPoseDetector } from './domain/pose';
+import { createPoseDetector, isUpsideDown } from './domain/pose';
 import {
   easyLevelSettings,
   formatLength,
@@ -597,6 +597,7 @@ function bootstrap(root: HTMLElement): void {
       maybeRebuildScreen();
     },
     getCalibration: () => calibration,
+    isPhoneActive: () => sensor().getSource() === 'phone',
     calibrate: () => calibrateNow(),
     readTilt: () => readTiltNow(),
     applyCalibration(next: Calibration) {
@@ -1275,9 +1276,18 @@ function bootstrap(root: HTMLElement): void {
         }
         staleOverlay.hidden = true;
         // Invalid pose: pause the guidance and say what to do instead.
-        const badPose = detectPose(gravity) === 'not-flat';
-        if (badPose || landscape.matches) {
-          poseText.textContent = badPose ? t('pose.layFlat') : t('pose.portrait');
+        // The phone pose rules (R17) only apply to the phone itself; a
+        // mounted external box is never laid flat or turned (#285) — it
+        // only fails safely when mounted upside-down (R43).
+        const phoneActive = sensor().getSource() === 'phone';
+        const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : isUpsideDown(gravity);
+        const badLandscape = phoneActive && landscape.matches;
+        if (badPose || badLandscape) {
+          poseText.textContent = !badPose
+            ? t('pose.portrait')
+            : phoneActive
+              ? t('pose.layFlat')
+              : t('pose.sensorUpsideDown');
           poseOverlay.hidden = false;
           levelOverlay.hideNow();
           requestAnimationFrame(frame);

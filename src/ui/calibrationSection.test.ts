@@ -234,3 +234,32 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     }
   });
 });
+
+describe('calibration with an external sensor active (#285)', () => {
+  it('disables every phone calibration action and says why', () => {
+    let phone = false;
+    const section = createCalibrationSection(
+      makeOptions({
+        getCalibration: () => ({ rollDeg: 1, pitchDeg: 1 }),
+        getVehicleCalibration: () => ({ rollDeg: 1, pitchDeg: 1 }),
+        isPhoneActive: () => phone,
+      }),
+    );
+    const buttons = () => [...section.element.querySelectorAll('button')];
+    expect(buttons().length).toBeGreaterThan(0);
+    expect(buttons().every((b) => b.disabled)).toBe(true);
+    const notice = section.element.querySelector('.calibration-phone-only');
+    expect(notice?.hasAttribute('hidden')).toBe(false);
+    expect(notice?.textContent).toContain('external sensor');
+
+    phone = true;
+    section.refresh();
+    expect(notice?.hasAttribute('hidden')).toBe(true);
+    expect(buttonByText(section.element, 'Calibrate now').disabled).toBe(false);
+  });
+
+  it('behaves as before when the host does not say (phone assumed)', () => {
+    const section = createCalibrationSection(makeOptions());
+    expect(buttonByText(section.element, 'Calibrate now').disabled).toBe(false);
+  });
+});
