@@ -414,10 +414,11 @@ describe('onboarding wizard — ramps step (design review): the ramp catalog/cou
     next(); // source -> vehicle
     next(); // vehicle -> connect
     next(); // connect -> installation offset
+    next(); // -> reading the screen
     next(); // -> settings
     next(); // settings -> ramps
     expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('settings.tab.ramps'));
-    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('10 / 10');
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('11 / 11');
     next(); // "Done"
     expect(finished).toBe(true);
   });
@@ -560,7 +561,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.vehicle.h'));
       next(); // vehicle -> connect (embeds the real sensorSourceSection's connect half)
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('menu.sensorSource'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('7 / 10');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('7 / 11');
       // The real connect flow, not a wizard-only duplicate.
       expect(
         [...card().querySelectorAll('button')].some(
@@ -574,18 +575,22 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(
         t('sensorSource.install.h'),
       );
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('8 / 10');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('8 / 11');
       expect(
         [...card().querySelectorAll('button')].some(
           (b) => b.textContent === t('sensorSource.install.now'),
         ),
       ).toBe(true);
-      next(); // installation offset -> settings (dimensions), never the phone calibration steps
+      next(); // installation offset -> how to read the screen (#285), not the phone placement
+      expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.screen.h'));
+      expect(card().textContent).not.toContain(t('onboard.step1.h'));
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 11');
+      next(); // -> settings (dimensions), never the phone calibration steps
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.settings.h'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 10');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('10 / 11');
       next(); // -> ramps, the last step for this path
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('settings.tab.ramps'));
-      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('10 / 10');
+      expect(card().querySelector('.onboarding__progress')?.textContent).toBe('11 / 11');
       next(); // "Done" — no phone calibration steps for the external path
       expect(finished).toBe(true);
     });

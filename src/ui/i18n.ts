@@ -538,6 +538,8 @@ export const MESSAGES = {
     'tilt.sideSide': 'Side/side',
 
     'pose.layFlat': 'Lay the phone flat to measure',
+    'pose.sensorExtreme':
+      'The sensor is tilted too far to be mounted right — check that it sits flat with its face up',
     'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
     'calibration.phoneOnly':
       "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
@@ -968,6 +970,8 @@ export const MESSAGES = {
     'tilt.sideSide': 'Sidled',
 
     'pose.layFlat': 'Lägg telefonen plant för att mäta',
+    'pose.sensorExtreme':
+      'Sensorn lutar för mycket för att sitta rätt — kontrollera att den ligger plant med ovansidan uppåt',
     'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
     'calibration.phoneOnly':
       'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
@@ -1395,6 +1399,8 @@ export const MESSAGES = {
     'tilt.sideSide': 'Latéral',
 
     'pose.layFlat': 'Posez le téléphone à plat pour mesurer',
+    'pose.sensorExtreme':
+      'Le capteur est trop incliné pour être bien monté — vérifiez qu’il est à plat, face vers le haut',
     'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
     'calibration.phoneOnly':
       'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
@@ -1820,6 +1826,8 @@ export const MESSAGES = {
     'tilt.sideSide': 'Lado/lado',
 
     'pose.layFlat': 'Deja el móvil plano para medir',
+    'pose.sensorExtreme':
+      'El sensor está demasiado inclinado para estar bien montado — comprueba que está plano y con la cara hacia arriba',
     'pose.sensorUpsideDown':
       'El sensor parece estar montado boca abajo — móntalo con la cara hacia arriba',
     'calibration.phoneOnly':
@@ -2241,6 +2249,8 @@ export const MESSAGES = {
     'tilt.sideSide': 'Quer',
 
     'pose.layFlat': 'Zum Messen das Handy flach hinlegen',
+    'pose.sensorExtreme':
+      'Der Sensor ist zu stark geneigt für eine korrekte Montage — prüfe, dass er flach mit der Oberseite nach oben liegt',
     'pose.sensorUpsideDown':
       'Der Sensor scheint verkehrt herum montiert — mit der Oberseite nach oben montieren',
     'calibration.phoneOnly':

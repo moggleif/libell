@@ -600,6 +600,20 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
+  // External-sensor path (#285): the phone-placement step above is skipped
+  // (the box, not the phone, is what must sit right), but its "how to read
+  // the answer" half is still needed — shown on its own here.
+  const readScreenStep: Step = {
+    title: t('help.screen.h'),
+    build: () => {
+      if (isModern) return [buildModernLegend()];
+      const legendText = document.createElement('p');
+      legendText.className = 'menu__text';
+      legendText.textContent = t('help.screen.t');
+      return [legendIllustration(t('help.screen.h')), legendText];
+    },
+  };
+
   const phoneSteps = [
     placementStep,
     settingsStep,
@@ -607,7 +621,7 @@ export function showOnboarding(options: OnboardingOptions): void {
     sensorCalibrationStep,
     vehicleZeroStep,
   ];
-  const externalSteps = [connectStep, installOffsetStep, settingsStep, rampsStep];
+  const externalSteps = [connectStep, installOffsetStep, readScreenStep, settingsStep, rampsStep];
 
   // welcomeStep, then languageStep/appearanceStep/soundStep, always lead
   // (#189, design review) — every branch below prepends all four. Depends

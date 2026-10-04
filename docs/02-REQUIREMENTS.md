@@ -272,8 +272,11 @@ URL and must keep working with no signal.
 - **Given** an external sensor box is the active source (R33, R40)
 - **Then** none of the above applies: the box is permanently mounted, so the phone's
   pose is irrelevant and the phone may lie anywhere or be held in landscape. The only
-  pose check left is on the box itself — if it reads fully upside-down (R43), the
-  overlay says "the sensor looks mounted upside-down" instead of guidance (#285).
+  pose check left is on the box itself: if it is tilted past 45° (cleared again below
+  40°) — lying on its side, hanging on a wall — or reads fully upside-down (R43), the
+  overlay says the sensor sits in an extreme position, or looks mounted upside-down,
+  instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
+  degrees, far below that limit.
 
 ## R18 — A first-run introduction, skippable and reopenable
 
@@ -1253,6 +1256,7 @@ Mounting the box fully upside-down (inverted Z) stays out of scope and fails saf
 rather than silently: `isUpsideDown` in `domain/pose.ts` sees gravity pointing out of
 the sensor's back and shows R17's "sensor looks mounted upside-down" overlay instead of
 guidance (#285; the phone's own "lay it flat" wording no longer applies to a box).
+`createExternalPoseDetector` also flags any other extreme tilt (> 45°) of a mounted box.
 
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this

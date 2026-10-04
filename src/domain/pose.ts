@@ -43,3 +43,30 @@ export function createPoseDetector(): (gravity: GravityVector) => Pose {
 export function isUpsideDown(gravity: GravityVector): boolean {
   return gravity.z < 0;
 }
+
+const ENTER_EXTREME_DEG = 45;
+const EXIT_EXTREME_DEG = 40;
+
+export type ExternalPose = 'ok' | 'extreme' | 'upside-down';
+
+/**
+ * Pose check for a permanently-mounted external sensor (#285). Far looser
+ * than the phone's 25° rule — a vehicle on ramps tilts a mounted box by
+ * several degrees — but a box lying on its side, hanging from a wall or
+ * face-down reads far beyond that and would give confident wrong guidance.
+ * Face-down is reported separately so the overlay can say what to fix;
+ * "extreme" has a Schmitt band (enter > 45°, exit < 40°) like the phone's.
+ */
+export function createExternalPoseDetector(): (gravity: GravityVector) => ExternalPose {
+  let extreme = false;
+  return (gravity) => {
+    if (isUpsideDown(gravity)) {
+      extreme = true;
+      return 'upside-down';
+    }
+    const tilt = totalTiltDeg(gravity);
+    if (!extreme && tilt > ENTER_EXTREME_DEG) extreme = true;
+    else if (extreme && tilt < EXIT_EXTREME_DEG) extreme = false;
+    return extreme ? 'extreme' : 'ok';
+  };
+}

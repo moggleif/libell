@@ -20,7 +20,7 @@ import {
   type TargetPreset,
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
-import { createPoseDetector, isUpsideDown } from './domain/pose';
+import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
 import {
   easyLevelSettings,
   formatLength,
@@ -508,6 +508,7 @@ function bootstrap(root: HTMLElement): void {
         maybeRebuildScreen();
       },
       getCalibration: () => calibration,
+      isPhoneActive: () => sensor().getSource() === 'phone',
       calibrate: () => calibrateNow(),
       readTilt: () => readTiltNow(),
       applyCalibration(next) {
@@ -1164,6 +1165,7 @@ function bootstrap(root: HTMLElement): void {
     root.append(staleOverlay);
 
     const detectPose = createPoseDetector();
+    const detectExternalPose = createExternalPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
     // Rocking vehicle (people moving around): show "Measuring…" until the
     // reading has been calm for a moment (#86); the diagram itself stays
@@ -1277,17 +1279,21 @@ function bootstrap(root: HTMLElement): void {
         staleOverlay.hidden = true;
         // Invalid pose: pause the guidance and say what to do instead.
         // The phone pose rules (R17) only apply to the phone itself; a
-        // mounted external box is never laid flat or turned (#285) — it
-        // only fails safely when mounted upside-down (R43).
+        // mounted external box is never laid flat or turned (#285). It is
+        // only checked for positions too extreme to be a real mount
+        // (on its side, face-down — R43).
         const phoneActive = sensor().getSource() === 'phone';
-        const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : isUpsideDown(gravity);
+        const externalPose = phoneActive ? 'ok' : detectExternalPose(gravity);
+        const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : externalPose !== 'ok';
         const badLandscape = phoneActive && landscape.matches;
         if (badPose || badLandscape) {
           poseText.textContent = !badPose
             ? t('pose.portrait')
             : phoneActive
               ? t('pose.layFlat')
-              : t('pose.sensorUpsideDown');
+              : externalPose === 'upside-down'
+                ? t('pose.sensorUpsideDown')
+                : t('pose.sensorExtreme');
           poseOverlay.hidden = false;
           levelOverlay.hideNow();
           requestAnimationFrame(frame);
