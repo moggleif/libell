@@ -277,6 +277,10 @@ URL and must keep working with no signal.
   overlay says the sensor sits in an extreme position, or looks mounted upside-down,
   instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
   degrees, far below that limit.
+- **Given** that overlay is shown for an external sensor
+- **Then** it also says what to do — check the sensor's live values and mounting — and
+  carries an "Open sensor page" button that goes straight to that sensor's own page
+  (R40), not the source list (#285).
 
 ## R18 — A first-run introduction, skippable and reopenable
 

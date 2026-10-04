@@ -538,6 +538,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Side/side',
 
     'pose.layFlat': 'Lay the phone flat to measure',
+    'pose.sensorHint':
+      'Open the sensor page to see its live values and check the mounting setting — or remount the box flat.',
+    'pose.openSensorPage': 'Open sensor page',
     'pose.sensorExtreme':
       'The sensor is tilted too far to be mounted right — check that it sits flat with its face up',
     'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
@@ -970,6 +973,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Sidled',
 
     'pose.layFlat': 'Lägg telefonen plant för att mäta',
+    'pose.sensorHint':
+      'Öppna sensorsidan för att se de aktuella värdena och kontrollera monteringsinställningen — eller montera om boxen plant.',
+    'pose.openSensorPage': 'Öppna sensorsidan',
     'pose.sensorExtreme':
       'Sensorn lutar för mycket för att sitta rätt — kontrollera att den ligger plant med ovansidan uppåt',
     'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
@@ -1399,6 +1405,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Latéral',
 
     'pose.layFlat': 'Posez le téléphone à plat pour mesurer',
+    'pose.sensorHint':
+      'Ouvrez la page du capteur pour voir ses valeurs en direct et vérifier le réglage de montage — ou remontez le boîtier à plat.',
+    'pose.openSensorPage': 'Ouvrir la page du capteur',
     'pose.sensorExtreme':
       'Le capteur est trop incliné pour être bien monté — vérifiez qu’il est à plat, face vers le haut',
     'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
@@ -1826,6 +1835,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Lado/lado',
 
     'pose.layFlat': 'Deja el móvil plano para medir',
+    'pose.sensorHint':
+      'Abre la página del sensor para ver sus valores en vivo y comprobar el ajuste de montaje, o vuelve a montar la caja plana.',
+    'pose.openSensorPage': 'Abrir la página del sensor',
     'pose.sensorExtreme':
       'El sensor está demasiado inclinado para estar bien montado — comprueba que está plano y con la cara hacia arriba',
     'pose.sensorUpsideDown':
@@ -2249,6 +2261,9 @@ export const MESSAGES = {
     'tilt.sideSide': 'Quer',
 
     'pose.layFlat': 'Zum Messen das Handy flach hinlegen',
+    'pose.sensorHint':
+      'Öffne die Sensorseite, um die Livewerte zu sehen und die Montageeinstellung zu prüfen — oder montiere die Box neu, flach.',
+    'pose.openSensorPage': 'Sensorseite öffnen',
     'pose.sensorExtreme':
       'Der Sensor ist zu stark geneigt für eine korrekte Montage — prüfe, dass er flach mit der Oberseite nach oben liegt',
     'pose.sensorUpsideDown':

@@ -1148,7 +1148,20 @@ function bootstrap(root: HTMLElement): void {
     poseOverlay.hidden = true;
     const poseText = document.createElement('p');
     poseText.className = 'pose-overlay__text';
-    poseOverlay.append(poseText);
+    // External sensor only (#285): what to do about a sensor that reads
+    // wrong, with a direct link to its own page (live values, mounting).
+    const poseHint = document.createElement('p');
+    poseHint.className = 'pose-overlay__hint';
+    poseHint.textContent = t('pose.sensorHint');
+    const poseSensorButton = document.createElement('button');
+    poseSensorButton.type = 'button';
+    poseSensorButton.className = 'menu__action';
+    poseSensorButton.textContent = t('pose.openSensorPage');
+    poseSensorButton.addEventListener('click', () => {
+      const source = sensor().getSource();
+      if (source !== 'phone') externalSensorPage?.openSource(source);
+    });
+    poseOverlay.append(poseText, poseHint, poseSensorButton);
     root.append(poseOverlay);
 
     // Stale-data overlay (#132): a third, distinct state from the pose
@@ -1294,6 +1307,7 @@ function bootstrap(root: HTMLElement): void {
               : externalPose === 'upside-down'
                 ? t('pose.sensorUpsideDown')
                 : t('pose.sensorExtreme');
+          poseHint.hidden = poseSensorButton.hidden = phoneActive;
           poseOverlay.hidden = false;
           levelOverlay.hideNow();
           requestAnimationFrame(frame);

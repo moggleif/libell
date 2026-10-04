@@ -63,6 +63,9 @@ export interface ExternalSensorPage extends SensorPage {
    * "runs every frame regardless of what's open" discipline `main.ts`
    * already uses for the top-bar sensor-status dot. */
   refreshLive(): void;
+  /** Opens one source's own device page directly (#285) — the quick route
+   * from "this sensor looks wrong" to its live values and mounting. */
+  openSource(id: string): void;
 }
 
 export type SensorPageOptions = SensorSourceOptions & EasyLevelStatusOptions;
@@ -73,7 +76,8 @@ export function createSensorPage(
 ): ExternalSensorPage {
   // Declared before the page so its `onOpen` can close over it; filled
   // immediately below, and never read until the page is actually opened.
-  const sources: { statusPage: EasyLevelStatusPage; section: SensorSourceSection }[] = [];
+  const sources: { id: string; statusPage: EasyLevelStatusPage; section: SensorSourceSection }[] =
+    [];
   const refreshAll = () => {
     for (const source of sources) source.section.refresh();
   };
@@ -108,7 +112,7 @@ export function createSensorPage(
     // never grows longer than the detail pages its chevrons lead to.
     page.body.append(section.connectElement);
     statusPage.settingsSlot.append(section.installElement);
-    sources.push({ statusPage, section });
+    sources.push({ id: sensor.id, statusPage, section });
   }
 
   return {
@@ -117,6 +121,12 @@ export function createSensorPage(
     isOpen: page.isOpen,
     attach: page.attach,
     open: page.open,
+    openSource: (id) => {
+      const source = sources.find((candidate) => candidate.id === id);
+      if (!source) return;
+      source.section.refresh();
+      source.statusPage.open();
+    },
     refreshLive: () => {
       for (const source of sources) {
         if (source.statusPage.isOpen()) source.statusPage.refresh();
