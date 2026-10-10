@@ -656,6 +656,11 @@ function bootstrap(root: HTMLElement): void {
     isPhoneActive: () => sensor().getSource() === 'phone',
     getExternalSensor: () => activeExternalCalibrationState(),
     calibrateExternalSensor: () => calibrateInstallNow(sensor().getSource()),
+    // Declared further down; only ever called after start-up (#316).
+    openExternalSensor: () => {
+      const source = sensor().getSource();
+      if (source !== 'phone') externalSensorPage?.openSource(source);
+    },
     calibrate: () => calibrateNow(),
     readTilt: () => readTiltNow(),
     applyCalibration(next: Calibration) {
@@ -850,6 +855,14 @@ function bootstrap(root: HTMLElement): void {
   // app (in memory only — nothing is written), so screenshots and demos
   // show the product, not the first-run warnings (#70).
   const indicators = createIndicators((section) => {
+    // With a box in use the amber lamp is about the box's zero (R34), so it
+    // opens the box's page at that step rather than the Calibration tab
+    // (#316, the #309 UX review).
+    const source = sensor().getSource();
+    if (section === 'calibration' && source !== 'phone' && externalSensorPage) {
+      externalSensorPage.openSource(source, 'zero');
+      return;
+    }
     if (isModern) {
       if (section === 'calibration') settingsPage!.openCalibration();
       else settingsPage!.open();

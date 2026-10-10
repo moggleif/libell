@@ -944,8 +944,9 @@ cross-platform goal — they are not this app's code and are not covered here.
   is — never both pairs at once. Its label names what it checks: the phone, or the
   sensor while an external sensor is active.
 - **Given** an external sensor is the active source
-- **Then** the Calibration section (R11, R24) hides the phone's controls and says why
-  in one line, so the box's own calibration (below) is what the page shows: the phone's
+- **Then** the Calibration section (R11, R24) hides the phone's controls without a
+  paragraph about them (#316), so the box's own calibration (below) is what the page
+  shows: the phone's
   sensor calibration, flip calibration and vehicle zero are not applied to a box's
   readings, so capturing one would silently do nothing (or capture the box's tilt as
   the phone's). The stored phone values are kept untouched and become editable again on
@@ -955,7 +956,13 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Then** the Calibration section also offers "Set vehicle level" for that sensor,
   named, in place of the hidden phone controls — the same action as on the sensor's own page
   (R34; for the Xparkle box, R49's zeroing), so calibrating is found where a user looks
-  for it (#290).
+  for it (#290). Below it a quiet "Show the box" link opens the box's own page (R51) for
+  its position and direction (#316).
+- **Given** an external sensor is the active source and the amber calibration lamp is
+  lit (#316)
+- **When** I tap the lamp
+- **Then** the box's own page opens with its zero step expanded, rather than the
+  Calibration tab: that step is what the lamp is about.
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
   External sensor page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),

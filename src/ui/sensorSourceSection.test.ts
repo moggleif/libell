@@ -407,6 +407,26 @@ describe('picking the mounting by tapping a side of the vehicle (#217, #222, #31
   });
 });
 
+describe('opening the box page at its zero (#316)', () => {
+  it('expands the zero step even while the direction is still to do', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting: {
+          getRawReading: () => ({ pitchDeg: 0, rollDeg: 0 }),
+          getLearnedMounting: () => null,
+          setLearnedMounting: vi.fn(),
+        },
+      }),
+    );
+    section.openZeroStep();
+    const open = [...section.installElement.querySelectorAll('.box-step.is-open')];
+    expect(open).toHaveLength(1);
+    expect(open[0]?.textContent).toContain('Zero now');
+  });
+});
+
 describe('the position step, live (#304, #314)', () => {
   it('says an upright box stands, and guides a lying one without blocking anything', () => {
     let tilt = { pitchDeg: 1, rollDeg: -2 };

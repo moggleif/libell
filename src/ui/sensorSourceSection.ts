@@ -145,6 +145,9 @@ export interface SensorSourceSection {
   refresh(): void;
   /** Re-reads the live position step only; cheap enough every frame. */
   refreshLive(): void;
+  /** Expands the zero step (#316), for a way in that is about the zero:
+   * the calibration lamp. */
+  openZeroStep(): void;
 }
 
 export function createSensorSourceSection(
@@ -548,6 +551,11 @@ export function createSensorSourceSection(
     refresh,
     refreshLive: () => {
       if (!installSection.hidden) refreshPosition();
+    },
+    openZeroStep: () => {
+      if (!zeroStep) return;
+      openedByHand = zeroStep.element;
+      refresh();
     },
   };
 }

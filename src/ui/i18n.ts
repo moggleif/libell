@@ -563,8 +563,6 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'The box looks upside down',
     'pose.sensorNotUpright': 'The box is lying down',
     'pose.sensorHintUpright': 'It only measures right standing up.',
-    'calibration.phoneOnly':
-      "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
     'calibration.external.h': 'Calibrate {name}',
     'calibration.external.intro':
       "Level the vehicle verifiably once (spirit level, or after leveling with your ramps), then set the sensor's current reading as level.",
@@ -1044,8 +1042,6 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Boxen verkar sitta upp och ner',
     'pose.sensorNotUpright': 'Boxen ligger ner',
     'pose.sensorHintUpright': 'Den mäter bara rätt stående.',
-    'calibration.phoneOnly':
-      'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
     'calibration.external.h': 'Kalibrera {name}',
     'calibration.external.intro':
       'Ställ fordonet verifierat plant en gång (vattenpass, eller efter nivellering med ramperna) och sätt sedan sensorns aktuella avläsning som plan.',
@@ -1526,8 +1522,6 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Le boîtier semble à l’envers',
     'pose.sensorNotUpright': 'Le boîtier est couché',
     'pose.sensorHintUpright': 'Il ne mesure correctement que debout.',
-    'calibration.phoneOnly':
-      'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
     'calibration.external.h': 'Étalonner {name}',
     'calibration.external.intro':
       'Mettez le véhicule de niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé avec vos cales), puis définissez la lecture actuelle du capteur comme le niveau.',
@@ -2010,8 +2004,6 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'La caja parece estar del revés',
     'pose.sensorNotUpright': 'La caja está tumbada',
     'pose.sensorHintUpright': 'Solo mide bien de pie.',
-    'calibration.phoneOnly':
-      'Hay un sensor externo activo, así que no se usa la calibración del móvil. Cambia al sensor del móvil para modificarla.',
     'calibration.external.h': 'Calibrar {name}',
     'calibration.external.intro':
       'Nivela el vehículo de forma verificable una vez (con un nivel de burbuja o tras nivelar con tus calzos) y luego fija la lectura actual del sensor como nivelada.',
@@ -2489,8 +2481,6 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Die Box scheint kopfüber zu sitzen',
     'pose.sensorNotUpright': 'Die Box liegt',
     'pose.sensorHintUpright': 'Sie misst nur stehend richtig.',
-    'calibration.phoneOnly':
-      'Ein externer Sensor ist aktiv, daher wird die Kalibrierung des Handys nicht verwendet. Wechsle zum Handy-Sensor, um sie zu ändern.',
     'calibration.external.h': '{name} kalibrieren',
     'calibration.external.intro':
       'Bringen Sie das Fahrzeug einmal nachweislich in die Waage (Wasserwaage oder nach dem Ausgleichen mit Ihren Keilen) und legen Sie dann den aktuellen Messwert des Sensors als waagerecht fest.',

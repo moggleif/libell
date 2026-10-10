@@ -64,8 +64,9 @@ export interface ExternalSensorPage extends SensorPage {
    * already uses for the top-bar sensor-status dot. */
   refreshLive(): void;
   /** Opens one source's own device page directly (#285) — the quick route
-   * from "this sensor looks wrong" to its live values and mounting. */
-  openSource(id: string): void;
+   * from "this sensor looks wrong" to its live values and mounting. With
+   * `'zero'` its zero step is expanded (#316, the calibration lamp). */
+  openSource(id: string, step?: 'zero'): void;
 }
 
 export type SensorPageOptions = SensorSourceOptions & EasyLevelStatusOptions;
@@ -125,10 +126,11 @@ export function createSensorPage(
     isOpen: () => page.isOpen() || sources.some((source) => source.statusPage.isOpen()),
     attach: page.attach,
     open: page.open,
-    openSource: (id) => {
+    openSource: (id, step) => {
       const source = sources.find((candidate) => candidate.id === id);
       if (!source) return;
       source.section.refresh();
+      if (step === 'zero') source.section.openZeroStep();
       source.statusPage.open();
     },
     refreshLive: () => {
