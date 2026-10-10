@@ -186,9 +186,8 @@ describe('onboarding wizard — language/appearance/sound steps (#189, split by 
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(title);
       expect(card().textContent).not.toContain(t('onboard.skip.consequence'));
       const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
-      expect(buttonTexts).not.toContain(t('settings.save'));
       expect(buttonTexts).not.toContain(t('settings.undo'));
-      expect(buttonTexts).not.toContain(t('settings.reset'));
+      expect(buttonTexts).not.toContain(t('settings.resetAll'));
     }
   });
 
@@ -399,9 +398,8 @@ describe('onboarding wizard — ramps step (design review): the ramp catalog/cou
     next(); // -> settings
     next(); // -> ramps
     const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
-    expect(buttonTexts).not.toContain(t('settings.save'));
     expect(buttonTexts).not.toContain(t('settings.undo'));
-    expect(buttonTexts).not.toContain(t('settings.reset'));
+    expect(buttonTexts).not.toContain(t('settings.resetAll'));
   });
 
   it('also appears on the external-sensor path, as the last step', () => {
@@ -810,13 +808,11 @@ describe('onboarding wizard — compact steps (#156)', () => {
     expect(card().querySelector('input[name="toleranceMm"]')).toBeNull();
     expect(card().querySelector('.settings__advanced')).toBeNull();
     expect(card().querySelector('select')).toBeNull();
-    // Design review: the form's own Save/Undo/Reset row isn't mounted in
-    // the wizard at all — Next (already tested elsewhere) is the only save
-    // path, so there's no second, identically-styled "confirm" button.
+    // The wizard's steps are saved by Next alone (#328 left them that
+    // way): no Undo and no "Reset all settings" from the full page.
     const buttonTexts = [...card().querySelectorAll('button')].map((b) => b.textContent);
-    expect(buttonTexts).not.toContain(t('settings.save'));
     expect(buttonTexts).not.toContain(t('settings.undo'));
-    expect(buttonTexts).not.toContain(t('settings.reset'));
+    expect(buttonTexts).not.toContain(t('settings.resetAll'));
   });
 
   it('can still be saved via Next, which submits the form directly (no Save button to click)', () => {

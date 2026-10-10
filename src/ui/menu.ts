@@ -301,9 +301,8 @@ export function createMenu(options: MenuOptions): Menu {
   // matches Modern's tabs (General, Calibration, Fordon, Klossar, Targets).
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    // Design review, follow-up: Save used to close the whole drawer back
-    // to the main screen (#159) — reversed, since the user may still want
-    // to change more right after saving. Only ✕/back actually close it.
+    // Every change is stored as it is made (#328); only ✕/back close the
+    // drawer.
     (settings) => {
       options.onSettingsSaved(settings);
     },

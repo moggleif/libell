@@ -132,32 +132,36 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
   // Design review, follow-up: Save used to close the whole drawer back to
   // the main screen (#159) — reversed, since the user may still want to
   // change more right after saving. Only ✕/back actually close it now.
-  it('Save persists from the Vehicle page but does not close the drawer', () => {
-    const onSettingsSaved = vi.fn();
-    const menu = createMenu(makeOptions({ initialSettings: classicSettings(), onSettingsSaved }));
-    menu.open('vehicle');
-    expect(menu.isOpen()).toBe(true);
-    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSettingsSaved).toHaveBeenCalledTimes(1);
-    expect(menu.isOpen()).toBe(true);
-  });
-
-  it('Save from the Ramps page persists Vehicle fields edited earlier, not the stale snapshot (#108 follow-up)', () => {
+  it('a change on the Vehicle page is saved at once and does not close the drawer (#328)', () => {
     const onSettingsSaved = vi.fn();
     const menu = createMenu(makeOptions({ initialSettings: classicSettings(), onSettingsSaved }));
     menu.open('vehicle');
     const wheelbase = menu.element.querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
     wheelbase.value = '4200';
-    wheelbase.dispatchEvent(new Event('input', { bubbles: true }));
-    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    wheelbase.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(onSettingsSaved).toHaveBeenCalledTimes(1);
     expect(onSettingsSaved.mock.calls[0]![0].wheelbaseMm).toBe(4200);
+    expect(menu.isOpen()).toBe(true);
+  });
 
-    // Reopening Ramps re-mounts the same shared form — saving from there
-    // (without touching wheelbase again) must not clobber the value just
-    // saved from Vehicle back to its pre-edit snapshot.
+  it('a change on the Ramps page keeps Vehicle fields edited earlier, not the stale snapshot (#108 follow-up)', () => {
+    const onSettingsSaved = vi.fn();
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings(), onSettingsSaved }));
+    menu.open('vehicle');
+    const wheelbase = menu.element.querySelector<HTMLInputElement>('input[name="wheelbaseMm"]')!;
+    wheelbase.value = '4200';
+    wheelbase.dispatchEvent(new Event('change', { bubbles: true }));
+
+    // Reopening Ramps re-mounts the same shared form — a change there must
+    // not clobber the value just saved from Vehicle back to its snapshot.
     menu.open('ramps');
-    menu.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSettingsSaved.mock.calls[1]![0].wheelbaseMm).toBe(4200);
+    const rampCount = [...menu.element.querySelectorAll<HTMLSelectElement>('select')].find((s) =>
+      [...s.options].some((o) => o.value === '4'),
+    )!;
+    rampCount.value = '3';
+    rampCount.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(onSettingsSaved.mock.lastCall![0].wheelbaseMm).toBe(4200);
+    expect(onSettingsSaved.mock.lastCall![0].rampCount).toBe(3);
   });
 
   it('attach(): first click opens the drawer, second click closes it', () => {

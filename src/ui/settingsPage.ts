@@ -32,9 +32,8 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
 
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    // Design review, follow-up: Save used to close the page (#159) — but
-    // Save is not "I'm done", just "keep this" — the user may still want
-    // to change more. Only the ✕ actually closes the page now.
+    // Every change is stored as it is made (#328); only the ✕ closes the
+    // page.
     (settings) => {
       options.onSettingsSaved(settings);
     },

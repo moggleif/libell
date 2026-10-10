@@ -139,11 +139,8 @@ URL and must keep working with no signal.
   five sections in the same order — General/Calibration/Vehicle/Ramps/Targets (design
   review) — as five full-screen drawer pages instead of tabs, one page per decision
   rather than the old single flat page that bundled Vehicle's own fields with Ramps
-  and General underneath it. General/Vehicle/Ramps/Targets share one settings
-  form/save state under the hood, same as Modern's tabs do — Save from any of the
-  four still persists the current values of all four, not just the page on screen,
-  and every one of the four shows the exact same Reset/Undo/Save row (Calibration
-  alone stays exempt, the one page with no "unsaved" form state at all). The
+  and General underneath it. General/Vehicle/Ramps/Targets share one settings form
+  under the hood, same as Modern's tabs do. The
   introduction relaunch and External sensor stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"
@@ -159,13 +156,29 @@ URL and must keep working with no signal.
   live mm figure right after a change has just been adopted and a further change keeps
   the same direction — e.g. still driving up a ramp — never for the very first change or
   one reversing direction, so it can never weaken the noise guard above), display unit
-  (R14), language (R13), theme (R15) or level chime (R16) and save
-- **Then** the values persist across app restarts (`localStorage`) and immediately affect
-  the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
-  `docs/03-ARCHITECTURE.md` § Settings). Not the first-run wizard, which keeps its own
-  Skip/Next flow — a successful Save here also returns to the main level screen (#159),
-  so the effect is visible without an extra tap — regardless of which Modern tab
-  (General/Kalibrering/Vehicle/Ramps/Targets) Save was tapped from.
+  (R14), language (R13), theme (R15) or level chime (R16)
+- **Then** each change is stored the moment it is made (#328) — a select, switch, ramp
+  choice or step height at once, a number field when I leave it or press Enter, never
+  half-typed — persists across app restarts (`localStorage`) and immediately affects the
+  calculation. There is no Save, Undo changes or Reset row on any tab or page, so
+  closing Settings can never leave a change unsaved. A short toast says "Saved" with
+  **Undo**, which puts the previous values back and stores them. The defaults are
+  `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see `docs/03-ARCHITECTURE.md` §
+  Settings). Saving never closes the page; only ✕/back do. Not the first-run wizard,
+  which keeps its own Skip/Next flow (R18).
+- **Given** I type a number that cannot be used (empty, zero, or negative where only a
+  positive value makes sense)
+- **When** I leave the field
+- **Then** the value in effect stays, in the field and in storage, and one line under the
+  field says what was wrong and that the previous value still applies (#328). Nothing is
+  blocked; the next usable value is saved as usual and the line goes away.
+- **Given** a change is saved from Settings while an external sensor was picked or set
+  up after Settings was opened
+- **Then** the save keeps that sensor choice and its settings: Settings only ever writes
+  the fields it shows (#328).
+- **Given** General › More › "Reset all settings"
+- **Then** every field on every tab goes back to its default and is stored, with the same
+  Undo toast. The appearance is kept, since changing it rebuilds the app.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 - **Given** the measurement fields (also in the wizard's measurements step, which
@@ -325,11 +338,9 @@ URL and must keep working with no signal.
   already a complete, valid choice.
 - **Given** any step that embeds a real Settings form — Language, Appearance, Sound,
   measurements, ramps (design review)
-- **Then** the embedded form shows only its fields — no Save/Undo/Reset row. A wizard
-  step's Next already submits the form (see below), so a second, identically-styled
-  "confirm" control next to Next no longer asks a first-time user to parse two
-  different actions that do almost the same thing. Save/Undo/Reset are unaffected on
-  the real, full Settings page — only the wizard's compact forms drop the row.
+- **Then** the embedded form shows only its fields, and is saved by the step's Next (see
+  below) rather than on each change as on the full Settings page (#328): no Undo toast,
+  no "Reset all settings".
 - **Given** the vehicle step (#184)
 - **Then** it asks "What are you leveling?" with the same Motorhome/Caravan choice and
   labels Settings uses, pre-selected to whatever is already stored (not hardcoded to
@@ -1120,7 +1131,7 @@ unannounced switch could show a plausible-looking but wrong reading.
   never forces a setting back on that was already off before I muted.
 - **Given** I mute or unmute from the bottom bar, then later open Settings
 - **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
-  never a stale display that could silently undo the mute on an unrelated Save.
+  never a stale display that could silently undo the mute on an unrelated change.
 
 ## R39 — External sensor on iOS: a Bluefy workaround guide, not a hidden option (#119)
 
@@ -1464,8 +1475,7 @@ the footer, with the card and the footer both spelling out the same step heights
 - **Given** the tab's running order
 - **Then** the answer comes first and the means of changing it below: what is set (the
   model and its step heights), the settings that follow from it (number of ramps), the
-  picker for changing your mind, the Advanced disclosure (drain position), and Save
-  last. Someone opening this tab is usually checking what is set rather than
+  picker for changing your mind, and the Advanced disclosure (drain position) last. Someone opening this tab is usually checking what is set rather than
   re-choosing; whoever is re-choosing opens the picker. "Change ramp" sits above
   Advanced rather than below it because of what picking "Custom set" does — the
   step-height editor appears up under the block showing those heights, and every row
@@ -1482,7 +1492,7 @@ the footer, with the card and the footer both spelling out the same step heights
 - **Given** the settings that depend on the chosen ramp (number of ramps, the drain
   position under Advanced)
 - **Then** they sit below the block naming that choice, not above the answer they belong
-  to. Save/Undo/Reset stay last.
+  to.
 - **Given** the tab on any phone (usability review against #189's persona — someone
   setting up their first motorhome, reading at arm's length in poor light)
 - **Then** the catalogue is not a scroll region inside the scrolling settings page: every
@@ -1504,7 +1514,7 @@ the footer, with the card and the footer both spelling out the same step heights
 - **Given** the tab on a 375x553 screen (an iPhone SE in Safari)
 - **Then** it does not fit whole: it is about 105 px too tall in Swedish, 126 px in French
   and German, and scrolls by that much with everything reachable. The remaining space is
-  in the Reset/Undo/Save row and the block naming the choice and its step heights, and in
+  in the block naming the choice and its step heights, and in
   labels sized for readability — closing it would mean taking back type this tab was
   given for exactly that reason. The one-screen promise is therefore made, and checked,
   from 393x745 upward.

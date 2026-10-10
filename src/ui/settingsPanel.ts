@@ -4,8 +4,8 @@
  * display unit,
  * tolerance/stability, the level chime and continuous audio guidance
  * (#121). Values are entered and shown in the chosen unit; storage and
- * math stay mm. Save is disabled until the form differs from the saved
- * settings.
+ * math stay mm. Every change is stored as it is made, with a "Saved ·
+ * Undo" toast (#328); the wizard's compact steps save on Next instead.
  *
  * Modern appearance (#108): when `initial.appearance === 'modern'`, the
  * form renders as tabs (Allmän/Kalibrering/Fordon/Klossar/Targets) instead
@@ -32,7 +32,14 @@ import {
   type VehicleType,
 } from '../domain/settings';
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
-import { saveSettings, loadLanguage, saveLanguage, clearLanguage } from '../data/settingsStore';
+import {
+  saveSettings,
+  loadSettings,
+  loadLanguage,
+  saveLanguage,
+  clearLanguage,
+} from '../data/settingsStore';
+import { showActionToast } from './toast';
 import { applyAppearance, applyTheme } from './theme';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createTargetsSection, type TargetsOptions } from './targetsSection';
@@ -111,12 +118,10 @@ export type SettingsFormElement = HTMLFormElement & {
   selectTargetsTab?: () => void;
   /**
    * Resync the Chime/Continuous-audio-guidance checkboxes (and the
-   * Save/Undo baseline for just those two fields) from a value that
-   * changed outside this form — the bottom bar's mute toggle (#161).
-   * Called by the menu host every time it reopens; safe because nothing
-   * else can edit this form while the menu is closed (mute's button
-   * lives outside the fullscreen menu overlay), so there is never an
-   * in-progress unsaved edit to clobber.
+   * stored baseline for just those two fields) from a value that changed
+   * outside this form — the bottom bar's mute toggle (#161). Called by
+   * the menu host every time it reopens. Not a change of its own: the
+   * value is already stored, so nothing is saved and no toast shows.
    */
   resyncSoundFields?: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>) => void;
   /**
@@ -125,9 +130,7 @@ export type SettingsFormElement = HTMLFormElement & {
    * general/vehicle/ramps/targets — sharing this one form's state. The
    * menu swaps whichever body is this form's current child right before
    * showing it; undefined unless `splitPages` was requested. Calibration
-   * stays its own standalone page outside this form — the one page with
-   * no "unsaved" form state at all, same exemption as Modern's own
-   * Kalibrering tab.
+   * stays its own standalone page outside this form.
    */
   classicPages?: {
     general: HTMLElement;
@@ -572,7 +575,7 @@ export function createSettingsForm(
   // --- Language (screen-cleanup follow-up): a stored override, entirely
   // separate from `LevelSettings` (see `settingsStore.ts`'s loadLanguage/
   // saveLanguage) — so it applies (and reloads, since `t()` isn't
-  // reactive) immediately on change rather than waiting for Save/Undo.
+  // reactive) immediately on change.
   // Every shipped language is offered (#178), each named in itself via
   // `LANGUAGE_NAMES` — deliberately literal, never translated via `t()`,
   // so a Swedish reader can still find "Deutsch" and vice versa. Automatic
@@ -621,7 +624,7 @@ export function createSettingsForm(
     themeSelect.append(option);
     themeOptions.push([option, label]);
   }
-  // Live preview — the choice still only persists on Save.
+  // Live preview, and stored at once like every other change (#328).
   themeSelect.addEventListener('change', () => {
     applyTheme(themeSelect.value as ThemeSetting);
     notifyChanged();
@@ -696,58 +699,26 @@ export function createSettingsForm(
   const soundGuidanceHint = document.createElement('p');
   soundGuidanceHint.className = 'settings__hint';
 
-  // Save persists; Undo returns to the last saved values; Reset fills
-  // the form with the factory defaults (still needs Save to persist,
-  // and Undo can take it back). Modern mode's Klossar tab additionally
-  // gets its own Save/Undo/Reset in its fixed footer (spec'd — the ramp
-  // steps need to be saveable without switching tabs); every tab keeps
-  // this same set too, so it's always reachable from wherever the user
-  // is editing (#140). Kept in sync via saveButtons/undoButtons/
-  // resetButtons rather than sharing DOM nodes, since a node can only
-  // live in one place in the tree.
-  const saveButtons: HTMLButtonElement[] = [];
-  const undoButtons: HTMLButtonElement[] = [];
-  const resetButtons: HTMLButtonElement[] = [];
-
-  /**
-   * Reset + Undo side by side, Save full-width below (design review,
-   * then two follow-ups: Save used to sit first in one flat row with
-   * Undo/Reset — moved to its own prominent row so it reads as the one
-   * primary action, biggest and green via CSS; and every tab that edits
-   * form fields gets this exact same row, Targets included — General had
-   * none at all and Klossar had Save/Undo only the first time around,
-   * and Targets was wrongly skipped as "immediate-apply like
-   * Kalibrering". Only Kalibrering stays exempt, the one tab with no
-   * "unsaved" form state at all.
-   */
-  function buildActionsRow(): HTMLDivElement {
-    const row = document.createElement('div');
-    row.className = 'settings__actions';
-    const topRow = document.createElement('div');
-    topRow.className = 'settings__actions-row';
-    const resetBtn = document.createElement('button');
-    resetBtn.type = 'button';
-    resetBtn.className = 'menu__action menu__action--secondary';
-    resetBtn.textContent = t('settings.reset');
-    resetBtn.addEventListener('click', () => populate(DEFAULT_SETTINGS));
-    const undoBtn = document.createElement('button');
-    undoBtn.type = 'button';
-    undoBtn.className = 'menu__action menu__action--secondary';
-    undoBtn.disabled = true;
-    undoBtn.textContent = t('settings.undo');
-    undoBtn.addEventListener('click', () => populate(saved));
-    topRow.append(resetBtn, undoBtn);
-    const saveBtn = document.createElement('button');
-    saveBtn.type = 'submit';
-    saveBtn.className = 'menu__action';
-    saveBtn.disabled = true;
-    saveBtn.textContent = t('settings.save');
-    row.append(topRow, saveBtn);
-    saveButtons.push(saveBtn);
-    undoButtons.push(undoBtn);
-    resetButtons.push(resetBtn);
-    return row;
-  }
+  // No Save/Undo/Reset rows (#328): every change is stored the moment it
+  // is made (see `notifyChanged` below) and a "Saved · Undo" toast is the
+  // way back. The one remaining whole-form action, "Reset all settings",
+  // sits under General › More, out of the way of everyday edits — it used
+  // to sit on every tab, where it also reset the tabs not on screen.
+  const resetAllButton = document.createElement('button');
+  resetAllButton.type = 'button';
+  resetAllButton.className = 'menu__action menu__action--secondary settings__reset-all';
+  // Keeps the appearance: it decides the page's whole structure, and
+  // changing it reloads the app (see the Appearance select below), which
+  // would take the Undo toast with it.
+  resetAllButton.addEventListener('click', () => {
+    populate({ ...DEFAULT_SETTINGS, appearance: saved.appearance });
+    notifyChanged();
+  });
+  const generalMore = document.createElement('details');
+  generalMore.className = 'settings__advanced settings__more';
+  const generalMoreSummary = document.createElement('summary');
+  generalMoreSummary.className = 'settings__advanced-summary';
+  generalMore.append(generalMoreSummary, resetAllButton);
 
   // Four labeled sections keep the long (Classic) form readable: vehicle &
   // measurements, ramps, level & display, general (screen-cleanup
@@ -827,12 +798,9 @@ export function createSettingsForm(
     // Onboarding step (#156): the reduced subset only — no tabs, no
     // Advanced disclosure, no vehicle-type/axle selectors. A short note
     // pointing to ☰ is added by onboarding.ts itself, next to this form.
-    // No `buildActionsRow()` call here (design-review follow-up): a wizard
-    // step already has its own Next/Skip/Back, and Next submits this form
-    // directly — a second, identically-styled "Save" button here only
-    // duplicated it and invited a "do I need to press this too?" moment.
-    // Save/Undo/Reset stay exactly as they are on the real Settings page,
-    // the only place this ever gets called.
+    // A wizard step already has its own Next/Skip/Back, and Next submits
+    // this form directly — it is the step's only save (#328 left the
+    // wizard that way; nothing here saves on change).
     form.append(
       measureHint,
       fieldEls.get('wheelbaseMm')!,
@@ -842,7 +810,7 @@ export function createSettingsForm(
   } else if (compact === 'language') {
     // Onboarding step (design review, split from #189's combined
     // 'general'): Language alone — still reloads immediately on change,
-    // same as Settings. No `buildActionsRow()` call — see 'measurements' above.
+    // same as Settings.
     form.append(languageField);
   } else if (compact === 'appearance') {
     // Onboarding step (design review): Theme + Appearance, the "how it
@@ -932,7 +900,7 @@ export function createSettingsForm(
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
-      buildActionsRow(),
+      generalMore,
     );
 
     // --- Kalibrering tab: embeds the same calibration section the menu
@@ -944,13 +912,9 @@ export function createSettingsForm(
     );
     calibrationPanel.append(embeddedCalibration.element);
 
-    // --- Targets tab: same reuse pattern as Kalibrering above. Also gets
-    // the exact same Reset/Undo/Save row as General/Fordon/Klossar
-    // (design review, follow-up: "if I say Targets too, I mean it") —
-    // it acts on the whole form's state, same as those three, regardless
-    // of Targets' own presets applying immediately.
+    // --- Targets tab: same reuse pattern as Kalibrering above.
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
-    targetsPanel.append(embeddedTargets.element, buildActionsRow());
+    targetsPanel.append(embeddedTargets.element);
 
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
@@ -974,7 +938,6 @@ export function createSettingsForm(
       shareVehicleButton,
       unitField,
       advancedDetails,
-      buildActionsRow(),
     );
 
     // --- Klossar tab ---
@@ -1088,14 +1051,11 @@ export function createSettingsForm(
     customEditor.className = 'klossar__custom-editor';
     customEditor.append(stepsCaption, chipList, addRow);
 
-    // The chosen ramp, directly under the picker that chose it; the
-    // settings that depend on it below that; the Save/Undo/Reset row last
+    // The chosen ramp first, the settings that depend on it below that
     // (#246 — the settings used to sit above the answer they belong to).
     const selectedBlock = document.createElement('div');
     selectedBlock.className = 'klossar__selected';
 
-    const footer = document.createElement('div');
-    footer.className = 'klossar__footer';
     // Reads top-down as one statement — "Selected: Thule Levelers, whose
     // step heights are these" — instead of the old single line that put a
     // "STEP HEIGHTS (MM)" heading and the model name at opposite ends of
@@ -1112,46 +1072,12 @@ export function createSettingsForm(
     footerHeading.className = 'klossar__footer-heading';
     const footerGrid = document.createElement('div');
     footerGrid.className = 'klossar__grid';
-    // Same Reset+Undo-then-Save layout as `buildActionsRow()` above, just
-    // built by hand since the fixed footer needs its own classes (design
-    // review: Klossar used to be Save/Undo only, one flat row).
-    const footerActions = document.createElement('div');
-    footerActions.className = 'klossar__footer-actions';
-    const footerTopRow = document.createElement('div');
-    footerTopRow.className = 'klossar__footer-actions-row';
-    const footerReset = document.createElement('button');
-    footerReset.type = 'button';
-    footerReset.className = 'menu__action menu__action--secondary';
-    footerReset.textContent = t('settings.reset');
-    footerReset.addEventListener('click', () => populate(DEFAULT_SETTINGS));
-    const footerUndo = document.createElement('button');
-    footerUndo.type = 'button';
-    footerUndo.className = 'menu__action menu__action--secondary';
-    footerUndo.disabled = true;
-    footerUndo.textContent = t('settings.undo');
-    // populate()/saved are defined further down, but this only runs on a
-    // later click — by then the whole form is fully set up.
-    footerUndo.addEventListener('click', () => populate(saved));
-    footerTopRow.append(footerReset, footerUndo);
-    const footerSave = document.createElement('button');
-    footerSave.type = 'submit';
-    footerSave.className = 'menu__action';
-    footerSave.disabled = true;
-    footerSave.textContent = t('settings.save');
-    footerActions.append(footerTopRow, footerSave);
-    saveButtons.push(footerSave);
-    undoButtons.push(footerUndo);
-    resetButtons.push(footerReset);
     selectedBlock.append(footerHead, footerHeading, footerGrid);
-    footer.append(footerActions);
 
     // Number of ramps / Drain side (pre-existing gap, found during the
     // Classic split-pages review): these two were never appended anywhere
     // in Modern at all, unlike Classic's Ramps page/step, which has always
-    // had them. Same elements/handlers as Classic — mounted here between
-    // the custom-set editor and the fixed footer, not inside it, so they
-    // scroll with the rest of the tab's content instead of crowding the
-    // footer's own Save/Undo.
+    // had them. Same elements/handlers as Classic.
     // Answer first, means of changing it below (#246): what you have set
     // — the model and its step heights — then the settings that follow
     // from it, then the one disclosure that changes the choice, filter and
@@ -1173,7 +1099,6 @@ export function createSettingsForm(
       rampCountHint,
       filterDetails,
       rampsAdvancedDetails,
-      footer,
     );
 
     renderKlossarUiImpl = (): void => {
@@ -1258,7 +1183,7 @@ export function createSettingsForm(
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
-      buildActionsRow(),
+      generalMore,
     );
     const vehicleBody = document.createElement('div');
     vehicleBody.append(
@@ -1271,10 +1196,9 @@ export function createSettingsForm(
       shareVehicleButton,
       unitField,
       advancedDetails,
-      buildActionsRow(),
     );
     const rampsBody = document.createElement('div');
-    rampsBody.append(stepsField, rampCountField, rampsAdvancedDetails, rampHint, buildActionsRow());
+    rampsBody.append(stepsField, rampCountField, rampsAdvancedDetails, rampHint);
 
     // --- Targets page: same reuse pattern as Modern's Targets tab (#108
     // follow-up) — one real `createTargetsSection` component, not a copy,
@@ -1283,7 +1207,7 @@ export function createSettingsForm(
     // presets applying immediately.
     const embeddedTargetsClassic = createTargetsSection(targetsOptions ?? inertTargetsOptions());
     const targetsBody = document.createElement('div');
-    targetsBody.append(embeddedTargetsClassic.element, buildActionsRow());
+    targetsBody.append(embeddedTargetsClassic.element);
     form.refreshTargetsPage = embeddedTargetsClassic.refresh;
 
     form.classicPages = {
@@ -1324,7 +1248,7 @@ export function createSettingsForm(
       soundGuidanceField,
       soundGuidanceHint,
       advancedDetails,
-      buildActionsRow(),
+      generalMore,
     );
   }
 
@@ -1383,17 +1307,23 @@ export function createSettingsForm(
     advancedSummary.textContent = t('settings.advanced');
     toleranceHint.textContent = t('settings.tolerance.hint');
     stabilityHint.textContent = t('settings.stability.hint');
-    for (const btn of saveButtons) btn.textContent = t('settings.save');
-    for (const btn of undoButtons) btn.textContent = t('settings.undo');
-    for (const btn of resetButtons) btn.textContent = t('settings.reset');
+    generalMoreSummary.textContent = t('settings.more');
+    resetAllButton.textContent = t('settings.resetAll');
   }
   applyUnitEverywhere();
   renderChips();
 
   // parseSettings guards against empty/invalid fields the same way it
-  // guards against corrupt storage.
+  // guards against corrupt storage. Fields this form does not edit (the
+  // sensor source and its device settings) come from what is stored now,
+  // not from `initial`: they change while the form is open, and a save
+  // from here must never put back an older sensor choice (#328 — with
+  // every edit now saved at once, that would happen on any tap).
   const currentSettings = (): LevelSettings => {
+    const stored = loadSettings();
     const raw: Record<string, unknown> = {
+      sensorSource: stored.sensorSource,
+      sensorDevices: stored.sensorDevices,
       vehicleType: vehicle,
       rearAxle: axle,
       rampStepHeightsMm: [...steps],
@@ -1410,14 +1340,91 @@ export function createSettingsForm(
     return parseSettings(raw);
   };
 
-  // Save and Undo are grayed out until the form differs from what is saved.
-  let saved = initial;
-  const notifyChanged = () => {
-    const clean = JSON.stringify(currentSettings()) === JSON.stringify(saved);
-    for (const btn of saveButtons) btn.disabled = clean;
-    for (const btn of undoButtons) btn.disabled = clean;
+  /** Only what this form edits — see `currentSettings` above. */
+  const sameFormValues = (a: LevelSettings, b: LevelSettings): boolean => {
+    const formValues = ({ sensorSource, sensorDevices, ...rest }: LevelSettings): string => {
+      void sensorSource;
+      void sensorDevices;
+      return JSON.stringify(rest);
+    };
+    return formValues(a) === formValues(b);
   };
-  form.addEventListener('input', notifyChanged);
+
+  // --- A number the user typed that cannot be used (#328): empty, zero or
+  // negative. Never refused silently and never replaced by a factory
+  // default: the field goes back to the value in effect, and one line
+  // under it says what was wrong, until the next change.
+  const fieldErrors = new Map<HTMLElement, HTMLParagraphElement>();
+  const showFieldError = (field: HTMLElement, message: string | null): void => {
+    let error = fieldErrors.get(field);
+    if (!message) {
+      if (error) error.hidden = true;
+      return;
+    }
+    if (!error) {
+      error = document.createElement('p');
+      error.className = 'settings__hint settings__error';
+      error.setAttribute('role', 'alert');
+      fieldErrors.set(field, error);
+    }
+    error.textContent = message;
+    error.hidden = false;
+    field.after(error);
+  };
+  /** Puts the value in effect back into every unusable number field. */
+  const restoreInvalidNumbers = (): void => {
+    for (const { key, min } of NUMBER_FIELDS) {
+      const input = inputs.get(key)!;
+      const value = fromUnit(input.valueAsNumber);
+      const ok = Number.isFinite(value) && (min === 0 ? value >= 0 : value > 0);
+      showFieldError(
+        fieldEls.get(key)!,
+        ok ? null : t(min === 0 ? 'settings.err.notNegative' : 'settings.err.positive'),
+      );
+      if (!ok) input.value = String(toUnit(saved[key]));
+    }
+    for (const [key, input] of msInputs) {
+      const field = key === 'dwellRestMs' ? dwellRestField : dwellMotionField;
+      const ok = Number.isFinite(input.valueAsNumber) && input.valueAsNumber > 0;
+      showFieldError(field, ok ? null : t('settings.err.positive'));
+      if (!ok) input.value = String(saved[key]);
+    }
+  };
+
+  let saved = initial;
+  let undoToast: HTMLElement | null = null;
+  const persist = (settings: LevelSettings): void => {
+    saveSettings(settings);
+    saved = settings;
+    onSave(settings);
+  };
+  /**
+   * Every change is stored at once (#328): there is no Save button and no
+   * "unsaved" state to lose by closing the page. A toast offers to undo
+   * it. The wizard's compact steps are the exception — they are saved by
+   * their own Next, which submits this form (see the submit handler).
+   */
+  const notifyChanged = (): void => {
+    if (compact) return;
+    restoreInvalidNumbers();
+    const next = currentSettings();
+    if (sameFormValues(next, saved)) return;
+    const previous = saved;
+    // What parseSettings settled on (e.g. a motion delay clamped to the
+    // rest delay) is what the fields show.
+    for (const [key, input] of inputs) input.value = String(toUnit(next[key]));
+    for (const [key, input] of msInputs) input.value = String(next[key]);
+    persist(next);
+    undoToast?.remove();
+    undoToast = showActionToast(t('settings.saved'), t('settings.undo'), () => {
+      populate(previous);
+      restoreInvalidNumbers();
+      persist(currentSettings());
+    });
+  };
+  // Selects and switches report a change at once; a number field when the
+  // user leaves it or presses Enter, so a half-typed value is never saved.
+  form.addEventListener('change', notifyChanged);
 
   /** Fill every field from the given settings, with live theme preview. */
   const populate = (settings: LevelSettings): void => {
@@ -1441,35 +1448,29 @@ export function createSettingsForm(
     applyAppearance(settings.appearance);
     soundInput.checked = settings.soundOnLevel;
     soundGuidanceInput.checked = settings.soundGuidance;
-    notifyChanged();
   };
-
-  // Reset always needs Save to persist too: safe because `buildActionsRow`
-  // (Reset included) is only ever called on the real, full Settings page
-  // — the compact onboarding forms never call it (see the 'compact'
-  // branches below), so there is no reduced screen left where "reset
-  // everything" could look like it only reset what's on screen. Each
-  // instance's own click handlers are wired inside `buildActionsRow`
-  // itself, not here.
 
   form.resyncSoundFields = (sound) => {
     soundInput.checked = sound.soundOnLevel;
     soundGuidanceInput.checked = sound.soundGuidance;
     saved = { ...saved, soundOnLevel: sound.soundOnLevel, soundGuidance: sound.soundGuidance };
-    notifyChanged();
   };
 
+  // The wizard's compact steps: Next submits the form, which saves it.
+  // Enter in a number field on the full page lands here too, and is just
+  // another change.
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (!compact) {
+      notifyChanged();
+      return;
+    }
     const settings = currentSettings();
     for (const [key, input] of inputs) input.value = String(toUnit(settings[key]));
     for (const [key, input] of msInputs) input.value = String(settings[key]);
     steps = [...settings.rampStepHeightsMm];
     renderChips();
-    saveSettings(settings);
-    saved = settings;
-    notifyChanged();
-    onSave(settings);
+    persist(settings);
   });
 
   return form;

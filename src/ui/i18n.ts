@@ -80,7 +80,6 @@ export const MESSAGES = {
     // heading in a different part of the UI.
     'menu.advanced': 'ADVANCED',
     'menu.others': 'OTHER',
-    'menu.card.notSaved': 'Not saved',
     'menu.card.notDone': 'Not done',
 
     // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
@@ -370,9 +369,12 @@ export const MESSAGES = {
       'signal for getting closer vs. moving the wrong way — so you can watch the ' +
       'ramps instead of the screen. Silent when the reading is too unreliable to ' +
       'trust — changing too fast, for instance.',
-    'settings.save': 'Save',
-    'settings.undo': 'Undo changes',
-    'settings.reset': 'Reset to defaults',
+    'settings.undo': 'Undo',
+    'settings.saved': 'Saved',
+    'settings.more': 'More',
+    'settings.resetAll': 'Reset all settings',
+    'settings.err.positive': 'Enter a number above 0. The previous value still applies.',
+    'settings.err.notNegative': 'Enter 0 or more. The previous value still applies.',
 
     'settings.tab.vehicle': 'Vehicle',
     'settings.tab.ramps': 'Ramps',
@@ -672,7 +674,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Extern sensor',
     'menu.advanced': 'AVANCERAT',
     'menu.others': 'ÖVRIGT',
-    'menu.card.notSaved': 'Ej sparade',
     'menu.card.notDone': 'Ej gjord',
 
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
@@ -878,9 +879,12 @@ export const MESSAGES = {
       'tydlig signal för om du närmar dig eller rör dig åt fel håll — så att du kan ' +
       'titta på klossarna istället för skärmen. Tyst vid osäker indata — till ' +
       'exempel för snabba förändringar.',
-    'settings.save': 'Spara',
-    'settings.undo': 'Ångra ändringar',
-    'settings.reset': 'Återställ standard',
+    'settings.undo': 'Ångra',
+    'settings.saved': 'Sparat',
+    'settings.more': 'Mer',
+    'settings.resetAll': 'Återställ alla inställningar',
+    'settings.err.positive': 'Ange ett tal större än 0. Det förra värdet gäller.',
+    'settings.err.notNegative': 'Ange 0 eller mer. Det förra värdet gäller.',
 
     'settings.tab.vehicle': 'Fordon',
     'settings.tab.ramps': 'Klossar',
@@ -1148,7 +1152,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Capteur externe',
     'menu.advanced': 'AVANCÉ',
     'menu.others': 'AUTRES',
-    'menu.card.notSaved': 'Non enregistré',
     'menu.card.notDone': 'Non fait',
 
     'sensorSource.connect': 'Connecter le capteur {name}',
@@ -1359,9 +1362,13 @@ export const MESSAGES = {
       'niveau, avec un signal distinct selon que vous vous rapprochez ou allez dans le ' +
       'mauvais sens — vous pouvez ainsi regarder les rampes plutôt que l’écran. Silencieux ' +
       'quand la lecture est trop peu fiable — par exemple quand elle change trop vite.',
-    'settings.save': 'Enregistrer',
-    'settings.undo': 'Annuler les modifications',
-    'settings.reset': 'Rétablir les valeurs par défaut',
+    'settings.undo': 'Annuler',
+    'settings.saved': 'Enregistré',
+    'settings.more': 'Plus',
+    'settings.resetAll': 'Réinitialiser tous les réglages',
+    'settings.err.positive':
+      'Saisissez un nombre supérieur à 0. La valeur précédente reste en vigueur.',
+    'settings.err.notNegative': 'Saisissez 0 ou plus. La valeur précédente reste en vigueur.',
 
     'settings.tab.vehicle': 'Véhicule',
     'settings.tab.ramps': 'Rampes',
@@ -1640,7 +1647,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Sensor externo',
     'menu.advanced': 'AVANZADO',
     'menu.others': 'OTROS',
-    'menu.card.notSaved': 'Sin guardar',
     'menu.card.notDone': 'Sin hacer',
 
     'sensorSource.connect': 'Conectar el sensor {name}',
@@ -1848,9 +1854,12 @@ export const MESSAGES = {
       'distinta según si te acercas o vas en la dirección equivocada, de modo que puedes ' +
       'mirar las rampas en vez de la pantalla. Se calla cuando la lectura es demasiado poco ' +
       'fiable, por ejemplo si cambia demasiado deprisa.',
-    'settings.save': 'Guardar',
-    'settings.undo': 'Deshacer los cambios',
-    'settings.reset': 'Restablecer los valores predeterminados',
+    'settings.undo': 'Deshacer',
+    'settings.saved': 'Guardado',
+    'settings.more': 'Más',
+    'settings.resetAll': 'Restablecer todos los ajustes',
+    'settings.err.positive': 'Introduce un número mayor que 0. Sigue valiendo el valor anterior.',
+    'settings.err.notNegative': 'Introduce 0 o más. Sigue valiendo el valor anterior.',
 
     'settings.tab.vehicle': 'Vehículo',
     'settings.tab.ramps': 'Rampas',
@@ -2127,7 +2136,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Externer Sensor',
     'menu.advanced': 'ERWEITERT',
     'menu.others': 'SONSTIGES',
-    'menu.card.notSaved': 'Nicht gespeichert',
     'menu.card.notDone': 'Nicht erledigt',
 
     'sensorSource.connect': '{name}-Sensor verbinden',
@@ -2331,9 +2339,12 @@ export const MESSAGES = {
       'unterschiedlichem Signal je nachdem, ob du näher kommst oder in die falsche Richtung ' +
       'fährst — so kannst du auf die Keile statt auf den Bildschirm schauen. Still, wenn der ' +
       'Messwert zu unzuverlässig ist, etwa weil er sich zu schnell ändert.',
-    'settings.save': 'Speichern',
-    'settings.undo': 'Änderungen verwerfen',
-    'settings.reset': 'Auf Standardwerte zurücksetzen',
+    'settings.undo': 'Rückgängig',
+    'settings.saved': 'Gespeichert',
+    'settings.more': 'Mehr',
+    'settings.resetAll': 'Alle Einstellungen zurücksetzen',
+    'settings.err.positive': 'Gib eine Zahl über 0 ein. Der vorige Wert gilt weiter.',
+    'settings.err.notNegative': 'Gib 0 oder mehr ein. Der vorige Wert gilt weiter.',
 
     'settings.tab.vehicle': 'Fahrzeug',
     'settings.tab.ramps': 'Keile',

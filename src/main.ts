@@ -360,7 +360,7 @@ function bootstrap(root: HTMLElement): void {
    * Mounting orientation (#217), set from the External sensor page — an
    * ordinary persisted setting (unlike `setEasyLevelConnectDelay` below,
    * this is not a debug-only field), but set directly here rather than
-   * through the Settings page's own Save/Undo/Reset flow, matching how the
+   * through the Settings form, matching how the
    * install-offset calibration right next to it on that same page already
    * behaves.
    */
@@ -646,7 +646,7 @@ function bootstrap(root: HTMLElement): void {
       settings = next;
       applyTheme(settings.theme);
       applyAppearance(settings.appearance);
-      // The save click is a user gesture — the right moment to unlock
+      // A settings change comes from a tap, a user gesture — the right moment to unlock
       // audio for the opt-in level chime and/or continuous guidance.
       if (settings.soundOnLevel || settings.soundGuidance) unlockAudio();
       updateIndicators();
