@@ -530,7 +530,17 @@ export function createXparkleWebBluetoothTransport(): XparkleTransport {
         optionalServices: [XPARKLE_SERVICE_UUID],
       });
       picked = device;
-      return connectToDevice(device, onDisconnect);
+      try {
+        return await connectToDevice(device, onDisconnect);
+      } catch {
+        // Picked, but the link would not come up (#322, found on hardware
+        // right after Disconnect): the box can take a moment before it
+        // advertises and accepts a connection again. Wait to hear it, the
+        // same way the silent reconnect does (#288), and try once more —
+        // a second failure is the caller's ordinary "could not connect".
+        await waitForAdvertisement(device);
+        return connectToDevice(device, onDisconnect);
+      }
     },
     async reconnect(deviceId, onDisconnect) {
       try {

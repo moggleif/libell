@@ -910,6 +910,10 @@ cross-platform goal — they are not this app's code and are not covered here.
   without an explicit "forget this box". The phone's own sensor is started at that
   tap (#321): when the box took over the app's startup, the phone was never started,
   and the screen waited for a sensor that would never deliver.
+- **Given** I pick the box in the device picker, right after disconnecting it (#322)
+- **When** the first connect to it fails
+- **Then** the app waits to hear the box advertise (as the silent reconnect does,
+  #288) and tries once more before saying it could not connect.
 
 ## R34 — EasyLevel box: installation calibration ("Set vehicle level")
 
