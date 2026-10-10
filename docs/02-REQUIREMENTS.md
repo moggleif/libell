@@ -280,7 +280,9 @@ URL and must keep working with no signal.
 - **Given** that overlay is shown for an external sensor
 - **Then** it also says what to do — check the sensor's live values and mounting — and
   carries an "Open sensor page" button that goes straight to that sensor's own page
-  (R40), not the source list (#285).
+  (R40), not the source list (#285). That page opens on top of the overlay, which stays
+  hidden while the page is open and returns after closing it only if the sensor still
+  sits wrong (#297).
 
 ## R18 — A first-run introduction, skippable and reopenable
 
@@ -986,7 +988,8 @@ noisy samples to arrive; this fires when no new samples arrive at all).
   disconnected is a separate action, R33's job, not this one's.)
 - **Given** an external sensor is the active source and the overlay is shown (#286)
 - **Then** it also carries an "Open sensor page" button (the same label as R17's
-  pose overlay) that opens that sensor's own page, not the source list. While the
+  pose overlay) that opens that sensor's own page, not the source list — on top of the
+  overlay, which stays hidden while the page is open (#297). While the
   phone is the active source the button is not shown. R37's unavailable prompt is
   never shown at the same time as this overlay (that one needs no reading at all,
   this one a reading that has gone old), and it carries the same button, so both
