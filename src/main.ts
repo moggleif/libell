@@ -1038,10 +1038,10 @@ function bootstrap(root: HTMLElement): void {
 
   /**
    * "Set vehicle level" for the Xparkle box (#290): the box zeroes itself
-   * (`resetZero`), which works however it is mounted — lying on its back
-   * included, where a Libell-side capture would be refused as far too
-   * tilted. Libell then stores a zero installation offset with the time:
-   * it changes no reading (the box already reports from its new zero), but
+   * (`resetZero`). The box must stand upright for a zero to hold (#273);
+   * nothing is refused here — its page shows live whether it stands, and
+   * guides the user when it does not (#304). Libell then stores a zero
+   * installation offset with the time: it changes no reading (the box already reports from its new zero), but
    * it is what the calibration lamp, the age text and "Check" go by, and
    * it replaces any older Libell-side offset so two zeros are never
    * stacked.
@@ -1404,13 +1404,18 @@ function bootstrap(root: HTMLElement): void {
         const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : externalPose !== 'ok';
         const badLandscape = phoneActive && landscape.matches;
         if (badPose || badLandscape) {
+          // A box built to stand (#304) is told to stand, never to lie flat.
+          const upright = externalSensorById(sensor().getSource())?.capabilities.upright ?? false;
           poseText.textContent = !badPose
             ? t('pose.portrait')
             : phoneActive
               ? t('pose.layFlat')
-              : externalPose === 'upside-down'
-                ? t('pose.sensorUpsideDown')
-                : t('pose.sensorExtreme');
+              : upright
+                ? t('pose.sensorNotUpright')
+                : externalPose === 'upside-down'
+                  ? t('pose.sensorUpsideDown')
+                  : t('pose.sensorExtreme');
+          poseHint.textContent = t(upright ? 'pose.sensorHintUpright' : 'pose.sensorHint');
           poseHint.hidden = poseSensorButton.hidden = phoneActive;
           poseOverlay.hidden = false;
           levelOverlay.hideNow();

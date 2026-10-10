@@ -29,8 +29,9 @@
  * be rotated twice and name the wrong wheel while looking plausible. So
  * the descriptor declares `mounting: false`, no picker is offered, and
  * `getOrientation()` below exposes what the box reports for display only.
- * The vendor app remains the place to change it, which is also where the
- * user set it up in the first place.
+ * Which way the box faces in the vehicle is learned in Libell instead
+ * (#293), so no step ever needs the vendor app. The box itself must stand
+ * upright whichever way it faces (#304, `domain/uprightMount.ts`).
  *
  * **The password does not gate readings here.** Whether the box refuses to
  * serve `fff2` before command `4` was unknowable from the app, which always
@@ -46,8 +47,8 @@
  * automatically.** The box remembers its own configuration, and silently
  * rewriting a user's setup is worse than not supporting it at all. The one
  * exception is `resetZero`, and only behind an explicit tap (`zeroBox()`,
- * #290): the box's own zero is what makes a box mounted lying on its back
- * usable at all. `setParameters` is never sent.
+ * #290): the box's own zero takes out the few degrees a mounting is off
+ * level. `setParameters` is never sent.
  */
 import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { GravityVector } from '../domain/leveling';
@@ -186,10 +187,11 @@ export interface XparkleSensor extends ExternalSensor {
   isPasswordRejected(): boolean;
   /**
    * Zero the box where it sits, with its own `resetZero` command (#290):
-   * from then on it reports angles relative to this position, however it
-   * is mounted — including lying on its back, which Libell's own
-   * installation offset cannot capture (R34 refuses a capture that far
-   * from level). Resolves true once the command was written, false when
+   * from then on it reports angles relative to this position. The box must
+   * stand upright: lying down, turning it about its own axis changes both
+   * angles, so no zero holds (found on hardware, #273); the box's page
+   * guides the user to stand it up (#304). Resolves true once the command
+   * was written, false when
    * no box is connected or the write failed; nothing is retried.
    *
    * The one command that changes the box's stored state this adapter
@@ -597,6 +599,7 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     debugBytes: false,
     reportedOrientation: true,
     learnMounting: true,
+    upright: true,
   },
   // Polled every 500 ms, so a silence of several polls is a real fault
   // rather than jitter — but kept at EasyLevel's own 4s rather than
