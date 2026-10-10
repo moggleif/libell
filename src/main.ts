@@ -23,7 +23,6 @@ import {
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
-import { mayZeroUprightBox } from './domain/uprightMount';
 import {
   easyLevelSettings,
   xparkleSettings,
@@ -1039,28 +1038,20 @@ function bootstrap(root: HTMLElement): void {
 
   /**
    * "Set vehicle level" for the Xparkle box (#290): the box zeroes itself
-   * (`resetZero`). Refused while it reads far from upright: a box lying
-   * down gives readings no zero can fix (#273, #304); a second tap right
-   * after the refusal zeroes it anyway, the way back for a box that was
-   * zeroed lying down before it was stood up. Libell then stores a zero
+   * (`resetZero`). The box must stand upright for a zero to hold (#273);
+   * nothing is refused here — its page shows live whether it stands, and
+   * guides the user when it does not (#304). Libell then stores a zero
    * installation offset with the time: it changes no reading (the box already reports from its new zero), but
    * it is what the calibration lamp, the age text and "Check" go by, and
    * it replaces any older Libell-side offset so two zeros are never
    * stacked.
    */
-  let xparkleZeroRefusedAt: number | null = null;
   async function zeroXparkleNow(): Promise<string | null> {
     const name = XPARKLE_DESCRIPTOR.displayName;
     const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
     if (!box || box.getState() !== 'granted') {
       return t('calibration.external.err.notConnected', { name });
     }
-    const now = Date.now();
-    if (!mayZeroUprightBox(box.getReading(), xparkleZeroRefusedAt, now)) {
-      xparkleZeroRefusedAt = now;
-      return t('calibration.external.err.notUpright', { name });
-    }
-    xparkleZeroRefusedAt = null;
     if (!(await box.zeroBox())) return t('calibration.external.err.failed', { name });
     const value: Calibration = { rollDeg: 0, pitchDeg: 0 };
     const capturedAt = Date.now();

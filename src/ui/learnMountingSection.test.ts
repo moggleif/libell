@@ -104,15 +104,6 @@ describe('learn the mounting in Libell (#293)', () => {
     expect(setLearnedMounting).toHaveBeenCalledWith(null);
   });
 
-  it('refuses to start while the box lies down, and stores nothing (#304)', () => {
-    const options = makeOptions([{ pitchDeg: -89, rollDeg: 0 }]);
-    const section = createLearnMountingSection(options);
-    button(section.element, t('sensorSource.learn.start')).click();
-    expect(section.element.textContent).toContain(t('sensorSource.learn.err.notUpright'));
-    expect(button(section.element, t('sensorSource.learn.start'))).toBeTruthy();
-    expect(options.saved).toEqual([]);
-  });
-
   it('hides "forget" when nothing has been learned', () => {
     const section = createLearnMountingSection(makeOptions([{ pitchDeg: 0, rollDeg: 0 }]));
     section.refresh();

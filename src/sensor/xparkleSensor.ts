@@ -189,9 +189,9 @@ export interface XparkleSensor extends ExternalSensor {
    * Zero the box where it sits, with its own `resetZero` command (#290):
    * from then on it reports angles relative to this position. The box must
    * stand upright: lying down, turning it about its own axis changes both
-   * angles, so no zero holds (found on hardware, #273) — the caller checks
-   * `mayZeroUprightBox` first (#304). Resolves true once the command was
-   * written, false when
+   * angles, so no zero holds (found on hardware, #273); the box's page
+   * guides the user to stand it up (#304). Resolves true once the command
+   * was written, false when
    * no box is connected or the write failed; nothing is retried.
    *
    * The one command that changes the box's stored state this adapter

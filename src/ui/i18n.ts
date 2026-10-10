@@ -135,6 +135,9 @@ export const MESSAGES = {
     // why RSSI can never be read for a connected device.
     'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
+    'sensorSource.upright.ok': 'The box stands upright ✓',
+    'sensorSource.upright.lying':
+      'The box is lying down. It only measures right standing up: stand it upright (which way it faces does not matter), then tap “Set vehicle level”.',
     'sensorSource.detail.orientation': 'The box’s own mounting setting: {value}',
     'sensorSource.orientation.front': 'Front',
     'sensorSource.orientation.rear': 'Rear',
@@ -190,8 +193,6 @@ export const MESSAGES = {
       'Both directions moved about as much. Raise only the front, then only the right side, and try again.',
     'sensorSource.learn.err.sameAxis':
       'Both lifts tilted the same way. Raise the front first, then the right side, and try again.',
-    'sensorSource.learn.err.notUpright':
-      'The box seems to be lying down. Mount it standing upright, set the vehicle as level and try again.',
 
     // Mounting orientation (#217): the box can be physically mounted two
     // ways, 90° apart — mirrors the official EasyLevel app's own setting,
@@ -599,8 +600,6 @@ export const MESSAGES = {
     'calibration.external.working': 'Calibrating…',
     'calibration.external.done': '{name} is calibrated: this position now counts as level.',
     'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',
-    'calibration.external.err.notUpright':
-      '{name} seems to be lying down. It must stand upright: lying down, its readings change when it turns, so no calibration holds. Mount it standing and try again. If it already stands upright, tap again to calibrate it anyway.',
     'calibration.external.err.failed':
       'Could not calibrate {name}. Nothing was changed. Check the connection and try again.',
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
@@ -707,6 +706,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
+    'sensorSource.upright.ok': 'Boxen står upp ✓',
+    'sensorSource.upright.lying':
+      'Boxen ligger ner. Den mäter bara rätt stående: ställ den upprätt (vilket håll den vänder åt spelar ingen roll) och tryck sedan ”Sätt fordonet som plant”.',
     'sensorSource.detail.orientation': 'Boxens egen monteringsinställning: {value}',
     'sensorSource.orientation.front': 'Fram',
     'sensorSource.orientation.rear': 'Bak',
@@ -754,8 +756,6 @@ export const MESSAGES = {
       'Båda riktningarna rörde sig ungefär lika mycket. Höj bara fronten, sedan bara höger sida, och försök igen.',
     'sensorSource.learn.err.sameAxis':
       'Båda lyften lutade åt samma håll. Höj fronten först och sedan höger sida, och försök igen.',
-    'sensorSource.learn.err.notUpright':
-      'Boxen verkar ligga ner. Montera den stående, sätt fordonet som plant och försök igen.',
 
     // Monteringsriktning (#217): sensorboxen kan monteras på två sätt, ett
     // kvarts varv från varandra — motsvarar den officiella EasyLevel-
@@ -1086,8 +1086,6 @@ export const MESSAGES = {
     'calibration.external.working': 'Kalibrerar…',
     'calibration.external.done': '{name} är kalibrerad: det här läget räknas nu som plant.',
     'calibration.external.err.notConnected': '{name} är inte ansluten. Anslut den och försök igen.',
-    'calibration.external.err.notUpright':
-      '{name} verkar ligga ner. Den måste stå upp: liggande ändras värdena när den vrids, så ingen kalibrering håller. Montera den stående och försök igen. Står den redan upp, tryck igen för att kalibrera ändå.',
     'calibration.external.err.failed':
       'Kunde inte kalibrera {name}. Inget ändrades. Kontrollera anslutningen och försök igen.',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
@@ -1187,6 +1185,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Détails du capteur',
     'sensorSource.detail.battery': 'Batterie : {value}',
+    'sensorSource.upright.ok': 'Le boîtier est debout ✓',
+    'sensorSource.upright.lying':
+      'Le boîtier est couché. Il ne mesure correctement que debout : redressez-le (peu importe son orientation), puis touchez « Définir le véhicule comme de niveau ».',
     'sensorSource.detail.orientation': 'Réglage de montage du boîtier : {value}',
     'sensorSource.orientation.front': 'Avant',
     'sensorSource.orientation.rear': 'Arrière',
@@ -1233,8 +1234,6 @@ export const MESSAGES = {
       'Les deux directions ont bougé à peu près autant. Soulevez seulement l’avant, puis seulement le côté droit, et réessayez.',
     'sensorSource.learn.err.sameAxis':
       'Les deux levages ont incliné dans le même sens. Soulevez d’abord l’avant, puis le côté droit, et réessayez.',
-    'sensorSource.learn.err.notUpright':
-      'Le boîtier semble couché. Montez-le debout, définissez le véhicule comme de niveau et réessayez.',
 
     'sensorSource.mounting.h': 'Montage du capteur',
     'sensorSource.mounting.intro':
@@ -1574,8 +1573,6 @@ export const MESSAGES = {
       '{name} est étalonné : cette position compte désormais comme le niveau.',
     'calibration.external.err.notConnected':
       '{name} n’est pas connecté. Connectez-le et réessayez.',
-    'calibration.external.err.notUpright':
-      '{name} semble couché. Il doit être debout : couché, ses valeurs changent quand il tourne, aucun étalonnage ne tient. Montez-le debout et réessayez. S’il est déjà debout, touchez à nouveau pour l’étalonner quand même.',
     'calibration.external.err.failed':
       'Impossible d’étalonner {name}. Rien n’a été modifié. Vérifiez la connexion et réessayez.',
     'pose.portrait':
@@ -1676,6 +1673,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Detalles del sensor',
     'sensorSource.detail.battery': 'Batería: {value}',
+    'sensorSource.upright.ok': 'La caja está de pie ✓',
+    'sensorSource.upright.lying':
+      'La caja está tumbada. Solo mide bien de pie: ponla derecha (da igual hacia dónde mire) y luego toca «Fijar el vehículo como nivelado».',
     'sensorSource.detail.orientation': 'Ajuste de montaje de la propia caja: {value}',
     'sensorSource.orientation.front': 'Delante',
     'sensorSource.orientation.rear': 'Detrás',
@@ -1722,8 +1722,6 @@ export const MESSAGES = {
       'Las dos direcciones se movieron casi lo mismo. Levanta solo la parte delantera, luego solo el lado derecho, e inténtalo de nuevo.',
     'sensorSource.learn.err.sameAxis':
       'Los dos levantamientos inclinaron hacia el mismo lado. Levanta primero la parte delantera y luego el lado derecho, e inténtalo de nuevo.',
-    'sensorSource.learn.err.notUpright':
-      'La caja parece estar tumbada. Móntala de pie, fija el vehículo como nivelado e inténtalo de nuevo.',
 
     'sensorSource.mounting.h': 'Montaje del sensor',
     'sensorSource.mounting.intro':
@@ -2059,8 +2057,6 @@ export const MESSAGES = {
     'calibration.external.done': '{name} está calibrado: esta posición cuenta ahora como nivelada.',
     'calibration.external.err.notConnected':
       '{name} no está conectado. Conéctalo e inténtalo de nuevo.',
-    'calibration.external.err.notUpright':
-      '{name} parece estar tumbado. Debe estar de pie: tumbado, sus valores cambian al girarlo y ninguna calibración se mantiene. Móntalo de pie e inténtalo de nuevo. Si ya está de pie, toca otra vez para calibrarlo de todos modos.',
     'calibration.external.err.failed':
       'No se pudo calibrar {name}. No se ha cambiado nada. Comprueba la conexión e inténtalo de nuevo.',
     'pose.portrait':
@@ -2164,6 +2160,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetails',
     'sensorSource.detail.battery': 'Batterie: {value}',
+    'sensorSource.upright.ok': 'Die Box steht aufrecht ✓',
+    'sensorSource.upright.lying':
+      'Die Box liegt. Sie misst nur stehend richtig: stelle sie aufrecht (die Richtung ist egal) und tippe dann auf „Fahrzeug als waagerecht setzen“.',
     'sensorSource.detail.orientation': 'Eigene Montageeinstellung der Box: {value}',
     'sensorSource.orientation.front': 'Vorne',
     'sensorSource.orientation.rear': 'Hinten',
@@ -2208,8 +2207,6 @@ export const MESSAGES = {
       'Beide Richtungen haben sich etwa gleich stark bewegt. Hebe nur die Front, dann nur die rechte Seite an und versuche es erneut.',
     'sensorSource.learn.err.sameAxis':
       'Beide Anhebungen haben in dieselbe Richtung geneigt. Hebe zuerst die Front, dann die rechte Seite an und versuche es erneut.',
-    'sensorSource.learn.err.notUpright':
-      'Die Box scheint zu liegen. Montiere sie aufrecht stehend, setze das Fahrzeug als waagerecht und versuche es erneut.',
 
     'sensorSource.mounting.h': 'Sensormontage',
     'sensorSource.mounting.intro':
@@ -2541,8 +2538,6 @@ export const MESSAGES = {
     'calibration.external.done': '{name} ist kalibriert: Diese Lage gilt jetzt als waagerecht.',
     'calibration.external.err.notConnected':
       '{name} ist nicht verbunden. Verbinden Sie ihn und versuchen Sie es erneut.',
-    'calibration.external.err.notUpright':
-      '{name} scheint zu liegen. Sie muss aufrecht stehen: Liegend ändern sich die Werte beim Drehen, keine Kalibrierung hält. Montiere sie stehend und versuche es erneut. Steht sie bereits aufrecht, tippe noch einmal, um sie trotzdem zu kalibrieren.',
     'calibration.external.err.failed':
       '{name} konnte nicht kalibriert werden. Es wurde nichts geändert. Prüfen Sie die Verbindung und versuchen Sie es erneut.',
     'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',

@@ -1566,16 +1566,16 @@ present this source as more proven than it is.
   offset, which drives the calibration lamp, the age text and "Check", and replaces any
   older Libell-side offset so two zeros are never stacked. If no box is connected, or
   the command cannot be written, it says so and nothing is changed.
-- **Given** the box reads more than 45° from upright (lying down) when the user taps "Set
-  vehicle level"
-- **Then** Libell refuses and says the box must be mounted standing (#273, #304): verified
-  on hardware, a box lying on its back changes both angles whenever it turns about its
-  own axis, so no zero taken there holds. A second tap within 30 seconds of the refusal
-  zeroes it anyway, so a box that already stands but was zeroed lying down earlier (and
-  therefore reads about a quarter turn) is recovered in Libell, never in the vendor app.
-- **Given** the user starts "Learn the mounting" while the box reads more than 45° from
-  upright
-- **Then** it is refused with the same reason and nothing is stored (#304).
+- **Given** the box must stand upright to measure right (#273, #304): verified on
+  hardware, a box lying on its back changes both angles whenever it turns about its own
+  axis, so no zero taken there holds
+- **When** the box's own page is open
+- **Then** it shows live whether the box stands upright; when it reads more than 45° on
+  either axis it says the box is lying down, that it only measures right standing, and
+  what to do: stand it up (whichever way it faces) and tap "Set vehicle level". Libell
+  guides and never blocks: "Set vehicle level" and "Learn the mounting" always run, so a
+  box that was zeroed lying down earlier is recovered by standing it up and zeroing again
+  in Libell, never in the vendor app.
 - **Given** any other command that would change what the box has stored (its vehicle
   dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
