@@ -127,6 +127,11 @@ export const MESSAGES = {
     // why RSSI can never be read for a connected device.
     'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
+    'sensorSource.detail.orientation': "Mounting (set in the manufacturer's app): {value}",
+    'sensorSource.orientation.front': 'Front',
+    'sensorSource.orientation.rear': 'Rear',
+    'sensorSource.orientation.left': 'Left',
+    'sensorSource.orientation.right': 'Right',
     'sensorSource.detail.temperature': 'Temperature: {value}',
     'sensorSource.detail.notAvailable': 'Not available yet',
     // Low-battery warning (#123): a settings-page notice, not a
@@ -546,6 +551,14 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
     'calibration.phoneOnly':
       "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
+    'calibration.external.h': 'Calibrate {name}',
+    'calibration.external.intro':
+      "Level the vehicle verifiably once (spirit level, or after leveling with your ramps), then set the sensor's current reading as level.",
+    'calibration.external.working': 'Calibrating…',
+    'calibration.external.done': '{name} is calibrated: this position now counts as level.',
+    'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',
+    'calibration.external.err.failed':
+      'Could not calibrate {name}. Nothing was changed. Check the connection and try again.',
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
 
     'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
@@ -643,6 +656,11 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
+    'sensorSource.detail.orientation': 'Montering (ställs in i tillverkarens app): {value}',
+    'sensorSource.orientation.front': 'Fram',
+    'sensorSource.orientation.rear': 'Bak',
+    'sensorSource.orientation.left': 'Vänster',
+    'sensorSource.orientation.right': 'Höger',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Inte tillgängligt ännu',
     'sensorSource.lowBattery':
@@ -981,6 +999,14 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
     'calibration.phoneOnly':
       'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
+    'calibration.external.h': 'Kalibrera {name}',
+    'calibration.external.intro':
+      'Ställ fordonet verifierat plant en gång (vattenpass, eller efter nivellering med ramperna) och sätt sedan sensorns aktuella avläsning som plan.',
+    'calibration.external.working': 'Kalibrerar…',
+    'calibration.external.done': '{name} är kalibrerad: det här läget räknas nu som plant.',
+    'calibration.external.err.notConnected': '{name} är inte ansluten. Anslut den och försök igen.',
+    'calibration.external.err.failed':
+      'Kunde inte kalibrera {name}. Inget ändrades. Kontrollera anslutningen och försök igen.',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
 
     'stale.dataUnavailable':
@@ -1070,6 +1096,11 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Détails du capteur',
     'sensorSource.detail.battery': 'Batterie : {value}',
+    'sensorSource.detail.orientation': 'Montage (réglé dans l’app du fabricant) : {value}',
+    'sensorSource.orientation.front': 'Avant',
+    'sensorSource.orientation.rear': 'Arrière',
+    'sensorSource.orientation.left': 'Gauche',
+    'sensorSource.orientation.right': 'Droite',
     'sensorSource.detail.temperature': 'Température : {value}',
     'sensorSource.detail.notAvailable': 'Pas encore disponible',
     'sensorSource.lowBattery':
@@ -1413,6 +1444,16 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
     'calibration.phoneOnly':
       'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
+    'calibration.external.h': 'Étalonner {name}',
+    'calibration.external.intro':
+      'Mettez le véhicule de niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé avec vos cales), puis définissez la lecture actuelle du capteur comme le niveau.',
+    'calibration.external.working': 'Étalonnage…',
+    'calibration.external.done':
+      '{name} est étalonné : cette position compte désormais comme le niveau.',
+    'calibration.external.err.notConnected':
+      '{name} n’est pas connecté. Connectez-le et réessayez.',
+    'calibration.external.err.failed':
+      'Impossible d’étalonner {name}. Rien n’a été modifié. Vérifiez la connexion et réessayez.',
     'pose.portrait':
       'Tournez le téléphone à la verticale (portrait) — le bord supérieur doit pointer vers l’avant',
 
@@ -1504,6 +1545,11 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Detalles del sensor',
     'sensorSource.detail.battery': 'Batería: {value}',
+    'sensorSource.detail.orientation': 'Montaje (se ajusta en la app del fabricante): {value}',
+    'sensorSource.orientation.front': 'Delante',
+    'sensorSource.orientation.rear': 'Detrás',
+    'sensorSource.orientation.left': 'Izquierda',
+    'sensorSource.orientation.right': 'Derecha',
     'sensorSource.detail.temperature': 'Temperatura: {value}',
     'sensorSource.detail.notAvailable': 'Aún no disponible',
     'sensorSource.lowBattery':
@@ -1844,6 +1890,15 @@ export const MESSAGES = {
       'El sensor parece estar montado boca abajo — móntalo con la cara hacia arriba',
     'calibration.phoneOnly':
       'Hay un sensor externo activo, así que no se usa la calibración del móvil. Cambia al sensor del móvil para modificarla.',
+    'calibration.external.h': 'Calibrar {name}',
+    'calibration.external.intro':
+      'Nivela el vehículo de forma verificable una vez (con un nivel de burbuja o tras nivelar con tus calzos) y luego fija la lectura actual del sensor como nivelada.',
+    'calibration.external.working': 'Calibrando…',
+    'calibration.external.done': '{name} está calibrado: esta posición cuenta ahora como nivelada.',
+    'calibration.external.err.notConnected':
+      '{name} no está conectado. Conéctalo e inténtalo de nuevo.',
+    'calibration.external.err.failed':
+      'No se pudo calibrar {name}. No se ha cambiado nada. Comprueba la conexión e inténtalo de nuevo.',
     'pose.portrait':
       'Pon el móvil en vertical (retrato): el borde superior debe apuntar hacia delante',
 
@@ -1937,6 +1992,11 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetails',
     'sensorSource.detail.battery': 'Batterie: {value}',
+    'sensorSource.detail.orientation': 'Montage (in der Hersteller-App eingestellt): {value}',
+    'sensorSource.orientation.front': 'Vorne',
+    'sensorSource.orientation.rear': 'Hinten',
+    'sensorSource.orientation.left': 'Links',
+    'sensorSource.orientation.right': 'Rechts',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Noch nicht verfügbar',
     'sensorSource.lowBattery':
@@ -2270,6 +2330,15 @@ export const MESSAGES = {
       'Der Sensor scheint verkehrt herum montiert — mit der Oberseite nach oben montieren',
     'calibration.phoneOnly':
       'Ein externer Sensor ist aktiv, daher wird die Kalibrierung des Handys nicht verwendet. Wechsle zum Handy-Sensor, um sie zu ändern.',
+    'calibration.external.h': '{name} kalibrieren',
+    'calibration.external.intro':
+      'Bringen Sie das Fahrzeug einmal nachweislich in die Waage (Wasserwaage oder nach dem Ausgleichen mit Ihren Keilen) und legen Sie dann den aktuellen Messwert des Sensors als waagerecht fest.',
+    'calibration.external.working': 'Wird kalibriert…',
+    'calibration.external.done': '{name} ist kalibriert: Diese Lage gilt jetzt als waagerecht.',
+    'calibration.external.err.notConnected':
+      '{name} ist nicht verbunden. Verbinden Sie ihn und versuchen Sie es erneut.',
+    'calibration.external.err.failed':
+      '{name} konnte nicht kalibriert werden. Es wurde nichts geändert. Prüfen Sie die Verbindung und versuchen Sie es erneut.',
     'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',
 
     'stale.dataUnavailable': 'Keine neuen Sensordaten — die Führung pausiert, bis sie zurückkommen',

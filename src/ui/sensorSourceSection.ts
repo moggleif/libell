@@ -158,8 +158,13 @@ export interface SensorSourceOptions {
    * independently: this is never the phone's own vehicle zero.
    */
   getInstallCalibration(): Calibration | null;
-  /** Capture the current reading as this box's installation offset ("Set vehicle level"). Returns an error text, or null on success. */
-  calibrateInstall(): string | null;
+  /**
+   * "Set vehicle level": capture the current reading as this box's
+   * installation offset — or, for a box that zeroes itself (#290), have the
+   * box do it. Returns an error text, or null on success; a box that must
+   * be written to answers asynchronously.
+   */
+  calibrateInstall(): string | null | Promise<string | null>;
   /** When the installation offset was captured (R26) — null when unknown. */
   getInstallCalibrationCapturedAt(): number | null;
   /** Compare the current reading against the installation offset's promise of zero — returns a verdict text (R26). */
@@ -376,7 +381,19 @@ export function createSensorSourceSection(
   }
 
   installButton.addEventListener('click', () => {
-    refreshInstall(options.calibrateInstall() ?? undefined);
+    const result = options.calibrateInstall();
+    if (!(result instanceof Promise)) {
+      refreshInstall(result ?? undefined);
+      return;
+    }
+    // A box that zeroes itself (#290) answers later; no second tap while
+    // the first is still on its way.
+    installButton.disabled = true;
+    installStatus.textContent = t('calibration.external.working');
+    void result.then((error) => {
+      installButton.disabled = false;
+      refreshInstall(error ?? undefined);
+    });
   });
   installCheckButton.addEventListener('click', () => {
     refreshInstall(options.checkInstallCalibration());

@@ -43,10 +43,11 @@
  * "the box is broken" (#272 renders it).
  *
  * **No box command that changes stored state is ever issued
- * automatically.** `resetZero` and `setParameters` exist in the codec, and
- * this adapter deliberately calls neither: the box remembers its own
- * configuration, and silently rewriting a user's setup is worse than not
- * supporting it at all.
+ * automatically.** The box remembers its own configuration, and silently
+ * rewriting a user's setup is worse than not supporting it at all. The one
+ * exception is `resetZero`, and only behind an explicit tap (`zeroBox()`,
+ * #290): the box's own zero is what makes a box mounted lying on its back
+ * usable at all. `setParameters` is never sent.
  */
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
@@ -57,6 +58,7 @@ import { createSimulatedXparkleTransport, xparkleSimulationMode } from './xparkl
 import {
   buildPasswordFrame,
   buildQueryParameters,
+  buildResetZero,
   createXparkleFrameReassembler,
   gravityFromReading,
   parseLivePayload,
@@ -179,6 +181,18 @@ export interface XparkleSensor extends ExternalSensor {
    * rather than blaming the hardware.
    */
   isPasswordRejected(): boolean;
+  /**
+   * Zero the box where it sits, with its own `resetZero` command (#290):
+   * from then on it reports angles relative to this position, however it
+   * is mounted — including lying on its back, which Libell's own
+   * installation offset cannot capture (R34 refuses a capture that far
+   * from level). Resolves true once the command was written, false when
+   * no box is connected or the write failed; nothing is retried.
+   *
+   * The one command that changes the box's stored state this adapter
+   * ever sends, and only ever from an explicit user action.
+   */
+  zeroBox(): Promise<boolean>;
 }
 
 /** The password reply (command `4`) carries its verdict in byte 4: zero is
@@ -396,6 +410,17 @@ export function createXparkleSensor(
     getReading: () => reading,
     getOrientation: () => orientation,
     isPasswordRejected: () => passwordRejected,
+
+    async zeroBox() {
+      const live = connection;
+      if (!live) return false;
+      try {
+        await live.write(buildResetZero());
+        return true;
+      } catch {
+        return false;
+      }
+    },
   };
 }
 
@@ -537,6 +562,7 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     mounting: false,
     installCalibration: true,
     debugBytes: false,
+    reportedOrientation: true,
   },
   // Polled every 500 ms, so a silence of several polls is a real fault
   // rather than jitter — but kept at EasyLevel's own 4s rather than

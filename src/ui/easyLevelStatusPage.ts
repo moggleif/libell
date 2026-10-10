@@ -137,6 +137,11 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   detailHeading.textContent = t('sensorSource.detail.heading');
   const batteryRow = document.createElement('p');
   batteryRow.className = 'menu__text';
+  // The orientation the box keeps itself (R49, #290): read-only, since it
+  // is changed in the vendor app, but worth seeing — it decides which
+  // wheel gets named.
+  const orientationRow = document.createElement('p');
+  orientationRow.className = 'menu__text';
   const temperatureRow = document.createElement('p');
   temperatureRow.className = 'menu__text';
   const readingRow = document.createElement('p');
@@ -156,6 +161,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   page.body.append(stateRow, detailHeading);
   if (capabilities.battery) page.body.append(batteryRow);
   if (capabilities.temperature) page.body.append(temperatureRow);
+  if (capabilities.reportedOrientation) page.body.append(orientationRow);
   page.body.append(readingRow);
   if (capabilities.battery) page.body.append(lowBatteryRow);
 
@@ -289,6 +295,10 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         health?.temperatureCelsius == null
           ? notAvailable
           : `${health.temperatureCelsius.toFixed(1)}°C`,
+    });
+    const orientation = health?.reportedOrientation ?? null;
+    orientationRow.textContent = t('sensorSource.detail.orientation', {
+      value: orientation === null ? notAvailable : t(`sensorSource.orientation.${orientation}`),
     });
     const tilt = options.getCalibratedTilt();
     readingRow.textContent = t('sensorStatus.reading', {

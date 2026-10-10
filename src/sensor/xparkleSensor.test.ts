@@ -9,7 +9,7 @@ import {
   type XparkleConnection,
   type XparkleTransport,
 } from './xparkleSensor';
-import { buildCommandFrame, XPARKLE_COMMAND } from './xparkleProtocol';
+import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleProtocol';
 
 /** A live payload: flags, two big-endian 1/100° magnitudes, battery. */
 function livePayload(pitchHundredths: number, rollHundredths: number, battery = 80): DataView {
@@ -389,6 +389,39 @@ describe('reconnecting (#130, #270)', () => {
   });
 });
 
+describe('zeroing the box (#290)', () => {
+  it('never zeroes the box on its own: connecting sends only the login handshake', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+    await timers.flush();
+
+    expect(box.writes.map((frame) => frame[2])).not.toContain(XPARKLE_COMMAND.resetZero);
+  });
+
+  it('sends the box its own resetZero command when asked', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+
+    expect(await sensor.zeroBox()).toBe(true);
+    expect([...box.writes.at(-1)!]).toEqual([...buildResetZero()]);
+  });
+
+  it('reports failure, rather than success, when nothing is connected or the write fails', async () => {
+    const timers = fakeTimers();
+    const idle = createXparkleSensor(makeTransport().transport, timers);
+    expect(await idle.zeroBox()).toBe(false);
+
+    const box = fakeBox({ write: () => Promise.reject(new Error('gone')) });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+    await sensor.start();
+    expect(await sensor.zeroBox()).toBe(false);
+  });
+});
+
 describe('the Xparkle descriptor (#270)', () => {
   it('declares only what this protocol actually reports', () => {
     expect(XPARKLE_DESCRIPTOR.capabilities).toEqual({
@@ -398,6 +431,7 @@ describe('the Xparkle descriptor (#270)', () => {
       mounting: false,
       installCalibration: true,
       debugBytes: false,
+      reportedOrientation: true,
     });
   });
 

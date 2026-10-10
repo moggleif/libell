@@ -155,6 +155,27 @@ describe('createSensorSourceSection (#116)', () => {
     expect(calibrateInstall).toHaveBeenCalledOnce();
   });
 
+  it('waits for a box that zeroes itself, then shows its answer (#290)', async () => {
+    let answer: (error: string | null) => void = () => {};
+    const calibrateInstall = () =>
+      new Promise<string | null>((resolve) => {
+        answer = resolve;
+      });
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
+    );
+    const button = findButton(section.element, 'Set vehicle level');
+    button.click();
+    expect(button.disabled).toBe(true);
+    expect(section.element.textContent).toContain('Calibrating');
+
+    answer('Could not calibrate the sensor.');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button.disabled).toBe(false);
+    expect(section.element.textContent).toContain('Could not calibrate the sensor.');
+  });
+
   it('surfaces a rejected implausible capture as an error instead of silently storing it', () => {
     const calibrateInstall = () =>
       'That looks like more than placement tilt (>15°) — is the vehicle really level?';

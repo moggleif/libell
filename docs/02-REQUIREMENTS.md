@@ -933,6 +933,11 @@ cross-platform goal — they are not this app's code and are not covered here.
   readings, so capturing one would silently do nothing (or capture the box's tilt as
   the phone's). The stored phone values are kept untouched and become editable again on
   switching back to the phone (#285).
+- **Given** an external sensor is the active source
+- **Then** the Calibration section also offers "Set vehicle level" for that sensor,
+  named, above the disabled phone controls — the same action as on the sensor's own page
+  (R34; for the Xparkle box, R49's zeroing), so calibrating is found where a user looks
+  for it (#290).
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
   External sensor page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
@@ -1511,7 +1516,17 @@ present this source as more proven than it is.
 - **Then** the External sensor page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
   rather than at the setting that is actually wrong.
-- **Given** any command that would change what the box has stored (its zero, its vehicle
-  dimensions, its orientation)
+- **Given** the Xparkle box is connected and the user taps "Set vehicle level" — on its
+  own page (R34) or in the Calibration tab (R11)
+- **Then** Libell has the box zero itself with its own command (#290), so its readings
+  are relative to that position however it is mounted, lying on its back included (the
+  box is built to stand upright; on its back it reads about −90° of pitch, which a
+  Libell-side offset cannot capture). Libell records the moment as a zero installation
+  offset, which drives the calibration lamp, the age text and "Check", and replaces any
+  older Libell-side offset so two zeros are never stacked. If no box is connected, or
+  the command cannot be written, it says so and nothing is changed.
+- **Given** any other command that would change what the box has stored (its vehicle
+  dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
-  rewriting a user's setup is worse than not supporting it.
+  rewriting a user's setup is worse than not supporting it. The box's orientation is
+  changed in the vendor app.

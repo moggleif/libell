@@ -263,3 +263,63 @@ describe('calibration with an external sensor active (#285)', () => {
     expect(buttonByText(section.element, 'Calibrate now').disabled).toBe(false);
   });
 });
+
+describe('calibrating the active external sensor from this tab (#290)', () => {
+  function externalOptions(overrides: Partial<CalibrationOptions> = {}) {
+    let active = true;
+    const options = makeOptions({
+      isPhoneActive: () => !active,
+      getExternalSensor: () =>
+        active ? { name: 'Xparkle RVS01', offset: null, capturedAt: null } : null,
+      calibrateExternalSensor: () => null,
+      ...overrides,
+    });
+    return { options, setPhone: () => (active = false) };
+  }
+
+  it('offers it, named, only while an external sensor is active', () => {
+    const { options, setPhone } = externalOptions();
+    const section = createCalibrationSection(options);
+    expect(section.element.textContent).toContain('Calibrate Xparkle RVS01');
+    const button = buttonByText(section.element, 'Set vehicle level');
+    expect(button.closest('[hidden]')).toBeNull();
+    expect(button.disabled).toBe(false);
+
+    setPhone();
+    section.refresh();
+    expect(button.closest('[hidden]')).not.toBeNull();
+  });
+
+  it('waits for a box that zeroes itself, then says it is calibrated', async () => {
+    let answer: (error: string | null) => void = () => {};
+    const calibrateExternalSensor = vi.fn(
+      () =>
+        new Promise<string | null>((resolve) => {
+          answer = resolve;
+        }),
+    );
+    const { options } = externalOptions({ calibrateExternalSensor });
+    const section = createCalibrationSection(options);
+    const button = buttonByText(section.element, 'Set vehicle level');
+    button.click();
+    expect(calibrateExternalSensor).toHaveBeenCalledOnce();
+    expect(button.disabled).toBe(true);
+    expect(section.element.textContent).toContain('Calibrating');
+
+    answer(null);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button.disabled).toBe(false);
+    expect(section.element.textContent).toContain('Xparkle RVS01 is calibrated');
+  });
+
+  it('shows the error, not success, when calibration fails', () => {
+    const { options } = externalOptions({
+      calibrateExternalSensor: () => 'Xparkle RVS01 is not connected. Connect it and try again.',
+    });
+    const section = createCalibrationSection(options);
+    buttonByText(section.element, 'Set vehicle level').click();
+    expect(section.element.textContent).toContain('is not connected');
+    expect(section.element.textContent).not.toContain('is calibrated');
+  });
+});
