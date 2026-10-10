@@ -283,6 +283,17 @@ describe('createSensorPage.openSource (#285)', () => {
     page.refreshLive(); // only refreshes when a device page is open — must not throw
   });
 
+  it('counts as open while only the device page is open (#297)', () => {
+    // The pose/stale overlays hide only while `isOpen()` is true — a device
+    // page opened straight from them must count, or it opens behind them.
+    const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () => makeOptions());
+    document.body.append(page.element, ...page.statusElements);
+    expect(page.isOpen()).toBe(false);
+    page.openSource(EASYLEVEL_DESCRIPTOR.id);
+    expect(page.element.hasAttribute('hidden')).toBe(true);
+    expect(page.isOpen()).toBe(true);
+  });
+
   it('ignores an unknown source id', () => {
     const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () => makeOptions());
     expect(() => page.openSource('nope' as never)).not.toThrow();
