@@ -69,7 +69,7 @@ direction, or one reversing the last, still pays `dwellRestMs`, so oscillating n
 (which never holds one direction twice) can't borrow the fast path. The ramp
 plan/step keeps the fixed rest dwell throughout — a discrete recommendation, not a
 live readout, so it shouldn't change mid-climb. Both dwell figures are `LevelSettings`
-fields, editable under Settings → Advanced.
+fields, editable under Settings → General › More › Fine-tuning.
 
 The steps the motorhome screen actually shows come from `rampPlan.ts` (ADR 0011): an
 exhaustive search assigns the owned ramps (`rampCount`, a boggie pair costs two) to
@@ -279,6 +279,12 @@ stability 3 mm); update that constant, not prose copies of it. Legacy cm values
 migrate on read (×10): wheelbase, track widths (including a single `trackWidthCm` for
 both axles) and step heights.
 
+The Settings form (`src/ui/settingsPanel.ts`) writes each change as it is made (#328)
+and has no Save button. Because the same blob also holds what other pages write while
+Settings is open (the sensor source and `sensorDevices`, saved directly by the sensor
+pages), the form never writes those from its own snapshot: each save reads them back
+from storage first and only replaces the fields the form shows.
+
 ## Offline
 
 Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`), so once the app
@@ -308,7 +314,7 @@ install prompt is unaffected — it still renders via the `#install-hint` banner
 top bar. Because mute can change the two sound settings while the menu is closed, the
 Settings page's own checkboxes resync from the live values (`SettingsFormElement.
 resyncSoundFields`) every time the menu reopens, so a stale checkbox state can never
-silently overwrite a mute on the next unrelated Save.
+silently overwrite a mute on the next unrelated change.
 
 ## Build / CI notes
 

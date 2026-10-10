@@ -13,9 +13,6 @@ function makeOptions(overrides: Partial<TargetsOptions> = {}): TargetsOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
-    getCalibration: () => null,
-    getVehicleCalibration: () => null,
-    getActiveTargetName: () => null,
     ...overrides,
   };
 }
@@ -76,21 +73,37 @@ describe('targets section (#122, ADR 0013)', () => {
     expect(deleteTargetPreset).toHaveBeenCalledWith('shower');
   });
 
-  it('the add button is disabled until a name is typed, then captures and clears the field', () => {
+  it('captures with the typed name and clears the field', () => {
     const addTargetPreset = vi.fn<() => string | null>(() => null);
     const section = createTargetsSection(makeOptions({ addTargetPreset }));
     const input = section.element.querySelector<HTMLInputElement>('.targets__name-input')!;
     const addButton = [...section.element.querySelectorAll('button')].find(
       (b) => b.textContent === t('targets.add'),
     ) as HTMLButtonElement;
-    expect(addButton.disabled).toBe(true);
     input.value = 'Grey-water drainage';
     input.dispatchEvent(new Event('input'));
-    expect(addButton.disabled).toBe(false);
     addButton.click();
     expect(addTargetPreset).toHaveBeenCalledWith('Grey-water drainage');
     expect(input.value).toBe('');
-    expect(addButton.disabled).toBe(true);
+  });
+
+  // #329: nothing is disabled — an unnamed target still gets saved, under
+  // the next free "Target N".
+  it('saves an unnamed target as "Target N", the next free number', () => {
+    const addTargetPreset = vi.fn<() => string | null>(() => null);
+    const presets: TargetPreset[] = [
+      { ...SHOWER, id: 'a', name: t('targets.defaultName', { n: 1 }) },
+      { ...SHOWER, id: 'b', name: t('targets.defaultName', { n: 3 }) },
+    ];
+    const section = createTargetsSection(
+      makeOptions({ addTargetPreset, getTargetPresets: () => presets }),
+    );
+    const addButton = [...section.element.querySelectorAll('button')].find(
+      (b) => b.textContent === t('targets.add'),
+    ) as HTMLButtonElement;
+    expect(addButton.disabled).toBe(false);
+    addButton.click();
+    expect(addTargetPreset).toHaveBeenCalledWith('Target 2');
   });
 
   it('surfaces a rejection from a too-steep capture without clearing the name field', () => {
@@ -113,68 +126,10 @@ describe('targets section (#122, ADR 0013)', () => {
   });
 });
 
-describe('offset summary line (#160)', () => {
-  function summaryText(section: ReturnType<typeof createTargetsSection>): string | null {
-    return section.element.querySelector('.menu__text')!.textContent;
-  }
-
-  it('reflects all three layers unset (Normal, no sensor, no vehicle zero)', () => {
-    const section = createTargetsSection(makeOptions());
-    expect(summaryText(section)).toBe(
-      t('menu.offsetSummary', { sensor: '–', vehicleZero: '–', target: t('targets.normal') }),
-    );
-  });
-
-  it('reflects all three layers set, with the active target name', () => {
-    const section = createTargetsSection(
-      makeOptions({
-        getCalibration: () => ({ rollDeg: 1, pitchDeg: 1 }),
-        getVehicleCalibration: () => ({ rollDeg: 2, pitchDeg: 2 }),
-        getActiveTargetName: () => 'Shower drain',
-      }),
-    );
-    expect(summaryText(section)).toBe(
-      t('menu.offsetSummary', { sensor: '✓', vehicleZero: '✓', target: 'Shower drain' }),
-    );
-  });
-
-  it('reflects each combination of sensor/vehicle-zero set independently', () => {
-    const sensorOnly = createTargetsSection(
-      makeOptions({ getCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }) }),
-    );
-    expect(summaryText(sensorOnly)).toBe(
-      t('menu.offsetSummary', { sensor: '✓', vehicleZero: '–', target: t('targets.normal') }),
-    );
-
-    const vehicleZeroOnly = createTargetsSection(
-      makeOptions({ getVehicleCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }) }),
-    );
-    expect(summaryText(vehicleZeroOnly)).toBe(
-      t('menu.offsetSummary', { sensor: '–', vehicleZero: '✓', target: t('targets.normal') }),
-    );
-  });
-
-  it('updates live when selecting a target, without changing how sensor/vehicle zero are shown', () => {
-    // A stateful mock, matching how the real host (main.ts) reflects
-    // selectTarget's effect back through getActiveTargetName — this
-    // section owns none of that state itself.
-    let activeName: string | null = null;
-    const section = createTargetsSection(
-      makeOptions({
-        getTargetPresets: () => [SHOWER],
-        getCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }),
-        getActiveTargetName: () => activeName,
-        selectTarget: (id) => {
-          activeName = id === 'shower' ? 'Shower drain' : null;
-        },
-      }),
-    );
-    expect(summaryText(section)).toContain(t('targets.normal'));
-    expect(summaryText(section)).toContain('sensor ✓');
-
-    const select = section.element.querySelectorAll<HTMLButtonElement>('.targets__row-select')[1]!;
-    select.click(); // makeRow's onSelect already calls selectTarget + refresh
-    expect(summaryText(section)).toContain('Shower drain');
-    expect(summaryText(section)).toContain('sensor ✓');
-  });
+// #329: the "Level is computed from: sensor – · vehicle zero – · …" line
+// (#160) is gone — it explained the math rather than helping anyone level.
+it('shows no offset summary line or intro text (#329)', () => {
+  const section = createTargetsSection(makeOptions({ getTargetPresets: () => [SHOWER] }));
+  expect(section.element.querySelectorAll('.menu__text:not(.menu__text--status)')).toHaveLength(0);
+  expect(section.element.textContent).not.toContain('vehicle zero');
 });

@@ -1,7 +1,7 @@
 /**
  * Settings page (screen-cleanup follow-up, Modern only): the gear icon
- * opens straight to the same tabbed form (General/Kalibrering/Vehicle/
- * Ramps/Targets, `settingsPanel.ts`) that used to sit behind a drawer/card list
+ * opens straight to the same tabbed form (Vehicle/Ramps/Calibration/
+ * Level/General, `settingsPanel.ts`) that used to sit behind a drawer/card list
  * — now its own standalone page (`standalonePage.ts`), with a ✕ to close
  * instead of a ‹ back that used to reveal that drawer. Classic has no
  * tabs to land on, so it keeps the old drawer-based `menu.ts` unchanged.
@@ -32,9 +32,8 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
 
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    // Design review, follow-up: Save used to close the page (#159) — but
-    // Save is not "I'm done", just "keep this" — the user may still want
-    // to change more. Only the ✕ actually closes the page now.
+    // Every change is stored as it is made (#328); only the ✕ closes the
+    // page.
     (settings) => {
       options.onSettingsSaved(settings);
     },

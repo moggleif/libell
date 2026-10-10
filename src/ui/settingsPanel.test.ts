@@ -2,7 +2,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
 import { LANGUAGE_NAMES, LANGUAGES, setLanguage, t } from './i18n';
-import { loadLanguage, loadSettings } from '../data/settingsStore';
+import { loadLanguage, loadSettings, saveSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
@@ -21,6 +21,23 @@ describe('settings form', () => {
     const form = createSettingsForm(classic, vi.fn());
     const hint = form.querySelector('.settings__hint');
     expect(hint?.textContent).toContain('registration');
+  });
+
+  it('a caravan is told to measure axle to jockey wheel, not wheelbase (#327)', () => {
+    const form = createSettingsForm({ ...classic, vehicleType: 'caravan' }, vi.fn());
+    const hint = form.querySelector('.settings__hint')!.textContent!;
+    expect(hint).toBe(t('settings.measureHint.caravan'));
+    expect(hint).not.toContain(t('settings.wheelbase').toLowerCase());
+  });
+
+  it('switching to caravan swaps the measurement hint live (#327)', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    const vehicleSelect = form.querySelectorAll('select')[0] as HTMLSelectElement;
+    vehicleSelect.value = 'caravan';
+    vehicleSelect.dispatchEvent(new Event('change'));
+    expect(form.querySelector('.settings__hint')!.textContent).toBe(
+      t('settings.measureHint.caravan'),
+    );
   });
 
   it('has no selectCalibrationTab in Classic — there are no tabs to select (#155)', () => {
@@ -59,9 +76,9 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0]).toEqual({ ...classic, wheelbaseMm: 4100 });
   });
 
-  it('falls back to defaults for an invalid field instead of saving garbage', () => {
+  it('the wizard falls back to defaults for an invalid field instead of saving garbage', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, undefined, { compact: 'measurements' });
     input(form, 'wheelbaseMm').value = '-5';
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
@@ -109,9 +126,8 @@ describe('settings form', () => {
     rampCountSelect.dispatchEvent(new Event('change'));
     drainSelect.value = 'left';
     drainSelect.dispatchEvent(new Event('change'));
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave.mock.calls[0]![0].rampCount).toBe(4);
-    expect(onSave.mock.calls[0]![0].drainPosition).toBe('left');
+    expect(onSave.mock.lastCall![0].rampCount).toBe(4);
+    expect(onSave.mock.lastCall![0].drainPosition).toBe('left');
   });
 
   it('hides the ramp count and drain fields for a caravan', () => {
@@ -135,8 +151,8 @@ describe('settings form', () => {
     const selects = form.querySelectorAll('select');
     // Order: vehicle, axle, ramp model, ramp count, drain, unit, language
     // (screen-cleanup follow-up), theme, appearance.
-    const themeSelect = selects[7] as HTMLSelectElement;
-    const appearanceSelect = selects[8] as HTMLSelectElement;
+    const themeSelect = selects[6] as HTMLSelectElement;
+    const appearanceSelect = selects[7] as HTMLSelectElement;
     expect(appearanceSelect.value).toBe('classic');
     appearanceSelect.value = 'modern';
     appearanceSelect.dispatchEvent(new Event('change'));
@@ -167,7 +183,7 @@ describe('settings form', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
     const selects = form.querySelectorAll('select');
-    const appearanceSelect = selects[8] as HTMLSelectElement;
+    const appearanceSelect = selects[7] as HTMLSelectElement;
     const values = Array.from(appearanceSelect.options).map((o) => o.value);
     expect(values).toEqual(['classic', 'modern', 'glossy']);
     appearanceSelect.value = 'glossy';
@@ -197,60 +213,56 @@ describe('settings form', () => {
   });
 });
 
-describe('settings form — Advanced disclosure (#157)', () => {
-  // Vehicle's own Advanced (Tolerance/Stability/dwell) — not the Ramps
-  // tab's separate Drain disclosure (`.settings__advanced--drain` below),
-  // which also matches the bare `.settings__advanced` class.
-  function advanced(form: HTMLFormElement): HTMLDetailsElement {
-    return [...form.querySelectorAll<HTMLDetailsElement>('.settings__advanced')].find(
-      (el) => !el.classList.contains('settings__advanced--drain'),
-    )!;
+// #329: Stability and both response delays are tuned rarely if ever, so
+// they live under General › More › Fine-tuning — collapsed, and the only
+// collapsed settings left (#157's Advanced on Vehicle and Ramps is gone).
+describe('settings form — Fine-tuning under General › More (#329)', () => {
+  function more(form: HTMLFormElement): HTMLDetailsElement {
+    return form.querySelector<HTMLDetailsElement>('.settings__more')!;
   }
 
-  it('Classic: Tolerance/Stability/Appearance/Chime/Continuous audio guidance are collapsed by default', () => {
-    const form = createSettingsForm(classic, vi.fn());
-    expect(advanced(form).open).toBe(false);
-    expect(advanced(form).querySelector('input[name="toleranceMm"]')).not.toBeNull();
-    expect(advanced(form).querySelector('input[name="stabilityMm"]')).not.toBeNull();
-    expect(advanced(form).querySelector('input[name="dwellRestMs"]')).not.toBeNull();
-    expect(advanced(form).querySelector('input[name="dwellMotionMs"]')).not.toBeNull();
-    // Fields that stay visible by default are outside the disclosure.
-    expect(advanced(form).querySelector('input[name="wheelbaseMm"]')).toBeNull();
-  });
+  for (const appearance of ['classic', 'modern'] as const) {
+    it(`${appearance}: Stability and both response delays sit in More, collapsed`, () => {
+      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn());
+      expect(more(form).open).toBe(false);
+      for (const name of ['stabilityMm', 'dwellRestMs', 'dwellMotionMs']) {
+        expect(more(form).querySelector(`input[name="${name}"]`), name).not.toBeNull();
+      }
+      expect(more(form).textContent).toContain(t('settings.fineTuning'));
+      expect(more(form).querySelector('input[name="toleranceMm"]')).toBeNull();
+      // No other Advanced disclosure is left (the ramp picker's own
+      // "Change ramp" disclosure is navigation, not settings).
+      const others = [...form.querySelectorAll('.settings__advanced')].filter(
+        (el) =>
+          !el.classList.contains('settings__more') &&
+          !el.classList.contains('klossar__picker-details'),
+      );
+      expect(others).toHaveLength(0);
+    });
+  }
 
   it('round-trips edited response-delay fields through save, not unit-converted (#183)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
     input(form, 'dwellRestMs').value = '500';
     input(form, 'dwellMotionMs').value = '120';
-    form.dispatchEvent(new Event('input'));
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave.mock.calls[0]![0].dwellRestMs).toBe(500);
-    expect(onSave.mock.calls[0]![0].dwellMotionMs).toBe(120);
+    form.dispatchEvent(new Event('change'));
+    expect(onSave.mock.lastCall![0].dwellRestMs).toBe(500);
+    expect(onSave.mock.lastCall![0].dwellMotionMs).toBe(120);
   });
 
   it('never starts expanded, even when a field inside it holds a non-default value', () => {
-    const customized: LevelSettings = { ...classic, toleranceMm: classic.toleranceMm + 15 };
+    const customized: LevelSettings = { ...classic, stabilityMm: classic.stabilityMm + 2 };
     const form = createSettingsForm(customized, vi.fn());
-    expect(advanced(form).open).toBe(false);
+    expect(more(form).open).toBe(false);
   });
 
-  it('Save/Undo still apply to fields inside Advanced while it is collapsed', () => {
+  it('a change inside More is saved while it is collapsed', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(classic, onSave);
-    expect(advanced(form).open).toBe(false);
-    input(form, 'toleranceMm').value = String(classic.toleranceMm + 5);
-    form.dispatchEvent(new Event('input'));
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave.mock.calls[0]![0].toleranceMm).toBe(classic.toleranceMm + 5);
-  });
-
-  it('Modern: the Vehicle tab collapses the same fields behind Advanced', () => {
-    const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
-    const form = createSettingsForm(modern, vi.fn());
-    expect(advanced(form).open).toBe(false);
-    expect(advanced(form).querySelector('input[name="toleranceMm"]')).not.toBeNull();
-    expect(advanced(form).querySelector('input[name="wheelbaseMm"]')).toBeNull();
+    input(form, 'stabilityMm').value = String(classic.stabilityMm + 1);
+    form.dispatchEvent(new Event('change'));
+    expect(onSave.mock.lastCall![0].stabilityMm).toBe(classic.stabilityMm + 1);
   });
 });
 
@@ -265,37 +277,43 @@ describe('settings form — Modern tabs (#108)', () => {
     return form.querySelector<HTMLElement>(`.settings__tabpanel[data-tab="${id}"]`)!;
   }
 
-  it('puts "Share vehicle setup" (#207) on the Fordon tab', () => {
+  // #329: type, axle, the three measurements, one hint and a quiet share
+  // link — no Advanced section, no unit field.
+  it('the Vehicle tab holds only the vehicle, with a quiet share link', () => {
     const form = createSettingsForm(modern, vi.fn());
-    const button = tabPanel(form, 'vehicle').querySelector('button');
-    expect(button?.textContent).toBe(t('settings.shareVehicle'));
+    const panel = tabPanel(form, 'vehicle');
+    const share = panel.querySelector<HTMLButtonElement>('button.link-button');
+    expect(share?.textContent).toBe(t('settings.shareVehicle'));
+    expect(panel.querySelector('.settings__advanced')).toBeNull();
+    expect(panel.textContent).not.toContain(t('settings.unit'));
+    expect(panel.querySelector('input[name="toleranceMm"]')).toBeNull();
+    expect(panel.querySelectorAll('.settings__hint')).toHaveLength(1);
   });
 
-  it('renders five tabs in order, General active by default, and switches on click', () => {
+  it('renders five tabs in order, Vehicle active by default, and switches on click (#329)', () => {
     const form = createSettingsForm(modern, vi.fn());
     const tabs = form.querySelectorAll('.settings__tab');
     expect(tabs.length).toBe(5);
-    // General and Kalibrering lead (screen-cleanup follow-up): language/
-    // theme color how the rest of the screen reads, and calibration is the
-    // other must-do besides the vehicle's own measurements.
+    // The order a new owner sets things up in: the vehicle, its ramps,
+    // calibration, what counts as level, then the rest.
     expect([...tabs].map((tab) => tab.getAttribute('data-tab'))).toEqual([
-      'general',
-      'calibration',
       'vehicle',
       'ramps',
+      'calibration',
       'targets',
+      'general',
     ]);
-    const generalTab = tabButton(form, 'general');
+    const vehicleTab = tabButton(form, 'vehicle');
     const rampsTab = tabButton(form, 'ramps');
     const calibrationTab = tabButton(form, 'calibration');
-    expect(generalTab.getAttribute('aria-selected')).toBe('true');
+    expect(vehicleTab.getAttribute('aria-selected')).toBe('true');
     expect(rampsTab.getAttribute('aria-selected')).toBe('false');
-    expect(tabPanel(form, 'general').hidden).toBe(false);
+    expect(tabPanel(form, 'vehicle').hidden).toBe(false);
 
     rampsTab.click();
     expect(rampsTab.getAttribute('aria-selected')).toBe('true');
-    expect(generalTab.getAttribute('aria-selected')).toBe('false');
-    expect(tabPanel(form, 'general').hidden).toBe(true);
+    expect(vehicleTab.getAttribute('aria-selected')).toBe('false');
+    expect(tabPanel(form, 'vehicle').hidden).toBe(true);
     expect(tabPanel(form, 'ramps').hidden).toBe(false);
 
     calibrationTab.click();
@@ -309,36 +327,46 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(typeof form.selectCalibrationTab).toBe('function');
     form.selectCalibrationTab?.();
     expect(tabButton(form, 'calibration').getAttribute('aria-selected')).toBe('true');
-    expect(tabButton(form, 'general').getAttribute('aria-selected')).toBe('false');
+    expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
   });
 
-  // Targets folded in as a tab (screen-cleanup follow-up), same
-  // embed-and-shortcut pattern as Kalibrering above.
-  it("renders a Targets tab with the embedded targets section, and exposes selectTargetsTab for the menu's shortcut", () => {
+  // #329: the Level tab (id still 'targets', which the main screen's
+  // target badge opens) holds Tolerance, Drain side and the saved targets.
+  it("renders a Level tab with Tolerance, Drain side and the saved targets, and exposes selectTargetsTab for the menu's shortcut", () => {
     const form = createSettingsForm(modern, vi.fn());
-    const targetsTab = tabButton(form, 'targets');
-    expect(targetsTab.textContent).toBe('Targets');
+    const levelTab = tabButton(form, 'targets');
+    expect(levelTab.textContent).toBe(t('settings.tab.level'));
     expect(typeof form.selectTargetsTab).toBe('function');
 
     form.selectTargetsTab?.();
-    expect(targetsTab.getAttribute('aria-selected')).toBe('true');
-    expect(tabButton(form, 'general').getAttribute('aria-selected')).toBe('false');
-    expect(tabPanel(form, 'targets').hidden).toBe(false);
+    expect(levelTab.getAttribute('aria-selected')).toBe('true');
+    expect(tabButton(form, 'vehicle').getAttribute('aria-selected')).toBe('false');
+    const panel = tabPanel(form, 'targets');
+    expect(panel.hidden).toBe(false);
+    expect(panel.querySelector('input[name="toleranceMm"]')).not.toBeNull();
+    expect(panel.textContent).toContain(t('settings.drain'));
     // The embedded targets section (targetsSection.ts, not a copy) renders
     // its "Normal" row even with no host wired (inertTargetsOptions).
-    expect(tabPanel(form, 'targets').textContent).toContain('Normal');
+    expect(panel.textContent).toContain(t('targets.normal'));
+    expect(panel.querySelector('.settings__advanced')).toBeNull();
   });
 
-  // Language/Theme/Sound folded into a General tab (screen-cleanup
-  // follow-up) — promoted out of Vehicle/Advanced since they're common
-  // enough to want a visible home of their own.
-  it('renders a General tab with language, theme and sound — no longer inside Vehicle/Advanced', () => {
+  it('hides Drain side on the Level tab for a caravan, keeping Tolerance', () => {
+    const form = createSettingsForm({ ...modern, vehicleType: 'caravan' }, vi.fn());
+    const panel = tabPanel(form, 'targets');
+    const drain = [...panel.querySelectorAll<HTMLElement>('.settings__field')].find((f) =>
+      f.textContent?.includes(t('settings.drain')),
+    )!;
+    expect(drain.hidden).toBe(true);
+    expect(input(form, 'toleranceMm').closest<HTMLElement>('.settings__field')!.hidden).toBe(false);
+  });
+
+  it('renders a General tab with language, theme, appearance, unit and sound', () => {
     const form = createSettingsForm(modern, vi.fn());
     const generalTab = tabButton(form, 'general');
     expect(generalTab.textContent).toBe('General');
 
-    const vehiclePanel = tabPanel(form, 'vehicle');
-    expect(vehiclePanel.textContent).not.toContain('Theme'); // moved to General
+    expect(tabPanel(form, 'vehicle').textContent).not.toContain('Theme');
 
     generalTab.click();
     expect(generalTab.getAttribute('aria-selected')).toBe('true');
@@ -346,7 +374,10 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(generalPanel.hidden).toBe(false);
     expect(generalPanel.textContent).toContain('Language');
     expect(generalPanel.textContent).toContain('Theme');
+    expect(generalPanel.textContent).toContain(t('settings.unit'));
     expect(generalPanel.textContent).toContain('Chime when level');
+    // #329: no "the app reloads" hint under Appearance.
+    expect(generalPanel.textContent).not.toContain('reload');
     // Language names are literal, never translated (a language name names
     // itself regardless of the current UI language) — all five of them (#178).
     for (const name of ['Svenska', 'English', 'Français', 'Español', 'Deutsch']) {
@@ -354,57 +385,12 @@ describe('settings form — Modern tabs (#108)', () => {
     }
   });
 
-  // Design review: every tab that edits form fields (General/Fordon/
-  // Klossar) gets its own working Save/Undo — General used to have none
-  // at all, so editing Language/Theme/Sound had no way to save without
-  // switching to another tab first.
-  it('the General tab has its own working Save/Undo', () => {
-    const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
-    const generalPanel = tabPanel(form, 'general');
-    const generalSave = generalPanel.querySelector<HTMLButtonElement>(
-      '.settings__actions button[type="submit"]',
-    )!;
-    const generalUndo = generalPanel.querySelectorAll<HTMLButtonElement>(
-      '.settings__actions button',
-    )[1]!;
-    expect(generalSave.disabled).toBe(true);
-    expect(generalUndo.disabled).toBe(true);
-
-    const themeSelect = generalPanel.querySelectorAll<HTMLSelectElement>('.settings__select')[1]!;
-    themeSelect.value = 'dark';
-    themeSelect.dispatchEvent(new Event('change'));
-    expect(generalSave.disabled).toBe(false);
-    expect(generalUndo.disabled).toBe(false);
-
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave.mock.calls[0]![0].theme).toBe('dark');
-    expect(generalSave.disabled).toBe(true);
-
-    themeSelect.value = 'light';
-    themeSelect.dispatchEvent(new Event('change'));
-    expect(generalUndo.disabled).toBe(false);
-    generalUndo.click();
-    expect(themeSelect.value).toBe('dark');
-    expect(generalSave.disabled).toBe(true);
-  });
-
-  // Design review, then a follow-up: "exakt samma" means every tab —
-  // Targets was wrongly skipped as "immediate-apply like Kalibrering"
-  // the first time around; only Kalibrering is actually exempt (no
-  // "unsaved" form state at all).
-  it('General, Fordon, Klossar and Targets all show the exact same three action buttons, Reset/Undo/Save in that order', () => {
+  it('no tab shows a Save, Undo or Reset row (#328)', () => {
     const form = createSettingsForm(modern, vi.fn());
-    for (const tab of ['general', 'vehicle', 'ramps', 'targets']) {
-      const panel = tabPanel(form, tab);
-      const actions = panel.querySelector<HTMLElement>(
-        '.settings__actions, .klossar__footer-actions',
-      )!;
-      const labels = [...actions.querySelectorAll('button')].map((b) => b.textContent);
-      // Design review, follow-up: Save (biggest/green, the primary action)
-      // moved last — Reset and Undo swapped ahead of it.
-      expect(labels).toEqual(['Reset to defaults', 'Undo changes', 'Save']);
+    expect(form.querySelector('.settings__actions, .klossar__footer-actions')).toBeNull();
+    for (const tab of ['vehicle', 'ramps', 'targets', 'general']) {
+      const labels = [...tabPanel(form, tab).querySelectorAll('button')].map((b) => b.textContent);
+      expect(labels).not.toContain(t('settings.undo'));
     }
   });
 
@@ -492,54 +478,23 @@ describe('settings form — Modern tabs (#108)', () => {
     });
   });
 
-  // Pre-existing gap found during the Classic split-pages review: Number of
-  // ramps / Waste-water drain were never appended anywhere in the Klossar
-  // tab, unlike Classic's Ramps page, which has always had them.
-  it('includes Number of ramps and Waste-water drain, hidden for a caravan', () => {
+  it('includes Number of ramps, hidden for a caravan, and no Advanced section (#329)', () => {
     const form = createSettingsForm(modern, vi.fn());
     const rampsPanel = tabPanel(form, 'ramps');
     expect(rampsPanel.textContent).toContain(t('settings.rampCount'));
-    expect(rampsPanel.textContent).toContain(t('settings.drain'));
+    expect(rampsPanel.textContent).not.toContain(t('settings.drain'));
+    expect(
+      rampsPanel.querySelector('.settings__advanced:not(.klossar__picker-details)'),
+    ).toBeNull();
+    // One help text, next to "Number of ramps" (#246).
+    expect(rampsPanel.textContent).toContain(t('settings.rampCountHint'));
+    expect(rampsPanel.querySelectorAll('.settings__hint')).toHaveLength(1);
 
     const caravanModern: LevelSettings = { ...modern, vehicleType: 'caravan' };
     const caravanForm = createSettingsForm(caravanModern, vi.fn());
     const caravanRampsPanel = tabPanel(caravanForm, 'ramps');
     const rampCountField = caravanRampsPanel.querySelector<HTMLLabelElement>('.settings__field');
     expect(rampCountField?.hidden).toBe(true);
-  });
-
-  // Design review: Drain side only matters if the owner cares where sink/
-  // shower water drains — moved behind its own Advanced disclosure
-  // instead of sitting unconditionally in the main Klossar flow.
-  it('tucks Waste-water drain behind its own Advanced disclosure, collapsed by default', () => {
-    const form = createSettingsForm(modern, vi.fn());
-    const rampsPanel = tabPanel(form, 'ramps');
-    const drainAdvanced = rampsPanel.querySelector<HTMLDetailsElement>(
-      '.settings__advanced--drain',
-    )!;
-    expect(drainAdvanced.open).toBe(false);
-    expect(drainAdvanced.querySelector('select')?.closest('label')?.textContent).toContain(
-      t('settings.drain'),
-    );
-    // What the app does with the ramps stays visible outside Advanced —
-    // but as part of the one sentence next to "Number of ramps" (#246),
-    // not as a second help text a few lines further down saying an
-    // overlapping thing.
-    expect(rampsPanel.textContent).toContain(t('settings.rampCountHint'));
-    expect(rampsPanel.textContent).not.toContain(t('settings.rampHint'));
-    // Exactly one help text out in the open — Advanced keeps its own for
-    // the drain, which is a different subject.
-    const hintsOutsideAdvanced = [...rampsPanel.querySelectorAll('.settings__hint')].filter(
-      (hint) => !hint.closest('.settings__advanced'),
-    );
-    expect(hintsOutsideAdvanced).toHaveLength(1);
-
-    const caravanModern: LevelSettings = { ...modern, vehicleType: 'caravan' };
-    const caravanForm = createSettingsForm(caravanModern, vi.fn());
-    const caravanDrainAdvanced = tabPanel(caravanForm, 'ramps').querySelector<HTMLDetailsElement>(
-      '.settings__advanced--drain',
-    )!;
-    expect(caravanDrainAdvanced.hidden).toBe(true);
   });
 
   it('names the chosen model under the picker, labelled as the selection', () => {
@@ -681,8 +636,6 @@ describe('settings form — Modern tabs (#108)', () => {
       panel.querySelector('.klossar__selected')!,
       panel.querySelector('.settings__field')!,
       panel.querySelector('.klossar__picker-details')!,
-      panel.querySelector('.settings__advanced--drain')!,
-      panel.querySelector('.klossar__footer')!,
     ].map(indexOf);
     expect(order).toEqual([...order].sort((a, b) => a - b));
     // And every one of them is actually on the panel, so a missing
@@ -700,69 +653,10 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(form.querySelector('.klossar__footer-model')?.textContent).toBe('Custom set');
   });
 
-  it('Save/Undo in the footer round-trip like the classic form (#108)', () => {
-    const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
-    const save = form.querySelector<HTMLButtonElement>(
-      '.klossar__footer-actions button[type="submit"]',
-    )!;
-    const undo = form.querySelectorAll<HTMLButtonElement>('.klossar__footer-actions button')[1]!;
-    expect(save.disabled).toBe(true);
-    expect(undo.disabled).toBe(true);
-
-    input(form, 'wheelbaseMm').value = '4200';
-    form.dispatchEvent(new Event('input'));
-    expect(save.disabled).toBe(false);
-    expect(undo.disabled).toBe(false);
-
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(4200);
-    expect(save.disabled).toBe(true);
-
-    input(form, 'wheelbaseMm').value = '5000';
-    form.dispatchEvent(new Event('input'));
-    expect(undo.disabled).toBe(false);
-    undo.click();
-    expect(input(form, 'wheelbaseMm').value).toBe('4200');
-    expect(save.disabled).toBe(true);
-  });
-
-  it('the Fordon tab has its own working Save/Undo, kept in sync with the Klossar footer (#140)', () => {
-    const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
-    // The Fordon (Vehicle) tab is active by default — its actions bar
-    // must be usable without switching to Klossar first. Scoped to
-    // [data-tab="vehicle"] specifically since General now has its own
-    // Save/Undo row too (#140 follow-up).
-    const fordonSave = form.querySelector<HTMLButtonElement>(
-      '.settings__tabpanel[data-tab="vehicle"] .settings__actions button[type="submit"]',
-    )!;
-    const fordonUndo = form.querySelectorAll<HTMLButtonElement>(
-      '.settings__tabpanel[data-tab="vehicle"] .settings__actions button',
-    )[1]!;
-    const klossarSave = form.querySelector<HTMLButtonElement>(
-      '.klossar__footer-actions button[type="submit"]',
-    )!;
-    expect(fordonSave.disabled).toBe(true);
-    expect(fordonUndo.disabled).toBe(true);
-
-    input(form, 'wheelbaseMm').value = '4200';
-    form.dispatchEvent(new Event('input'));
-    expect(fordonSave.disabled).toBe(false);
-    expect(fordonUndo.disabled).toBe(false);
-    expect(klossarSave.disabled).toBe(false); // the two pairs stay in sync
-
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
-    expect(onSave).toHaveBeenCalledTimes(1);
-    expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(4200);
-    expect(fordonSave.disabled).toBe(true);
-    expect(klossarSave.disabled).toBe(true);
-
-    input(form, 'wheelbaseMm').value = '5000';
-    form.dispatchEvent(new Event('input'));
-    fordonUndo.click();
-    expect(input(form, 'wheelbaseMm').value).toBe('4200');
+  it('shows the calibration tab as a two-step checklist (#330)', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const steps = tabPanel(form, 'calibration').querySelectorAll('.box-step');
+    expect(steps).toHaveLength(2);
   });
 
   it('embeds a working calibration section in the Kalibrering tab (#109)', () => {
@@ -801,37 +695,69 @@ describe('settings form — Modern tabs (#108)', () => {
 describe('settings form — Classic split pages (screen-cleanup follow-up)', () => {
   const classicSplit: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'classic' };
 
-  it('General, Vehicle, Ramps and Targets all show the exact same three action buttons, Reset/Undo/Save in that order', () => {
-    const targetsOptions = {
-      getTargetPresets: () => [],
-      getActiveTargetId: () => null,
-      selectTarget: () => {},
-      addTargetPreset: () => null,
-      deleteTargetPreset: () => {},
-      getCalibration: () => null,
-      getVehicleCalibration: () => null,
-      getActiveTargetName: () => null,
-    };
-    const form = createSettingsForm(
-      classicSplit,
-      vi.fn(),
-      undefined,
-      { splitPages: true },
-      targetsOptions,
-    );
+  it('no page shows a Save, Undo or Reset row (#328)', () => {
+    const form = createSettingsForm(classicSplit, vi.fn(), undefined, { splitPages: true });
     for (const page of ['general', 'vehicle', 'ramps', 'targets'] as const) {
-      const body = form.classicPages![page];
-      const labels = [...body.querySelectorAll('.settings__actions button')].map(
-        (b) => b.textContent,
-      );
-      expect(labels).toEqual(['Reset to defaults', 'Undo changes', 'Save']);
+      expect(form.classicPages![page].querySelector('.settings__actions')).toBeNull();
     }
   });
 
-  it('renders the embedded targets section in the Targets page (not a copy)', () => {
+  // Same groups as Modern's tabs (#329), as ☰ pages.
+  it('groups the pages like the Modern tabs', () => {
     const form = createSettingsForm(classicSplit, vi.fn(), undefined, { splitPages: true });
-    // No host wired — inertTargetsOptions still renders the "Normal" row.
-    expect(form.classicPages!.targets.textContent).toContain('Normal');
+    const pages = form.classicPages!;
+    // The Level page: Tolerance, Drain side and the targets section.
+    expect(pages.targets.querySelector('input[name="toleranceMm"]')).not.toBeNull();
+    expect(pages.targets.textContent).toContain(t('settings.drain'));
+    expect(pages.targets.textContent).toContain(t('targets.normal'));
+    // Vehicle: no Advanced, no unit field, quiet share link.
+    expect(pages.vehicle.querySelector('.settings__advanced')).toBeNull();
+    expect(pages.vehicle.textContent).not.toContain(t('settings.unit'));
+    expect(pages.vehicle.querySelector('button.link-button')).not.toBeNull();
+    // General: unit, and More holding Fine-tuning.
+    expect(pages.general.textContent).toContain(t('settings.unit'));
+    expect(pages.general.querySelector('.settings__more input[name="stabilityMm"]')).not.toBeNull();
+    // Ramps: no Advanced besides the ramp picker itself.
+    expect(
+      pages.ramps.querySelector('.settings__advanced:not(.klossar__picker-details)'),
+    ).toBeNull();
+  });
+
+  // #331: Classic and Glossy get Modern's Ramps page, only styled
+  // differently — not the wizard's compact select.
+  for (const appearance of ['classic', 'glossy'] as const) {
+    it(`${appearance}: ☰ → Ramps is the same page as Modern's Ramps tab`, () => {
+      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn(), undefined, {
+        splitPages: true,
+      });
+      const page = form.classicPages!.ramps;
+      expect(page.querySelector('.klossar__selected')?.textContent).toContain(
+        t('settings.klossar.selected'),
+      );
+      expect(page.textContent).toContain(t('settings.rampCount'));
+      const picker = page.querySelector<HTMLDetailsElement>('.klossar__picker-details')!;
+      expect(picker.open).toBe(false);
+      expect(picker.querySelector('.klossar__filter')).not.toBeNull();
+      expect(picker.querySelector('.klossar__row')?.classList).toContain('klossar__row--custom');
+      // No ready-made-ramp <select>: the catalogue is the picker.
+      expect(page.textContent).not.toContain(t('settings.ramp'));
+    });
+  }
+
+  it('a ramp picked on the Classic Ramps page is saved at once', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classicSplit, onSave, undefined, { splitPages: true });
+    const rows = [...form.classicPages!.ramps.querySelectorAll<HTMLButtonElement>('.klossar__row')];
+    const other = rows.find(
+      (r) =>
+        !r.classList.contains('klossar__row--custom') &&
+        !r.classList.contains('klossar__row--selected'),
+    )!;
+    other.click();
+    expect(onSave).toHaveBeenCalled();
+    expect(onSave.mock.lastCall![0].rampStepHeightsMm).not.toEqual(
+      DEFAULT_SETTINGS.rampStepHeightsMm,
+    );
   });
 });
 
@@ -876,9 +802,8 @@ describe('settings form — compact mode (#156)', () => {
       const form = createSettingsForm(classic, vi.fn(), undefined, { compact });
       expect(form.querySelector('.settings__actions')).toBeNull();
       const buttonTexts = [...form.querySelectorAll('button')].map((b) => b.textContent);
-      expect(buttonTexts).not.toContain(t('settings.save'));
       expect(buttonTexts).not.toContain(t('settings.undo'));
-      expect(buttonTexts).not.toContain(t('settings.reset'));
+      expect(buttonTexts).not.toContain(t('settings.resetAll'));
     }
   });
 });
@@ -900,21 +825,18 @@ describe('settings form — resyncSoundFields (#161)', () => {
     expect(guidance!.checked).toBe(true);
   });
 
-  it('keeps Save disabled after a resync that matches the new baseline', () => {
+  it('a resync is not a change: nothing is saved until the user edits (#328)', () => {
     const settings: LevelSettings = { ...classic, soundOnLevel: true, soundGuidance: true };
-    const form = createSettingsForm(settings, vi.fn());
-    const save = [...form.querySelectorAll<HTMLButtonElement>('button')].find(
-      (b) => b.textContent === t('settings.save'),
-    )!;
-    expect(save.disabled).toBe(true); // nothing edited yet
-
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(settings, onSave);
     form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: false });
-    expect(save.disabled).toBe(true); // resync is not an unsaved edit
+    expect(onSave).not.toHaveBeenCalled();
 
     const [chime] = soundCheckboxes(form);
     chime!.checked = true;
-    chime!.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(save.disabled).toBe(false); // a genuine edit still enables it
+    chime!.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.lastCall![0]).toMatchObject({ soundOnLevel: true, soundGuidance: false });
   });
 
   it('exists in Modern and compact too, not just Classic', () => {
@@ -924,5 +846,105 @@ describe('settings form — resyncSoundFields (#161)', () => {
       typeof createSettingsForm(classic, vi.fn(), undefined, { compact: 'measurements' })
         .resyncSoundFields,
     ).toBe('function');
+  });
+});
+
+describe('settings form — every change is saved at once (#328)', () => {
+  const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
+
+  beforeEach(() => {
+    localStorage.clear();
+    for (const toast of document.querySelectorAll('.toast')) toast.remove();
+  });
+
+  function change(element: HTMLElement): void {
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  function undoButton(): HTMLButtonElement {
+    return document.querySelector<HTMLButtonElement>('.toast__action')!;
+  }
+
+  it('stores a changed select at once and says so, with Undo', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    const theme = [...form.querySelectorAll<HTMLSelectElement>('select')].find((s) =>
+      [...s.options].some((o) => o.value === 'dark'),
+    )!;
+    theme.value = 'dark';
+    change(theme);
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.lastCall![0].theme).toBe('dark');
+    expect(loadSettings().theme).toBe('dark');
+    expect(document.querySelector('.toast')?.textContent).toContain(t('settings.saved'));
+    expect(undoButton().textContent).toBe(t('settings.undo'));
+  });
+
+  it('saves a number when the field is left, never half-typed', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    input(form, 'wheelbaseMm').value = '42';
+    input(form, 'wheelbaseMm').dispatchEvent(new Event('input', { bubbles: true }));
+    expect(onSave).not.toHaveBeenCalled();
+    input(form, 'wheelbaseMm').value = '4200';
+    change(input(form, 'wheelbaseMm'));
+    expect(onSave.mock.lastCall![0].wheelbaseMm).toBe(4200);
+  });
+
+  it('Undo puts the previous value back and stores it', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    input(form, 'wheelbaseMm').value = '4200';
+    change(input(form, 'wheelbaseMm'));
+    undoButton().click();
+    expect(input(form, 'wheelbaseMm').value).toBe(String(modern.wheelbaseMm));
+    expect(onSave.mock.lastCall![0].wheelbaseMm).toBe(modern.wheelbaseMm);
+    expect(loadSettings().wheelbaseMm).toBe(modern.wheelbaseMm);
+    expect(document.querySelector('.toast')).toBeNull();
+  });
+
+  it('keeps the value in effect when a typed number cannot be used, and says why', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    input(form, 'wheelbaseMm').value = '-5';
+    change(input(form, 'wheelbaseMm'));
+    expect(onSave).not.toHaveBeenCalled();
+    expect(input(form, 'wheelbaseMm').value).toBe(String(modern.wheelbaseMm));
+    const error = form.querySelector<HTMLElement>('.settings__error')!;
+    expect(error.hidden).toBe(false);
+    expect(error.textContent).toBe(t('settings.err.positive'));
+
+    input(form, 'wheelbaseMm').value = '4000';
+    change(input(form, 'wheelbaseMm'));
+    expect(error.hidden).toBe(true);
+    expect(onSave.mock.lastCall![0].wheelbaseMm).toBe(4000);
+  });
+
+  it('never puts back an older sensor choice made while the page was open', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(modern, onSave);
+    saveSettings({ ...modern, sensorSource: 'xparkle' });
+    input(form, 'wheelbaseMm').value = '4200';
+    change(input(form, 'wheelbaseMm'));
+    expect(onSave.mock.lastCall![0].sensorSource).toBe('xparkle');
+    expect(loadSettings().sensorSource).toBe('xparkle');
+  });
+
+  it('"Reset all settings" sits under General › More, resets every tab and can be undone', () => {
+    const custom: LevelSettings = { ...modern, wheelbaseMm: 4500, theme: 'dark' };
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(custom, onSave);
+    const more = form.querySelector<HTMLDetailsElement>(
+      '.settings__tabpanel[data-tab="general"] .settings__more',
+    )!;
+    const reset = more.querySelector<HTMLButtonElement>('.settings__reset-all')!;
+    expect(reset.textContent).toBe(t('settings.resetAll'));
+    reset.click();
+    expect(onSave.mock.lastCall![0]).toMatchObject({
+      wheelbaseMm: DEFAULT_SETTINGS.wheelbaseMm,
+      theme: DEFAULT_SETTINGS.theme,
+      appearance: 'modern',
+    });
+    undoButton().click();
+    expect(onSave.mock.lastCall![0]).toMatchObject({ wheelbaseMm: 4500, theme: 'dark' });
   });
 });

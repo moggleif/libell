@@ -112,12 +112,16 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
   // Design review, follow-up: Save used to close the page back to the main
   // screen (#159) — reversed, since the user may want to change more
   // right after saving. Only the ✕ actually closes it now.
-  it('Save persists but does not close the page — only the ✕ does', () => {
+  it('a change is saved at once but does not close the page — only the ✕ does (#328)', () => {
     const onSettingsSaved = vi.fn();
     const page = createSettingsPage(makeOptions({ onSettingsSaved }));
     page.open();
     page.element.querySelector<HTMLButtonElement>('[data-tab="ramps"]')!.click();
-    page.element.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    const rampCount = page.element.querySelector<HTMLSelectElement>(
+      '.settings__tabpanel[data-tab="ramps"] .settings__select',
+    )!;
+    rampCount.value = '3';
+    rampCount.dispatchEvent(new Event('change', { bubbles: true }));
     expect(onSettingsSaved).toHaveBeenCalledTimes(1);
     expect(page.isOpen()).toBe(true);
 

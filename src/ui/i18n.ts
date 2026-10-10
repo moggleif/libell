@@ -32,7 +32,7 @@ export const MESSAGES = {
     // see domain/vehicleShare.ts) so a family member using the same
     // vehicle doesn't have to re-measure and retype everything by hand.
     'share.vehicle.text': "My RV's vehicle setup for Libell — measurements and ramps.",
-    'settings.shareVehicle': 'Share vehicle setup',
+    'settings.shareVehicle': 'Share to another phone',
     'setup.incoming.h': 'Incoming vehicle setup',
     'setup.incoming.intro': 'A family member shared these vehicle measurements with you:',
     'setup.incoming.reminder':
@@ -80,7 +80,6 @@ export const MESSAGES = {
     // heading in a different part of the UI.
     'menu.advanced': 'ADVANCED',
     'menu.others': 'OTHER',
-    'menu.card.notSaved': 'Not saved',
     'menu.card.notDone': 'Not done',
 
     // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
@@ -283,10 +282,7 @@ export const MESSAGES = {
     'settings.stability': 'Stability',
     'settings.dwellRest': 'Response delay (ms)',
     'settings.dwellMotion': 'Response delay while adjusting (ms)',
-    'settings.dwell.hint':
-      'How long a reading must hold steady before the shown number changes. The second ' +
-      "value applies only right after a change, while you're actively adjusting (e.g. " +
-      "driving up a ramp), so the live number doesn't lag behind.",
+    'settings.dwell.hint': 'How long a reading must hold before the number changes.',
     'settings.vehicle': 'Vehicle',
     'vehicle.motorhome': 'Motorhome',
     'vehicle.caravan': 'Caravan',
@@ -296,9 +292,9 @@ export const MESSAGES = {
     'axle.single': 'Single',
     'axle.boggie': 'Tandem (boggie)',
     'settings.track': 'Track width',
-    'settings.measureHint':
-      'Wheelbase and track widths are in the registration document or the handbook — ' +
-      'a tape measure works too; a few cm of error hardly matters.',
+    'settings.measureHint': "They're in the registration document. A few cm off doesn't matter.",
+    'settings.measureHint.caravan':
+      "Measure from the axle to the jockey wheel. A few cm off doesn't matter.",
     'settings.measureHint.boggie': 'With a boggie, measure to the centre of the axle pair.',
     'settings.steps': 'Ramp step heights',
     'settings.steps.add': 'Add step',
@@ -312,28 +308,22 @@ export const MESSAGES = {
     // if the owner cares where sink/shower water drains, so it moved
     // behind the Drain field's own Advanced disclosure instead of always
     // showing next to the ramp steps.
-    'settings.drainHint':
-      'Matters only if you care where sink/shower water drains — within the ' +
-      'tolerance, the app then leaves this side lowest so it keeps draining.',
+    'settings.drainHint': 'Within the tolerance, this side is left lowest so water drains.',
     'settings.section.vehicle': 'Vehicle & measurements',
     'settings.section.ramps': 'Ramps',
-    'settings.section.display': 'Level & display',
     // General (screen-cleanup follow-up): language/theme/sound, common
     // enough to want a visible home — a Modern tab, or this Classic
     // section — rather than Advanced's rarely-tuned pile.
     'settings.general': 'General',
     'settings.language': 'Language',
     'settings.language.auto': 'Automatic (device language)',
-    'settings.advanced': 'Advanced',
     // Design review: the fields inside Advanced had labels but no
     // explanation of what they actually do — this is why the disclosure
     // "saknar beskrivning" (was missing a description). Split into one hint
     // per field (follow-up), each placed right below its own field — the
     // same pattern the response-delay hint below already uses — instead of
     // one combined paragraph ahead of both fields.
-    'settings.tolerance.hint':
-      'Sets how close to level counts as "level" — tighter for a shower or fridge, ' +
-      'looser if close enough is fine.',
+    'settings.tolerance.hint': 'How close to level counts as level.',
     'settings.stability.hint': 'Smooths out small sensor jitter so the numbers do not flicker.',
     'drain.none': 'None / does not matter',
     // "Middle" (design review): the mean of the two wheels on that edge —
@@ -361,25 +351,23 @@ export const MESSAGES = {
     // Design review, follow-up: switching this now saves and reloads
     // (matching Language above) so the whole app switches immediately,
     // not just this form's colors.
-    'settings.appearance.hint':
-      'Switching this saves your changes and reloads Libell so the new layout applies everywhere.',
     'settings.sound': 'Chime when level',
     'settings.soundGuidance': 'Continuous audio guidance',
-    'settings.soundGuidance.help':
-      'A pulse speeds up and rises in pitch as you approach level, with a distinct ' +
-      'signal for getting closer vs. moving the wrong way — so you can watch the ' +
-      'ramps instead of the screen. Silent when the reading is too unreliable to ' +
-      'trust — changing too fast, for instance.',
-    'settings.save': 'Save',
-    'settings.undo': 'Undo changes',
-    'settings.reset': 'Reset to defaults',
+    'settings.soundGuidance.help': 'The beep gets faster and higher the closer you get to level.',
+    'settings.undo': 'Undo',
+    'settings.saved': 'Saved',
+    'settings.more': 'More',
+    'settings.fineTuning': 'Fine-tuning',
+    'settings.resetAll': 'Reset all settings',
+    'settings.err.positive': 'Enter a number above 0. The previous value still applies.',
+    'settings.err.notNegative': 'Enter 0 or more. The previous value still applies.',
 
     'settings.tab.vehicle': 'Vehicle',
     'settings.tab.ramps': 'Ramps',
+    'settings.tab.level': 'Level',
     'settings.klossar.brandAll': 'All',
     'settings.klossar.changeRamp': 'Change ramp',
-    'settings.rampCountHint':
-      'How many ramps you have to put out. The app places them where they help most.',
+    'settings.rampCountHint': 'The app puts them where they help most.',
     'settings.klossar.selected': 'Selected',
     'settings.klossar.stepsHeading': 'Step heights',
 
@@ -394,6 +382,13 @@ export const MESSAGES = {
     'calibration.status': 'Calibrated: side/side {roll}°, front/back {pitch}°.',
     'calibration.status.none': 'Not calibrated — using the raw sensor.',
     'calibration.now': 'Calibrate now',
+    'calibration.step.phone.done': 'Phone calibrated',
+    'calibration.step.phone.hint': 'Lay the phone on something flat.',
+    'calibration.step.flipLink': 'No flat surface? Flip the phone',
+    'calibration.step.vehicle.done': 'Vehicle zero set',
+    'calibration.step.vehicle.hint':
+      'Level the vehicle with a spirit level and put the phone in its usual spot.',
+    'calibration.step.vehicle.now': 'Set as level',
     'calibration.clear': 'Clear calibration',
     'calibration.err.notRunning':
       'The tilt sensor is not running yet — tap Start on the main screen first.',
@@ -407,11 +402,6 @@ export const MESSAGES = {
     // Design review: the two-layer overview used to live only on the Help
     // page ('help.calibration.t' below) — moved to the top of the actual
     // Kalibrering tab, where it is actionable, not just informational.
-    'calibration.guide.intro':
-      'Two layers:\n' +
-      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
-      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
-      'vehicle zero — then a slightly tilting table is cancelled out too.',
     'calibration.vehicle.intro':
       'The sensor calibration zeroes the phone — not the spot where it lies. If the ' +
       'table tilts slightly, the app would always show that tilt. Level the vehicle ' +
@@ -447,20 +437,15 @@ export const MESSAGES = {
     // Target presets (#122, ADR 0013): an intentional NON-level target,
     // distinct from the calibration layers above — "Normal" (true level)
     // is always available and is not one of the saved presets.
-    'targets.intro':
-      'Save an intentional tilt — for the shower or grey-water drain — and switch ' +
-      'to it in a couple of taps. Normal (level) is always available and is never ' +
-      'overwritten.',
     'targets.normal': 'Normal (level)',
     'targets.name.placeholder': 'Name (e.g. "Shower drain")',
+    'targets.defaultName': 'Target {n}',
     'targets.add': 'Save current tilt as new target',
     'targets.delete': 'Delete {name}',
     'targets.err.tooSteep': 'That looks like more than an intentional target (>15°) — try again.',
     'targets.badge': 'Target: {name}',
     // Offset summary (#160): read-only, inside the menu only — never the
     // main screen (see targetBadge.ts/R31's own guard against that).
-    'menu.offsetSummary':
-      'Level is calculated from: sensor {sensor} · vehicle zero {vehicleZero} · target: {target}',
 
     'feedback.intro':
       'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
@@ -511,9 +496,9 @@ export const MESSAGES = {
       'The app then picks where your ramps do the most good — and, within the ' +
       'tolerance, leaves the drain side lowest so sink and shower keep draining.',
     'help.calibration.h': 'Calibration',
-    // Design review: the step-by-step "how" moved to the actual
-    // Kalibrering tab ('calibration.guide.intro' above) where it is
-    // actionable — this stays the "why" instead of repeating it.
+    // Design review: the step-by-step "how" lives on the Kalibrering tab's
+    // checklist (#330), where it is actionable — this stays the "why"
+    // instead of repeating it.
     'help.calibration.t':
       "The phone reads its own tilt, not the ground's — and a vehicle floor is rarely " +
       'perfectly flat either. Calibrating corrects for both, so what the app shows is ' +
@@ -636,7 +621,7 @@ export const MESSAGES = {
     'update.unsupported': 'Uppdateringar är inte tillgängliga här',
     'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',
     'share.vehicle.text': 'Mina fordonsmått för Libell — mått och ramper.',
-    'settings.shareVehicle': 'Dela fordonsinställning',
+    'settings.shareVehicle': 'Dela till en annan telefon',
     'setup.incoming.h': 'Inkommande fordonsinställning',
     'setup.incoming.intro': 'En familjemedlem har delat de här fordonsmåtten med dig:',
     'setup.incoming.reminder':
@@ -672,7 +657,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Extern sensor',
     'menu.advanced': 'AVANCERAT',
     'menu.others': 'ÖVRIGT',
-    'menu.card.notSaved': 'Ej sparade',
     'menu.card.notDone': 'Ej gjord',
 
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
@@ -812,10 +796,7 @@ export const MESSAGES = {
     'settings.stability': 'Stabilitet',
     'settings.dwellRest': 'Svarsfördröjning (ms)',
     'settings.dwellMotion': 'Svarsfördröjning vid justering (ms)',
-    'settings.dwell.hint':
-      'Hur länge en mätning måste hålla i sig innan den visade siffran ändras. Det andra ' +
-      'värdet gäller bara direkt efter en ändring, medan du aktivt justerar (t.ex. kör upp ' +
-      'på en ramp), så att siffran inte släpar efter.',
+    'settings.dwell.hint': 'Hur länge en mätning ska hålla i sig innan siffran ändras.',
     'settings.vehicle': 'Fordon',
     'vehicle.motorhome': 'Husbil',
     'vehicle.caravan': 'Husvagn',
@@ -825,31 +806,25 @@ export const MESSAGES = {
     'axle.single': 'Enkel',
     'axle.boggie': 'Boggie',
     'settings.track': 'Spårvidd',
-    'settings.measureHint':
-      'Hjulbas och spårvidd står i registreringsbeviset eller handboken — tumstock ' +
-      'funkar också; några centimeters fel spelar knappast någon roll.',
+    'settings.measureHint': 'Står i registreringsbeviset. Några cm fel gör inget.',
+    'settings.measureHint.caravan': 'Mät från axeln till stödhjulet. Några cm fel gör inget.',
     'settings.measureHint.boggie': 'Med boggie mäter du till mitten av axelparet.',
-    'settings.steps': 'Rampens steghöjder',
+    'settings.steps': 'Klossarnas steghöjder',
     'settings.steps.add': 'Lägg till steg',
     'settings.steps.remove': 'Ta bort {value}',
-    'settings.ramp': 'Färdig ramp',
+    'settings.ramp': 'Färdiga klossar',
     'settings.ramp.custom': 'Egen uppsättning',
-    'settings.rampCount': 'Antal ramper',
+    'settings.rampCount': 'Antal klossar',
     'settings.drain': 'Avloppssida',
-    'settings.rampHint': 'Appen väljer var ramperna gör mest nytta.',
+    'settings.rampHint': 'Appen väljer var klossarna gör mest nytta.',
     'settings.drainHint':
-      'Spelar bara roll om det är viktigt var disk- eller duschvattnet rinner — inom ' +
-      'toleransen lämnas den här sidan lägst så att det fortsätter rinna undan.',
+      'Inom toleransen hamnar den här sidan lägst, så att vattnet rinner undan.',
     'settings.section.vehicle': 'Fordon och mått',
-    'settings.section.ramps': 'Ramper',
-    'settings.section.display': 'Nivå och visning',
+    'settings.section.ramps': 'Klossar',
     'settings.general': 'Allmänt',
     'settings.language': 'Språk',
     'settings.language.auto': 'Automatiskt (enhetens språk)',
-    'settings.advanced': 'Avancerat',
-    'settings.tolerance.hint':
-      'Avgör hur nära i våg som räknas som "i våg" — snävare för dusch eller kylskåp, ' +
-      'mer tillåtande om det bara ska vara tillräckligt bra.',
+    'settings.tolerance.hint': 'Hur nära våg som räknas som i våg.',
     'settings.stability.hint': 'Jämnar ut små skakningar i sensorn så att siffrorna inte hoppar.',
     'drain.none': 'Inget / spelar ingen roll',
     'drain.left': 'Vänster, mitt',
@@ -869,26 +844,23 @@ export const MESSAGES = {
     'appearance.classic': 'Klassisk',
     'appearance.modern': 'Modern',
     'appearance.glossy': 'Glansig',
-    'settings.appearance.hint':
-      'Att byta det här sparar dina ändringar och laddar om Libell så att den nya ' +
-      'layouten gäller överallt.',
     'settings.sound': 'Ljudsignal när det är i våg',
     'settings.soundGuidance': 'Kontinuerlig ljudvägledning',
-    'settings.soundGuidance.help':
-      'En puls blir snabbare och stiger i tonhöjd ju närmare våg du kommer, med en ' +
-      'tydlig signal för om du närmar dig eller rör dig åt fel håll — så att du kan ' +
-      'titta på klossarna istället för skärmen. Tyst vid osäker indata — till ' +
-      'exempel för snabba förändringar.',
-    'settings.save': 'Spara',
-    'settings.undo': 'Ångra ändringar',
-    'settings.reset': 'Återställ standard',
+    'settings.soundGuidance.help': 'Pipet går snabbare och ljusare ju närmare våg du kommer.',
+    'settings.undo': 'Ångra',
+    'settings.saved': 'Sparat',
+    'settings.more': 'Mer',
+    'settings.fineTuning': 'Finjustering',
+    'settings.resetAll': 'Återställ alla inställningar',
+    'settings.err.positive': 'Ange ett tal större än 0. Det förra värdet gäller.',
+    'settings.err.notNegative': 'Ange 0 eller mer. Det förra värdet gäller.',
 
     'settings.tab.vehicle': 'Fordon',
     'settings.tab.ramps': 'Klossar',
+    'settings.tab.level': 'I våg',
     'settings.klossar.brandAll': 'Alla',
-    'settings.klossar.changeRamp': 'Byt ramp',
-    'settings.rampCountHint':
-      'Hur många klossar du har att lägga ut. Appen placerar dem där de gör mest nytta.',
+    'settings.klossar.changeRamp': 'Byt klossar',
+    'settings.rampCountHint': 'Appen lägger dem där de gör mest nytta.',
     'settings.klossar.selected': 'Vald',
     'settings.klossar.stepsHeading': 'Steghöjder',
 
@@ -903,6 +875,13 @@ export const MESSAGES = {
     'calibration.status': 'Kalibrerad: sidled {roll}°, längsled {pitch}°.',
     'calibration.status.none': 'Inte kalibrerad — använder sensorn som den är.',
     'calibration.now': 'Kalibrera nu',
+    'calibration.step.phone.done': 'Telefonen kalibrerad',
+    'calibration.step.phone.hint': 'Lägg telefonen på något plant.',
+    'calibration.step.flipLink': 'Inget plant underlag? Vänd telefonen',
+    'calibration.step.vehicle.done': 'Nolläget satt',
+    'calibration.step.vehicle.hint':
+      'Ställ fordonet plant med ett vattenpass och lägg telefonen på sin vanliga plats.',
+    'calibration.step.vehicle.now': 'Sätt som plant',
     'calibration.clear': 'Rensa kalibrering',
     'calibration.err.notRunning':
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
@@ -910,11 +889,6 @@ export const MESSAGES = {
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
     'calibration.sensor.h': 'Kalibrera telefonen',
     'calibration.vehicle.h': 'Kalibrera fordonets nolläge',
-    'calibration.guide.intro':
-      'Två lager:\n' +
-      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
-      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
-      'fordonets nolläge — då räknas även ett lutande bord bort.',
     'calibration.vehicle.intro':
       'Sensorkalibreringen nollar telefonen — inte platsen där den ligger. Lutar ' +
       'bordet lite visar appen alltid den lutningen. Ställ fordonet verifierat ' +
@@ -950,18 +924,13 @@ export const MESSAGES = {
     // Sparade mål/presets (#122, ADR 0013): ett avsiktligt ICKE-plant mål,
     // skilt från kalibreringslagren ovan — "Normal" (i våg) finns alltid
     // kvar och är inte ett av de sparade målen.
-    'targets.intro':
-      'Spara en avsiktlig lutning — för dusch- eller gråvattenavlopp — och växla ' +
-      'till den på ett par tryck. Normal (i våg) finns alltid kvar och skrivs ' +
-      'aldrig över.',
     'targets.normal': 'Normal (i våg)',
     'targets.name.placeholder': 'Namn (t.ex. "Duschavlopp")',
+    'targets.defaultName': 'Mål {n}',
     'targets.add': 'Spara aktuell lutning som nytt mål',
     'targets.delete': 'Ta bort {name}',
     'targets.err.tooSteep': 'Det ser ut som mer än ett avsiktligt mål (>15°) — försök igen.',
     'targets.badge': 'Mål: {name}',
-    'menu.offsetSummary':
-      'Nivån beräknas från: sensor {sensor} · fordonets nolläge {vehicleZero} · mål: {target}',
 
     'feedback.intro':
       'Har du hittat ett problem eller har en idé? Fyll i det här och tryck på ' +
@@ -1114,7 +1083,7 @@ export const MESSAGES = {
     'update.unsupported': 'Les mises à jour ne sont pas disponibles ici',
     'install.hint': 'Touchez Partager, puis « Sur l’écran d’accueil ».',
     'share.vehicle.text': 'La configuration de mon camping-car pour Libell — mesures et rampes.',
-    'settings.shareVehicle': 'Partager la configuration du véhicule',
+    'settings.shareVehicle': 'Partager vers un autre téléphone',
     'setup.incoming.h': 'Configuration de véhicule reçue',
     'setup.incoming.intro': 'Un proche a partagé ces mesures de véhicule avec vous :',
     'setup.incoming.reminder':
@@ -1149,7 +1118,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Capteur externe',
     'menu.advanced': 'AVANCÉ',
     'menu.others': 'AUTRES',
-    'menu.card.notSaved': 'Non enregistré',
     'menu.card.notDone': 'Non fait',
 
     'sensorSource.connect': 'Connecter le capteur {name}',
@@ -1288,11 +1256,7 @@ export const MESSAGES = {
     'settings.stability': 'Stabilité',
     'settings.dwellRest': 'Délai de réponse (ms)',
     'settings.dwellMotion': 'Délai de réponse pendant le réglage (ms)',
-    'settings.dwell.hint':
-      'Combien de temps une lecture doit rester stable avant que le nombre affiché ne ' +
-      'change. La seconde valeur ne s’applique que juste après un changement, pendant que ' +
-      'vous ajustez activement (en montant sur une rampe, par exemple), pour que le nombre ' +
-      'affiché ne soit pas en retard.',
+    'settings.dwell.hint': 'Combien de temps une mesure doit tenir avant que le nombre change.',
     'settings.vehicle': 'Véhicule',
     'vehicle.motorhome': 'Camping-car',
     'vehicle.caravan': 'Caravane',
@@ -1303,8 +1267,9 @@ export const MESSAGES = {
     'axle.boggie': 'Tandem (double essieu)',
     'settings.track': 'Voie',
     'settings.measureHint':
-      'L’empattement et les voies figurent sur la carte grise ou dans le manuel — un ' +
-      'mètre ruban fait aussi l’affaire ; quelques cm d’erreur n’ont guère d’importance.',
+      'Elles figurent sur la carte grise. Quelques cm d’écart ne changent rien.',
+    'settings.measureHint.caravan':
+      'Mesurez de l’essieu à la roue jockey. Quelques cm d’écart ne changent rien.',
     'settings.measureHint.boggie':
       'Avec un double essieu, mesurez jusqu’au centre de la paire d’essieux.',
     'settings.steps': 'Hauteurs des paliers de rampe',
@@ -1315,20 +1280,14 @@ export const MESSAGES = {
     'settings.rampCount': 'Nombre de rampes',
     'settings.drain': 'Côté de l’évacuation',
     'settings.rampHint': 'L’application choisit où vos rampes sont le plus utiles.',
-    'settings.drainHint':
-      'N’a d’importance que si vous tenez à l’endroit où l’eau de l’évier ou de la douche ' +
-      's’écoule — dans la tolérance, l’application laisse alors ce côté le plus bas pour ' +
-      'que l’écoulement continue.',
+    'settings.drainHint': 'Dans la tolérance, ce côté reste le plus bas pour que l’eau s’écoule.',
     'settings.section.vehicle': 'Véhicule et mesures',
     'settings.section.ramps': 'Rampes',
-    'settings.section.display': 'Niveau et affichage',
     'settings.general': 'Général',
     'settings.language': 'Langue',
     'settings.language.auto': 'Automatique (langue de l’appareil)',
-    'settings.advanced': 'Avancé',
     'settings.tolerance.hint':
-      'Définit à quel point il faut être proche du niveau pour compter comme « de niveau » ' +
-      '— plus strict pour une douche ou un réfrigérateur, plus souple si à peu près suffit.',
+      'À quel point il faut être proche du niveau pour compter comme de niveau.',
     'settings.stability.hint':
       'Lisse les petites variations du capteur pour que les nombres ne clignotent pas.',
     'drain.none': 'Aucun / peu importe',
@@ -1349,26 +1308,25 @@ export const MESSAGES = {
     'appearance.classic': 'Classique',
     'appearance.modern': 'Moderne',
     'appearance.glossy': 'Brillant',
-    'settings.appearance.hint':
-      'Changer ce réglage enregistre vos modifications et recharge Libell pour que la ' +
-      'nouvelle mise en page s’applique partout.',
     'settings.sound': 'Carillon quand c’est de niveau',
     'settings.soundGuidance': 'Guidage sonore continu',
     'settings.soundGuidance.help':
-      'Une impulsion s’accélère et monte dans les aigus à mesure que vous approchez du ' +
-      'niveau, avec un signal distinct selon que vous vous rapprochez ou allez dans le ' +
-      'mauvais sens — vous pouvez ainsi regarder les rampes plutôt que l’écran. Silencieux ' +
-      'quand la lecture est trop peu fiable — par exemple quand elle change trop vite.',
-    'settings.save': 'Enregistrer',
-    'settings.undo': 'Annuler les modifications',
-    'settings.reset': 'Rétablir les valeurs par défaut',
+      'Le bip s’accélère et monte à mesure que vous approchez du niveau.',
+    'settings.undo': 'Annuler',
+    'settings.saved': 'Enregistré',
+    'settings.more': 'Plus',
+    'settings.fineTuning': 'Réglage fin',
+    'settings.resetAll': 'Réinitialiser tous les réglages',
+    'settings.err.positive':
+      'Saisissez un nombre supérieur à 0. La valeur précédente reste en vigueur.',
+    'settings.err.notNegative': 'Saisissez 0 ou plus. La valeur précédente reste en vigueur.',
 
     'settings.tab.vehicle': 'Véhicule',
     'settings.tab.ramps': 'Rampes',
+    'settings.tab.level': 'Niveau',
     'settings.klossar.brandAll': 'Toutes',
     'settings.klossar.changeRamp': 'Changer de rampe',
-    'settings.rampCountHint':
-      "Combien de rampes vous avez à poser. L'application les place au mieux.",
+    'settings.rampCountHint': 'L’application les place au mieux.',
     'settings.klossar.selected': 'Sélectionné',
     'settings.klossar.stepsHeading': 'Hauteurs des paliers',
 
@@ -1384,6 +1342,13 @@ export const MESSAGES = {
     'calibration.status': 'Étalonné : latéral {roll}°, longitudinal {pitch}°.',
     'calibration.status.none': 'Non étalonné — capteur brut utilisé.',
     'calibration.now': 'Étalonner maintenant',
+    'calibration.step.phone.done': 'Téléphone étalonné',
+    'calibration.step.phone.hint': 'Posez le téléphone sur une surface plane.',
+    'calibration.step.flipLink': 'Pas de surface plane ? Retournez le téléphone',
+    'calibration.step.vehicle.done': 'Zéro du véhicule défini',
+    'calibration.step.vehicle.hint':
+      'Mettez le véhicule de niveau avec un niveau à bulle et posez le téléphone à sa place habituelle.',
+    'calibration.step.vehicle.now': 'Définir comme niveau',
     'calibration.clear': 'Effacer l’étalonnage',
     'calibration.err.notRunning':
       'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
@@ -1392,11 +1357,6 @@ export const MESSAGES = {
       'Le téléphone ne semble pas à plat — posez-le sur une surface de niveau et réessayez.',
     'calibration.sensor.h': 'Étalonner le téléphone',
     'calibration.vehicle.h': 'Étalonner le zéro du véhicule',
-    'calibration.guide.intro':
-      'Deux couches :\n' +
-      '1. Étalonnez le téléphone une fois sur une surface de niveau (ou avec le retournement à 180°).\n' +
-      '2. Le véhicule étant vérifiablement de niveau, définissez l’emplacement habituel du ' +
-      'téléphone comme zéro du véhicule — une table légèrement inclinée est alors compensée elle aussi.',
     'calibration.vehicle.intro':
       'L’étalonnage du capteur met le téléphone à zéro — pas l’endroit où il repose. Si la ' +
       'table penche un peu, l’application afficherait toujours cette inclinaison. Mettez le ' +
@@ -1429,18 +1389,13 @@ export const MESSAGES = {
     'calibration.pill.done': 'FAIT',
     'calibration.pill.none': 'AUCUN',
 
-    'targets.intro':
-      'Enregistrez une inclinaison volontaire — pour la douche ou l’évacuation des eaux ' +
-      'grises — et passez-y en quelques touches. Normal (de niveau) est toujours disponible ' +
-      'et n’est jamais écrasé.',
     'targets.normal': 'Normal (de niveau)',
     'targets.name.placeholder': 'Nom (par ex. « Évacuation douche »)',
+    'targets.defaultName': 'Cible {n}',
     'targets.add': 'Enregistrer l’inclinaison actuelle comme nouvelle cible',
     'targets.delete': 'Supprimer {name}',
     'targets.err.tooSteep': 'Cela ressemble à plus qu’une cible volontaire (>15°) — réessayez.',
     'targets.badge': 'Cible : {name}',
-    'menu.offsetSummary':
-      'Le niveau est calculé à partir de : capteur {sensor} · zéro véhicule {vehicleZero} · cible : {target}',
 
     'feedback.intro':
       'Un problème ou une idée ? Remplissez ceci et touchez le bouton — cela ouvre un ' +
@@ -1604,7 +1559,7 @@ export const MESSAGES = {
     'update.unsupported': 'Las actualizaciones no están disponibles aquí',
     'install.hint': 'Toca Compartir y luego «Añadir a pantalla de inicio».',
     'share.vehicle.text': 'La configuración de mi autocaravana para Libell: medidas y rampas.',
-    'settings.shareVehicle': 'Compartir la configuración del vehículo',
+    'settings.shareVehicle': 'Compartir con otro teléfono',
     'setup.incoming.h': 'Configuración de vehículo recibida',
     'setup.incoming.intro':
       'Alguien de tu familia ha compartido contigo estas medidas del vehículo:',
@@ -1640,7 +1595,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Sensor externo',
     'menu.advanced': 'AVANZADO',
     'menu.others': 'OTROS',
-    'menu.card.notSaved': 'Sin guardar',
     'menu.card.notDone': 'Sin hacer',
 
     'sensorSource.connect': 'Conectar el sensor {name}',
@@ -1778,11 +1732,7 @@ export const MESSAGES = {
     'settings.stability': 'Estabilidad',
     'settings.dwellRest': 'Retardo de respuesta (ms)',
     'settings.dwellMotion': 'Retardo de respuesta al ajustar (ms)',
-    'settings.dwell.hint':
-      'Cuánto tiempo debe mantenerse estable una lectura antes de que cambie el número ' +
-      'mostrado. El segundo valor solo se aplica justo después de un cambio, mientras ' +
-      'ajustas activamente (por ejemplo, subiendo por una rampa), para que el número en ' +
-      'vivo no se quede atrás.',
+    'settings.dwell.hint': 'Cuánto debe mantenerse una lectura antes de que cambie el número.',
     'settings.vehicle': 'Vehículo',
     'vehicle.motorhome': 'Autocaravana',
     'vehicle.caravan': 'Caravana',
@@ -1793,8 +1743,9 @@ export const MESSAGES = {
     'axle.boggie': 'Tándem (doble eje)',
     'settings.track': 'Ancho de vía',
     'settings.measureHint':
-      'La distancia entre ejes y los anchos de vía están en la documentación del vehículo o ' +
-      'en el manual; una cinta métrica también sirve: unos pocos cm de error apenas importan.',
+      'Figuran en la documentación del vehículo. Unos cm de error no importan.',
+    'settings.measureHint.caravan':
+      'Mide desde el eje hasta la rueda jockey. Unos cm de error no importan.',
     'settings.measureHint.boggie': 'Con doble eje, mide hasta el centro del par de ejes.',
     'settings.steps': 'Alturas de nivel de la rampa',
     'settings.steps.add': 'Añadir nivel',
@@ -1805,18 +1756,13 @@ export const MESSAGES = {
     'settings.drain': 'Lado del desagüe',
     'settings.rampHint': 'La app elige dónde tus rampas hacen más falta.',
     'settings.drainHint':
-      'Solo importa si te interesa por dónde desagua el fregadero o la ducha: dentro de la ' +
-      'tolerancia, la app deja ese lado lo más bajo posible para que siga desaguando.',
+      'Dentro de la tolerancia, este lado queda más bajo para que el agua desagüe.',
     'settings.section.vehicle': 'Vehículo y medidas',
     'settings.section.ramps': 'Rampas',
-    'settings.section.display': 'Nivel y visualización',
     'settings.general': 'General',
     'settings.language': 'Idioma',
     'settings.language.auto': 'Automático (idioma del dispositivo)',
-    'settings.advanced': 'Avanzado',
-    'settings.tolerance.hint':
-      'Define cuánto hay que acercarse al nivel para contar como «nivelado»: más estricto ' +
-      'para una ducha o un frigorífico, más holgado si basta con aproximarse.',
+    'settings.tolerance.hint': 'Cuánto hay que acercarse al nivel para contar como nivelado.',
     'settings.stability.hint':
       'Suaviza las pequeñas fluctuaciones del sensor para que los números no parpadeen.',
     'drain.none': 'Ninguno / da igual',
@@ -1837,26 +1783,23 @@ export const MESSAGES = {
     'appearance.classic': 'Clásico',
     'appearance.modern': 'Moderno',
     'appearance.glossy': 'Brillante',
-    'settings.appearance.hint':
-      'Cambiar esto guarda tus cambios y recarga Libell para que el nuevo diseño se aplique ' +
-      'en todas partes.',
     'settings.sound': 'Sonido al quedar nivelado',
     'settings.soundGuidance': 'Guía sonora continua',
-    'settings.soundGuidance.help':
-      'Un pulso se acelera y sube de tono a medida que te acercas al nivel, con una señal ' +
-      'distinta según si te acercas o vas en la dirección equivocada, de modo que puedes ' +
-      'mirar las rampas en vez de la pantalla. Se calla cuando la lectura es demasiado poco ' +
-      'fiable, por ejemplo si cambia demasiado deprisa.',
-    'settings.save': 'Guardar',
-    'settings.undo': 'Deshacer los cambios',
-    'settings.reset': 'Restablecer los valores predeterminados',
+    'settings.soundGuidance.help': 'El pitido se acelera y sube a medida que te acercas al nivel.',
+    'settings.undo': 'Deshacer',
+    'settings.saved': 'Guardado',
+    'settings.more': 'Más',
+    'settings.fineTuning': 'Ajuste fino',
+    'settings.resetAll': 'Restablecer todos los ajustes',
+    'settings.err.positive': 'Introduce un número mayor que 0. Sigue valiendo el valor anterior.',
+    'settings.err.notNegative': 'Introduce 0 o más. Sigue valiendo el valor anterior.',
 
     'settings.tab.vehicle': 'Vehículo',
     'settings.tab.ramps': 'Rampas',
+    'settings.tab.level': 'Nivelación',
     'settings.klossar.brandAll': 'Todas',
     'settings.klossar.changeRamp': 'Cambiar rampa',
-    'settings.rampCountHint':
-      'Cuántas rampas tienes para colocar. La aplicación las coloca donde más ayudan.',
+    'settings.rampCountHint': 'La app las coloca donde más ayudan.',
     'settings.klossar.selected': 'Seleccionado',
     'settings.klossar.stepsHeading': 'Alturas de nivel',
 
@@ -1871,6 +1814,13 @@ export const MESSAGES = {
     'calibration.status': 'Calibrado: lado/lado {roll}°, delante/detrás {pitch}°.',
     'calibration.status.none': 'Sin calibrar: se usa el sensor en bruto.',
     'calibration.now': 'Calibrar ahora',
+    'calibration.step.phone.done': 'Teléfono calibrado',
+    'calibration.step.phone.hint': 'Deja el teléfono sobre algo plano.',
+    'calibration.step.flipLink': '¿Nada plano? Gira el teléfono',
+    'calibration.step.vehicle.done': 'Cero del vehículo fijado',
+    'calibration.step.vehicle.hint':
+      'Nivela el vehículo con un nivel de burbuja y pon el teléfono en su sitio habitual.',
+    'calibration.step.vehicle.now': 'Fijar como nivelado',
     'calibration.clear': 'Borrar la calibración',
     'calibration.err.notRunning':
       'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
@@ -1878,11 +1828,6 @@ export const MESSAGES = {
       'El móvil no parece estar plano: ponlo sobre una superficie nivelada e inténtalo de nuevo.',
     'calibration.sensor.h': 'Calibrar el móvil',
     'calibration.vehicle.h': 'Calibrar el cero del vehículo',
-    'calibration.guide.intro':
-      'Dos capas:\n' +
-      '1. Calibra el móvil una vez sobre una superficie nivelada (o con el giro de 180°).\n' +
-      '2. Con el vehículo verificablemente nivelado, fija el sitio habitual del móvil como ' +
-      'cero del vehículo: así también se compensa una mesa algo inclinada.',
     'calibration.vehicle.intro':
       'La calibración del sensor pone a cero el móvil, no el sitio donde está apoyado. Si la ' +
       'mesa se inclina un poco, la app mostraría siempre esa inclinación. Nivela el vehículo ' +
@@ -1915,19 +1860,14 @@ export const MESSAGES = {
     'calibration.pill.done': 'HECHO',
     'calibration.pill.none': 'NINGUNO',
 
-    'targets.intro':
-      'Guarda una inclinación intencionada, para la ducha o el desagüe de aguas grises, y ' +
-      'cambia a ella en un par de toques. Normal (nivelado) siempre está disponible y nunca ' +
-      'se sobrescribe.',
     'targets.normal': 'Normal (nivelado)',
     'targets.name.placeholder': 'Nombre (p. ej. «Desagüe de la ducha»)',
+    'targets.defaultName': 'Objetivo {n}',
     'targets.add': 'Guardar la inclinación actual como nuevo objetivo',
     'targets.delete': 'Eliminar {name}',
     'targets.err.tooSteep':
       'Esto parece más que un objetivo intencionado (>15°): inténtalo de nuevo.',
     'targets.badge': 'Objetivo: {name}',
-    'menu.offsetSummary':
-      'El nivel se calcula a partir de: sensor {sensor} · cero del vehículo {vehicleZero} · objetivo: {target}',
 
     'feedback.intro':
       '¿Has encontrado un problema o tienes una idea? Rellena esto y toca el botón: se ' +
@@ -2090,7 +2030,7 @@ export const MESSAGES = {
     'install.hint': 'Auf Teilen tippen, dann „Zum Home-Bildschirm“.',
     'share.vehicle.text':
       'Die Fahrzeugkonfiguration meines Wohnmobils für Libell — Maße und Auffahrkeile.',
-    'settings.shareVehicle': 'Fahrzeugkonfiguration teilen',
+    'settings.shareVehicle': 'An ein anderes Handy senden',
     'setup.incoming.h': 'Empfangene Fahrzeugkonfiguration',
     'setup.incoming.intro': 'Jemand aus deiner Familie hat dir diese Fahrzeugmaße geschickt:',
     'setup.incoming.reminder':
@@ -2126,7 +2066,6 @@ export const MESSAGES = {
     'menu.sensorSource': 'Externer Sensor',
     'menu.advanced': 'ERWEITERT',
     'menu.others': 'SONSTIGES',
-    'menu.card.notSaved': 'Nicht gespeichert',
     'menu.card.notDone': 'Nicht erledigt',
 
     'sensorSource.connect': '{name}-Sensor verbinden',
@@ -2262,10 +2201,7 @@ export const MESSAGES = {
     'settings.stability': 'Stabilität',
     'settings.dwellRest': 'Reaktionsverzögerung (ms)',
     'settings.dwellMotion': 'Reaktionsverzögerung beim Ausrichten (ms)',
-    'settings.dwell.hint':
-      'Wie lange ein Messwert stabil bleiben muss, bevor sich die angezeigte Zahl ändert. ' +
-      'Der zweite Wert gilt nur direkt nach einer Änderung, während du aktiv ausrichtest ' +
-      '(etwa beim Auffahren auf einen Keil), damit die Anzeige nicht hinterherhinkt.',
+    'settings.dwell.hint': 'Wie lange ein Messwert halten muss, bevor sich die Zahl ändert.',
     'settings.vehicle': 'Fahrzeug',
     'vehicle.motorhome': 'Wohnmobil',
     'vehicle.caravan': 'Wohnwagen',
@@ -2276,8 +2212,9 @@ export const MESSAGES = {
     'axle.boggie': 'Tandem (Doppelachse)',
     'settings.track': 'Spurweite',
     'settings.measureHint':
-      'Radstand und Spurweiten stehen im Fahrzeugschein oder im Handbuch — ein Maßband tut ' +
-      'es auch; ein paar cm Abweichung machen kaum etwas aus.',
+      'Die Maße stehen im Fahrzeugschein. Ein paar cm Abweichung machen nichts.',
+    'settings.measureHint.caravan':
+      'Von der Achse bis zum Stützrad messen. Ein paar cm Abweichung machen nichts.',
     'settings.measureHint.boggie': 'Bei einer Doppelachse bis zur Mitte des Achspaars messen.',
     'settings.steps': 'Stufenhöhen der Keile',
     'settings.steps.add': 'Stufe hinzufügen',
@@ -2288,18 +2225,13 @@ export const MESSAGES = {
     'settings.drain': 'Abflussseite',
     'settings.rampHint': 'Die App wählt, wo deine Keile am meisten bringen.',
     'settings.drainHint':
-      'Wichtig nur, wenn dir wichtig ist, wohin das Wasser aus Spüle und Dusche abläuft — ' +
-      'innerhalb der Toleranz lässt die App diese Seite dann am tiefsten, damit es weiter abläuft.',
+      'Innerhalb der Toleranz bleibt diese Seite am tiefsten, damit das Wasser abläuft.',
     'settings.section.vehicle': 'Fahrzeug und Maße',
     'settings.section.ramps': 'Auffahrkeile',
-    'settings.section.display': 'Ausrichtung und Anzeige',
     'settings.general': 'Allgemein',
     'settings.language': 'Sprache',
     'settings.language.auto': 'Automatisch (Gerätesprache)',
-    'settings.advanced': 'Erweitert',
-    'settings.tolerance.hint':
-      'Legt fest, wie nah an der Waagerechten als „waagerecht“ gilt — enger für Dusche oder ' +
-      'Kühlschrank, großzügiger, wenn ungefähr reicht.',
+    'settings.tolerance.hint': 'Wie nah an der Waagerechten noch als waagerecht gilt.',
     'settings.stability.hint':
       'Glättet kleine Schwankungen des Sensors, damit die Zahlen nicht flackern.',
     'drain.none': 'Keine / egal',
@@ -2320,25 +2252,24 @@ export const MESSAGES = {
     'appearance.classic': 'Klassisch',
     'appearance.modern': 'Modern',
     'appearance.glossy': 'Glänzend',
-    'settings.appearance.hint':
-      'Diese Änderung speichert deine Eingaben und lädt Libell neu, damit das neue Layout überall gilt.',
     'settings.sound': 'Signalton bei waagerecht',
     'settings.soundGuidance': 'Durchgehende Tonführung',
     'settings.soundGuidance.help':
-      'Ein Puls wird schneller und höher, je näher du der Waagerechten kommst, mit ' +
-      'unterschiedlichem Signal je nachdem, ob du näher kommst oder in die falsche Richtung ' +
-      'fährst — so kannst du auf die Keile statt auf den Bildschirm schauen. Still, wenn der ' +
-      'Messwert zu unzuverlässig ist, etwa weil er sich zu schnell ändert.',
-    'settings.save': 'Speichern',
-    'settings.undo': 'Änderungen verwerfen',
-    'settings.reset': 'Auf Standardwerte zurücksetzen',
+      'Der Ton wird schneller und höher, je näher du der Waagerechten kommst.',
+    'settings.undo': 'Rückgängig',
+    'settings.saved': 'Gespeichert',
+    'settings.more': 'Mehr',
+    'settings.fineTuning': 'Feinabstimmung',
+    'settings.resetAll': 'Alle Einstellungen zurücksetzen',
+    'settings.err.positive': 'Gib eine Zahl über 0 ein. Der vorige Wert gilt weiter.',
+    'settings.err.notNegative': 'Gib 0 oder mehr ein. Der vorige Wert gilt weiter.',
 
     'settings.tab.vehicle': 'Fahrzeug',
     'settings.tab.ramps': 'Keile',
+    'settings.tab.level': 'Waagerecht',
     'settings.klossar.brandAll': 'Alle',
     'settings.klossar.changeRamp': 'Keil wechseln',
-    'settings.rampCountHint':
-      'Wie viele Keile du auslegen kannst. Die App legt sie dorthin, wo sie am meisten bringen.',
+    'settings.rampCountHint': 'Die App legt sie dorthin, wo sie am meisten bringen.',
     'settings.klossar.selected': 'Ausgewählt',
     'settings.klossar.stepsHeading': 'Stufenhöhen',
 
@@ -2354,6 +2285,13 @@ export const MESSAGES = {
     'calibration.status': 'Kalibriert: seitlich {roll}°, längs {pitch}°.',
     'calibration.status.none': 'Nicht kalibriert — der Rohwert des Sensors wird verwendet.',
     'calibration.now': 'Jetzt kalibrieren',
+    'calibration.step.phone.done': 'Handy kalibriert',
+    'calibration.step.phone.hint': 'Leg das Handy auf etwas Ebenes.',
+    'calibration.step.flipLink': 'Nichts Ebenes da? Handy drehen',
+    'calibration.step.vehicle.done': 'Fahrzeug-Nullpunkt gesetzt',
+    'calibration.step.vehicle.hint':
+      'Richte das Fahrzeug mit einer Wasserwaage aus und leg das Handy an seinen üblichen Platz.',
+    'calibration.step.vehicle.now': 'Als waagerecht setzen',
     'calibration.clear': 'Kalibrierung löschen',
     'calibration.err.notRunning':
       'Der Neigungssensor läuft noch nicht — tippe zuerst auf dem Hauptbildschirm auf Start.',
@@ -2362,11 +2300,6 @@ export const MESSAGES = {
       'versuche es erneut.',
     'calibration.sensor.h': 'Handy kalibrieren',
     'calibration.vehicle.h': 'Fahrzeug-Nullpunkt kalibrieren',
-    'calibration.guide.intro':
-      'Zwei Ebenen:\n' +
-      '1. Kalibriere das Handy einmal auf einer waagerechten Fläche (oder mit der 180°-Drehung).\n' +
-      '2. Setze bei nachweislich waagerechtem Fahrzeug den gewohnten Platz des Handys als ' +
-      'Fahrzeug-Nullpunkt — dann wird auch ein leicht schiefer Tisch herausgerechnet.',
     'calibration.vehicle.intro':
       'Die Sensorkalibrierung stellt das Handy auf null — nicht den Platz, auf dem es liegt. ' +
       'Steht der Tisch leicht schief, würde die App diese Neigung immer anzeigen. Stelle das ' +
@@ -2400,19 +2333,14 @@ export const MESSAGES = {
     'calibration.pill.done': 'ERLEDIGT',
     'calibration.pill.none': 'KEINER',
 
-    'targets.intro':
-      'Speichere eine gewollte Neigung — für die Dusche oder den Grauwasserablauf — und ' +
-      'wechsle mit ein paar Tipps dorthin. Normal (waagerecht) ist immer verfügbar und wird ' +
-      'nie überschrieben.',
     'targets.normal': 'Normal (waagerecht)',
     'targets.name.placeholder': 'Name (z. B. „Duschablauf“)',
+    'targets.defaultName': 'Ziel {n}',
     'targets.add': 'Aktuelle Neigung als neues Ziel speichern',
     'targets.delete': '{name} löschen',
     'targets.err.tooSteep':
       'Das sieht nach mehr als einem gewollten Ziel aus (>15°) — versuche es erneut.',
     'targets.badge': 'Ziel: {name}',
-    'menu.offsetSummary':
-      'Die Waagerechte wird berechnet aus: Sensor {sensor} · Fahrzeug-Nullpunkt {vehicleZero} · Ziel: {target}',
 
     'feedback.intro':
       'Ein Problem gefunden oder eine Idee? Fülle das hier aus und tippe auf den Knopf — es ' +
