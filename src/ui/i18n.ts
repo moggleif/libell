@@ -263,6 +263,9 @@ export const MESSAGES = {
     'onboard.source.intro':
       'Choose which sensor Libell should read tilt from — most people just use the phone.',
     'onboard.source.phone': 'This phone',
+    // #287: shown on the source step only while a box is the active source.
+    'onboard.source.externalActive':
+      'An external sensor is active now. Choosing this phone skips the phone calibration steps — to calibrate the phone, first tap "Disconnect" on the External sensor page.',
     // Vehicle step: which vehicle every later step's imagery and field
     // labels are drawn for. Reuses 'vehicle.motorhome'/'vehicle.caravan' —
     // the exact same labels Settings uses — rather than separate copy.
@@ -787,6 +790,8 @@ export const MESSAGES = {
     'onboard.source.intro':
       'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',
     'onboard.source.phone': 'Den här telefonen',
+    'onboard.source.externalActive':
+      'En extern sensor är aktiv nu. Väljer du telefonen hoppar guiden över telefonens kalibrering — för att kalibrera telefonen, tryck först på "Koppla från" på sidan Extern sensor.',
     'onboard.vehicle.h': 'Vad ska nivelleras?',
     'onboard.vehicle.intro': 'Välj fordon — resten av guiden anpassas efter det.',
     'onboard.step1.h': 'Lägg telefonen så här',
@@ -1247,6 +1252,8 @@ export const MESSAGES = {
       'Choisissez le capteur dont Libell doit lire l’inclinaison — la plupart des gens ' +
       'utilisent simplement le téléphone.',
     'onboard.source.phone': 'Ce téléphone',
+    'onboard.source.externalActive':
+      'Un capteur externe est actif. Si vous choisissez ce téléphone, le guide saute l’étalonnage du téléphone — pour étalonner le téléphone, touchez d’abord « Déconnecter » sur la page Capteur externe.',
     'onboard.vehicle.h': 'Que mettez-vous de niveau ?',
     'onboard.vehicle.intro': 'Choisissez votre véhicule — la suite du guide s’y adapte.',
     'onboard.step1.h': 'Posez le téléphone comme ceci',
@@ -1719,6 +1726,8 @@ export const MESSAGES = {
     'onboard.source.intro':
       'Elige de qué sensor debe leer Libell la inclinación: la mayoría simplemente usa el móvil.',
     'onboard.source.phone': 'Este móvil',
+    'onboard.source.externalActive':
+      'Hay un sensor externo activo. Si eliges este móvil, la guía omite la calibración del móvil; para calibrarlo, toca primero «Desconectar» en la página Sensor externo.',
     'onboard.vehicle.h': '¿Qué vas a nivelar?',
     'onboard.vehicle.intro': 'Elige tu vehículo: el resto de la guía se adapta a él.',
     'onboard.step1.h': 'Coloca el móvil así',
@@ -2185,6 +2194,8 @@ export const MESSAGES = {
     'onboard.source.intro':
       'Wähle, von welchem Sensor Libell die Neigung lesen soll — die meisten nehmen einfach das Handy.',
     'onboard.source.phone': 'Dieses Handy',
+    'onboard.source.externalActive':
+      'Ein externer Sensor ist aktiv. Wählst du dieses Handy, überspringt der Assistent die Kalibrierung des Handys – um das Handy zu kalibrieren, tippe zuerst auf der Seite „Externer Sensor“ auf „Trennen“.',
     'onboard.vehicle.h': 'Was richtest du aus?',
     'onboard.vehicle.intro':
       'Wähle dein Fahrzeug — der Rest dieser Einführung richtet sich danach.',

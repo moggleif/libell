@@ -65,8 +65,10 @@
  * (#189 follow-up — otherwise the "n / total" progress readout could
  * commit to a total that a later choice then falsified). Closing the
  * wizard (✕) before or during that step never *saves* anything, so an
- * unfinished choice always leaves the app on the phone sensor (the
- * existing `DEFAULT_SETTINGS.sensorSource`), never an ambiguous state.
+ * unfinished choice always leaves the source exactly as it was (the
+ * phone, `DEFAULT_SETTINGS.sensorSource`, on a first run), never an
+ * ambiguous state. With a box already active, the phone path leaves out
+ * the phone calibration steps (#287) — see `phoneSteps` below.
  *
  * Appearance (#110): whether this instance renders Classic or Modern
  * structure is decided once, up front, from `initialSettings.appearance`
@@ -565,8 +567,18 @@ export function showOnboarding(options: OnboardingOptions): void {
       const intro = document.createElement('p');
       intro.className = isModern ? 'onboarding__text--modern' : 'menu__text';
       intro.textContent = t('onboard.source.intro');
+      // With a box already active (#287), say up front what the phone path
+      // leaves out and where to switch — never switch from here (ADR 0014).
+      const externalNote: HTMLElement[] = [];
+      if (externalActive) {
+        const note = document.createElement('p');
+        note.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+        note.textContent = t('onboard.source.externalActive');
+        externalNote.push(note);
+      }
       return [
         intro,
+        ...externalNote,
         buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, sensorChoice, (value) => {
           sensorChoice = value;
           // Re-resolve immediately, not just when Next is pressed (#189
@@ -614,13 +626,15 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
-  const phoneSteps = [
-    placementStep,
-    settingsStep,
-    rampsStep,
-    sensorCalibrationStep,
-    vehicleZeroStep,
-  ];
+  // An external sensor already active (#287): the wizard never switches
+  // the source (✕ must leave it as it was, ADR 0014), and #285 disables
+  // every phone-calibration action while a box is active — so the phone
+  // path leaves both calibration steps out rather than leading into
+  // screens where nothing can be pressed. The source step says so.
+  const externalActive = options.getSensorSource() !== 'phone';
+  const phoneSteps = externalActive
+    ? [placementStep, settingsStep, rampsStep]
+    : [placementStep, settingsStep, rampsStep, sensorCalibrationStep, vehicleZeroStep];
   const externalSteps = [connectStep, installOffsetStep, readScreenStep, settingsStep, rampsStep];
 
   // welcomeStep, then languageStep/appearanceStep/soundStep, always lead

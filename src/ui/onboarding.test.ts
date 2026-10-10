@@ -595,6 +595,64 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(finished).toBe(true);
     });
 
+    describe('an external sensor is already the active source (#287)', () => {
+      it('picking "This phone" leaves out both phone calibration steps, which could not be used', () => {
+        withBluetooth();
+        let finished = false;
+        open({
+          initialSettings: classicSettings(),
+          getSensorSource: () => 'easylevel',
+          isPhoneActive: () => false,
+          onFinished: () => (finished = true),
+        });
+        expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 9');
+        next(); // source (phone) -> vehicle
+        next(); // -> placement
+        next(); // -> settings
+        next(); // -> ramps, now the last step
+        expect(card().querySelector('.onboarding__title')?.textContent).toBe(
+          t('settings.tab.ramps'),
+        );
+        expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 9');
+        next(); // "Done" — never a disabled calibration step
+        expect(finished).toBe(true);
+      });
+
+      it('says so on the source step, and how to calibrate the phone instead', () => {
+        withBluetooth();
+        open({ initialSettings: classicSettings(), getSensorSource: () => 'xparkle' });
+        expect(card().textContent).toContain(t('onboard.source.externalActive'));
+      });
+
+      it('never switches the source itself, whichever path is walked or closed', () => {
+        withBluetooth();
+        let disconnected = false;
+        open({
+          initialSettings: classicSettings(),
+          getSensorSource: () => 'easylevel',
+          disconnectSensor: () => (disconnected = true),
+        });
+        for (let i = 0; i < 4; i += 1) next();
+        card().querySelector<HTMLButtonElement>('.onboarding__close')!.click();
+        expect(disconnected).toBe(false);
+      });
+
+      it('the external path is unchanged', () => {
+        withBluetooth();
+        open({ initialSettings: classicSettings(), getSensorSource: () => 'easylevel' });
+        const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;
+        external.checked = true;
+        external.dispatchEvent(new Event('change'));
+        expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 11');
+      });
+    });
+
+    it('with the phone active, the source step shows no external-sensor note', () => {
+      withBluetooth();
+      open({ initialSettings: classicSettings() });
+      expect(card().textContent).not.toContain(t('onboard.source.externalActive'));
+    });
+
     it('closing (✕) before a choice is made never leaves an ambiguous state', () => {
       withBluetooth();
       let finished = false;
