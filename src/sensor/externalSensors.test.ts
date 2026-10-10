@@ -111,6 +111,7 @@ describe('the EasyLevel descriptor (#262)', () => {
       installCalibration: true,
       debugBytes: true,
       reportedOrientation: false,
+      learnMounting: false,
     });
   });
 });

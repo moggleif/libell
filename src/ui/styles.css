@@ -1529,6 +1529,13 @@ body {
   display: none;
 }
 
+/* The learn-the-mounting guide (#293) shows one step's button at a time
+   by toggling `hidden`, which .menu__action's display: block would
+   otherwise override. */
+.learn-mounting [hidden] {
+  display: none;
+}
+
 /* ---- Modern calibration cards (#109) ----
  * Two-card restyle of the same calibration flow: sensor calibration and
  * vehicle zero (#83) each get their own surfaced card with a status pill.

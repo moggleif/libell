@@ -389,6 +389,31 @@ describe('reconnecting (#130, #270)', () => {
   });
 });
 
+describe('a learned mounting (#293)', () => {
+  it('turns the box’s axes into the vehicle’s before the leveling math sees them', async () => {
+    const timers = fakeTimers();
+    let mapping: { swap: boolean; pitchSign: 1 | -1; rollSign: 1 | -1 } | null = null;
+    const sensor = createXparkleSensor(makeTransport().transport, {
+      ...timers,
+      getAxisMapping: () => mapping,
+    });
+    await sensor.start();
+    await timers.flush();
+    const raw = sensor.getGravity()!;
+    expect(raw.x).toBeCloseTo(Math.tan((1.5 * Math.PI) / 180));
+    expect(raw.y).toBeCloseTo(Math.tan((3.25 * Math.PI) / 180));
+
+    // Takes effect on the next reading, with no reconnect.
+    mapping = { swap: true, pitchSign: -1, rollSign: 1 };
+    await timers.flush();
+    const mapped = sensor.getGravity()!;
+    expect(mapped.x).toBeCloseTo(Math.tan((3.25 * Math.PI) / 180));
+    expect(mapped.y).toBeCloseTo(-Math.tan((1.5 * Math.PI) / 180));
+    // The raw reading stays raw: learning a new mounting needs it.
+    expect(sensor.getReading()?.pitchDeg).toBeCloseTo(3.25);
+  });
+});
+
 describe('zeroing the box (#290)', () => {
   it('never zeroes the box on its own: connecting sends only the login handshake', async () => {
     const timers = fakeTimers();
@@ -432,6 +457,7 @@ describe('the Xparkle descriptor (#270)', () => {
       installCalibration: true,
       debugBytes: false,
       reportedOrientation: true,
+      learnMounting: true,
     });
   });
 

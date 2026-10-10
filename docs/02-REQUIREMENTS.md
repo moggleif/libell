@@ -1502,10 +1502,21 @@ present this source as more proven than it is.
   guidance, the ramp plan, the stillness detection and the staleness overlay are the
   same code every other source runs through — never a second leveling path.
 - **Given** the box applies its own stored mounting orientation before reporting angles
-- **Then** Libell offers no mounting picker for it and applies no rotation of its own:
-  doing both would double-correct and name the wrong wheel while looking plausible. The
-  orientation the box reports is shown, and the manufacturer's app remains where it is
-  changed.
+- **Then** Libell offers no mounting picker for it — a picker describes the mounting
+  from the outside, and on top of the box's own correction it would double-correct and
+  name the wrong wheel while looking plausible. The orientation the box reports is shown.
+- **Given** the box is connected and the user opens "Learn the mounting" on its page
+  (#293)
+- **When** the user raises the vehicle's front, confirms, lowers it, raises the right
+  side and confirms
+- **Then** Libell learns which of the box's two angles moved for each lift and in which
+  direction, and from then on reads them so a raised front is front high and a raised
+  right side is left low — for any of the eight ways the box can sit, and composed with
+  whatever the box already applies, since it is measured rather than described. The
+  user never needs the vendor app for this. A lift too small to tell from noise, one
+  that moved both angles about equally, or two lifts that moved the same angle are
+  refused with the reason and nothing is stored; the learned mounting can be forgotten,
+  which returns to the box's own directions.
 - **Given** the connection to the box is lost while it stays switched on and in range
 - **When** the user taps Retry, or the background auto-retry runs (R37)
 - **Then** the app reconnects to the same box without the device picker (#288): a read
@@ -1528,5 +1539,5 @@ present this source as more proven than it is.
 - **Given** any other command that would change what the box has stored (its vehicle
   dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
-  rewriting a user's setup is worse than not supporting it. The box's orientation is
-  changed in the vendor app.
+  rewriting a user's setup is worse than not supporting it. Libell's learned mounting
+  (#293) lives in Libell's own settings instead.

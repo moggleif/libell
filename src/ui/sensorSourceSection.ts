@@ -52,6 +52,7 @@ import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
+import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -175,6 +176,9 @@ export interface SensorSourceOptions {
   getMounting(): EasyLevelMounting;
   /** Takes effect on the very next reading, no reconnect needed. */
   setMounting(mounting: EasyLevelMounting): void;
+  /** The "learn the mounting" guide (#293) — only rendered when the
+   * descriptor declares `learnMounting` and this is supplied. */
+  learnMounting?: Omit<LearnMountingOptions, 'name'>;
 }
 
 export interface SensorSourceSection {
@@ -358,6 +362,13 @@ export function createSensorSourceSection(
       installClearButton,
     );
   }
+  // Learned mounting (#293): after the offset, because the guide's first
+  // step assumes the box has just been set as level.
+  const learnSection =
+    capabilities.learnMounting && options.learnMounting
+      ? createLearnMountingSection({ name: options.sensor.displayName, ...options.learnMounting })
+      : null;
+  if (learnSection) installSection.append(learnSection.element);
   body.append(connectSection, installSection);
 
   /** Same status/age/disabled-buttons pattern as the phone's vehicle zero
@@ -443,6 +454,7 @@ export function createSensorSourceSection(
     if (active) {
       if (capabilities.mounting) refreshMountingIcon();
       if (capabilities.installCalibration) refreshInstall();
+      learnSection?.refresh();
     }
   }
 

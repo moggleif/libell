@@ -1,5 +1,6 @@
 import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
+import type { LearnMountingOptions } from './ui/learnMountingSection';
 import { setupShareButton } from './ui/share';
 import { shareVehicleSetup, takePendingVehicleSetupCode } from './ui/vehicleShare';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
@@ -23,6 +24,8 @@ import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
 import {
   easyLevelSettings,
+  xparkleSettings,
+  withXparkleSettings,
   formatLength,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
   toggleMute,
@@ -388,7 +391,13 @@ function bootstrap(root: HTMLElement): void {
    * very next attempt without recreating anything.
    */
   function createExternalSensor(source: SensorSource): LibellExternalSensor | null {
-    if (source === 'xparkle') return createXparkleSensor(createXparkleTransport());
+    if (source === 'xparkle') {
+      // The learned mounting (#293) is read live, so a newly learned one
+      // takes effect on the very next reading.
+      return createXparkleSensor(createXparkleTransport(), {
+        getAxisMapping: () => xparkleSettings(settings).axisMapping,
+      });
+    }
     if (source !== 'easylevel') return null;
     // Simulated box (#220): the `?easylevel-sim` flag swaps the transport
     // at this one seam — everything above it (sensor state machine,
@@ -440,6 +449,28 @@ function bootstrap(root: HTMLElement): void {
         : null;
     }
     return null;
+  }
+
+  /**
+   * The "learn the mounting" guide's wiring (#293), for the one box that
+   * offers it; undefined for every other source, so no guide is drawn.
+   */
+  function learnMountingFor(source: SensorSource): Omit<LearnMountingOptions, 'name'> | undefined {
+    if (source !== 'xparkle') return undefined;
+    return {
+      getRawReading: () => {
+        const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
+        if (!box || box.getState() !== 'granted') return null;
+        const reading = box.getReading();
+        return reading ? { pitchDeg: reading.pitchDeg, rollDeg: reading.rollDeg } : null;
+      },
+      getLearnedMounting: () => xparkleSettings(settings).axisMapping,
+      setLearnedMounting: (axisMapping) => {
+        settings = withXparkleSettings(settings, { axisMapping });
+        saveSettings(settings);
+        updateIndicators();
+      },
+    };
   }
 
   /**
@@ -569,6 +600,7 @@ function bootstrap(root: HTMLElement): void {
           installOffsets.get(descriptor.id)?.capturedAt ?? null,
         checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
         clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+        learnMounting: learnMountingFor(descriptor.id),
       }),
       connectSensor: () => externalSensors.connect('easylevel'),
       disconnectSensor: () => externalSensors.disconnect(),
@@ -759,6 +791,7 @@ function bootstrap(root: HTMLElement): void {
           installOffsets.get(descriptor.id)?.capturedAt ?? null,
         checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
         clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+        learnMounting: learnMountingFor(descriptor.id),
       }))
     : null;
   const sensorPage = externalSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);

@@ -49,6 +49,7 @@
  * #290): the box's own zero is what makes a box mounted lying on its back
  * usable at all. `setParameters` is never sent.
  */
+import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
 import type { ExternalSensor } from './externalSensorController';
@@ -60,6 +61,7 @@ import {
   buildQueryParameters,
   buildResetZero,
   createXparkleFrameReassembler,
+  gravityFromAngles,
   gravityFromReading,
   parseLivePayload,
   parseParameterReply,
@@ -170,7 +172,8 @@ export interface XparkleTransport {
 
 export interface XparkleSensor extends ExternalSensor {
   /** The most recent parsed reading, or null — battery included, for the
-   * device page's health row. */
+   * device page's health row. Raw, as the box reports it: before any
+   * learned mounting (#293), which is what learning a new one needs. */
   getReading(): XparkleReading | null;
   /** The mounting orientation the box itself reports (display only — see
    * the module doc comment for why Libell never applies its own). */
@@ -204,6 +207,12 @@ function passwordAccepted(frame: Uint8Array): boolean {
 export interface XparkleSensorOptions {
   /** The box's four-digit password. Defaults to the factory `"0000"`. */
   getPassword?: () => string;
+  /**
+   * How the box sits in the vehicle, as learned on its page (#293), or
+   * null for its own axes. Read on every reading, so a newly learned
+   * mounting takes effect at once, with no reconnect.
+   */
+  getAxisMapping?: () => AxisMapping | null;
   /** Injectable for tests; real timers in the browser. */
   setTimer?: (handler: () => void, ms: number) => number;
   clearTimer?: (id: number) => void;
@@ -215,6 +224,7 @@ export function createXparkleSensor(
   options: XparkleSensorOptions = {},
 ): XparkleSensor {
   const getPassword = options.getPassword ?? (() => XPARKLE_DEFAULT_PASSWORD);
+  const getAxisMapping = options.getAxisMapping ?? (() => null);
   const setTimer =
     options.setTimer ?? ((handler, ms) => setTimeout(handler, ms) as unknown as number);
   const clearTimer = options.clearTimer ?? ((id) => clearTimeout(id));
@@ -270,7 +280,13 @@ export function createXparkleSensor(
       const parsed = view ? parseLivePayload(view) : null;
       if (parsed) {
         reading = parsed;
-        gravity = gravityFromReading(parsed);
+        const mapping = getAxisMapping();
+        if (mapping) {
+          const mapped = applyAxisMapping(parsed, mapping);
+          gravity = gravityFromAngles(mapped.rollDeg, mapped.pitchDeg);
+        } else {
+          gravity = gravityFromReading(parsed);
+        }
         lastSampleAt = now();
       }
       // A payload that parses to null is a bad packet, not a lost link:
@@ -563,6 +579,7 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     installCalibration: true,
     debugBytes: false,
     reportedOrientation: true,
+    learnMounting: true,
   },
   // Polled every 500 ms, so a silence of several polls is a real fault
   // rather than jitter — but kept at EasyLevel's own 4s rather than

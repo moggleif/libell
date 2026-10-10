@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
+import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
 import { setLanguage } from './i18n';
 
 setLanguage('en');
@@ -437,5 +438,31 @@ describe('one row per source, each answering for itself (#272)', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(onSourceChanged).toHaveBeenCalled();
+  });
+});
+
+describe('the learn-the-mounting guide on the device page (#293)', () => {
+  const learnMounting = {
+    getRawReading: () => ({ pitchDeg: 0, rollDeg: 0 }),
+    getLearnedMounting: () => null,
+    setLearnedMounting: () => {},
+  };
+
+  it('is offered for a box that declares it', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting,
+      }),
+    );
+    expect(section.installElement.textContent).toContain('Learn the mounting');
+  });
+
+  it('is not offered for a box that does not', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', learnMounting }),
+    );
+    expect(section.installElement.textContent).not.toContain('Learn the mounting');
   });
 });

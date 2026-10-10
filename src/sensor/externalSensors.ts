@@ -55,6 +55,8 @@ export interface ExternalSensorCapabilities {
   /** Reports the mounting orientation it stores itself, shown read-only
    * (R49, #290) — as opposed to `mounting`, which the user picks here. */
   reportedOrientation: boolean;
+  /** Its mounting can be learned in Libell by lifting the vehicle (#293). */
+  learnMounting: boolean;
 }
 
 /** A mounting orientation a box stores and reports itself (R49). */

@@ -3,6 +3,7 @@
  * APIs — so it is shared between the domain tests and the localStorage
  * store in `src/data/settingsStore.ts`.
  */
+import { parseAxisMapping, type AxisMapping } from './axisMapping';
 
 export interface LevelSettings {
   /**
@@ -267,6 +268,21 @@ export const DEFAULT_EASYLEVEL_SETTINGS: EasyLevelSettings = {
   // comment), not its bonded 1600ms — an EasyLevel box has no reason to
   // ever be bonded. Not used at all while `connectDelayEnabled` is false.
   connectDelayMs: 300,
+};
+
+/** Settings belonging to the Xparkle box specifically (#293). */
+export interface XparkleSettings {
+  /**
+   * How the box sits in the vehicle, learned by lifting the front and the
+   * right side (`domain/axisMapping.ts`), or null for "as the box reports
+   * it". Applied to every reading before anything else sees it.
+   */
+  axisMapping: AxisMapping | null;
+}
+
+export const DEFAULT_XPARKLE_SETTINGS: XparkleSettings = {
+  // Nothing learned: the box's own axes, exactly as before #293.
+  axisMapping: null,
 };
 
 export const DEFAULT_SETTINGS: LevelSettings = {
@@ -540,6 +556,28 @@ export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
  * Settings with the EasyLevel entry patched (#264) — every other source's
  * entry, known or not, is carried through untouched.
  */
+/** Read the Xparkle box's settings out of the bag (#293), validated the
+ * same way `easyLevelSettings` validates its own. */
+export function xparkleSettings(settings: LevelSettings): XparkleSettings {
+  const stored = settings.sensorDevices.xparkle;
+  const raw = isRecord(stored) ? stored : {};
+  return { axisMapping: parseAxisMapping(raw.axisMapping) };
+}
+
+/** Settings with the Xparkle entry patched (#293). */
+export function withXparkleSettings(
+  settings: LevelSettings,
+  patch: Partial<XparkleSettings>,
+): LevelSettings {
+  return {
+    ...settings,
+    sensorDevices: {
+      ...settings.sensorDevices,
+      xparkle: { ...xparkleSettings(settings), ...patch },
+    },
+  };
+}
+
 export function withEasyLevelSettings(
   settings: LevelSettings,
   patch: Partial<EasyLevelSettings>,

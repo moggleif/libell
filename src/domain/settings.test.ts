@@ -12,6 +12,8 @@ import {
   parseSettings,
   toggleMute,
   withEasyLevelSettings,
+  withXparkleSettings,
+  xparkleSettings,
 } from './settings';
 
 describe('parseSettings', () => {
@@ -385,5 +387,27 @@ describe('toggleMute (#161)', () => {
     expect(muted.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
     const unmuted = toggleMute(muted.settings, muted.preMute);
     expect(unmuted.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
+  });
+});
+
+describe('Xparkle device settings (#293)', () => {
+  it('defaults to no learned mounting', () => {
+    expect(xparkleSettings(parseSettings({})).axisMapping).toBeNull();
+  });
+
+  it('round-trips a learned mounting through the per-source bag', () => {
+    const mapping = { swap: true, pitchSign: -1 as const, rollSign: 1 as const };
+    const saved = withXparkleSettings(parseSettings({}), { axisMapping: mapping });
+    const reloaded = parseSettings(JSON.parse(JSON.stringify(saved)));
+    expect(xparkleSettings(reloaded).axisMapping).toEqual(mapping);
+    // The other box's entry is untouched.
+    expect(easyLevelSettings(reloaded)).toEqual(easyLevelSettings(parseSettings({})));
+  });
+
+  it('falls back to no mapping for a corrupt entry rather than guessing one', () => {
+    const raw = {
+      sensorDevices: { xparkle: { axisMapping: { swap: 1, pitchSign: 1, rollSign: 1 } } },
+    };
+    expect(xparkleSettings(parseSettings(raw)).axisMapping).toBeNull();
   });
 });

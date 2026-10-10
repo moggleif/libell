@@ -201,6 +201,7 @@ const SECOND_BOX: ExternalSensorDescriptor = {
     installCalibration: true,
     debugBytes: false,
     reportedOrientation: false,
+    learnMounting: false,
   },
   staleTimeoutMs: 4000,
 };

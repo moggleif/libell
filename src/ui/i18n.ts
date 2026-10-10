@@ -127,7 +127,7 @@ export const MESSAGES = {
     // why RSSI can never be read for a connected device.
     'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
-    'sensorSource.detail.orientation': "Mounting (set in the manufacturer's app): {value}",
+    'sensorSource.detail.orientation': 'The box’s own mounting setting: {value}',
     'sensorSource.orientation.front': 'Front',
     'sensorSource.orientation.rear': 'Rear',
     'sensorSource.orientation.left': 'Left',
@@ -157,6 +157,31 @@ export const MESSAGES = {
     'sensorSource.install.clear': 'Clear installation offset',
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
     'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
+
+    // Learn the mounting (#293): Libell watches the box while the user
+    // lifts the front, then the right side — no vendor app needed.
+    'sensorSource.learn.h': 'Learn the mounting',
+    'sensorSource.learn.intro':
+      'However the box sits in the vehicle, Libell can learn which way is front and which is right. Set the vehicle as level first, then follow the steps.',
+    'sensorSource.learn.start': 'Learn the mounting',
+    'sensorSource.learn.step.front':
+      'Raise the vehicle’s front a few centimetres, then press the button.',
+    'sensorSource.learn.capture.front': 'The front is raised',
+    'sensorSource.learn.step.right':
+      'Lower the front again. Now raise the right side a few centimetres, then press the button.',
+    'sensorSource.learn.capture.right': 'The right side is raised',
+    'sensorSource.learn.cancel': 'Cancel',
+    'sensorSource.learn.clear': 'Forget the learned mounting',
+    'sensorSource.learn.status.learned': 'Mounting learned.',
+    'sensorSource.learn.status.none': 'No mounting learned — the box’s own directions are used.',
+    'sensorSource.learn.done':
+      'Done! Check it: raise the front and Libell should point to the rear wheels.',
+    'sensorSource.learn.err.tooSmall':
+      'The vehicle hardly moved. Raise it a little more and try again.',
+    'sensorSource.learn.err.ambiguous':
+      'Both directions moved about as much. Raise only the front, then only the right side, and try again.',
+    'sensorSource.learn.err.sameAxis':
+      'Both lifts tilted the same way. Raise the front first, then the right side, and try again.',
 
     // Mounting orientation (#217): the box can be physically mounted two
     // ways, 90° apart — mirrors the official EasyLevel app's own setting,
@@ -656,7 +681,7 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
-    'sensorSource.detail.orientation': 'Montering (ställs in i tillverkarens app): {value}',
+    'sensorSource.detail.orientation': 'Boxens egen monteringsinställning: {value}',
     'sensorSource.orientation.front': 'Fram',
     'sensorSource.orientation.rear': 'Bak',
     'sensorSource.orientation.left': 'Vänster',
@@ -680,6 +705,29 @@ export const MESSAGES = {
     'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
     'sensorSource.install.status.none':
       'Inget installationsoffset — den råa avläsningen räknas som plan.',
+
+    // Lär in monteringen (#293): Libell följer boxen medan användaren
+    // höjer fronten och sedan höger sida — ingen tillverkarapp behövs.
+    'sensorSource.learn.h': 'Lär in monteringen',
+    'sensorSource.learn.intro':
+      'Hur boxen än sitter i fordonet kan Libell lära sig vad som är fram och vad som är höger. Sätt fordonet som plant först och följ sedan stegen.',
+    'sensorSource.learn.start': 'Lär in monteringen',
+    'sensorSource.learn.step.front':
+      'Höj fordonets front några centimeter och tryck sedan på knappen.',
+    'sensorSource.learn.capture.front': 'Fronten är höjd',
+    'sensorSource.learn.step.right':
+      'Sänk fronten igen. Höj nu höger sida några centimeter och tryck sedan på knappen.',
+    'sensorSource.learn.capture.right': 'Höger sida är höjd',
+    'sensorSource.learn.cancel': 'Avbryt',
+    'sensorSource.learn.clear': 'Glöm inlärd montering',
+    'sensorSource.learn.status.learned': 'Monteringen är inlärd.',
+    'sensorSource.learn.status.none': 'Ingen inlärd montering — boxens egna riktningar används.',
+    'sensorSource.learn.done': 'Klart! Kontrollera: höj fronten så ska Libell peka ut bakhjulen.',
+    'sensorSource.learn.err.tooSmall': 'Fordonet rörde sig knappt. Höj lite mer och försök igen.',
+    'sensorSource.learn.err.ambiguous':
+      'Båda riktningarna rörde sig ungefär lika mycket. Höj bara fronten, sedan bara höger sida, och försök igen.',
+    'sensorSource.learn.err.sameAxis':
+      'Båda lyften lutade åt samma håll. Höj fronten först och sedan höger sida, och försök igen.',
 
     // Monteringsriktning (#217): sensorboxen kan monteras på två sätt, ett
     // kvarts varv från varandra — motsvarar den officiella EasyLevel-
@@ -1096,7 +1144,7 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Détails du capteur',
     'sensorSource.detail.battery': 'Batterie : {value}',
-    'sensorSource.detail.orientation': 'Montage (réglé dans l’app du fabricant) : {value}',
+    'sensorSource.detail.orientation': 'Réglage de montage du boîtier : {value}',
     'sensorSource.orientation.front': 'Avant',
     'sensorSource.orientation.rear': 'Arrière',
     'sensorSource.orientation.left': 'Gauche',
@@ -1118,6 +1166,30 @@ export const MESSAGES = {
       'Décalage d’installation : latéral {roll}°, longitudinal {pitch}°.',
     'sensorSource.install.status.none':
       'Aucun décalage d’installation — la lecture brute compte comme le niveau.',
+
+    'sensorSource.learn.h': 'Apprendre le montage',
+    'sensorSource.learn.intro':
+      'Quelle que soit la position du boîtier dans le véhicule, Libell peut apprendre où sont l’avant et la droite. Définissez d’abord le véhicule comme de niveau, puis suivez les étapes.',
+    'sensorSource.learn.start': 'Apprendre le montage',
+    'sensorSource.learn.step.front':
+      'Soulevez l’avant du véhicule de quelques centimètres, puis appuyez sur le bouton.',
+    'sensorSource.learn.capture.front': 'L’avant est soulevé',
+    'sensorSource.learn.step.right':
+      'Redescendez l’avant. Soulevez maintenant le côté droit de quelques centimètres, puis appuyez sur le bouton.',
+    'sensorSource.learn.capture.right': 'Le côté droit est soulevé',
+    'sensorSource.learn.cancel': 'Annuler',
+    'sensorSource.learn.clear': 'Oublier le montage appris',
+    'sensorSource.learn.status.learned': 'Montage appris.',
+    'sensorSource.learn.status.none':
+      'Aucun montage appris — les directions du boîtier sont utilisées.',
+    'sensorSource.learn.done':
+      'Terminé ! Vérifiez : soulevez l’avant et Libell doit indiquer les roues arrière.',
+    'sensorSource.learn.err.tooSmall':
+      'Le véhicule a à peine bougé. Soulevez un peu plus et réessayez.',
+    'sensorSource.learn.err.ambiguous':
+      'Les deux directions ont bougé à peu près autant. Soulevez seulement l’avant, puis seulement le côté droit, et réessayez.',
+    'sensorSource.learn.err.sameAxis':
+      'Les deux levages ont incliné dans le même sens. Soulevez d’abord l’avant, puis le côté droit, et réessayez.',
 
     'sensorSource.mounting.h': 'Montage du capteur',
     'sensorSource.mounting.intro':
@@ -1545,7 +1617,7 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Detalles del sensor',
     'sensorSource.detail.battery': 'Batería: {value}',
-    'sensorSource.detail.orientation': 'Montaje (se ajusta en la app del fabricante): {value}',
+    'sensorSource.detail.orientation': 'Ajuste de montaje de la propia caja: {value}',
     'sensorSource.orientation.front': 'Delante',
     'sensorSource.orientation.rear': 'Detrás',
     'sensorSource.orientation.left': 'Izquierda',
@@ -1567,6 +1639,30 @@ export const MESSAGES = {
       'Desfase de instalación: lado/lado {roll}°, delante/detrás {pitch}°.',
     'sensorSource.install.status.none':
       'Sin desfase de instalación: la lectura en bruto cuenta como nivel.',
+
+    'sensorSource.learn.h': 'Aprender el montaje',
+    'sensorSource.learn.intro':
+      'Esté como esté la caja en el vehículo, Libell puede aprender dónde está la parte delantera y dónde la derecha. Primero fija el vehículo como nivelado y luego sigue los pasos.',
+    'sensorSource.learn.start': 'Aprender el montaje',
+    'sensorSource.learn.step.front':
+      'Levanta la parte delantera del vehículo unos centímetros y pulsa el botón.',
+    'sensorSource.learn.capture.front': 'La parte delantera está levantada',
+    'sensorSource.learn.step.right':
+      'Baja otra vez la parte delantera. Ahora levanta el lado derecho unos centímetros y pulsa el botón.',
+    'sensorSource.learn.capture.right': 'El lado derecho está levantado',
+    'sensorSource.learn.cancel': 'Cancelar',
+    'sensorSource.learn.clear': 'Olvidar el montaje aprendido',
+    'sensorSource.learn.status.learned': 'Montaje aprendido.',
+    'sensorSource.learn.status.none':
+      'Ningún montaje aprendido: se usan las direcciones propias de la caja.',
+    'sensorSource.learn.done':
+      '¡Listo! Compruébalo: levanta la parte delantera y Libell debería señalar las ruedas traseras.',
+    'sensorSource.learn.err.tooSmall':
+      'El vehículo apenas se movió. Levántalo un poco más e inténtalo de nuevo.',
+    'sensorSource.learn.err.ambiguous':
+      'Las dos direcciones se movieron casi lo mismo. Levanta solo la parte delantera, luego solo el lado derecho, e inténtalo de nuevo.',
+    'sensorSource.learn.err.sameAxis':
+      'Los dos levantamientos inclinaron hacia el mismo lado. Levanta primero la parte delantera y luego el lado derecho, e inténtalo de nuevo.',
 
     'sensorSource.mounting.h': 'Montaje del sensor',
     'sensorSource.mounting.intro':
@@ -1992,7 +2088,7 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetails',
     'sensorSource.detail.battery': 'Batterie: {value}',
-    'sensorSource.detail.orientation': 'Montage (in der Hersteller-App eingestellt): {value}',
+    'sensorSource.detail.orientation': 'Eigene Montageeinstellung der Box: {value}',
     'sensorSource.orientation.front': 'Vorne',
     'sensorSource.orientation.rear': 'Hinten',
     'sensorSource.orientation.left': 'Links',
@@ -2012,6 +2108,30 @@ export const MESSAGES = {
     'sensorSource.install.clear': 'Einbau-Offset löschen',
     'sensorSource.install.status': 'Einbau-Offset: seitlich {roll}°, längs {pitch}°.',
     'sensorSource.install.status.none': 'Kein Einbau-Offset — der Rohwert gilt als waagerecht.',
+
+    'sensorSource.learn.h': 'Montage anlernen',
+    'sensorSource.learn.intro':
+      'Wie auch immer die Box im Fahrzeug sitzt, Libell kann lernen, wo vorne und wo rechts ist. Setze das Fahrzeug zuerst als waagerecht und folge dann den Schritten.',
+    'sensorSource.learn.start': 'Montage anlernen',
+    'sensorSource.learn.step.front':
+      'Hebe die Fahrzeugfront ein paar Zentimeter an und tippe dann auf die Schaltfläche.',
+    'sensorSource.learn.capture.front': 'Die Front ist angehoben',
+    'sensorSource.learn.step.right':
+      'Senke die Front wieder ab. Hebe jetzt die rechte Seite ein paar Zentimeter an und tippe dann auf die Schaltfläche.',
+    'sensorSource.learn.capture.right': 'Die rechte Seite ist angehoben',
+    'sensorSource.learn.cancel': 'Abbrechen',
+    'sensorSource.learn.clear': 'Angelernte Montage vergessen',
+    'sensorSource.learn.status.learned': 'Montage angelernt.',
+    'sensorSource.learn.status.none':
+      'Keine Montage angelernt — die eigenen Richtungen der Box werden verwendet.',
+    'sensorSource.learn.done':
+      'Fertig! Prüfe es: Hebe die Front an, dann sollte Libell auf die Hinterräder zeigen.',
+    'sensorSource.learn.err.tooSmall':
+      'Das Fahrzeug hat sich kaum bewegt. Hebe es etwas mehr an und versuche es erneut.',
+    'sensorSource.learn.err.ambiguous':
+      'Beide Richtungen haben sich etwa gleich stark bewegt. Hebe nur die Front, dann nur die rechte Seite an und versuche es erneut.',
+    'sensorSource.learn.err.sameAxis':
+      'Beide Anhebungen haben in dieselbe Richtung geneigt. Hebe zuerst die Front, dann die rechte Seite an und versuche es erneut.',
 
     'sensorSource.mounting.h': 'Sensormontage',
     'sensorSource.mounting.intro':

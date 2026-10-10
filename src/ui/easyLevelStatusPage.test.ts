@@ -60,7 +60,7 @@ describe('createEasyLevelStatusPage', () => {
         getHealth: () => health,
       }),
     );
-    expect(xparkle.element.textContent).toContain("Mounting (set in the manufacturer's app): Rear");
+    expect(xparkle.element.textContent).toContain('The box’s own mounting setting: Rear');
 
     const easyLevel = createEasyLevelStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getHealth: () => health }),
