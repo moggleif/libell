@@ -283,7 +283,10 @@ both axles) and step heights.
 
 Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`), so once the app
 has been opened with a connection it works with no signal at all. `registerType:
-'autoUpdate'` means a new deployment is picked up on the next launch.
+'autoUpdate'` lets a new worker activate on its own; `src/ui/appUpdate.ts` then reloads
+an already-controlled page once on `controllerchange`, re-checks for a new worker when
+the app returns to the foreground, and lets a tap on the top-bar name / version check on
+demand (R50).
 
 ## UI
 
