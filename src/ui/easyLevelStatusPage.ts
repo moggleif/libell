@@ -95,9 +95,13 @@ export interface EasyLevelStatusPage {
    * from `sensorSourceSection.ts`'s `installElement`. Sits below the
    * live detail rows and above the debug disclosure. */
   settingsSlot: HTMLElement;
-  /** Inside the collapsed "More" disclosure (#314): the rarely needed
-   * actions `sensorSourceSection.ts` builds, placed by `sensorPage.ts`. */
-  moreSlot: HTMLElement;
+  /** Under the checklist (#332): the box's Disconnect, built by
+   * `sensorSourceSection.ts` and placed by `sensorPage.ts`. There is no
+   * "More" any more; every action sits where it belongs. */
+  footerSlot: HTMLElement;
+  /** At the start of the live line (#332): the box's position ("✓ Stands
+   * upright"), so position and tilt read as one status line. */
+  positionSlot: HTMLElement;
   isOpen(): boolean;
   open(): void;
   close(): void;
@@ -168,16 +172,17 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   // established GATT connection — and a BLE peripheral generally stops
   // advertising once connected, which is exactly the state this page is
   // open in. So there is nothing to measure here, ever.
-  const batteryRow = document.createElement('p');
-  batteryRow.className = 'menu__text';
-  // The orientation the box keeps itself (R49, #290): read-only, since it
-  // is changed in the vendor app, but worth seeing.
-  const orientationRow = document.createElement('p');
-  orientationRow.className = 'menu__text';
+  // No battery row (the header says it) and no row for the box's own
+  // mounting setting (the direction step says it), #332.
   const temperatureRow = document.createElement('p');
   temperatureRow.className = 'menu__text';
+  // One live status line (#332): the box's position, then its tilt.
   const readingRow = document.createElement('p');
-  readingRow.className = 'menu__text';
+  readingRow.className = 'menu__text box-live';
+  const positionSlot = document.createElement('span');
+  positionSlot.className = 'box-live__position';
+  const tiltText = document.createElement('span');
+  readingRow.append(positionSlot, tiltText);
   // A plain threshold + hysteresis band (#123's `isLowBattery`).
   const lowBatteryRow = document.createElement('p');
   lowBatteryRow.className = 'menu__text menu__text--warning';
@@ -192,20 +197,9 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   const settingsSlot = document.createElement('div');
   page.body.append(settingsSlot);
 
-  // "More" (#314): everything a user rarely needs, collapsed — the
-  // secondary actions, the detail rows, and the debug info.
-  const moreDetails = document.createElement('details');
-  moreDetails.className = 'menu__detail box-more';
-  const moreSummary = document.createElement('summary');
-  moreSummary.className = 'sensor-status__debug-summary';
-  moreSummary.textContent = t('box.more');
-  const moreSlot = document.createElement('div');
-  moreDetails.append(moreSummary, moreSlot);
-  // Only the rows this device can actually fill (#268, ADR 0016).
-  if (capabilities.battery) moreDetails.append(batteryRow);
-  if (capabilities.temperature) moreDetails.append(temperatureRow);
-  if (capabilities.reportedOrientation) moreDetails.append(orientationRow);
-  page.body.append(moreDetails);
+  const footerSlot = document.createElement('div');
+  footerSlot.className = 'box-footer';
+  page.body.append(footerSlot);
 
   // Debug info (EasyLevel only): closed by default, same native-<details>
   // discipline as the settings page's Advanced disclosure (#157) — no JS
@@ -261,7 +255,10 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   connectDelayMsInput.step = '50';
   connectDelayMsField.append(connectDelayMsCaption, connectDelayMsInput);
 
-  debugDetails.append(debugSummary, debugIntro, deviceIdRow, lastSampleRow, rawAccelRow);
+  debugDetails.append(debugSummary, debugIntro);
+  // Only the rows this device can actually fill (#268, ADR 0016).
+  if (capabilities.temperature) debugDetails.append(temperatureRow);
+  debugDetails.append(deviceIdRow, lastSampleRow, rawAccelRow);
   if (capabilities.firmwareVersion) debugDetails.append(firmwareTierRow);
   if (capabilities.debugBytes) debugDetails.append(rawStatusBytesRow);
   debugDetails.append(
@@ -275,7 +272,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   // workaround — are one device's own debug surface, and a source without
   // them would show a disclosure full of dashes and a control that does
   // nothing (#272).
-  if (capabilities.debugBytes) moreDetails.append(debugDetails);
+  if (capabilities.debugBytes) page.body.append(debugDetails);
 
   // Silent-reconnect tip (#310): for any box, closed by default, and only
   // in a Chromium browser off iOS that has Web Bluetooth but not
@@ -367,25 +364,21 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         ? t('sensorFallback.retry')
         : t('box.connect');
     const batteryPercent = health?.batteryPercent ?? null;
-    batteryRow.textContent = t('sensorSource.detail.battery', {
-      value: batteryPercent === null ? notAvailable : `${Math.round(batteryPercent)}%`,
-    });
     temperatureRow.textContent = t('sensorSource.detail.temperature', {
       value:
         health?.temperatureCelsius == null
           ? notAvailable
           : `${health.temperatureCelsius.toFixed(1)}°C`,
     });
-    const orientation = health?.reportedOrientation ?? null;
-    orientationRow.textContent = t('sensorSource.detail.orientation', {
-      value: orientation === null ? notAvailable : t(`sensorSource.orientation.${orientation}`),
-    });
     const tilt = options.getCalibratedTilt();
-    readingRow.textContent = t('sensorStatus.reading', {
-      value: tilt
-        ? `${t('tilt.sideSide')} ${tilt.rollDeg.toFixed(1)}° · ${t('tilt.frontBack')} ${tilt.pitchDeg.toFixed(1)}°`
-        : '—',
-    });
+    // After the position when there is one ("✓ Stands upright · Side…"),
+    // else on its own; nothing at all before the first reading.
+    const separator = positionSlot.childElementCount > 0 ? ' · ' : '';
+    tiltText.textContent = tilt
+      ? `${separator}${t('tilt.sideSide')} ${tilt.rollDeg.toFixed(1)}° · ${t('tilt.frontBack')} ${tilt.pitchDeg.toFixed(1)}°`
+      : positionSlot.childElementCount > 0
+        ? ''
+        : t('sensorStatus.reading', { value: '—' });
 
     wasLowBattery = batteryPercent === null ? false : isLowBattery(batteryPercent, wasLowBattery);
     lowBatteryRow.hidden = !wasLowBattery;
@@ -439,7 +432,8 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   return {
     element: page.element,
     settingsSlot,
-    moreSlot,
+    footerSlot,
+    positionSlot,
     isOpen: page.isOpen,
     open: page.open,
     close: page.close,

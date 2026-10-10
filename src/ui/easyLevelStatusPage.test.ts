@@ -42,11 +42,14 @@ describe('createEasyLevelStatusPage', () => {
         }),
       }),
     );
-    expect(page.element.textContent).toContain('Battery: 72%');
-    expect(page.element.textContent).toContain('Temperature: 19.5°C');
+    // Battery once, in the header (#332); temperature with the debug info.
+    expect(page.element.textContent).toContain('Connected · battery 72 %');
+    expect(page.element.textContent).not.toContain('Battery: 72%');
+    const debug = page.element.querySelector('.sensor-status__debug');
+    expect(debug?.textContent).toContain('Temperature: 19.5°C');
   });
 
-  it('shows the mounting a box reports itself, and only for a box that reports one (#290)', () => {
+  it('no longer repeats the mounting a box reports itself — Libell sets the direction (#290, #332)', () => {
     const health = {
       batteryPercent: 80,
       temperatureCelsius: null,
@@ -60,12 +63,7 @@ describe('createEasyLevelStatusPage', () => {
         getHealth: () => health,
       }),
     );
-    expect(xparkle.element.textContent).toContain('The box’s own mounting setting: Rear');
-
-    const easyLevel = createEasyLevelStatusPage(
-      makeOptions({ getSensorSource: () => 'easylevel', getHealth: () => health }),
-    );
-    expect(easyLevel.element.textContent).not.toContain('Mounting (set in');
+    expect(xparkle.element.textContent).not.toContain('The box’s own mounting setting');
   });
 
   it('shows a distinct disconnected status once the connection is lost (#129), not the plain "connected" text', () => {
@@ -133,17 +131,16 @@ describe('createEasyLevelStatusPage', () => {
     // entirely rather than shown as a permanent "not available yet",
     // which promised a reading Web Bluetooth cannot ever deliver for a
     // connected device.
-    expect(page.element.textContent).toContain('Battery: 72%');
+    expect(page.element.textContent).toContain('Connected · battery 72 %');
     expect(page.element.textContent).toContain('Temperature: 19.5°C');
     expect(page.element.textContent).not.toContain('Signal strength');
   });
 
-  it('still spells out battery and temperature for a dropped connection — not omitted on disconnect (#226)', () => {
+  it('still spells out the temperature for a dropped connection — not omitted on disconnect (#226)', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
-    expect(page.element.textContent).toContain('Battery');
-    expect(page.element.textContent).toContain('Temperature');
+    expect(page.element.textContent).toContain('Temperature: Not available yet');
   });
 
   it('holds the low-battery warning through the hysteresis band, hiding only once clearly recovered (#123, #226)', () => {
@@ -202,10 +199,10 @@ describe('createEasyLevelStatusPage', () => {
         }),
       }),
     );
-    expect(page.element.textContent).toContain('Battery: 80%');
+    expect(page.element.textContent).toContain('battery 80 %');
     battery = 60;
     page.refresh();
-    expect(page.element.textContent).toContain('Battery: 60%');
+    expect(page.element.textContent).toContain('battery 60 %');
   });
 
   describe('debug info (EasyLevel only)', () => {
@@ -247,9 +244,9 @@ describe('createEasyLevelStatusPage', () => {
       const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
       const text = page.element.textContent ?? '';
       const notAvailableCount = (text.match(/Not available yet/g) ?? []).length;
-      // Device ID, raw accelerometer, firmware tier, raw status bytes — plus
-      // the battery/temperature rows above the disclosure.
-      expect(notAvailableCount).toBeGreaterThanOrEqual(6);
+      // Temperature, device ID, raw accelerometer, firmware tier, raw status
+      // bytes — the battery lives in the header (#332).
+      expect(notAvailableCount).toBeGreaterThanOrEqual(5);
     });
 
     it('copies a plain-text debug summary to the clipboard', async () => {
@@ -384,12 +381,31 @@ describe('createEasyLevelStatusPage', () => {
       expect(button(page)?.textContent).toBe(t('box.connect'));
     });
 
-    it('keeps the rarely needed rows inside a closed "More"', () => {
+    it('has no "More" — the footer below the steps hosts Disconnect, debug info stays last (#332)', () => {
       const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
-      const more = page.element.querySelector<HTMLDetailsElement>('.box-more');
-      expect(more?.open).toBe(false);
-      expect(more?.contains(page.moreSlot)).toBe(true);
-      expect(more?.textContent).toContain('Battery');
+      expect(page.element.querySelector('.box-more')).toBeNull();
+      expect(page.element.textContent).not.toContain('More');
+      const footer = page.element.querySelector('.box-footer');
+      expect(footer).toBe(page.footerSlot);
+      const debug = page.element.querySelector('.sensor-status__debug');
+      expect(
+        footer!.compareDocumentPosition(debug!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('puts the box position at the start of the live tilt line (#332)', () => {
+      const page = createEasyLevelStatusPage(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getCalibratedTilt: () => ({ pitchDeg: 0, rollDeg: 0 }),
+        }),
+      );
+      const position = document.createElement('span');
+      position.textContent = '✓ Stands upright';
+      page.positionSlot.append(position);
+      page.refresh();
+      const line = page.positionSlot.closest('.box-live');
+      expect(line?.textContent?.startsWith('✓ Stands upright · ')).toBe(true);
     });
   });
 
