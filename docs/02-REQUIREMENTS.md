@@ -389,6 +389,15 @@ URL and must keep working with no signal.
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
   any state, so an interrupted wizard can never leave the active source ambiguous.
+- **Given** an external sensor is already the active source when the wizard opens, and I
+  pick "This phone" on the source step (#287)
+- **Then** the phone path leaves out both phone calibration steps (sensor calibration and
+  vehicle zero) — their actions are disabled while a box is active (#285), and the wizard
+  never switches the source itself (ADR 0014; ✕ still leaves the source exactly as it
+  was). The source step says so while a box is active: choosing the phone skips the phone
+  calibration, and to calibrate the phone, tap "Disconnect" on the External sensor page
+  first. The box's own calibration (R34, R49) is unaffected. With the phone already
+  active, the wizard is unchanged.
 - **Given** the source step, with the external sensor picked instead of "This phone"
   (style-consistency review follow-up)
 - **Then** the "n / total" step count updates immediately, on the source step itself —
@@ -932,7 +941,8 @@ cross-platform goal — they are not this app's code and are not covered here.
   sensor calibration, flip calibration and vehicle zero are not applied to a box's
   readings, so capturing one would silently do nothing (or capture the box's tilt as
   the phone's). The stored phone values are kept untouched and become editable again on
-  switching back to the phone (#285).
+  switching back to the phone (#285). The first-run wizard (R18) leaves those disabled
+  steps out of its phone path for the same reason (#287).
 - **Given** an external sensor is the active source
 - **Then** the Calibration section also offers "Set vehicle level" for that sensor,
   named, above the disabled phone controls — the same action as on the sensor's own page
