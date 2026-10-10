@@ -972,6 +972,13 @@ noisy samples to arrive; this fires when no new samples arrive at all).
 - **Then** the overlay clears automatically the moment the next sample arrives — no
   manual action is needed purely to clear it. (Reconnecting a sensor that actually
   disconnected is a separate action, R33's job, not this one's.)
+- **Given** an external sensor is the active source and the overlay is shown (#286)
+- **Then** it also carries an "Open sensor page" button (the same label as R17's
+  pose overlay) that opens that sensor's own page, not the source list. While the
+  phone is the active source the button is not shown. R37's unavailable prompt is
+  never shown at the same time as this overlay (that one needs no reading at all,
+  this one a reading that has gone old), and it carries the same button, so both
+  reach the sensor page.
 - The staleness check itself is one pure function shared by every
   `OrientationSensor` implementation (`domain/staleness.ts`): given the timestamp of
   the last real sample and the current time, has more than the timeout passed? Time
@@ -994,7 +1001,8 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **When** I look at the main screen
 - **Then** instead of the plain "no reading yet" hint, a clear, non-blocking prompt is
   shown: "External sensor unavailable." with two actions, "Retry" and "Use phone
-  sensor" — never a frozen or ambiguous screen.
+  sensor" — never a frozen or ambiguous screen. A third, "Open sensor page", opens that
+  sensor's own page (R40), as R35's stale-data overlay does (#286).
 - **Given** the fallback prompt is shown
 - **When** I tap "Retry"
 - **Then** the app makes one immediate silent reconnect attempt against the remembered

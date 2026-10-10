@@ -1132,6 +1132,13 @@ function bootstrap(root: HTMLElement): void {
     waiting.className = 'app__hint';
     waiting.textContent = t('main.waiting');
 
+    // The active external sensor's own page, not the source list (#285,
+    // #286): shared by every main-screen surface that links to it.
+    const openActiveSensorPage = () => {
+      const source = sensor().getSource();
+      if (source !== 'phone') externalSensorPage?.openSource(source);
+    };
+
     // Sensor unavailable fallback prompt (#134): the actionable form of
     // the plain "waiting" hint above, shown instead of it once the active
     // EasyLevel connection is unreachable (`isSensorUnavailable`,
@@ -1139,6 +1146,7 @@ function bootstrap(root: HTMLElement): void {
     const fallbackPrompt = createSensorFallbackPrompt(
       () => void externalSensors.retry(),
       () => externalSensors.usePhoneSensor(),
+      externalSensorPage ? openActiveSensorPage : undefined,
     );
 
     // Full-screen confirmation shown briefly when level is reached (#124:
@@ -1240,10 +1248,7 @@ function bootstrap(root: HTMLElement): void {
     poseSensorButton.type = 'button';
     poseSensorButton.className = 'menu__action';
     poseSensorButton.textContent = t('pose.openSensorPage');
-    poseSensorButton.addEventListener('click', () => {
-      const source = sensor().getSource();
-      if (source !== 'phone') externalSensorPage?.openSource(source);
-    });
+    poseSensorButton.addEventListener('click', openActiveSensorPage);
     poseOverlay.append(poseText, poseHint, poseSensorButton);
     root.append(poseOverlay);
 
@@ -1257,7 +1262,14 @@ function bootstrap(root: HTMLElement): void {
     const staleText = document.createElement('p');
     staleText.className = 'stale-overlay__text';
     staleText.textContent = t('stale.dataUnavailable');
-    staleOverlay.append(staleText);
+    // External sensor only (#286): the way to its own page (live values,
+    // connection), as the pose overlay above already has.
+    const staleSensorButton = document.createElement('button');
+    staleSensorButton.type = 'button';
+    staleSensorButton.className = 'menu__action';
+    staleSensorButton.textContent = t('pose.openSensorPage');
+    staleSensorButton.addEventListener('click', openActiveSensorPage);
+    staleOverlay.append(staleText, staleSensorButton);
     root.append(staleOverlay);
 
     const detectPose = createPoseDetector();
@@ -1366,6 +1378,7 @@ function bootstrap(root: HTMLElement): void {
         const staleTimeoutMs =
           externalSensorById(sensor().getSource())?.staleTimeoutMs ?? STALE_TIMEOUT_PHONE_MS;
         if (isSensorStale(sensor().getLastSampleAt(), now, staleTimeoutMs)) {
+          staleSensorButton.hidden = !externalSensorPage || sensor().getSource() === 'phone';
           staleOverlay.hidden = false;
           poseOverlay.hidden = true;
           levelOverlay.hideNow();
