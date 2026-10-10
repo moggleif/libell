@@ -5,6 +5,7 @@ import { setupShareButton } from './ui/share';
 import { shareVehicleSetup, takePendingVehicleSetupCode } from './ui/vehicleShare';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
+import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
@@ -186,6 +187,12 @@ const versionFooter = document.querySelector<HTMLElement>('#app-version');
 if (versionFooter && __APP_VERSION__) {
   versionFooter.textContent = `v${__APP_VERSION__}`;
 }
+
+// Tapping the name / version checks for a new deployment (#301), and a new
+// worker taking over reloads the page into it once.
+installUpdateReload();
+const identityEl = document.querySelector<HTMLElement>('.topbar__identity');
+if (identityEl) attachUpdateCheck(identityEl);
 
 const RAD_TO_DEG = 180 / Math.PI;
 const MAX_CALIBRATION_DEG = 15;

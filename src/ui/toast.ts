@@ -6,8 +6,9 @@
  */
 
 /** Fades/slides the toast in and out (#105) instead of appearing and
- * vanishing instantly; skipped under `prefers-reduced-motion`. */
-export function showToast(text: string): void {
+ * vanishing instantly; skipped under `prefers-reduced-motion`. Returns the
+ * element so a caller can drop it early when a follow-up replaces it. */
+export function showToast(text: string): HTMLElement {
   const toast = document.createElement('p');
   toast.className = 'toast';
   toast.setAttribute('role', 'status');
@@ -17,7 +18,7 @@ export function showToast(text: string): void {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) {
     window.setTimeout(() => toast.remove(), 2500);
-    return;
+    return toast;
   }
   requestAnimationFrame(() => toast.classList.add('is-visible'));
   window.setTimeout(() => {
@@ -26,4 +27,5 @@ export function showToast(text: string): void {
     // Fallback in case the transition never fires.
     window.setTimeout(() => toast.remove(), 400);
   }, 2500);
+  return toast;
 }

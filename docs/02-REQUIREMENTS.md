@@ -1568,3 +1568,20 @@ present this source as more proven than it is.
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
   rewriting a user's setup is worse than not supporting it. Libell's learned mounting
   (#293) lives in Libell's own settings instead.
+
+## R50 — Check for a new version from the top bar (#301)
+
+- **Given** a newer version has been deployed
+- **When** I tap the Libell name / version in the top bar
+- **Then** a short "Checking for updates…" message shows, the new version is fetched and
+  activated, and the app reloads into it.
+- **Given** I already run the latest version
+- **When** I tap the name / version
+- **Then** a short "You have the latest version" message shows and nothing reloads.
+- **Given** I have no connection
+- **When** I tap the name / version
+- **Then** a short message says there is no connection to check with.
+- **Given** a newer version has been deployed
+- **When** I open the app, or bring it back to the foreground
+- **Then** the update is found and the app reloads into it once, without a second
+  relaunch.
