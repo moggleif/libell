@@ -95,6 +95,7 @@ import {
 } from './sensor/easyLevelSensor';
 import {
   createXparkleSensor,
+  isXparkleUpright,
   XPARKLE_DESCRIPTOR,
   createXparkleTransport,
   type XparkleSensor,
@@ -1038,9 +1039,8 @@ function bootstrap(root: HTMLElement): void {
 
   /**
    * "Set vehicle level" for the Xparkle box (#290): the box zeroes itself
-   * (`resetZero`), which works however it is mounted — lying on its back
-   * included, where a Libell-side capture would be refused as far too
-   * tilted. Libell then stores a zero installation offset with the time:
+   * (`resetZero`). Refused while it reads far from upright: a box lying
+   * down gives readings no zero can fix (#273). Libell then stores a zero installation offset with the time:
    * it changes no reading (the box already reports from its new zero), but
    * it is what the calibration lamp, the age text and "Check" go by, and
    * it replaces any older Libell-side offset so two zeros are never
@@ -1051,6 +1051,10 @@ function bootstrap(root: HTMLElement): void {
     const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
     if (!box || box.getState() !== 'granted') {
       return t('calibration.external.err.notConnected', { name });
+    }
+    const reading = box.getReading();
+    if (reading && !isXparkleUpright(reading)) {
+      return t('calibration.external.err.notUpright', { name });
     }
     if (!(await box.zeroBox())) return t('calibration.external.err.failed', { name });
     const value: Calibration = { rollDeg: 0, pitchDeg: 0 };

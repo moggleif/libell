@@ -46,8 +46,8 @@
  * automatically.** The box remembers its own configuration, and silently
  * rewriting a user's setup is worse than not supporting it at all. The one
  * exception is `resetZero`, and only behind an explicit tap (`zeroBox()`,
- * #290): the box's own zero is what makes a box mounted lying on its back
- * usable at all. `setParameters` is never sent.
+ * #290): the box's own zero takes out the few degrees a mounting is off
+ * level. `setParameters` is never sent.
  */
 import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { GravityVector } from '../domain/leveling';
@@ -141,6 +141,21 @@ async function waitForAdvertisement(device: BluetoothDevice): Promise<void> {
   }
 }
 
+/**
+ * How far off upright the box may read and still be zeroed (#273). The box
+ * is built to stand; lying on its back it reads about 90° of pitch, and
+ * there turning it about its own axis moves both angles — found on
+ * hardware — so a zero taken there does not hold.
+ */
+export const XPARKLE_MAX_ZERO_TILT_DEG = 45;
+
+export function isXparkleUpright(reading: { pitchDeg: number; rollDeg: number }): boolean {
+  return (
+    Math.abs(reading.pitchDeg) <= XPARKLE_MAX_ZERO_TILT_DEG &&
+    Math.abs(reading.rollDeg) <= XPARKLE_MAX_ZERO_TILT_DEG
+  );
+}
+
 /** One connected box. */
 export interface XparkleConnection {
   /** Web Bluetooth's own device id (#130) — remembered for a later silent
@@ -186,10 +201,10 @@ export interface XparkleSensor extends ExternalSensor {
   isPasswordRejected(): boolean;
   /**
    * Zero the box where it sits, with its own `resetZero` command (#290):
-   * from then on it reports angles relative to this position, however it
-   * is mounted — including lying on its back, which Libell's own
-   * installation offset cannot capture (R34 refuses a capture that far
-   * from level). Resolves true once the command was written, false when
+   * from then on it reports angles relative to this position. The box must
+   * stand upright: lying down, turning it about its own axis changes both
+   * angles, so no zero holds (found on hardware, #273) — the caller checks
+   * `isXparkleUpright` first. Resolves true once the command was written, false when
    * no box is connected or the write failed; nothing is retried.
    *
    * The one command that changes the box's stored state this adapter

@@ -170,7 +170,7 @@ export const MESSAGES = {
     // lifts the front, then the right side — no vendor app needed.
     'sensorSource.learn.h': 'Learn the mounting',
     'sensorSource.learn.intro':
-      'However the box sits in the vehicle, Libell can learn which way is front and which is right. Set the vehicle as level first, then follow the steps.',
+      'The box must stand upright, but it can face any way. Libell learns which way is front and which is right. Set the vehicle as level first, then follow the steps.',
     'sensorSource.learn.start': 'Learn the mounting',
     'sensorSource.learn.step.front':
       'Raise the vehicle’s front a few centimetres, then press the button.',
@@ -593,6 +593,8 @@ export const MESSAGES = {
     'calibration.external.working': 'Calibrating…',
     'calibration.external.done': '{name} is calibrated: this position now counts as level.',
     'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',
+    'calibration.external.err.notUpright':
+      '{name} must stand upright to be calibrated. Lying down, its readings change when it turns, so no calibration holds. Mount it standing and try again.',
     'calibration.external.err.failed':
       'Could not calibrate {name}. Nothing was changed. Check the connection and try again.',
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
@@ -728,7 +730,7 @@ export const MESSAGES = {
     // höjer fronten och sedan höger sida — ingen tillverkarapp behövs.
     'sensorSource.learn.h': 'Lär in monteringen',
     'sensorSource.learn.intro':
-      'Hur boxen än sitter i fordonet kan Libell lära sig vad som är fram och vad som är höger. Sätt fordonet som plant först och följ sedan stegen.',
+      'Boxen ska stå upp men kan vara vänd åt vilket håll som helst. Libell lär sig vad som är fram och vad som är höger. Sätt fordonet som plant först och följ sedan stegen.',
     'sensorSource.learn.start': 'Lär in monteringen',
     'sensorSource.learn.step.front':
       'Höj fordonets front några centimeter och tryck sedan på knappen.',
@@ -1073,6 +1075,8 @@ export const MESSAGES = {
     'calibration.external.working': 'Kalibrerar…',
     'calibration.external.done': '{name} är kalibrerad: det här läget räknas nu som plant.',
     'calibration.external.err.notConnected': '{name} är inte ansluten. Anslut den och försök igen.',
+    'calibration.external.err.notUpright':
+      '{name} måste stå upp för att kunna kalibreras. Liggande ändras värdena när den vrids, så ingen kalibrering håller. Montera den stående och försök igen.',
     'calibration.external.err.failed':
       'Kunde inte kalibrera {name}. Inget ändrades. Kontrollera anslutningen och försök igen.',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
@@ -1197,7 +1201,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Apprendre le montage',
     'sensorSource.learn.intro':
-      'Quelle que soit la position du boîtier dans le véhicule, Libell peut apprendre où sont l’avant et la droite. Définissez d’abord le véhicule comme de niveau, puis suivez les étapes.',
+      'Le boîtier doit être monté debout, mais peut être tourné dans n’importe quel sens. Libell apprend où sont l’avant et la droite. Définissez d’abord le véhicule comme de niveau, puis suivez les étapes.',
     'sensorSource.learn.start': 'Apprendre le montage',
     'sensorSource.learn.step.front':
       'Soulevez l’avant du véhicule de quelques centimètres, puis appuyez sur le bouton.',
@@ -1554,6 +1558,8 @@ export const MESSAGES = {
       '{name} est étalonné : cette position compte désormais comme le niveau.',
     'calibration.external.err.notConnected':
       '{name} n’est pas connecté. Connectez-le et réessayez.',
+    'calibration.external.err.notUpright':
+      '{name} doit être debout pour être étalonné. Couché, ses valeurs changent quand il tourne, aucun étalonnage ne tient. Montez-le debout et réessayez.',
     'calibration.external.err.failed':
       'Impossible d’étalonner {name}. Rien n’a été modifié. Vérifiez la connexion et réessayez.',
     'pose.portrait':
@@ -1679,7 +1685,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Aprender el montaje',
     'sensorSource.learn.intro':
-      'Esté como esté la caja en el vehículo, Libell puede aprender dónde está la parte delantera y dónde la derecha. Primero fija el vehículo como nivelado y luego sigue los pasos.',
+      'La caja debe ir de pie, pero puede mirar en cualquier dirección. Libell aprende dónde está la parte delantera y dónde la derecha. Primero fija el vehículo como nivelado y luego sigue los pasos.',
     'sensorSource.learn.start': 'Aprender el montaje',
     'sensorSource.learn.step.front':
       'Levanta la parte delantera del vehículo unos centímetros y pulsa el botón.',
@@ -2032,6 +2038,8 @@ export const MESSAGES = {
     'calibration.external.done': '{name} está calibrado: esta posición cuenta ahora como nivelada.',
     'calibration.external.err.notConnected':
       '{name} no está conectado. Conéctalo e inténtalo de nuevo.',
+    'calibration.external.err.notUpright':
+      '{name} debe estar de pie para calibrarse. Tumbado, sus valores cambian al girarlo y ninguna calibración se mantiene. Móntalo de pie e inténtalo de nuevo.',
     'calibration.external.err.failed':
       'No se pudo calibrar {name}. No se ha cambiado nada. Comprueba la conexión e inténtalo de nuevo.',
     'pose.portrait':
@@ -2158,7 +2166,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Montage anlernen',
     'sensorSource.learn.intro':
-      'Wie auch immer die Box im Fahrzeug sitzt, Libell kann lernen, wo vorne und wo rechts ist. Setze das Fahrzeug zuerst als waagerecht und folge dann den Schritten.',
+      'Die Box muss aufrecht stehen, darf aber in jede Richtung zeigen. Libell lernt, wo vorne und wo rechts ist. Setze das Fahrzeug zuerst als waagerecht und folge dann den Schritten.',
     'sensorSource.learn.start': 'Montage anlernen',
     'sensorSource.learn.step.front':
       'Hebe die Fahrzeugfront ein paar Zentimeter an und tippe dann auf die Schaltfläche.',
@@ -2506,6 +2514,8 @@ export const MESSAGES = {
     'calibration.external.done': '{name} ist kalibriert: Diese Lage gilt jetzt als waagerecht.',
     'calibration.external.err.notConnected':
       '{name} ist nicht verbunden. Verbinden Sie ihn und versuchen Sie es erneut.',
+    'calibration.external.err.notUpright':
+      '{name} muss zum Kalibrieren aufrecht stehen. Liegend ändern sich die Werte beim Drehen, keine Kalibrierung hält. Montiere sie stehend und versuche es erneut.',
     'calibration.external.err.failed':
       '{name} konnte nicht kalibriert werden. Es wurde nichts geändert. Prüfen Sie die Verbindung und versuchen Sie es erneut.',
     'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',

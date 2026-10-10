@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createXparkleSensor,
   createXparkleWebBluetoothTransport,
+  isXparkleUpright,
   XPARKLE_ADVERTISEMENT_WAIT_MS,
   XPARKLE_DESCRIPTOR,
   XPARKLE_POLL_INTERVAL_MS,
@@ -560,5 +561,16 @@ describe('Retry without getDevices() (#288, Chrome on Android)', () => {
       configurable: true,
     });
     expect(await createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn())).toBeNull();
+  });
+});
+
+describe('the box must stand upright to be zeroed (#273, found on hardware)', () => {
+  it('accepts a box standing a few degrees off level', () => {
+    expect(isXparkleUpright({ pitchDeg: 3, rollDeg: -2 })).toBe(true);
+  });
+
+  it('refuses a box lying on its back', () => {
+    expect(isXparkleUpright({ pitchDeg: -89, rollDeg: 1 })).toBe(false);
+    expect(isXparkleUpright({ pitchDeg: 2, rollDeg: 88 })).toBe(false);
   });
 });
