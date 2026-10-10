@@ -1536,7 +1536,10 @@ body {
   font-size: 0.875rem;
 }
 
-.menu__action--inline[hidden] {
+/* `display: block` above would otherwise win over the UA [hidden] rule
+   for any action hidden by toggling `hidden` (#315: the list's Connect
+   while its box is in use). */
+.menu__action[hidden] {
   display: none;
 }
 
