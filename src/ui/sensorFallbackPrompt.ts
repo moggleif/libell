@@ -48,6 +48,10 @@ export interface SensorFallbackPrompt {
 export function createSensorFallbackPrompt(
   onRetry: () => void,
   onUsePhone: () => void,
+  // The unreachable sensor's own page (#286), same label as the pose
+  // overlay's link (#285) — so this prompt and R35's stale overlay, which
+  // never show at once, both reach it. Omitted when there is no such page.
+  onOpenSensorPage?: () => void,
 ): SensorFallbackPrompt {
   const container = document.createElement('div');
   container.className = 'sensor-fallback';
@@ -82,6 +86,14 @@ export function createSensorFallbackPrompt(
   usePhoneButton.addEventListener('click', onUsePhone);
 
   actions.append(retryButton, usePhoneButton);
+  if (onOpenSensorPage) {
+    const sensorPageButton = document.createElement('button');
+    sensorPageButton.type = 'button';
+    sensorPageButton.className = 'menu__action menu__action--secondary';
+    sensorPageButton.textContent = t('pose.openSensorPage');
+    sensorPageButton.addEventListener('click', onOpenSensorPage);
+    actions.append(sensorPageButton);
+  }
   container.append(actions);
 
   return {

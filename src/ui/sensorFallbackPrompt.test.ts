@@ -66,4 +66,19 @@ describe('createSensorFallbackPrompt (#134)', () => {
     );
     expect(labels).toEqual([t('sensorFallback.retry'), t('sensorFallback.usePhone')]);
   });
+
+  it('offers no sensor-page button unless the caller can open one', () => {
+    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
+    expect(prompt.element.textContent).not.toContain(t('pose.openSensorPage'));
+  });
+
+  it('reaches the sensor page too (#286): a third button opens it', () => {
+    const onOpenSensorPage = vi.fn();
+    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn(), onOpenSensorPage);
+    prompt.update(true);
+    const buttons = Array.from(prompt.element.querySelectorAll('button'));
+    const open = buttons.find((button) => button.textContent === t('pose.openSensorPage'));
+    open?.click();
+    expect(onOpenSensorPage).toHaveBeenCalledOnce();
+  });
 });
