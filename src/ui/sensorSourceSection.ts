@@ -145,9 +145,11 @@ export interface SensorSourceSection {
   refresh(): void;
   /** Re-reads the live position step only; cheap enough every frame. */
   refreshLive(): void;
-  /** Expands the zero step (#316), for a way in that is about the zero:
-   * the calibration lamp. */
-  openZeroStep(): void;
+  /** The live position step alone (#317), for the first-run wizard,
+   * which checks the box's position and leaves direction and zero for the
+   * first parking. Moving it out of `installElement` is fine: the wizard
+   * builds a fresh section per step. */
+  positionElement: HTMLElement;
 }
 
 export function createSensorSourceSection(
@@ -550,12 +552,8 @@ export function createSensorSourceSection(
     moreElement: moreSection,
     refresh,
     refreshLive: () => {
-      if (!installSection.hidden) refreshPosition();
+      if (options.getSensorSource() === options.sensor.id) refreshPosition();
     },
-    openZeroStep: () => {
-      if (!zeroStep) return;
-      openedByHand = zeroStep.element;
-      refresh();
-    },
+    positionElement: positionStep.element,
   };
 }

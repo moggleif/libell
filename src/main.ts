@@ -855,12 +855,12 @@ function bootstrap(root: HTMLElement): void {
   // app (in memory only — nothing is written), so screenshots and demos
   // show the product, not the first-run warnings (#70).
   const indicators = createIndicators((section) => {
-    // With a box in use the amber lamp is about the box's zero (R34), so it
-    // opens the box's page at that step rather than the Calibration tab
-    // (#316, the #309 UX review).
+    // With a box in use the amber lamp is about the box's setup, so it
+    // opens the box's page, where its checklist expands the next step not
+    // yet done — the direction before the zero (#316, the #309 UX review).
     const source = sensor().getSource();
     if (section === 'calibration' && source !== 'phone' && externalSensorPage) {
-      externalSensorPage.openSource(source, 'zero');
+      externalSensorPage.openSource(source);
       return;
     }
     if (isModern) {

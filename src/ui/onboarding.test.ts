@@ -545,7 +545,7 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('11 / 11');
     });
 
-    it('picking the external sensor branches to vehicle, then connect, then installation offset, then settings, then ramps', () => {
+    it('picking the external sensor branches to vehicle, then connect, then the box’s position, then settings, then ramps', () => {
       withBluetooth();
       let finished = false;
       const connectSensor = () => Promise.resolve<'granted'>('granted');
@@ -570,18 +570,20 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
         ),
       ).toBe(true);
       // Split into its own step (design review) — not shown alongside Connect.
-      expect(card().textContent).not.toContain(t('sensorSource.install.h'));
-      next(); // connect -> installation offset
+      expect(card().textContent).not.toContain(t('onboard.boxPosition.h'));
+      next(); // connect -> the box's position (#317)
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(
-        t('sensorSource.install.h'),
+        t('onboard.boxPosition.h'),
       );
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('8 / 11');
+      // Direction and zero wait for the first parking (#317): said, not asked.
+      expect(card().textContent).toContain(t('onboard.boxPosition.later'));
       expect(
         [...card().querySelectorAll('button')].some(
           (b) => b.textContent === t('sensorSource.install.now'),
         ),
-      ).toBe(true);
-      next(); // installation offset -> how to read the screen (#285), not the phone placement
+      ).toBe(false);
+      next(); // the box's position -> how to read the screen (#285), not the phone placement
       expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('help.screen.h'));
       expect(card().textContent).not.toContain(t('onboard.step1.h'));
       expect(card().querySelector('.onboarding__progress')?.textContent).toBe('9 / 11');
@@ -644,6 +646,22 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
         external.checked = true;
         external.dispatchEvent(new Event('change'));
         expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 11');
+      });
+
+      it('checks the connected box’s position live on its own step (#317)', () => {
+        withBluetooth();
+        open({
+          initialSettings: classicSettings(),
+          getSensorSource: () => 'easylevel',
+          getCalibratedTilt: () => ({ pitchDeg: 1, rollDeg: 0 }),
+        });
+        const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;
+        external.checked = true;
+        external.dispatchEvent(new Event('change'));
+        next(); // -> vehicle
+        next(); // -> connect
+        next(); // -> the box's position
+        expect(card().textContent).toContain(t('box.step.position.flat.ok'));
       });
     });
 

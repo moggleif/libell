@@ -480,48 +480,63 @@ export function showOnboarding(options: OnboardingOptions): void {
     build: () => [createCalibrationSection(options).vehicleElement],
   };
 
-  // External path's calibration equivalent (#135, ADR 0014, split into two
-  // steps on a design review — same reasoning as the phone-sensor/
-  // vehicle-zero split above): the box's own connect flow and its
-  // "Set vehicle level" installation offset (#131) are two different
-  // moments — connect once, then separately verify the vehicle is level
-  // and set the offset — so each gets its own step,
-  // `connectElement`/`installElement` from `createSensorSourceSection`,
-  // still the exact same UI the real menu page shows, never a wizard-only
-  // rebuild of either half. Both skippable on the same terms as the
-  // phone's calibration steps, which this pair stands in for.
+  // External path's calibration equivalent (#135, ADR 0014): connect the
+  // box, then check its position live (#317) — both the exact same
+  // components the box's pages show, never a wizard-only rebuild, and both
+  // skippable on the same terms as the phone's calibration steps, which
+  // this pair stands in for.
   //
-  // `connectEasyLevel()` is asynchronous (a live Web Bluetooth device
-  // picker, then a GATT connect) — the picker itself is a native, modal
-  // UI that blocks interacting with this step while it's open, but the
-  // GATT connect afterward does not, so it's possible to tap Next before
-  // it resolves. The install step then simply shows its own "not
-  // running"/no-offset state, same as visiting it before ever connecting
-  // at all — no special guard, matching the wizard's "never block, always
-  // recoverable via Back" rule elsewhere (#189).
-  /** One section per available source (#272) — the same real components
-   * the External sensor page uses, never a wizard-only rebuild. Falls back
-   * to this bag alone when the caller supplies no per-source factory. */
-  function sectionsFor(half: 'connectElement' | 'installElement'): HTMLElement[] {
+  // Connecting is asynchronous (a live Web Bluetooth device picker, then a
+  // GATT connect), so it's possible to tap Next before it resolves. The
+  // position step then shows "waiting for a reading", same as visiting it
+  // before ever connecting at all — no special guard, matching the
+  // wizard's "never block, always recoverable via Back" rule (#189).
+  /** One option bag per available source (#272). Falls back to this bag
+   * alone when the caller supplies no per-source factory. */
+  function sourceBags(): SensorSourceOptions[] {
     const perSource = options.sensorOptionsFor;
-    if (!perSource) return [createSensorSourceSection(options)[half]];
-    return availableExternalSensors().map(
-      (sensor) => createSensorSourceSection(perSource(sensor))[half],
-    );
+    if (!perSource) return [options];
+    return availableExternalSensors().map((sensor) => perSource(sensor));
   }
 
   const connectStep: Step = {
     title: t('menu.sensorSource'),
     skipLabel: t('onboard.skipStep'),
     skipConsequence: true,
-    build: () => sectionsFor('connectElement'),
+    build: () => sourceBags().map((bag) => createSensorSourceSection(bag).connectElement),
   };
 
-  const installOffsetStep: Step = {
-    title: t('sensorSource.install.h'),
+  // Only the box's position, live (#317, the #309 UX review): direction
+  // and zero wait for the first parking — the zero needs level ground,
+  // which a first run at home rarely has — where the box's own page guides
+  // them and the amber lamp reminds until they are done.
+  const boxPositionStep: Step = {
+    title: t('onboard.boxPosition.h'),
     skipLabel: t('onboard.skipStep'),
     skipConsequence: true,
-    build: () => sectionsFor('installElement'),
+    build: () => {
+      const sections = sourceBags()
+        .filter((bag) => bag.getSensorSource() === bag.sensor.id)
+        .map((bag) => createSensorSourceSection(bag));
+      const positions: HTMLElement[] = sections.map((section) => section.positionElement);
+      if (positions.length === 0) {
+        const waiting = document.createElement('p');
+        waiting.className = 'menu__text menu__text--status';
+        waiting.textContent = t('box.step.position.waiting');
+        positions.push(waiting);
+      }
+      const later = document.createElement('p');
+      later.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      later.textContent = t('onboard.boxPosition.later');
+      // Live while the step is shown; stops once it is left.
+      const tick = () => {
+        if (!later.isConnected) return;
+        for (const section of sections) section.refreshLive();
+        requestAnimationFrame(tick);
+      };
+      if (sections.length > 0) requestAnimationFrame(tick);
+      return [...positions, later];
+    },
   };
 
   // A labeled radio group for a single wizard choice — shared by the
@@ -635,7 +650,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   const phoneSteps = externalActive
     ? [placementStep, settingsStep, rampsStep]
     : [placementStep, settingsStep, rampsStep, sensorCalibrationStep, vehicleZeroStep];
-  const externalSteps = [connectStep, installOffsetStep, readScreenStep, settingsStep, rampsStep];
+  const externalSteps = [connectStep, boxPositionStep, readScreenStep, settingsStep, rampsStep];
 
   // welcomeStep, then languageStep/appearanceStep/soundStep, always lead
   // (#189, design review) — every branch below prepends all four. Depends

@@ -383,13 +383,13 @@ URL and must keep working with no signal.
 - **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
   placement, measurements, ramps, sensor calibration, vehicle zero).
 - **Given** the source step, with the external sensor selected instead
-- **Then** the wizard asks the vehicle step, then branches to two steps of the external
-  sensor's own page (design review: split, same reasoning as the phone-calibration
-  split above) — Connect, then Installation offset — the same External sensor page
-  R32/R34 already describe, embedded in two halves rather than duplicated (connect once,
-  then separately verify the vehicle is level and set the offset), standing in for the
-  phone calibration steps it replaces (skippable on the same terms), then rejoins the
-  shared vehicle-measurements and ramps steps before finishing. No phone-placement step
+- **Then** the wizard asks the vehicle step, then branches to two steps built from the
+  box's own pages — Connect (R32's list), then the box's position, checked live (R51's
+  first step) — standing in for the phone calibration steps it replaces (skippable on
+  the same terms). Direction and zero are not asked here (#317): the zero needs level
+  ground, which a first run rarely has, so the step says they are set the first time
+  the user parks, guided by the box's page and reminded by the amber lamp (R34). It
+  then rejoins the shared vehicle-measurements and ramps steps before finishing. No phone-placement step
   and no phone calibration steps are shown on this path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
   reopened)
@@ -961,8 +961,8 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Given** an external sensor is the active source and the amber calibration lamp is
   lit (#316)
 - **When** I tap the lamp
-- **Then** the box's own page opens with its zero step expanded, rather than the
-  Calibration tab: that step is what the lamp is about.
+- **Then** the box's own page opens rather than the Calibration tab, its checklist
+  (R51) expanding the next step not yet done: the direction before the zero.
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
   External sensor page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
@@ -1179,7 +1179,7 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 - **Then** below those rows the same page carries this box's own setup checklist
   (R51): its position, its direction (R43's rotations, picked by tapping a side of the
   vehicle) and its zero (R34), showing current values whenever the page is opened. It
-  is the very same component the onboarding wizard embeds — never a second,
+  is the very same component the onboarding wizard embeds its position step from (#317) — never a second,
   page-specific rebuild.
 - **Given** the External sensor page (R32)
 - **Then** it carries none of the above: only the browser requirement (said once), and

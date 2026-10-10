@@ -153,7 +153,6 @@ export const MESSAGES = {
     // `calibration.vehicle.*` / `calibration.*` rather than re-invented.
     // Shown only once EasyLevel is connected: an install offset means
     // nothing until there is a live reading to capture.
-    'sensorSource.install.h': 'Installation offset',
     'sensorSource.install.now': 'Zero now',
     'sensorSource.install.clear': 'Clear the zero',
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
@@ -613,6 +612,9 @@ export const MESSAGES = {
     'box.step.zero.done': 'Zeroed',
     'box.step.zero.hint': 'Level the vehicle with a spirit level, then zero.',
     'box.forgetDirection': 'Forget the direction',
+    'onboard.boxPosition.h': "The box's position",
+    'onboard.boxPosition.later':
+      "Direction and zero are set the first time you park. The box's page guides you, and the amber lamp reminds you until it's done.",
   },
   sv: {
     'topbar.install': 'Installera',
@@ -711,7 +713,6 @@ export const MESSAGES = {
     // Installationskalibrering (#131, ADR 0014): samma "fordonets nolläge"
     // som R24 redan använder för telefonen, generaliserat till en permanent
     // monterad extern sensor.
-    'sensorSource.install.h': 'Installationsoffset',
     'sensorSource.install.now': 'Nollställ nu',
     'sensorSource.install.clear': 'Rensa nolläget',
     'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
@@ -1086,6 +1087,9 @@ export const MESSAGES = {
     'box.step.zero.done': 'Nollställd',
     'box.step.zero.hint': 'Ställ fordonet plant med ett vattenpass och nollställ sedan.',
     'box.forgetDirection': 'Glöm riktningen',
+    'onboard.boxPosition.h': 'Boxens läge',
+    'onboard.boxPosition.later':
+      'Riktning och nollställning gör du första gången du parkerar. Boxens sida guidar dig, och den gula lampan påminner tills det är gjort.',
   },
   fr: {
     'topbar.install': 'Installer',
@@ -1178,7 +1182,6 @@ export const MESSAGES = {
     'sensorSource.lowBattery':
       '⚠ Batterie faible ({value}) — pensez à remplacer bientôt la pile du boîtier.',
 
-    'sensorSource.install.h': 'Décalage d’installation',
     'sensorSource.install.now': 'Mettre à zéro',
     'sensorSource.install.clear': 'Effacer le zéro',
     'sensorSource.install.status':
@@ -1571,6 +1574,9 @@ export const MESSAGES = {
     'box.step.zero.hint':
       'Mettez le véhicule de niveau avec un niveau à bulle, puis mettez à zéro.',
     'box.forgetDirection': 'Oublier l’orientation',
+    'onboard.boxPosition.h': 'Position du boîtier',
+    'onboard.boxPosition.later':
+      'La direction et le zéro se règlent la première fois que vous vous garez. La page du boîtier vous guide, et le voyant orange vous le rappelle jusque-là.',
   },
   es: {
     'topbar.install': 'Instalar',
@@ -1664,7 +1670,6 @@ export const MESSAGES = {
     'sensorSource.lowBattery':
       '⚠ Batería baja ({value}): conviene cambiar pronto la pila de la caja del sensor.',
 
-    'sensorSource.install.h': 'Desfase de instalación',
     'sensorSource.install.now': 'Poner a cero',
     'sensorSource.install.clear': 'Borrar el cero',
     'sensorSource.install.status':
@@ -2051,6 +2056,9 @@ export const MESSAGES = {
     'box.step.zero.done': 'Puesta a cero',
     'box.step.zero.hint': 'Nivela el vehículo con un nivel de burbuja y luego pon a cero.',
     'box.forgetDirection': 'Olvidar la orientación',
+    'onboard.boxPosition.h': 'Posición de la caja',
+    'onboard.boxPosition.later':
+      'La dirección y el cero se ajustan la primera vez que aparcas. La página de la caja te guía y el piloto ámbar te lo recuerda hasta entonces.',
   },
   de: {
     'topbar.install': 'Installieren',
@@ -2147,7 +2155,6 @@ export const MESSAGES = {
     'sensorSource.lowBattery':
       '⚠ Batterie schwach ({value}) — die Batterie der Sensorbox sollte bald gewechselt werden.',
 
-    'sensorSource.install.h': 'Einbau-Offset',
     'sensorSource.install.now': 'Jetzt nullen',
     'sensorSource.install.clear': 'Nullpunkt löschen',
     'sensorSource.install.status': 'Einbau-Offset: seitlich {roll}°, längs {pitch}°.',
@@ -2527,6 +2534,9 @@ export const MESSAGES = {
     'box.step.zero.done': 'Genullt',
     'box.step.zero.hint': 'Stelle das Fahrzeug mit einer Wasserwaage waagerecht und nulle dann.',
     'box.forgetDirection': 'Richtung vergessen',
+    'onboard.boxPosition.h': 'Lage der Box',
+    'onboard.boxPosition.later':
+      'Richtung und Nullpunkt stellst du beim ersten Parken ein. Die Seite der Box führt dich, und die gelbe Lampe erinnert dich bis dahin.',
   },
 } as const;
 
