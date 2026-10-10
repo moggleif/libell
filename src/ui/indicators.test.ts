@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
 import { createIndicators } from './indicators';
+import { t } from './i18n';
 
 describe('createIndicators', () => {
   it('applies the first update synchronously, with no pending transition (regression: broke the demo-mode smoke test)', () => {
@@ -39,5 +40,17 @@ describe('createIndicators', () => {
     expect(settingsLamp!.hidden).toBe(false); // still mid fade-out
     settingsLamp!.dispatchEvent(new Event('transitionend'));
     expect(settingsLamp!.hidden).toBe(true);
+  });
+
+  it('names the sensor, not the phone, while an external sensor is what lacks calibration', () => {
+    const indicators = createIndicators(vi.fn());
+    indicators.update({ settingsSaved: true, calibrated: false, externalSensor: true });
+    const [, calibrationLamp] =
+      indicators.element.querySelectorAll<HTMLButtonElement>('.indicators__lamp');
+    expect(calibrationLamp!.title).toBe(t('lamp.calibrate.title.sensor'));
+    expect(calibrationLamp!.getAttribute('aria-label')).toBe(t('lamp.calibrate.title.sensor'));
+
+    indicators.update({ settingsSaved: true, calibrated: false });
+    expect(calibrationLamp!.title).toBe(t('lamp.calibrate.title'));
   });
 });

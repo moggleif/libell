@@ -935,7 +935,8 @@ cross-platform goal — they are not this app's code and are not covered here.
   either calibration layer.
 - The amber calibration lamp (R11) follows the same rule: it checks the phone's pair
   while the phone is active, or just the box's installation offset while EasyLevel
-  is — never both pairs at once.
+  is — never both pairs at once. Its label names what it checks: the phone, or the
+  sensor while an external sensor is active.
 - **Given** an external sensor is the active source
 - **Then** the Calibration section (R11, R24) hides the phone's controls and says why
   in one line, so the box's own calibration (below) is what the page shows: the phone's

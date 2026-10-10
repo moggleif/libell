@@ -10,7 +10,13 @@ import { setVisible } from './motion';
 
 export interface Indicators {
   element: HTMLElement;
-  update(state: { settingsSaved: boolean; calibrated: boolean }): void;
+  update(state: {
+    settingsSaved: boolean;
+    calibrated: boolean;
+    /** An external sensor is the active source, so it is what the
+     * calibration lamp is about — never "the phone". */
+    externalSensor?: boolean;
+  }): void;
 }
 
 export function createIndicators(openMenu: (section: MenuSection) => void): Indicators {
@@ -44,7 +50,12 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
 
   return {
     element: container,
-    update({ settingsSaved, calibrated }) {
+    update({ settingsSaved, calibrated, externalSensor = false }) {
+      const calibrationTitle = t(
+        externalSensor ? 'lamp.calibrate.title.sensor' : 'lamp.calibrate.title',
+      );
+      calibrationLamp.title = calibrationTitle;
+      calibrationLamp.setAttribute('aria-label', calibrationTitle);
       if (first) {
         first = false;
         settingsLamp.hidden = settingsSaved;
