@@ -33,7 +33,7 @@ import type { GravityVector } from '../domain/leveling';
 import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
-import { CHROME_FLAGS_ADDRESS, lacksSilentReconnect } from '../sensor/silentReconnect';
+import { CHROME_FLAGS_ADDRESS, offersSilentReconnectTip } from '../sensor/silentReconnect';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import { showToast } from './toast';
@@ -85,7 +85,7 @@ export interface EasyLevelStatusOptions {
   connectSensor?(): Promise<SensorState>;
   /** Whether to offer the silent-reconnect tip (#310); defaults to asking
    * the browser itself. */
-  lacksSilentReconnect?(): boolean;
+  offersSilentReconnectTip?(): boolean;
 }
 
 export interface EasyLevelStatusPage {
@@ -278,11 +278,12 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   if (capabilities.debugBytes) moreDetails.append(debugDetails);
 
   // Silent-reconnect tip (#310): for any box, closed by default, and only
-  // in a browser that has Web Bluetooth but not `getDevices()`. Without
+  // in a Chromium browser off iOS that has Web Bluetooth but not
+  // `getDevices()` (never Bluefy on iPhone: no `chrome://flags`). Without
   // it a restarted app needs the device picker again (#307); the flag that
   // adds it is not something every user should have to learn, so it lives
   // here rather than in the reconnect prompt.
-  if ((options.lacksSilentReconnect ?? lacksSilentReconnect)()) {
+  if ((options.offersSilentReconnectTip ?? offersSilentReconnectTip)()) {
     const advanced = document.createElement('details');
     advanced.className = 'menu__detail sensor-status__advanced';
     const advancedSummary = document.createElement('summary');

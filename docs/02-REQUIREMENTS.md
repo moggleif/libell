@@ -1585,14 +1585,15 @@ present this source as more proven than it is.
   in Chrome on Android): the app reconnects to the box the user picked. After the app
   has been restarted, only a browser with `getDevices()` can reconnect silently;
   elsewhere the user connects again from the sensor page, or taps Retry (#307).
-- **Given** a browser with Web Bluetooth but without `getDevices()` (Chrome on Android
-  by default)
+- **Given** a Chromium browser with Web Bluetooth but without `getDevices()` (Chrome on
+  Android by default)
 - **When** the user opens the closed "Advanced" disclosure on the sensor's page
 - **Then** a short tip explains how to turn on silent reconnect in Chrome
   (`chrome://flags`, the new permissions backend for Web Bluetooth, relaunch, connect
   once), with a button that copies the address (#310; found on hardware: with the flag
   on, the box reconnects silently even after a restart). Where silent reconnect already
-  works, or there is no Web Bluetooth, the disclosure is not shown.
+  works, there is no Web Bluetooth, or the browser is not Chromium — any browser on
+  iPhone or iPad, Bluefy included, has no `chrome://flags` — the disclosure is not shown.
 - **Given** the box rejects the password it is offered
 - **Then** the External sensor page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
