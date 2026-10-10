@@ -21,3 +21,13 @@ export function isStandingUpright(reading: Calibration): boolean {
     Math.abs(reading.rollDeg) <= UPRIGHT_LIMIT_DEG
   );
 }
+
+/**
+ * Whether a mounted box sits the way it measures right (#314): within the
+ * same 45° on both axes, whichever way it is built to sit — standing for
+ * the Xparkle box, lying flat for the EasyLevel box. Each box reports its
+ * angles from its own measuring position, so one rule serves both.
+ */
+export function isMountedRight(reading: Calibration): boolean {
+  return isStandingUpright(reading);
+}

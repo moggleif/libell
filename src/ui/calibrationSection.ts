@@ -51,7 +51,8 @@ export interface CalibrationOptions {
   /**
    * Whether the phone itself is the active sensor (#285). Every action here
    * calibrates the phone, which an external sensor never reads, so while one
-   * is active the section is disabled with an explanation. Omitted = phone.
+   * is active they are hidden and the box's own zero is shown in their
+   * place (#316). Omitted = phone.
    */
   isPhoneActive?(): boolean;
   /**
@@ -65,6 +66,9 @@ export interface CalibrationOptions {
    * page (R34), which for a box that zeroes itself is asynchronous. Returns
    * an error text, or null on success. */
   calibrateExternalSensor?(): string | null | Promise<string | null>;
+  /** Opens the active box's own page (#316), for its position and
+   * direction; no link is shown when omitted. */
+  openExternalSensor?(): void;
 }
 
 export interface ExternalSensorCalibrationState {
@@ -103,10 +107,6 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   guideIntro.textContent = t('calibration.guide.intro');
   /** Everything that calibrates the phone, hidden while a box is active. */
   const phoneElements: HTMLElement[] = [];
-  const phoneOnlyNotice = document.createElement('p');
-  phoneOnlyNotice.className = 'menu__text menu__text--status calibration-phone-only';
-  phoneOnlyNotice.textContent = t('calibration.phoneOnly');
-  phoneOnlyNotice.hidden = true;
 
   // Calibrating the active external sensor (#290), in the place a user
   // looks for calibration: shown only while one is active, above the
@@ -128,6 +128,16 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   const externalStatus = document.createElement('p');
   externalStatus.className = 'menu__text menu__text--status';
   externalSection.append(externalHeading, externalIntro, externalButton, externalStatus);
+  // The way to the rest of the box's setup (#316): its position and
+  // direction live on its own page, one quiet link away.
+  if (options.openExternalSensor) {
+    const openBox = document.createElement('button');
+    openBox.type = 'button';
+    openBox.className = 'link-button';
+    openBox.textContent = t('pose.openSensorPage');
+    openBox.addEventListener('click', () => options.openExternalSensor?.());
+    externalSection.append(openBox);
+  }
 
   function refreshExternal(message?: string): void {
     const external = options.getExternalSensor?.() ?? null;
@@ -229,7 +239,6 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   // their own "nothing to clear/check" logic.
   function applyPhoneGate(): void {
     const phoneActive = options.isPhoneActive?.() ?? true;
-    phoneOnlyNotice.hidden = phoneActive;
     // And hides them (Morgan, after #290): a page of greyed-out phone
     // cards buried the one thing that applies, the box's own calibration.
     for (const element of phoneElements) element.hidden = !phoneActive;
@@ -415,7 +424,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
 
     calibrationBody.className = 'calibration-cards';
     if (offersExternal) calibrationBody.append(externalSection);
-    calibrationBody.append(phoneOnlyNotice, guideIntro, sensorCard, vehicleCard);
+    calibrationBody.append(guideIntro, sensorCard, vehicleCard);
     phoneElements.push(guideIntro, sensorCard, vehicleCard);
     sensorElement = sensorCard;
     vehicleElement = vehicleCard;
@@ -446,7 +455,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
       vehicleClearButton,
     );
     if (offersExternal) calibrationBody.append(externalSection);
-    calibrationBody.append(phoneOnlyNotice, guideIntro, sensorSection, vehicleSection);
+    calibrationBody.append(guideIntro, sensorSection, vehicleSection);
     phoneElements.push(guideIntro, sensorSection, vehicleSection);
     sensorElement = sensorSection;
     vehicleElement = vehicleSection;

@@ -15,7 +15,7 @@
  * halves and the callers decide where they go, because they answer
  * different questions:
  *   - `connectElement` — "which source is feeding readings, and how do I
- *     connect it": intro, Connect/Reconnect, and the sensor row. This is
+ *     connect it": Connect (while not active) and the sensor row. This is
  *     the whole of the External sensor *list* page (`sensorPage.ts`).
  *   - `installElement` — the mounting picker (#217/#222, R43) and the
  *     installation offset (#131, R34): per-device *configuration*, so
@@ -42,81 +42,21 @@
  * purely so callers/tests that don't need that page (the onboarding
  * wizard) can construct this section without threading a callback through.
  */
+import type { Calibration, EasyLevelMounting, SensorSource, VehicleType } from '../domain/settings';
 import {
-  EASYLEVEL_MOUNTINGS,
-  type Calibration,
-  type EasyLevelMounting,
-  type SensorSource,
-} from '../domain/settings';
+  axisMappingForFacing,
+  easyLevelMountingForFacing,
+  facingForAxisMapping,
+  facingForEasyLevelMounting,
+  type Facing,
+} from '../domain/mountingFacing';
+import { isMountedRight } from '../domain/uprightMount';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
+import { createMountingPicker, type BoxShape } from './mountingPicker';
 import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function svgEl<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-): SVGElementTagNameMap[K] {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-  return node;
-}
-
-/** How far the icon's box is drawn round for each mounting (#222) — the
- * same rotation `applyEasyLevelMounting` applies to the readings, so the
- * picture and the maths can never drift apart. */
-const MOUNTING_ICON_DEGREES: Record<EasyLevelMounting, number> = {
-  standard: 0,
-  rotated90: 90,
-  rotated180: 180,
-  rotated270: 270,
-};
-
-/**
- * Top-down box-mounting diagram (#217): a small upward arrow labeled
- * "front" over a rectangle representing the sensor box, itself carrying an
- * arrow of its own — the box's long axis runs left/right for `'standard'`,
- * front/back for `'rotated90'`, the box's own arrow rotating along with
- * it. Deliberately schematic, not a literal redraw of the official app's
- * own illustrations (`top_wideside_rv.webp`/`top_shortside_rv.webp`) —
- * just enough for a user to visually match "which way did I screw mine
- * in" without needing to know that app's own terminology. Colors come
- * from the existing CSS custom properties, same as every other icon in
- * this codebase (no hex values here).
- */
-function mountingIcon(mounting: EasyLevelMounting): SVGSVGElement {
-  const icon = svgEl('svg', {
-    viewBox: '0 0 64 64',
-    class: 'mounting-icon',
-    'aria-hidden': 'true',
-  });
-  // "Front of vehicle" arrow, fixed regardless of mounting.
-  icon.append(
-    svgEl('line', { x1: '32', y1: '4', x2: '32', y2: '16', class: 'mounting-icon__front' }),
-    svgEl('polygon', { points: '32,2 27,12 37,12', class: 'mounting-icon__front' }),
-  );
-  // The box itself: a rectangle longer one way than the other, drawn at
-  // the chosen rotation — plus a short arrow through it marking the same
-  // physical edge in every drawing, so the four options read as "the same
-  // box turned", not "four different boxes". The arrow is what makes the
-  // half turn (#222) distinguishable from 'standard' at a glance: the
-  // outline alone would look identical.
-  const degrees = MOUNTING_ICON_DEGREES[mounting];
-  const group = svgEl('g', {
-    transform: degrees === 0 ? '' : `rotate(${degrees} 32 40)`,
-    class: 'mounting-icon__box',
-  });
-  group.append(
-    svgEl('rect', { x: '14', y: '28', width: '36', height: '24', rx: '4' }),
-    svgEl('line', { x1: '32', y1: '46', x2: '32', y2: '34' }),
-    svgEl('polygon', { points: '32,30 28,38 36,38' }),
-  );
-  icon.append(group);
-  return icon;
-}
 
 export interface SensorSourceOptions {
   /**
@@ -179,6 +119,11 @@ export interface SensorSourceOptions {
   /** The "learn the mounting" guide (#293) — only rendered when the
    * descriptor declares `learnMounting` and this is supplied. */
   learnMounting?: Omit<LearnMountingOptions, 'name'>;
+  /** Which vehicle the mounting picker draws (#314); motorhome if omitted. */
+  getVehicleType?(): VehicleType;
+  /** The box's live reading, for the position step (#314); null before
+   * the first sample. */
+  getCalibratedTilt?(): Calibration | null;
 }
 
 export interface SensorSourceSection {
@@ -189,12 +134,22 @@ export interface SensorSourceSection {
    * which is fine: nothing here reads `element`'s children after
    * construction. */
   element: HTMLElement;
-  /** Connect half alone: intro, Connect/Reconnect, sensor row — see the
+  /** Connect half alone: Connect (while not active), sensor row — see the
    * module doc comment's "Where each half is shown". */
   connectElement: HTMLElement;
   /** Mounting + installation-offset half alone — see `connectElement`. */
   installElement: HTMLElement;
+  /** The rarely needed actions (#314) — check/clear the zero, forget the
+   * direction, disconnect — for the device page's "More" disclosure. */
+  moreElement: HTMLElement;
   refresh(): void;
+  /** Re-reads the live position step only; cheap enough every frame. */
+  refreshLive(): void;
+  /** The live position step alone (#317), for the first-run wizard,
+   * which checks the box's position and leaves direction and zero for the
+   * first parking. Moving it out of `installElement` is fine: the wizard
+   * builds a fresh section per step. */
+  positionElement: HTMLElement;
 }
 
 export function createSensorSourceSection(
@@ -209,14 +164,9 @@ export function createSensorSourceSection(
   onSourceChanged?: () => void,
 ): SensorSourceSection {
   const body = document.createElement('div');
-  // Wraps intro/connect/health — the "get connected" half (design review).
+  // Wraps connect/row/note — the "get connected" half (design review).
   // A plain div changes nothing visually; see the return statement below.
   const connectSection = document.createElement('div');
-
-  const intro = document.createElement('p');
-  intro.className = 'menu__text';
-  intro.textContent = t('sensorSource.intro', { name: options.sensor.displayName });
-  connectSection.append(intro);
 
   const connectButton = document.createElement('button');
   connectButton.type = 'button';
@@ -269,81 +219,135 @@ export function createSensorSourceSection(
   noteRow.hidden = true;
   connectSection.append(noteRow);
 
-  // Mounting orientation (#217): the box can be physically mounted two
-  // ways, 90° apart — mirrors the official app's own `"sensor_Placing"`,
-  // exposed without that terminology (see `mountingIcon`'s doc comment).
-  // Same "shown once EasyLevel is (or was) the active source" visibility
-  // rule as the install-offset block below, folded into the same
-  // `installElement` half so onboarding's existing two-step split needs
-  // no changes.
-  const mountingSection = document.createElement('div');
-  const mountingHeading = document.createElement('h3');
-  mountingHeading.className = 'menu__heading';
-  mountingHeading.textContent = t('sensorSource.mounting.h');
-  const mountingIntro = document.createElement('p');
-  mountingIntro.className = 'menu__text';
-  mountingIntro.textContent = t('sensorSource.mounting.intro');
-  const mountingChoice = document.createElement('div');
-  mountingChoice.className = 'mounting-choice';
-  const mountingSelect = document.createElement('select');
-  // Reuses the settings panel's own select styling (`settingsPanel.ts`'s
-  // `drainSelect`) rather than inventing a menu-specific variant — this
-  // page has no select of its own to style otherwise.
-  mountingSelect.className = 'settings__select';
-  for (const value of EASYLEVEL_MOUNTINGS) {
-    const option = document.createElement('option');
-    option.value = value;
-    option.textContent = t(`sensorSource.mounting.${value}`);
-    mountingSelect.append(option);
-  }
-  let mountingIconEl = mountingIcon(options.getMounting());
-  mountingChoice.append(mountingSelect, mountingIconEl);
-  mountingSection.append(mountingHeading, mountingIntro, mountingChoice);
-
-  function refreshMountingIcon(): void {
-    const mounting = options.getMounting();
-    mountingSelect.value = mounting;
-    const next = mountingIcon(mounting);
-    mountingIconEl.replaceWith(next);
-    mountingIconEl = next;
-  }
-
-  mountingSelect.addEventListener('change', () => {
-    // Validated against the canonical list rather than compared to one
-    // literal (#222): with four options a missed branch would silently
-    // store 'standard' and quietly undo the user's choice.
-    const value = EASYLEVEL_MOUNTINGS.find((candidate) => candidate === mountingSelect.value);
-    options.setMounting(value ?? 'standard');
-    refreshMountingIcon();
-  });
-
-  // Installation calibration (#131, ADR 0014): the same "vehicle zero"
-  // concept R24 already gives the phone (ADR 0010), generalized to this
-  // permanently-mounted external sensor — its own independent stored
-  // offset (`getInstallCalibration`/`calibrateInstall`/...), never the
-  // phone's. Visible whenever EasyLevel is (or was) the active source,
-  // connected or not —
-  // capturing while disconnected simply surfaces the ordinary "not
-  // running" error `readTilt`-based captures already give elsewhere.
-  const installSection = document.createElement('div');
-  installSection.hidden = true;
-  // Only the controls this device actually has (#268): a box whose
-  // orientation it reports itself, or one with no installation offset of
-  // its own, must not be given a control that does nothing.
+  // The box's setup (#314, the #309 UX review): one checklist of three
+  // steps instead of three stacked sections of paragraphs and buttons —
+  //   1. position, live (stands upright / lies flat, R49/#304's 45° rule);
+  //   2. direction, by tapping a side of the vehicle (`mountingPicker.ts`),
+  //      with the lift guide (#293) one quiet link away;
+  //   3. zero on level ground (R34, #290).
+  // Direction comes before the zero: it is learned from differences and
+  // works anywhere, while the zero needs level ground — and the ramp
+  // guidance used to reach level ground needs the direction first.
+  // Only the next undone step is expanded, but every one can be opened and
+  // run at any time: guidance, never a gate.
   const capabilities = options.sensor.capabilities;
-  if (capabilities.mounting) installSection.append(mountingSection);
-  const installHeading = document.createElement('h3');
-  installHeading.className = 'menu__heading';
-  installHeading.textContent = t('sensorSource.install.h');
-  const installIntro = document.createElement('p');
-  installIntro.className = 'menu__text';
-  installIntro.textContent = t('sensorSource.install.intro');
-  const installStatus = document.createElement('p');
-  installStatus.className = 'menu__text menu__text--status';
+  const shape: BoxShape = capabilities.upright ? 'upright' : 'flat';
+  const installSection = document.createElement('div');
+  installSection.className = 'box-setup';
+  installSection.hidden = true;
+
+  interface StepParts {
+    element: HTMLElement;
+    mark: HTMLElement;
+    title: HTMLElement;
+    body: HTMLElement;
+  }
+  function makeStep(number: number, expandable: boolean): StepParts {
+    const element = document.createElement('div');
+    element.className = 'box-step';
+    const header = document.createElement(expandable ? 'button' : 'div');
+    header.className = 'box-step__header';
+    if (header instanceof HTMLButtonElement) header.type = 'button';
+    const mark = document.createElement('span');
+    mark.className = 'box-step__mark';
+    mark.textContent = String(number);
+    const title = document.createElement('span');
+    title.className = 'box-step__title';
+    header.append(mark, title);
+    const body = document.createElement('div');
+    body.className = 'box-step__body';
+    body.hidden = true;
+    element.append(header, body);
+    return { element, mark, title, body };
+  }
+  function setDone(step: StepParts, done: boolean, number: number): void {
+    step.element.classList.toggle('is-done', done);
+    step.mark.textContent = done ? '✓' : String(number);
+  }
+
+  // 1. Position — no body, its title says it all, live.
+  const positionStep = makeStep(1, false);
+  positionStep.element.classList.add('box-step--position');
+
+  // 2. Direction.
+  const usesEasyLevelMounting = capabilities.mounting;
+  const usesAxisMapping = !usesEasyLevelMounting && Boolean(options.learnMounting);
+  const directionStep = usesEasyLevelMounting || usesAxisMapping ? makeStep(2, true) : null;
+  /** The facing in which the box's own output needs no mapping. An
+   * assumption for the Xparkle box until checked on hardware (#314); the
+   * lift guide below measures instead, for anyone whose box disagrees. */
+  const AXIS_REFERENCE_FACING: Facing = 'front';
+  function currentFacing(): Facing | null {
+    if (usesEasyLevelMounting) return facingForEasyLevelMounting(options.getMounting());
+    return facingForAxisMapping(
+      options.learnMounting?.getLearnedMounting() ?? null,
+      AXIS_REFERENCE_FACING,
+    );
+  }
+  const picker = directionStep
+    ? createMountingPicker({
+        shape,
+        getVehicleType: () => options.getVehicleType?.() ?? 'motorhome',
+        getFacing: currentFacing,
+        setFacing: (facing) => {
+          if (usesEasyLevelMounting) options.setMounting(easyLevelMountingForFacing(facing));
+          else
+            options.learnMounting?.setLearnedMounting(
+              axisMappingForFacing(facing, AXIS_REFERENCE_FACING),
+            );
+          refreshSteps();
+        },
+      })
+    : null;
+  const learnSection =
+    capabilities.learnMounting && options.learnMounting
+      ? createLearnMountingSection({
+          name: options.sensor.displayName,
+          ...options.learnMounting,
+          setLearnedMounting: (mapping) => {
+            options.learnMounting?.setLearnedMounting(mapping);
+            refreshSteps();
+          },
+        })
+      : null;
+  if (directionStep && picker) {
+    directionStep.body.append(picker.element);
+    if (learnSection) {
+      const learnLink = document.createElement('button');
+      learnLink.type = 'button';
+      learnLink.className = 'link-button';
+      learnLink.textContent = t('box.step.direction.learn');
+      learnSection.element.hidden = true;
+      learnLink.addEventListener('click', () => {
+        learnSection.element.hidden = !learnSection.element.hidden;
+        learnSection.refresh();
+      });
+      directionStep.body.append(learnLink, learnSection.element);
+    }
+  }
+
+  // 3. Zero.
+  const zeroStep = capabilities.installCalibration ? makeStep(3, true) : null;
+  const zeroHint = document.createElement('p');
+  zeroHint.className = 'menu__text';
+  zeroHint.textContent = t('box.step.zero.hint');
   const installButton = document.createElement('button');
   installButton.type = 'button';
   installButton.className = 'menu__action';
   installButton.textContent = t('sensorSource.install.now');
+  const installStatus = document.createElement('p');
+  installStatus.className = 'menu__text menu__text--status';
+  installStatus.hidden = true;
+  zeroStep?.body.append(zeroHint, installButton, installStatus);
+
+  installSection.append(positionStep.element);
+  if (directionStep) installSection.append(directionStep.element);
+  if (zeroStep) installSection.append(zeroStep.element);
+
+  // "More": the rarely needed actions, out of the way (#314). Placed by
+  // the caller inside the device page's own "More" disclosure.
+  const moreSection = document.createElement('div');
+  moreSection.className = 'box-more__actions';
   const installCheckButton = document.createElement('button');
   installCheckButton.type = 'button';
   installCheckButton.className = 'menu__action menu__action--secondary';
@@ -352,76 +356,141 @@ export function createSensorSourceSection(
   installClearButton.type = 'button';
   installClearButton.className = 'menu__action menu__action--secondary';
   installClearButton.textContent = t('sensorSource.install.clear');
-  if (capabilities.installCalibration) {
-    installSection.append(
-      installHeading,
-      installIntro,
-      installButton,
-      installStatus,
-      installCheckButton,
-      installClearButton,
-    );
-  }
-  // Learned mounting (#293): after the offset, because the guide's first
-  // step assumes the box has just been set as level.
-  const learnSection =
-    capabilities.learnMounting && options.learnMounting
-      ? createLearnMountingSection({ name: options.sensor.displayName, ...options.learnMounting })
-      : null;
-  if (learnSection) installSection.append(learnSection.element);
-  body.append(connectSection, installSection);
+  const forgetDirectionButton = document.createElement('button');
+  forgetDirectionButton.type = 'button';
+  forgetDirectionButton.className = 'menu__action menu__action--secondary';
+  forgetDirectionButton.textContent = t('box.forgetDirection');
+  const moreDisconnectButton = document.createElement('button');
+  moreDisconnectButton.type = 'button';
+  moreDisconnectButton.className = 'menu__action menu__action--secondary';
+  moreDisconnectButton.textContent = t('sensorSource.disconnect');
+  if (capabilities.installCalibration) moreSection.append(installCheckButton, installClearButton);
+  if (usesAxisMapping) moreSection.append(forgetDirectionButton);
+  moreSection.append(moreDisconnectButton);
 
-  /** Same status/age/disabled-buttons pattern as the phone's vehicle zero
-   * (R26) — reused wording via `sensorSource.install.*` and the shared
-   * `ageText` helper rather than a one-off implementation. */
-  function refreshInstall(error?: string): void {
+  /** Which step the user opened by hand; null follows "next undone". */
+  let openedByHand: HTMLElement | null = null;
+  const expandable = [directionStep, zeroStep].filter((step): step is StepParts => step !== null);
+  for (const step of expandable) {
+    step.element.querySelector('.box-step__header')?.addEventListener('click', () => {
+      openedByHand = step.body.hidden ? step.element : null;
+      if (!step.body.hidden) {
+        // Closing by hand: keep it closed until something changes.
+        step.body.hidden = true;
+        openedByHand = installSection;
+        return;
+      }
+      refreshSteps();
+    });
+  }
+
+  let zeroMessage: string | null = null;
+
+  function refreshPosition(): void {
+    const tilt = options.getCalibratedTilt?.() ?? null;
+    if (!tilt) {
+      positionStep.title.textContent = t('box.step.position.waiting');
+      setDone(positionStep, false, 1);
+      positionStep.element.classList.remove('is-warning');
+      return;
+    }
+    const ok = isMountedRight(tilt);
+    positionStep.title.textContent = t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
+    setDone(positionStep, ok, 1);
+    positionStep.element.classList.toggle('is-warning', !ok);
+  }
+
+  function refreshSteps(): void {
+    refreshPosition();
+    const directionDone = currentFacing() !== null;
+    if (directionStep) {
+      const facing = currentFacing();
+      // Says which way, so the closed step still shows what was picked.
+      directionStep.title.textContent = facing
+        ? `${t('box.step.direction.done')}: ${t(`mounting.facing.${facing}`).toLowerCase()}`
+        : t('box.step.direction.todo');
+      setDone(directionStep, directionDone, 2);
+      picker?.refresh();
+      learnSection?.refresh();
+    }
     const offset = options.getInstallCalibration();
-    if (error) {
-      installStatus.textContent = error;
-    } else if (offset) {
-      installStatus.textContent =
-        t('sensorSource.install.status', {
-          roll: offset.rollDeg.toFixed(1),
-          pitch: offset.pitchDeg.toFixed(1),
-        }) + ageText(options.getInstallCalibrationCapturedAt());
-    } else {
-      installStatus.textContent = t('sensorSource.install.status.none');
+    if (zeroStep) {
+      zeroStep.title.textContent = offset
+        ? t('box.step.zero.done') + ageText(options.getInstallCalibrationCapturedAt())
+        : t('box.step.zero.todo');
+      setDone(zeroStep, offset !== null, 3);
+      installStatus.hidden = zeroMessage === null;
+      installStatus.textContent = zeroMessage ?? '';
     }
     installClearButton.disabled = !offset;
     installCheckButton.disabled = !offset;
+    forgetDirectionButton.disabled = options.learnMounting?.getLearnedMounting() === null;
+    // Expand the step opened by hand, else the next one not yet done.
+    const next =
+      openedByHand === null
+        ? (expandable.find(
+            (step) => (step === directionStep && !directionDone) || (step === zeroStep && !offset),
+          ) ?? null)
+        : (expandable.find((step) => step.element === openedByHand) ?? null);
+    for (const step of expandable) {
+      step.body.hidden = step !== next;
+      step.element.classList.toggle('is-open', step === next);
+    }
   }
 
   installButton.addEventListener('click', () => {
+    openedByHand = zeroStep?.element ?? null;
     const result = options.calibrateInstall();
     if (!(result instanceof Promise)) {
-      refreshInstall(result ?? undefined);
+      zeroMessage = result;
+      refreshSteps();
       return;
     }
     // A box that zeroes itself (#290) answers later; no second tap while
     // the first is still on its way.
     installButton.disabled = true;
-    installStatus.textContent = t('calibration.external.working');
+    zeroMessage = t('calibration.external.working');
+    refreshSteps();
     void result.then((error) => {
       installButton.disabled = false;
-      refreshInstall(error ?? undefined);
+      zeroMessage = error;
+      refreshSteps();
     });
   });
   installCheckButton.addEventListener('click', () => {
-    refreshInstall(options.checkInstallCalibration());
+    openedByHand = zeroStep?.element ?? null;
+    zeroMessage = options.checkInstallCalibration();
+    refreshSteps();
   });
   installClearButton.addEventListener('click', () => {
     options.clearInstallCalibration();
-    refreshInstall();
+    zeroMessage = null;
+    openedByHand = null;
+    refreshSteps();
   });
+  forgetDirectionButton.addEventListener('click', () => {
+    options.learnMounting?.setLearnedMounting(null);
+    openedByHand = null;
+    refreshSteps();
+  });
+  moreDisconnectButton.addEventListener('click', () => {
+    options.disconnectSensor();
+    refresh();
+    onSourceChanged?.();
+  });
+  body.append(connectSection, installSection, moreSection);
 
   /** Button labels/visibility only — never touches `status`, so an
-   * in-flight connect's status text survives a `refresh()` call. */
+   * in-flight connect's status text survives a `refresh()` call.
+   *
+   * The list only lists and adds boxes (#315, the #309 UX review): once
+   * this box is the active source there is no Connect/Reconnect here — a
+   * lost box is reconnected from its own page, which the row opens, so the
+   * list never offers "Reconnect" next to a box that is connected. */
   function refreshButtons(): void {
     const connected = options.getSensorSource() === options.sensor.id;
-    const name = { name: options.sensor.displayName };
-    connectButton.textContent = connected
-      ? t('sensorSource.reconnect', name)
-      : t('sensorSource.connect', name);
+    connectButton.textContent = t('sensorSource.connect', { name: options.sensor.displayName });
+    connectButton.hidden = connected;
     disconnectButton.hidden = !connected;
   }
 
@@ -451,11 +520,8 @@ export function createSensorSourceSection(
     noteRow.hidden = note === null;
     if (note !== null) noteRow.textContent = note;
     installSection.hidden = !active;
-    if (active) {
-      if (capabilities.mounting) refreshMountingIcon();
-      if (capabilities.installCalibration) refreshInstall();
-      learnSection?.refresh();
-    }
+    moreSection.hidden = !active;
+    if (active) refreshSteps();
   }
 
   connectButton.addEventListener('click', () => {
@@ -479,5 +545,15 @@ export function createSensorSourceSection(
   });
 
   refresh();
-  return { element: body, connectElement: connectSection, installElement: installSection, refresh };
+  return {
+    element: body,
+    connectElement: connectSection,
+    installElement: installSection,
+    moreElement: moreSection,
+    refresh,
+    refreshLive: () => {
+      if (options.getSensorSource() === options.sensor.id) refreshPosition();
+    },
+    positionElement: positionStep.element,
+  };
 }

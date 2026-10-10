@@ -5,7 +5,13 @@ import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-describe('createSensorFallbackPrompt (#134)', () => {
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+function buttons(element: HTMLElement): HTMLButtonElement[] {
+  return Array.from(element.querySelectorAll('button'));
+}
+
+describe('createSensorFallbackPrompt (#134, #313)', () => {
   it('starts hidden', () => {
     const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
     expect(prompt.element.hidden).toBe(true);
@@ -13,72 +19,75 @@ describe('createSensorFallbackPrompt (#134)', () => {
 
   it('shows the actionable prompt once the sensor is unavailable', () => {
     const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
-    prompt.update(true);
+    prompt.update(true, true);
     expect(prompt.element.hidden).toBe(false);
   });
 
-  it('says plainly, up front, that phone mode needs the phone lying flat', () => {
+  it('says it is trying again on its own while a silent retry can still work (#313)', () => {
     const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
-    prompt.update(true);
-    expect(prompt.element.textContent).toContain(t('sensorFallback.phoneHint'));
+    prompt.update(true, true);
+    expect(prompt.element.textContent).toContain(t('sensorFallback.lost'));
+    expect(prompt.element.textContent).toContain(t('sensorFallback.autoRetry'));
   });
 
-  it('resolves (hides again) once the caller reports the state is no longer unavailable', () => {
-    // unavailable -> resolved, e.g. a successful Retry or a switch to the phone.
+  it('never promises an automatic retry that cannot work after a restart (#313)', () => {
     const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
-    prompt.update(true);
-    prompt.update(false);
-    expect(prompt.element.hidden).toBe(true);
+    prompt.update(true, false);
+    expect(prompt.element.textContent).toContain(t('sensorFallback.connect'));
+    expect(prompt.element.textContent).toContain(t('sensorFallback.pick'));
+    expect(prompt.element.textContent).not.toContain(t('sensorFallback.autoRetry'));
   });
 
-  it('tapping Retry calls the retry callback exactly once, one tap one attempt', () => {
-    const onRetry = vi.fn();
-    const prompt = createSensorFallbackPrompt(onRetry, vi.fn());
-    prompt.update(true);
-    const retryButton = prompt.element.querySelector('button');
-    retryButton?.click();
-    expect(onRetry).toHaveBeenCalledOnce();
-  });
-
-  it('a failed Retry leaves the prompt shown (no auto-loop, no auto-hide)', () => {
+  it('says nothing about the phone lying flat, and has no sensor-page button (#313)', () => {
     const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
-    prompt.update(true);
-    const retryButton = prompt.element.querySelector('button');
-    retryButton?.click();
-    // The component itself never hides on a click alone — only a fresh
-    // update(false) from the caller (a real reconnect) does.
-    expect(prompt.element.hidden).toBe(false);
-  });
-
-  it('tapping "Use phone sensor" calls the fallback callback exactly once', () => {
-    const onUsePhone = vi.fn();
-    const prompt = createSensorFallbackPrompt(vi.fn(), onUsePhone);
-    prompt.update(true);
-    const buttons = prompt.element.querySelectorAll('button');
-    buttons[1]?.click();
-    expect(onUsePhone).toHaveBeenCalledOnce();
-  });
-
-  it("renders both action labels from the issue's own example wording", () => {
-    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
-    const labels = Array.from(prompt.element.querySelectorAll('button')).map(
-      (button) => button.textContent,
-    );
-    expect(labels).toEqual([t('sensorFallback.retry'), t('sensorFallback.usePhone')]);
-  });
-
-  it('offers no sensor-page button unless the caller can open one', () => {
-    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
+    prompt.update(true, true);
+    expect(prompt.element.textContent).not.toContain('flat');
     expect(prompt.element.textContent).not.toContain(t('pose.openSensorPage'));
   });
 
-  it('reaches the sensor page too (#286): a third button opens it', () => {
-    const onOpenSensorPage = vi.fn();
-    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn(), onOpenSensorPage);
-    prompt.update(true);
-    const buttons = Array.from(prompt.element.querySelectorAll('button'));
-    const open = buttons.find((button) => button.textContent === t('pose.openSensorPage'));
-    open?.click();
-    expect(onOpenSensorPage).toHaveBeenCalledOnce();
+  it('resolves (hides again) once the caller reports the state is no longer unavailable', () => {
+    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
+    prompt.update(true, true);
+    prompt.update(false, true);
+    expect(prompt.element.hidden).toBe(true);
+  });
+
+  it('tapping Reconnect calls the retry callback exactly once, one tap one attempt', () => {
+    const onRetry = vi.fn(() => Promise.resolve());
+    const prompt = createSensorFallbackPrompt(onRetry, vi.fn());
+    prompt.update(true, true);
+    buttons(prompt.element)[0]?.click();
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it('a failed Reconnect leaves the prompt shown and says what to check (#313)', async () => {
+    const prompt = createSensorFallbackPrompt(() => Promise.resolve(), vi.fn());
+    prompt.update(true, true);
+    buttons(prompt.element)[0]?.click();
+    await flush();
+    prompt.update(true, true);
+    expect(prompt.element.hidden).toBe(false);
+    expect(prompt.element.textContent).toContain(t('sensorFallback.notFound'));
+    // A later loss starts fresh.
+    prompt.update(false, true);
+    prompt.update(true, true);
+    expect(prompt.element.textContent).not.toContain(t('sensorFallback.notFound'));
+  });
+
+  it('tapping "Use the phone instead" calls the fallback callback exactly once', () => {
+    const onUsePhone = vi.fn();
+    const prompt = createSensorFallbackPrompt(vi.fn(), onUsePhone);
+    prompt.update(true, true);
+    buttons(prompt.element)[1]?.click();
+    expect(onUsePhone).toHaveBeenCalledOnce();
+  });
+
+  it('has exactly one primary action and one quiet link', () => {
+    const prompt = createSensorFallbackPrompt(vi.fn(), vi.fn());
+    const [retry, usePhone, ...rest] = buttons(prompt.element);
+    expect(retry?.textContent).toBe(t('sensorFallback.retry'));
+    expect(usePhone?.textContent).toBe(t('sensorFallback.usePhone'));
+    expect(usePhone?.classList.contains('link-button')).toBe(true);
+    expect(rest).toHaveLength(0);
   });
 });

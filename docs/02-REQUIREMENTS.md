@@ -383,13 +383,13 @@ URL and must keep working with no signal.
 - **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
   placement, measurements, ramps, sensor calibration, vehicle zero).
 - **Given** the source step, with the external sensor selected instead
-- **Then** the wizard asks the vehicle step, then branches to two steps of the external
-  sensor's own page (design review: split, same reasoning as the phone-calibration
-  split above) — Connect, then Installation offset — the same External sensor page
-  R32/R34 already describe, embedded in two halves rather than duplicated (connect once,
-  then separately verify the vehicle is level and set the offset), standing in for the
-  phone calibration steps it replaces (skippable on the same terms), then rejoins the
-  shared vehicle-measurements and ramps steps before finishing. No phone-placement step
+- **Then** the wizard asks the vehicle step, then branches to two steps built from the
+  box's own pages — Connect (R32's list), then the box's position, checked live (R51's
+  first step) — standing in for the phone calibration steps it replaces (skippable on
+  the same terms). Direction and zero are not asked here (#317): the zero needs level
+  ground, which a first run rarely has, so the step says they are set the first time
+  the user parks, guided by the box's page and reminded by the amber lamp (R34). It
+  then rejoins the shared vehicle-measurements and ramps steps before finishing. No phone-placement step
   and no phone calibration steps are shown on this path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
   reopened)
@@ -944,8 +944,9 @@ cross-platform goal — they are not this app's code and are not covered here.
   is — never both pairs at once. Its label names what it checks: the phone, or the
   sensor while an external sensor is active.
 - **Given** an external sensor is the active source
-- **Then** the Calibration section (R11, R24) hides the phone's controls and says why
-  in one line, so the box's own calibration (below) is what the page shows: the phone's
+- **Then** the Calibration section (R11, R24) hides the phone's controls without a
+  paragraph about them (#316), so the box's own calibration (below) is what the page
+  shows: the phone's
   sensor calibration, flip calibration and vehicle zero are not applied to a box's
   readings, so capturing one would silently do nothing (or capture the box's tilt as
   the phone's). The stored phone values are kept untouched and become editable again on
@@ -955,7 +956,13 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Then** the Calibration section also offers "Set vehicle level" for that sensor,
   named, in place of the hidden phone controls — the same action as on the sensor's own page
   (R34; for the Xparkle box, R49's zeroing), so calibrating is found where a user looks
-  for it (#290).
+  for it (#290). Below it a quiet "Show the box" link opens the box's own page (R51) for
+  its position and direction (#316).
+- **Given** an external sensor is the active source and the amber calibration lamp is
+  lit (#316)
+- **When** I tap the lamp
+- **Then** the box's own page opens rather than the Calibration tab, its checklist
+  (R51) expanding the next step not yet done: the direction before the zero.
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
   External sensor page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
@@ -1018,12 +1025,26 @@ unannounced switch could show a plausible-looking but wrong reading.
   disconnect, or a failed silent reconnect attempt at app open (R33) that never
   recovered
 - **When** I look at the main screen
-- **Then** instead of the plain "no reading yet" hint, a clear, non-blocking prompt is
-  shown: "External sensor unavailable." with two actions, "Retry" and "Use phone
-  sensor" — never a frozen or ambiguous screen. A third, "Open sensor page", opens that
-  sensor's own page (R40), as R35's stale-data overlay does (#286).
+- **Then** instead of the plain "no reading yet" hint, a clear, non-blocking card is
+  shown with one sentence, one primary action and one quiet link (**#313**, the #309 UX
+  review): "Lost contact with the box", the live line "Trying again automatically…", a
+  **Reconnect** button and a **Use the phone instead** link — never a frozen or
+  ambiguous screen. It says nothing about the phone lying flat (that only applies once
+  the phone is chosen, R17) and has no "Open sensor page" button (the top-bar sensor
+  icon reaches that page).
+- **Given** the app was restarted and the browser cannot reconnect silently (no
+  `getDevices()`, as on Chrome for Android, #308)
+- **Then** the card says "Connect the box" / "Tap and pick your box in the list." instead,
+  never promising an automatic retry that cannot land (#313).
+- **Given** I tapped Reconnect and the picker was cancelled or the connect failed
+- **Then** the card's line says "No box found? Check that it is on and close by." and
+  the buttons stay.
+- **Given** there is no reading at all — the prompt above, or the plain "no reading yet"
+  hint
+- **Then** the wheel diagram is dimmed and the tilt readout hidden (**#312**): the last
+  frame's steps never stay on screen looking live.
 - **Given** the fallback prompt is shown
-- **When** I tap "Retry"
+- **When** I tap "Reconnect"
 - **Then** the browser's device picker opens for the active source, exactly as the
   sensor page's connect button does (**#307**, found on hardware: a silent reconnect
   could not reach the box on Chrome for Android, so the tap did nothing). The picker
@@ -1041,14 +1062,11 @@ unannounced switch could show a plausible-looking but wrong reading.
   only ever retries reaching the same already-known box, silently (no gesture, so no
   picker), through the same adapter `reconnect()` R33 uses.
 - **Given** the fallback prompt is shown
-- **When** I tap "Use phone sensor"
+- **When** I tap "Use the phone instead"
 - **Then** the app switches the active source to the phone sensor via the exact same
-  explicit switch the External sensor page's own "Disconnect" action already performs (never a
-  parallel code path), and the prompt itself says plainly, before I tap, that this
-  is not a like-for-like swap: the phone sensor needs the phone lying flat inside the
-  vehicle (R1/R17), unlike a permanently-mounted box. If the phone is not already
-  lying flat, R17's existing wrong-pose overlay reinforces the same point right after
-  the switch — reused as-is, not duplicated here.
+  explicit switch the External sensor page's own "Disconnect" action already performs
+  (never a parallel code path). If the phone is not lying flat, R17's wrong-pose overlay
+  says so right after the switch — the one place the phone's pose rule is stated.
 - **Given** I have switched to the phone sensor from this prompt
 - **Then** nothing about EasyLevel's calibration (its own installation offset, R34) is
   reused or assumed for the phone — the phone's own calibration/vehicle-zero pair
@@ -1143,8 +1161,9 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 
 - **Given** the External sensor page with EasyLevel as the active source
 - **When** I tap the sensor's status row ("Connected to the EasyLevel sensor" / etc.)
-- **Then** a new page opens on top, showing that sensor's connection state, battery,
-  temperature (R32's exact values and wording) and a live reading —
+- **Then** a new page opens on top, showing that sensor's connection state with its
+  battery (R51's header), the battery and temperature rows (R32's values) inside its
+  collapsed "More", and a live reading —
   the same calibrated roll/pitch the leveling math itself uses — so a box can be
   confirmed alive by watching the number move, without leaving this page.
 - **Given** the phone's own sensor is the active source (#244)
@@ -1157,15 +1176,24 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   tight underneath it where it reads as part of that button instead of as the sensor it
   reports on.
 - **Given** EasyLevel is (or was) the active source
-- **Then** below those rows, and above the debug disclosure, the same page carries
-  this box's own settings: the mounting picker (R43) and the installation offset
-  (R34), each behaving exactly as specified in its own requirement and showing
-  current values whenever the page is opened. They are the very same components the
-  onboarding wizard embeds as steps — never a second, page-specific rebuild.
+- **Then** below those rows the same page carries this box's own setup checklist
+  (R51): its position, its direction (R43's rotations, picked by tapping a side of the
+  vehicle) and its zero (R34), showing current values whenever the page is opened. It
+  is the very same component the onboarding wizard embeds its position step from (#317) — never a second,
+  page-specific rebuild.
 - **Given** the External sensor page (R32)
-- **Then** it carries none of the above: only the intro, the Connect/Reconnect action
-  and the sensor row that leads here. A list of sources never grows longer than the
-  page it links to.
+- **Then** it carries none of the above: only the browser requirement (said once), and
+  per box its row plus a Connect action while that box is not the one in use (#315).
+  It never offers Connect or Reconnect for the box already in use, connected or lost
+  — reconnecting happens on the box's own page (R51), which the row opens. A list of
+  sources never grows longer than the page it links to.
+- **Given** a box is the active source, connected or lost (#315)
+- **When** I tap the sensor icon in the top bar
+- **Then** that box's own page opens directly, not the list: its state, Reconnect and
+  setup are all there.
+- **Given** the phone's own sensor is the active source
+- **When** I tap the sensor icon
+- **Then** the list opens, the place to connect a box.
 - **Given** this status page is open
 - **Then** every value on it keeps refreshing every frame for as long as it stays
   open — the same "runs every frame regardless of what else is open" discipline the
@@ -1173,8 +1201,8 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   or a tilt change shows up immediately, never only after closing and reopening the
   page.
 - **Given** EasyLevel is the active source
-- **When** I expand its "Debug info" disclosure (closed by default, a native
-  `<details>` — no separate tap-and-wait)
+- **When** I expand its "Debug info" disclosure (inside "More", R51; closed by default,
+  a native `<details>` — no separate tap-and-wait)
 - **Then** it shows raw values straight off the box, for troubleshooting a box that
   isn't behaving as expected — not everyday reading material: the box's Web
   Bluetooth device id, time since its last accepted accel notification, the raw
@@ -1298,12 +1326,13 @@ guidance (#285; the phone's own "lay it flat" wording no longer applies to a box
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this
   setting sits alongside — both moved here from the External sensor page by #226)
-- **Then** it shows a mounting-orientation choice — "Standard", "Rotated 90°",
-  "Rotated 180°" and "Rotated 270°" — described without the official app's own
-  `"sensor_Placing"` terminology, plus a small schematic diagram (a box-and-arrow
-  icon, not a literal redraw of the official app's own illustrations) drawn at that
-  same rotation, so the choice is made by matching the picture rather than by
-  understanding an axis convention; it updates live as the choice changes.
+- **Then** the four rotations are offered as R51's direction step: a picture of the
+  vehicle with one button at each side, each showing the box (with an arrow on it)
+  turned so the arrow points out to that side — the front is "Standard", the right
+  "Rotated 90°", the rear "Rotated 180°", the left "Rotated 270°" (#314). The choice is
+  made by matching the picture, never through the official app's `"sensor_Placing"`
+  terminology. Which physical edge of the EasyLevel box the arrow stands for is still
+  to be confirmed on hardware; the picture says "the arrow" until then.
 - **Given** a box physically mounted any of the other three ways
 - **When** the user selects the matching option
 - **Then** that rotation of the (x, y) pair — `(-y, x)` at 90° (the exact transform
@@ -1580,12 +1609,11 @@ present this source as more proven than it is.
   hardware, a box lying on its back changes both angles whenever it turns about its own
   axis, so no zero taken there holds
 - **When** the box's own page is open
-- **Then** it shows live whether the box stands upright; when it reads more than 45° on
-  either axis it says the box is lying down, that it only measures right standing, and
-  what to do: stand it up (whichever way it faces) and tap "Set vehicle level". Libell
-  guides and never blocks: "Set vehicle level" and "Learn the mounting" always run, so a
-  box that was zeroed lying down earlier is recovered by standing it up and zeroing again
-  in Libell, never in the vendor app.
+- **Then** its setup checklist's first step (R51) shows live whether the box stands
+  upright; past 45° on either axis it says the box is lying down and to stand it up,
+  whichever way it faces. Libell guides and never blocks: zeroing and picking the
+  direction always run, so a box that was zeroed lying down earlier is recovered by
+  standing it up and zeroing again in Libell, never in the vendor app.
 - **Given** any other command that would change what the box has stored (its vehicle
   dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
@@ -1608,3 +1636,52 @@ present this source as more proven than it is.
 - **When** I open the app, or bring it back to the foreground
 - **Then** the update is found and the app reloads into it once, without a second
   relaunch.
+
+## R51 — The box's own page: one header, a three-step setup checklist (#314)
+
+The #309 UX review found the box page three stacked sections of paragraphs and buttons,
+jargon ("installation offset", "raw reading"), no order, and — when the connection was
+lost — a line telling the user to tap a Reconnect button that only existed on another
+page. This requirement gives every external box the same page; only the box's picture
+and what its first step checks differ, read from its descriptor's capabilities (ADR
+0016).
+
+- **Given** a box's own page (R40) is open
+- **Then** its header says the state in a few words — "Connected · battery 62 %", "No
+  contact" or "Not connected" — and, whenever the box is not delivering, carries the
+  one button that fixes it: **Reconnect** (lost) or **Connect** (not the active source),
+  the same device picker as everywhere else (#307). Under it, one live line: "Tilt now:
+  side-to-side X° · front-to-back Y°".
+- **Given** the box is the active source
+- **Then** the page shows a checklist of three steps, each with a ✓ when done and only
+  the next undone one expanded; every step can be opened and run at any time — guidance,
+  never a gate:
+  1. **Position**, live: a box built to stand (the Xparkle box) "Stands upright" or
+     "Lying down: stand it upright, facing any way"; a box built to lie flat (the
+     EasyLevel box) "Lies flat" or "Tilted too far: lay it flat, top up". Past 45° on
+     either axis is wrong.
+  2. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
+     from the vehicle setting — with one button at each of its four sides. Each shows
+     the box turned so its reference side points out that way: the Xparkle box's back
+     (the screw mount), the EasyLevel box's arrow. The user taps where it points; the
+     box drawn inside the vehicle follows, and the step's title names the side ("Direction
+     set: points to the rear"). It takes effect on the next reading. For the EasyLevel
+     box the choice is R43's rotation. For the Xparkle box it is a quarter-turn axis
+     mapping, the same kind the lift guide (R49, #293) learns; "Not sure? Learn it by
+     raising the front" opens that guide instead. Which choice equals the Xparkle box's
+     unrotated output is assumed to be "back toward the front" until checked on
+     hardware; the lift guide measures instead of assuming.
+  3. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
+     **Zero now** (R34; the Xparkle box zeroes itself, #290), then "Zeroed" with its age.
+- **Given** the order of the steps
+- **Then** the direction comes before the zero: the direction is learned from
+  differences and works anywhere, while the zero needs level ground — and leveling with
+  Libell's own ramp guidance needs the direction first.
+- **Given** the rarely needed actions
+- **Then** they sit in a collapsed **More**: check the zero, clear the zero, forget the
+  direction, disconnect, the battery/temperature/box-setting rows and the debug info
+  (R40).
+- **Given** an external box reads a wrong position on the main screen (R17, #285, #304)
+- **Then** the overlay says it in one sentence and one short reason ("The box is lying
+  down" / "It only measures right standing up.") with one button, **Show the box**, which
+  opens this page.

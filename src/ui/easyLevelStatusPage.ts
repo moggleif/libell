@@ -30,7 +30,6 @@ import {
   type SensorSource,
 } from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
-import { isStandingUpright } from '../domain/uprightMount';
 import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
@@ -78,6 +77,12 @@ export interface EasyLevelStatusOptions {
   /** Persists a new enabled/delay pair (#212) — takes effect on the very
    * next EasyLevel connect attempt, by any path. */
   setEasyLevelConnectDelay(enabled: boolean, ms: number): void;
+  /**
+   * Connect (or reconnect) this box from its own page (#314) — the device
+   * picker, so it must run inside the button's click handler. Optional:
+   * without it the page shows the state but offers no button.
+   */
+  connectSensor?(): Promise<SensorState>;
   /** Whether to offer the silent-reconnect tip (#310); defaults to asking
    * the browser itself. */
   offersSilentReconnectTip?(): boolean;
@@ -90,6 +95,9 @@ export interface EasyLevelStatusPage {
    * from `sensorSourceSection.ts`'s `installElement`. Sits below the
    * live detail rows and above the debug disclosure. */
   settingsSlot: HTMLElement;
+  /** Inside the collapsed "More" disclosure (#314): the rarely needed
+   * actions `sensorSourceSection.ts` builds, placed by `sensorPage.ts`. */
+  moreSlot: HTMLElement;
   isOpen(): boolean;
   open(): void;
   close(): void;
@@ -127,65 +135,77 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   // paint above it, not just rely on DOM append order elsewhere.
   page.element.classList.add('sensor-status-page');
 
+  // The header (#314, the #309 UX review): the connection state in a few
+  // words, and — whenever the box is not delivering — the one button that
+  // fixes it, right here. This page used to tell the user to tap a
+  // Reconnect button that only existed on the list page above it.
+  const header = document.createElement('div');
+  header.className = 'box-header';
   const stateRow = document.createElement('p');
-  stateRow.className = 'menu__text menu__text--status';
+  stateRow.className = 'menu__text menu__text--status box-header__state';
+  const stateDot = document.createElement('span');
+  stateDot.className = 'box-header__dot';
+  stateDot.setAttribute('aria-hidden', 'true');
+  const stateText = document.createElement('span');
+  stateRow.append(stateDot, stateText);
+  const connectButton = document.createElement('button');
+  connectButton.type = 'button';
+  connectButton.className = 'menu__action';
+  connectButton.hidden = true;
+  let connecting = false;
+  connectButton.addEventListener('click', () => {
+    if (!options.connectSensor) return;
+    connecting = true;
+    refresh();
+    void options.connectSensor().finally(() => {
+      connecting = false;
+      refresh();
+    });
+  });
+  header.append(stateRow, connectButton);
   // No signal-strength row (#228). Web Bluetooth exposes RSSI only through
   // `advertisementreceived` (via `watchAdvertisements()`), never for an
   // established GATT connection — and a BLE peripheral generally stops
   // advertising once connected, which is exactly the state this page is
-  // open in. So there is nothing to measure here, ever: this is how BLE
-  // and the API work, not a gap that closes with browser support. R32
-  // used to require a hard-coded "not available yet" row instead, but
-  // that wording promised a value that could never arrive.
-  const detailHeading = document.createElement('h3');
-  detailHeading.className = 'menu__heading';
-  detailHeading.textContent = t('sensorSource.detail.heading');
+  // open in. So there is nothing to measure here, ever.
   const batteryRow = document.createElement('p');
   batteryRow.className = 'menu__text';
   // The orientation the box keeps itself (R49, #290): read-only, since it
-  // is changed in the vendor app, but worth seeing — it decides which
-  // wheel gets named.
+  // is changed in the vendor app, but worth seeing.
   const orientationRow = document.createElement('p');
   orientationRow.className = 'menu__text';
   const temperatureRow = document.createElement('p');
   temperatureRow.className = 'menu__text';
   const readingRow = document.createElement('p');
   readingRow.className = 'menu__text';
-  // A plain threshold + hysteresis band (#123's `isLowBattery`). Since
-  // #226 this is the only place battery is shown at all, so there is no
-  // second latch anywhere to leave in a stale "low" state.
+  // A plain threshold + hysteresis band (#123's `isLowBattery`).
   const lowBatteryRow = document.createElement('p');
   lowBatteryRow.className = 'menu__text menu__text--warning';
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
-  // A box built to stand (#304): says live whether it does, and how to
-  // fix it when it lies down — guidance, never a refusal.
-  const uprightRow = document.createElement('p');
-  uprightRow.className = 'menu__text';
-  uprightRow.hidden = true;
-  // Only the rows this device can actually fill (#268, ADR 0016). #228
-  // removed the signal-strength row for exactly this reason: a row that
-  // permanently reads "not available yet" promises a value that never
-  // arrives, which is worse than not showing it.
   const capabilities = options.sensor.capabilities;
-  page.body.append(stateRow, detailHeading);
-  if (capabilities.battery) page.body.append(batteryRow);
-  if (capabilities.temperature) page.body.append(temperatureRow);
-  if (capabilities.reportedOrientation) page.body.append(orientationRow);
-  page.body.append(readingRow);
-  if (capabilities.upright) page.body.append(uprightRow);
+  page.body.append(header, readingRow);
   if (capabilities.battery) page.body.append(lowBatteryRow);
 
-  // Where this sensor's own SETTINGS go (#226) — the mounting picker
-  // (R43) and installation offset (R34), built by
-  // `sensorSourceSection.ts` and placed here by `sensorPage.ts` rather
-  // than rebuilt: they are per-device configuration, so they belong on
-  // the device's page, not on the list of sources that links to it. A
-  // dedicated slot (rather than letting the caller append to `page.body`)
-  // keeps this page owning its own running order, with the debug
-  // disclosure below staying last.
+  // This sensor's own setup (#226, #314): the checklist built by
+  // `sensorSourceSection.ts` and placed here by `sensorPage.ts`.
   const settingsSlot = document.createElement('div');
   page.body.append(settingsSlot);
+
+  // "More" (#314): everything a user rarely needs, collapsed — the
+  // secondary actions, the detail rows, and the debug info.
+  const moreDetails = document.createElement('details');
+  moreDetails.className = 'menu__detail box-more';
+  const moreSummary = document.createElement('summary');
+  moreSummary.className = 'sensor-status__debug-summary';
+  moreSummary.textContent = t('box.more');
+  const moreSlot = document.createElement('div');
+  moreDetails.append(moreSummary, moreSlot);
+  // Only the rows this device can actually fill (#268, ADR 0016).
+  if (capabilities.battery) moreDetails.append(batteryRow);
+  if (capabilities.temperature) moreDetails.append(temperatureRow);
+  if (capabilities.reportedOrientation) moreDetails.append(orientationRow);
+  page.body.append(moreDetails);
 
   // Debug info (EasyLevel only): closed by default, same native-<details>
   // discipline as the settings page's Advanced disclosure (#157) — no JS
@@ -255,7 +275,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   // workaround — are one device's own debug surface, and a source without
   // them would show a disclosure full of dashes and a control that does
   // nothing (#272).
-  if (capabilities.debugBytes) page.body.append(debugDetails);
+  if (capabilities.debugBytes) moreDetails.append(debugDetails);
 
   // Silent-reconnect tip (#310): for any box, closed by default, and only
   // in a Chromium browser off iOS that has Web Bluetooth but not
@@ -324,15 +344,28 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     const source = options.getSensorSource();
     const state = options.getSensorState();
     const isActive = source === options.sensor.id;
-    stateRow.textContent = !isActive
-      ? source === 'phone'
-        ? t('sensorSource.status.phone')
-        : t('sensorSource.status.inactive')
-      : state === 'disconnected'
-        ? t('sensorSource.status.disconnected')
-        : t('sensorSource.status.connected', { name: options.sensor.displayName });
+    const lost = isActive && state === 'disconnected';
+    stateRow.classList.toggle('is-connected', isActive && !lost);
+    stateRow.classList.toggle('is-lost', lost);
 
     const health = isActive ? options.getHealth() : null;
+    const batteryKnown = capabilities.battery && health?.batteryPercent != null;
+    stateText.textContent = !isActive
+      ? t('box.state.notConnected')
+      : lost
+        ? t('box.state.lost')
+        : batteryKnown
+          ? `${t('box.state.connected')} · ${t('box.state.battery', {
+              value: `${Math.round(health?.batteryPercent ?? 0)} %`,
+            })}`
+          : t('box.state.connected');
+    connectButton.hidden = !options.connectSensor || (isActive && !lost);
+    connectButton.disabled = connecting;
+    connectButton.textContent = connecting
+      ? t('sensorSource.status.connecting')
+      : isActive
+        ? t('sensorFallback.retry')
+        : t('box.connect');
     const batteryPercent = health?.batteryPercent ?? null;
     batteryRow.textContent = t('sensorSource.detail.battery', {
       value: batteryPercent === null ? notAvailable : `${Math.round(batteryPercent)}%`,
@@ -350,18 +383,9 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     const tilt = options.getCalibratedTilt();
     readingRow.textContent = t('sensorStatus.reading', {
       value: tilt
-        ? `${t('sensorStatus.roll')} ${tilt.rollDeg.toFixed(1)}°, ${t('sensorStatus.pitch')} ${tilt.pitchDeg.toFixed(1)}°`
+        ? `${t('tilt.sideSide')} ${tilt.rollDeg.toFixed(1)}° · ${t('tilt.frontBack')} ${tilt.pitchDeg.toFixed(1)}°`
         : '—',
     });
-
-    uprightRow.hidden = !isActive || !tilt;
-    if (isActive && tilt) {
-      const standing = isStandingUpright(tilt);
-      uprightRow.textContent = t(
-        standing ? 'sensorSource.upright.ok' : 'sensorSource.upright.lying',
-      );
-      uprightRow.classList.toggle('menu__text--warning', !standing);
-    }
 
     wasLowBattery = batteryPercent === null ? false : isLowBattery(batteryPercent, wasLowBattery);
     lowBatteryRow.hidden = !wasLowBattery;
@@ -415,6 +439,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   return {
     element: page.element,
     settingsSlot,
+    moreSlot,
     isOpen: page.isOpen,
     open: page.open,
     close: page.close,
