@@ -23,6 +23,23 @@ describe('settings form', () => {
     expect(hint?.textContent).toContain('registration');
   });
 
+  it('a caravan is told to measure axle to jockey wheel, not wheelbase (#327)', () => {
+    const form = createSettingsForm({ ...classic, vehicleType: 'caravan' }, vi.fn());
+    const hint = form.querySelector('.settings__hint')!.textContent!;
+    expect(hint).toBe(t('settings.measureHint.caravan'));
+    expect(hint).not.toContain(t('settings.wheelbase').toLowerCase());
+  });
+
+  it('switching to caravan swaps the measurement hint live (#327)', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    const vehicleSelect = form.querySelectorAll('select')[0] as HTMLSelectElement;
+    vehicleSelect.value = 'caravan';
+    vehicleSelect.dispatchEvent(new Event('change'));
+    expect(form.querySelector('.settings__hint')!.textContent).toBe(
+      t('settings.measureHint.caravan'),
+    );
+  });
+
   it('has no selectCalibrationTab in Classic — there are no tabs to select (#155)', () => {
     const form = createSettingsForm(classic, vi.fn());
     expect(form.selectCalibrationTab).toBeUndefined();

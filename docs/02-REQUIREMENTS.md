@@ -170,8 +170,10 @@ URL and must keep working with no signal.
 - **Then** the app falls back to the defaults rather than failing to start.
 - **Given** the measurement fields (also in the wizard's measurements step, which
   reuses the same form)
-- **Then** a short muted hint says where the numbers are found (registration document /
-  handbook, or a tape measure — a few cm of error hardly matters).
+- **Then** a one-sentence muted hint says where the numbers are found: the registration
+  document for a motorhome; for a caravan, whose first field is the axle-to-jockey
+  distance that document does not list, to measure from the axle to the jockey wheel
+  (#327). Either way, a few cm off doesn't matter.
 
 ## R10 — The app installs to the home screen and works offline
 

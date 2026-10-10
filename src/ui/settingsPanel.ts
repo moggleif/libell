@@ -1336,8 +1336,11 @@ export function createSettingsForm(
     for (const [option, label] of axleOptions) option.textContent = t(label);
     // A caravan has one axle — the front track width does not apply.
     fieldEls.get('trackWidthFrontMm')!.hidden = vehicle === 'caravan';
+    // A caravan's "wheelbase" is the axle-to-jockey distance, which the
+    // registration document does not list (#327).
     measureHint.textContent =
-      t('settings.measureHint') + (axle === 'boggie' ? ` ${t('settings.measureHint.boggie')}` : '');
+      t(vehicle === 'caravan' ? 'settings.measureHint.caravan' : 'settings.measureHint') +
+      (axle === 'boggie' ? ` ${t('settings.measureHint.boggie')}` : '');
     stepsCaption.textContent = `${t('settings.steps')} (${unit})`;
     addInput.placeholder = unit === 'cm' ? '4' : '40';
     addButton.textContent = `+ ${t('settings.steps.add')}`;

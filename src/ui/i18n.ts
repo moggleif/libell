@@ -296,9 +296,9 @@ export const MESSAGES = {
     'axle.single': 'Single',
     'axle.boggie': 'Tandem (boggie)',
     'settings.track': 'Track width',
-    'settings.measureHint':
-      'Wheelbase and track widths are in the registration document or the handbook — ' +
-      'a tape measure works too; a few cm of error hardly matters.',
+    'settings.measureHint': "They're in the registration document. A few cm off doesn't matter.",
+    'settings.measureHint.caravan':
+      "Measure from the axle to the jockey wheel. A few cm off doesn't matter.",
     'settings.measureHint.boggie': 'With a boggie, measure to the centre of the axle pair.',
     'settings.steps': 'Ramp step heights',
     'settings.steps.add': 'Add step',
@@ -825,9 +825,8 @@ export const MESSAGES = {
     'axle.single': 'Enkel',
     'axle.boggie': 'Boggie',
     'settings.track': 'Spårvidd',
-    'settings.measureHint':
-      'Hjulbas och spårvidd står i registreringsbeviset eller handboken — tumstock ' +
-      'funkar också; några centimeters fel spelar knappast någon roll.',
+    'settings.measureHint': 'Står i registreringsbeviset. Några cm fel gör inget.',
+    'settings.measureHint.caravan': 'Mät från axeln till stödhjulet. Några cm fel gör inget.',
     'settings.measureHint.boggie': 'Med boggie mäter du till mitten av axelparet.',
     'settings.steps': 'Rampens steghöjder',
     'settings.steps.add': 'Lägg till steg',
@@ -1303,8 +1302,9 @@ export const MESSAGES = {
     'axle.boggie': 'Tandem (double essieu)',
     'settings.track': 'Voie',
     'settings.measureHint':
-      'L’empattement et les voies figurent sur la carte grise ou dans le manuel — un ' +
-      'mètre ruban fait aussi l’affaire ; quelques cm d’erreur n’ont guère d’importance.',
+      'Elles figurent sur la carte grise. Quelques cm d’écart ne changent rien.',
+    'settings.measureHint.caravan':
+      'Mesurez de l’essieu à la roue jockey. Quelques cm d’écart ne changent rien.',
     'settings.measureHint.boggie':
       'Avec un double essieu, mesurez jusqu’au centre de la paire d’essieux.',
     'settings.steps': 'Hauteurs des paliers de rampe',
@@ -1793,8 +1793,9 @@ export const MESSAGES = {
     'axle.boggie': 'Tándem (doble eje)',
     'settings.track': 'Ancho de vía',
     'settings.measureHint':
-      'La distancia entre ejes y los anchos de vía están en la documentación del vehículo o ' +
-      'en el manual; una cinta métrica también sirve: unos pocos cm de error apenas importan.',
+      'Figuran en la documentación del vehículo. Unos cm de error no importan.',
+    'settings.measureHint.caravan':
+      'Mide desde el eje hasta la rueda jockey. Unos cm de error no importan.',
     'settings.measureHint.boggie': 'Con doble eje, mide hasta el centro del par de ejes.',
     'settings.steps': 'Alturas de nivel de la rampa',
     'settings.steps.add': 'Añadir nivel',
@@ -2276,8 +2277,9 @@ export const MESSAGES = {
     'axle.boggie': 'Tandem (Doppelachse)',
     'settings.track': 'Spurweite',
     'settings.measureHint':
-      'Radstand und Spurweiten stehen im Fahrzeugschein oder im Handbuch — ein Maßband tut ' +
-      'es auch; ein paar cm Abweichung machen kaum etwas aus.',
+      'Die Maße stehen im Fahrzeugschein. Ein paar cm Abweichung machen nichts.',
+    'settings.measureHint.caravan':
+      'Von der Achse bis zum Stützrad messen. Ein paar cm Abweichung machen nichts.',
     'settings.measureHint.boggie': 'Bei einer Doppelachse bis zur Mitte des Achspaars messen.',
     'settings.steps': 'Stufenhöhen der Keile',
     'settings.steps.add': 'Stufe hinzufügen',
