@@ -30,6 +30,7 @@ import {
   type SensorSource,
 } from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
+import { isStandingUpright } from '../domain/uprightMount';
 import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
@@ -153,6 +154,11 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   lowBatteryRow.className = 'menu__text menu__text--warning';
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
+  // A box built to stand (#304): says live whether it does, and how to
+  // fix it when it lies down — guidance, never a refusal.
+  const uprightRow = document.createElement('p');
+  uprightRow.className = 'menu__text';
+  uprightRow.hidden = true;
   // Only the rows this device can actually fill (#268, ADR 0016). #228
   // removed the signal-strength row for exactly this reason: a row that
   // permanently reads "not available yet" promises a value that never
@@ -163,6 +169,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   if (capabilities.temperature) page.body.append(temperatureRow);
   if (capabilities.reportedOrientation) page.body.append(orientationRow);
   page.body.append(readingRow);
+  if (capabilities.upright) page.body.append(uprightRow);
   if (capabilities.battery) page.body.append(lowBatteryRow);
 
   // Where this sensor's own SETTINGS go (#226) — the mounting picker
@@ -306,6 +313,15 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         ? `${t('sensorStatus.roll')} ${tilt.rollDeg.toFixed(1)}°, ${t('sensorStatus.pitch')} ${tilt.pitchDeg.toFixed(1)}°`
         : '—',
     });
+
+    uprightRow.hidden = !isActive || !tilt;
+    if (isActive && tilt) {
+      const standing = isStandingUpright(tilt);
+      uprightRow.textContent = t(
+        standing ? 'sensorSource.upright.ok' : 'sensorSource.upright.lying',
+      );
+      uprightRow.classList.toggle('menu__text--warning', !standing);
+    }
 
     wasLowBattery = batteryPercent === null ? false : isLowBattery(batteryPercent, wasLowBattery);
     lowBatteryRow.hidden = !wasLowBattery;

@@ -29,8 +29,9 @@
  * be rotated twice and name the wrong wheel while looking plausible. So
  * the descriptor declares `mounting: false`, no picker is offered, and
  * `getOrientation()` below exposes what the box reports for display only.
- * The vendor app remains the place to change it, which is also where the
- * user set it up in the first place.
+ * Which way the box faces in the vehicle is learned in Libell instead
+ * (#293), so no step ever needs the vendor app. The box itself must stand
+ * upright whichever way it faces (#304, `domain/uprightMount.ts`).
  *
  * **The password does not gate readings here.** Whether the box refuses to
  * serve `fff2` before command `4` was unknowable from the app, which always
@@ -46,8 +47,8 @@
  * automatically.** The box remembers its own configuration, and silently
  * rewriting a user's setup is worse than not supporting it at all. The one
  * exception is `resetZero`, and only behind an explicit tap (`zeroBox()`,
- * #290): the box's own zero is what makes a box mounted lying on its back
- * usable at all. `setParameters` is never sent.
+ * #290): the box's own zero takes out the few degrees a mounting is off
+ * level. `setParameters` is never sent.
  */
 import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { GravityVector } from '../domain/leveling';
@@ -186,10 +187,11 @@ export interface XparkleSensor extends ExternalSensor {
   isPasswordRejected(): boolean;
   /**
    * Zero the box where it sits, with its own `resetZero` command (#290):
-   * from then on it reports angles relative to this position, however it
-   * is mounted — including lying on its back, which Libell's own
-   * installation offset cannot capture (R34 refuses a capture that far
-   * from level). Resolves true once the command was written, false when
+   * from then on it reports angles relative to this position. The box must
+   * stand upright: lying down, turning it about its own axis changes both
+   * angles, so no zero holds (found on hardware, #273); the box's page
+   * guides the user to stand it up (#304). Resolves true once the command
+   * was written, false when
    * no box is connected or the write failed; nothing is retried.
    *
    * The one command that changes the box's stored state this adapter
@@ -391,8 +393,10 @@ export function createXparkleSensor(
         return await adopt(await transport.connect(markDisconnected));
       } catch {
         // A cancelled picker and a failed connect are the same to the
-        // caller: nothing is connected, and a tap can try again.
-        state = 'denied';
+        // caller: nothing is connected, and a tap can try again. A box that
+        // was already lost stays lost (#307), so Retry's cancelled picker
+        // keeps the unavailable prompt and its background retry.
+        if (state !== 'disconnected') state = 'denied';
         return state;
       }
     },
@@ -456,6 +460,15 @@ export function createXparkleSensor(
  * one actually fires.
  */
 export function createXparkleWebBluetoothTransport(): XparkleTransport {
+  /**
+   * The box the user picked in this page session. Chrome on Android keeps
+   * `getDevices()` behind a flag, so without this the silent reconnect had
+   * nothing to reconnect to and Retry never worked there (#288, found on
+   * hardware); the object `requestDevice()` returned stays connectable for
+   * as long as the page lives.
+   */
+  let picked: BluetoothDevice | null = null;
+
   async function connectToDevice(
     device: BluetoothDevice,
     onDisconnect: () => void,
@@ -496,6 +509,17 @@ export function createXparkleWebBluetoothTransport(): XparkleTransport {
     }
   }
 
+  /** The box picked this session, else the browser's own list of devices
+   * this origin may use — a second, narrower feature (`getDevices()`) that
+   * can be missing even where `navigator.bluetooth` is not. */
+  async function findDevice(deviceId: string): Promise<BluetoothDevice | null> {
+    if (picked?.id === deviceId) return picked;
+    const getDevices = navigator.bluetooth?.getDevices;
+    if (typeof getDevices !== 'function') return null;
+    const devices = await getDevices.call(navigator.bluetooth);
+    return devices.find((candidate) => candidate.id === deviceId) ?? null;
+  }
+
   return {
     async connect(onDisconnect) {
       const device = await navigator.bluetooth!.requestDevice({
@@ -505,17 +529,12 @@ export function createXparkleWebBluetoothTransport(): XparkleTransport {
         ],
         optionalServices: [XPARKLE_SERVICE_UUID],
       });
+      picked = device;
       return connectToDevice(device, onDisconnect);
     },
     async reconnect(deviceId, onDisconnect) {
-      // Same "only called where navigator.bluetooth exists" contract as
-      // connect(), but getDevices() is a second, narrower feature that can
-      // be missing even where `bluetooth` itself is not.
-      const getDevices = navigator.bluetooth?.getDevices;
-      if (typeof getDevices !== 'function') return null;
       try {
-        const devices = await getDevices.call(navigator.bluetooth);
-        const device = devices.find((candidate) => candidate.id === deviceId);
+        const device = await findDevice(deviceId);
         if (!device) return null;
         await waitForAdvertisement(device);
         return await connectToDevice(device, onDisconnect);
@@ -580,6 +599,7 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     debugBytes: false,
     reportedOrientation: true,
     learnMounting: true,
+    upright: true,
   },
   // Polled every 500 ms, so a silence of several polls is a real fault
   // rather than jitter — but kept at EasyLevel's own 4s rather than

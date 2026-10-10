@@ -340,4 +340,42 @@ describe('createEasyLevelStatusPage', () => {
     page.close();
     expect(page.isOpen()).toBe(false);
   });
+
+  describe('a box built to stand upright (#304)', () => {
+    function xparklePage(tilt: { rollDeg: number; pitchDeg: number }) {
+      const page = createEasyLevelStatusPage(
+        makeOptions({
+          sensor: XPARKLE_DESCRIPTOR,
+          getSensorSource: () => 'xparkle',
+          getCalibratedTilt: () => tilt,
+        }),
+      );
+      page.refresh();
+      return page;
+    }
+
+    it('says it stands upright when it does', () => {
+      const page = xparklePage({ rollDeg: 1, pitchDeg: -2 });
+      expect(page.element.textContent).toContain(t('sensorSource.upright.ok'));
+    });
+
+    it('guides the user to stand it up when it lies down, without blocking anything', () => {
+      const page = xparklePage({ rollDeg: 0, pitchDeg: -89 });
+      expect(page.element.textContent).toContain(t('sensorSource.upright.lying'));
+      expect(page.element.querySelector('.menu__text--warning:not([hidden])')?.textContent).toBe(
+        t('sensorSource.upright.lying'),
+      );
+    });
+
+    it('is not shown for the EasyLevel box, which is mounted flat', () => {
+      const page = createEasyLevelStatusPage(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getCalibratedTilt: () => ({ rollDeg: 0, pitchDeg: -89 }),
+        }),
+      );
+      page.refresh();
+      expect(page.element.textContent).not.toContain(t('sensorSource.upright.lying'));
+    });
+  });
 });

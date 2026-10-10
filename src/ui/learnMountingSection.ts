@@ -1,6 +1,6 @@
 /**
  * "Learn the mounting" guide (#293, R49): for a box that reports finished
- * angles and can sit in the vehicle any way round. Instead of asking the
+ * angles and stands upright facing any of four ways. Instead of asking the
  * user how the box is mounted, or sending them to the vendor's app, Libell
  * watches the box while the user lifts the vehicle's front and then its
  * right side, and learns which way is which (`domain/axisMapping.ts`).

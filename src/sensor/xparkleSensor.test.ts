@@ -138,6 +138,22 @@ describe('connecting (#270)', () => {
     expect(sensor.getGravity()).toBeNull();
   });
 
+  it('stays disconnected when a Retry picker is cancelled after the box was lost (#307)', async () => {
+    const timers = fakeTimers();
+    const sensor = createXparkleSensor(
+      {
+        connect: () => Promise.reject(new Error('cancelled')),
+        reconnect: () => Promise.resolve(null),
+      },
+      timers,
+    );
+    await sensor.reconnect('xparkle-1');
+    expect(sensor.getState()).toBe('disconnected');
+
+    // Still 'disconnected', so the prompt and its background retry stay.
+    expect(await sensor.start()).toBe('disconnected');
+  });
+
   it('still delivers readings when the box answers nothing but the live read', async () => {
     // A firmware that rejects the subscription or the writes must not stop
     // leveling from working: only the live read is actually required.
@@ -458,6 +474,7 @@ describe('the Xparkle descriptor (#270)', () => {
       debugBytes: false,
       reportedOrientation: true,
       learnMounting: true,
+      upright: true,
     });
   });
 
@@ -537,5 +554,28 @@ describe('the silent reconnect waits to hear the box first (#288)', () => {
 
     expect(connection).not.toBeNull();
     expect(calls).toEqual(['connect']);
+  });
+});
+
+describe('Retry without getDevices() (#288, Chrome on Android)', () => {
+  it('reconnects to the box picked this session even where getDevices() is missing', async () => {
+    const { device, calls } = fakeRememberedDevice({ watch: false });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createXparkleWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    const connection = await transport.reconnect('xparkle-1', vi.fn());
+    expect(connection).not.toBeNull();
+    expect(calls).toEqual(['connect', 'connect']);
+  });
+
+  it('returns nothing, silently, when no box was picked and getDevices() is missing', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn() } },
+      configurable: true,
+    });
+    expect(await createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn())).toBeNull();
   });
 });

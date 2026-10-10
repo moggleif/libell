@@ -57,6 +57,9 @@ export interface ExternalSensorCapabilities {
   reportedOrientation: boolean;
   /** Its mounting can be learned in Libell by lifting the vehicle (#293). */
   learnMounting: boolean;
+  /** Must be mounted standing upright, not lying flat (#304) — what the
+   * pose overlay tells the user when it reads far off level. */
+  upright: boolean;
 }
 
 /** A mounting orientation a box stores and reports itself (R49). */

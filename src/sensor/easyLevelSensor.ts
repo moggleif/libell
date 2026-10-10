@@ -184,6 +184,7 @@ export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
     debugBytes: true,
     reportedOrientation: false,
     learnMounting: false,
+    upright: false,
   },
   // Notifications are event-driven, not a fixed clock — a connection-
   // interval hiccup or a slow packet can legitimately create a larger gap
@@ -259,6 +260,10 @@ function delay(ms: number): Promise<void> {
 export function createWebBluetoothTransport(
   getConnectDelayMs: () => number = () => 0,
 ): EasyLevelTransport {
+  /** The box picked in this page session, reconnectable without
+   * `getDevices()` for as long as the page lives (#288). */
+  let picked: BluetoothDevice | null = null;
+
   async function connectToDevice(
     device: BluetoothDevice,
     onDisconnect: () => void,
@@ -317,17 +322,21 @@ export function createWebBluetoothTransport(
         ],
         optionalServices: [EASYLEVEL_SERVICE_UUID],
       });
+      picked = device;
       return connectToDevice(device, onDisconnect);
     },
     async reconnect(deviceId, onDisconnect): Promise<EasyLevelConnection | null> {
-      // Same "only called after isWebBluetoothSupported()" contract as
-      // connect() above, but getDevices() itself is a second, narrower
-      // feature (#130) that can be missing even where `bluetooth` exists.
-      const getDevices = navigator.bluetooth?.getDevices;
-      if (typeof getDevices !== 'function') return null;
       try {
-        const devices = await getDevices.call(navigator.bluetooth);
-        const device = devices.find((candidate) => candidate.id === deviceId);
+        // The box picked this page session first (#288 — Chrome on Android
+        // keeps getDevices() behind a flag), then getDevices() itself, a
+        // second, narrower feature (#130) that can be missing even where
+        // `bluetooth` exists.
+        let device: BluetoothDevice | null = picked?.id === deviceId ? picked : null;
+        const getDevices = navigator.bluetooth?.getDevices;
+        if (!device && typeof getDevices === 'function') {
+          const devices = await getDevices.call(navigator.bluetooth);
+          device = devices.find((candidate) => candidate.id === deviceId) ?? null;
+        }
         if (!device) return null;
         return await connectToDevice(device, onDisconnect);
       } catch {
@@ -490,8 +499,10 @@ export function createEasyLevelSensor(
       } catch {
         // Covers a cancelled device picker, a GATT connect failure, or a
         // missing service — all surfaced the same way the phone sensor
-        // surfaces a denied permission.
-        state = 'denied';
+        // surfaces a denied permission. A box that was already lost stays
+        // lost (#307): Retry's picker being cancelled must not hide the
+        // unavailable prompt or stop its background retry.
+        if (state !== 'disconnected') state = 'denied';
         return state;
       }
     },

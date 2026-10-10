@@ -213,6 +213,23 @@ describe('createEasyLevelSensor (#116)', () => {
     expect(sensor.getState()).toBe('denied');
   });
 
+  it('stays disconnected when a Retry picker is cancelled after the box was lost (#307)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const transport: EasyLevelTransport = {
+      connect: () => Promise.reject(new Error('User cancelled the requestDevice() chooser.')),
+      reconnect: async () => null,
+    };
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.reconnect('device-1');
+    expect(sensor.getState()).toBe('disconnected');
+
+    // Still 'disconnected', so the prompt and its background retry stay.
+    expect(await sensor.start()).toBe('disconnected');
+  });
+
   it('never fails to connect just because the status characteristic subscription throws (best-effort, #116)', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
@@ -935,5 +952,31 @@ describe('isEasyLevelInitialCalibrationWaitExpired (#217)', () => {
         1000 + EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS + 5000,
       ),
     ).toBe(true);
+  });
+});
+
+describe('Retry without getDevices() (#288, Chrome on Android)', () => {
+  it('reconnects to the box picked this session even where getDevices() is missing', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    const connection = await transport.reconnect('device-1', vi.fn());
+    expect(connection).not.toBeNull();
+    expect(device.gatt?.connect).toHaveBeenCalledTimes(2);
+  });
+
+  it('still has nothing to reconnect to for a different box', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    expect(await transport.reconnect('device-2', vi.fn())).toBeNull();
   });
 });

@@ -277,6 +277,10 @@ URL and must keep working with no signal.
   overlay says the sensor sits in an extreme position, or looks mounted upside-down,
   instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
   degrees, far below that limit.
+- **Given** that box is one built to stand upright (the Xparkle box, R49)
+- **Then** the overlay says it seems to be lying down and must be mounted standing, and
+  never tells the user to lay it flat or face up (#304); the EasyLevel box, which is
+  mounted flat, keeps the flat wording.
 - **Given** that overlay is shown for an external sensor
 - **Then** it also says what to do — check the sensor's live values and mounting — and
   carries an "Open sensor page" button that goes straight to that sensor's own page
@@ -1020,11 +1024,13 @@ unannounced switch could show a plausible-looking but wrong reading.
   sensor's own page (R40), as R35's stale-data overlay does (#286).
 - **Given** the fallback prompt is shown
 - **When** I tap "Retry"
-- **Then** the app makes one immediate silent reconnect attempt against the remembered
-  box (the same `EasyLevelSensor.reconnect()` R33's own auto-reconnect uses, not a
-  duplicate implementation). On success the prompt clears and leveling resumes on the
-  external source; on failure the prompt simply stays (or reappears on the next
-  frame).
+- **Then** the browser's device picker opens for the active source, exactly as the
+  sensor page's connect button does (**#307**, found on hardware: a silent reconnect
+  could not reach the box on Chrome for Android, so the tap did nothing). The picker
+  lists only that kind of box; Web Bluetooth never lets a page choose in it, so the one
+  tap on the box is the user's. On success the prompt clears and leveling resumes on
+  the external source; if the picker is cancelled or the connect fails, the prompt
+  stays and the background retry below keeps going.
 - **Given** EasyLevel is unreachable and the fallback prompt is shown, and no one
   taps anything (**#211**)
 - **Then** the app also retries the same reconnect call on its own, on a short fixed
@@ -1032,9 +1038,8 @@ unannounced switch could show a plausible-looking but wrong reading.
   long as the main screen is visible and the box stays unreachable — recovering
   automatically the moment the box is back in range or powered on, with no tap
   required. This never switches source on its own (ADR 0014's rule is unchanged): it
-  only ever retries reaching the same already-known box, exactly what the manual
-  button already did. The background loop and the manual button share one
-  implementation, never two.
+  only ever retries reaching the same already-known box, silently (no gesture, so no
+  picker), through the same adapter `reconnect()` R33 uses.
 - **Given** the fallback prompt is shown
 - **When** I tap "Use phone sensor"
 - **Then** the app switches the active source to the phone sensor via the exact same
@@ -1534,18 +1539,23 @@ present this source as more proven than it is.
   side and confirms
 - **Then** Libell learns which of the box's two angles moved for each lift and in which
   direction, and from then on reads them so a raised front is front high and a raised
-  right side is left low — for any of the eight ways the box can sit, and composed with
+  right side is left low — whichever of the four directions the upright box faces, and
+  composed with
   whatever the box already applies, since it is measured rather than described. The
   user never needs the vendor app for this. A lift too small to tell from noise, one
   that moved both angles about equally, or two lifts that moved the same angle are
   refused with the reason and nothing is stored; the learned mounting can be forgotten,
   which returns to the box's own directions.
 - **Given** the connection to the box is lost while it stays switched on and in range
-- **When** the user taps Retry, or the background auto-retry runs (R37)
+- **When** the background auto-retry runs (R37; a Retry tap opens the picker, #307)
 - **Then** the app reconnects to the same box without the device picker (#288): a read
   that fails or never answers closes the link rather than leaving it half-open (a box
   does not advertise while it holds a connection), and the silent reconnect first waits
-  a bounded time to hear the box advertise where the browser can watch for that.
+  a bounded time to hear the box advertise where the browser can watch for that. Within
+  the same app session this works without the browser's `getDevices()` (behind a flag
+  in Chrome on Android): the app reconnects to the box the user picked. After the app
+  has been restarted, only a browser with `getDevices()` can reconnect silently;
+  elsewhere the user connects again from the sensor page.
 - **Given** the box rejects the password it is offered
 - **Then** the External sensor page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
@@ -1553,12 +1563,20 @@ present this source as more proven than it is.
 - **Given** the Xparkle box is connected and the user taps "Set vehicle level" — on its
   own page (R34) or in the Calibration tab (R11)
 - **Then** Libell has the box zero itself with its own command (#290), so its readings
-  are relative to that position however it is mounted, lying on its back included (the
-  box is built to stand upright; on its back it reads about −90° of pitch, which a
-  Libell-side offset cannot capture). Libell records the moment as a zero installation
+  are relative to that position. Libell records the moment as a zero installation
   offset, which drives the calibration lamp, the age text and "Check", and replaces any
   older Libell-side offset so two zeros are never stacked. If no box is connected, or
   the command cannot be written, it says so and nothing is changed.
+- **Given** the box must stand upright to measure right (#273, #304): verified on
+  hardware, a box lying on its back changes both angles whenever it turns about its own
+  axis, so no zero taken there holds
+- **When** the box's own page is open
+- **Then** it shows live whether the box stands upright; when it reads more than 45° on
+  either axis it says the box is lying down, that it only measures right standing, and
+  what to do: stand it up (whichever way it faces) and tap "Set vehicle level". Libell
+  guides and never blocks: "Set vehicle level" and "Learn the mounting" always run, so a
+  box that was zeroed lying down earlier is recovered by standing it up and zeroing again
+  in Libell, never in the vendor app.
 - **Given** any other command that would change what the box has stored (its vehicle
   dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
