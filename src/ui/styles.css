@@ -3288,3 +3288,17 @@ body {
     min-height: 46px;
   }
 }
+
+/* No reading at all (#312): the diagram is dimmed and the readout hidden,
+   so the last frame's steps never stay on screen looking live. */
+.is-no-data.rv-diagram {
+  opacity: 0.2;
+  filter: grayscale(1);
+}
+
+.is-no-data.tilt-readout,
+.is-no-data .wheel-card__text,
+.is-no-data .wheel-card__marker,
+.is-no-data text {
+  visibility: hidden;
+}

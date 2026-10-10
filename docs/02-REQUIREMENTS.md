@@ -1022,6 +1022,10 @@ unannounced switch could show a plausible-looking but wrong reading.
   shown: "External sensor unavailable." with two actions, "Retry" and "Use phone
   sensor" — never a frozen or ambiguous screen. A third, "Open sensor page", opens that
   sensor's own page (R40), as R35's stale-data overlay does (#286).
+- **Given** there is no reading at all — the prompt above, or the plain "no reading yet"
+  hint
+- **Then** the wheel diagram is dimmed and the tilt readout hidden (**#312**): the last
+  frame's steps never stay on screen looking live.
 - **Given** the fallback prompt is shown
 - **When** I tap "Retry"
 - **Then** the browser's device picker opens for the active source, exactly as the

@@ -289,7 +289,7 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
         ? t('sensorSource.status.phone')
         : t('sensorSource.status.inactive')
       : state === 'disconnected'
-        ? t('sensorSource.status.disconnected')
+        ? t('sensorSource.status.disconnected', { name: options.sensor.displayName })
         : t('sensorSource.status.connected', { name: options.sensor.displayName });
 
     const health = isActive ? options.getHealth() : null;

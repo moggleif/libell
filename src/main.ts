@@ -1241,6 +1241,15 @@ function bootstrap(root: HTMLElement): void {
 
     root.append(engineElement, status, tilt.element, waiting, fallbackPrompt.element);
 
+    // While there is no reading at all (first load, or a lost external
+    // sensor), the diagram and readout are dimmed and say nothing (#312):
+    // the last frame's steps must never stay on screen looking live.
+    const showNoData = (noData: boolean): void => {
+      engineElement.classList.toggle('is-no-data', noData);
+      tilt.element.classList.toggle('is-no-data', noData);
+      if (noData) setStatus('');
+    };
+
     // Pose guard: wrong-pose overlay instead of wrong guidance (#51).
     const poseOverlay = document.createElement('div');
     poseOverlay.className = 'pose-overlay';
@@ -1360,6 +1369,8 @@ function bootstrap(root: HTMLElement): void {
         // once. Every other case here (first load, still connecting) is
         // unchanged: the plain "waiting for the tilt sensor" hint.
         const unavailable = isSensorUnavailable(sensor().getState());
+        // No data: never leave the last frame's steps looking live (#312).
+        showNoData(true);
         fallbackPrompt.update(unavailable);
         waiting.hidden = unavailable;
         if (unavailable) {
@@ -1371,6 +1382,7 @@ function bootstrap(root: HTMLElement): void {
           // waiting out a stale interval left over from this one.
         }
       } else {
+        showNoData(false);
         waiting.hidden = true;
         fallbackPrompt.update(false);
         const now = performance.now();

@@ -72,7 +72,11 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
-    expect(page.element.textContent).toContain(t('sensorSource.status.disconnected'));
+    expect(page.element.textContent).toContain(
+      t('sensorSource.status.disconnected', { name: EASYLEVEL_DESCRIPTOR.displayName }),
+    );
+    // Never the bare placeholder (#312).
+    expect(page.element.textContent).not.toContain('{name}');
   });
 
   it('shows the live calibrated reading for either sensor source', () => {
