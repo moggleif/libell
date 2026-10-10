@@ -299,7 +299,7 @@ URL and must keep working with no signal.
   wheel-state legend and the bubble), vehicle measurements (skippable), ramp model/count
   (skippable), phone-sensor calibration (skippable), vehicle-zero position (skippable).
   It can be closed with ✕ at any point, warning lamps (R11) stay lit for whatever was
-  skipped, and the "Show introduction" button at the top of the "?" page's Help tab
+  skipped, and the "Show introduction" button below the "?" page's Help topics
   (R28, screen-cleanup follow-up) reopens it any time. That button reads green
   (primary) until the wizard has actually been stepped through to its end at least
   once — an early ✕ does not count, even though it still counts for the auto-launch
@@ -596,29 +596,40 @@ URL and must keep working with no signal.
   its form hides both fields. Display hysteresis (R25's calm-display rules and the
   Stability dead band) applies to the plan too: it may not flap at boundaries.
 
-## R28 — Help reads one fact per line, and an About page
+## R28 — Help: short fold-out topics, one fact per line, and an About page (#326)
 
-- **Given** a Help section whose text is a list of facts (the screen indicators, the
-  measurements, the calibration layers, good to know)
-- **Then** each fact starts on its own line — the indicator colors in "Reading the
-  screen" (green ✓ / orange ↑ / red ✕ / gray –, R5) are never one running paragraph.
-  The breaks live in the i18n strings and render as real line breaks
-  (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same
-  caption and gets the same breaks.
-- **Given** the Help tab's first section (design review)
-- **Then** it is titled "What Libell does" and actually says what Libell does — the
-  same one-line pitch the About tab and the onboarding wizard's welcome step use
-  (`about.text`) — not placement instructions under a mismatched heading. The
-  placement instructions that used to sit under that heading get their own section
-  right after, titled with the wizard's own step heading for the same content
-  ("Place the phone like this").
-- **Given** the Help tab's "Ramps" section (design review — used to be one sentence
-  inside "The measurements", the only place in the app that still didn't give ramp
-  configuration its own topic)
-- **Then** it explains picking a ready-made model or adding custom step heights, and
-  that the app picks where ramps do the most good while preferring to keep the drain
-  side low — the same explanation `settings.rampHint` gives elsewhere, in its own
-  words for this context rather than a literal string reuse.
+- **Given** I open the Help tab on the "?" page (R38)
+- **Then** I see a list of topics, in this order: Reading the screen, Place the phone
+  like this, Enter the measurements, Ramps, Calibration, Sensor box, Targets and sound,
+  If something is wrong — with "Show introduction" below the list. Only "Reading the
+  screen" is unfolded; every other topic is one heading line, so the whole list fits a
+  phone screen. Every time the page reopens it folds back to that state.
+- **When** I tap a topic's heading
+- **Then** that topic unfolds and any other open topic folds (one open at a time); a
+  second tap folds it again. The heading row is the whole tap target, with a chevron
+  that turns when open.
+- **Given** a topic's text
+- **Then** it is a few short lines, each fact on its own line — the indicator colors in
+  "Reading the screen" (green ✓ / orange ↑ / red ✕ / gray –, R5) are never one running
+  paragraph. The breaks live in the i18n strings and render as real line breaks
+  (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same captions
+  and gets the same breaks. Help says what something is and where to do it; the screens
+  themselves say how. It uses the app's own words for what it names (lamps, the
+  "Reconnect" button, the exact on-screen messages under "If something is wrong").
+- **Given** a topic about a place in the app (measurements, ramps, calibration, sensor
+  box, targets)
+- **Then** it ends in a button to that place: "Open Vehicle", "Open Ramps", "Open
+  Calibration", "Open Targets" (named after the Settings tab they open, so they follow
+  its name), and "Open the sensor". Tapping one closes Help, then opens that Settings
+  tab (Classic: that ☰ section). Calibration with a sensor box in use opens the box's
+  page instead, and "Open the sensor" goes where the top-right sensor icon goes — the
+  same routes as the lamp and the icon. Where the app has no sensor page at all (no Web
+  Bluetooth and not iOS), the Sensor box topic still explains but has no button.
+- **Given** "If something is wrong"
+- **Then** it ends in "Write a report", which switches to the Feedback tab (R12).
+- **Given** what the About tab already says (the pitch, works offline) and what a
+  Feedback report already includes (the app version)
+- **Then** Help does not repeat it.
 - **Given** the "About" / "Om Libell" tab on the "?" page (R38)
 - **When** I open it
 - **Then** I see, in my language: what Libell is, that it works fully offline and
@@ -1106,7 +1117,7 @@ unannounced switch could show a plausible-looking but wrong reading.
   follow-up: not clustered together in the middle): settings (a gear icon, R9 —
   Help/About/Feedback are not part of this menu at all), sound (visually larger —
   the primary, most-reached-for control), help ("?", opens its own page with Help
-  (R28, "Show introduction" at the top of that tab), About (R28) and Feedback (R12)
+  (R28, "Show introduction" below its topics), About (R28) and Feedback (R12)
   as tabs, in that order — a fully independent component from the Settings
   page/menu, never routed through its drawer or sharing its back-navigation state,
   so its close (✕) can never reveal the Settings drawer underneath).

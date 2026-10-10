@@ -6,7 +6,7 @@
  * instead of a ‹ back that used to reveal that drawer. Classic has no
  * tabs to land on, so it keeps the old drawer-based `menu.ts` unchanged.
  */
-import type { MenuOptions } from './menu';
+import type { MenuOptions, MenuSection } from './menu';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
@@ -21,6 +21,8 @@ export interface SettingsPage {
   openCalibration(): void;
   /** Open directly on the Targets tab — the main-screen badge's shortcut. */
   openTargets(): void;
+  /** Open directly on any tab — Help's topic buttons (#326). */
+  openTab(id: MenuSection): void;
 }
 
 export function createSettingsPage(options: MenuOptions): SettingsPage {
@@ -55,6 +57,10 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
     },
     openTargets() {
       settingsForm.selectTargetsTab?.();
+      page.open();
+    },
+    openTab(id) {
+      settingsForm.selectTab?.(id);
       page.open();
     },
   };

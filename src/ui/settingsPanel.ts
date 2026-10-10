@@ -109,6 +109,8 @@ export type SettingsFormElement = HTMLFormElement & {
    * select; its Targets page is reached via `classicPages` below instead).
    */
   selectTargetsTab?: () => void;
+  /** Any tab by id (#326, Help's topic buttons) — Modern only, like the two above. */
+  selectTab?: (id: 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general') => void;
   /**
    * Resync the Chime/Continuous-audio-guidance checkboxes (and the
    * Save/Undo baseline for just those two fields) from a value that
@@ -960,6 +962,7 @@ export function createSettingsForm(
     };
     form.selectCalibrationTab = () => selectTab?.('calibration');
     form.selectTargetsTab = () => selectTab?.('targets');
+    form.selectTab = (id) => selectTab?.(id);
 
     // --- Fordon tab: today's vehicle/axle/measurement fields visible by
     // default; tolerance/stability behind Advanced (#157) — theme and

@@ -1342,6 +1342,57 @@ body {
   font-weight: 700;
 }
 
+/* Help tab (#326): fold-out topics, one open at a time. The heading row
+ * is the whole tap target; the chevron turns when the topic is open. */
+.help-topic {
+  border-top: 1px solid var(--outline);
+}
+
+.help-topic:first-child {
+  border-top: 0;
+}
+
+.help-topic__heading {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.help-topic__toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 4px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--on-surface);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.help-topic__toggle::after {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--on-surface-muted);
+  border-bottom: 2px solid var(--on-surface-muted);
+  transform: rotate(45deg);
+  transition: transform var(--motion-fast) var(--motion-ease);
+}
+
+.help-topic__toggle[aria-expanded='true']::after {
+  transform: rotate(-135deg);
+}
+
+.help-topic__body {
+  padding: 0 4px 14px;
+}
+
 /* Sensor-source detail block (#129): battery/RSSI/temperature, separated
  * from the connect/disconnect buttons above it. */
 .menu__detail {
@@ -2758,18 +2809,6 @@ body {
 
 .illu__measure--dash {
   stroke-dasharray: 5 4;
-}
-
-.illu__rotate {
-  fill: none;
-  stroke: var(--level);
-  stroke-width: 3;
-}
-
-.illu__label {
-  fill: var(--on-surface);
-  font-size: 15px;
-  font-weight: 700;
 }
 
 /* ---- Onboarding wizard ---- */

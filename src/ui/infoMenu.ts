@@ -26,15 +26,18 @@ import { createFeedbackSection } from './feedback';
 import { createStandalonePage, type StandalonePage } from './standalonePage';
 import { t, type MessageKey } from './i18n';
 import {
-  calibrationIllustration,
   legendIllustration,
   measuresIllustration,
   placementIllustration,
 } from './helpIllustrations';
 import type { VehicleType } from '../domain/settings';
 
+/** Where a Help topic's button leads (#326) — `main.ts` maps each to the
+ * right Settings tab (Classic: ☰ section) or the sensor page. */
+export type HelpTarget = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'sensor';
+
 export interface InfoPageOptions {
-  /** Relaunch the first-run wizard — the button at the top of the Help tab. */
+  /** Relaunch the first-run wizard — the button at the bottom of the Help tab. */
   openOnboarding(): void;
   /**
    * True once the wizard has actually been stepped through to the end —
@@ -44,6 +47,12 @@ export interface InfoPageOptions {
    * re-launch (secondary, `true`) — see `buildIntroButton` below.
    */
   hasDoneOnboarding(): boolean;
+  /** Open the place a Help topic talks about (#326). Called after this
+   * page has closed. Without it, topics show no buttons. */
+  openTarget?(target: HelpTarget): void;
+  /** False where the app has no sensor page at all (no Web Bluetooth and
+   * not iOS) — the Sensor box topic then explains without a button. */
+  hasSensorPage?: boolean;
 }
 
 export interface InfoPage {
@@ -54,44 +63,70 @@ export interface InfoPage {
 
 type InfoTab = 'help' | 'about' | 'feedback';
 
-// Design review: 'help.what.h' ("What Libell does") used to be paired with
-// 'help.what.t' — actually placement instructions, not a value pitch, so
-// the heading promised one thing and delivered another. Split in two:
-// this row now pairs the heading with the real pitch ('about.text', the
-// same one the About tab and the onboarding wizard's welcome step use);
-// the placement instructions moved to their own row below, titled with
-// the wizard's own step heading for the same content ('onboard.step1.h').
-// A Ramps row was added too (reusing 'settings.tab.ramps', the same
-// heading the wizard step and the Settings tab use) — it used to be one
-// sentence inside "The measurements", the only place in the app that
-// still didn't give ramp configuration its own topic.
-const HELP: {
+/** The Help tab's topics (#326, R28): fold-out, one open at a time, each a
+ * few lines (one fact per line) ending in a button to the place it talks
+ * about. Help says what and where; the screens themselves say how. What
+ * the About tab says (the pitch, offline) and what Feedback already sends
+ * (the version) is not repeated here. "Reading the screen" opens first:
+ * it is what people come back for. */
+type TopicId =
+  'screen' | 'place' | 'measures' | 'ramps' | 'calibration' | 'sensor' | 'targets' | 'trouble';
+
+interface Topic {
+  id: TopicId;
   h: MessageKey;
   text: MessageKey;
-  illustration?: (label: string) => SVGSVGElement;
-  /** Motorhome + caravan side by side, one per vehicle type (design
-   * review, follow-up): this static Help tab isn't tied to any
-   * particular user's vehicle (see `helpIllustrations.ts`'s file
-   * comment) — it used to default to just showing the motorhome, as if
-   * a caravan owner's measurements didn't exist. Only "The measurements"
-   * needs this: it's the one topic whose picture and text actually
-   * differ by vehicle type (axle-to-jockey vs. front/rear axles, one
-   * track width vs. two) — every other illustrated topic (placement,
-   * the screen legend, calibration) looks and reads the same either way. */
-  vehiclePair?: boolean;
-}[] = [
-  { h: 'help.what.h', text: 'about.text' },
-  { h: 'onboard.step1.h', text: 'help.what.t', illustration: placementIllustration },
-  { h: 'help.first.h', text: 'help.first.t' },
-  { h: 'help.screen.h', text: 'help.screen.t', illustration: legendIllustration },
-  { h: 'help.settings.h', text: 'help.settings.t', vehiclePair: true },
-  { h: 'settings.tab.ramps', text: 'help.ramps.t' },
-  { h: 'help.calibration.h', text: 'help.calibration.t', illustration: calibrationIllustration },
-  { h: 'help.notes.h', text: 'help.notes.t' },
-];
+  picture?: (label: string) => Element;
+  go?: { label: () => string; target: HelpTarget | 'feedback' };
+}
 
-/** The introduction relaunch, at the top of the Help tab (screen-cleanup
- * follow-up) — the same action the old ☰ menu's "Show introduction" row
+const openTab = (tab: MessageKey) => () => t('help.open', { name: t(tab) });
+
+const TOPICS: Topic[] = [
+  { id: 'screen', h: 'help.screen.h', text: 'help.screen.t', picture: legendIllustration },
+  { id: 'place', h: 'onboard.step1.h', text: 'help.what.t', picture: placementIllustration },
+  {
+    id: 'measures',
+    h: 'help.measures.h',
+    text: 'help.settings.t',
+    picture: buildVehiclePair,
+    go: { label: openTab('settings.tab.vehicle'), target: 'vehicle' },
+  },
+  {
+    id: 'ramps',
+    h: 'settings.tab.ramps',
+    text: 'help.ramps.t',
+    go: { label: openTab('settings.tab.ramps'), target: 'ramps' },
+  },
+  {
+    id: 'calibration',
+    h: 'help.calibration.h',
+    text: 'help.calibration.t',
+    go: { label: openTab('menu.calibration'), target: 'calibration' },
+  },
+  {
+    id: 'sensor',
+    h: 'help.sensor.h',
+    text: 'help.sensor.t',
+    go: { label: () => t('help.open.sensor'), target: 'sensor' },
+  },
+  {
+    id: 'targets',
+    h: 'help.targets.h',
+    text: 'help.targets.t',
+    go: { label: openTab('menu.targets'), target: 'targets' },
+  },
+  {
+    id: 'trouble',
+    h: 'help.trouble.h',
+    text: 'help.trouble.t',
+    go: { label: () => t('help.open.feedback'), target: 'feedback' },
+  },
+];
+const FIRST_OPEN: TopicId = 'screen';
+
+/** The introduction relaunch, at the bottom of the Help tab (screen-cleanup
+ * follow-up; moved from the top in #326) — the same action the old ☰ menu's "Show introduction" row
  * performed, closing this page first so the wizard isn't shown behind it.
  *
  * Styled green (the "still an open first-run task" look, same as the
@@ -124,7 +159,8 @@ function buildIntroButton(
 }
 
 /** Motorhome + caravan illustrations side by side, each with its own
- * small caption — see `vehiclePair` on `HELP` above. */
+ * small caption: this static tab isn't tied to the user's vehicle, and
+ * the measurements are the one topic whose picture differs by type. */
 function buildVehiclePair(heading: string): HTMLElement {
   const row = document.createElement('div');
   row.className = 'illu-pair';
@@ -144,30 +180,79 @@ function buildVehiclePair(heading: string): HTMLElement {
   return row;
 }
 
-function buildHelpPanel(introButton: HTMLButtonElement): HTMLElement {
+interface HelpPanel {
+  element: HTMLElement;
+  /** Fold every topic but the first one — each time the page reopens. */
+  reset(): void;
+}
+
+function buildHelpPanel(
+  introButton: HTMLButtonElement,
+  go: (target: HelpTarget | 'feedback') => void,
+  hasTarget: (target: HelpTarget | 'feedback') => boolean,
+): HelpPanel {
   const panel = document.createElement('div');
-  panel.append(introButton);
-  for (const { h, text, illustration, vehiclePair } of HELP) {
+  const toggles = new Map<TopicId, { button: HTMLButtonElement; body: HTMLElement }>();
+
+  function show(open: TopicId | null): void {
+    for (const [id, { button, body }] of toggles) {
+      button.setAttribute('aria-expanded', String(id === open));
+      body.hidden = id !== open;
+    }
+  }
+
+  for (const topic of TOPICS) {
+    const section = document.createElement('section');
+    section.className = 'help-topic';
+    section.dataset.topic = topic.id;
+
     const heading = document.createElement('h3');
-    heading.className = 'menu__heading';
-    heading.textContent = t(h);
-    panel.append(heading);
-    if (vehiclePair) panel.append(buildVehiclePair(t(h)));
-    else if (illustration) panel.append(illustration(t(h)));
+    heading.className = 'help-topic__heading';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'help-topic__toggle';
+    button.textContent = t(topic.h);
+    const body = document.createElement('div');
+    body.className = 'help-topic__body';
+    body.id = `help-topic-${topic.id}`;
+    button.setAttribute('aria-controls', body.id);
+    button.addEventListener('click', () => show(body.hidden ? topic.id : null));
+    heading.append(button);
+
+    if (topic.picture) body.append(topic.picture(t(topic.h)));
     const p = document.createElement('p');
     p.className = 'menu__text';
-    p.textContent = t(text);
-    panel.append(p);
+    p.textContent = t(topic.text);
+    body.append(p);
+    if (topic.go && hasTarget(topic.go.target)) {
+      const target = topic.go.target;
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'menu__action menu__action--secondary help-topic__go';
+      action.textContent = topic.go.label();
+      action.addEventListener('click', () => go(target));
+      body.append(action);
+    }
+
+    section.append(heading, body);
+    panel.append(section);
+    toggles.set(topic.id, { button, body });
   }
-  return panel;
+  panel.append(introButton);
+
+  const reset = () => show(FIRST_OPEN);
+  reset();
+  return { element: panel, reset };
 }
 
 export function createInfoPage(options: InfoPageOptions): InfoPage {
   // Assigned below, once `buildIntroButton` runs — referenced here only
   // inside a callback that fires on a later reopen, well after that.
   let refreshIntroButton: () => void = () => {};
+  let resetHelp: () => void = () => {};
   const page = createStandalonePage(t('menu.help'), () => {
     selectTab('help');
+    resetHelp();
     // The wizard may have been completed (or not) since this page was
     // last open (design review, follow-up) — resync "Show introduction"'s
     // green/secondary look every reopen, same pattern as the mute
@@ -212,7 +297,20 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
 
   const introButton = buildIntroButton(page, options.openOnboarding, options.hasDoneOnboarding);
   refreshIntroButton = introButton.refresh;
-  addTab('help', buildHelpPanel(introButton.element));
+  const helpPanel = buildHelpPanel(
+    introButton.element,
+    (target) => {
+      // Feedback is a tab right here; everything else is another page,
+      // opened once this one's close has landed (`StandalonePage.close`).
+      if (target === 'feedback') selectTab('feedback');
+      else page.close(() => options.openTarget?.(target));
+    },
+    (target) =>
+      target === 'feedback' ||
+      (options.openTarget !== undefined && (target !== 'sensor' || options.hasSensorPage === true)),
+  );
+  resetHelp = helpPanel.reset;
+  addTab('help', helpPanel.element);
   addTab('about', createAboutSection());
   addTab('feedback', createFeedbackSection());
 

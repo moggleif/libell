@@ -275,7 +275,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
-    'onboard.legend.dim': 'Gray – — a low wheel your ramps don’t reach.',
+    'onboard.legend.dim': 'Gray – — no ramp at that wheel; leave it as it is.',
     'settings.wheelbase': 'Wheelbase',
     'settings.trackFront': 'Track width front',
     'settings.trackRear': 'Track width rear',
@@ -474,55 +474,51 @@ export const MESSAGES = {
     'feedback.desc': 'What happened, or what do you wish for?',
     'feedback.submit': 'Open the report on GitHub',
 
-    'help.what.h': 'What Libell does',
-    'help.what.t':
-      'Lay the phone flat inside the vehicle with the top toward the front. ' +
-      'The screen shows your vehicle from above, and each wheel tells you what to do. With an external sensor box the phone can be anywhere — the box does the measuring.',
-    'help.first.h': 'Before the first use',
-    'help.first.t':
-      'Fill in Settings and calibrate once — the yellow signs in the top bar remind ' +
-      'you until both are done. Everything is remembered.',
+    // Help tab (#326): fold-out topics, one fact per line (R28). The
+    // screens themselves explain how; these say what and where.
     'help.screen.h': 'Reading the screen',
     'help.screen.t':
-      'Green ✓: done.\n' +
-      'Orange ↑: drive that wheel up on the step shown above it.\n' +
-      'Red ✕: not even your highest step is enough — move to a flatter spot.\n' +
-      'Gray –: a low wheel your ramps do not stretch to.\n' +
+      'Green ✓: done, nothing to do.\n' +
+      'Orange ↑: drive that wheel up onto the step shown next to it.\n' +
+      'Red ✕: your ramps are not enough here. Move the vehicle.\n' +
+      'Gray –: no ramp at that wheel. Leave it as it is.\n' +
       'When the bubble rests in the middle, you are level.',
+    'help.what.t':
+      'Lay the phone flat in the vehicle, top toward the front, in the same spot every time.\n' +
+      'With a sensor box it does not matter how the phone lies.',
     'help.settings.h': 'The measurements',
-    // Design review, two follow-ups: (1) used to say "L is the wheelbase,
-    // W the track width", but the illustration stopped drawing those
-    // letters (see `helpIllustrations.ts`'s `measuresIllustration`) — the
-    // text still promised letters the picture no longer shows; (2) this
-    // static Help tab isn't tied to any particular user's vehicle (see
-    // that file's own comment) but the text only ever described a
-    // motorhome — now covers both, matching the motorhome+caravan pair of
-    // illustrations shown above it.
+    'help.measures.h': 'Enter the measurements',
     'help.settings.t':
-      'For a motorhome, wheelbase is the distance between the front and rear axles; a ' +
-      "caravan's is the axle-to-jockey-wheel distance instead. Track width is the distance " +
-      'between the left and right wheels — a motorhome can have a different width front and ' +
-      'rear, a caravan has just the one. Usually in the vehicle papers, or use a tape measure.',
-    // Design review: used to be one sentence inside "The measurements"
-    // ("Add your ramp steps...") — moved to its own topic, matching Ramps'
-    // status elsewhere (its own wizard step, its own Settings tab).
+      'Wheelbase and track width. They are in the vehicle papers, or measure with a tape.\n' +
+      'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.',
     'help.ramps.t':
-      'Pick a ready-made ramp model, or add your own step heights with the + button. ' +
-      'The app then picks where your ramps do the most good — and, within the ' +
-      'tolerance, leaves the drain side lowest so sink and shower keep draining.',
+      'Pick your ramps or type in the step heights. Libell puts them where they help most.',
     'help.calibration.h': 'Calibration',
-    // Design review: the step-by-step "how" moved to the actual
-    // Kalibrering tab ('calibration.guide.intro' above) where it is
-    // actionable — this stays the "why" instead of repeating it.
     'help.calibration.t':
-      "The phone reads its own tilt, not the ground's — and a vehicle floor is rarely " +
-      'perfectly flat either. Calibrating corrects for both, so what the app shows is ' +
-      'the actual ground, not just how the phone happens to sit.',
-    'help.notes.h': 'Good to know',
-    'help.notes.t':
-      'Works fully offline once opened — add it to your home screen like an app.\n' +
-      'On iPhone, tap Start each time.\n' +
-      'The version number at the bottom helps when reporting problems.',
+      'Lay the phone on a flat surface and tap Calibrate now. You do it once.\n' +
+      'Is the phone’s spot a little crooked? Set a zero position when the vehicle is level.\n' +
+      'The ⚠ Calibrate lamp stays on until it is done.\n' +
+      'With a sensor box, this is done on the box’s page instead.',
+    'help.sensor.h': 'Sensor box',
+    'help.sensor.t':
+      'A box in the vehicle can measure instead of the phone.\n' +
+      'Tap the sensor icon at the top right to connect. The box’s page shows the rest step by step.\n' +
+      'The Xparkle must stand upright.\n' +
+      'On iPhone you need the Bluefy browser.',
+    'help.targets.h': 'Targets and sound',
+    'help.targets.t':
+      'Save a tilt you want, for example toward the shower drain, and switch between them.\n' +
+      'The button in the middle of the bottom bar turns sound on and off.',
+    'help.trouble.h': 'If something is wrong',
+    'help.trouble.t':
+      '“Measuring…”: the vehicle is rocking. Wait until it is still.\n' +
+      '“Lay the phone flat to measure”: the phone is tilted too much to measure.\n' +
+      '“Lost contact with the box”: tap Reconnect and pick the box in the list.\n' +
+      'On iPhone: tap Start each time you open the app.\n' +
+      'Still wrong? Write a report under Feedback.',
+    'help.open': 'Open {name}',
+    'help.open.sensor': 'Open the sensor',
+    'help.open.feedback': 'Write a report',
 
     'main.hint': 'Lay your phone flat inside your motorhome, top edge toward the front.',
     'main.start': 'Start',
@@ -803,7 +799,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
-    'onboard.legend.dim': 'Grått – — ett lågt hjul som ramperna inte når.',
+    'onboard.legend.dim': 'Grått – — ingen kloss vid det hjulet, låt det vara.',
 
     'settings.wheelbase': 'Hjulbas',
     'settings.trackFront': 'Spårvidd fram',
@@ -975,42 +971,49 @@ export const MESSAGES = {
     'feedback.desc': 'Vad hände, eller vad önskar du dig?',
     'feedback.submit': 'Öppna rapporten på GitHub',
 
-    'help.what.h': 'Vad Libell gör',
-    'help.what.t':
-      'Lägg telefonen plant i fordonet med ovansidan mot fronten. Skärmen visar ' +
-      'fordonet ovanifrån, och varje hjul talar om vad du ska göra. Med en extern sensorbox kan telefonen ligga var som helst — boxen gör mätningen.',
-    'help.first.h': 'Före första användningen',
-    'help.first.t':
-      'Fyll i Inställningar och kalibrera en gång — de gula skyltarna i listen ' +
-      'påminner tills båda är gjorda. Allt sparas.',
     'help.screen.h': 'Så läser du skärmen',
     'help.screen.t':
-      'Grönt ✓: klart.\n' +
-      'Orange ↑: kör upp hjulet på steget som visas ovanför.\n' +
-      'Rött ✕: inte ens ditt högsta steg räcker — flytta till ett planare ställe.\n' +
-      'Grått –: ett lågt hjul som ramperna inte räcker till.\n' +
+      'Grönt ✓: klart, inget att göra.\n' +
+      'Orange ↑: kör upp hjulet på steget som står bredvid.\n' +
+      'Rött ✕: klossarna räcker inte här. Flytta fordonet.\n' +
+      'Grått –: ingen kloss vid det hjulet. Låt det vara.\n' +
       'När bubblan vilar i mitten står du i våg.',
+    'help.what.t':
+      'Lägg telefonen plant i fordonet med ovansidan mot fronten, på samma plats varje gång.\n' +
+      'Med en sensorbox spelar det ingen roll hur telefonen ligger.',
     'help.settings.h': 'Måtten',
+    'help.measures.h': 'Fyll i måtten',
     'help.settings.t':
-      'För en husbil är hjulbasen avståndet mellan fram- och bakaxeln; för en husvagn är ' +
-      'det istället avståndet från axeln till stödhjulet. Spårvidden är avståndet mellan ' +
-      'vänster och höger hjul — en husbil kan ha olika bredd fram och bak, en husvagn har ' +
-      'bara en. Står oftast i fordonspapperen, annars tumstock.',
+      'Hjulbas och spårvidd. De står i fordonspapperen, annars mäter du med tumstock.\n' +
+      'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.',
     'help.ramps.t':
-      'Välj en färdig ramp, eller lägg till egna steghöjder med plusknappen. Appen ' +
-      'väljer sedan var ramperna gör mest nytta — och lämnar avloppssidan lägst ' +
-      'inom toleransen, så att disk- och duschvattnet rinner undan.',
+      'Välj dina klossar eller skriv in stegens höjder. Libell lägger dem där de gör mest nytta.',
     'help.calibration.h': 'Kalibrering',
     'help.calibration.t':
-      'Telefonen läser sin egen lutning, inte markens — och fordonets golv är sällan ' +
-      'helt plant heller. Kalibrering rättar till båda delarna, så det appen visar är ' +
-      'den verkliga marken, inte bara hur telefonen råkar ligga.',
-    'help.notes.h': 'Bra att veta',
-    'help.notes.t':
-      'Fungerar helt utan internet när den väl öppnats — lägg den på hemskärmen ' +
-      'som en app.\n' +
-      'På iPhone trycker du Start varje gång.\n' +
-      'Versionsnumret längst ner är bra vid felanmälan.',
+      'Lägg telefonen på en plan yta och tryck Kalibrera nu. Det görs en gång.\n' +
+      'Ligger telefonens plats lite snett? Sätt ett nolläge när fordonet står i våg.\n' +
+      'Lampan ⚠ Kalibrera lyser tills det är gjort.\n' +
+      'Med en sensorbox görs det i stället på boxens sida.',
+    'help.sensor.h': 'Sensorbox',
+    'help.sensor.t':
+      'En box i fordonet kan mäta i stället för telefonen.\n' +
+      'Tryck på sensorikonen uppe till höger för att ansluta. Boxens sida visar resten steg för steg.\n' +
+      'Xparkle ska stå upprätt.\n' +
+      'På iPhone behövs webbläsaren Bluefy.',
+    'help.targets.h': 'Mål och ljud',
+    'help.targets.t':
+      'Spara en lutning du vill ha, till exempel mot duschavloppet, och växla mellan dem.\n' +
+      'Knappen mitt i nederkanten slår av och på ljudet.',
+    'help.trouble.h': 'Om något krånglar',
+    'help.trouble.t':
+      '”Mäter…”: fordonet gungar. Vänta tills det står still.\n' +
+      '”Lägg telefonen plant för att mäta”: telefonen lutar för mycket för att mäta.\n' +
+      '”Tappade kontakten med boxen”: tryck Återanslut och välj boxen i listan.\n' +
+      'På iPhone: tryck Start varje gång du öppnar appen.\n' +
+      'Fortfarande fel? Skriv en rapport under Feedback.',
+    'help.open': 'Öppna {name}',
+    'help.open.sensor': 'Öppna sensorn',
+    'help.open.feedback': 'Skriv en rapport',
 
     'main.hint': 'Lägg telefonen plant i husbilen, med ovansidan mot fronten.',
     'main.start': 'Start',
@@ -1280,7 +1283,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Vert ✓ — cette roue est de niveau.',
     'onboard.legend.up': 'Orange ↑ — montez cette roue sur le palier indiqué.',
     'onboard.legend.no': 'Rouge ✕ — aucun palier ne suffit ; allez sur un endroit plus plat.',
-    'onboard.legend.dim': 'Gris – — une roue basse que vos rampes n’atteignent pas.',
+    'onboard.legend.dim': 'Gris – — pas de rampe à cette roue ; laissez-la telle quelle.',
     'settings.wheelbase': 'Empattement',
     'settings.trackFront': 'Voie avant',
     'settings.trackRear': 'Voie arrière',
@@ -1454,45 +1457,49 @@ export const MESSAGES = {
     'feedback.desc': 'Que s’est-il passé, ou que souhaitez-vous ?',
     'feedback.submit': 'Ouvrir le rapport sur GitHub',
 
-    'help.what.h': 'Ce que fait Libell',
-    'help.what.t':
-      'Posez le téléphone à plat dans le véhicule, le haut vers l’avant. L’écran montre ' +
-      'votre véhicule vu de dessus, et chaque roue vous dit quoi faire. Avec un boîtier de capteur externe, le téléphone peut être n’importe où — c’est le boîtier qui mesure.',
-    'help.first.h': 'Avant la première utilisation',
-    'help.first.t':
-      'Remplissez les Réglages et étalonnez une fois — les panneaux jaunes de la barre du ' +
-      'haut vous le rappellent jusqu’à ce que les deux soient faits. Tout est mémorisé.',
     'help.screen.h': 'Lire l’écran',
     'help.screen.t':
-      'Vert ✓ : c’est fait.\n' +
-      'Orange ↑ : montez cette roue sur le palier indiqué au-dessus.\n' +
-      'Rouge ✕ : même votre palier le plus haut ne suffit pas ; allez sur un endroit plus plat.\n' +
-      'Gris – : une roue basse que vos rampes n’atteignent pas.\n' +
+      'Vert ✓ : c’est fait, rien à faire.\n' +
+      'Orange ↑ : montez cette roue sur le palier indiqué à côté.\n' +
+      'Rouge ✕ : vos rampes ne suffisent pas ici. Déplacez le véhicule.\n' +
+      'Gris – : pas de rampe à cette roue. Laissez-la telle quelle.\n' +
       'Quand la bulle repose au milieu, vous êtes de niveau.',
+    'help.what.t':
+      'Posez le téléphone à plat dans le véhicule, le haut vers l’avant, toujours au même endroit.\n' +
+      'Avec un boîtier capteur, la position du téléphone n’a pas d’importance.',
     'help.settings.h': 'Les mesures',
+    'help.measures.h': 'Saisir les mesures',
     'help.settings.t':
-      'Pour un camping-car, l’empattement est la distance entre l’essieu avant et l’essieu ' +
-      'arrière ; pour une caravane, c’est la distance entre l’essieu et la roue jockey. La ' +
-      'voie est la distance entre les roues gauche et droite — un camping-car peut avoir une ' +
-      'largeur différente à l’avant et à l’arrière, une caravane n’en a qu’une. Cela figure ' +
-      'généralement sur les papiers du véhicule, sinon prenez un mètre ruban.',
+      'Empattement et voie. Ils figurent sur les papiers du véhicule, sinon prenez un mètre ruban.\n' +
+      'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.',
     'help.ramps.t':
-      'Choisissez un modèle de rampe tout fait, ou ajoutez vos propres hauteurs de palier ' +
-      'avec le bouton +. L’application choisit ensuite où vos rampes sont le plus utiles — ' +
-      'et, dans la tolérance, laisse le côté de l’évacuation le plus bas pour que l’évier et ' +
-      'la douche continuent de s’écouler.',
+      'Choisissez vos rampes ou saisissez les hauteurs des paliers. Libell les place là où elles servent le plus.',
     'help.calibration.h': 'Étalonnage',
     'help.calibration.t':
-      'Le téléphone lit sa propre inclinaison, pas celle du sol — et le plancher d’un ' +
-      'véhicule est rarement parfaitement plat non plus. L’étalonnage corrige les deux, si ' +
-      'bien que ce que l’application affiche est le sol réel, et pas seulement la façon dont ' +
-      'le téléphone se trouve posé.',
-    'help.notes.h': 'Bon à savoir',
-    'help.notes.t':
-      'Fonctionne entièrement hors ligne une fois ouverte — ajoutez-la à votre écran ' +
-      'd’accueil comme une application.\n' +
-      'Sur iPhone, touchez Démarrer à chaque fois.\n' +
-      'Le numéro de version en bas est utile pour signaler un problème.',
+      'Posez le téléphone sur une surface plane et touchez Étalonner maintenant. Cela se fait une fois.\n' +
+      'L’emplacement du téléphone est un peu de travers ? Définissez une position zéro quand le véhicule est de niveau.\n' +
+      'Le voyant ⚠ Étalonner reste allumé tant que ce n’est pas fait.\n' +
+      'Avec un boîtier capteur, cela se fait plutôt sur la page du boîtier.',
+    'help.sensor.h': 'Boîtier capteur',
+    'help.sensor.t':
+      'Un boîtier dans le véhicule peut mesurer à la place du téléphone.\n' +
+      'Touchez l’icône du capteur en haut à droite pour le connecter. La page du boîtier montre la suite étape par étape.\n' +
+      'Le Xparkle doit être posé debout.\n' +
+      'Sur iPhone, il faut le navigateur Bluefy.',
+    'help.targets.h': 'Cibles et son',
+    'help.targets.t':
+      'Enregistrez une inclinaison voulue, par exemple vers l’évacuation de la douche, et passez de l’une à l’autre.\n' +
+      'Le bouton au milieu de la barre du bas active et coupe le son.',
+    'help.trouble.h': 'En cas de souci',
+    'help.trouble.t':
+      '« Mesure… » : le véhicule bouge. Attendez qu’il soit immobile.\n' +
+      '« Posez le téléphone à plat pour mesurer » : le téléphone est trop incliné pour mesurer.\n' +
+      '« Contact perdu avec le boîtier » : touchez Reconnecter et choisissez le boîtier dans la liste.\n' +
+      'Sur iPhone : touchez Démarrer à chaque ouverture de l’application.\n' +
+      'Toujours un souci ? Écrivez un rapport sous Commentaires.',
+    'help.open': 'Ouvrir {name}',
+    'help.open.sensor': 'Ouvrir le capteur',
+    'help.open.feedback': 'Écrire un rapport',
 
     'main.hint':
       'Posez votre téléphone à plat dans votre camping-car, le bord supérieur vers l’avant.',
@@ -1770,7 +1777,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Verde ✓: esa rueda está nivelada.',
     'onboard.legend.up': 'Naranja ↑: sube esa rueda al nivel indicado.',
     'onboard.legend.no': 'Rojo ✕: ningún nivel basta; muévete a un sitio más llano.',
-    'onboard.legend.dim': 'Gris –: una rueda baja a la que no llegan tus rampas.',
+    'onboard.legend.dim': 'Gris –: ninguna rampa en esa rueda; déjala como está.',
     'settings.wheelbase': 'Distancia entre ejes',
     'settings.trackFront': 'Ancho de vía delantero',
     'settings.trackRear': 'Ancho de vía trasero',
@@ -1941,44 +1948,49 @@ export const MESSAGES = {
     'feedback.desc': '¿Qué ha pasado, o qué te gustaría?',
     'feedback.submit': 'Abrir el informe en GitHub',
 
-    'help.what.h': 'Qué hace Libell',
-    'help.what.t':
-      'Deja el móvil plano dentro del vehículo con la parte de arriba hacia delante. La ' +
-      'pantalla muestra tu vehículo visto desde arriba, y cada rueda te dice qué hacer. Con una caja de sensor externa el móvil puede estar en cualquier sitio: mide la caja.',
-    'help.first.h': 'Antes del primer uso',
-    'help.first.t':
-      'Rellena los Ajustes y calibra una vez: los avisos amarillos de la barra superior te ' +
-      'lo recuerdan hasta que ambas cosas estén hechas. Todo se guarda.',
     'help.screen.h': 'Cómo leer la pantalla',
     'help.screen.t':
-      'Verde ✓: hecho.\n' +
-      'Naranja ↑: sube esa rueda al nivel indicado encima.\n' +
-      'Rojo ✕: ni tu nivel más alto basta; muévete a un sitio más llano.\n' +
-      'Gris –: una rueda baja a la que no llegan tus rampas.\n' +
-      'Cuando la burbuja descansa en el centro, estás nivelado.',
+      'Verde ✓: hecho, nada que hacer.\n' +
+      'Naranja ↑: sube esa rueda al escalón indicado al lado.\n' +
+      'Rojo ✕: tus rampas no bastan aquí. Mueve el vehículo.\n' +
+      'Gris –: ninguna rampa en esa rueda. Déjala como está.\n' +
+      'Cuando la burbuja reposa en el centro, estás nivelado.',
+    'help.what.t':
+      'Coloca el móvil plano en el vehículo, con la parte de arriba hacia delante, siempre en el mismo sitio.\n' +
+      'Con una caja sensora da igual cómo esté el móvil.',
     'help.settings.h': 'Las medidas',
+    'help.measures.h': 'Introduce las medidas',
     'help.settings.t':
-      'En una autocaravana, la distancia entre ejes es la que hay entre el eje delantero y ' +
-      'el trasero; en una caravana es, en cambio, la distancia del eje a la rueda jockey. El ' +
-      'ancho de vía es la distancia entre las ruedas izquierda y derecha: una autocaravana ' +
-      'puede tener anchos distintos delante y detrás, una caravana solo tiene uno. Suele ' +
-      'estar en la documentación del vehículo; si no, usa una cinta métrica.',
+      'Distancia entre ejes y ancho de vía. Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
+      'En una caravana, la distancia entre ejes va del eje a la rueda jockey.',
     'help.ramps.t':
-      'Elige un modelo de rampa ya hecho, o añade tus propias alturas de nivel con el ' +
-      'botón +. Después la app elige dónde tus rampas hacen más falta y, dentro de la ' +
-      'tolerancia, deja el lado del desagüe lo más bajo posible para que el fregadero y la ' +
-      'ducha sigan desaguando.',
+      'Elige tus rampas o escribe la altura de los escalones. Libell las coloca donde más ayudan.',
     'help.calibration.h': 'Calibración',
     'help.calibration.t':
-      'El móvil lee su propia inclinación, no la del suelo, y el piso de un vehículo tampoco ' +
-      'suele ser perfectamente plano. Calibrar corrige ambas cosas, de modo que lo que ' +
-      'muestra la app es el suelo real y no solo cómo está apoyado el móvil.',
-    'help.notes.h': 'Bueno saberlo',
-    'help.notes.t':
-      'Funciona totalmente sin conexión una vez abierta: añádela a tu pantalla de inicio ' +
-      'como una app.\n' +
-      'En iPhone hay que tocar Iniciar cada vez.\n' +
-      'El número de versión de abajo ayuda al informar de problemas.',
+      'Coloca el móvil sobre una superficie plana y toca Calibrar ahora. Se hace una vez.\n' +
+      '¿El sitio del móvil está algo torcido? Fija una posición cero cuando el vehículo esté nivelado.\n' +
+      'La luz ⚠ Calibrar sigue encendida hasta que esté hecho.\n' +
+      'Con una caja sensora, esto se hace en la página de la caja.',
+    'help.sensor.h': 'Caja sensora',
+    'help.sensor.t':
+      'Una caja en el vehículo puede medir en lugar del móvil.\n' +
+      'Toca el icono del sensor arriba a la derecha para conectarla. La página de la caja muestra el resto paso a paso.\n' +
+      'El Xparkle debe ir de pie.\n' +
+      'En iPhone necesitas el navegador Bluefy.',
+    'help.targets.h': 'Objetivos y sonido',
+    'help.targets.t':
+      'Guarda una inclinación que quieras, por ejemplo hacia el desagüe de la ducha, y cambia entre ellas.\n' +
+      'El botón en el centro de la barra inferior activa y quita el sonido.',
+    'help.trouble.h': 'Si algo falla',
+    'help.trouble.t':
+      '«Midiendo…»: el vehículo se mueve. Espera a que esté quieto.\n' +
+      '«Deja el móvil plano para medir»: el móvil está demasiado inclinado para medir.\n' +
+      '«Se perdió el contacto con la caja»: toca Reconectar y elige la caja en la lista.\n' +
+      'En iPhone: toca Iniciar cada vez que abras la app.\n' +
+      '¿Sigue fallando? Escribe un informe en Comentarios.',
+    'help.open': 'Abrir {name}',
+    'help.open.sensor': 'Abrir el sensor',
+    'help.open.feedback': 'Escribir un informe',
 
     'main.hint':
       'Deja el móvil plano dentro de la autocaravana, con el borde superior hacia delante.',
@@ -2254,7 +2266,7 @@ export const MESSAGES = {
     'onboard.legend.ok': 'Grün ✓ — dieses Rad steht waagerecht.',
     'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe fahren.',
     'onboard.legend.no': 'Rot ✕ — keine Stufe reicht; such dir einen ebeneren Platz.',
-    'onboard.legend.dim': 'Grau – — ein tiefes Rad, das deine Keile nicht erreichen.',
+    'onboard.legend.dim': 'Grau – — an diesem Rad kein Keil; lass es so.',
     'settings.wheelbase': 'Radstand',
     'settings.trackFront': 'Spurweite vorn',
     'settings.trackRear': 'Spurweite hinten',
@@ -2426,43 +2438,49 @@ export const MESSAGES = {
     'feedback.desc': 'Was ist passiert, oder was wünschst du dir?',
     'feedback.submit': 'Den Bericht auf GitHub öffnen',
 
-    'help.what.h': 'Was Libell macht',
-    'help.what.t':
-      'Lege das Handy flach ins Fahrzeug, mit der Oberkante nach vorn. Der Bildschirm zeigt ' +
-      'dein Fahrzeug von oben, und jedes Rad sagt dir, was zu tun ist. Mit einer externen Sensorbox kann das Handy überall liegen — die Box misst.',
-    'help.first.h': 'Vor der ersten Nutzung',
-    'help.first.t':
-      'Fülle die Einstellungen aus und kalibriere einmal — die gelben Schilder in der oberen ' +
-      'Leiste erinnern dich daran, bis beides erledigt ist. Alles wird gespeichert.',
     'help.screen.h': 'Den Bildschirm lesen',
     'help.screen.t':
-      'Grün ✓: erledigt.\n' +
-      'Orange ↑: dieses Rad auf die darüber angezeigte Stufe fahren.\n' +
-      'Rot ✕: selbst die höchste Stufe reicht nicht; such dir einen ebeneren Platz.\n' +
-      'Grau –: ein tiefes Rad, das deine Keile nicht erreichen.\n' +
-      'Wenn die Blase in der Mitte ruht, steht das Fahrzeug waagerecht.',
+      'Grün ✓: fertig, nichts zu tun.\n' +
+      'Orange ↑: fahr das Rad auf die daneben angezeigte Stufe.\n' +
+      'Rot ✕: deine Keile reichen hier nicht. Stell das Fahrzeug um.\n' +
+      'Grau –: an diesem Rad kein Keil. Lass es so.\n' +
+      'Ruht die Blase in der Mitte, stehst du waagerecht.',
+    'help.what.t':
+      'Leg das Handy flach ins Fahrzeug, die Oberseite nach vorn, jedes Mal an dieselbe Stelle.\n' +
+      'Mit einer Sensorbox ist egal, wie das Handy liegt.',
     'help.settings.h': 'Die Maße',
+    'help.measures.h': 'Maße eintragen',
     'help.settings.t':
-      'Bei einem Wohnmobil ist der Radstand der Abstand zwischen Vorder- und Hinterachse; ' +
-      'bei einem Wohnwagen stattdessen der Abstand von der Achse zum Stützrad. Die Spurweite ' +
-      'ist der Abstand zwischen linkem und rechtem Rad — ein Wohnmobil kann vorn und hinten ' +
-      'unterschiedlich breit sein, ein Wohnwagen hat nur eine. Steht meist in den ' +
-      'Fahrzeugpapieren, sonst hilft ein Maßband.',
+      'Radstand und Spurweite. Sie stehen in den Fahrzeugpapieren, sonst miss mit dem Maßband.\n' +
+      'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.',
     'help.ramps.t':
-      'Wähle ein fertiges Keilmodell, oder füge mit der Plus-Taste eigene Stufenhöhen hinzu. ' +
-      'Die App wählt dann, wo deine Keile am meisten bringen — und lässt innerhalb der ' +
-      'Toleranz die Abflussseite am tiefsten, damit Spüle und Dusche weiter ablaufen.',
+      'Wähle deine Keile oder gib die Stufenhöhen ein. Libell legt sie dorthin, wo sie am meisten bringen.',
     'help.calibration.h': 'Kalibrierung',
     'help.calibration.t':
-      'Das Handy misst seine eigene Neigung, nicht die des Bodens — und der Fahrzeugboden ist ' +
-      'selten perfekt eben. Die Kalibrierung korrigiert beides, sodass die App den ' +
-      'tatsächlichen Untergrund zeigt und nicht nur, wie das Handy gerade liegt.',
-    'help.notes.h': 'Gut zu wissen',
-    'help.notes.t':
-      'Funktioniert nach dem ersten Öffnen vollständig offline — lege sie wie eine App auf ' +
-      'den Home-Bildschirm.\n' +
-      'Auf dem iPhone musst du jedes Mal auf Start tippen.\n' +
-      'Die Versionsnummer unten hilft bei Fehlermeldungen.',
+      'Leg das Handy auf eine ebene Fläche und tippe auf Jetzt kalibrieren. Das machst du einmal.\n' +
+      'Liegt das Handy an seinem Platz etwas schief? Setz eine Nullstellung, wenn das Fahrzeug waagerecht steht.\n' +
+      'Die Lampe ⚠ Kalibrieren leuchtet, bis es erledigt ist.\n' +
+      'Mit einer Sensorbox geht das stattdessen auf der Seite der Box.',
+    'help.sensor.h': 'Sensorbox',
+    'help.sensor.t':
+      'Eine Box im Fahrzeug kann statt des Handys messen.\n' +
+      'Tippe oben rechts auf das Sensorsymbol, um sie zu verbinden. Die Seite der Box zeigt den Rest Schritt für Schritt.\n' +
+      'Die Xparkle muss aufrecht stehen.\n' +
+      'Auf dem iPhone brauchst du den Browser Bluefy.',
+    'help.targets.h': 'Ziele und Ton',
+    'help.targets.t':
+      'Speichere eine gewünschte Neigung, etwa zum Duschablauf hin, und wechsle zwischen ihnen.\n' +
+      'Die Taste in der Mitte der unteren Leiste schaltet den Ton ein und aus.',
+    'help.trouble.h': 'Wenn etwas nicht klappt',
+    'help.trouble.t':
+      '„Messen…“: das Fahrzeug schaukelt. Warte, bis es ruhig steht.\n' +
+      '„Zum Messen das Handy flach hinlegen“: das Handy ist zum Messen zu stark geneigt.\n' +
+      '„Verbindung zur Box verloren“: tippe auf Erneut verbinden und wähle die Box in der Liste.\n' +
+      'Auf dem iPhone: tippe bei jedem Öffnen der App auf Start.\n' +
+      'Immer noch falsch? Schreib einen Bericht unter Rückmeldung.',
+    'help.open': '{name} öffnen',
+    'help.open.sensor': 'Sensor öffnen',
+    'help.open.feedback': 'Bericht schreiben',
 
     'main.hint': 'Lege dein Handy flach ins Wohnmobil, die Oberkante nach vorn.',
     'main.start': 'Start',
