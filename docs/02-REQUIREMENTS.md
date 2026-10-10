@@ -1455,10 +1455,13 @@ source applies to it — opt-in, never a silent switch, its own installation off
 lost-connection prompt, the staleness overlay — so this requirement states only what is
 specific to this device.
 
-**Nothing here has been tested against a physical box.** The protocol was read off the
-vendor app's own unobfuscated source (`docs/competitor-notes.md`), which is as solid as
-a decompile gets, but two things it structurally cannot answer are tracked in #273.
-Until that is closed, the app must not present this source as more proven than it is.
+**Only partly tested against a physical box.** The protocol was read off the vendor
+app's own unobfuscated source (`docs/competitor-notes.md`), which is as solid as a
+decompile gets. A first physical box (#273) confirmed that it is found by name, connects
+and reports readings without needing the password; which physical edge it treats as
+"front", and so whether Libell names the same wheels as the vendor app for every
+installation orientation, is still open there. Until that is closed, the app must not
+present this source as more proven than it is.
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support (or `?xparkle-sim`)
 - **When** the user connects the Xparkle box from the External sensor page

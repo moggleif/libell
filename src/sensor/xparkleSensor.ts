@@ -33,8 +33,9 @@
  * user set it up in the first place.
  *
  * **The password does not gate readings here.** Whether the box refuses to
- * serve `fff2` before command `4` is unknown and unknowable from the app,
- * which always logs in first (#273). This adapter sends the password and
+ * serve `fff2` before command `4` was unknowable from the app, which always
+ * logs in first; a physical box (#273) answers it: it does not refuse. This
+ * adapter sends the password and
  * then polls regardless of what the reply says: if the box does not gate
  * reads, everything works; if it does, the reads fail and the ordinary
  * `'disconnected'` path takes over. `isPasswordRejected()` records the
