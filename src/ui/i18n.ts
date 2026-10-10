@@ -135,6 +135,9 @@ export const MESSAGES = {
     // why RSSI can never be read for a connected device.
     'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
+    'sensorSource.upright.ok': 'The box stands upright ✓',
+    'sensorSource.upright.lying':
+      'The box is lying down. It only measures right standing up: stand it upright (which way it faces does not matter), then tap “Set vehicle level”.',
     'sensorSource.detail.orientation': 'The box’s own mounting setting: {value}',
     'sensorSource.orientation.front': 'Front',
     'sensorSource.orientation.rear': 'Rear',
@@ -170,7 +173,7 @@ export const MESSAGES = {
     // lifts the front, then the right side — no vendor app needed.
     'sensorSource.learn.h': 'Learn the mounting',
     'sensorSource.learn.intro':
-      'However the box sits in the vehicle, Libell can learn which way is front and which is right. Set the vehicle as level first, then follow the steps.',
+      'The box must stand upright, but it can face any way. Libell learns which way is front and which is right. Set the vehicle as level first, then follow the steps.',
     'sensorSource.learn.start': 'Learn the mounting',
     'sensorSource.learn.step.front':
       'Raise the vehicle’s front a few centimetres, then press the button.',
@@ -585,6 +588,10 @@ export const MESSAGES = {
     'pose.sensorExtreme':
       'The sensor is tilted too far to be mounted right — check that it sits flat with its face up',
     'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
+    'pose.sensorNotUpright':
+      'The sensor box seems to be lying down — it must be mounted standing upright',
+    'pose.sensorHintUpright':
+      'Mount the box standing upright, then set the vehicle as level on its sensor page.',
     'calibration.phoneOnly':
       "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
     'calibration.external.h': 'Calibrate {name}',
@@ -699,6 +706,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
+    'sensorSource.upright.ok': 'Boxen står upp ✓',
+    'sensorSource.upright.lying':
+      'Boxen ligger ner. Den mäter bara rätt stående: ställ den upprätt (vilket håll den vänder åt spelar ingen roll) och tryck sedan ”Sätt fordonet som plant”.',
     'sensorSource.detail.orientation': 'Boxens egen monteringsinställning: {value}',
     'sensorSource.orientation.front': 'Fram',
     'sensorSource.orientation.rear': 'Bak',
@@ -728,7 +738,7 @@ export const MESSAGES = {
     // höjer fronten och sedan höger sida — ingen tillverkarapp behövs.
     'sensorSource.learn.h': 'Lär in monteringen',
     'sensorSource.learn.intro':
-      'Hur boxen än sitter i fordonet kan Libell lära sig vad som är fram och vad som är höger. Sätt fordonet som plant först och följ sedan stegen.',
+      'Boxen ska stå upp men kan vara vänd åt vilket håll som helst. Libell lär sig vad som är fram och vad som är höger. Sätt fordonet som plant först och följ sedan stegen.',
     'sensorSource.learn.start': 'Lär in monteringen',
     'sensorSource.learn.step.front':
       'Höj fordonets front några centimeter och tryck sedan på knappen.',
@@ -1065,6 +1075,9 @@ export const MESSAGES = {
     'pose.sensorExtreme':
       'Sensorn lutar för mycket för att sitta rätt — kontrollera att den ligger plant med ovansidan uppåt',
     'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
+    'pose.sensorNotUpright': 'Sensorboxen verkar ligga ner — den ska monteras stående',
+    'pose.sensorHintUpright':
+      'Montera boxen stående och sätt sedan fordonet som plant på dess sensorsida.',
     'calibration.phoneOnly':
       'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
     'calibration.external.h': 'Kalibrera {name}',
@@ -1172,6 +1185,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Détails du capteur',
     'sensorSource.detail.battery': 'Batterie : {value}',
+    'sensorSource.upright.ok': 'Le boîtier est debout ✓',
+    'sensorSource.upright.lying':
+      'Le boîtier est couché. Il ne mesure correctement que debout : redressez-le (peu importe son orientation), puis touchez « Définir le véhicule comme de niveau ».',
     'sensorSource.detail.orientation': 'Réglage de montage du boîtier : {value}',
     'sensorSource.orientation.front': 'Avant',
     'sensorSource.orientation.rear': 'Arrière',
@@ -1197,7 +1213,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Apprendre le montage',
     'sensorSource.learn.intro':
-      'Quelle que soit la position du boîtier dans le véhicule, Libell peut apprendre où sont l’avant et la droite. Définissez d’abord le véhicule comme de niveau, puis suivez les étapes.',
+      'Le boîtier doit être monté debout, mais peut être tourné dans n’importe quel sens. Libell apprend où sont l’avant et la droite. Définissez d’abord le véhicule comme de niveau, puis suivez les étapes.',
     'sensorSource.learn.start': 'Apprendre le montage',
     'sensorSource.learn.step.front':
       'Soulevez l’avant du véhicule de quelques centimètres, puis appuyez sur le bouton.',
@@ -1544,6 +1560,9 @@ export const MESSAGES = {
     'pose.sensorExtreme':
       'Le capteur est trop incliné pour être bien monté — vérifiez qu’il est à plat, face vers le haut',
     'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
+    'pose.sensorNotUpright': 'Le boîtier capteur semble couché — il doit être monté debout',
+    'pose.sensorHintUpright':
+      'Montez le boîtier debout, puis définissez le véhicule comme de niveau sur la page du capteur.',
     'calibration.phoneOnly':
       'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
     'calibration.external.h': 'Étalonner {name}',
@@ -1654,6 +1673,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Detalles del sensor',
     'sensorSource.detail.battery': 'Batería: {value}',
+    'sensorSource.upright.ok': 'La caja está de pie ✓',
+    'sensorSource.upright.lying':
+      'La caja está tumbada. Solo mide bien de pie: ponla derecha (da igual hacia dónde mire) y luego toca «Fijar el vehículo como nivelado».',
     'sensorSource.detail.orientation': 'Ajuste de montaje de la propia caja: {value}',
     'sensorSource.orientation.front': 'Delante',
     'sensorSource.orientation.rear': 'Detrás',
@@ -1679,7 +1701,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Aprender el montaje',
     'sensorSource.learn.intro':
-      'Esté como esté la caja en el vehículo, Libell puede aprender dónde está la parte delantera y dónde la derecha. Primero fija el vehículo como nivelado y luego sigue los pasos.',
+      'La caja debe ir de pie, pero puede mirar en cualquier dirección. Libell aprende dónde está la parte delantera y dónde la derecha. Primero fija el vehículo como nivelado y luego sigue los pasos.',
     'sensorSource.learn.start': 'Aprender el montaje',
     'sensorSource.learn.step.front':
       'Levanta la parte delantera del vehículo unos centímetros y pulsa el botón.',
@@ -2023,6 +2045,9 @@ export const MESSAGES = {
       'El sensor está demasiado inclinado para estar bien montado — comprueba que está plano y con la cara hacia arriba',
     'pose.sensorUpsideDown':
       'El sensor parece estar montado boca abajo — móntalo con la cara hacia arriba',
+    'pose.sensorNotUpright': 'La caja del sensor parece estar tumbada — debe montarse de pie',
+    'pose.sensorHintUpright':
+      'Monta la caja de pie y luego fija el vehículo como nivelado en la página del sensor.',
     'calibration.phoneOnly':
       'Hay un sensor externo activo, así que no se usa la calibración del móvil. Cambia al sensor del móvil para modificarla.',
     'calibration.external.h': 'Calibrar {name}',
@@ -2135,6 +2160,9 @@ export const MESSAGES = {
 
     'sensorSource.detail.heading': 'Sensordetails',
     'sensorSource.detail.battery': 'Batterie: {value}',
+    'sensorSource.upright.ok': 'Die Box steht aufrecht ✓',
+    'sensorSource.upright.lying':
+      'Die Box liegt. Sie misst nur stehend richtig: stelle sie aufrecht (die Richtung ist egal) und tippe dann auf „Fahrzeug als waagerecht setzen“.',
     'sensorSource.detail.orientation': 'Eigene Montageeinstellung der Box: {value}',
     'sensorSource.orientation.front': 'Vorne',
     'sensorSource.orientation.rear': 'Hinten',
@@ -2158,7 +2186,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Montage anlernen',
     'sensorSource.learn.intro':
-      'Wie auch immer die Box im Fahrzeug sitzt, Libell kann lernen, wo vorne und wo rechts ist. Setze das Fahrzeug zuerst als waagerecht und folge dann den Schritten.',
+      'Die Box muss aufrecht stehen, darf aber in jede Richtung zeigen. Libell lernt, wo vorne und wo rechts ist. Setze das Fahrzeug zuerst als waagerecht und folge dann den Schritten.',
     'sensorSource.learn.start': 'Montage anlernen',
     'sensorSource.learn.step.front':
       'Hebe die Fahrzeugfront ein paar Zentimeter an und tippe dann auf die Schaltfläche.',
@@ -2497,6 +2525,10 @@ export const MESSAGES = {
       'Der Sensor ist zu stark geneigt für eine korrekte Montage — prüfe, dass er flach mit der Oberseite nach oben liegt',
     'pose.sensorUpsideDown':
       'Der Sensor scheint verkehrt herum montiert — mit der Oberseite nach oben montieren',
+    'pose.sensorNotUpright':
+      'Die Sensorbox scheint zu liegen — sie muss aufrecht stehend montiert werden',
+    'pose.sensorHintUpright':
+      'Montiere die Box aufrecht stehend und setze das Fahrzeug dann auf ihrer Sensorseite als waagerecht.',
     'calibration.phoneOnly':
       'Ein externer Sensor ist aktiv, daher wird die Kalibrierung des Handys nicht verwendet. Wechsle zum Handy-Sensor, um sie zu ändern.',
     'calibration.external.h': '{name} kalibrieren',

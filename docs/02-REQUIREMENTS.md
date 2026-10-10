@@ -277,6 +277,10 @@ URL and must keep working with no signal.
   overlay says the sensor sits in an extreme position, or looks mounted upside-down,
   instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
   degrees, far below that limit.
+- **Given** that box is one built to stand upright (the Xparkle box, R49)
+- **Then** the overlay says it seems to be lying down and must be mounted standing, and
+  never tells the user to lay it flat or face up (#304); the EasyLevel box, which is
+  mounted flat, keeps the flat wording.
 - **Given** that overlay is shown for an external sensor
 - **Then** it also says what to do — check the sensor's live values and mounting — and
   carries an "Open sensor page" button that goes straight to that sensor's own page
@@ -1534,7 +1538,8 @@ present this source as more proven than it is.
   side and confirms
 - **Then** Libell learns which of the box's two angles moved for each lift and in which
   direction, and from then on reads them so a raised front is front high and a raised
-  right side is left low — for any of the eight ways the box can sit, and composed with
+  right side is left low — whichever of the four directions the upright box faces, and
+  composed with
   whatever the box already applies, since it is measured rather than described. The
   user never needs the vendor app for this. A lift too small to tell from noise, one
   that moved both angles about equally, or two lifts that moved the same angle are
@@ -1557,12 +1562,20 @@ present this source as more proven than it is.
 - **Given** the Xparkle box is connected and the user taps "Set vehicle level" — on its
   own page (R34) or in the Calibration tab (R11)
 - **Then** Libell has the box zero itself with its own command (#290), so its readings
-  are relative to that position however it is mounted, lying on its back included (the
-  box is built to stand upright; on its back it reads about −90° of pitch, which a
-  Libell-side offset cannot capture). Libell records the moment as a zero installation
+  are relative to that position. Libell records the moment as a zero installation
   offset, which drives the calibration lamp, the age text and "Check", and replaces any
   older Libell-side offset so two zeros are never stacked. If no box is connected, or
   the command cannot be written, it says so and nothing is changed.
+- **Given** the box must stand upright to measure right (#273, #304): verified on
+  hardware, a box lying on its back changes both angles whenever it turns about its own
+  axis, so no zero taken there holds
+- **When** the box's own page is open
+- **Then** it shows live whether the box stands upright; when it reads more than 45° on
+  either axis it says the box is lying down, that it only measures right standing, and
+  what to do: stand it up (whichever way it faces) and tap "Set vehicle level". Libell
+  guides and never blocks: "Set vehicle level" and "Learn the mounting" always run, so a
+  box that was zeroed lying down earlier is recovered by standing it up and zeroing again
+  in Libell, never in the vendor app.
 - **Given** any other command that would change what the box has stored (its vehicle
   dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
