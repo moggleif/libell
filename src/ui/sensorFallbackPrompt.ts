@@ -13,12 +13,12 @@
  * reading — "Use phone sensor" is therefore always this explicit tap.
  * `main.ts` wires it to the exact same switch-to-phone path the menu's
  * own "Disconnect" button already uses, never a parallel implementation.
- * "Retry" is likewise wired to the existing `EasyLevelSensor.reconnect()`
- * (#130) — one tap, one attempt from this component's own point of view;
- * on failure the state simply stays 'disconnected' and this prompt stays
- * shown (or reappears, per `update()` below). This component itself never
- * loops or retries on its own — `main.ts` separately drives an automatic
- * background retry on the same `reconnect()` call (#211), so recovery
+ * "Retry" opens the device picker for the active source, the same connect
+ * the sensor page's button runs (#307) — one tap, one attempt from this
+ * component's own point of view; on failure the state simply stays
+ * 'disconnected' and this prompt stays shown (or reappears, per `update()`
+ * below). This component itself never loops or retries on its own —
+ * `main.ts` separately drives a silent background `reconnect()` (#211), so recovery
  * does not depend on the user finding this button — but that lives
  * entirely outside this file: from here, a tap still means exactly one
  * attempt, no more.

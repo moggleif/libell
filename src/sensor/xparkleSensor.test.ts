@@ -138,6 +138,22 @@ describe('connecting (#270)', () => {
     expect(sensor.getGravity()).toBeNull();
   });
 
+  it('stays disconnected when a Retry picker is cancelled after the box was lost (#307)', async () => {
+    const timers = fakeTimers();
+    const sensor = createXparkleSensor(
+      {
+        connect: () => Promise.reject(new Error('cancelled')),
+        reconnect: () => Promise.resolve(null),
+      },
+      timers,
+    );
+    await sensor.reconnect('xparkle-1');
+    expect(sensor.getState()).toBe('disconnected');
+
+    // Still 'disconnected', so the prompt and its background retry stay.
+    expect(await sensor.start()).toBe('disconnected');
+  });
+
   it('still delivers readings when the box answers nothing but the live read', async () => {
     // A firmware that rejects the subscription or the writes must not stop
     // leveling from working: only the live read is actually required.

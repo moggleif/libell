@@ -107,7 +107,13 @@ export interface ExternalSensorController<T extends ExternalSensor> {
    * forever. A no-op once already granted.
    */
   usePhoneSensor(): void;
-  /** "Retry" (#134): one tap, one immediate attempt at the same box. */
+  /**
+   * "Retry" (#134): the tap opens the device picker, exactly as the sensor
+   * page's connect button does (#307). The silent reconnect the button
+   * used before could not reach the box on Chrome for Android once the
+   * page had lost the device it picked, so the tap did nothing there. Must
+   * be called synchronously inside the click handler, like `connect()`.
+   */
   retry(): Promise<void>;
   /** The background counterpart to Retry (#211), on its own cadence. */
   maybeAutoRetry(nowMs: number): void;
@@ -186,6 +192,15 @@ export function createExternalSensorController<T extends ExternalSensor>(
 
   async function retry(): Promise<void> {
     const source = activeSource;
+    if (source === null) return;
+    await connect(source);
+    options.onStatusChanged();
+  }
+
+  /** The background loop's silent attempt at the same box (#211): no
+   * gesture to open a picker with, so a reconnect is all it can do. */
+  async function reconnectSilently(): Promise<void> {
+    const source = activeSource;
     const sensor = source === null ? null : (sensors.get(source) ?? null);
     if (source === null || !sensor) return;
     const deviceId = sensor.getDeviceId() ?? options.loadDeviceId(source);
@@ -205,7 +220,7 @@ export function createExternalSensorController<T extends ExternalSensor>(
     if (!isExternalSensorAutoRetryDue(lastAutoRetryAt, nowMs)) return;
     lastAutoRetryAt = nowMs;
     autoRetryInFlight = true;
-    void retry().finally(() => {
+    void reconnectSilently().finally(() => {
       autoRetryInFlight = false;
     });
   }

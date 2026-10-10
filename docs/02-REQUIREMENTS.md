@@ -1024,11 +1024,13 @@ unannounced switch could show a plausible-looking but wrong reading.
   sensor's own page (R40), as R35's stale-data overlay does (#286).
 - **Given** the fallback prompt is shown
 - **When** I tap "Retry"
-- **Then** the app makes one immediate silent reconnect attempt against the remembered
-  box (the same `EasyLevelSensor.reconnect()` R33's own auto-reconnect uses, not a
-  duplicate implementation). On success the prompt clears and leveling resumes on the
-  external source; on failure the prompt simply stays (or reappears on the next
-  frame).
+- **Then** the browser's device picker opens for the active source, exactly as the
+  sensor page's connect button does (**#307**, found on hardware: a silent reconnect
+  could not reach the box on Chrome for Android, so the tap did nothing). The picker
+  lists only that kind of box; Web Bluetooth never lets a page choose in it, so the one
+  tap on the box is the user's. On success the prompt clears and leveling resumes on
+  the external source; if the picker is cancelled or the connect fails, the prompt
+  stays and the background retry below keeps going.
 - **Given** EasyLevel is unreachable and the fallback prompt is shown, and no one
   taps anything (**#211**)
 - **Then** the app also retries the same reconnect call on its own, on a short fixed
@@ -1036,9 +1038,8 @@ unannounced switch could show a plausible-looking but wrong reading.
   long as the main screen is visible and the box stays unreachable — recovering
   automatically the moment the box is back in range or powered on, with no tap
   required. This never switches source on its own (ADR 0014's rule is unchanged): it
-  only ever retries reaching the same already-known box, exactly what the manual
-  button already did. The background loop and the manual button share one
-  implementation, never two.
+  only ever retries reaching the same already-known box, silently (no gesture, so no
+  picker), through the same adapter `reconnect()` R33 uses.
 - **Given** the fallback prompt is shown
 - **When** I tap "Use phone sensor"
 - **Then** the app switches the active source to the phone sensor via the exact same
@@ -1546,7 +1547,7 @@ present this source as more proven than it is.
   refused with the reason and nothing is stored; the learned mounting can be forgotten,
   which returns to the box's own directions.
 - **Given** the connection to the box is lost while it stays switched on and in range
-- **When** the user taps Retry, or the background auto-retry runs (R37)
+- **When** the background auto-retry runs (R37; a Retry tap opens the picker, #307)
 - **Then** the app reconnects to the same box without the device picker (#288): a read
   that fails or never answers closes the link rather than leaving it half-open (a box
   does not advertise while it holds a connection), and the silent reconnect first waits

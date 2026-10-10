@@ -393,8 +393,10 @@ export function createXparkleSensor(
         return await adopt(await transport.connect(markDisconnected));
       } catch {
         // A cancelled picker and a failed connect are the same to the
-        // caller: nothing is connected, and a tap can try again.
-        state = 'denied';
+        // caller: nothing is connected, and a tap can try again. A box that
+        // was already lost stays lost (#307), so Retry's cancelled picker
+        // keeps the unavailable prompt and its background retry.
+        if (state !== 'disconnected') state = 'denied';
         return state;
       }
     },
