@@ -1545,7 +1545,11 @@ present this source as more proven than it is.
 - **Then** the app reconnects to the same box without the device picker (#288): a read
   that fails or never answers closes the link rather than leaving it half-open (a box
   does not advertise while it holds a connection), and the silent reconnect first waits
-  a bounded time to hear the box advertise where the browser can watch for that.
+  a bounded time to hear the box advertise where the browser can watch for that. Within
+  the same app session this works without the browser's `getDevices()` (behind a flag
+  in Chrome on Android): the app reconnects to the box the user picked. After the app
+  has been restarted, only a browser with `getDevices()` can reconnect silently;
+  elsewhere the user connects again from the sensor page.
 - **Given** the box rejects the password it is offered
 - **Then** the External sensor page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware

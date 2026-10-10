@@ -539,3 +539,26 @@ describe('the silent reconnect waits to hear the box first (#288)', () => {
     expect(calls).toEqual(['connect']);
   });
 });
+
+describe('Retry without getDevices() (#288, Chrome on Android)', () => {
+  it('reconnects to the box picked this session even where getDevices() is missing', async () => {
+    const { device, calls } = fakeRememberedDevice({ watch: false });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createXparkleWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    const connection = await transport.reconnect('xparkle-1', vi.fn());
+    expect(connection).not.toBeNull();
+    expect(calls).toEqual(['connect', 'connect']);
+  });
+
+  it('returns nothing, silently, when no box was picked and getDevices() is missing', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn() } },
+      configurable: true,
+    });
+    expect(await createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn())).toBeNull();
+  });
+});

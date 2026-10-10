@@ -937,3 +937,29 @@ describe('isEasyLevelInitialCalibrationWaitExpired (#217)', () => {
     ).toBe(true);
   });
 });
+
+describe('Retry without getDevices() (#288, Chrome on Android)', () => {
+  it('reconnects to the box picked this session even where getDevices() is missing', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    const connection = await transport.reconnect('device-1', vi.fn());
+    expect(connection).not.toBeNull();
+    expect(device.gatt?.connect).toHaveBeenCalledTimes(2);
+  });
+
+  it('still has nothing to reconnect to for a different box', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(vi.fn());
+    expect(await transport.reconnect('device-2', vi.fn())).toBeNull();
+  });
+});
