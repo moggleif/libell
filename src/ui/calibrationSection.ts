@@ -101,6 +101,8 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   const guideIntro = document.createElement('p');
   guideIntro.className = modern ? 'calibration-card__body' : 'menu__text';
   guideIntro.textContent = t('calibration.guide.intro');
+  /** Everything that calibrates the phone, hidden while a box is active. */
+  const phoneElements: HTMLElement[] = [];
   const phoneOnlyNotice = document.createElement('p');
   phoneOnlyNotice.className = 'menu__text menu__text--status calibration-phone-only';
   phoneOnlyNotice.textContent = t('calibration.phoneOnly');
@@ -228,6 +230,9 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
   function applyPhoneGate(): void {
     const phoneActive = options.isPhoneActive?.() ?? true;
     phoneOnlyNotice.hidden = phoneActive;
+    // And hides them (Morgan, after #290): a page of greyed-out phone
+    // cards buried the one thing that applies, the box's own calibration.
+    for (const element of phoneElements) element.hidden = !phoneActive;
     if (externalButton.disabled === false) refreshExternal();
     if (phoneActive) {
       // Clear/Check are re-derived by the refreshes; the capture actions
@@ -411,6 +416,7 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     calibrationBody.className = 'calibration-cards';
     if (offersExternal) calibrationBody.append(externalSection);
     calibrationBody.append(phoneOnlyNotice, guideIntro, sensorCard, vehicleCard);
+    phoneElements.push(guideIntro, sensorCard, vehicleCard);
     sensorElement = sensorCard;
     vehicleElement = vehicleCard;
   } else {
@@ -441,8 +447,11 @@ export function createCalibrationSection(options: CalibrationOptions): Calibrati
     );
     if (offersExternal) calibrationBody.append(externalSection);
     calibrationBody.append(phoneOnlyNotice, guideIntro, sensorSection, vehicleSection);
+    phoneElements.push(guideIntro, sensorSection, vehicleSection);
     sensorElement = sensorSection;
     vehicleElement = vehicleSection;
   }
+  // The first refresh ran before the layout existed; hide what it could not.
+  applyPhoneGate();
   return { element: calibrationBody, sensorElement, vehicleElement, refresh: refreshCalibration };
 }

@@ -38,6 +38,7 @@ export const MESSAGES = {
     'lamp.setup.title': 'Vehicle settings have never been saved — tap to open Settings',
     'lamp.calibrate': '⚠ Calibrate',
     'lamp.calibrate.title': 'The phone is not calibrated — tap to open Calibration',
+    'lamp.calibrate.title.sensor': 'The sensor is not calibrated — tap to open Calibration',
 
     // Main-screen external-sensor indicator (#129): shown only while an
     // external source (today: EasyLevel) is active — never in phone mode.
@@ -635,6 +636,7 @@ export const MESSAGES = {
       'Fordonsinställningarna har aldrig sparats — tryck för att öppna Inställningar',
     'lamp.calibrate': '⚠ Kalibrera',
     'lamp.calibrate.title': 'Telefonen är inte kalibrerad — tryck för att öppna Kalibrering',
+    'lamp.calibrate.title.sensor': 'Sensorn är inte kalibrerad — tryck för att öppna Kalibrering',
 
     'menu.title': 'Meny',
     'menu.close': 'Stäng menyn',
@@ -1097,6 +1099,8 @@ export const MESSAGES = {
       'Les réglages du véhicule n’ont jamais été enregistrés — touchez pour ouvrir les Réglages',
     'lamp.calibrate': '⚠ Étalonner',
     'lamp.calibrate.title': 'Le téléphone n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
+    'lamp.calibrate.title.sensor':
+      'Le capteur n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
 
     'sensorStatus.connected': 'Capteur externe connecté',
     'sensorStatus.disconnected': 'Connexion au capteur externe perdue — touchez pour les détails',
@@ -1572,6 +1576,7 @@ export const MESSAGES = {
     'lamp.setup.title': 'Los ajustes del vehículo nunca se han guardado: toca para abrir Ajustes',
     'lamp.calibrate': '⚠ Calibrar',
     'lamp.calibrate.title': 'El móvil no está calibrado: toca para abrir Calibración',
+    'lamp.calibrate.title.sensor': 'El sensor no está calibrado: toca para abrir Calibración',
 
     'sensorStatus.connected': 'Sensor externo conectado',
     'sensorStatus.disconnected':
@@ -2044,6 +2049,8 @@ export const MESSAGES = {
       'Die Fahrzeugeinstellungen wurden noch nie gespeichert — zum Öffnen der Einstellungen tippen',
     'lamp.calibrate': '⚠ Kalibrieren',
     'lamp.calibrate.title': 'Das Handy ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
+    'lamp.calibrate.title.sensor':
+      'Der Sensor ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
 
     'sensorStatus.connected': 'Externer Sensor verbunden',
     'sensorStatus.disconnected': 'Verbindung zum externen Sensor verloren — für Details tippen',

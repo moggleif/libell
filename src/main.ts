@@ -857,6 +857,7 @@ function bootstrap(root: HTMLElement): void {
         (sensor().getSource() === 'phone'
           ? calibration !== null || vehicleCalibration !== null
           : activeInstallOffset() !== null),
+      externalSensor: sensor().getSource() !== 'phone',
     });
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
