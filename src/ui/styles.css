@@ -3535,12 +3535,50 @@ button.box-step__header {
   margin: 4px auto 0;
 }
 
-.box-more {
-  margin-top: 16px;
+/* The box's position, as a status on the live line (#332): not a card,
+ * since there is nothing to tap. */
+.box-position.is-done .box-position__mark {
+  color: var(--level);
 }
 
-.box-more__actions[hidden] {
+.box-position.is-warning {
+  color: var(--warning);
+}
+
+/* A done step's follow-up actions, as quiet links in a row (#332). */
+.box-step__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 24px;
+  margin-top: 6px;
+}
+
+.box-step__links .link-button {
+  flex: 0 0 auto;
+  width: auto;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.box-step__links[hidden],
+.box-step__body .link-button[hidden] {
   display: none;
+}
+
+/* Disconnect at the foot of the box page (#332), in the warning colour. */
+.box-footer {
+  margin-top: 20px;
+}
+
+.box-footer__actions[hidden] {
+  display: none;
+}
+
+.menu__action.box-disconnect,
+:root[data-appearance='modern'] .menu__action.box-disconnect {
+  color: var(--warning);
+  border-color: var(--warning);
 }
 
 /* The sensor list (#324, flow D of the #309 UX review): one card per box,

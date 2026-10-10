@@ -262,14 +262,22 @@ export function createSensorSourceSection(
     step.mark.textContent = done ? '✓' : String(number);
   }
 
-  // 1. Position — no body, its title says it all, live.
-  const positionStep = makeStep(1, false);
-  positionStep.element.classList.add('box-step--position');
+  // Position — not a step but a status, live (#332): nothing to tap, so
+  // it is drawn as a line ("✓ Stands upright"), never as a card that looks
+  // like the steps below it. The device page puts it at the start of its
+  // live tilt line; the first-run wizard shows it on its own.
+  const positionElement = document.createElement('span');
+  positionElement.className = 'box-position';
+  const positionMark = document.createElement('span');
+  positionMark.className = 'box-position__mark';
+  positionMark.setAttribute('aria-hidden', 'true');
+  const positionTitle = document.createElement('span');
+  positionElement.append(positionMark, positionTitle);
 
-  // 2. Direction.
+  // 1. Direction.
   const usesEasyLevelMounting = capabilities.mounting;
   const usesAxisMapping = !usesEasyLevelMounting && Boolean(options.learnMounting);
-  const directionStep = usesEasyLevelMounting || usesAxisMapping ? makeStep(2, true) : null;
+  const directionStep = usesEasyLevelMounting || usesAxisMapping ? makeStep(1, true) : null;
   /** The facing in which the box's own output needs no mapping. An
    * assumption for the Xparkle box until checked on hardware (#314); the
    * lift guide below measures instead, for anyone whose box disagrees. */
@@ -322,9 +330,15 @@ export function createSensorSourceSection(
       directionStep.body.append(learnLink, learnSection.element);
     }
   }
+  // Undoing a learned direction, where it applies (#332: was under "More").
+  const forgetDirectionButton = document.createElement('button');
+  forgetDirectionButton.type = 'button';
+  forgetDirectionButton.className = 'link-button';
+  forgetDirectionButton.textContent = t('box.forgetDirection');
+  if (directionStep && usesAxisMapping) directionStep.body.append(forgetDirectionButton);
 
-  // 3. Zero.
-  const zeroStep = capabilities.installCalibration ? makeStep(3, true) : null;
+  // 2. Zero.
+  const zeroStep = capabilities.installCalibration ? makeStep(2, true) : null;
   const zeroHint = document.createElement('p');
   zeroHint.className = 'menu__text';
   zeroHint.textContent = t('box.step.zero.hint');
@@ -335,34 +349,32 @@ export function createSensorSourceSection(
   const installStatus = document.createElement('p');
   installStatus.className = 'menu__text menu__text--status';
   installStatus.hidden = true;
-  zeroStep?.body.append(zeroHint, installButton, installStatus);
-
-  installSection.append(positionStep.element);
-  if (directionStep) installSection.append(directionStep.element);
-  if (zeroStep) installSection.append(zeroStep.element);
-
-  // "More": the rarely needed actions, out of the way (#314). Placed by
-  // the caller inside the device page's own "More" disclosure.
-  const moreSection = document.createElement('div');
-  moreSection.className = 'box-more__actions';
+  // Once zeroed (#332): check it, or clear it, right here — quiet links,
+  // not the first-time instruction again.
+  const zeroLinks = document.createElement('div');
+  zeroLinks.className = 'box-step__links';
   const installCheckButton = document.createElement('button');
   installCheckButton.type = 'button';
-  installCheckButton.className = 'menu__action menu__action--secondary';
+  installCheckButton.className = 'link-button';
   installCheckButton.textContent = t('calibration.check');
   const installClearButton = document.createElement('button');
   installClearButton.type = 'button';
-  installClearButton.className = 'menu__action menu__action--secondary';
+  installClearButton.className = 'link-button';
   installClearButton.textContent = t('sensorSource.install.clear');
-  const forgetDirectionButton = document.createElement('button');
-  forgetDirectionButton.type = 'button';
-  forgetDirectionButton.className = 'menu__action menu__action--secondary';
-  forgetDirectionButton.textContent = t('box.forgetDirection');
+  zeroLinks.append(installCheckButton, installClearButton);
+  zeroStep?.body.append(zeroHint, installButton, zeroLinks, installStatus);
+
+  if (directionStep) installSection.append(directionStep.element);
+  if (zeroStep) installSection.append(zeroStep.element);
+
+  // Disconnect, at the foot of the device page (#332), in the warning
+  // colour: it stops the box feeding readings.
+  const moreSection = document.createElement('div');
+  moreSection.className = 'box-footer__actions';
   const moreDisconnectButton = document.createElement('button');
   moreDisconnectButton.type = 'button';
-  moreDisconnectButton.className = 'menu__action menu__action--secondary';
+  moreDisconnectButton.className = 'menu__action menu__action--secondary box-disconnect';
   moreDisconnectButton.textContent = t('sensorSource.disconnect');
-  if (capabilities.installCalibration) moreSection.append(installCheckButton, installClearButton);
-  if (usesAxisMapping) moreSection.append(forgetDirectionButton);
   moreSection.append(moreDisconnectButton);
 
   /** Which step the user opened by hand; null follows "next undone". */
@@ -386,15 +398,16 @@ export function createSensorSourceSection(
   function refreshPosition(): void {
     const tilt = options.getCalibratedTilt?.() ?? null;
     if (!tilt) {
-      positionStep.title.textContent = t('box.step.position.waiting');
-      setDone(positionStep, false, 1);
-      positionStep.element.classList.remove('is-warning');
+      positionTitle.textContent = t('box.step.position.waiting');
+      positionMark.textContent = '';
+      positionElement.classList.remove('is-done', 'is-warning');
       return;
     }
     const ok = isMountedRight(tilt);
-    positionStep.title.textContent = t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
-    setDone(positionStep, ok, 1);
-    positionStep.element.classList.toggle('is-warning', !ok);
+    positionTitle.textContent = t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
+    positionMark.textContent = ok ? '✓ ' : '! ';
+    positionElement.classList.toggle('is-done', ok);
+    positionElement.classList.toggle('is-warning', !ok);
   }
 
   function refreshSteps(): void {
@@ -406,7 +419,7 @@ export function createSensorSourceSection(
       directionStep.title.textContent = facing
         ? `${t('box.step.direction.done')}: ${t(`mounting.facing.${facing}`).toLowerCase()}`
         : t('box.step.direction.todo');
-      setDone(directionStep, directionDone, 2);
+      setDone(directionStep, directionDone, 1);
       picker?.refresh();
       learnSection?.refresh();
     }
@@ -415,13 +428,17 @@ export function createSensorSourceSection(
       zeroStep.title.textContent = offset
         ? t('box.step.zero.done') + ageText(options.getInstallCalibrationCapturedAt())
         : t('box.step.zero.todo');
-      setDone(zeroStep, offset !== null, 3);
+      setDone(zeroStep, offset !== null, 2);
+      // Done: the links instead of the first-time instruction (#332).
+      zeroHint.hidden = offset !== null;
+      zeroLinks.hidden = offset === null;
+      installButton.textContent = t(offset ? 'box.step.zero.again' : 'sensorSource.install.now');
       installStatus.hidden = zeroMessage === null;
       installStatus.textContent = zeroMessage ?? '';
     }
     installClearButton.disabled = !offset;
     installCheckButton.disabled = !offset;
-    forgetDirectionButton.disabled = options.learnMounting?.getLearnedMounting() === null;
+    forgetDirectionButton.hidden = options.learnMounting?.getLearnedMounting() == null;
     // Expand the step opened by hand, else the next one not yet done.
     const next =
       openedByHand === null
@@ -537,6 +554,6 @@ export function createSensorSourceSection(
     refreshLive: () => {
       if (options.getSensorSource() === options.sensor.id) refreshPosition();
     },
-    positionElement: positionStep.element,
+    positionElement,
   };
 }

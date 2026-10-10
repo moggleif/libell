@@ -126,12 +126,6 @@ export const MESSAGES = {
     // these two: they really do arrive. There is deliberately no signal-
     // strength string any more (#228) — see `easyLevelStatusPage.ts` for
     // why RSSI can never be read for a connected device.
-    'sensorSource.detail.battery': 'Battery: {value}',
-    'sensorSource.detail.orientation': 'The box’s own mounting setting: {value}',
-    'sensorSource.orientation.front': 'Front',
-    'sensorSource.orientation.rear': 'Rear',
-    'sensorSource.orientation.left': 'Left',
-    'sensorSource.orientation.right': 'Right',
     'sensorSource.detail.temperature': 'Temperature: {value}',
     'sensorSource.detail.notAvailable': 'Not available yet',
     // Low-battery warning (#123): a settings-page notice, not a
@@ -600,7 +594,6 @@ export const MESSAGES = {
     'box.state.notConnected': 'Not connected',
     'box.state.battery': 'battery {value}',
     'box.connect': 'Connect',
-    'box.more': 'More',
     'box.step.position.upright.ok': 'Stands upright',
     'box.step.position.upright.bad': 'Lying down: stand it upright, facing any way',
     'box.step.position.flat.ok': 'Lies flat',
@@ -618,6 +611,7 @@ export const MESSAGES = {
       "Direction and zero are set the first time you park. The box's page guides you, and the amber lamp reminds you until it's done.",
     'sensorList.title': 'Sensors',
     'sensorList.phone': "The phone's own sensor is used when no box is connected.",
+    'box.step.zero.again': 'Zero again',
   },
   sv: {
     'topbar.install': 'Installera',
@@ -696,12 +690,6 @@ export const MESSAGES = {
       'appen kan behöva en manuell tryckning där, istället för att ske tyst.',
     'sensorSource.ios.bluefyLink': 'Hitta Bluefy i App Store',
 
-    'sensorSource.detail.battery': 'Batteri: {value}',
-    'sensorSource.detail.orientation': 'Boxens egen monteringsinställning: {value}',
-    'sensorSource.orientation.front': 'Fram',
-    'sensorSource.orientation.rear': 'Bak',
-    'sensorSource.orientation.left': 'Vänster',
-    'sensorSource.orientation.right': 'Höger',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Inte tillgängligt ännu',
     'sensorSource.lowBattery':
@@ -1078,7 +1066,6 @@ export const MESSAGES = {
     'box.state.notConnected': 'Inte ansluten',
     'box.state.battery': 'batteri {value}',
     'box.connect': 'Anslut',
-    'box.more': 'Mer',
     'box.step.position.upright.ok': 'Står upprätt',
     'box.step.position.upright.bad': 'Ligger ner – ställ den upprätt, åt vilket håll som helst',
     'box.step.position.flat.ok': 'Ligger plant',
@@ -1096,6 +1083,7 @@ export const MESSAGES = {
       'Riktning och nollställning gör du första gången du parkerar. Boxens sida guidar dig, och den gula lampan påminner tills det är gjort.',
     'sensorList.title': 'Sensorer',
     'sensorList.phone': 'Telefonens egen sensor används när ingen box är ansluten.',
+    'box.step.zero.again': 'Nollställ igen',
   },
   fr: {
     'topbar.install': 'Installer',
@@ -1171,12 +1159,6 @@ export const MESSAGES = {
       'l’ouverture peut y demander une touche manuelle au lieu de se faire toute seule.',
     'sensorSource.ios.bluefyLink': 'Trouver Bluefy dans l’App Store',
 
-    'sensorSource.detail.battery': 'Batterie : {value}',
-    'sensorSource.detail.orientation': 'Réglage de montage du boîtier : {value}',
-    'sensorSource.orientation.front': 'Avant',
-    'sensorSource.orientation.rear': 'Arrière',
-    'sensorSource.orientation.left': 'Gauche',
-    'sensorSource.orientation.right': 'Droite',
     'sensorSource.detail.temperature': 'Température : {value}',
     'sensorSource.detail.notAvailable': 'Pas encore disponible',
     'sensorSource.lowBattery':
@@ -1567,7 +1549,6 @@ export const MESSAGES = {
     'box.state.notConnected': 'Non connecté',
     'box.state.battery': 'batterie {value}',
     'box.connect': 'Connecter',
-    'box.more': 'Plus',
     'box.step.position.upright.ok': 'Debout',
     'box.step.position.upright.bad': 'Couché : mettez-le debout, dans n’importe quel sens',
     'box.step.position.flat.ok': 'À plat',
@@ -1586,6 +1567,7 @@ export const MESSAGES = {
       'La direction et le zéro se règlent la première fois que vous vous garez. La page du boîtier vous guide, et le voyant orange vous le rappelle jusque-là.',
     'sensorList.title': 'Capteurs',
     'sensorList.phone': 'Le capteur du téléphone est utilisé quand aucun boîtier n’est connecté.',
+    'box.step.zero.again': 'Remettre à zéro',
   },
   es: {
     'topbar.install': 'Instalar',
@@ -1662,12 +1644,6 @@ export const MESSAGES = {
       'abrir la app requiera un toque manual allí en lugar de hacerse solo.',
     'sensorSource.ios.bluefyLink': 'Buscar Bluefy en la App Store',
 
-    'sensorSource.detail.battery': 'Batería: {value}',
-    'sensorSource.detail.orientation': 'Ajuste de montaje de la propia caja: {value}',
-    'sensorSource.orientation.front': 'Delante',
-    'sensorSource.orientation.rear': 'Detrás',
-    'sensorSource.orientation.left': 'Izquierda',
-    'sensorSource.orientation.right': 'Derecha',
     'sensorSource.detail.temperature': 'Temperatura: {value}',
     'sensorSource.detail.notAvailable': 'Aún no disponible',
     'sensorSource.lowBattery':
@@ -2053,7 +2029,6 @@ export const MESSAGES = {
     'box.state.notConnected': 'No conectada',
     'box.state.battery': 'batería {value}',
     'box.connect': 'Conectar',
-    'box.more': 'Más',
     'box.step.position.upright.ok': 'Está de pie',
     'box.step.position.upright.bad': 'Tumbada: ponla de pie, hacia cualquier lado',
     'box.step.position.flat.ok': 'Está en plano',
@@ -2071,6 +2046,7 @@ export const MESSAGES = {
       'La dirección y el cero se ajustan la primera vez que aparcas. La página de la caja te guía y el piloto ámbar te lo recuerda hasta entonces.',
     'sensorList.title': 'Sensores',
     'sensorList.phone': 'Se usa el sensor del propio móvil cuando no hay ninguna caja conectada.',
+    'box.step.zero.again': 'Volver a poner a cero',
   },
   de: {
     'topbar.install': 'Installieren',
@@ -2149,12 +2125,6 @@ export const MESSAGES = {
       'erfordert dort eventuell einen manuellen Tipp, statt still zu geschehen.',
     'sensorSource.ios.bluefyLink': 'Bluefy im App Store finden',
 
-    'sensorSource.detail.battery': 'Batterie: {value}',
-    'sensorSource.detail.orientation': 'Eigene Montageeinstellung der Box: {value}',
-    'sensorSource.orientation.front': 'Vorne',
-    'sensorSource.orientation.rear': 'Hinten',
-    'sensorSource.orientation.left': 'Links',
-    'sensorSource.orientation.right': 'Rechts',
     'sensorSource.detail.temperature': 'Temperatur: {value}',
     'sensorSource.detail.notAvailable': 'Noch nicht verfügbar',
     'sensorSource.lowBattery':
@@ -2533,7 +2503,6 @@ export const MESSAGES = {
     'box.state.notConnected': 'Nicht verbunden',
     'box.state.battery': 'Akku {value}',
     'box.connect': 'Verbinden',
-    'box.more': 'Mehr',
     'box.step.position.upright.ok': 'Steht aufrecht',
     'box.step.position.upright.bad': 'Liegt: stelle sie aufrecht, Richtung egal',
     'box.step.position.flat.ok': 'Liegt flach',
@@ -2551,6 +2520,7 @@ export const MESSAGES = {
       'Richtung und Nullpunkt stellst du beim ersten Parken ein. Die Seite der Box führt dich, und die gelbe Lampe erinnert dich bis dahin.',
     'sensorList.title': 'Sensoren',
     'sensorList.phone': 'Der Sensor des Handys wird verwendet, wenn keine Box verbunden ist.',
+    'box.step.zero.again': 'Erneut nullen',
   },
 } as const;
 
