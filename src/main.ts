@@ -23,6 +23,7 @@ import {
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
+import { mayZeroUprightBox } from './domain/uprightMount';
 import {
   easyLevelSettings,
   xparkleSettings,
@@ -95,7 +96,6 @@ import {
 } from './sensor/easyLevelSensor';
 import {
   createXparkleSensor,
-  isXparkleUpright,
   XPARKLE_DESCRIPTOR,
   createXparkleTransport,
   type XparkleSensor,
@@ -1040,22 +1040,27 @@ function bootstrap(root: HTMLElement): void {
   /**
    * "Set vehicle level" for the Xparkle box (#290): the box zeroes itself
    * (`resetZero`). Refused while it reads far from upright: a box lying
-   * down gives readings no zero can fix (#273). Libell then stores a zero installation offset with the time:
-   * it changes no reading (the box already reports from its new zero), but
+   * down gives readings no zero can fix (#273, #304); a second tap right
+   * after the refusal zeroes it anyway, the way back for a box that was
+   * zeroed lying down before it was stood up. Libell then stores a zero
+   * installation offset with the time: it changes no reading (the box already reports from its new zero), but
    * it is what the calibration lamp, the age text and "Check" go by, and
    * it replaces any older Libell-side offset so two zeros are never
    * stacked.
    */
+  let xparkleZeroRefusedAt: number | null = null;
   async function zeroXparkleNow(): Promise<string | null> {
     const name = XPARKLE_DESCRIPTOR.displayName;
     const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
     if (!box || box.getState() !== 'granted') {
       return t('calibration.external.err.notConnected', { name });
     }
-    const reading = box.getReading();
-    if (reading && !isXparkleUpright(reading)) {
+    const now = Date.now();
+    if (!mayZeroUprightBox(box.getReading(), xparkleZeroRefusedAt, now)) {
+      xparkleZeroRefusedAt = now;
       return t('calibration.external.err.notUpright', { name });
     }
+    xparkleZeroRefusedAt = null;
     if (!(await box.zeroBox())) return t('calibration.external.err.failed', { name });
     const value: Calibration = { rollDeg: 0, pitchDeg: 0 };
     const capturedAt = Date.now();
@@ -1408,13 +1413,18 @@ function bootstrap(root: HTMLElement): void {
         const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : externalPose !== 'ok';
         const badLandscape = phoneActive && landscape.matches;
         if (badPose || badLandscape) {
+          // A box built to stand (#304) is told to stand, never to lie flat.
+          const upright = externalSensorById(sensor().getSource())?.capabilities.upright ?? false;
           poseText.textContent = !badPose
             ? t('pose.portrait')
             : phoneActive
               ? t('pose.layFlat')
-              : externalPose === 'upside-down'
-                ? t('pose.sensorUpsideDown')
-                : t('pose.sensorExtreme');
+              : upright
+                ? t('pose.sensorNotUpright')
+                : externalPose === 'upside-down'
+                  ? t('pose.sensorUpsideDown')
+                  : t('pose.sensorExtreme');
+          poseHint.textContent = t(upright ? 'pose.sensorHintUpright' : 'pose.sensorHint');
           poseHint.hidden = poseSensorButton.hidden = phoneActive;
           poseOverlay.hidden = false;
           levelOverlay.hideNow();

@@ -29,8 +29,9 @@
  * be rotated twice and name the wrong wheel while looking plausible. So
  * the descriptor declares `mounting: false`, no picker is offered, and
  * `getOrientation()` below exposes what the box reports for display only.
- * The vendor app remains the place to change it, which is also where the
- * user set it up in the first place.
+ * Which way the box faces in the vehicle is learned in Libell instead
+ * (#293), so no step ever needs the vendor app. The box itself must stand
+ * upright whichever way it faces (#304, `domain/uprightMount.ts`).
  *
  * **The password does not gate readings here.** Whether the box refuses to
  * serve `fff2` before command `4` was unknowable from the app, which always
@@ -141,21 +142,6 @@ async function waitForAdvertisement(device: BluetoothDevice): Promise<void> {
   }
 }
 
-/**
- * How far off upright the box may read and still be zeroed (#273). The box
- * is built to stand; lying on its back it reads about 90° of pitch, and
- * there turning it about its own axis moves both angles — found on
- * hardware — so a zero taken there does not hold.
- */
-export const XPARKLE_MAX_ZERO_TILT_DEG = 45;
-
-export function isXparkleUpright(reading: { pitchDeg: number; rollDeg: number }): boolean {
-  return (
-    Math.abs(reading.pitchDeg) <= XPARKLE_MAX_ZERO_TILT_DEG &&
-    Math.abs(reading.rollDeg) <= XPARKLE_MAX_ZERO_TILT_DEG
-  );
-}
-
 /** One connected box. */
 export interface XparkleConnection {
   /** Web Bluetooth's own device id (#130) — remembered for a later silent
@@ -204,7 +190,8 @@ export interface XparkleSensor extends ExternalSensor {
    * from then on it reports angles relative to this position. The box must
    * stand upright: lying down, turning it about its own axis changes both
    * angles, so no zero holds (found on hardware, #273) — the caller checks
-   * `isXparkleUpright` first. Resolves true once the command was written, false when
+   * `mayZeroUprightBox` first (#304). Resolves true once the command was
+   * written, false when
    * no box is connected or the write failed; nothing is retried.
    *
    * The one command that changes the box's stored state this adapter
@@ -610,6 +597,7 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     debugBytes: false,
     reportedOrientation: true,
     learnMounting: true,
+    upright: true,
   },
   // Polled every 500 ms, so a silence of several polls is a real fault
   // rather than jitter — but kept at EasyLevel's own 4s rather than

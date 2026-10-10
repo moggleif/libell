@@ -13,6 +13,7 @@
  */
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { Calibration } from '../domain/settings';
+import { isStandingUpright } from '../domain/uprightMount';
 import { t, type MessageKey } from './i18n';
 
 export interface LearnMountingOptions {
@@ -105,7 +106,14 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
 
   startButton.addEventListener('click', () => {
     baseline = capture();
-    if (baseline) show('front');
+    if (!baseline) return;
+    // A box lying down moves both angles as it turns (#304): nothing
+    // learned from it would hold, so say what to fix instead.
+    if (!isStandingUpright(baseline)) {
+      show('idle', t('sensorSource.learn.err.notUpright'));
+      return;
+    }
+    show('front');
   });
   frontButton.addEventListener('click', () => {
     frontRaised = capture();

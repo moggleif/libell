@@ -190,6 +190,8 @@ export const MESSAGES = {
       'Both directions moved about as much. Raise only the front, then only the right side, and try again.',
     'sensorSource.learn.err.sameAxis':
       'Both lifts tilted the same way. Raise the front first, then the right side, and try again.',
+    'sensorSource.learn.err.notUpright':
+      'The box seems to be lying down. Mount it standing upright, set the vehicle as level and try again.',
 
     // Mounting orientation (#217): the box can be physically mounted two
     // ways, 90° apart — mirrors the official EasyLevel app's own setting,
@@ -585,6 +587,10 @@ export const MESSAGES = {
     'pose.sensorExtreme':
       'The sensor is tilted too far to be mounted right — check that it sits flat with its face up',
     'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
+    'pose.sensorNotUpright':
+      'The sensor box seems to be lying down — it must be mounted standing upright',
+    'pose.sensorHintUpright':
+      'Mount the box standing upright, then set the vehicle as level on its sensor page.',
     'calibration.phoneOnly':
       "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
     'calibration.external.h': 'Calibrate {name}',
@@ -594,7 +600,7 @@ export const MESSAGES = {
     'calibration.external.done': '{name} is calibrated: this position now counts as level.',
     'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',
     'calibration.external.err.notUpright':
-      '{name} must stand upright to be calibrated. Lying down, its readings change when it turns, so no calibration holds. Mount it standing and try again.',
+      '{name} seems to be lying down. It must stand upright: lying down, its readings change when it turns, so no calibration holds. Mount it standing and try again. If it already stands upright, tap again to calibrate it anyway.',
     'calibration.external.err.failed':
       'Could not calibrate {name}. Nothing was changed. Check the connection and try again.',
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
@@ -748,6 +754,8 @@ export const MESSAGES = {
       'Båda riktningarna rörde sig ungefär lika mycket. Höj bara fronten, sedan bara höger sida, och försök igen.',
     'sensorSource.learn.err.sameAxis':
       'Båda lyften lutade åt samma håll. Höj fronten först och sedan höger sida, och försök igen.',
+    'sensorSource.learn.err.notUpright':
+      'Boxen verkar ligga ner. Montera den stående, sätt fordonet som plant och försök igen.',
 
     // Monteringsriktning (#217): sensorboxen kan monteras på två sätt, ett
     // kvarts varv från varandra — motsvarar den officiella EasyLevel-
@@ -1067,6 +1075,9 @@ export const MESSAGES = {
     'pose.sensorExtreme':
       'Sensorn lutar för mycket för att sitta rätt — kontrollera att den ligger plant med ovansidan uppåt',
     'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
+    'pose.sensorNotUpright': 'Sensorboxen verkar ligga ner — den ska monteras stående',
+    'pose.sensorHintUpright':
+      'Montera boxen stående och sätt sedan fordonet som plant på dess sensorsida.',
     'calibration.phoneOnly':
       'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
     'calibration.external.h': 'Kalibrera {name}',
@@ -1076,7 +1087,7 @@ export const MESSAGES = {
     'calibration.external.done': '{name} är kalibrerad: det här läget räknas nu som plant.',
     'calibration.external.err.notConnected': '{name} är inte ansluten. Anslut den och försök igen.',
     'calibration.external.err.notUpright':
-      '{name} måste stå upp för att kunna kalibreras. Liggande ändras värdena när den vrids, så ingen kalibrering håller. Montera den stående och försök igen.',
+      '{name} verkar ligga ner. Den måste stå upp: liggande ändras värdena när den vrids, så ingen kalibrering håller. Montera den stående och försök igen. Står den redan upp, tryck igen för att kalibrera ändå.',
     'calibration.external.err.failed':
       'Kunde inte kalibrera {name}. Inget ändrades. Kontrollera anslutningen och försök igen.',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
@@ -1222,6 +1233,8 @@ export const MESSAGES = {
       'Les deux directions ont bougé à peu près autant. Soulevez seulement l’avant, puis seulement le côté droit, et réessayez.',
     'sensorSource.learn.err.sameAxis':
       'Les deux levages ont incliné dans le même sens. Soulevez d’abord l’avant, puis le côté droit, et réessayez.',
+    'sensorSource.learn.err.notUpright':
+      'Le boîtier semble couché. Montez-le debout, définissez le véhicule comme de niveau et réessayez.',
 
     'sensorSource.mounting.h': 'Montage du capteur',
     'sensorSource.mounting.intro':
@@ -1548,6 +1561,9 @@ export const MESSAGES = {
     'pose.sensorExtreme':
       'Le capteur est trop incliné pour être bien monté — vérifiez qu’il est à plat, face vers le haut',
     'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
+    'pose.sensorNotUpright': 'Le boîtier capteur semble couché — il doit être monté debout',
+    'pose.sensorHintUpright':
+      'Montez le boîtier debout, puis définissez le véhicule comme de niveau sur la page du capteur.',
     'calibration.phoneOnly':
       'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
     'calibration.external.h': 'Étalonner {name}',
@@ -1559,7 +1575,7 @@ export const MESSAGES = {
     'calibration.external.err.notConnected':
       '{name} n’est pas connecté. Connectez-le et réessayez.',
     'calibration.external.err.notUpright':
-      '{name} doit être debout pour être étalonné. Couché, ses valeurs changent quand il tourne, aucun étalonnage ne tient. Montez-le debout et réessayez.',
+      '{name} semble couché. Il doit être debout : couché, ses valeurs changent quand il tourne, aucun étalonnage ne tient. Montez-le debout et réessayez. S’il est déjà debout, touchez à nouveau pour l’étalonner quand même.',
     'calibration.external.err.failed':
       'Impossible d’étalonner {name}. Rien n’a été modifié. Vérifiez la connexion et réessayez.',
     'pose.portrait':
@@ -1706,6 +1722,8 @@ export const MESSAGES = {
       'Las dos direcciones se movieron casi lo mismo. Levanta solo la parte delantera, luego solo el lado derecho, e inténtalo de nuevo.',
     'sensorSource.learn.err.sameAxis':
       'Los dos levantamientos inclinaron hacia el mismo lado. Levanta primero la parte delantera y luego el lado derecho, e inténtalo de nuevo.',
+    'sensorSource.learn.err.notUpright':
+      'La caja parece estar tumbada. Móntala de pie, fija el vehículo como nivelado e inténtalo de nuevo.',
 
     'sensorSource.mounting.h': 'Montaje del sensor',
     'sensorSource.mounting.intro':
@@ -2029,6 +2047,9 @@ export const MESSAGES = {
       'El sensor está demasiado inclinado para estar bien montado — comprueba que está plano y con la cara hacia arriba',
     'pose.sensorUpsideDown':
       'El sensor parece estar montado boca abajo — móntalo con la cara hacia arriba',
+    'pose.sensorNotUpright': 'La caja del sensor parece estar tumbada — debe montarse de pie',
+    'pose.sensorHintUpright':
+      'Monta la caja de pie y luego fija el vehículo como nivelado en la página del sensor.',
     'calibration.phoneOnly':
       'Hay un sensor externo activo, así que no se usa la calibración del móvil. Cambia al sensor del móvil para modificarla.',
     'calibration.external.h': 'Calibrar {name}',
@@ -2039,7 +2060,7 @@ export const MESSAGES = {
     'calibration.external.err.notConnected':
       '{name} no está conectado. Conéctalo e inténtalo de nuevo.',
     'calibration.external.err.notUpright':
-      '{name} debe estar de pie para calibrarse. Tumbado, sus valores cambian al girarlo y ninguna calibración se mantiene. Móntalo de pie e inténtalo de nuevo.',
+      '{name} parece estar tumbado. Debe estar de pie: tumbado, sus valores cambian al girarlo y ninguna calibración se mantiene. Móntalo de pie e inténtalo de nuevo. Si ya está de pie, toca otra vez para calibrarlo de todos modos.',
     'calibration.external.err.failed':
       'No se pudo calibrar {name}. No se ha cambiado nada. Comprueba la conexión e inténtalo de nuevo.',
     'pose.portrait':
@@ -2187,6 +2208,8 @@ export const MESSAGES = {
       'Beide Richtungen haben sich etwa gleich stark bewegt. Hebe nur die Front, dann nur die rechte Seite an und versuche es erneut.',
     'sensorSource.learn.err.sameAxis':
       'Beide Anhebungen haben in dieselbe Richtung geneigt. Hebe zuerst die Front, dann die rechte Seite an und versuche es erneut.',
+    'sensorSource.learn.err.notUpright':
+      'Die Box scheint zu liegen. Montiere sie aufrecht stehend, setze das Fahrzeug als waagerecht und versuche es erneut.',
 
     'sensorSource.mounting.h': 'Sensormontage',
     'sensorSource.mounting.intro':
@@ -2505,6 +2528,10 @@ export const MESSAGES = {
       'Der Sensor ist zu stark geneigt für eine korrekte Montage — prüfe, dass er flach mit der Oberseite nach oben liegt',
     'pose.sensorUpsideDown':
       'Der Sensor scheint verkehrt herum montiert — mit der Oberseite nach oben montieren',
+    'pose.sensorNotUpright':
+      'Die Sensorbox scheint zu liegen — sie muss aufrecht stehend montiert werden',
+    'pose.sensorHintUpright':
+      'Montiere die Box aufrecht stehend und setze das Fahrzeug dann auf ihrer Sensorseite als waagerecht.',
     'calibration.phoneOnly':
       'Ein externer Sensor ist aktiv, daher wird die Kalibrierung des Handys nicht verwendet. Wechsle zum Handy-Sensor, um sie zu ändern.',
     'calibration.external.h': '{name} kalibrieren',
@@ -2515,7 +2542,7 @@ export const MESSAGES = {
     'calibration.external.err.notConnected':
       '{name} ist nicht verbunden. Verbinden Sie ihn und versuchen Sie es erneut.',
     'calibration.external.err.notUpright':
-      '{name} muss zum Kalibrieren aufrecht stehen. Liegend ändern sich die Werte beim Drehen, keine Kalibrierung hält. Montiere sie stehend und versuche es erneut.',
+      '{name} scheint zu liegen. Sie muss aufrecht stehen: Liegend ändern sich die Werte beim Drehen, keine Kalibrierung hält. Montiere sie stehend und versuche es erneut. Steht sie bereits aufrecht, tippe noch einmal, um sie trotzdem zu kalibrieren.',
     'calibration.external.err.failed':
       '{name} konnte nicht kalibriert werden. Es wurde nichts geändert. Prüfen Sie die Verbindung und versuchen Sie es erneut.',
     'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',

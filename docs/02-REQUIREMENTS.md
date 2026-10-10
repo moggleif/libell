@@ -277,6 +277,10 @@ URL and must keep working with no signal.
   overlay says the sensor sits in an extreme position, or looks mounted upside-down,
   instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
   degrees, far below that limit.
+- **Given** that box is one built to stand upright (the Xparkle box, R49)
+- **Then** the overlay says it seems to be lying down and must be mounted standing, and
+  never tells the user to lay it flat or face up (#304); the EasyLevel box, which is
+  mounted flat, keeps the flat wording.
 - **Given** that overlay is shown for an external sensor
 - **Then** it also says what to do — check the sensor's live values and mounting — and
   carries an "Open sensor page" button that goes straight to that sensor's own page
@@ -1564,9 +1568,14 @@ present this source as more proven than it is.
   the command cannot be written, it says so and nothing is changed.
 - **Given** the box reads more than 45° from upright (lying down) when the user taps "Set
   vehicle level"
-- **Then** Libell refuses and says the box must be mounted standing (#273): verified on
-  hardware, a box lying on its back changes both angles whenever it turns about its own
-  axis, so no zero taken there holds.
+- **Then** Libell refuses and says the box must be mounted standing (#273, #304): verified
+  on hardware, a box lying on its back changes both angles whenever it turns about its
+  own axis, so no zero taken there holds. A second tap within 30 seconds of the refusal
+  zeroes it anyway, so a box that already stands but was zeroed lying down earlier (and
+  therefore reads about a quarter turn) is recovered in Libell, never in the vendor app.
+- **Given** the user starts "Learn the mounting" while the box reads more than 45° from
+  upright
+- **Then** it is refused with the same reason and nothing is stored (#304).
 - **Given** any other command that would change what the box has stored (its vehicle
   dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
