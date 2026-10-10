@@ -179,6 +179,21 @@ describe('falling back to the phone (#265)', () => {
     expect(remembered.easylevel).toBe('device-1');
   });
 
+  it('starts the phone, which an external source may have kept from ever starting (#321)', async () => {
+    const start = vi.fn(() => Promise.resolve<SensorState>('granted'));
+    const easylevel = fakeExternal('easylevel');
+    const { controller } = makeController(
+      { phoneSensor: { ...phoneSensor, start } },
+      { easylevel: easylevel.sensor },
+    );
+
+    await controller.connect('easylevel');
+    controller.disconnect();
+
+    expect(controller.getActiveSensor().getSource()).toBe('phone');
+    expect(start).toHaveBeenCalledOnce();
+  });
+
   it('"use phone sensor" is the same switch plus a start, since the tap is the gesture (#134)', async () => {
     const start = vi.fn(() => Promise.resolve<SensorState>('granted'));
     const easylevel = fakeExternal('easylevel');

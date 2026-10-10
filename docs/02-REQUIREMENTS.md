@@ -907,7 +907,9 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Then** the box stays remembered (its device id is not forgotten), but
   `sensorSource` reverts to `'phone'` — the next app open does not attempt to
   auto-reconnect until the user connects again, honoring an explicit "not right now"
-  without an explicit "forget this box".
+  without an explicit "forget this box". The phone's own sensor is started at that
+  tap (#321): when the box took over the app's startup, the phone was never started,
+  and the screen waited for a sensor that would never deliver.
 
 ## R34 — EasyLevel box: installation calibration ("Set vehicle level")
 

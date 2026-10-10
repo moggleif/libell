@@ -99,7 +99,8 @@ export interface ExternalSensorController<T extends ExternalSensor> {
    */
   connect(source: SensorSource): Promise<SensorState>;
   /**
-   * Explicit disconnect — falls back to the phone sensor. Deliberately
+   * Explicit disconnect — falls back to the phone sensor and starts it
+   * (#321), exactly as `usePhoneSensor()` does. Deliberately
    * does NOT forget the remembered device (#130): this is "not right now",
    * not "never again", so the box stays one tap away while the next app
    * open skips auto-reconnect.
@@ -265,7 +266,14 @@ export function createExternalSensorController<T extends ExternalSensor>(
     getActiveSensor: () => active,
     getSensor: (source) => sensors.get(source) ?? null,
     connect,
-    disconnect: fallBackToPhone,
+    // Both start the phone (#321): an external source can take over the
+    // whole startup flow, so the phone may never have been started, and a
+    // plain switch left the screen waiting for a sensor that never
+    // delivered. The tap is the gesture iOS needs; a no-op once granted.
+    disconnect() {
+      fallBackToPhone();
+      void options.phoneSensor.start();
+    },
     usePhoneSensor() {
       fallBackToPhone();
       void options.phoneSensor.start();
