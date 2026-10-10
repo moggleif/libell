@@ -43,6 +43,14 @@ interface BluetoothDevice extends EventTarget {
    * granted access to (#130) — not the box's real MAC address. */
   readonly id: string;
   readonly gatt?: BluetoothRemoteGATTServer;
+  /**
+   * Start delivering `advertisementreceived` events for this device (#288).
+   * Chrome's advice for a device from `getDevices()`: wait for one before
+   * `gatt.connect()`, which otherwise often fails for a box that is in
+   * range but has not been seen by a scan. Optional because it is missing
+   * in some browsers that do have `getDevices()` — feature-detect it.
+   */
+  watchAdvertisements?(options?: { signal?: AbortSignal }): Promise<void>;
 }
 
 interface Bluetooth {
