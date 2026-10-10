@@ -62,16 +62,16 @@ function classicSettings(): LevelSettings {
 // this file used to cover, and infoMenu.test.ts / sensorPage.test.ts for
 // Diagnostics/introduction/External sensor, all moved off this menu.
 describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
-  it('renders a flat item list with General, Calibration, Vehicle, Ramps, Targets — Modern tab order', () => {
+  it('renders a flat item list with Vehicle, Ramps, Calibration, Level, General — Modern tab order (#329)', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     menu.open('general');
     const items = [...menu.element.querySelectorAll('.menu__item')].map((i) => i.textContent);
     expect(items).toEqual([
-      t('settings.general'),
-      t('menu.calibration'),
       t('settings.tab.vehicle'),
       t('settings.tab.ramps'),
-      t('menu.targets'),
+      t('menu.calibration'),
+      t('settings.tab.level'),
+      t('settings.general'),
     ]);
     expect(menu.element.querySelectorAll('.menu__card')).toHaveLength(0);
     expect(menu.element.querySelectorAll('.menu__row')).toHaveLength(0);

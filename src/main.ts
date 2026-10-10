@@ -738,7 +738,7 @@ function bootstrap(root: HTMLElement): void {
   };
 
   // Modern (screen-cleanup follow-up): the gear icon opens the Settings
-  // page directly (General/Kalibrering/Vehicle/Ramps/Targets as tabs), never a
+  // page directly (Vehicle/Ramps/Calibration/Level/General as tabs), never a
   // drawer — and the old ☰ menu is gone entirely for this appearance.
   // Classic has no tabs to land on, so it keeps the ☰ drawer, now holding
   // just Settings/Calibration/Targets (Diagnostics, the introduction

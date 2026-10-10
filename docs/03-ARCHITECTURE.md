@@ -69,7 +69,7 @@ direction, or one reversing the last, still pays `dwellRestMs`, so oscillating n
 (which never holds one direction twice) can't borrow the fast path. The ramp
 plan/step keeps the fixed rest dwell throughout — a discrete recommendation, not a
 live readout, so it shouldn't change mid-climb. Both dwell figures are `LevelSettings`
-fields, editable under Settings → Advanced.
+fields, editable under Settings → General › More › Fine-tuning.
 
 The steps the motorhome screen actually shows come from `rampPlan.ts` (ADR 0011): an
 exhaustive search assigns the owned ramps (`rampCount`, a boggie pair costs two) to

@@ -8,7 +8,7 @@
  * Undo" toast (#328); the wizard's compact steps save on Next instead.
  *
  * Modern appearance (#108): when `initial.appearance === 'modern'`, the
- * form renders as tabs (Allmän/Kalibrering/Fordon/Klossar/Targets) instead
+ * form renders as tabs (Fordon/Klossar/Kalibrering/I våg/Allmänt, #329) instead
  * of one long page, with a redesigned ramp picker (brand filter, pinned current
  * model, scrolling catalog, fixed step-height footer). Which structure to
  * build is decided once, from `initial.appearance`, at construction time
@@ -96,9 +96,6 @@ function inertTargetsOptions(): TargetsOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
-    getCalibration: () => null,
-    getVehicleCalibration: () => null,
-    getActiveTargetName: () => null,
   };
 }
 
@@ -111,9 +108,9 @@ function inertTargetsOptions(): TargetsOptions {
 export type SettingsFormElement = HTMLFormElement & {
   selectCalibrationTab?: () => void;
   /**
-   * Same shortcut as `selectCalibrationTab` above, for Targets
-   * (screen-cleanup follow-up, Modern only — Classic has no tabs to
-   * select; its Targets page is reached via `classicPages` below instead).
+   * Same shortcut as `selectCalibrationTab` above, for the Level tab that
+   * holds the saved targets (#329; Modern only — Classic has no tabs to
+   * select; its Level page is `classicPages.targets` below instead).
    */
   selectTargetsTab?: () => void;
   /**
@@ -127,7 +124,8 @@ export type SettingsFormElement = HTMLFormElement & {
   /**
    * Classic split pages (screen-cleanup follow-up, `splitPages` below):
    * the same four bodies the menu's ☰ drawer navigates between —
-   * general/vehicle/ramps/targets — sharing this one form's state. The
+   * vehicle/ramps/targets (the Level page, #329)/general — sharing this
+   * one form's state. The
    * menu swaps whichever body is this form's current child right before
    * showing it; undefined unless `splitPages` was requested. Calibration
    * stays its own standalone page outside this form.
@@ -140,7 +138,7 @@ export type SettingsFormElement = HTMLFormElement & {
   };
   /**
    * Refreshes the embedded targets section built for `classicPages.targets`
-   * above — the preset list and offset summary can change from outside
+   * above — the preset list can change from outside
    * this form (a preset added/deleted, the active target switched), so the
    * menu host calls this every time it (re)opens the Targets page, same
    * reasoning as `resyncSoundFields` above. Undefined unless `splitPages`
@@ -365,7 +363,9 @@ export function createSettingsForm(
   // reach the incoming-setup view the way a real user does — by producing
   // a real share link from this button (scripts/fit-test.mjs). Matching on
   // the label instead would mean duplicating the i18n table in the test.
-  shareVehicleButton.className = 'menu__action menu__action--secondary settings__share-vehicle';
+  // A quiet link, not a button (#329): sharing is a rare errand, and a
+  // full-width button made it look like the page's main action.
+  shareVehicleButton.className = 'link-button settings__share-vehicle';
   shareVehicleButton.textContent = t('settings.shareVehicle');
   shareVehicleButton.addEventListener('click', () => {
     formOptions?.onShareVehicleSetup?.(currentSettings());
@@ -526,19 +526,11 @@ export function createSettingsForm(
   drainSelect.addEventListener('change', () => notifyChanged());
   drainField.append(drainCaption, drainSelect);
 
-  // Advanced-tier (design review): drain positioning only matters if the
-  // owner cares where sink/shower water drains — most don't, so it moved
-  // behind the same disclosure pattern as Tolerance/Stability instead of
-  // sitting unconditionally in the main Ramps flow. A distinct modifier
-  // class (not just `.settings__advanced`) keeps it distinguishable from
-  // the Vehicle tab's own Advanced block for tests/styling.
-  const rampsAdvancedDetails = document.createElement('details');
-  rampsAdvancedDetails.className = 'settings__advanced settings__advanced--drain';
-  const rampsAdvancedSummary = document.createElement('summary');
-  rampsAdvancedSummary.className = 'settings__advanced-summary';
+  // On the Level tab with Tolerance (#329): it decides which way the
+  // vehicle may lean within the tolerance, so it is about level, not about
+  // the ramps — it used to sit behind Advanced on the Ramps tab.
   const drainHint = document.createElement('p');
   drainHint.className = 'settings__hint';
-  rampsAdvancedDetails.append(rampsAdvancedSummary, drainField, drainHint);
 
   const rampHint = document.createElement('p');
   rampHint.className = 'settings__hint';
@@ -673,8 +665,6 @@ export function createSettingsForm(
     location.reload();
   });
   appearanceField.append(appearanceCaption, appearanceSelect);
-  const appearanceHint = document.createElement('p');
-  appearanceHint.className = 'settings__hint';
 
   // --- Level chime ---
   const soundField = document.createElement('label');
@@ -718,12 +708,12 @@ export function createSettingsForm(
   generalMore.className = 'settings__advanced settings__more';
   const generalMoreSummary = document.createElement('summary');
   generalMoreSummary.className = 'settings__advanced-summary';
-  generalMore.append(generalMoreSummary, resetAllButton);
+  // Filled further down, once the Fine-tuning fields exist.
+  generalMore.append(generalMoreSummary);
 
-  // Four labeled sections keep the long (Classic) form readable: vehicle &
-  // measurements, ramps, level & display, general (screen-cleanup
-  // follow-up: language/theme/sound, promoted out of Advanced below since
-  // they are common enough to want visible, not tucked behind a disclosure).
+  // Section headings: the flat Classic page's four groups, the Sound
+  // group on General, Fine-tuning inside More and the saved targets on the
+  // Level tab.
   const sectionHeading = (): HTMLParagraphElement => {
     const heading = document.createElement('p');
     heading.className = 'settings__section';
@@ -731,57 +721,47 @@ export function createSettingsForm(
   };
   const vehicleHeading = sectionHeading();
   const rampsHeading = sectionHeading();
-  const displayHeading = sectionHeading();
+  const levelHeading = sectionHeading();
   const generalHeading = sectionHeading();
-  // Sub-grouping inside Modern's General tab only (design review, following
-  // up on the onboarding wizard's split of this same field set into
-  // Language/Appearance/Sound steps): unlike the wizard, Settings is a
-  // revisit-with-intent surface where a returning user already knows what
-  // these fields are, so splitting into more tabs would trade a real cost
-  // (extra navigation) for a small win (less to hold in mind) — not worth
-  // it. Light eyebrow labels get the scanning benefit for free, no new
-  // navigation. Classic's single flat page keeps its one "General" heading
-  // unchanged; these two are Modern-tab-only.
-  const appearanceGroupHeading = sectionHeading();
   const soundGroupHeading = sectionHeading();
+  const targetsHeading = sectionHeading();
 
-  // --- Advanced disclosure (#157): tolerance/stability preferences, tuned
-  // rarely if ever, behind a single tap — always closed on open, in Classic
-  // and in Modern's Vehicle tab alike. Never auto-expanded for a customized
-  // value: the owner's explicit call is that a user's own settings are
-  // personal choices they're expected to remember, and with no test cohort
-  // to validate a "smarter" default the simplest rule wins. Built once,
-  // shared by both branches below — same field elements, just appended
-  // inside this wrapper instead of flat. Language/Theme/Appearance/Sound
-  // (screen-cleanup follow-up) moved out to their own General tab/section
-  // — common enough to deserve a visible home, not Advanced's rarely-tuned
-  // pile.
-  const advancedDetails = document.createElement('details');
-  advancedDetails.className = 'settings__advanced';
-  const advancedSummary = document.createElement('summary');
-  advancedSummary.className = 'settings__advanced-summary';
-  // Design review: the disclosure used to jump straight from the summary
-  // to bare labeled inputs with no explanation of what Tolerance/Stability
-  // actually change. One hint per field, placed right below it — same
-  // pattern as `dwellHint` below the response-delay fields — rather than
-  // one combined paragraph ahead of both fields.
+  // One hint per field, right below it — same pattern as `dwellHint`.
   const toleranceHint = document.createElement('p');
   toleranceHint.className = 'settings__hint';
   const stabilityHint = document.createElement('p');
   stabilityHint.className = 'settings__hint';
-  advancedDetails.append(
-    advancedSummary,
-    fieldEls.get('toleranceMm')!,
-    toleranceHint,
+
+  // Fine-tuning (#329): Stability and both response delays are tuned
+  // rarely if ever, so they sit under General › More with "Reset all",
+  // always collapsed on open — never auto-expanded for a customized value
+  // (#157: a user's own settings are choices they are expected to
+  // remember). Tolerance is not here: it is a real choice about how level
+  // is level, and has its place on the Level tab.
+  const fineTuningHeading = sectionHeading();
+  generalMore.append(
+    fineTuningHeading,
     fieldEls.get('stabilityMm')!,
     stabilityHint,
     dwellRestField,
     dwellMotionField,
     dwellHint,
+    resetAllButton,
   );
 
+  // The Level tab/page (#329): what counts as level, which side drains,
+  // and the saved targets. Built once and shared by Modern and Classic.
+  const levelGroup = (targets: HTMLElement): HTMLElement[] => [
+    fieldEls.get('toleranceMm')!,
+    toleranceHint,
+    drainField,
+    drainHint,
+    targetsHeading,
+    targets,
+  ];
+
   // ============================================================
-  // Modern (#108): tabs (Allmän/Kalibrering/Fordon/Klossar/Targets) instead
+  // Modern (#108): tabs (Fordon/Klossar/Kalibrering/I våg/Allmänt, #329) instead
   // of one long page. Built only when appearance === 'modern'; every
   // element above is reused as-is, just reparented into tab panels
   // instead of appended flat.
@@ -849,20 +829,17 @@ export function createSettingsForm(
       tabButtons.set(id, btn);
       return btn;
     };
-    // Tab order (screen-cleanup follow-up): General and Kalibrering lead —
-    // language/theme color how the rest of the screen reads, and
-    // calibration is the other must-do before the app is usable (matches
-    // the "not calibrated" lamp's shortcut) — ahead of the vehicle's own
-    // physical setup (Fordon/Klossar) and the rarely-touched Targets.
-    const generalTab = makeTabButton('general');
-    const calibrationTab = makeTabButton('calibration');
+    // Tab order (#329): the order a new owner sets things up in — the
+    // vehicle, its ramps, calibration, what counts as level — with the
+    // app-wide preferences last. Opens on Vehicle.
     const vehicleTab = makeTabButton('vehicle');
     const rampsTab = makeTabButton('ramps');
-    // Targets: folded in as a tab instead of its own drawer entry — an
-    // intentional non-level target (#122, ADR 0013) is just as much "how
-    // this vehicle is set up" as the other three. Classic keeps it as its
-    // own standalone page (see menu.ts) — it has no tabs to fold into.
+    const calibrationTab = makeTabButton('calibration');
+    // The Level tab (#329): Tolerance, Drain side and the saved targets
+    // (#122, ADR 0013). Its id stays 'targets' — the main screen's target
+    // badge opens it through `selectTargetsTab`.
     const targetsTab = makeTabButton('targets');
+    const generalTab = makeTabButton('general');
 
     const generalPanel = document.createElement('div');
     generalPanel.className = 'settings__tabpanel';
@@ -884,18 +861,13 @@ export function createSettingsForm(
     // never silently breaks a positional lookup.
     for (const [id, panel] of tabPanels) panel.dataset.tab = id;
 
-    // --- General tab: language, theme, appearance, sound — the same field
-    // elements Classic uses, just reparented here instead of appended flat.
-    // Grouped under eyebrow labels (design review) — Language stands alone
-    // at the top, same reasoning as its own wizard step; "Appearance" over
-    // Theme+Appearance and "Sound" over Chime+Continuous audio guidance
-    // mirror the wizard's step split without adding tabs or clicks.
+    // --- General tab: how the app looks and sounds, and More (#329) —
+    // the same field elements Classic uses, just reparented here.
     generalPanel.append(
       languageField,
-      appearanceGroupHeading,
       themeField,
       appearanceField,
-      appearanceHint,
+      unitField,
       soundGroupHeading,
       soundField,
       soundGuidanceField,
@@ -912,9 +884,10 @@ export function createSettingsForm(
     );
     calibrationPanel.append(embeddedCalibration.element);
 
-    // --- Targets tab: same reuse pattern as Kalibrering above.
+    // --- Level tab: same reuse pattern as Kalibrering above for the
+    // targets section.
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
-    targetsPanel.append(embeddedTargets.element);
+    targetsPanel.append(...levelGroup(embeddedTargets.element));
 
     selectTab = (id: TabId): void => {
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
@@ -925,9 +898,7 @@ export function createSettingsForm(
     form.selectCalibrationTab = () => selectTab?.('calibration');
     form.selectTargetsTab = () => selectTab?.('targets');
 
-    // --- Fordon tab: today's vehicle/axle/measurement fields visible by
-    // default; tolerance/stability behind Advanced (#157) — theme and
-    // appearance moved to the General tab (screen-cleanup follow-up).
+    // --- Fordon tab: the vehicle only (#329) — no Advanced, no unit.
     vehiclePanel.append(
       vehicleField,
       axleField,
@@ -936,8 +907,6 @@ export function createSettingsForm(
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
       shareVehicleButton,
-      unitField,
-      advancedDetails,
     );
 
     // --- Klossar tab ---
@@ -1074,32 +1043,13 @@ export function createSettingsForm(
     footerGrid.className = 'klossar__grid';
     selectedBlock.append(footerHead, footerHeading, footerGrid);
 
-    // Number of ramps / Drain side (pre-existing gap, found during the
-    // Classic split-pages review): these two were never appended anywhere
-    // in Modern at all, unlike Classic's Ramps page/step, which has always
-    // had them. Same elements/handlers as Classic.
     // Answer first, means of changing it below (#246): what you have set
     // — the model and its step heights — then the settings that follow
     // from it, then the one disclosure that changes the choice, filter and
-    // catalogue together, and the rarely-touched Advanced block last.
-    //
-    // "Change ramp" sits above Advanced rather than below it because of
-    // what picking "Custom set" does: the step-height editor appears up
-    // under the block showing those heights, and every row between the
-    // list you picked from and the editor that answers is distance the
-    // eye has to travel. Advanced is the one thing on this tab nobody
-    // needs while choosing, so it is what goes below.
-    // The custom step-height editor stays directly under the block showing
-    // those heights, since that is what it edits.
+    // catalogue together. The custom step-height editor stays directly
+    // under the block showing those heights, since that is what it edits.
     filterDetails.append(modelList);
-    rampsPanel.append(
-      selectedBlock,
-      customEditor,
-      rampCountField,
-      rampCountHint,
-      filterDetails,
-      rampsAdvancedDetails,
-    );
+    rampsPanel.append(selectedBlock, customEditor, rampCountField, rampCountHint, filterDetails);
 
     renderKlossarUiImpl = (): void => {
       const selectedModel = customChosen
@@ -1143,8 +1093,8 @@ export function createSettingsForm(
       });
     };
 
-    form.append(tabsBar, generalPanel, calibrationPanel, vehiclePanel, rampsPanel, targetsPanel);
-    selectTab('general');
+    form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel, generalPanel);
+    selectTab('vehicle');
 
     // applyUnitEverywhere sets tab-label text (needs unit/vehicle
     // resolved captions elsewhere already handled below).
@@ -1153,32 +1103,20 @@ export function createSettingsForm(
       calibrationTab.textContent = t('menu.calibration');
       vehicleTab.textContent = t('settings.tab.vehicle');
       rampsTab.textContent = t('settings.tab.ramps');
-      targetsTab.textContent = t('menu.targets');
+      targetsTab.textContent = t('settings.tab.level');
     });
   } else if (formOptions?.splitPages) {
-    // --- Classic split pages (screen-cleanup follow-up): Settings ☰ used
-    // to fold Language/Theme/Appearance/Sound and Ramps into one long flat
-    // page alongside Vehicle's own fields — bundled because they used to
-    // share a Settings section header, not because they're one decision,
-    // the same bundling already fixed on the onboarding wizard's General/
-    // Ramps steps and on Modern's tabs (#108). The four bodies below
-    // reuse Modern's exact tab groupings (General/Fordon/Klossar/Targets),
-    // just as ☰ drawer pages instead of tabs — Classic has no tab bar to
-    // fold into. One shared `<form>`/state underneath, same as Modern's
-    // tabs: the menu swaps whichever body is this form's mounted child, so
-    // Save from any of the four persists the current values of all four,
-    // not just the one on screen. Every page gets the exact same
-    // Reset/Undo/Save row (design review, matching Modern's General/
-    // Fordon/Klossar/Targets, #108 follow-up) — Classic used to leave
-    // Reset off General/Ramps and skip the whole row on Targets, which is
-    // exactly the "Classic doesn't match Modern" gap this closes.
+    // --- Classic split pages (screen-cleanup follow-up): the same groups
+    // as Modern's tabs (#329), as ☰ drawer pages instead — Classic has no
+    // tab bar. One shared `<form>`/state underneath: the menu swaps
+    // whichever body is this form's mounted child, and every change is
+    // stored as it is made (#328), whichever page it is on.
     const generalBody = document.createElement('div');
     generalBody.append(
       languageField,
-      appearanceGroupHeading,
       themeField,
       appearanceField,
-      appearanceHint,
+      unitField,
       soundGroupHeading,
       soundField,
       soundGuidanceField,
@@ -1194,20 +1132,15 @@ export function createSettingsForm(
       fieldEls.get('trackWidthRearMm')!,
       measureHint,
       shareVehicleButton,
-      unitField,
-      advancedDetails,
     );
     const rampsBody = document.createElement('div');
-    rampsBody.append(stepsField, rampCountField, rampsAdvancedDetails, rampHint);
+    rampsBody.append(stepsField, rampCountField, rampHint);
 
-    // --- Targets page: same reuse pattern as Modern's Targets tab (#108
-    // follow-up) — one real `createTargetsSection` component, not a copy,
-    // sharing this form's state so its Reset/Undo/Save row acts on the
-    // whole form like the other three pages, regardless of Targets' own
-    // presets applying immediately.
+    // --- Level page (#329): one real `createTargetsSection` component,
+    // not a copy, below Tolerance and Drain side.
     const embeddedTargetsClassic = createTargetsSection(targetsOptions ?? inertTargetsOptions());
     const targetsBody = document.createElement('div');
-    targetsBody.append(embeddedTargetsClassic.element);
+    targetsBody.append(...levelGroup(embeddedTargetsClassic.element));
     form.refreshTargetsPage = embeddedTargetsClassic.refresh;
 
     form.classicPages = {
@@ -1219,10 +1152,9 @@ export function createSettingsForm(
     form.append(vehicleBody);
   } else {
     // --- Classic: one flat page (default; the menu opts into the split
-    // pages above via `splitPages`). Tolerance/stability move behind
-    // Advanced (#157); language/theme/appearance/sound get their own
-    // visible General section (screen-cleanup follow-up) — everything
-    // else is unchanged from #108.
+    // pages above via `splitPages`), in the same groups as the tabs
+    // (#329). The saved targets are not part of it: they need a host, and
+    // the ☰ menu always uses the split pages.
     form.append(
       vehicleHeading,
       vehicleField,
@@ -1235,19 +1167,21 @@ export function createSettingsForm(
       rampsHeading,
       stepsField,
       rampCountField,
-      rampsAdvancedDetails,
       rampHint,
-      displayHeading,
-      unitField,
+      levelHeading,
+      fieldEls.get('toleranceMm')!,
+      toleranceHint,
+      drainField,
+      drainHint,
       generalHeading,
       languageField,
       themeField,
       appearanceField,
-      appearanceHint,
+      unitField,
+      soundGroupHeading,
       soundField,
       soundGuidanceField,
       soundGuidanceHint,
-      advancedDetails,
       generalMore,
     );
   }
@@ -1273,12 +1207,13 @@ export function createSettingsForm(
     // Ramp planning applies to the motorhome; a caravan ramps one wheel.
     rampCountField.hidden = vehicle === 'caravan';
     rampCountHint.hidden = vehicle === 'caravan';
-    rampsAdvancedDetails.hidden = vehicle === 'caravan';
+    // Which side drains is a motorhome choice, like the ramp count.
+    drainField.hidden = vehicle === 'caravan';
+    drainHint.hidden = vehicle === 'caravan';
     rampHint.hidden = vehicle === 'caravan';
     rampCountCaption.textContent = t('settings.rampCount');
     drainCaption.textContent = t('settings.drain');
     for (const [option, label] of drainOptions) option.textContent = t(label);
-    rampsAdvancedSummary.textContent = t('settings.advanced');
     drainHint.textContent = t('settings.drainHint');
     rampHint.textContent = t('settings.rampHint');
     rampCountHint.textContent = t('settings.rampCountHint');
@@ -1289,7 +1224,6 @@ export function createSettingsForm(
     for (const [option, label] of themeOptions) option.textContent = t(label);
     appearanceCaption.textContent = t('settings.appearance');
     for (const [option, label] of appearanceOptions) option.textContent = t(label);
-    appearanceHint.textContent = t('settings.appearance.hint');
     soundCaption.textContent = t('settings.sound');
     soundGuidanceCaption.textContent = t('settings.soundGuidance');
     soundGuidanceHint.textContent = t('settings.soundGuidance.help');
@@ -1298,13 +1232,13 @@ export function createSettingsForm(
     dwellHint.textContent = t('settings.dwell.hint');
     vehicleHeading.textContent = t('settings.section.vehicle');
     rampsHeading.textContent = t('settings.section.ramps');
-    displayHeading.textContent = t('settings.section.display');
+    levelHeading.textContent = t('settings.tab.level');
+    targetsHeading.textContent = t('menu.targets');
+    fineTuningHeading.textContent = t('settings.fineTuning');
     generalHeading.textContent = t('settings.general');
-    // Reuses the wizard's own step titles (#189 follow-up) — same names
-    // for the same grouping, not new copy for the same idea.
-    appearanceGroupHeading.textContent = t('settings.appearance');
+    // Reuses the wizard's own step title (#189 follow-up) — same name for
+    // the same grouping, not new copy for the same idea.
     soundGroupHeading.textContent = t('onboard.sound.h');
-    advancedSummary.textContent = t('settings.advanced');
     toleranceHint.textContent = t('settings.tolerance.hint');
     stabilityHint.textContent = t('settings.stability.hint');
     generalMoreSummary.textContent = t('settings.more');

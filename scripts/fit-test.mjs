@@ -410,23 +410,18 @@ try {
         await auditView(level, at('settings'));
 
         // --- The Ramps tab specifically, which is meant to fit one screen
-        // with its picker collapsed (#246): what is set, its step heights,
-        // the ramp count and Save, all without scrolling. That is the
-        // point of collapsing the picker, so it is checked rather than
-        // left to hold by luck — a longer hint or one more setting would
-        // otherwise take it back silently.
+        // with its picker collapsed (#246): what is set, its step heights
+        // and the ramp count, all without scrolling. That is the point of
+        // collapsing the picker, so it is checked rather than left to hold
+        // by luck — a longer hint or one more setting would otherwise take
+        // it back silently.
         //
-        // Held to the phones where it actually holds. On a 375x553 SE the
-        // tab is about 130px too tall (181px in French), and the space is
-        // in things put there on purpose: the Reset/Undo/Save row (150px),
-        // the block naming the choice and its step heights (125px), and
-        // labels sized up for readability. Closing that gap would mean
-        // shrinking the type this tab was just given for exactly the
-        // opposite reason, so the promise is stated where it is kept
-        // rather than asserted where it is not.
+        // Held to every phone that is meant to fit whole: with the Save
+        // row (#328) and the Advanced block (#329) gone, it fits the SE in
+        // every language too. The 320x480 floor only promises reachability.
         // Modern only; Classic splits these settings across drawer
         // sub-pages with no tab bar.
-        if (viewport.height >= 745 && appearance === 'modern') {
+        if (viewport.fitsWhole && appearance === 'modern') {
           const reached = await level.evaluate(() => {
             const tab = [...document.querySelectorAll('.settings__tab')].find(
               (t) => t.getAttribute('data-tab') === 'ramps',

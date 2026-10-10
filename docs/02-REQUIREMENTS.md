@@ -130,21 +130,30 @@ URL and must keep working with no signal.
 ## R9 — Vehicle parameters are configurable and persist
 
 - **Given** I tap the gear icon
-- **Then** in Modern, it opens straight to the Settings tabs (General/Kalibrering/
-  Vehicle/Ramps/Targets, screen-cleanup follow-up — General and Kalibrering lead since
-  they color how the rest of the screen reads and are the other must-do besides the
-  vehicle's own measurements) as its own page with a ✕ to
+- **Then** in Modern, it opens straight to the Settings tabs as its own page with a ✕ to
   close — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
-  page (R38). Classic (no tabs) keeps a small ☰ drawer instead, now holding the same
-  five sections in the same order — General/Calibration/Vehicle/Ramps/Targets (design
-  review) — as five full-screen drawer pages instead of tabs, one page per decision
-  rather than the old single flat page that bundled Vehicle's own fields with Ramps
-  and General underneath it. General/Vehicle/Ramps/Targets share one settings form
-  under the hood, same as Modern's tabs do. The
+  page (R38). The tabs are, in this order, Vehicle, Ramps, Calibration, Level, General
+  (#329): the order a new owner sets things up in, with the app-wide preferences last.
+  Settings opens on Vehicle. Classic (no tabs) keeps a small ☰ drawer instead, holding
+  the same five in the same order as full-screen drawer pages. Vehicle/Ramps/Level/
+  General share one settings form under the hood, same as Modern's tabs do. The
   introduction relaunch and External sensor stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"
   button.
+- **Given** the five tabs or pages (#329)
+- **Then** each holds one subject, with at most one sentence of hint per field and no
+  "Advanced" section:
+  - **Vehicle**: type, axle, the three measurements, one hint, and a quiet "Share to
+    another phone" link (R41). No unit field.
+  - **Ramps**: the ramp, its step heights and Number of ramps (R27, R47).
+  - **Calibration**: R11/R24.
+  - **Level**: Tolerance, Drain side (R27, hidden for a caravan) and the saved targets
+    (R31).
+  - **General**: Language, Theme, Appearance (no reload hint), Show lengths in (R14),
+    the two sound switches with one sentence of hint, and a collapsed **More** holding
+    Fine-tuning (Stability and both response delays) and "Reset all settings". More is
+    never opened by itself, even when a value in it is not the default.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
@@ -362,7 +371,8 @@ URL and must keep working with no signal.
   numbers the step's own hint text says come from the registration document, labeled
   for whichever vehicle the vehicle step chose. Everything else the full Settings form
   has beyond what the Language/Appearance/Sound steps (#189) already covered (Rear axle
-  — Vehicle tab; Tolerance, Stability — Advanced) is reachable from Settings afterward,
+  — Vehicle tab; Tolerance — Level tab; Stability — General › More) is reachable from
+  Settings afterward,
   not hidden from the app, just not shown on this reduced step.
 - **Given** the ramps step (design review: never had a wizard step before, despite
   being what the ramp catalog and per-wheel step guidance actually run on — arguably
@@ -371,7 +381,7 @@ URL and must keep working with no signal.
 - **Then** it shows the same ready-made ramp model/custom step-height picker and ramp
   count Classic mode's own Ramps section uses — a single `<select>` + chip editor, not
   Modern's scrolling brand-filtered catalog grid, proportionate to a reduced first-run
-  step either way. Drain position stays Advanced-tier, reachable from Settings
+  step either way. Drain position is on the Level tab, reachable from Settings
   afterward. Skippable, with the same warning-lamp consequence hint as measurements —
   skipping it leaves the shipped default ramp model in place, which may not match what
   the user actually owns.
@@ -700,16 +710,17 @@ URL and must keep working with no signal.
 - **Given** no target preset has ever been selected (the default, "Normal")
 - **Then** the app behaves exactly as it does today: leveling targets true level, and
   the main screen shows nothing about targets at all (regression guard; ADR 0013).
-- **Given** the Targets menu section (reached from the menu, or from the main-screen
-  badge below once a target is active), listing "Normal" first and then any saved
-  presets
-- **When** I tap "Save current tilt as new target" and type a name
+- **Given** the saved targets on Settings' Level tab or page (#329; reached from Settings,
+  or from the main-screen badge below once a target is active), listing "Normal" first
+  and then any saved presets
+- **When** I tap "Save current tilt as new target", with or without typing a name
 - **Then** the current tilt — relative to whatever the sensor calibration and vehicle
   zero (R11, R24) already define as level — is captured and stored as a new preset
-  under that name; a capture reading more than 15° from that zero is rejected, the
+  under that name — or, with no name typed, as "Target N", the lowest number not already
+  taken (#329; nothing is disabled); a capture reading more than 15° from that zero is rejected, the
   same implausible-capture guard R24 already uses.
 - **Given** a saved preset
-- **When** I tap it in the Targets section
+- **When** I tap it in that list
 - **Then** it becomes the active target: every reading on the main screen is now
   measured against that preset's tilt instead of true level — a THIRD offset summed
   on top of the sensor calibration + vehicle zero sum (R24), never stored in the same
@@ -1257,7 +1268,7 @@ one vehicle, ADR 0010/0014) and every UI/behavior preference (tolerance, stabili
 dwell, unit, sound, theme, appearance, sensor source) are deliberately excluded.
 
 - **Given** I am on the Settings page's Vehicle section
-- **When** I tap "Share vehicle setup"
+- **When** I tap "Share to another phone"
 - **Then** a link is generated encoding only the fields listed above in the URL
   fragment (never sent to any server — no backend exists, `SECURITY.md`), and handed
   to the same native share sheet / clipboard fallback the app-link share button
@@ -1475,22 +1486,18 @@ the footer, with the card and the footer both spelling out the same step heights
 - **Given** the tab's running order
 - **Then** the answer comes first and the means of changing it below: what is set (the
   model and its step heights), the settings that follow from it (number of ramps), the
-  picker for changing your mind, and the Advanced disclosure (drain position) last. Someone opening this tab is usually checking what is set rather than
-  re-choosing; whoever is re-choosing opens the picker. "Change ramp" sits above
-  Advanced rather than below it because of what picking "Custom set" does — the
-  step-height editor appears up under the block showing those heights, and every row
-  between the list and the editor that answers it is distance the eye has to travel;
-  Advanced is the one block nobody needs while choosing, so it is what goes below. The
-  custom step-height editor stays directly under the block showing those heights, since
-  that is what it edits.
+  picker for changing your mind last. Someone opening this tab is usually checking what
+  is set rather than re-choosing; whoever is re-choosing opens the picker. The custom
+  step-height editor stays directly under the block showing those heights, since that
+  is what it edits. Drain position is not on this tab: it is about which way the vehicle
+  may lean, so it sits with Tolerance on the Level tab (#329).
 - **Given** the choice "Custom set"
 - **Then** it is the _first_ entry of the catalogue inside that disclosure, not a
   separate control below it: entering your own step heights is one of the choices, and the one that is relevant
   whatever brand you own, so it leads rather than trailing eleven models you may already
   have ruled out. The brand filter never hides it — narrowing to a brand says which
   ready-made models to show, it does not withdraw the option of entering your own.
-- **Given** the settings that depend on the chosen ramp (number of ramps, the drain
-  position under Advanced)
+- **Given** the setting that depends on the chosen ramp (number of ramps)
 - **Then** they sit below the block naming that choice, not above the answer they belong
   to.
 - **Given** the tab on any phone (usability review against #189's persona — someone
@@ -1511,13 +1518,10 @@ the footer, with the card and the footer both spelling out the same step heights
   carry that as two separate help texts a few lines apart — this one and a general
   ramp-placement note — saying overlapping things and costing the tab a line it did not
   have. Classic still shows the placement note on its own, where it stands alone.
-- **Given** the tab on a 375x553 screen (an iPhone SE in Safari)
-- **Then** it does not fit whole: it is about 105 px too tall in Swedish, 126 px in French
-  and German, and scrolls by that much with everything reachable. The remaining space is
-  in the block naming the choice and its step heights, and in
-  labels sized for readability — closing it would mean taking back type this tab was
-  given for exactly that reason. The one-screen promise is therefore made, and checked,
-  from 393x745 upward.
+- **Given** the tab on any phone the fit test holds to one screen, down to a 375x553
+  screen (an iPhone SE in Safari)
+- **Then** it fits whole in every language with the picker closed. It did not while the
+  Save row and the Advanced block were on it; both are gone (#328, #329).
 
 ## R48 — Simulated Xparkle box (`?xparkle-sim`): the whole flow, no hardware (#271)
 

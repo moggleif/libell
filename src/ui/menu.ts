@@ -1,34 +1,27 @@
 /**
  * ☰ menu (Classic appearance only, screen-cleanup follow-up): a flat
- * navigation list — General, Calibration, Vehicle, Ramps, Targets — each
- * opening a full-screen page with a ‹ Back header, the pattern users know
- * from every phone app. The History API is integrated so the Android back
- * button/gesture closes the page, then the drawer, and only then leaves
- * the app.
+ * navigation list — Vehicle, Ramps, Calibration, Level, General (#329) —
+ * each opening a full-screen page with a ‹ Back header, the pattern users
+ * know from every phone app. The History API is integrated so the Android
+ * back button/gesture closes the page, then the drawer, and only then
+ * leaves the app.
  *
  * Modern no longer uses this component at all: its gear icon opens
- * `settingsPage.ts` directly (General/Kalibrering/Vehicle/Ramps/Targets as
- * tabs, no drawer). Help, About, Feedback, Diagnostics and the introduction
- * relaunch live on `infoMenu.ts`'s own page, reached from "?" — and
- * External sensor lives on `sensorPage.ts`'s, reached from the top-right
- * sensor-status icon — both universal, reachable from Classic too.
+ * `settingsPage.ts` directly (the same five as tabs, no drawer). Help,
+ * About, Feedback, Diagnostics and the introduction relaunch live on
+ * `infoMenu.ts`'s own page, reached from "?" — and External sensor lives
+ * on `sensorPage.ts`'s, reached from the top-right sensor-status icon —
+ * both universal, reachable from Classic too.
  *
- * General/Vehicle/Ramps/Targets (design review, following up on #108's
- * Modern tabs and the onboarding wizard's own step split): one settings
- * form used to cover General/Vehicle/Ramps at once as a single flat drawer
- * page, with Targets as a wholly separate component — bundled because the
- * fields historically shared a Settings section heading, not because
- * they're one decision, and Targets was left out of the shared form
- * entirely. `createSettingsForm`'s `splitPages` option builds the same
- * four groupings Modern's tabs already use (General/Fordon/Klossar/
- * Targets) and exposes them as `classicPages`; this drawer swaps whichever
- * one is the shared form's mounted content right before showing it (see
- * `showPage` below), so Save from any of the four still persists all
- * four, same as switching Modern's tabs does — and Targets gets the same
- * Reset/Undo/Save row the other three (and Modern's own Targets tab)
- * already show. Same reuse principle as Calibration below — one real
- * component, reparented, never a copy; Calibration alone stays fully
- * standalone, the one page with no "unsaved" form state at all.
+ * Vehicle/Ramps/Level/General are one settings form: `createSettingsForm`'s
+ * `splitPages` option builds the same groups Modern's tabs use and exposes
+ * them as `classicPages`; this drawer swaps whichever one is the shared
+ * form's mounted content right before showing it (see `showPage` below).
+ * Every change is stored as it is made (#328), whichever page it is on.
+ * Same reuse principle as Calibration below — one real component,
+ * reparented, never a copy; Calibration alone stays fully standalone.
+ * The Level page keeps the section id 'targets', which the main screen's
+ * target badge opens.
  */
 import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
@@ -296,9 +289,9 @@ export function createMenu(options: MenuOptions): Menu {
     if (event.target === backdrop) goBack();
   });
 
-  // --- Settings: General / Vehicle / Ramps / Targets, one shared form
+  // --- Settings: Vehicle / Ramps / Level / General, one shared form
   // split into four drawer pages (see the file header comment) — order
-  // matches Modern's tabs (General, Calibration, Fordon, Klossar, Targets).
+  // matches Modern's tabs, with Calibration third (#329).
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
     // Every change is stored as it is made (#328); only ✕/back close the
@@ -310,7 +303,8 @@ export function createMenu(options: MenuOptions): Menu {
     { splitPages: true, onShareVehicleSetup: options.onShareVehicleSetup },
     options,
   );
-  addSection('general', t('settings.general'), settingsForm);
+  addSection('vehicle', t('settings.tab.vehicle'), settingsForm);
+  addSection('ramps', t('settings.tab.ramps'), settingsForm);
 
   // --- Calibration (one-shot + flip) — the one page that stays fully
   // standalone, outside the shared settingsForm (#122, ADR 0013 above).
@@ -318,9 +312,8 @@ export function createMenu(options: MenuOptions): Menu {
   const refreshCalibration = calibrationSection.refresh;
   addSection('calibration', t('menu.calibration'), calibrationSection.element);
 
-  addSection('vehicle', t('settings.tab.vehicle'), settingsForm);
-  addSection('ramps', t('settings.tab.ramps'), settingsForm);
-  addSection('targets', t('menu.targets'), settingsForm);
+  addSection('targets', t('settings.tab.level'), settingsForm);
+  addSection('general', t('settings.general'), settingsForm);
 
   return {
     element: container,
