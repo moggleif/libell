@@ -112,8 +112,10 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
 
     menu.open('ramps');
     expect(menu.element.querySelector('.menu-page__body form.settings__form')).toBeTruthy();
+    // Modern's Ramps page (#331), not the wizard's ready-made-ramp select.
+    expect(menu.element.querySelector('.menu-page__body .klossar__selected')).toBeTruthy();
     expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain(
-      t('settings.ramp'),
+      t('settings.rampCount'),
     );
   });
 

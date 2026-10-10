@@ -717,8 +717,47 @@ describe('settings form — Classic split pages (screen-cleanup follow-up)', () 
     // General: unit, and More holding Fine-tuning.
     expect(pages.general.textContent).toContain(t('settings.unit'));
     expect(pages.general.querySelector('.settings__more input[name="stabilityMm"]')).not.toBeNull();
-    // Ramps: no Advanced.
-    expect(pages.ramps.querySelector('.settings__advanced')).toBeNull();
+    // Ramps: no Advanced besides the ramp picker itself.
+    expect(
+      pages.ramps.querySelector('.settings__advanced:not(.klossar__picker-details)'),
+    ).toBeNull();
+  });
+
+  // #331: Classic and Glossy get Modern's Ramps page, only styled
+  // differently — not the wizard's compact select.
+  for (const appearance of ['classic', 'glossy'] as const) {
+    it(`${appearance}: ☰ → Ramps is the same page as Modern's Ramps tab`, () => {
+      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn(), undefined, {
+        splitPages: true,
+      });
+      const page = form.classicPages!.ramps;
+      expect(page.querySelector('.klossar__selected')?.textContent).toContain(
+        t('settings.klossar.selected'),
+      );
+      expect(page.textContent).toContain(t('settings.rampCount'));
+      const picker = page.querySelector<HTMLDetailsElement>('.klossar__picker-details')!;
+      expect(picker.open).toBe(false);
+      expect(picker.querySelector('.klossar__filter')).not.toBeNull();
+      expect(picker.querySelector('.klossar__row')?.classList).toContain('klossar__row--custom');
+      // No ready-made-ramp <select>: the catalogue is the picker.
+      expect(page.textContent).not.toContain(t('settings.ramp'));
+    });
+  }
+
+  it('a ramp picked on the Classic Ramps page is saved at once', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm(classicSplit, onSave, undefined, { splitPages: true });
+    const rows = [...form.classicPages!.ramps.querySelectorAll<HTMLButtonElement>('.klossar__row')];
+    const other = rows.find(
+      (r) =>
+        !r.classList.contains('klossar__row--custom') &&
+        !r.classList.contains('klossar__row--selected'),
+    )!;
+    other.click();
+    expect(onSave).toHaveBeenCalled();
+    expect(onSave.mock.lastCall![0].rampStepHeightsMm).not.toEqual(
+      DEFAULT_SETTINGS.rampStepHeightsMm,
+    );
   });
 });
 

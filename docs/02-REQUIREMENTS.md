@@ -1494,7 +1494,9 @@ Reported from a phone, with the duplicates circled: the chosen ramp was on scree
 times over — a pinned card above the catalogue, its own row inside the catalogue, and
 the footer, with the card and the footer both spelling out the same step heights.
 
-- **Given** the Ramps tab in Modern
+- **Given** the Ramps tab in Modern, or ☰ → Ramps in Classic and Glossy (#331: the same
+  page, only styled differently; the first-run wizard's ramps step keeps its compact
+  ready-made-ramp select)
 - **Then** the catalogue is the picker and exactly one place outside it says what is
   chosen: a block reading top-down as a statement — "Selected", the model's name,
   "Step heights (mm)", then the heights themselves. The same numbers are never printed
@@ -1533,7 +1535,8 @@ the footer, with the card and the footer both spelling out the same step heights
   have to put out, and that the app places them where they help most. Modern used to
   carry that as two separate help texts a few lines apart — this one and a general
   ramp-placement note — saying overlapping things and costing the tab a line it did not
-  have. Classic still shows the placement note on its own, where it stands alone.
+  have. Only the wizard's ramps step still shows the placement note, where it stands
+  alone.
 - **Given** the tab on any phone the fit test holds to one screen, down to a 375x553
   screen (an iPhone SE in Safari)
 - **Then** it fits whole in every language with the picker closed. It did not while the

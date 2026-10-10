@@ -768,150 +768,21 @@ export function createSettingsForm(
   // ============================================================
   let selectTab:
     ((id: 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general') => void) | null = null;
-  /** Set by the Modern branch below; stays null (a no-op) in Classic. */
+  /** Set by `buildRampsPage` below; stays null (a no-op) without it. */
   let renderKlossarUiImpl: (() => void) | null = null;
   function renderKlossarUi(): void {
     renderKlossarUiImpl?.();
   }
 
-  if (compact === 'measurements') {
-    // Onboarding step (#156): the reduced subset only — no tabs, no
-    // Advanced disclosure, no vehicle-type/axle selectors. A short note
-    // pointing to ☰ is added by onboarding.ts itself, next to this form.
-    // A wizard step already has its own Next/Skip/Back, and Next submits
-    // this form directly — it is the step's only save (#328 left the
-    // wizard that way; nothing here saves on change).
-    form.append(
-      measureHint,
-      fieldEls.get('wheelbaseMm')!,
-      fieldEls.get('trackWidthFrontMm')!,
-      fieldEls.get('trackWidthRearMm')!,
-    );
-  } else if (compact === 'language') {
-    // Onboarding step (design review, split from #189's combined
-    // 'general'): Language alone — still reloads immediately on change,
-    // same as Settings.
-    form.append(languageField);
-  } else if (compact === 'appearance') {
-    // Onboarding step (design review): Theme + Appearance, the "how it
-    // looks" pair — still live-preview on change, same as Settings.
-    form.append(themeField, appearanceField);
-  } else if (compact === 'sound') {
-    // Onboarding step (design review): Chime + Continuous audio guidance,
-    // the "what it sounds like" pair.
-    form.append(soundField, soundGuidanceField, soundGuidanceHint);
-  } else if (compact === 'ramps') {
-    // Onboarding step (design review): the ready-made ramp model/custom
-    // step-height picker + ramp count — the same elements/handlers
-    // Classic mode's own Ramps section uses. `applyUnitEverywhere()` still
-    // hides rampCountField/rampCountHint/rampHint for a caravan (it ramps
-    // one wheel),
-    // exactly as it already does on the full form — no extra logic needed
-    // here for that.
-    form.append(rampHint, stepsField, rampCountField);
-  } else if (appearance === 'modern') {
-    type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
-    const tabsBar = document.createElement('div');
-    tabsBar.className = 'settings__tabs';
-    tabsBar.setAttribute('role', 'tablist');
-
-    const tabButtons = new Map<TabId, HTMLButtonElement>();
-    const tabPanels = new Map<TabId, HTMLElement>();
-
-    const makeTabButton = (id: TabId): HTMLButtonElement => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'settings__tab';
-      btn.setAttribute('role', 'tab');
-      btn.dataset.tab = id;
-      btn.addEventListener('click', () => selectTab?.(id));
-      tabsBar.append(btn);
-      tabButtons.set(id, btn);
-      return btn;
-    };
-    // Tab order (#329): the order a new owner sets things up in — the
-    // vehicle, its ramps, calibration, what counts as level — with the
-    // app-wide preferences last. Opens on Vehicle.
-    const vehicleTab = makeTabButton('vehicle');
-    const rampsTab = makeTabButton('ramps');
-    const calibrationTab = makeTabButton('calibration');
-    // The Level tab (#329): Tolerance, Drain side and the saved targets
-    // (#122, ADR 0013). Its id stays 'targets' — the main screen's target
-    // badge opens it through `selectTargetsTab`.
-    const targetsTab = makeTabButton('targets');
-    const generalTab = makeTabButton('general');
-
-    const generalPanel = document.createElement('div');
-    generalPanel.className = 'settings__tabpanel';
-    const calibrationPanel = document.createElement('div');
-    calibrationPanel.className = 'settings__tabpanel';
-    const vehiclePanel = document.createElement('div');
-    vehiclePanel.className = 'settings__tabpanel';
-    const rampsPanel = document.createElement('div');
-    rampsPanel.className = 'settings__tabpanel settings__tabpanel--klossar';
-    const targetsPanel = document.createElement('div');
-    targetsPanel.className = 'settings__tabpanel';
-    tabPanels.set('general', generalPanel);
-    tabPanels.set('calibration', calibrationPanel);
-    tabPanels.set('vehicle', vehiclePanel);
-    tabPanels.set('ramps', rampsPanel);
-    tabPanels.set('targets', targetsPanel);
-    // Mirrors the tab buttons' dataset.tab — lets callers (and tests) find
-    // a panel by id instead of by DOM position, so reordering the tabs
-    // never silently breaks a positional lookup.
-    for (const [id, panel] of tabPanels) panel.dataset.tab = id;
-
-    // --- General tab: how the app looks and sounds, and More (#329) —
-    // the same field elements Classic uses, just reparented here.
-    generalPanel.append(
-      languageField,
-      themeField,
-      appearanceField,
-      unitField,
-      soundGroupHeading,
-      soundField,
-      soundGuidanceField,
-      soundGuidanceHint,
-      generalMore,
-    );
-
-    // --- Kalibrering tab: embeds the same calibration section the menu
-    // uses standalone (#109) — not a reimplementation. Its status text
-    // is refreshed whenever this tab becomes visible, since the form
-    // (and this embedded copy) is only built once, not on every open.
-    // As a two-step checklist (#330), like the box's own setup.
-    const embeddedCalibration = createCalibrationSection(
-      calibrationOptions ?? inertCalibrationOptions(),
-      'checklist',
-    );
-    calibrationPanel.append(embeddedCalibration.element);
-
-    // --- Level tab: same reuse pattern as Kalibrering above for the
-    // targets section.
-    const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
-    targetsPanel.append(...levelGroup(embeddedTargets.element));
-
-    selectTab = (id: TabId): void => {
-      for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
-      for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
-      if (id === 'calibration') embeddedCalibration.refresh();
-      if (id === 'targets') embeddedTargets.refresh();
-    };
-    form.selectCalibrationTab = () => selectTab?.('calibration');
-    form.selectTargetsTab = () => selectTab?.('targets');
-
-    // --- Fordon tab: the vehicle only (#329) — no Advanced, no unit.
-    vehiclePanel.append(
-      vehicleField,
-      axleField,
-      fieldEls.get('wheelbaseMm')!,
-      fieldEls.get('trackWidthFrontMm')!,
-      fieldEls.get('trackWidthRearMm')!,
-      measureHint,
-      shareVehicleButton,
-    );
-
-    // --- Klossar tab ---
+  /**
+   * The Ramps page (#246), built into `panel`: the chosen ramp and its
+   * step heights, Number of ramps, then "Change ramp" holding the brand
+   * filter and the catalogue. Modern's tab and Classic's ☰ page both use
+   * it (#331) — only the styling differs; the wizard's ramps step keeps
+   * the compact select. Called at most once per form: it takes the step
+   * editor's elements for its custom-set editor.
+   */
+  function buildRampsPage(panel: HTMLElement): void {
     // The whole business of changing your ramp, behind one disclosure
     // (#246): the brand filter and the catalogue it narrows. Collapsed,
     // because the tab's common errand is checking what is set — which the
@@ -1051,7 +922,7 @@ export function createSettingsForm(
     // catalogue together. The custom step-height editor stays directly
     // under the block showing those heights, since that is what it edits.
     filterDetails.append(modelList);
-    rampsPanel.append(selectedBlock, customEditor, rampCountField, rampCountHint, filterDetails);
+    panel.append(selectedBlock, customEditor, rampCountField, rampCountHint, filterDetails);
 
     renderKlossarUiImpl = (): void => {
       const selectedModel = customChosen
@@ -1094,6 +965,147 @@ export function createSettingsForm(
         footerGrid.append(cell);
       });
     };
+  }
+
+  if (compact === 'measurements') {
+    // Onboarding step (#156): the reduced subset only — no tabs, no
+    // Advanced disclosure, no vehicle-type/axle selectors. A short note
+    // pointing to ☰ is added by onboarding.ts itself, next to this form.
+    // A wizard step already has its own Next/Skip/Back, and Next submits
+    // this form directly — it is the step's only save (#328 left the
+    // wizard that way; nothing here saves on change).
+    form.append(
+      measureHint,
+      fieldEls.get('wheelbaseMm')!,
+      fieldEls.get('trackWidthFrontMm')!,
+      fieldEls.get('trackWidthRearMm')!,
+    );
+  } else if (compact === 'language') {
+    // Onboarding step (design review, split from #189's combined
+    // 'general'): Language alone — still reloads immediately on change,
+    // same as Settings.
+    form.append(languageField);
+  } else if (compact === 'appearance') {
+    // Onboarding step (design review): Theme + Appearance, the "how it
+    // looks" pair — still live-preview on change, same as Settings.
+    form.append(themeField, appearanceField);
+  } else if (compact === 'sound') {
+    // Onboarding step (design review): Chime + Continuous audio guidance,
+    // the "what it sounds like" pair.
+    form.append(soundField, soundGuidanceField, soundGuidanceHint);
+  } else if (compact === 'ramps') {
+    // Onboarding step (design review): the ready-made ramp model/custom
+    // step-height picker + ramp count — the same elements/handlers
+    // Classic mode's own Ramps section uses. `applyUnitEverywhere()` still
+    // hides rampCountField/rampCountHint/rampHint for a caravan (it ramps
+    // one wheel),
+    // exactly as it already does on the full form — no extra logic needed
+    // here for that.
+    form.append(rampHint, stepsField, rampCountField);
+  } else if (appearance === 'modern') {
+    type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
+    const tabsBar = document.createElement('div');
+    tabsBar.className = 'settings__tabs';
+    tabsBar.setAttribute('role', 'tablist');
+
+    const tabButtons = new Map<TabId, HTMLButtonElement>();
+    const tabPanels = new Map<TabId, HTMLElement>();
+
+    const makeTabButton = (id: TabId): HTMLButtonElement => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'settings__tab';
+      btn.setAttribute('role', 'tab');
+      btn.dataset.tab = id;
+      btn.addEventListener('click', () => selectTab?.(id));
+      tabsBar.append(btn);
+      tabButtons.set(id, btn);
+      return btn;
+    };
+    // Tab order (#329): the order a new owner sets things up in — the
+    // vehicle, its ramps, calibration, what counts as level — with the
+    // app-wide preferences last. Opens on Vehicle.
+    const vehicleTab = makeTabButton('vehicle');
+    const rampsTab = makeTabButton('ramps');
+    const calibrationTab = makeTabButton('calibration');
+    // The Level tab (#329): Tolerance, Drain side and the saved targets
+    // (#122, ADR 0013). Its id stays 'targets' — the main screen's target
+    // badge opens it through `selectTargetsTab`.
+    const targetsTab = makeTabButton('targets');
+    const generalTab = makeTabButton('general');
+
+    const generalPanel = document.createElement('div');
+    generalPanel.className = 'settings__tabpanel';
+    const calibrationPanel = document.createElement('div');
+    calibrationPanel.className = 'settings__tabpanel';
+    const vehiclePanel = document.createElement('div');
+    vehiclePanel.className = 'settings__tabpanel';
+    const rampsPanel = document.createElement('div');
+    rampsPanel.className = 'settings__tabpanel settings__tabpanel--klossar';
+    const targetsPanel = document.createElement('div');
+    targetsPanel.className = 'settings__tabpanel';
+    tabPanels.set('general', generalPanel);
+    tabPanels.set('calibration', calibrationPanel);
+    tabPanels.set('vehicle', vehiclePanel);
+    tabPanels.set('ramps', rampsPanel);
+    tabPanels.set('targets', targetsPanel);
+    // Mirrors the tab buttons' dataset.tab — lets callers (and tests) find
+    // a panel by id instead of by DOM position, so reordering the tabs
+    // never silently breaks a positional lookup.
+    for (const [id, panel] of tabPanels) panel.dataset.tab = id;
+
+    // --- General tab: how the app looks and sounds, and More (#329) —
+    // the same field elements Classic uses, just reparented here.
+    generalPanel.append(
+      languageField,
+      themeField,
+      appearanceField,
+      unitField,
+      soundGroupHeading,
+      soundField,
+      soundGuidanceField,
+      soundGuidanceHint,
+      generalMore,
+    );
+
+    // --- Kalibrering tab: embeds the same calibration section the menu
+    // uses standalone (#109) — not a reimplementation. Its status text
+    // is refreshed whenever this tab becomes visible, since the form
+    // (and this embedded copy) is only built once, not on every open.
+    // As a two-step checklist (#330), like the box's own setup.
+    const embeddedCalibration = createCalibrationSection(
+      calibrationOptions ?? inertCalibrationOptions(),
+      'checklist',
+    );
+    calibrationPanel.append(embeddedCalibration.element);
+
+    // --- Level tab: same reuse pattern as Kalibrering above for the
+    // targets section.
+    const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
+    targetsPanel.append(...levelGroup(embeddedTargets.element));
+
+    selectTab = (id: TabId): void => {
+      for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
+      for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
+      if (id === 'calibration') embeddedCalibration.refresh();
+      if (id === 'targets') embeddedTargets.refresh();
+    };
+    form.selectCalibrationTab = () => selectTab?.('calibration');
+    form.selectTargetsTab = () => selectTab?.('targets');
+
+    // --- Fordon tab: the vehicle only (#329) — no Advanced, no unit.
+    vehiclePanel.append(
+      vehicleField,
+      axleField,
+      fieldEls.get('wheelbaseMm')!,
+      fieldEls.get('trackWidthFrontMm')!,
+      fieldEls.get('trackWidthRearMm')!,
+      measureHint,
+      shareVehicleButton,
+    );
+
+    // --- Klossar tab: the same page Classic's ☰ → Ramps shows (#331).
+    buildRampsPage(rampsPanel);
 
     form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel, generalPanel);
     selectTab('vehicle');
@@ -1135,8 +1147,10 @@ export function createSettingsForm(
       measureHint,
       shareVehicleButton,
     );
+    // The same Ramps page as Modern's tab (#331), not the wizard's select.
     const rampsBody = document.createElement('div');
-    rampsBody.append(stepsField, rampCountField, rampHint);
+    rampsBody.className = 'settings__tabpanel--klossar';
+    buildRampsPage(rampsBody);
 
     // --- Level page (#329): one real `createTargetsSection` component,
     // not a copy, below Tolerance and Drain side.
@@ -1155,8 +1169,10 @@ export function createSettingsForm(
   } else {
     // --- Classic: one flat page (default; the menu opts into the split
     // pages above via `splitPages`), in the same groups as the tabs
-    // (#329). The saved targets are not part of it: they need a host, and
-    // the ☰ menu always uses the split pages.
+    // (#329). No screen in the app shows it any more — the ☰ menu always
+    // uses the split pages — so it keeps the compact ramp select rather
+    // than the Ramps page (#331), and leaves out the saved targets, which
+    // need a host.
     form.append(
       vehicleHeading,
       vehicleField,
