@@ -3316,3 +3316,225 @@ body {
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+/* Mounting picker (#314): the user's vehicle from above with one button
+   at each side; each shows the box turned so its reference side points
+   out that way. */
+.mounting-picker__grid {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 140px) 56px;
+  grid-template-rows: 56px auto 56px;
+  grid-template-areas:
+    '. front .'
+    'left center right'
+    '. rear .';
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.mounting-picker__center {
+  grid-area: center;
+  width: 100%;
+}
+
+.mounting-picker__vehicle {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mounting-picker__button {
+  width: 52px;
+  height: 52px;
+  padding: 4px;
+  background: var(--surface-raised);
+  border: 2px solid var(--outline);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mounting-picker__button svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mounting-picker__button.is-picked {
+  border-color: var(--level);
+  border-width: 3px;
+}
+
+.mounting-picker__button--front {
+  grid-area: front;
+}
+
+.mounting-picker__button--right {
+  grid-area: right;
+}
+
+.mounting-picker__button--rear {
+  grid-area: rear;
+}
+
+.mounting-picker__button--left {
+  grid-area: left;
+}
+
+.mounting-picker__body {
+  fill: var(--surface-raised);
+  stroke: var(--on-surface-muted);
+  stroke-width: 1.5;
+}
+
+.mounting-picker__glass {
+  fill: var(--surface-sunken);
+}
+
+.mounting-picker__wheel {
+  fill: var(--on-surface);
+}
+
+.mounting-picker__drawbar {
+  fill: none;
+  stroke: var(--on-surface-muted);
+  stroke-width: 2.5;
+}
+
+.mounting-picker__front {
+  fill: var(--on-surface-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.box-glyph__body {
+  fill: var(--surface);
+  stroke: var(--on-surface);
+  stroke-width: 1.5;
+}
+
+.box-glyph__ref {
+  fill: var(--warning);
+}
+
+/* Box page (#314): header with the connection state and its one fix. */
+.box-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.box-header__state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.box-header__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--on-surface-muted);
+  flex-shrink: 0;
+}
+
+.box-header__state.is-connected .box-header__dot {
+  background: var(--level);
+}
+
+.box-header__state.is-lost .box-header__dot {
+  background: var(--warning);
+}
+
+.box-header .menu__action[hidden] {
+  display: none;
+}
+
+/* The setup checklist (#314): three steps, the next undone one open. */
+.box-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.box-step {
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  background: var(--surface-raised);
+}
+
+.box-step.is-open {
+  border-color: var(--level);
+}
+
+.box-step.is-warning {
+  border-color: var(--warning);
+}
+
+.box-step__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--on-surface);
+  text-align: left;
+  background: none;
+  border: none;
+}
+
+button.box-step__header {
+  cursor: pointer;
+}
+
+.box-step.is-warning .box-step__title {
+  color: var(--warning);
+}
+
+.box-step__mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: 2px solid var(--on-surface-muted);
+  border-radius: 50%;
+  font-size: 0.8rem;
+}
+
+.box-step.is-done .box-step__mark {
+  color: var(--surface);
+  background: var(--level);
+  border-color: var(--level);
+}
+
+.box-step__body {
+  padding: 0 12px 12px;
+}
+
+.box-step__body[hidden] {
+  display: none;
+}
+
+.box-step__body .menu__text:first-child {
+  margin-top: 0;
+}
+
+.box-step .link-button {
+  display: block;
+  margin: 4px auto 0;
+}
+
+.box-more {
+  margin-top: 16px;
+}
+
+.box-more__actions[hidden] {
+  display: none;
+}

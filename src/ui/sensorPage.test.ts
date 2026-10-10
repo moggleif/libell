@@ -105,12 +105,12 @@ describe('createSensorPage', () => {
       );
       // The list page is only about picking/connecting a source.
       expect(page.element.textContent).toContain('Connect');
-      expect(page.element.textContent).not.toContain('Sensor mounting');
-      expect(page.element.textContent).not.toContain('Installation offset');
+      expect(page.element.textContent).not.toContain('Direction');
+      expect(page.element.textContent).not.toContain('Zero on level ground');
       expect(page.element.textContent).not.toContain('Battery');
-      // Per-device settings and health live on the sensor's own page.
-      expect(page.statusElements[0]!.textContent).toContain('Sensor mounting');
-      expect(page.statusElements[0]!.textContent).toContain('Installation offset');
+      // Per-device setup and health live on the sensor's own page (#314).
+      expect(page.statusElements[0]!.textContent).toContain('Direction set');
+      expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
       expect(page.statusElements[0]!.textContent).toContain('Battery');
     });
 
@@ -146,13 +146,11 @@ describe('createSensorPage', () => {
       )!;
       statusButton.click();
 
-      const mountingHeading = [...page.statusElements[0]!.querySelectorAll('h3')].find(
-        (h) => h.textContent === 'Sensor mounting',
-      );
-      expect(mountingHeading?.closest('[hidden]')).toBeNull();
+      const checklist = page.statusElements[0]!.querySelector('.box-setup');
+      expect(checklist?.closest('[hidden]')).toBeNull();
       // Populated from the current setting, not left at its initial value.
-      expect(page.statusElements[0]!.querySelector('select')?.value).toBe('rotated180');
-      expect(page.statusElements[0]!.textContent).toContain('No installation offset');
+      expect(page.statusElements[0]!.textContent).toContain('Direction set: points to the rear');
+      expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
     });
 
     it('refreshLive() is a no-op while the status page is closed', () => {

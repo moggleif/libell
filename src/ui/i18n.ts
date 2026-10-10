@@ -133,11 +133,7 @@ export const MESSAGES = {
     // these two: they really do arrive. There is deliberately no signal-
     // strength string any more (#228) — see `easyLevelStatusPage.ts` for
     // why RSSI can never be read for a connected device.
-    'sensorSource.detail.heading': 'Sensor details',
     'sensorSource.detail.battery': 'Battery: {value}',
-    'sensorSource.upright.ok': 'The box stands upright ✓',
-    'sensorSource.upright.lying':
-      'The box is lying down. It only measures right standing up: stand it upright (which way it faces does not matter), then tap “Set vehicle level”.',
     'sensorSource.detail.orientation': 'The box’s own mounting setting: {value}',
     'sensorSource.orientation.front': 'Front',
     'sensorSource.orientation.rear': 'Rear',
@@ -159,13 +155,8 @@ export const MESSAGES = {
     // Shown only once EasyLevel is connected: an install offset means
     // nothing until there is a live reading to capture.
     'sensorSource.install.h': 'Installation offset',
-    'sensorSource.install.intro':
-      'Once the sensor is permanently mounted, its exact placement inside the ' +
-      'enclosure stops mattering — only where the enclosure sits does. Level the ' +
-      'vehicle verifiably once (spirit level, or after leveling with your ramps), ' +
-      'then set the current reading as level.',
-    'sensorSource.install.now': 'Set vehicle level',
-    'sensorSource.install.clear': 'Clear installation offset',
+    'sensorSource.install.now': 'Zero now',
+    'sensorSource.install.clear': 'Clear the zero',
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
     'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
 
@@ -173,7 +164,7 @@ export const MESSAGES = {
     // lifts the front, then the right side — no vendor app needed.
     'sensorSource.learn.h': 'Learn the mounting',
     'sensorSource.learn.intro':
-      'The box must stand upright, but it can face any way. Libell learns which way is front and which is right. Set the vehicle as level first, then follow the steps.',
+      'Libell learns the direction from two lifts: first the front, then the right side.',
     'sensorSource.learn.start': 'Learn the mounting',
     'sensorSource.learn.step.front':
       'Raise the vehicle’s front a few centimetres, then press the button.',
@@ -194,27 +185,12 @@ export const MESSAGES = {
     'sensorSource.learn.err.sameAxis':
       'Both lifts tilted the same way. Raise the front first, then the right side, and try again.',
 
-    // Mounting orientation (#217): the box can be physically mounted two
-    // ways, 90° apart — mirrors the official EasyLevel app's own setting,
-    // described here without that app's own "sensor_Placing" terminology.
-    'sensorSource.mounting.h': 'Sensor mounting',
-    'sensorSource.mounting.intro':
-      'The sensor box can be mounted four ways, each a quarter turn apart. Pick the ' +
-      'picture that matches how yours actually sits — if Libell ever suggests raising ' +
-      'the wrong side, or shows front/back and left/right swapped, try another one.',
-    'sensorSource.mounting.standard': 'Standard',
-    'sensorSource.mounting.rotated90': 'Rotated 90°',
-    'sensorSource.mounting.rotated180': 'Rotated 180°',
-    'sensorSource.mounting.rotated270': 'Rotated 270°',
-
     // Sensor status page: reached by tapping the sensor row on the
     // External sensor page. `reading` is the same roll/pitch the main
     // screen already computes, shown here too so a user checking the box
     // itself doesn't have to leave this page to see it move.
     'sensorStatus.title': '{name} sensor',
-    'sensorStatus.reading': 'Reading: {value}',
-    'sensorStatus.roll': 'roll',
-    'sensorStatus.pitch': 'pitch',
+    'sensorStatus.reading': 'Tilt now: {value}',
     // Debug info (EasyLevel only — hidden while the phone's own sensor is
     // active): raw values straight off the box, for troubleshooting a box
     // that isn't behaving as expected — not everyday reading material.
@@ -582,16 +558,12 @@ export const MESSAGES = {
     'tilt.sideSide': 'Side/side',
 
     'pose.layFlat': 'Lay the phone flat to measure',
-    'pose.sensorHint':
-      'Open the sensor page to see its live values and check the mounting setting — or remount the box flat.',
-    'pose.openSensorPage': 'Open sensor page',
-    'pose.sensorExtreme':
-      'The sensor is tilted too far to be mounted right — check that it sits flat with its face up',
-    'pose.sensorUpsideDown': 'The sensor looks mounted upside-down — mount it with its face up',
-    'pose.sensorNotUpright':
-      'The sensor box seems to be lying down — it must be mounted standing upright',
-    'pose.sensorHintUpright':
-      'Mount the box standing upright, then set the vehicle as level on its sensor page.',
+    'pose.sensorHint': 'It only measures right lying flat, top up.',
+    'pose.openSensorPage': 'Show the box',
+    'pose.sensorExtreme': 'The box is tilted too far',
+    'pose.sensorUpsideDown': 'The box looks upside down',
+    'pose.sensorNotUpright': 'The box is lying down',
+    'pose.sensorHintUpright': 'It only measures right standing up.',
     'calibration.phoneOnly':
       "An external sensor is active, so the phone's own calibration is not used. Switch to the phone sensor to change it.",
     'calibration.external.h': 'Calibrate {name}',
@@ -618,6 +590,32 @@ export const MESSAGES = {
     'sensorFallback.notFound': 'No box found? Check that it is on and close by.',
     'sensorFallback.retry': 'Reconnect',
     'sensorFallback.usePhone': 'Use the phone instead',
+    // Box page (#314, the #309 UX review): the mounting picker, the
+    // header and the three-step setup checklist.
+    'mounting.prompt.upright': 'Tap where the box’s back (the screw mount) points.',
+    'mounting.prompt.flat': 'Tap where the arrow on the box points.',
+    'mounting.facing.front': 'Points to the front',
+    'mounting.facing.right': 'Points to the right',
+    'mounting.facing.rear': 'Points to the rear',
+    'mounting.facing.left': 'Points to the left',
+    'box.state.connected': 'Connected',
+    'box.state.lost': 'No contact',
+    'box.state.notConnected': 'Not connected',
+    'box.state.battery': 'battery {value}',
+    'box.connect': 'Connect',
+    'box.more': 'More',
+    'box.step.position.upright.ok': 'Stands upright',
+    'box.step.position.upright.bad': 'Lying down: stand it upright, facing any way',
+    'box.step.position.flat.ok': 'Lies flat',
+    'box.step.position.flat.bad': 'Tilted too far: lay it flat, top up',
+    'box.step.position.waiting': 'Position: waiting for a reading',
+    'box.step.direction.todo': 'Pick the direction',
+    'box.step.direction.done': 'Direction set',
+    'box.step.direction.learn': 'Not sure? Learn it by raising the front',
+    'box.step.zero.todo': 'Zero on level ground',
+    'box.step.zero.done': 'Zeroed',
+    'box.step.zero.hint': 'Level the vehicle with a spirit level, then zero.',
+    'box.forgetDirection': 'Forget the direction',
   },
   sv: {
     'topbar.install': 'Installera',
@@ -705,11 +703,7 @@ export const MESSAGES = {
       'appen kan behöva en manuell tryckning där, istället för att ske tyst.',
     'sensorSource.ios.bluefyLink': 'Hitta Bluefy i App Store',
 
-    'sensorSource.detail.heading': 'Sensordetaljer',
     'sensorSource.detail.battery': 'Batteri: {value}',
-    'sensorSource.upright.ok': 'Boxen står upp ✓',
-    'sensorSource.upright.lying':
-      'Boxen ligger ner. Den mäter bara rätt stående: ställ den upprätt (vilket håll den vänder åt spelar ingen roll) och tryck sedan ”Sätt fordonet som plant”.',
     'sensorSource.detail.orientation': 'Boxens egen monteringsinställning: {value}',
     'sensorSource.orientation.front': 'Fram',
     'sensorSource.orientation.rear': 'Bak',
@@ -724,13 +718,8 @@ export const MESSAGES = {
     // som R24 redan använder för telefonen, generaliserat till en permanent
     // monterad extern sensor.
     'sensorSource.install.h': 'Installationsoffset',
-    'sensorSource.install.intro':
-      'När sensorn är permanent monterad spelar dess exakta placering i höljet ' +
-      'inte längre någon roll — bara var höljet sitter gör det. Ställ fordonet ' +
-      'verifierat plant en gång (vattenpass, eller efter nivellering med ' +
-      'ramperna), och sätt sedan den aktuella avläsningen som plan.',
-    'sensorSource.install.now': 'Sätt fordonet som plant',
-    'sensorSource.install.clear': 'Rensa installationsoffset',
+    'sensorSource.install.now': 'Nollställ nu',
+    'sensorSource.install.clear': 'Rensa nolläget',
     'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
     'sensorSource.install.status.none':
       'Inget installationsoffset — den råa avläsningen räknas som plan.',
@@ -739,7 +728,7 @@ export const MESSAGES = {
     // höjer fronten och sedan höger sida — ingen tillverkarapp behövs.
     'sensorSource.learn.h': 'Lär in monteringen',
     'sensorSource.learn.intro':
-      'Boxen ska stå upp men kan vara vänd åt vilket håll som helst. Libell lär sig vad som är fram och vad som är höger. Sätt fordonet som plant först och följ sedan stegen.',
+      'Libell lär sig riktningen från två lyft: först fronten, sedan höger sida.',
     'sensorSource.learn.start': 'Lär in monteringen',
     'sensorSource.learn.step.front':
       'Höj fordonets front några centimeter och tryck sedan på knappen.',
@@ -758,25 +747,8 @@ export const MESSAGES = {
     'sensorSource.learn.err.sameAxis':
       'Båda lyften lutade åt samma håll. Höj fronten först och sedan höger sida, och försök igen.',
 
-    // Monteringsriktning (#217): sensorboxen kan monteras på två sätt, ett
-    // kvarts varv från varandra — motsvarar den officiella EasyLevel-
-    // appens egen inställning, beskrivet här utan appens "sensor_Placing"-
-    // terminologi.
-    'sensorSource.mounting.h': 'Sensormontering',
-    'sensorSource.mounting.intro':
-      'Sensorboxen kan monteras på fyra sätt, ett kvarts varv mellan varje. Välj den ' +
-      'bild som stämmer med hur din faktiskt sitter — om Libell någon gång föreslår ' +
-      'att fel sida ska höjas, eller visar fram/bak och vänster/höger omkastat, ' +
-      'prova ett annat alternativ.',
-    'sensorSource.mounting.standard': 'Standard',
-    'sensorSource.mounting.rotated90': 'Vriden 90°',
-    'sensorSource.mounting.rotated180': 'Vriden 180°',
-    'sensorSource.mounting.rotated270': 'Vriden 270°',
-
     'sensorStatus.title': '{name}-sensor',
-    'sensorStatus.reading': 'Mätvärde: {value}',
-    'sensorStatus.roll': 'roll',
-    'sensorStatus.pitch': 'pitch',
+    'sensorStatus.reading': 'Lutning nu: {value}',
     'sensorStatus.debug': 'Felsökningsinfo',
     'sensorStatus.debug.intro':
       'Råa värden direkt från boxen — för felsökning om något inte fungerar som det ska.',
@@ -1070,15 +1042,12 @@ export const MESSAGES = {
     'tilt.sideSide': 'Sidled',
 
     'pose.layFlat': 'Lägg telefonen plant för att mäta',
-    'pose.sensorHint':
-      'Öppna sensorsidan för att se de aktuella värdena och kontrollera monteringsinställningen — eller montera om boxen plant.',
-    'pose.openSensorPage': 'Öppna sensorsidan',
-    'pose.sensorExtreme':
-      'Sensorn lutar för mycket för att sitta rätt — kontrollera att den ligger plant med ovansidan uppåt',
-    'pose.sensorUpsideDown': 'Sensorn verkar sitta upp och ner — montera den med ovansidan uppåt',
-    'pose.sensorNotUpright': 'Sensorboxen verkar ligga ner — den ska monteras stående',
-    'pose.sensorHintUpright':
-      'Montera boxen stående och sätt sedan fordonet som plant på dess sensorsida.',
+    'pose.sensorHint': 'Den mäter bara rätt liggande plant, ovansidan upp.',
+    'pose.openSensorPage': 'Visa boxen',
+    'pose.sensorExtreme': 'Boxen lutar för mycket',
+    'pose.sensorUpsideDown': 'Boxen verkar sitta upp och ner',
+    'pose.sensorNotUpright': 'Boxen ligger ner',
+    'pose.sensorHintUpright': 'Den mäter bara rätt stående.',
     'calibration.phoneOnly':
       'En extern sensor är aktiv, så telefonens egen kalibrering används inte. Byt till telefonens sensor för att ändra den.',
     'calibration.external.h': 'Kalibrera {name}',
@@ -1101,6 +1070,30 @@ export const MESSAGES = {
     'sensorFallback.notFound': 'Hittade ingen box? Kontrollera att den är påslagen och nära.',
     'sensorFallback.retry': 'Återanslut',
     'sensorFallback.usePhone': 'Använd telefonen i stället',
+    'mounting.prompt.upright': 'Tryck där boxens baksida (skruvfästet) pekar.',
+    'mounting.prompt.flat': 'Tryck där pilen på boxen pekar.',
+    'mounting.facing.front': 'Pekar mot fronten',
+    'mounting.facing.right': 'Pekar åt höger',
+    'mounting.facing.rear': 'Pekar bakåt',
+    'mounting.facing.left': 'Pekar åt vänster',
+    'box.state.connected': 'Ansluten',
+    'box.state.lost': 'Ingen kontakt',
+    'box.state.notConnected': 'Inte ansluten',
+    'box.state.battery': 'batteri {value}',
+    'box.connect': 'Anslut',
+    'box.more': 'Mer',
+    'box.step.position.upright.ok': 'Står upprätt',
+    'box.step.position.upright.bad': 'Ligger ner – ställ den upprätt, åt vilket håll som helst',
+    'box.step.position.flat.ok': 'Ligger plant',
+    'box.step.position.flat.bad': 'Lutar för mycket – lägg den plant med ovansidan upp',
+    'box.step.position.waiting': 'Läge: väntar på mätvärde',
+    'box.step.direction.todo': 'Välj riktning',
+    'box.step.direction.done': 'Riktning vald',
+    'box.step.direction.learn': 'Osäker? Lär in genom att höja fronten',
+    'box.step.zero.todo': 'Nollställ på plan mark',
+    'box.step.zero.done': 'Nollställd',
+    'box.step.zero.hint': 'Ställ fordonet plant med ett vattenpass och nollställ sedan.',
+    'box.forgetDirection': 'Glöm riktningen',
   },
   fr: {
     'topbar.install': 'Installer',
@@ -1185,11 +1178,7 @@ export const MESSAGES = {
       'l’ouverture peut y demander une touche manuelle au lieu de se faire toute seule.',
     'sensorSource.ios.bluefyLink': 'Trouver Bluefy dans l’App Store',
 
-    'sensorSource.detail.heading': 'Détails du capteur',
     'sensorSource.detail.battery': 'Batterie : {value}',
-    'sensorSource.upright.ok': 'Le boîtier est debout ✓',
-    'sensorSource.upright.lying':
-      'Le boîtier est couché. Il ne mesure correctement que debout : redressez-le (peu importe son orientation), puis touchez « Définir le véhicule comme de niveau ».',
     'sensorSource.detail.orientation': 'Réglage de montage du boîtier : {value}',
     'sensorSource.orientation.front': 'Avant',
     'sensorSource.orientation.rear': 'Arrière',
@@ -1201,13 +1190,8 @@ export const MESSAGES = {
       '⚠ Batterie faible ({value}) — pensez à remplacer bientôt la pile du boîtier.',
 
     'sensorSource.install.h': 'Décalage d’installation',
-    'sensorSource.install.intro':
-      'Une fois le capteur monté à demeure, son emplacement exact dans le boîtier n’a ' +
-      'plus d’importance — seule compte la position du boîtier. Mettez le véhicule de ' +
-      'niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé avec vos ' +
-      'rampes), puis définissez la lecture actuelle comme niveau.',
-    'sensorSource.install.now': 'Définir le véhicule comme de niveau',
-    'sensorSource.install.clear': 'Effacer le décalage d’installation',
+    'sensorSource.install.now': 'Mettre à zéro',
+    'sensorSource.install.clear': 'Effacer le zéro',
     'sensorSource.install.status':
       'Décalage d’installation : latéral {roll}°, longitudinal {pitch}°.',
     'sensorSource.install.status.none':
@@ -1215,7 +1199,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Apprendre le montage',
     'sensorSource.learn.intro':
-      'Le boîtier doit être monté debout, mais peut être tourné dans n’importe quel sens. Libell apprend où sont l’avant et la droite. Définissez d’abord le véhicule comme de niveau, puis suivez les étapes.',
+      'Libell apprend l’orientation à partir de deux levées : d’abord l’avant, puis le côté droit.',
     'sensorSource.learn.start': 'Apprendre le montage',
     'sensorSource.learn.step.front':
       'Soulevez l’avant du véhicule de quelques centimètres, puis appuyez sur le bouton.',
@@ -1237,21 +1221,8 @@ export const MESSAGES = {
     'sensorSource.learn.err.sameAxis':
       'Les deux levages ont incliné dans le même sens. Soulevez d’abord l’avant, puis le côté droit, et réessayez.',
 
-    'sensorSource.mounting.h': 'Montage du capteur',
-    'sensorSource.mounting.intro':
-      'Le boîtier peut être monté de quatre façons, chacune à un quart de tour de la ' +
-      'suivante. Choisissez l’image qui correspond au montage réel — si Libell propose ' +
-      'de soulever le mauvais côté, ou intervertit avant/arrière et gauche/droite, ' +
-      'essayez-en une autre.',
-    'sensorSource.mounting.standard': 'Standard',
-    'sensorSource.mounting.rotated90': 'Tourné à 90°',
-    'sensorSource.mounting.rotated180': 'Tourné à 180°',
-    'sensorSource.mounting.rotated270': 'Tourné à 270°',
-
     'sensorStatus.title': 'Capteur {name}',
-    'sensorStatus.reading': 'Lecture : {value}',
-    'sensorStatus.roll': 'roulis',
-    'sensorStatus.pitch': 'tangage',
+    'sensorStatus.reading': 'Inclinaison actuelle : {value}',
     'sensorStatus.debug': 'Infos de débogage',
     'sensorStatus.debug.intro':
       'Valeurs brutes directement du boîtier — pour le dépannage si quelque chose ne fonctionne pas.',
@@ -1556,15 +1527,12 @@ export const MESSAGES = {
     'tilt.sideSide': 'Latéral',
 
     'pose.layFlat': 'Posez le téléphone à plat pour mesurer',
-    'pose.sensorHint':
-      'Ouvrez la page du capteur pour voir ses valeurs en direct et vérifier le réglage de montage — ou remontez le boîtier à plat.',
-    'pose.openSensorPage': 'Ouvrir la page du capteur',
-    'pose.sensorExtreme':
-      'Le capteur est trop incliné pour être bien monté — vérifiez qu’il est à plat, face vers le haut',
-    'pose.sensorUpsideDown': 'Le capteur semble monté à l’envers — montez-le face vers le haut',
-    'pose.sensorNotUpright': 'Le boîtier capteur semble couché — il doit être monté debout',
-    'pose.sensorHintUpright':
-      'Montez le boîtier debout, puis définissez le véhicule comme de niveau sur la page du capteur.',
+    'pose.sensorHint': 'Il ne mesure correctement qu’à plat, face vers le haut.',
+    'pose.openSensorPage': 'Voir le boîtier',
+    'pose.sensorExtreme': 'Le boîtier est trop incliné',
+    'pose.sensorUpsideDown': 'Le boîtier semble à l’envers',
+    'pose.sensorNotUpright': 'Le boîtier est couché',
+    'pose.sensorHintUpright': 'Il ne mesure correctement que debout.',
     'calibration.phoneOnly':
       'Un capteur externe est actif : l’étalonnage du téléphone n’est donc pas utilisé. Passez au capteur du téléphone pour le modifier.',
     'calibration.external.h': 'Étalonner {name}',
@@ -1590,6 +1558,32 @@ export const MESSAGES = {
     'sensorFallback.notFound': 'Aucun boîtier trouvé ? Vérifiez qu’il est allumé et à proximité.',
     'sensorFallback.retry': 'Reconnecter',
     'sensorFallback.usePhone': 'Utiliser plutôt le téléphone',
+    'mounting.prompt.upright':
+      'Touchez le côté vers lequel pointe l’arrière du boîtier (la fixation à vis).',
+    'mounting.prompt.flat': 'Touchez le côté vers lequel pointe la flèche du boîtier.',
+    'mounting.facing.front': 'Vers l’avant',
+    'mounting.facing.right': 'Vers la droite',
+    'mounting.facing.rear': 'Vers l’arrière',
+    'mounting.facing.left': 'Vers la gauche',
+    'box.state.connected': 'Connecté',
+    'box.state.lost': 'Aucun contact',
+    'box.state.notConnected': 'Non connecté',
+    'box.state.battery': 'batterie {value}',
+    'box.connect': 'Connecter',
+    'box.more': 'Plus',
+    'box.step.position.upright.ok': 'Debout',
+    'box.step.position.upright.bad': 'Couché : mettez-le debout, dans n’importe quel sens',
+    'box.step.position.flat.ok': 'À plat',
+    'box.step.position.flat.bad': 'Trop incliné : posez-le à plat, face vers le haut',
+    'box.step.position.waiting': 'Position : en attente d’une mesure',
+    'box.step.direction.todo': 'Choisir l’orientation',
+    'box.step.direction.done': 'Orientation choisie',
+    'box.step.direction.learn': 'Pas sûr ? Apprenez-la en levant l’avant',
+    'box.step.zero.todo': 'Mettre à zéro sur sol plat',
+    'box.step.zero.done': 'Mis à zéro',
+    'box.step.zero.hint':
+      'Mettez le véhicule de niveau avec un niveau à bulle, puis mettez à zéro.',
+    'box.forgetDirection': 'Oublier l’orientation',
   },
   es: {
     'topbar.install': 'Instalar',
@@ -1674,11 +1668,7 @@ export const MESSAGES = {
       'abrir la app requiera un toque manual allí en lugar de hacerse solo.',
     'sensorSource.ios.bluefyLink': 'Buscar Bluefy en la App Store',
 
-    'sensorSource.detail.heading': 'Detalles del sensor',
     'sensorSource.detail.battery': 'Batería: {value}',
-    'sensorSource.upright.ok': 'La caja está de pie ✓',
-    'sensorSource.upright.lying':
-      'La caja está tumbada. Solo mide bien de pie: ponla derecha (da igual hacia dónde mire) y luego toca «Fijar el vehículo como nivelado».',
     'sensorSource.detail.orientation': 'Ajuste de montaje de la propia caja: {value}',
     'sensorSource.orientation.front': 'Delante',
     'sensorSource.orientation.rear': 'Detrás',
@@ -1690,13 +1680,8 @@ export const MESSAGES = {
       '⚠ Batería baja ({value}): conviene cambiar pronto la pila de la caja del sensor.',
 
     'sensorSource.install.h': 'Desfase de instalación',
-    'sensorSource.install.intro':
-      'Una vez el sensor está montado de forma permanente, su colocación exacta dentro de ' +
-      'la caja deja de importar: solo importa dónde está la caja. Nivela el vehículo de ' +
-      'forma verificable una vez (con un nivel de burbuja, o después de nivelar con tus ' +
-      'rampas) y luego fija la lectura actual como nivel.',
-    'sensorSource.install.now': 'Fijar el vehículo como nivelado',
-    'sensorSource.install.clear': 'Borrar el desfase de instalación',
+    'sensorSource.install.now': 'Poner a cero',
+    'sensorSource.install.clear': 'Borrar el cero',
     'sensorSource.install.status':
       'Desfase de instalación: lado/lado {roll}°, delante/detrás {pitch}°.',
     'sensorSource.install.status.none':
@@ -1704,7 +1689,7 @@ export const MESSAGES = {
 
     'sensorSource.learn.h': 'Aprender el montaje',
     'sensorSource.learn.intro':
-      'La caja debe ir de pie, pero puede mirar en cualquier dirección. Libell aprende dónde está la parte delantera y dónde la derecha. Primero fija el vehículo como nivelado y luego sigue los pasos.',
+      'Libell aprende la orientación con dos elevaciones: primero la parte delantera y luego el lado derecho.',
     'sensorSource.learn.start': 'Aprender el montaje',
     'sensorSource.learn.step.front':
       'Levanta la parte delantera del vehículo unos centímetros y pulsa el botón.',
@@ -1726,21 +1711,8 @@ export const MESSAGES = {
     'sensorSource.learn.err.sameAxis':
       'Los dos levantamientos inclinaron hacia el mismo lado. Levanta primero la parte delantera y luego el lado derecho, e inténtalo de nuevo.',
 
-    'sensorSource.mounting.h': 'Montaje del sensor',
-    'sensorSource.mounting.intro':
-      'La caja del sensor se puede montar de cuatro maneras, cada una a un cuarto de vuelta ' +
-      'de la siguiente. Elige la imagen que coincida con cómo está montada la tuya: si ' +
-      'Libell propone subir el lado equivocado, o intercambia delante/detrás e ' +
-      'izquierda/derecha, prueba otra.',
-    'sensorSource.mounting.standard': 'Estándar',
-    'sensorSource.mounting.rotated90': 'Girado 90°',
-    'sensorSource.mounting.rotated180': 'Girado 180°',
-    'sensorSource.mounting.rotated270': 'Girado 270°',
-
     'sensorStatus.title': 'Sensor {name}',
-    'sensorStatus.reading': 'Lectura: {value}',
-    'sensorStatus.roll': 'alabeo',
-    'sensorStatus.pitch': 'cabeceo',
+    'sensorStatus.reading': 'Inclinación ahora: {value}',
     'sensorStatus.debug': 'Información de depuración',
     'sensorStatus.debug.intro':
       'Valores en bruto directamente de la caja: para resolver problemas si algo no funciona.',
@@ -2041,16 +2013,12 @@ export const MESSAGES = {
     'tilt.sideSide': 'Lado/lado',
 
     'pose.layFlat': 'Deja el móvil plano para medir',
-    'pose.sensorHint':
-      'Abre la página del sensor para ver sus valores en vivo y comprobar el ajuste de montaje, o vuelve a montar la caja plana.',
-    'pose.openSensorPage': 'Abrir la página del sensor',
-    'pose.sensorExtreme':
-      'El sensor está demasiado inclinado para estar bien montado — comprueba que está plano y con la cara hacia arriba',
-    'pose.sensorUpsideDown':
-      'El sensor parece estar montado boca abajo — móntalo con la cara hacia arriba',
-    'pose.sensorNotUpright': 'La caja del sensor parece estar tumbada — debe montarse de pie',
-    'pose.sensorHintUpright':
-      'Monta la caja de pie y luego fija el vehículo como nivelado en la página del sensor.',
+    'pose.sensorHint': 'Solo mide bien en plano, con la cara hacia arriba.',
+    'pose.openSensorPage': 'Ver la caja',
+    'pose.sensorExtreme': 'La caja está demasiado inclinada',
+    'pose.sensorUpsideDown': 'La caja parece estar del revés',
+    'pose.sensorNotUpright': 'La caja está tumbada',
+    'pose.sensorHintUpright': 'Solo mide bien de pie.',
     'calibration.phoneOnly':
       'Hay un sensor externo activo, así que no se usa la calibración del móvil. Cambia al sensor del móvil para modificarla.',
     'calibration.external.h': 'Calibrar {name}',
@@ -2075,6 +2043,31 @@ export const MESSAGES = {
     'sensorFallback.notFound': '¿No aparece ninguna caja? Comprueba que esté encendida y cerca.',
     'sensorFallback.retry': 'Reconectar',
     'sensorFallback.usePhone': 'Usar el móvil en su lugar',
+    'mounting.prompt.upright':
+      'Toca el lado hacia el que apunta la parte trasera de la caja (el soporte de tornillo).',
+    'mounting.prompt.flat': 'Toca el lado hacia el que apunta la flecha de la caja.',
+    'mounting.facing.front': 'Hacia delante',
+    'mounting.facing.right': 'Hacia la derecha',
+    'mounting.facing.rear': 'Hacia atrás',
+    'mounting.facing.left': 'Hacia la izquierda',
+    'box.state.connected': 'Conectada',
+    'box.state.lost': 'Sin contacto',
+    'box.state.notConnected': 'No conectada',
+    'box.state.battery': 'batería {value}',
+    'box.connect': 'Conectar',
+    'box.more': 'Más',
+    'box.step.position.upright.ok': 'Está de pie',
+    'box.step.position.upright.bad': 'Tumbada: ponla de pie, hacia cualquier lado',
+    'box.step.position.flat.ok': 'Está en plano',
+    'box.step.position.flat.bad': 'Demasiado inclinada: ponla en plano, cara arriba',
+    'box.step.position.waiting': 'Posición: esperando una lectura',
+    'box.step.direction.todo': 'Elegir la orientación',
+    'box.step.direction.done': 'Orientación elegida',
+    'box.step.direction.learn': '¿No estás seguro? Apréndela levantando la parte delantera',
+    'box.step.zero.todo': 'Poner a cero en suelo llano',
+    'box.step.zero.done': 'Puesta a cero',
+    'box.step.zero.hint': 'Nivela el vehículo con un nivel de burbuja y luego pon a cero.',
+    'box.forgetDirection': 'Olvidar la orientación',
   },
   de: {
     'topbar.install': 'Installieren',
@@ -2162,11 +2155,7 @@ export const MESSAGES = {
       'erfordert dort eventuell einen manuellen Tipp, statt still zu geschehen.',
     'sensorSource.ios.bluefyLink': 'Bluefy im App Store finden',
 
-    'sensorSource.detail.heading': 'Sensordetails',
     'sensorSource.detail.battery': 'Batterie: {value}',
-    'sensorSource.upright.ok': 'Die Box steht aufrecht ✓',
-    'sensorSource.upright.lying':
-      'Die Box liegt. Sie misst nur stehend richtig: stelle sie aufrecht (die Richtung ist egal) und tippe dann auf „Fahrzeug als waagerecht setzen“.',
     'sensorSource.detail.orientation': 'Eigene Montageeinstellung der Box: {value}',
     'sensorSource.orientation.front': 'Vorne',
     'sensorSource.orientation.rear': 'Hinten',
@@ -2178,19 +2167,14 @@ export const MESSAGES = {
       '⚠ Batterie schwach ({value}) — die Batterie der Sensorbox sollte bald gewechselt werden.',
 
     'sensorSource.install.h': 'Einbau-Offset',
-    'sensorSource.install.intro':
-      'Sobald der Sensor fest eingebaut ist, spielt seine genaue Lage im Gehäuse keine Rolle ' +
-      'mehr — nur noch, wie das Gehäuse sitzt. Stelle das Fahrzeug einmal nachweislich ' +
-      'waagerecht (Wasserwaage, oder nach dem Auffahren auf die Keile) und setze dann den ' +
-      'aktuellen Messwert als waagerecht.',
-    'sensorSource.install.now': 'Fahrzeug als waagerecht setzen',
-    'sensorSource.install.clear': 'Einbau-Offset löschen',
+    'sensorSource.install.now': 'Jetzt nullen',
+    'sensorSource.install.clear': 'Nullpunkt löschen',
     'sensorSource.install.status': 'Einbau-Offset: seitlich {roll}°, längs {pitch}°.',
     'sensorSource.install.status.none': 'Kein Einbau-Offset — der Rohwert gilt als waagerecht.',
 
     'sensorSource.learn.h': 'Montage anlernen',
     'sensorSource.learn.intro':
-      'Die Box muss aufrecht stehen, darf aber in jede Richtung zeigen. Libell lernt, wo vorne und wo rechts ist. Setze das Fahrzeug zuerst als waagerecht und folge dann den Schritten.',
+      'Libell lernt die Richtung aus zwei Anhebungen: zuerst vorne, dann die rechte Seite.',
     'sensorSource.learn.start': 'Montage anlernen',
     'sensorSource.learn.step.front':
       'Hebe die Fahrzeugfront ein paar Zentimeter an und tippe dann auf die Schaltfläche.',
@@ -2212,20 +2196,8 @@ export const MESSAGES = {
     'sensorSource.learn.err.sameAxis':
       'Beide Anhebungen haben in dieselbe Richtung geneigt. Hebe zuerst die Front, dann die rechte Seite an und versuche es erneut.',
 
-    'sensorSource.mounting.h': 'Sensormontage',
-    'sensorSource.mounting.intro':
-      'Die Sensorbox lässt sich auf vier Arten montieren, jeweils um eine Vierteldrehung ' +
-      'versetzt. Wähle das Bild, das zu deiner tatsächlichen Montage passt — wenn Libell die ' +
-      'falsche Seite anheben will oder vorn/hinten und links/rechts vertauscht, probiere eine andere.',
-    'sensorSource.mounting.standard': 'Standard',
-    'sensorSource.mounting.rotated90': 'Um 90° gedreht',
-    'sensorSource.mounting.rotated180': 'Um 180° gedreht',
-    'sensorSource.mounting.rotated270': 'Um 270° gedreht',
-
     'sensorStatus.title': '{name}-Sensor',
-    'sensorStatus.reading': 'Messwert: {value}',
-    'sensorStatus.roll': 'Querneigung',
-    'sensorStatus.pitch': 'Längsneigung',
+    'sensorStatus.reading': 'Neigung jetzt: {value}',
     'sensorStatus.debug': 'Debug-Infos',
     'sensorStatus.debug.intro':
       'Rohwerte direkt aus der Box — zur Fehlersuche, wenn etwas nicht funktioniert.',
@@ -2522,17 +2494,12 @@ export const MESSAGES = {
     'tilt.sideSide': 'Quer',
 
     'pose.layFlat': 'Zum Messen das Handy flach hinlegen',
-    'pose.sensorHint':
-      'Öffne die Sensorseite, um die Livewerte zu sehen und die Montageeinstellung zu prüfen — oder montiere die Box neu, flach.',
-    'pose.openSensorPage': 'Sensorseite öffnen',
-    'pose.sensorExtreme':
-      'Der Sensor ist zu stark geneigt für eine korrekte Montage — prüfe, dass er flach mit der Oberseite nach oben liegt',
-    'pose.sensorUpsideDown':
-      'Der Sensor scheint verkehrt herum montiert — mit der Oberseite nach oben montieren',
-    'pose.sensorNotUpright':
-      'Die Sensorbox scheint zu liegen — sie muss aufrecht stehend montiert werden',
-    'pose.sensorHintUpright':
-      'Montiere die Box aufrecht stehend und setze das Fahrzeug dann auf ihrer Sensorseite als waagerecht.',
+    'pose.sensorHint': 'Sie misst nur flach liegend richtig, Oberseite nach oben.',
+    'pose.openSensorPage': 'Box anzeigen',
+    'pose.sensorExtreme': 'Die Box ist zu stark geneigt',
+    'pose.sensorUpsideDown': 'Die Box scheint kopfüber zu sitzen',
+    'pose.sensorNotUpright': 'Die Box liegt',
+    'pose.sensorHintUpright': 'Sie misst nur stehend richtig.',
     'calibration.phoneOnly':
       'Ein externer Sensor ist aktiv, daher wird die Kalibrierung des Handys nicht verwendet. Wechsle zum Handy-Sensor, um sie zu ändern.',
     'calibration.external.h': '{name} kalibrieren',
@@ -2556,6 +2523,31 @@ export const MESSAGES = {
       'Keine Box gefunden? Prüfe, ob sie eingeschaltet und in der Nähe ist.',
     'sensorFallback.retry': 'Erneut verbinden',
     'sensorFallback.usePhone': 'Stattdessen das Handy verwenden',
+    'mounting.prompt.upright':
+      'Tippe auf die Seite, auf die die Rückseite der Box (die Schraubhalterung) zeigt.',
+    'mounting.prompt.flat': 'Tippe auf die Seite, auf die der Pfeil auf der Box zeigt.',
+    'mounting.facing.front': 'Zeigt nach vorne',
+    'mounting.facing.right': 'Zeigt nach rechts',
+    'mounting.facing.rear': 'Zeigt nach hinten',
+    'mounting.facing.left': 'Zeigt nach links',
+    'box.state.connected': 'Verbunden',
+    'box.state.lost': 'Kein Kontakt',
+    'box.state.notConnected': 'Nicht verbunden',
+    'box.state.battery': 'Akku {value}',
+    'box.connect': 'Verbinden',
+    'box.more': 'Mehr',
+    'box.step.position.upright.ok': 'Steht aufrecht',
+    'box.step.position.upright.bad': 'Liegt: stelle sie aufrecht, Richtung egal',
+    'box.step.position.flat.ok': 'Liegt flach',
+    'box.step.position.flat.bad': 'Zu stark geneigt: lege sie flach, Oberseite nach oben',
+    'box.step.position.waiting': 'Lage: wartet auf einen Messwert',
+    'box.step.direction.todo': 'Richtung wählen',
+    'box.step.direction.done': 'Richtung gewählt',
+    'box.step.direction.learn': 'Unsicher? Durch Anheben der Front einlernen',
+    'box.step.zero.todo': 'Auf ebenem Boden nullen',
+    'box.step.zero.done': 'Genullt',
+    'box.step.zero.hint': 'Stelle das Fahrzeug mit einer Wasserwaage waagerecht und nulle dann.',
+    'box.forgetDirection': 'Richtung vergessen',
   },
 } as const;
 

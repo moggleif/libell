@@ -701,6 +701,7 @@ function bootstrap(root: HTMLElement): void {
     getMounting: () => easyLevelSettings(settings).mounting,
     setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
+    getVehicleType: () => settings.vehicleType,
     getActiveTargetName: () => activeTargetName(),
     getHealth: () => healthOf('easylevel'),
     getEasyLevelDeviceId: () => externalSensors.getSensor('easylevel')?.getDeviceId() ?? null,

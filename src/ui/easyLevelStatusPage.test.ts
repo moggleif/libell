@@ -27,7 +27,7 @@ function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevel
 describe('createEasyLevelStatusPage', () => {
   it('shows the phone-sensor status and "not available yet" battery/temperature while the phone is active', () => {
     const page = createEasyLevelStatusPage(makeOptions());
-    expect(page.element.textContent).toContain(t('sensorSource.status.phone'));
+    expect(page.element.textContent).toContain(t('box.state.notConnected'));
     expect(page.element.textContent).toContain('Not available yet');
   });
 
@@ -72,10 +72,9 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
-    expect(page.element.textContent).toContain(
-      t('sensorSource.status.disconnected', { name: EASYLEVEL_DESCRIPTOR.displayName }),
-    );
-    // Never the bare placeholder (#312).
+    expect(page.element.textContent).toContain(t('box.state.lost'));
+    expect(page.element.textContent).not.toContain(t('box.state.connected') + ' ·');
+    // Never a bare placeholder (#312).
     expect(page.element.textContent).not.toContain('{name}');
   });
 
@@ -83,8 +82,8 @@ describe('createEasyLevelStatusPage', () => {
     const page = createEasyLevelStatusPage(
       makeOptions({ getCalibratedTilt: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }) }),
     );
-    expect(page.element.textContent).toContain('roll 1.2°');
-    expect(page.element.textContent).toContain('pitch -0.3°');
+    expect(page.element.textContent).toContain('Side/side 1.2°');
+    expect(page.element.textContent).toContain('Front/back -0.3°');
   });
 
   it('surfaces the low-battery warning below the threshold (#123), reusing the exact inline-detail wording', () => {
@@ -185,7 +184,7 @@ describe('createEasyLevelStatusPage', () => {
     // Empty until `sensorPage.ts` fills it; the slot itself is the
     // contract, and it sits above the debug disclosure.
     expect(page.settingsSlot).toBeInstanceOf(HTMLElement);
-    const debugDetails = page.element.querySelector('details');
+    const debugDetails = page.element.querySelector<HTMLDetailsElement>('.sensor-status__debug');
     expect(
       page.settingsSlot.compareDocumentPosition(debugDetails!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -212,13 +211,13 @@ describe('createEasyLevelStatusPage', () => {
   describe('debug info (EasyLevel only)', () => {
     it('is hidden entirely while the phone sensor is active', () => {
       const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'phone' }));
-      const details = page.element.querySelector('details');
+      const details = page.element.querySelector<HTMLDetailsElement>('.sensor-status__debug');
       expect(details?.hidden).toBe(true);
     });
 
     it('shows, closed by default, once EasyLevel is the active source', () => {
       const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
-      const details = page.element.querySelector('details');
+      const details = page.element.querySelector<HTMLDetailsElement>('.sensor-status__debug');
       expect(details?.hidden).toBe(false);
       expect(details?.open).toBe(false);
     });
@@ -345,41 +344,52 @@ describe('createEasyLevelStatusPage', () => {
     expect(page.isOpen()).toBe(false);
   });
 
-  describe('a box built to stand upright (#304)', () => {
-    function xparklePage(tilt: { rollDeg: number; pitchDeg: number }) {
-      const page = createEasyLevelStatusPage(
-        makeOptions({
-          sensor: XPARKLE_DESCRIPTOR,
-          getSensorSource: () => 'xparkle',
-          getCalibratedTilt: () => tilt,
-        }),
-      );
-      page.refresh();
-      return page;
+  describe('the header: state in a few words, and the one fix right here (#314)', () => {
+    function button(page: { element: HTMLElement }): HTMLButtonElement | null {
+      return page.element.querySelector<HTMLButtonElement>('.box-header .menu__action');
     }
 
-    it('says it stands upright when it does', () => {
-      const page = xparklePage({ rollDeg: 1, pitchDeg: -2 });
-      expect(page.element.textContent).toContain(t('sensorSource.upright.ok'));
-    });
-
-    it('guides the user to stand it up when it lies down, without blocking anything', () => {
-      const page = xparklePage({ rollDeg: 0, pitchDeg: -89 });
-      expect(page.element.textContent).toContain(t('sensorSource.upright.lying'));
-      expect(page.element.querySelector('.menu__text--warning:not([hidden])')?.textContent).toBe(
-        t('sensorSource.upright.lying'),
-      );
-    });
-
-    it('is not shown for the EasyLevel box, which is mounted flat', () => {
+    it('says connected with the battery, and offers no button when all is well', () => {
       const page = createEasyLevelStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
-          getCalibratedTilt: () => ({ rollDeg: 0, pitchDeg: -89 }),
+          getHealth: () => ({ batteryPercent: 62, temperatureCelsius: null, firmwareLabel: null }),
+          connectSensor: () => Promise.resolve('granted'),
         }),
       );
-      page.refresh();
-      expect(page.element.textContent).not.toContain(t('sensorSource.upright.lying'));
+      expect(page.element.textContent).toContain('Connected · battery 62 %');
+      expect(button(page)?.hidden).toBe(true);
+    });
+
+    it('offers Reconnect on the page itself once the connection is lost', () => {
+      const connectSensor = vi.fn(() => Promise.resolve('granted' as const));
+      const page = createEasyLevelStatusPage(
+        makeOptions({
+          getSensorSource: () => 'easylevel',
+          getSensorState: () => 'disconnected',
+          connectSensor,
+        }),
+      );
+      expect(button(page)?.hidden).toBe(false);
+      expect(button(page)?.textContent).toBe(t('sensorFallback.retry'));
+      button(page)?.click();
+      expect(connectSensor).toHaveBeenCalledOnce();
+    });
+
+    it('offers Connect while the box is not the active source', () => {
+      const page = createEasyLevelStatusPage(
+        makeOptions({ connectSensor: () => Promise.resolve('granted') }),
+      );
+      expect(button(page)?.hidden).toBe(false);
+      expect(button(page)?.textContent).toBe(t('box.connect'));
+    });
+
+    it('keeps the rarely needed rows inside a closed "More"', () => {
+      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+      const more = page.element.querySelector<HTMLDetailsElement>('.box-more');
+      expect(more?.open).toBe(false);
+      expect(more?.contains(page.moreSlot)).toBe(true);
+      expect(more?.textContent).toContain('Battery');
     });
   });
 });
