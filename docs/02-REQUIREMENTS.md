@@ -1476,6 +1476,12 @@ Until that is closed, the app must not present this source as more proven than i
   doing both would double-correct and name the wrong wheel while looking plausible. The
   orientation the box reports is shown, and the manufacturer's app remains where it is
   changed.
+- **Given** the connection to the box is lost while it stays switched on and in range
+- **When** the user taps Retry, or the background auto-retry runs (R37)
+- **Then** the app reconnects to the same box without the device picker (#288): a read
+  that fails or never answers closes the link rather than leaving it half-open (a box
+  does not advertise while it holds a connection), and the silent reconnect first waits
+  a bounded time to hear the box advertise where the browser can watch for that.
 - **Given** the box rejects the password it is offered
 - **Then** the External sensor page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware

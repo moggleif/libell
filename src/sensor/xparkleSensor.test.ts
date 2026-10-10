@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createXparkleSensor,
+  createXparkleWebBluetoothTransport,
+  XPARKLE_ADVERTISEMENT_WAIT_MS,
   XPARKLE_DESCRIPTOR,
   XPARKLE_POLL_INTERVAL_MS,
   XPARKLE_READ_TIMEOUT_MS,
@@ -268,6 +270,59 @@ describe('the poll loop (#270)', () => {
     expect(XPARKLE_READ_TIMEOUT_MS).toBeLessThan(XPARKLE_DESCRIPTOR.staleTimeoutMs);
   });
 
+  it('closes the link itself when a read fails, so no half-open link hides the box (#288)', async () => {
+    const timers = fakeTimers();
+    const disconnect = vi.fn();
+    const box = fakeBox({ readLive: () => Promise.reject(new Error('gone')), disconnect });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+    await sensor.start();
+    await timers.flush();
+
+    expect(disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes the link itself when a read never answers (#288)', async () => {
+    const timers = fakeTimers();
+    const disconnect = vi.fn();
+    const box = fakeBox({ readLive: () => new Promise<DataView>(() => {}), disconnect });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+    await sensor.start();
+    await timers.flush();
+    await timers.flush();
+
+    expect(sensor.getState()).toBe('disconnected');
+    expect(disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves a newer link alone when a read on an older one fails late (#288)', async () => {
+    const timers = fakeTimers();
+    let failOldRead: ((error: Error) => void) | null = null;
+    const oldDisconnect = vi.fn();
+    const oldBox = fakeBox({
+      readLive: () =>
+        new Promise<DataView>((_, reject) => {
+          failOldRead = reject;
+        }),
+      disconnect: oldDisconnect,
+    });
+    const newBox = fakeBox();
+    const sensor = createXparkleSensor(
+      {
+        connect: () => Promise.resolve(oldBox.connection),
+        reconnect: () => Promise.resolve(newBox.connection),
+      },
+      timers,
+    );
+    await sensor.start();
+    expect(await sensor.reconnect('xparkle-1')).toBe('granted');
+
+    failOldRead!(new Error('old link gone'));
+    await timers.flush();
+
+    expect(sensor.getState()).toBe('granted');
+    expect(oldDisconnect).not.toHaveBeenCalled();
+  });
+
   it('keeps the connection on a payload it cannot parse', async () => {
     // A short or corrupt packet is not a lost link; the staleness timeout
     // is what eventually hides guidance if they keep coming.
@@ -349,5 +404,78 @@ describe('the Xparkle descriptor (#270)', () => {
   it('names the product without any catalogue involvement', () => {
     expect(XPARKLE_DESCRIPTOR.displayName).toBe('Xparkle RVS01');
     expect(XPARKLE_DESCRIPTOR.id).toBe('xparkle');
+  });
+});
+
+/** A device as `getDevices()` returns it — a real EventTarget, so
+ * `advertisementreceived` can be dispatched at it. */
+function fakeRememberedDevice(options: { watch?: boolean; advertises?: boolean } = {}) {
+  const calls: string[] = [];
+  const characteristic = {
+    addEventListener: vi.fn(),
+    startNotifications: vi.fn().mockResolvedValue(undefined),
+    readValue: vi.fn(),
+    writeValue: vi.fn().mockResolvedValue(undefined),
+  };
+  const service = { getCharacteristic: vi.fn().mockResolvedValue(characteristic) };
+  const server = {
+    connect: vi.fn(() => {
+      calls.push('connect');
+      return Promise.resolve(server);
+    }),
+    disconnect: vi.fn(),
+    getPrimaryService: vi.fn().mockResolvedValue(service),
+  };
+  const device = Object.assign(new EventTarget(), {
+    id: 'xparkle-1',
+    gatt: server,
+  }) as EventTarget & BluetoothDevice & { signal?: AbortSignal };
+  if (options.watch !== false) {
+    device.watchAdvertisements = vi.fn((watchOptions?: { signal?: AbortSignal }) => {
+      calls.push('watch');
+      device.signal = watchOptions?.signal;
+      if (options.advertises !== false) {
+        queueMicrotask(() => device.dispatchEvent(new Event('advertisementreceived')));
+      }
+      return Promise.resolve();
+    });
+  }
+  Object.defineProperty(globalThis, 'navigator', {
+    value: { bluetooth: { getDevices: () => Promise.resolve([device]) } },
+    configurable: true,
+  });
+  return { device, server, calls };
+}
+
+describe('the silent reconnect waits to hear the box first (#288)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('watches for an advertisement before connecting, and stops watching after', async () => {
+    const { device, calls } = fakeRememberedDevice();
+    const connection = await createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn());
+
+    expect(connection).not.toBeNull();
+    expect(calls).toEqual(['watch', 'connect']);
+    expect(device.signal?.aborted).toBe(true);
+  });
+
+  it('still tries the connect when no advertisement arrives in time', async () => {
+    vi.useFakeTimers();
+    const { calls } = fakeRememberedDevice({ advertises: false });
+    const pending = createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn());
+    await vi.advanceTimersByTimeAsync(XPARKLE_ADVERTISEMENT_WAIT_MS);
+
+    expect(await pending).not.toBeNull();
+    expect(calls).toEqual(['watch', 'connect']);
+  });
+
+  it('connects directly where the browser cannot watch advertisements', async () => {
+    const { calls } = fakeRememberedDevice({ watch: false });
+    const connection = await createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn());
+
+    expect(connection).not.toBeNull();
+    expect(calls).toEqual(['connect']);
   });
 });
