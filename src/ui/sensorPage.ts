@@ -118,7 +118,10 @@ export function createSensorPage(
   return {
     element: page.element,
     statusElements: sources.map((source) => source.statusPage.element),
-    isOpen: page.isOpen,
+    // A device page opened straight from a main-screen overlay (#285,
+    // #286) has no list page beneath it — it still counts as open, or
+    // `main.ts` keeps that overlay painted on top of it (#297).
+    isOpen: () => page.isOpen() || sources.some((source) => source.statusPage.isOpen()),
     attach: page.attach,
     open: page.open,
     openSource: (id) => {
