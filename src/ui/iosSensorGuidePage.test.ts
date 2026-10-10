@@ -34,7 +34,8 @@ describe('createIosSensorGuidePage (R39)', () => {
     expect(
       [...page.element.querySelectorAll('button')].some(
         (b) =>
-          b.textContent === t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
+          b.getAttribute('aria-label') ===
+          t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
       ),
     ).toBe(false);
   });

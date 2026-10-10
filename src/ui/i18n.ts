@@ -87,21 +87,15 @@ export const MESSAGES = {
     // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
     // The device sentence only — the browser requirement is the same for
     // every box and is shown once per page (#272), not once per row.
-    'sensorSource.intro.requirements': 'Requires Chrome on Android with Bluetooth turned on.',
     'sensorSource.connect': 'Connect {name} sensor',
     'sensorSource.disconnect': 'Disconnect',
-    'sensorSource.status.phone': "Using the phone's own sensor.",
     // Shown on a source's own row while a DIFFERENT external source is
     // feeding readings (#272) — claiming the phone is active would be
     // plainly wrong once there is more than one box to choose from.
-    'sensorSource.status.inactive': 'Not in use — another sensor is active.',
-    'sensorSource.status.connected': 'Connected to the {name} sensor.',
     'sensorSource.status.connecting': 'Connecting…',
     // Connection lost while the box stays the selected source (#129) —
     // distinct from the plain "connected" text above so the settings page
     // never claims a live link that no longer exists.
-    'sensorSource.status.disconnected':
-      'Contact with the {name} sensor was lost — open it to reconnect.',
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     // Some boxes ask for a password before they will talk (#272). Kept
     // separate from the generic failure so the user knows the hardware is
@@ -622,6 +616,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': "The box's position",
     'onboard.boxPosition.later':
       "Direction and zero are set the first time you park. The box's page guides you, and the amber lamp reminds you until it's done.",
+    'sensorList.title': 'Sensors',
+    'sensorList.phone': "The phone's own sensor is used when no box is connected.",
   },
   sv: {
     'topbar.install': 'Installera',
@@ -681,15 +677,9 @@ export const MESSAGES = {
 
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
     // sensor, visas bara när Web Bluetooth finns (`menu.ts`).
-    'sensorSource.intro.requirements': 'Kräver Chrome på Android med Bluetooth påslaget.',
     'sensorSource.connect': 'Anslut {name}-sensor',
     'sensorSource.disconnect': 'Koppla från',
-    'sensorSource.status.phone': 'Använder telefonens egen sensor.',
-    'sensorSource.status.inactive': 'Används inte — en annan sensor är aktiv.',
-    'sensorSource.status.connected': 'Ansluten till {name}-sensorn.',
     'sensorSource.status.connecting': 'Ansluter…',
-    'sensorSource.status.disconnected':
-      'Kontakten med {name}-sensorn bröts — öppna den för att återansluta.',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
     'sensorSource.err.password':
       '{name}-boxen godtog inte lösenordet. Ändra tillbaka det i tillverkarens egen app, eller nollställ boxen.',
@@ -1104,6 +1094,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Boxens läge',
     'onboard.boxPosition.later':
       'Riktning och nollställning gör du första gången du parkerar. Boxens sida guidar dig, och den gula lampan påminner tills det är gjort.',
+    'sensorList.title': 'Sensorer',
+    'sensorList.phone': 'Telefonens egen sensor används när ingen box är ansluten.',
   },
   fr: {
     'topbar.install': 'Installer',
@@ -1160,15 +1152,9 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Non enregistré',
     'menu.card.notDone': 'Non fait',
 
-    'sensorSource.intro.requirements': 'Nécessite Chrome sur Android avec le Bluetooth activé.',
     'sensorSource.connect': 'Connecter le capteur {name}',
     'sensorSource.disconnect': 'Déconnecter',
-    'sensorSource.status.phone': 'Utilise le capteur du téléphone.',
-    'sensorSource.status.inactive': 'Non utilisé — un autre capteur est actif.',
-    'sensorSource.status.connected': 'Connecté au capteur {name}.',
     'sensorSource.status.connecting': 'Connexion…',
-    'sensorSource.status.disconnected':
-      'Le contact avec le capteur {name} a été perdu — ouvrez-le pour le reconnecter.',
     'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
     'sensorSource.err.password':
       'Le boîtier {name} n’a pas accepté son mot de passe. Rétablissez-le dans l’application du fabricant, ou réinitialisez le boîtier.',
@@ -1598,6 +1584,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Position du boîtier',
     'onboard.boxPosition.later':
       'La direction et le zéro se règlent la première fois que vous vous garez. La page du boîtier vous guide, et le voyant orange vous le rappelle jusque-là.',
+    'sensorList.title': 'Capteurs',
+    'sensorList.phone': 'Le capteur du téléphone est utilisé quand aucun boîtier n’est connecté.',
   },
   es: {
     'topbar.install': 'Instalar',
@@ -1655,15 +1643,9 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Sin guardar',
     'menu.card.notDone': 'Sin hacer',
 
-    'sensorSource.intro.requirements': 'Requiere Chrome en Android con el Bluetooth activado.',
     'sensorSource.connect': 'Conectar el sensor {name}',
     'sensorSource.disconnect': 'Desconectar',
-    'sensorSource.status.phone': 'Usando el sensor del propio móvil.',
-    'sensorSource.status.inactive': 'No se usa: hay otro sensor activo.',
-    'sensorSource.status.connected': 'Conectado al sensor {name}.',
     'sensorSource.status.connecting': 'Conectando…',
-    'sensorSource.status.disconnected':
-      'Se ha perdido el contacto con el sensor {name}: ábrelo para reconectar.',
     'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
     'sensorSource.err.password':
       'La caja {name} no ha aceptado su contraseña. Restablécela en la aplicación del fabricante o reinicia la caja.',
@@ -2087,6 +2069,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Posición de la caja',
     'onboard.boxPosition.later':
       'La dirección y el cero se ajustan la primera vez que aparcas. La página de la caja te guía y el piloto ámbar te lo recuerda hasta entonces.',
+    'sensorList.title': 'Sensores',
+    'sensorList.phone': 'Se usa el sensor del propio móvil cuando no hay ninguna caja conectada.',
   },
   de: {
     'topbar.install': 'Installieren',
@@ -2145,16 +2129,9 @@ export const MESSAGES = {
     'menu.card.notSaved': 'Nicht gespeichert',
     'menu.card.notDone': 'Nicht erledigt',
 
-    'sensorSource.intro.requirements':
-      'Erfordert Chrome unter Android mit eingeschaltetem Bluetooth.',
     'sensorSource.connect': '{name}-Sensor verbinden',
     'sensorSource.disconnect': 'Trennen',
-    'sensorSource.status.phone': 'Der Sensor des Handys wird verwendet.',
-    'sensorSource.status.inactive': 'Nicht in Verwendung — ein anderer Sensor ist aktiv.',
-    'sensorSource.status.connected': 'Mit dem {name}-Sensor verbunden.',
     'sensorSource.status.connecting': 'Verbinden…',
-    'sensorSource.status.disconnected':
-      'Der Kontakt zum {name}-Sensor ist abgebrochen — öffnen, um neu zu verbinden.',
     'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
     'sensorSource.err.password':
       'Die {name}-Box hat ihr Passwort nicht akzeptiert. Stelle es in der App des Herstellers zurück, oder setze die Box zurück.',
@@ -2572,6 +2549,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Lage der Box',
     'onboard.boxPosition.later':
       'Richtung und Nullpunkt stellst du beim ersten Parken ein. Die Seite der Box führt dich, und die gelbe Lampe erinnert dich bis dahin.',
+    'sensorList.title': 'Sensoren',
+    'sensorList.phone': 'Der Sensor des Handys wird verwendet, wenn keine Box verbunden ist.',
   },
 } as const;
 

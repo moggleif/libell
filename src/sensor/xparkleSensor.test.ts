@@ -571,6 +571,34 @@ describe('Retry without getDevices() (#288, Chrome on Android)', () => {
     expect(calls).toEqual(['connect', 'connect']);
   });
 
+  it('tries once more, after hearing the box, when the picked box will not connect at once (#322)', async () => {
+    const { device, server, calls } = fakeRememberedDevice();
+    server.connect.mockImplementationOnce(() => {
+      calls.push('connect');
+      return Promise.reject(new Error('GATT Server is disconnected.'));
+    });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const connection = await createXparkleWebBluetoothTransport().connect(vi.fn());
+    expect(connection.deviceId).toBe('xparkle-1');
+    expect(calls).toEqual(['connect', 'watch', 'connect']);
+  });
+
+  it('gives up after that one extra try, so the caller can say it could not connect', async () => {
+    const { device, server } = fakeRememberedDevice({ watch: false });
+    server.connect.mockImplementation(() =>
+      Promise.reject(new Error('GATT Server is disconnected.')),
+    );
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    await expect(createXparkleWebBluetoothTransport().connect(vi.fn())).rejects.toThrow();
+    expect(server.connect).toHaveBeenCalledTimes(2);
+  });
+
   it('returns nothing, silently, when no box was picked and getDevices() is missing', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: { requestDevice: vi.fn() } },

@@ -566,7 +566,8 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
       expect(
         [...card().querySelectorAll('button')].some(
           (b) =>
-            b.textContent === t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
+            b.getAttribute('aria-label') ===
+            t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
         ),
       ).toBe(true);
       // Split into its own step (design review) — not shown alongside Connect.

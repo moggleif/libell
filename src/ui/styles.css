@@ -3542,3 +3542,82 @@ button.box-step__header {
 .box-more__actions[hidden] {
   display: none;
 }
+
+/* The sensor list (#324, flow D of the #309 UX review): one card per box,
+ * a mark, the box's name, and one line under it. */
+.sensor-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+
+.sensor-card__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 2px solid var(--on-surface-muted);
+  border-radius: 50%;
+  color: var(--on-surface-muted);
+  font-weight: 700;
+}
+
+.sensor-card.is-active .sensor-card__mark {
+  color: var(--surface);
+  background: var(--level);
+  border-color: var(--level);
+}
+
+.sensor-card.is-lost .sensor-card__mark {
+  color: var(--surface);
+  background: var(--warning);
+  border-color: var(--warning);
+}
+
+.sensor-card__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sensor-card__name {
+  color: var(--on-surface);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.sensor-card__state {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--on-surface-muted);
+}
+
+.sensor-card.is-lost .sensor-card__state {
+  color: var(--warning);
+}
+
+.sensor-card__state[hidden],
+.sensor-card__connect[hidden] {
+  display: none;
+}
+
+.sensor-card .menu__text--warning {
+  margin: 0;
+}
+
+.sensor-list__phone {
+  margin-top: 16px;
+  color: var(--on-surface-muted);
+}
+
+.sensor-card__connect {
+  padding: 4px 0;
+}
