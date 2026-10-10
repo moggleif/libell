@@ -378,4 +378,33 @@ describe('createEasyLevelStatusPage', () => {
       expect(page.element.textContent).not.toContain(t('sensorSource.upright.lying'));
     });
   });
+
+  describe('silent-reconnect tip (#310)', () => {
+    it('sits closed under Advanced when the browser lacks silent reconnect', () => {
+      const page = createEasyLevelStatusPage(
+        makeOptions({ sensor: XPARKLE_DESCRIPTOR, lacksSilentReconnect: () => true }),
+      );
+      const details = page.element.querySelector<HTMLDetailsElement>('.sensor-status__advanced');
+      expect(details).not.toBeNull();
+      expect(details!.open).toBe(false);
+      expect(details!.textContent).toContain(t('sensorStatus.advanced'));
+      expect(details!.textContent).toContain('chrome://flags');
+    });
+
+    it('copies the chrome://flags address', async () => {
+      const writeText = vi.fn(() => Promise.resolve());
+      Object.defineProperty(globalThis.navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true,
+      });
+      const page = createEasyLevelStatusPage(makeOptions({ lacksSilentReconnect: () => true }));
+      page.element.querySelector<HTMLButtonElement>('.sensor-status__advanced button')!.click();
+      expect(writeText).toHaveBeenCalledWith('chrome://flags');
+    });
+
+    it('is not shown when silent reconnect already works', () => {
+      const page = createEasyLevelStatusPage(makeOptions({ lacksSilentReconnect: () => false }));
+      expect(page.element.querySelector('.sensor-status__advanced')).toBeNull();
+    });
+  });
 });

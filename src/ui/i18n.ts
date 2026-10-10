@@ -230,6 +230,13 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Copy debug info',
     'sensorStatus.debug.copied': 'Debug info copied!',
     'sensorStatus.debug.copy.failed': 'Could not copy automatically.',
+    'sensorStatus.advanced': 'Advanced',
+    'sensorStatus.silentReconnect.intro':
+      'This browser cannot yet reconnect to the box on its own, so after a restart you pick it in the list again. In Chrome you can turn this on yourself.',
+    'sensorStatus.silentReconnect.steps':
+      'Open {address}, search for “web bluetooth”, set “Use the new permissions backend for Web Bluetooth” to Enabled and tap Relaunch. Then connect the box once.',
+    'sensorStatus.silentReconnect.copy': 'Copy {address}',
+    'sensorStatus.silentReconnect.copied': 'Copied — paste it into Chrome’s address bar.',
     // Connect-delay workaround (#212): an experimental, off-by-default
     // hardware-compatibility knob, not a normal setting — only worth
     // touching if the box's connection is actually unreliable.
@@ -788,6 +795,13 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Kopiera felsökningsinfo',
     'sensorStatus.debug.copied': 'Felsökningsinfo kopierad!',
     'sensorStatus.debug.copy.failed': 'Kunde inte kopiera automatiskt.',
+    'sensorStatus.advanced': 'Avancerat',
+    'sensorStatus.silentReconnect.intro':
+      'Den här webbläsaren kan ännu inte återansluta till boxen av sig själv, så efter en omstart väljer du den i listan igen. I Chrome kan du slå på det själv.',
+    'sensorStatus.silentReconnect.steps':
+      'Öppna {address}, sök på ”web bluetooth”, sätt ”Use the new permissions backend for Web Bluetooth” till Enabled och tryck Relaunch. Anslut sedan boxen en gång.',
+    'sensorStatus.silentReconnect.copy': 'Kopiera {address}',
+    'sensorStatus.silentReconnect.copied': 'Kopierat – klistra in i Chromes adressfält.',
     'sensorStatus.debug.connectDelay.intro':
       'Experimentellt: prova bara om boxens anslutning är opålitlig. Lägger till en fast paus efter anslutning, innan appen börjar läsa av den.',
     'sensorStatus.debug.connectDelay.enable': 'Aktivera anslutningsfördröjning',
@@ -1262,6 +1276,13 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Copier les infos de débogage',
     'sensorStatus.debug.copied': 'Infos de débogage copiées !',
     'sensorStatus.debug.copy.failed': 'La copie automatique a échoué.',
+    'sensorStatus.advanced': 'Avancé',
+    'sensorStatus.silentReconnect.intro':
+      'Ce navigateur ne sait pas encore se reconnecter seul au boîtier : après un redémarrage, vous le choisissez à nouveau dans la liste. Dans Chrome, vous pouvez l’activer vous-même.',
+    'sensorStatus.silentReconnect.steps':
+      'Ouvrez {address}, cherchez « web bluetooth », réglez « Use the new permissions backend for Web Bluetooth » sur Enabled et touchez Relaunch. Connectez ensuite le boîtier une fois.',
+    'sensorStatus.silentReconnect.copy': 'Copier {address}',
+    'sensorStatus.silentReconnect.copied': 'Copié — collez-le dans la barre d’adresse de Chrome.',
     'sensorStatus.debug.connectDelay.intro':
       'Expérimental : à essayer seulement si la connexion de votre boîtier est instable. ' +
       'Ajoute une pause fixe après la connexion, avant que l’application ne commence à lire.',
@@ -1750,6 +1771,13 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Copiar la información de depuración',
     'sensorStatus.debug.copied': '¡Información de depuración copiada!',
     'sensorStatus.debug.copy.failed': 'No se ha podido copiar automáticamente.',
+    'sensorStatus.advanced': 'Avanzado',
+    'sensorStatus.silentReconnect.intro':
+      'Este navegador aún no puede volver a conectarse a la caja por sí solo, así que tras un reinicio la eliges de nuevo en la lista. En Chrome puedes activarlo tú mismo.',
+    'sensorStatus.silentReconnect.steps':
+      'Abre {address}, busca «web bluetooth», pon «Use the new permissions backend for Web Bluetooth» en Enabled y toca Relaunch. Después conecta la caja una vez.',
+    'sensorStatus.silentReconnect.copy': 'Copiar {address}',
+    'sensorStatus.silentReconnect.copied': 'Copiado: pégalo en la barra de direcciones de Chrome.',
     'sensorStatus.debug.connectDelay.intro':
       'Experimental: pruébalo solo si la conexión de tu caja es inestable. Añade una pausa ' +
       'fija después de conectar, antes de que la app empiece a leer.',
@@ -2234,6 +2262,13 @@ export const MESSAGES = {
     'sensorStatus.debug.copy': 'Debug-Infos kopieren',
     'sensorStatus.debug.copied': 'Debug-Infos kopiert!',
     'sensorStatus.debug.copy.failed': 'Automatisches Kopieren nicht möglich.',
+    'sensorStatus.advanced': 'Erweitert',
+    'sensorStatus.silentReconnect.intro':
+      'Dieser Browser kann sich noch nicht selbst wieder mit der Box verbinden, daher wählst du sie nach einem Neustart erneut in der Liste. In Chrome kannst du das selbst einschalten.',
+    'sensorStatus.silentReconnect.steps':
+      'Öffne {address}, suche nach „web bluetooth“, stelle „Use the new permissions backend for Web Bluetooth“ auf Enabled und tippe auf Relaunch. Verbinde die Box danach einmal.',
+    'sensorStatus.silentReconnect.copy': '{address} kopieren',
+    'sensorStatus.silentReconnect.copied': 'Kopiert – füge es in die Adressleiste von Chrome ein.',
     'sensorStatus.debug.connectDelay.intro':
       'Experimentell: nur versuchen, wenn die Verbindung deiner Box unzuverlässig ist. Fügt ' +
       'nach dem Verbinden eine feste Pause ein, bevor die App zu lesen beginnt.',
