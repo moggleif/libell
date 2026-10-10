@@ -52,6 +52,7 @@ import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
+import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -158,8 +159,13 @@ export interface SensorSourceOptions {
    * independently: this is never the phone's own vehicle zero.
    */
   getInstallCalibration(): Calibration | null;
-  /** Capture the current reading as this box's installation offset ("Set vehicle level"). Returns an error text, or null on success. */
-  calibrateInstall(): string | null;
+  /**
+   * "Set vehicle level": capture the current reading as this box's
+   * installation offset — or, for a box that zeroes itself (#290), have the
+   * box do it. Returns an error text, or null on success; a box that must
+   * be written to answers asynchronously.
+   */
+  calibrateInstall(): string | null | Promise<string | null>;
   /** When the installation offset was captured (R26) — null when unknown. */
   getInstallCalibrationCapturedAt(): number | null;
   /** Compare the current reading against the installation offset's promise of zero — returns a verdict text (R26). */
@@ -170,6 +176,9 @@ export interface SensorSourceOptions {
   getMounting(): EasyLevelMounting;
   /** Takes effect on the very next reading, no reconnect needed. */
   setMounting(mounting: EasyLevelMounting): void;
+  /** The "learn the mounting" guide (#293) — only rendered when the
+   * descriptor declares `learnMounting` and this is supplied. */
+  learnMounting?: Omit<LearnMountingOptions, 'name'>;
 }
 
 export interface SensorSourceSection {
@@ -353,6 +362,13 @@ export function createSensorSourceSection(
       installClearButton,
     );
   }
+  // Learned mounting (#293): after the offset, because the guide's first
+  // step assumes the box has just been set as level.
+  const learnSection =
+    capabilities.learnMounting && options.learnMounting
+      ? createLearnMountingSection({ name: options.sensor.displayName, ...options.learnMounting })
+      : null;
+  if (learnSection) installSection.append(learnSection.element);
   body.append(connectSection, installSection);
 
   /** Same status/age/disabled-buttons pattern as the phone's vehicle zero
@@ -376,7 +392,19 @@ export function createSensorSourceSection(
   }
 
   installButton.addEventListener('click', () => {
-    refreshInstall(options.calibrateInstall() ?? undefined);
+    const result = options.calibrateInstall();
+    if (!(result instanceof Promise)) {
+      refreshInstall(result ?? undefined);
+      return;
+    }
+    // A box that zeroes itself (#290) answers later; no second tap while
+    // the first is still on its way.
+    installButton.disabled = true;
+    installStatus.textContent = t('calibration.external.working');
+    void result.then((error) => {
+      installButton.disabled = false;
+      refreshInstall(error ?? undefined);
+    });
   });
   installCheckButton.addEventListener('click', () => {
     refreshInstall(options.checkInstallCalibration());
@@ -426,6 +454,7 @@ export function createSensorSourceSection(
     if (active) {
       if (capabilities.mounting) refreshMountingIcon();
       if (capabilities.installCalibration) refreshInstall();
+      learnSection?.refresh();
     }
   }
 

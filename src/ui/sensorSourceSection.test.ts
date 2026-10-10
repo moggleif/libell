@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
+import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
 import { setLanguage } from './i18n';
 
 setLanguage('en');
@@ -153,6 +154,27 @@ describe('createSensorSourceSection (#116)', () => {
     const button = findButton(section.element, 'Set vehicle level');
     button.click();
     expect(calibrateInstall).toHaveBeenCalledOnce();
+  });
+
+  it('waits for a box that zeroes itself, then shows its answer (#290)', async () => {
+    let answer: (error: string | null) => void = () => {};
+    const calibrateInstall = () =>
+      new Promise<string | null>((resolve) => {
+        answer = resolve;
+      });
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
+    );
+    const button = findButton(section.element, 'Set vehicle level');
+    button.click();
+    expect(button.disabled).toBe(true);
+    expect(section.element.textContent).toContain('Calibrating');
+
+    answer('Could not calibrate the sensor.');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button.disabled).toBe(false);
+    expect(section.element.textContent).toContain('Could not calibrate the sensor.');
   });
 
   it('surfaces a rejected implausible capture as an error instead of silently storing it', () => {
@@ -416,5 +438,31 @@ describe('one row per source, each answering for itself (#272)', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(onSourceChanged).toHaveBeenCalled();
+  });
+});
+
+describe('the learn-the-mounting guide on the device page (#293)', () => {
+  const learnMounting = {
+    getRawReading: () => ({ pitchDeg: 0, rollDeg: 0 }),
+    getLearnedMounting: () => null,
+    setLearnedMounting: () => {},
+  };
+
+  it('is offered for a box that declares it', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting,
+      }),
+    );
+    expect(section.installElement.textContent).toContain('Learn the mounting');
+  });
+
+  it('is not offered for a box that does not', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', learnMounting }),
+    );
+    expect(section.installElement.textContent).not.toContain('Learn the mounting');
   });
 });

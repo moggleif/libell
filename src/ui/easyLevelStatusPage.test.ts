@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createEasyLevelStatusPage, type EasyLevelStatusOptions } from './easyLevelStatusPage';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
+import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
@@ -43,6 +44,28 @@ describe('createEasyLevelStatusPage', () => {
     );
     expect(page.element.textContent).toContain('Battery: 72%');
     expect(page.element.textContent).toContain('Temperature: 19.5°C');
+  });
+
+  it('shows the mounting a box reports itself, and only for a box that reports one (#290)', () => {
+    const health = {
+      batteryPercent: 80,
+      temperatureCelsius: null,
+      firmwareLabel: null,
+      reportedOrientation: 'rear' as const,
+    };
+    const xparkle = createEasyLevelStatusPage(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getHealth: () => health,
+      }),
+    );
+    expect(xparkle.element.textContent).toContain('The box’s own mounting setting: Rear');
+
+    const easyLevel = createEasyLevelStatusPage(
+      makeOptions({ getSensorSource: () => 'easylevel', getHealth: () => health }),
+    );
+    expect(easyLevel.element.textContent).not.toContain('Mounting (set in');
   });
 
   it('shows a distinct disconnected status once the connection is lost (#129), not the plain "connected" text', () => {

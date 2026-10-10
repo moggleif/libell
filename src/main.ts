@@ -1,5 +1,6 @@
 import './ui/styles.css';
 import { setupInstallButton } from './ui/install';
+import type { LearnMountingOptions } from './ui/learnMountingSection';
 import { setupShareButton } from './ui/share';
 import { shareVehicleSetup, takePendingVehicleSetupCode } from './ui/vehicleShare';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
@@ -20,9 +21,11 @@ import {
   type TargetPreset,
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
-import { createPoseDetector } from './domain/pose';
+import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
 import {
   easyLevelSettings,
+  xparkleSettings,
+  withXparkleSettings,
   formatLength,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
   toggleMute,
@@ -91,6 +94,7 @@ import {
 } from './sensor/easyLevelSensor';
 import {
   createXparkleSensor,
+  XPARKLE_DESCRIPTOR,
   createXparkleTransport,
   type XparkleSensor,
 } from './sensor/xparkleSensor';
@@ -117,6 +121,7 @@ import { createSensorStatusIndicator } from './ui/sensorStatusIndicator';
 import { createSensorFallbackPrompt } from './ui/sensorFallbackPrompt';
 import { createLevelOverlay } from './ui/levelOverlay';
 import { showOnboarding } from './ui/onboarding';
+import type { ExternalSensorCalibrationState } from './ui/calibrationSection';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 
 // Clickjacking guard (#67): GitHub Pages cannot send response headers and
@@ -386,7 +391,13 @@ function bootstrap(root: HTMLElement): void {
    * very next attempt without recreating anything.
    */
   function createExternalSensor(source: SensorSource): LibellExternalSensor | null {
-    if (source === 'xparkle') return createXparkleSensor(createXparkleTransport());
+    if (source === 'xparkle') {
+      // The learned mounting (#293) is read live, so a newly learned one
+      // takes effect on the very next reading.
+      return createXparkleSensor(createXparkleTransport(), {
+        getAxisMapping: () => xparkleSettings(settings).axisMapping,
+      });
+    }
     if (source !== 'easylevel') return null;
     // Simulated box (#220): the `?easylevel-sim` flag swaps the transport
     // at this one seam — everything above it (sensor state machine,
@@ -426,12 +437,40 @@ function bootstrap(root: HTMLElement): void {
     if (source === 'xparkle') {
       // This box reports battery and nothing else; its descriptor says so,
       // so no temperature or firmware row is drawn to be left empty.
-      const reading = (sensor as XparkleSensor).getReading();
+      const box = sensor as XparkleSensor;
+      const reading = box.getReading();
       return reading
-        ? { batteryPercent: reading.batteryPercent, temperatureCelsius: null, firmwareLabel: null }
+        ? {
+            batteryPercent: reading.batteryPercent,
+            temperatureCelsius: null,
+            firmwareLabel: null,
+            reportedOrientation: box.getOrientation(),
+          }
         : null;
     }
     return null;
+  }
+
+  /**
+   * The "learn the mounting" guide's wiring (#293), for the one box that
+   * offers it; undefined for every other source, so no guide is drawn.
+   */
+  function learnMountingFor(source: SensorSource): Omit<LearnMountingOptions, 'name'> | undefined {
+    if (source !== 'xparkle') return undefined;
+    return {
+      getRawReading: () => {
+        const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
+        if (!box || box.getState() !== 'granted') return null;
+        const reading = box.getReading();
+        return reading ? { pitchDeg: reading.pitchDeg, rollDeg: reading.rollDeg } : null;
+      },
+      getLearnedMounting: () => xparkleSettings(settings).axisMapping,
+      setLearnedMounting: (axisMapping) => {
+        settings = withXparkleSettings(settings, { axisMapping });
+        saveSettings(settings);
+        updateIndicators();
+      },
+    };
   }
 
   /**
@@ -508,6 +547,9 @@ function bootstrap(root: HTMLElement): void {
         maybeRebuildScreen();
       },
       getCalibration: () => calibration,
+      isPhoneActive: () => sensor().getSource() === 'phone',
+      getExternalSensor: () => activeExternalCalibrationState(),
+      calibrateExternalSensor: () => calibrateInstallNow(sensor().getSource()),
       calibrate: () => calibrateNow(),
       readTilt: () => readTiltNow(),
       applyCalibration(next) {
@@ -558,6 +600,7 @@ function bootstrap(root: HTMLElement): void {
           installOffsets.get(descriptor.id)?.capturedAt ?? null,
         checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
         clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+        learnMounting: learnMountingFor(descriptor.id),
       }),
       connectSensor: () => externalSensors.connect('easylevel'),
       disconnectSensor: () => externalSensors.disconnect(),
@@ -597,6 +640,9 @@ function bootstrap(root: HTMLElement): void {
       maybeRebuildScreen();
     },
     getCalibration: () => calibration,
+    isPhoneActive: () => sensor().getSource() === 'phone',
+    getExternalSensor: () => activeExternalCalibrationState(),
+    calibrateExternalSensor: () => calibrateInstallNow(sensor().getSource()),
     calibrate: () => calibrateNow(),
     readTilt: () => readTiltNow(),
     applyCalibration(next: Calibration) {
@@ -745,6 +791,7 @@ function bootstrap(root: HTMLElement): void {
           installOffsets.get(descriptor.id)?.capturedAt ?? null,
         checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
         clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+        learnMounting: learnMountingFor(descriptor.id),
       }))
     : null;
   const sensorPage = externalSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
@@ -963,7 +1010,8 @@ function bootstrap(root: HTMLElement): void {
    * simply means "none yet", the same shape `vehicleZeroFromReading`
    * already handles, so a future hardware-bias layer could subtract from
    * it without migrating anything already stored. */
-  function calibrateInstallNow(source: SensorSource): string | null {
+  function calibrateInstallNow(source: SensorSource): string | null | Promise<string | null> {
+    if (source === 'xparkle') return zeroXparkleNow();
     const reading = readTiltNow();
     if (typeof reading === 'string') return reading;
     if (
@@ -978,6 +1026,43 @@ function bootstrap(root: HTMLElement): void {
     saveInstallCalibration(source, value, undefined, capturedAt);
     updateIndicators();
     return null;
+  }
+
+  /**
+   * "Set vehicle level" for the Xparkle box (#290): the box zeroes itself
+   * (`resetZero`), which works however it is mounted — lying on its back
+   * included, where a Libell-side capture would be refused as far too
+   * tilted. Libell then stores a zero installation offset with the time:
+   * it changes no reading (the box already reports from its new zero), but
+   * it is what the calibration lamp, the age text and "Check" go by, and
+   * it replaces any older Libell-side offset so two zeros are never
+   * stacked.
+   */
+  async function zeroXparkleNow(): Promise<string | null> {
+    const name = XPARKLE_DESCRIPTOR.displayName;
+    const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
+    if (!box || box.getState() !== 'granted') {
+      return t('calibration.external.err.notConnected', { name });
+    }
+    if (!(await box.zeroBox())) return t('calibration.external.err.failed', { name });
+    const value: Calibration = { rollDeg: 0, pitchDeg: 0 };
+    const capturedAt = Date.now();
+    installOffsets.set('xparkle', { value, capturedAt });
+    saveInstallCalibration('xparkle', value, undefined, capturedAt);
+    updateIndicators();
+    return null;
+  }
+
+  /** The active external sensor's calibration state, for the Calibration
+   * tab (#290) — null while the phone is the active sensor. */
+  function activeExternalCalibrationState(): ExternalSensorCalibrationState | null {
+    const descriptor = externalSensorById(sensor().getSource());
+    if (!descriptor || !descriptor.capabilities.installCalibration) return null;
+    return {
+      name: descriptor.displayName,
+      offset: installOffsetOf(descriptor.id),
+      capturedAt: installOffsets.get(descriptor.id)?.capturedAt ?? null,
+    };
   }
 
   function clearInstallOffset(source: SensorSource): void {
@@ -1146,7 +1231,20 @@ function bootstrap(root: HTMLElement): void {
     poseOverlay.hidden = true;
     const poseText = document.createElement('p');
     poseText.className = 'pose-overlay__text';
-    poseOverlay.append(poseText);
+    // External sensor only (#285): what to do about a sensor that reads
+    // wrong, with a direct link to its own page (live values, mounting).
+    const poseHint = document.createElement('p');
+    poseHint.className = 'pose-overlay__hint';
+    poseHint.textContent = t('pose.sensorHint');
+    const poseSensorButton = document.createElement('button');
+    poseSensorButton.type = 'button';
+    poseSensorButton.className = 'menu__action';
+    poseSensorButton.textContent = t('pose.openSensorPage');
+    poseSensorButton.addEventListener('click', () => {
+      const source = sensor().getSource();
+      if (source !== 'phone') externalSensorPage?.openSource(source);
+    });
+    poseOverlay.append(poseText, poseHint, poseSensorButton);
     root.append(poseOverlay);
 
     // Stale-data overlay (#132): a third, distinct state from the pose
@@ -1163,6 +1261,7 @@ function bootstrap(root: HTMLElement): void {
     root.append(staleOverlay);
 
     const detectPose = createPoseDetector();
+    const detectExternalPose = createExternalPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
     // Rocking vehicle (people moving around): show "Measuring…" until the
     // reading has been calm for a moment (#86); the diagram itself stays
@@ -1275,9 +1374,23 @@ function bootstrap(root: HTMLElement): void {
         }
         staleOverlay.hidden = true;
         // Invalid pose: pause the guidance and say what to do instead.
-        const badPose = detectPose(gravity) === 'not-flat';
-        if (badPose || landscape.matches) {
-          poseText.textContent = badPose ? t('pose.layFlat') : t('pose.portrait');
+        // The phone pose rules (R17) only apply to the phone itself; a
+        // mounted external box is never laid flat or turned (#285). It is
+        // only checked for positions too extreme to be a real mount
+        // (on its side, face-down — R43).
+        const phoneActive = sensor().getSource() === 'phone';
+        const externalPose = phoneActive ? 'ok' : detectExternalPose(gravity);
+        const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : externalPose !== 'ok';
+        const badLandscape = phoneActive && landscape.matches;
+        if (badPose || badLandscape) {
+          poseText.textContent = !badPose
+            ? t('pose.portrait')
+            : phoneActive
+              ? t('pose.layFlat')
+              : externalPose === 'upside-down'
+                ? t('pose.sensorUpsideDown')
+                : t('pose.sensorExtreme');
+          poseHint.hidden = poseSensorButton.hidden = phoneActive;
           poseOverlay.hidden = false;
           levelOverlay.hideNow();
           requestAnimationFrame(frame);

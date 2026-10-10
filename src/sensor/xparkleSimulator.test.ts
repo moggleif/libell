@@ -9,7 +9,7 @@ import {
   xparkleSimulationMode,
 } from './xparkleSimulator';
 import { createXparkleSensor } from './xparkleSensor';
-import { parseLivePayload } from './xparkleProtocol';
+import { buildResetZero, parseLivePayload } from './xparkleProtocol';
 
 describe('xparkleSimulationMode (#271)', () => {
   it('is off without the flag', () => {
@@ -61,6 +61,21 @@ describe('the simulated box (#271)', () => {
     expect(reading?.rollDeg).toBeCloseTo(-1.2, 1);
     expect(reading?.pitchDeg).toBeCloseTo(-0.35, 1);
     expect(reading?.batteryPercent).toBe(62);
+  });
+
+  it('zeroes itself on resetZero, and keeps that zero across a reconnect (#290)', async () => {
+    const transport = createSimulatedXparkleTransport('steady');
+    const connection = await transport.connect(() => {});
+    await connection.write(buildResetZero());
+
+    const reading = parseLivePayload((await connection.readLive())!);
+    expect(Math.abs(reading!.rollDeg)).toBeLessThan(0.05);
+    expect(Math.abs(reading!.pitchDeg)).toBeLessThan(0.05);
+
+    connection.disconnect();
+    const again = await transport.connect(() => {});
+    const later = parseLivePayload((await again.readLive())!);
+    expect(Math.abs(later!.rollDeg)).toBeLessThan(0.05);
   });
 
   it('moves a little between reads, so a live screen visibly updates', async () => {

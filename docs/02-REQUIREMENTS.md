@@ -36,6 +36,8 @@ URL and must keep working with no signal.
 - **Then** the app derives side/side (roll) and front/back (pitch) tilt from gravity,
   preferring `DeviceMotionEvent.accelerationIncludingGravity` and falling back to
   `DeviceOrientationEvent`, and the reading is smoothed so it does not jitter.
+- This describes the phone sensor. With an external sensor box (R33) the phone's own
+  placement does not matter; the box is installed as R34 and R43 describe (#285).
 
 ## R3 — The app computes how much to raise each wheel
 
@@ -267,6 +269,18 @@ URL and must keep working with no signal.
 - **Then** an overlay says what to do ("lay the phone flat" / "turn to portrait")
   instead of showing wrong wheel guidance; the overlay clears with hysteresis (only
   once clearly flat again) so it cannot flicker at the boundary.
+- **Given** an external sensor box is the active source (R33, R40)
+- **Then** none of the above applies: the box is permanently mounted, so the phone's
+  pose is irrelevant and the phone may lie anywhere or be held in landscape. The only
+  pose check left is on the box itself: if it is tilted past 45° (cleared again below
+  40°) — lying on its side, hanging on a wall — or reads fully upside-down (R43), the
+  overlay says the sensor sits in an extreme position, or looks mounted upside-down,
+  instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
+  degrees, far below that limit.
+- **Given** that overlay is shown for an external sensor
+- **Then** it also says what to do — check the sensor's live values and mounting — and
+  carries an "Open sensor page" button that goes straight to that sensor's own page
+  (R40), not the source list (#285).
 
 ## R18 — A first-run introduction, skippable and reopenable
 
@@ -913,6 +927,17 @@ cross-platform goal — they are not this app's code and are not covered here.
 - The amber calibration lamp (R11) follows the same rule: it checks the phone's pair
   while the phone is active, or just the box's installation offset while EasyLevel
   is — never both pairs at once.
+- **Given** an external sensor is the active source
+- **Then** the Calibration section (R11, R24) is disabled and says why: the phone's
+  sensor calibration, flip calibration and vehicle zero are not applied to a box's
+  readings, so capturing one would silently do nothing (or capture the box's tilt as
+  the phone's). The stored phone values are kept untouched and become editable again on
+  switching back to the phone (#285).
+- **Given** an external sensor is the active source
+- **Then** the Calibration section also offers "Set vehicle level" for that sensor,
+  named, above the disabled phone controls — the same action as on the sensor's own page
+  (R34; for the Xparkle box, R49's zeroing), so calibrating is found where a user looks
+  for it (#290).
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
   External sensor page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
@@ -1237,8 +1262,10 @@ offset (R34) cannot rescue them — it subtracts a _constant_, while a half turn
 _sign inversion_. Level still reads level, so the calibration looks like it
 succeeded, and only then does the app start confidently naming the wrong wheel.
 Mounting the box fully upside-down (inverted Z) stays out of scope and fails safely
-rather than silently: `domain/pose.ts` reads ~180° of total tilt and shows R17's
-"lay it flat" overlay instead of guidance.
+rather than silently: `isUpsideDown` in `domain/pose.ts` sees gravity pointing out of
+the sensor's back and shows R17's "sensor looks mounted upside-down" overlay instead of
+guidance (#285; the phone's own "lay it flat" wording no longer applies to a box).
+`createExternalPoseDetector` also flags any other extreme tilt (> 45°) of a mounted box.
 
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this
@@ -1475,10 +1502,21 @@ present this source as more proven than it is.
   guidance, the ramp plan, the stillness detection and the staleness overlay are the
   same code every other source runs through — never a second leveling path.
 - **Given** the box applies its own stored mounting orientation before reporting angles
-- **Then** Libell offers no mounting picker for it and applies no rotation of its own:
-  doing both would double-correct and name the wrong wheel while looking plausible. The
-  orientation the box reports is shown, and the manufacturer's app remains where it is
-  changed.
+- **Then** Libell offers no mounting picker for it — a picker describes the mounting
+  from the outside, and on top of the box's own correction it would double-correct and
+  name the wrong wheel while looking plausible. The orientation the box reports is shown.
+- **Given** the box is connected and the user opens "Learn the mounting" on its page
+  (#293)
+- **When** the user raises the vehicle's front, confirms, lowers it, raises the right
+  side and confirms
+- **Then** Libell learns which of the box's two angles moved for each lift and in which
+  direction, and from then on reads them so a raised front is front high and a raised
+  right side is left low — for any of the eight ways the box can sit, and composed with
+  whatever the box already applies, since it is measured rather than described. The
+  user never needs the vendor app for this. A lift too small to tell from noise, one
+  that moved both angles about equally, or two lifts that moved the same angle are
+  refused with the reason and nothing is stored; the learned mounting can be forgotten,
+  which returns to the box's own directions.
 - **Given** the connection to the box is lost while it stays switched on and in range
 - **When** the user taps Retry, or the background auto-retry runs (R37)
 - **Then** the app reconnects to the same box without the device picker (#288): a read
@@ -1489,7 +1527,17 @@ present this source as more proven than it is.
 - **Then** the External sensor page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
   rather than at the setting that is actually wrong.
-- **Given** any command that would change what the box has stored (its zero, its vehicle
-  dimensions, its orientation)
+- **Given** the Xparkle box is connected and the user taps "Set vehicle level" — on its
+  own page (R34) or in the Calibration tab (R11)
+- **Then** Libell has the box zero itself with its own command (#290), so its readings
+  are relative to that position however it is mounted, lying on its back included (the
+  box is built to stand upright; on its back it reads about −90° of pitch, which a
+  Libell-side offset cannot capture). Libell records the moment as a zero installation
+  offset, which drives the calibration lamp, the age text and "Check", and replaces any
+  older Libell-side offset so two zeros are never stacked. If no box is connected, or
+  the command cannot be written, it says so and nothing is changed.
+- **Given** any other command that would change what the box has stored (its vehicle
+  dimensions, its orientation, a factory reset), or the zero command without that tap
 - **Then** Libell never sends it. The box remembers its own configuration, and silently
-  rewriting a user's setup is worse than not supporting it.
+  rewriting a user's setup is worse than not supporting it. Libell's learned mounting
+  (#293) lives in Libell's own settings instead.

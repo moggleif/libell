@@ -52,7 +52,15 @@ export interface ExternalSensorCapabilities {
   installCalibration: boolean;
   /** Has raw protocol bytes worth exposing behind the debug disclosure. */
   debugBytes: boolean;
+  /** Reports the mounting orientation it stores itself, shown read-only
+   * (R49, #290) — as opposed to `mounting`, which the user picks here. */
+  reportedOrientation: boolean;
+  /** Its mounting can be learned in Libell by lifting the vehicle (#293). */
+  learnMounting: boolean;
 }
+
+/** A mounting orientation a box stores and reports itself (R49). */
+export type ReportedOrientation = 'front' | 'rear' | 'left' | 'right';
 
 /**
  * One external sensor source, as everything above the seam sees it.
@@ -148,6 +156,9 @@ export interface ExternalSensorHealth {
   temperatureCelsius: number | null;
   /** Whatever this device calls its firmware — a tier, a version string. */
   firmwareLabel: string | null;
+  /** The orientation the box reports it is mounted in, or null before it
+   * has said (#290). Omitted by a box that has none to report. */
+  reportedOrientation?: ReportedOrientation | null;
 }
 
 /**

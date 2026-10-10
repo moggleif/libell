@@ -9,7 +9,7 @@ import {
   type XparkleConnection,
   type XparkleTransport,
 } from './xparkleSensor';
-import { buildCommandFrame, XPARKLE_COMMAND } from './xparkleProtocol';
+import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleProtocol';
 
 /** A live payload: flags, two big-endian 1/100° magnitudes, battery. */
 function livePayload(pitchHundredths: number, rollHundredths: number, battery = 80): DataView {
@@ -389,6 +389,64 @@ describe('reconnecting (#130, #270)', () => {
   });
 });
 
+describe('a learned mounting (#293)', () => {
+  it('turns the box’s axes into the vehicle’s before the leveling math sees them', async () => {
+    const timers = fakeTimers();
+    let mapping: { swap: boolean; pitchSign: 1 | -1; rollSign: 1 | -1 } | null = null;
+    const sensor = createXparkleSensor(makeTransport().transport, {
+      ...timers,
+      getAxisMapping: () => mapping,
+    });
+    await sensor.start();
+    await timers.flush();
+    const raw = sensor.getGravity()!;
+    expect(raw.x).toBeCloseTo(Math.tan((1.5 * Math.PI) / 180));
+    expect(raw.y).toBeCloseTo(Math.tan((3.25 * Math.PI) / 180));
+
+    // Takes effect on the next reading, with no reconnect.
+    mapping = { swap: true, pitchSign: -1, rollSign: 1 };
+    await timers.flush();
+    const mapped = sensor.getGravity()!;
+    expect(mapped.x).toBeCloseTo(Math.tan((3.25 * Math.PI) / 180));
+    expect(mapped.y).toBeCloseTo(-Math.tan((1.5 * Math.PI) / 180));
+    // The raw reading stays raw: learning a new mounting needs it.
+    expect(sensor.getReading()?.pitchDeg).toBeCloseTo(3.25);
+  });
+});
+
+describe('zeroing the box (#290)', () => {
+  it('never zeroes the box on its own: connecting sends only the login handshake', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+    await timers.flush();
+
+    expect(box.writes.map((frame) => frame[2])).not.toContain(XPARKLE_COMMAND.resetZero);
+  });
+
+  it('sends the box its own resetZero command when asked', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+
+    expect(await sensor.zeroBox()).toBe(true);
+    expect([...box.writes.at(-1)!]).toEqual([...buildResetZero()]);
+  });
+
+  it('reports failure, rather than success, when nothing is connected or the write fails', async () => {
+    const timers = fakeTimers();
+    const idle = createXparkleSensor(makeTransport().transport, timers);
+    expect(await idle.zeroBox()).toBe(false);
+
+    const box = fakeBox({ write: () => Promise.reject(new Error('gone')) });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+    await sensor.start();
+    expect(await sensor.zeroBox()).toBe(false);
+  });
+});
+
 describe('the Xparkle descriptor (#270)', () => {
   it('declares only what this protocol actually reports', () => {
     expect(XPARKLE_DESCRIPTOR.capabilities).toEqual({
@@ -398,6 +456,8 @@ describe('the Xparkle descriptor (#270)', () => {
       mounting: false,
       installCalibration: true,
       debugBytes: false,
+      reportedOrientation: true,
+      learnMounting: true,
     });
   });
 

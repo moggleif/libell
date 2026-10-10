@@ -107,17 +107,17 @@ const SIM_PARAMETERS = [1, 0, 0, 230, 2, 88, 0, 1];
  * (a pure function of the sample index — no clock, no randomness) keeps
  * the live UI visibly updating while staying far inside the stillness
  * detector's tolerance. */
-function livePayload(sampleIndex: number): DataView {
-  const wobble = Math.round(2 * Math.sin(sampleIndex / 9));
-  const pitchHundredths = Math.abs(Math.round(SIM_PITCH_DEG * 100)) + wobble;
-  const rollHundredths = Math.abs(Math.round(SIM_ROLL_DEG * 100)) + wobble;
+function livePayload(sampleIndex: number, zero: { rollDeg: number; pitchDeg: number }): DataView {
+  const wobble = 0.02 * Math.sin(sampleIndex / 9);
+  const pitch = SIM_PITCH_DEG - zero.pitchDeg + wobble;
+  const roll = SIM_ROLL_DEG - zero.rollDeg + wobble;
   const view = new DataView(new ArrayBuffer(7));
-  // Negative roll/pitch in Libell's convention: front low, right low —
-  // i.e. neither direction flag set (see `parseLivePayload`).
-  view.setUint8(0, 0);
-  view.setUint16(1, pitchHundredths, false);
-  view.setUint8(3, 0);
-  view.setUint16(4, rollHundredths, false);
+  // Direction flags per `parseLivePayload`: byte 0 set = front high
+  // (positive pitch), byte 3 set = left low (positive roll).
+  view.setUint8(0, pitch > 0 ? 1 : 0);
+  view.setUint16(1, Math.round(Math.abs(pitch) * 100), false);
+  view.setUint8(3, roll > 0 ? 1 : 0);
+  view.setUint16(4, Math.round(Math.abs(roll) * 100), false);
   view.setUint8(6, SIM_BATTERY_PERCENT);
   return view;
 }
@@ -129,6 +129,9 @@ export function createSimulatedXparkleTransport(
   // injected clock: this never runs in `domain/`, and tests drive it with
   // fake timers, which fake `Date` too.
   let lastDropAt: number | null = null;
+  // The box's own zero (#290): stored in the box, so it outlives a
+  // connection, exactly as on real hardware.
+  const zero = { rollDeg: 0, pitchDeg: 0 };
 
   function makeConnection(onDisconnect: () => void): XparkleConnection {
     let live = true;
@@ -171,7 +174,7 @@ export function createSimulatedXparkleTransport(
       },
       readLive: () => {
         if (!live) return Promise.reject(new Error('simulated box: link lost'));
-        return Promise.resolve(livePayload(sampleIndex++));
+        return Promise.resolve(livePayload(sampleIndex++, zero));
       },
       write: (frame) => {
         if (!live) return Promise.reject(new Error('simulated box: link lost'));
@@ -184,6 +187,12 @@ export function createSimulatedXparkleTransport(
           answer(buildCommandFrame(XPARKLE_COMMAND.password, [mode === 'badpassword' ? 1 : 0]));
         } else if (frame[2] === XPARKLE_COMMAND.queryParameters) {
           answer(buildCommandFrame(XPARKLE_COMMAND.queryParameters, SIM_PARAMETERS));
+        } else if (frame[2] === XPARKLE_COMMAND.resetZero) {
+          // Where the box sits now becomes its zero (#290). No reply is
+          // modelled: whether a real box answers this command is unknown,
+          // and Libell does not wait for one.
+          zero.rollDeg = SIM_ROLL_DEG;
+          zero.pitchDeg = SIM_PITCH_DEG;
         }
         // Every other command is accepted silently — nothing in Libell
         // sends one, and a simulator that invented replies for commands no

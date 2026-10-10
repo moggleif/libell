@@ -102,7 +102,7 @@ export interface MenuOptions {
    * shared with `sensorPage.ts`.
    */
   getInstallCalibration(): Calibration | null;
-  calibrateInstall(): string | null;
+  calibrateInstall(): string | null | Promise<string | null>;
   getInstallCalibrationCapturedAt(): number | null;
   checkInstallCalibration(): string;
   clearInstallCalibration(): void;
