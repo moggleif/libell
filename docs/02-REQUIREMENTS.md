@@ -1018,16 +1018,26 @@ unannounced switch could show a plausible-looking but wrong reading.
   disconnect, or a failed silent reconnect attempt at app open (R33) that never
   recovered
 - **When** I look at the main screen
-- **Then** instead of the plain "no reading yet" hint, a clear, non-blocking prompt is
-  shown: "External sensor unavailable." with two actions, "Retry" and "Use phone
-  sensor" — never a frozen or ambiguous screen. A third, "Open sensor page", opens that
-  sensor's own page (R40), as R35's stale-data overlay does (#286).
+- **Then** instead of the plain "no reading yet" hint, a clear, non-blocking card is
+  shown with one sentence, one primary action and one quiet link (**#313**, the #309 UX
+  review): "Lost contact with the box", the live line "Trying again automatically…", a
+  **Reconnect** button and a **Use the phone instead** link — never a frozen or
+  ambiguous screen. It says nothing about the phone lying flat (that only applies once
+  the phone is chosen, R17) and has no "Open sensor page" button (the top-bar sensor
+  icon reaches that page).
+- **Given** the app was restarted and the browser cannot reconnect silently (no
+  `getDevices()`, as on Chrome for Android, #308)
+- **Then** the card says "Connect the box" / "Tap and pick your box in the list." instead,
+  never promising an automatic retry that cannot land (#313).
+- **Given** I tapped Reconnect and the picker was cancelled or the connect failed
+- **Then** the card's line says "No box found? Check that it is on and close by." and
+  the buttons stay.
 - **Given** there is no reading at all — the prompt above, or the plain "no reading yet"
   hint
 - **Then** the wheel diagram is dimmed and the tilt readout hidden (**#312**): the last
   frame's steps never stay on screen looking live.
 - **Given** the fallback prompt is shown
-- **When** I tap "Retry"
+- **When** I tap "Reconnect"
 - **Then** the browser's device picker opens for the active source, exactly as the
   sensor page's connect button does (**#307**, found on hardware: a silent reconnect
   could not reach the box on Chrome for Android, so the tap did nothing). The picker
@@ -1045,14 +1055,11 @@ unannounced switch could show a plausible-looking but wrong reading.
   only ever retries reaching the same already-known box, silently (no gesture, so no
   picker), through the same adapter `reconnect()` R33 uses.
 - **Given** the fallback prompt is shown
-- **When** I tap "Use phone sensor"
+- **When** I tap "Use the phone instead"
 - **Then** the app switches the active source to the phone sensor via the exact same
-  explicit switch the External sensor page's own "Disconnect" action already performs (never a
-  parallel code path), and the prompt itself says plainly, before I tap, that this
-  is not a like-for-like swap: the phone sensor needs the phone lying flat inside the
-  vehicle (R1/R17), unlike a permanently-mounted box. If the phone is not already
-  lying flat, R17's existing wrong-pose overlay reinforces the same point right after
-  the switch — reused as-is, not duplicated here.
+  explicit switch the External sensor page's own "Disconnect" action already performs
+  (never a parallel code path). If the phone is not lying flat, R17's wrong-pose overlay
+  says so right after the switch — the one place the phone's pose rule is stated.
 - **Given** I have switched to the phone sensor from this prompt
 - **Then** nothing about EasyLevel's calibration (its own installation offset, R34) is
   reused or assumed for the phone — the phone's own calibration/vehicle-zero pair

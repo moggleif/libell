@@ -99,7 +99,7 @@ import {
   createXparkleTransport,
   type XparkleSensor,
 } from './sensor/xparkleSensor';
-import { isRememberedXparkleDeviceUsable } from './sensor/xparkleSimulator';
+import { isRememberedXparkleDeviceUsable, xparkleSimulationMode } from './sensor/xparkleSimulator';
 import {
   createSimulatedEasyLevelTransport,
   easyLevelSimulationMode,
@@ -520,6 +520,12 @@ function bootstrap(root: HTMLElement): void {
         ? isRememberedXparkleDeviceUsable(deviceId)
         : isRememberedEasyLevelDeviceUsable(deviceId),
     getPreferredSource: () => settings.sensorSource,
+    // A simulated box is always reachable; a real one after a restart only
+    // where the browser exposes getDevices() (#313).
+    hasPersistentDeviceAccess: () =>
+      easyLevelSimulationMode() !== 'off' ||
+      xparkleSimulationMode() !== 'off' ||
+      typeof navigator.bluetooth?.getDevices === 'function',
     rememberSource: (source) => {
       settings = { ...settings, sensorSource: source };
       saveSettings(settings);
@@ -1152,9 +1158,8 @@ function bootstrap(root: HTMLElement): void {
     // EasyLevel connection is unreachable (`isSensorUnavailable`,
     // `sensor/sensorFallback.ts`) — never both at once, see `frame()`.
     const fallbackPrompt = createSensorFallbackPrompt(
-      () => void externalSensors.retry(),
+      () => externalSensors.retry(),
       () => externalSensors.usePhoneSensor(),
-      externalSensorPage ? openActiveSensorPage : undefined,
     );
 
     // Full-screen confirmation shown briefly when level is reached (#124:
@@ -1350,7 +1355,7 @@ function bootstrap(root: HTMLElement): void {
       if (isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen) {
         poseOverlay.hidden = true;
         staleOverlay.hidden = true;
-        fallbackPrompt.update(false);
+        fallbackPrompt.update(false, true);
         levelOverlay.hideNow();
         requestAnimationFrame(frame);
         return;
@@ -1371,7 +1376,7 @@ function bootstrap(root: HTMLElement): void {
         const unavailable = isSensorUnavailable(sensor().getState());
         // No data: never leave the last frame's steps looking live (#312).
         showNoData(true);
-        fallbackPrompt.update(unavailable);
+        fallbackPrompt.update(unavailable, externalSensors.canRetrySilently());
         waiting.hidden = unavailable;
         if (unavailable) {
           // Background auto-retry (#211) — see `maybeAutoRetryEasyLevel`.
@@ -1384,7 +1389,7 @@ function bootstrap(root: HTMLElement): void {
       } else {
         showNoData(false);
         waiting.hidden = true;
-        fallbackPrompt.update(false);
+        fallbackPrompt.update(false, true);
         const now = performance.now();
         // Stale data (#132): the sensor still reports a reading, but it
         // hasn't refreshed in a while — a BLE box whose notifications

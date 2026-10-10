@@ -363,3 +363,45 @@ describe('silent auto-reconnect at app open (#130)', () => {
     expect(controller.getActiveSensor()).toBe(phoneSensor);
   });
 });
+
+describe('whether a silent retry can reach the box (#313)', () => {
+  it('is false on the phone', () => {
+    const { controller } = makeController();
+    expect(controller.canRetrySilently()).toBe(false);
+  });
+
+  it('is true once the box was picked in this page session, even without getDevices()', async () => {
+    const xparkle = fakeExternal('xparkle');
+    const { controller } = makeController(
+      { hasPersistentDeviceAccess: () => false },
+      { xparkle: xparkle.sensor },
+    );
+    await controller.connect('xparkle');
+    expect(controller.canRetrySilently()).toBe(true);
+  });
+
+  it('is false after an app restart when the browser cannot reconnect silently', async () => {
+    const xparkle = fakeExternal('xparkle', {
+      reconnect: () => Promise.resolve('disconnected'),
+      getState: () => 'disconnected',
+    });
+    const { controller, remembered } = makeController(
+      { getPreferredSource: () => 'xparkle', hasPersistentDeviceAccess: () => false },
+      { xparkle: xparkle.sensor },
+    );
+    remembered.xparkle = 'device-1';
+    expect(await controller.attemptAutoReconnect()).toBe(true);
+    expect(controller.canRetrySilently()).toBe(false);
+  });
+
+  it('is true after a restart when the browser keeps device permissions (getDevices())', async () => {
+    const xparkle = fakeExternal('xparkle', { reconnect: () => Promise.resolve('disconnected') });
+    const { controller, remembered } = makeController(
+      { getPreferredSource: () => 'xparkle', hasPersistentDeviceAccess: () => true },
+      { xparkle: xparkle.sensor },
+    );
+    remembered.xparkle = 'device-1';
+    await controller.attemptAutoReconnect();
+    expect(controller.canRetrySilently()).toBe(true);
+  });
+});

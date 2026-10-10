@@ -78,6 +78,13 @@ export interface ExternalSensorControllerOptions<T extends ExternalSensor> {
   onIndicatorsChanged(): void;
   /** The connection state changed in a way the status row should show. */
   onStatusChanged(): void;
+  /**
+   * Whether this browser keeps device permission across app restarts
+   * (`navigator.bluetooth.getDevices()`), so a silent reconnect can reach
+   * a box picked in an earlier session (#313). Chrome on Android keeps it
+   * behind a flag. Optional: defaults to true.
+   */
+  hasPersistentDeviceAccess?(): boolean;
 }
 
 export interface ExternalSensorController<T extends ExternalSensor> {
@@ -118,6 +125,13 @@ export interface ExternalSensorController<T extends ExternalSensor> {
   /** The background counterpart to Retry (#211), on its own cadence. */
   maybeAutoRetry(nowMs: number): void;
   /**
+   * Whether that background retry can reach the active box at all (#313):
+   * yes once the box was picked in this page session, or when the browser
+   * keeps device permission across restarts; no after a restart without
+   * it, where only a tap in the picker can bring the box back.
+   */
+  canRetrySilently(): boolean;
+  /**
    * Silent reconnect at app open (#130). Resolves true once an external
    * source has taken over the startup flow — whether the box actually
    * answered or not, since a failed attempt still renders its
@@ -139,6 +153,8 @@ export function createExternalSensorController<T extends ExternalSensor>(
   let activeSource: SensorSource | null = null;
   let lastAutoRetryAt: number | null = null;
   let autoRetryInFlight = false;
+  /** Sources picked in the device picker during this page session (#313). */
+  const pickedThisSession = new Set<SensorSource>();
 
   function sensorFor(source: SensorSource): T | null {
     const existing = sensors.get(source);
@@ -177,6 +193,7 @@ export function createExternalSensorController<T extends ExternalSensor>(
     if (!sensor) return 'unsupported';
     const state = await sensor.start();
     if (state === 'granted') {
+      pickedThisSession.add(source);
       adopt(source, sensor);
       options.rememberSource(source);
       // Remember this specific device (#130), not just "some sensor", so a
@@ -255,6 +272,9 @@ export function createExternalSensorController<T extends ExternalSensor>(
     },
     retry,
     maybeAutoRetry,
+    canRetrySilently: () =>
+      activeSource !== null &&
+      (pickedThisSession.has(activeSource) || (options.hasPersistentDeviceAccess?.() ?? true)),
     attemptAutoReconnect,
   };
 }

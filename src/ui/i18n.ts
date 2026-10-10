@@ -611,12 +611,13 @@ export const MESSAGES = {
     // reached — never a silent or automatic switch to the phone (ADR
     // 0014's calibration split), always this explicit Retry / "Use phone
     // sensor" choice.
-    'sensorFallback.unavailable': 'External sensor unavailable.',
-    'sensorFallback.phoneHint':
-      'The phone sensor needs the phone lying flat inside the vehicle — a permanently ' +
-      'mounted box does not.',
-    'sensorFallback.retry': 'Retry',
-    'sensorFallback.usePhone': 'Use phone sensor',
+    'sensorFallback.lost': 'Lost contact with the box',
+    'sensorFallback.autoRetry': 'Trying again automatically…',
+    'sensorFallback.connect': 'Connect the box',
+    'sensorFallback.pick': 'Tap and pick your box in the list.',
+    'sensorFallback.notFound': 'No box found? Check that it is on and close by.',
+    'sensorFallback.retry': 'Reconnect',
+    'sensorFallback.usePhone': 'Use the phone instead',
   },
   sv: {
     'topbar.install': 'Installera',
@@ -1093,12 +1094,13 @@ export const MESSAGES = {
     'stale.dataUnavailable':
       'Ingen ny sensordata – vägledningen är pausad tills den kommer tillbaka',
 
-    'sensorFallback.unavailable': 'Extern sensor otillgänglig.',
-    'sensorFallback.phoneHint':
-      'Telefonens sensor kräver att telefonen ligger plant i fordonet – en fast ' +
-      'monterad box behöver inte det.',
-    'sensorFallback.retry': 'Försök igen',
-    'sensorFallback.usePhone': 'Använd telefonsensorn',
+    'sensorFallback.lost': 'Tappade kontakten med boxen',
+    'sensorFallback.autoRetry': 'Försöker igen automatiskt…',
+    'sensorFallback.connect': 'Anslut boxen',
+    'sensorFallback.pick': 'Tryck och välj din box i listan.',
+    'sensorFallback.notFound': 'Hittade ingen box? Kontrollera att den är påslagen och nära.',
+    'sensorFallback.retry': 'Återanslut',
+    'sensorFallback.usePhone': 'Använd telefonen i stället',
   },
   fr: {
     'topbar.install': 'Installer',
@@ -1581,12 +1583,13 @@ export const MESSAGES = {
     'stale.dataUnavailable':
       'Aucune nouvelle donnée du capteur — le guidage est en pause jusqu’à son retour',
 
-    'sensorFallback.unavailable': 'Capteur externe indisponible.',
-    'sensorFallback.phoneHint':
-      'Le capteur du téléphone exige que le téléphone soit posé à plat dans le véhicule — ' +
-      'un boîtier monté à demeure, non.',
-    'sensorFallback.retry': 'Réessayer',
-    'sensorFallback.usePhone': 'Utiliser le capteur du téléphone',
+    'sensorFallback.lost': 'Contact perdu avec le boîtier',
+    'sensorFallback.autoRetry': 'Nouvelle tentative automatique…',
+    'sensorFallback.connect': 'Connectez le boîtier',
+    'sensorFallback.pick': 'Touchez puis choisissez votre boîtier dans la liste.',
+    'sensorFallback.notFound': 'Aucun boîtier trouvé ? Vérifiez qu’il est allumé et à proximité.',
+    'sensorFallback.retry': 'Reconnecter',
+    'sensorFallback.usePhone': 'Utiliser plutôt le téléphone',
   },
   es: {
     'topbar.install': 'Instalar',
@@ -2065,12 +2068,13 @@ export const MESSAGES = {
     'stale.dataUnavailable':
       'No llegan datos nuevos del sensor: la guía está en pausa hasta que vuelvan',
 
-    'sensorFallback.unavailable': 'Sensor externo no disponible.',
-    'sensorFallback.phoneHint':
-      'El sensor del móvil exige que el móvil esté plano dentro del vehículo; una caja ' +
-      'montada de forma permanente no lo necesita.',
-    'sensorFallback.retry': 'Reintentar',
-    'sensorFallback.usePhone': 'Usar el sensor del móvil',
+    'sensorFallback.lost': 'Se perdió el contacto con la caja',
+    'sensorFallback.autoRetry': 'Reintentando automáticamente…',
+    'sensorFallback.connect': 'Conecta la caja',
+    'sensorFallback.pick': 'Toca y elige tu caja en la lista.',
+    'sensorFallback.notFound': '¿No aparece ninguna caja? Comprueba que esté encendida y cerca.',
+    'sensorFallback.retry': 'Reconectar',
+    'sensorFallback.usePhone': 'Usar el móvil en su lugar',
   },
   de: {
     'topbar.install': 'Installieren',
@@ -2544,12 +2548,14 @@ export const MESSAGES = {
 
     'stale.dataUnavailable': 'Keine neuen Sensordaten — die Führung pausiert, bis sie zurückkommen',
 
-    'sensorFallback.unavailable': 'Externer Sensor nicht verfügbar.',
-    'sensorFallback.phoneHint':
-      'Der Handysensor verlangt, dass das Handy flach im Fahrzeug liegt — eine fest ' +
-      'eingebaute Box nicht.',
-    'sensorFallback.retry': 'Erneut versuchen',
-    'sensorFallback.usePhone': 'Handysensor verwenden',
+    'sensorFallback.lost': 'Verbindung zur Box verloren',
+    'sensorFallback.autoRetry': 'Neuer Versuch läuft automatisch…',
+    'sensorFallback.connect': 'Box verbinden',
+    'sensorFallback.pick': 'Tippe und wähle deine Box in der Liste.',
+    'sensorFallback.notFound':
+      'Keine Box gefunden? Prüfe, ob sie eingeschaltet und in der Nähe ist.',
+    'sensorFallback.retry': 'Erneut verbinden',
+    'sensorFallback.usePhone': 'Stattdessen das Handy verwenden',
   },
 } as const;
 

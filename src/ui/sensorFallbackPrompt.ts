@@ -23,12 +23,11 @@
  * entirely outside this file: from here, a tap still means exactly one
  * attempt, no more.
  *
- * Phone mode needs the phone lying flat inside the vehicle (R1/R17) where
- * a permanently-mounted EasyLevel box does not — this prompt's own copy
- * says so plainly, so tapping "Use phone sensor" is never presented as a
- * like-for-like swap. The existing R17 wrong-pose overlay reinforces the
- * same point after the switch, if the phone is not already lying flat —
- * reused as-is rather than duplicated here.
+ * One sentence, one primary action, one quiet link (#313, the #309 UX
+ * review). It used to lead with a paragraph about the phone lying flat —
+ * an option the user had not picked — and offer three equal buttons. The
+ * phone's own pose rule is now said only after switching to it, by R17's
+ * wrong-pose overlay, and the top-bar chip already reaches the box page.
  */
 import { t } from './i18n';
 
@@ -41,17 +40,19 @@ export interface SensorFallbackPrompt {
    * simply stops passing `true` once the state resolves (a successful
    * Retry, or the source having switched to the phone) — there is no
    * separate "clear" method.
+   *
+   * `canRetrySilently` says whether the background retry (#211) can reach
+   * the box at all (#313): after an app restart on a browser without
+   * `getDevices()` it cannot, so the card asks for the one tap instead of
+   * promising an automatic retry that will never land.
    */
-  update(unavailable: boolean): void;
+  update(unavailable: boolean, canRetrySilently: boolean): void;
 }
 
 export function createSensorFallbackPrompt(
-  onRetry: () => void,
+  /** Opens the device picker (#307); resolves once that attempt is over. */
+  onRetry: () => Promise<void> | void,
   onUsePhone: () => void,
-  // The unreachable sensor's own page (#286), same label as the pose
-  // overlay's link (#285) — so this prompt and R35's stale overlay, which
-  // never show at once, both reach it. Omitted when there is no such page.
-  onOpenSensorPage?: () => void,
 ): SensorFallbackPrompt {
   const container = document.createElement('div');
   container.className = 'sensor-fallback';
@@ -59,16 +60,9 @@ export function createSensorFallbackPrompt(
 
   const text = document.createElement('p');
   text.className = 'sensor-fallback__text';
-  text.textContent = t('sensorFallback.unavailable');
-  container.append(text);
-
-  // Said plainly up front, before the user decides — not only after the
-  // tap — per the issue's own requirement ("say this plainly ... it's not
-  // a like-for-like swap").
   const hint = document.createElement('p');
   hint.className = 'sensor-fallback__hint';
-  hint.textContent = t('sensorFallback.phoneHint');
-  container.append(hint);
+  container.append(text, hint);
 
   const actions = document.createElement('div');
   actions.className = 'sensor-fallback__actions';
@@ -77,29 +71,50 @@ export function createSensorFallbackPrompt(
   retryButton.type = 'button';
   retryButton.className = 'menu__action';
   retryButton.textContent = t('sensorFallback.retry');
-  retryButton.addEventListener('click', onRetry);
 
+  // A quiet link, not a second button: switching source is the escape
+  // hatch, not the expected next step.
   const usePhoneButton = document.createElement('button');
   usePhoneButton.type = 'button';
-  usePhoneButton.className = 'menu__action menu__action--secondary';
+  usePhoneButton.className = 'link-button';
   usePhoneButton.textContent = t('sensorFallback.usePhone');
   usePhoneButton.addEventListener('click', onUsePhone);
 
   actions.append(retryButton, usePhoneButton);
-  if (onOpenSensorPage) {
-    const sensorPageButton = document.createElement('button');
-    sensorPageButton.type = 'button';
-    sensorPageButton.className = 'menu__action menu__action--secondary';
-    sensorPageButton.textContent = t('pose.openSensorPage');
-    sensorPageButton.addEventListener('click', onOpenSensorPage);
-    actions.append(sensorPageButton);
-  }
   container.append(actions);
 
+  /** A tapped Reconnect that did not bring the box back (#313). Cleared
+   * as soon as the prompt hides, so a later loss starts fresh. */
+  let failed = false;
+  let silent = true;
+
+  function render(): void {
+    text.textContent = t(silent ? 'sensorFallback.lost' : 'sensorFallback.connect');
+    hint.textContent = failed
+      ? t('sensorFallback.notFound')
+      : t(silent ? 'sensorFallback.autoRetry' : 'sensorFallback.pick');
+  }
+
+  retryButton.addEventListener('click', () => {
+    void Promise.resolve(onRetry()).then(() => {
+      // Still shown means the attempt did not reconnect; the next
+      // update() confirms either way.
+      if (!container.hidden) {
+        failed = true;
+        render();
+      }
+    });
+  });
+
+  render();
   return {
     element: container,
-    update(unavailable) {
+    update(unavailable, canRetrySilently) {
+      if (!unavailable) failed = false;
+      if (container.hidden === !unavailable && silent === canRetrySilently) return;
+      silent = canRetrySilently;
       container.hidden = !unavailable;
+      render();
     },
   };
 }
