@@ -258,6 +258,20 @@ describe('calibration with an external sensor active (#285)', () => {
     expect(buttonByText(section.element, 'Calibrate now').disabled).toBe(false);
   });
 
+  it('hides the phone cards so the box is not buried under them, and brings them back', () => {
+    let phone = false;
+    const section = createCalibrationSection(makeOptions({ isPhoneActive: () => phone }));
+    const calibrate = buttonByText(section.element, 'Calibrate now');
+    expect(calibrate.closest('[hidden]')).not.toBeNull();
+    expect(section.sensorElement.hidden).toBe(true);
+    expect(section.vehicleElement.hidden).toBe(true);
+
+    phone = true;
+    section.refresh();
+    expect(calibrate.closest('[hidden]')).toBeNull();
+    expect(section.vehicleElement.hidden).toBe(false);
+  });
+
   it('behaves as before when the host does not say (phone assumed)', () => {
     const section = createCalibrationSection(makeOptions());
     expect(buttonByText(section.element, 'Calibrate now').disabled).toBe(false);

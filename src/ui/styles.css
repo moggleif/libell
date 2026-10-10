@@ -1547,6 +1547,12 @@ body {
   gap: 12px;
 }
 
+/* Phone cards are hidden while an external sensor is active; their own
+   display: flex would otherwise win over the UA [hidden] rule. */
+.calibration-cards > [hidden] {
+  display: none;
+}
+
 .calibration-card {
   display: flex;
   flex-direction: column;

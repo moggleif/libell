@@ -937,7 +937,8 @@ cross-platform goal — they are not this app's code and are not covered here.
   while the phone is active, or just the box's installation offset while EasyLevel
   is — never both pairs at once.
 - **Given** an external sensor is the active source
-- **Then** the Calibration section (R11, R24) is disabled and says why: the phone's
+- **Then** the Calibration section (R11, R24) hides the phone's controls and says why
+  in one line, so the box's own calibration (below) is what the page shows: the phone's
   sensor calibration, flip calibration and vehicle zero are not applied to a box's
   readings, so capturing one would silently do nothing (or capture the box's tilt as
   the phone's). The stored phone values are kept untouched and become editable again on
@@ -945,7 +946,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   steps out of its phone path for the same reason (#287).
 - **Given** an external sensor is the active source
 - **Then** the Calibration section also offers "Set vehicle level" for that sensor,
-  named, above the disabled phone controls — the same action as on the sensor's own page
+  named, in place of the hidden phone controls — the same action as on the sensor's own page
   (R34; for the Xparkle box, R49's zeroing), so calibrating is found where a user looks
   for it (#290).
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
