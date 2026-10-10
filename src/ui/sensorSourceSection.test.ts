@@ -43,8 +43,21 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
     const disconnectButton = findButton(section.element, 'Disconnect');
     expect(disconnectButton.hidden).toBe(false);
-    const connectButton = findButton(section.element, 'Reconnect EasyLevel sensor');
-    expect(connectButton.textContent).not.toBe('');
+  });
+
+  it('never offers Connect or Reconnect on the list for the box already in use (#315)', () => {
+    for (const state of ['granted', 'disconnected'] as const) {
+      const section = createSensorSourceSection(
+        makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => state }),
+      );
+      expect(findButton(section.element, 'Connect EasyLevel sensor').hidden).toBe(true);
+      expect(section.connectElement.textContent).not.toContain('Reconnect');
+    }
+  });
+
+  it('has no intro paragraph on the list, just the row (#315)', () => {
+    const section = createSensorSourceSection(makeOptions());
+    expect(section.connectElement.textContent).not.toContain('alternative');
   });
 
   it('clicking connect calls connectSensor() and reflects a successful result', async () => {
@@ -115,24 +128,16 @@ describe('createSensorSourceSection (#116)', () => {
     expect(section.element.textContent).not.toContain('Connected to the EasyLevel sensor.');
   });
 
-  function installBlock(root: HTMLElement): HTMLElement {
-    const heading = [...root.querySelectorAll('h3')].find(
-      (h) => h.textContent === 'Installation offset',
-    );
-    if (!heading?.parentElement) throw new Error('installation offset heading not found');
-    return heading.parentElement;
-  }
-
-  it('shows "no installation offset" until one is captured, once EasyLevel is active', () => {
+  it('shows the zero step as not done until one is captured, once EasyLevel is active (#314)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => null }),
     );
-    const block = installBlock(section.element);
-    expect(block.hidden).toBe(false);
-    expect(block.textContent).toContain('No installation offset');
+    expect(section.installElement.hidden).toBe(false);
+    expect(section.installElement.textContent).toContain('Zero on level ground');
+    expect(section.installElement.textContent).toContain('Zero now');
   });
 
-  it('shows the stored offset and its age once captured', () => {
+  it('shows the zero as done, with its age, once captured (#314)', () => {
     const section = createSensorSourceSection(
       makeOptions({
         getSensorSource: () => 'easylevel',
@@ -140,10 +145,8 @@ describe('createSensorSourceSection (#116)', () => {
         getInstallCalibrationCapturedAt: () => Date.now() - 14 * 86_400_000,
       }),
     );
-    const block = installBlock(section.element);
-    expect(block.textContent).toContain('1.2');
-    expect(block.textContent).toContain('-0.3');
-    expect(block.textContent).toContain('14 days ago');
+    expect(section.installElement.textContent).toContain('Zeroed');
+    expect(section.installElement.textContent).toContain('14 days ago');
   });
 
   it('clicking "Set vehicle level" calls calibrateInstall() and refreshes the status', () => {
@@ -151,7 +154,7 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
     );
-    const button = findButton(section.element, 'Set vehicle level');
+    const button = findButton(section.element, 'Zero now');
     button.click();
     expect(calibrateInstall).toHaveBeenCalledOnce();
   });
@@ -165,7 +168,7 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
     );
-    const button = findButton(section.element, 'Set vehicle level');
+    const button = findButton(section.element, 'Zero now');
     button.click();
     expect(button.disabled).toBe(true);
     expect(section.element.textContent).toContain('Calibrating');
@@ -183,7 +186,7 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
     );
-    const button = findButton(section.element, 'Set vehicle level');
+    const button = findButton(section.element, 'Zero now');
     button.click();
     expect(section.element.textContent).toContain('more than placement tilt');
   });
@@ -204,7 +207,7 @@ describe('createSensorSourceSection (#116)', () => {
     expect(checkInstallCalibration).toHaveBeenCalledOnce();
     expect(section.element.textContent).toContain('Still good');
 
-    const clearButton = findButton(section.element, 'Clear installation offset');
+    const clearButton = findButton(section.element, 'Clear the zero');
     clearButton.click();
     expect(clearInstallCalibration).toHaveBeenCalledOnce();
   });
@@ -215,11 +218,11 @@ describe('createSensorSourceSection (#116)', () => {
       makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => offset }),
     );
     expect(findButton(section.element, 'Check').disabled).toBe(true);
-    expect(findButton(section.element, 'Clear installation offset').disabled).toBe(true);
+    expect(findButton(section.element, 'Clear the zero').disabled).toBe(true);
     offset = { rollDeg: 1, pitchDeg: 1 };
     section.refresh();
     expect(findButton(section.element, 'Check').disabled).toBe(false);
-    expect(findButton(section.element, 'Clear installation offset').disabled).toBe(false);
+    expect(findButton(section.element, 'Clear the zero').disabled).toBe(false);
   });
 
   // The sensor row's status text doubles as a button opening the deeper
@@ -295,99 +298,162 @@ describe('createSensorSourceSection halves (#226)', () => {
     expect(listPage).not.toContain('Battery');
     expect(listPage).not.toContain('Signal strength');
     expect(listPage).not.toContain('Temperature');
-    // What it must still carry: the connect action and the sensor row.
-    expect(listPage).toContain('Reconnect EasyLevel sensor');
+    // What it must still carry: the sensor row.
     expect(listPage).toContain('Connected to the EasyLevel sensor.');
   });
 
-  it('keeps mounting and installation offset on the install half, not the connect half', () => {
+  it('keeps the setup checklist on the install half, not the connect half (#314)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
-    expect(section.connectElement.textContent).not.toContain('Sensor mounting');
-    expect(section.connectElement.textContent).not.toContain('Installation offset');
-    expect(section.installElement.textContent).toContain('Sensor mounting');
-    expect(section.installElement.textContent).toContain('Installation offset');
+    expect(section.connectElement.textContent).not.toContain('Zero on level ground');
+    expect(section.installElement.textContent).toContain('Position: waiting for a reading');
+    expect(section.installElement.textContent).toContain('Direction set');
+    expect(section.installElement.textContent).toContain('Zero on level ground');
   });
 });
 
-describe('createSensorSourceSection mounting orientation (#217)', () => {
-  function mountingSelect(root: HTMLElement): HTMLSelectElement {
-    const select = root.querySelector('select');
-    if (!select) throw new Error('mounting select not found');
-    return select;
+describe('picking the mounting by tapping a side of the vehicle (#217, #222, #314)', () => {
+  function pickerButton(root: HTMLElement, facing: string): HTMLButtonElement {
+    const button = root.querySelector<HTMLButtonElement>(`.mounting-picker__button--${facing}`);
+    if (!button) throw new Error(`no picker button for ${facing}`);
+    return button;
+  }
+  function openDirectionStep(root: HTMLElement): void {
+    const header = [...root.querySelectorAll<HTMLButtonElement>('button.box-step__header')].find(
+      (button) => button.textContent?.includes('Direction'),
+    );
+    header?.click();
   }
 
-  it('hides the mounting picker (folded into the installation block) while the phone is the active source', () => {
+  it('hides the checklist while the phone is the active source', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
-    const heading = [...section.element.querySelectorAll('h3')].find(
-      (h) => h.textContent === 'Sensor mounting',
-    );
-    expect(heading?.closest('[hidden]')).not.toBeNull();
+    expect(section.installElement.hidden).toBe(true);
   });
 
-  it('reflects the stored mounting orientation once EasyLevel is active', () => {
-    const section = createSensorSourceSection(
-      makeOptions({ getSensorSource: () => 'easylevel', getMounting: () => 'rotated90' }),
-    );
-    expect(mountingSelect(section.element).value).toBe('rotated90');
-  });
-
-  it('offers all four physical rotations, not just the official app\u2019s two (#222)', () => {
+  it('offers all four physical rotations, one per side of the vehicle (#222)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
-    const values = [...mountingSelect(section.element).options].map((option) => option.value);
-    expect(values).toEqual(['standard', 'rotated90', 'rotated180', 'rotated270']);
-  });
-
-  it('reflects a stored half-turn mounting, and applies a selected one (#222)', () => {
-    const setMounting = vi.fn();
-    const section = createSensorSourceSection(
-      makeOptions({
-        getSensorSource: () => 'easylevel',
-        getMounting: () => 'rotated180',
-        setMounting,
-      }),
+    const facings = [...section.installElement.querySelectorAll('.mounting-picker__button')].map(
+      (button) => button.className.replace(/.*mounting-picker__button--(\w+).*/, '$1'),
     );
-    const select = mountingSelect(section.element);
-    expect(select.value).toBe('rotated180');
-
-    select.value = 'rotated270';
-    select.dispatchEvent(new Event('change'));
-    expect(setMounting).toHaveBeenCalledWith('rotated270');
+    expect(facings).toEqual(['front', 'right', 'rear', 'left']);
   });
 
-  it('calls setMounting() when the selection changes', () => {
+  it('reflects the stored rotation as the picked side, and says it in the step title', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getMounting: () => 'rotated180' }),
+    );
+    expect(pickerButton(section.installElement, 'rear').getAttribute('aria-pressed')).toBe('true');
+    expect(pickerButton(section.installElement, 'front').getAttribute('aria-pressed')).toBe(
+      'false',
+    );
+    expect(section.installElement.textContent).toContain('Direction set: points to the rear');
+  });
+
+  it('applies the tapped side as the matching rotation', () => {
     const setMounting = vi.fn();
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', setMounting }),
     );
-    const select = mountingSelect(section.element);
-    select.value = 'rotated90';
-    select.dispatchEvent(new Event('change'));
+    openDirectionStep(section.installElement);
+    pickerButton(section.installElement, 'left').click();
+    expect(setMounting).toHaveBeenCalledWith('rotated270');
+    pickerButton(section.installElement, 'right').click();
     expect(setMounting).toHaveBeenCalledWith('rotated90');
   });
 
-  it('refresh() re-reads the stored orientation (changed elsewhere, e.g. another open page)', () => {
+  it('refresh() re-reads the stored rotation (changed elsewhere, e.g. another open page)', () => {
     let mounting: 'standard' | 'rotated90' = 'standard';
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getMounting: () => mounting }),
     );
-    expect(mountingSelect(section.element).value).toBe('standard');
+    expect(pickerButton(section.installElement, 'front').getAttribute('aria-pressed')).toBe('true');
     mounting = 'rotated90';
     section.refresh();
-    expect(mountingSelect(section.element).value).toBe('rotated90');
+    expect(pickerButton(section.installElement, 'right').getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('offers exactly the four supported orientations, all official-app-jargon-free', () => {
-    // Was two before #222 — the official app's own pair. The count changed
-    // by design (a box can be bolted in any of four ways); the "described
-    // without that app's sensor_Placing terminology" half of this test is
-    // unchanged, and now asserted explicitly rather than only implied by
-    // the expected labels.
+  it('labels each side in plain words, free of the vendor app’s jargon', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
-    const labels = [...mountingSelect(section.element).options].map((o) => o.textContent);
-    expect(labels).toEqual(['Standard', 'Rotated 90°', 'Rotated 180°', 'Rotated 270°']);
+    const labels = [...section.installElement.querySelectorAll('.mounting-picker__button')].map(
+      (button) => button.getAttribute('aria-label'),
+    );
+    expect(labels).toEqual([
+      'Points to the front',
+      'Points to the right',
+      'Points to the rear',
+      'Points to the left',
+    ]);
     for (const label of labels) {
       expect(label?.toLowerCase()).not.toMatch(/sensor_placing|placement|placing/);
     }
+  });
+
+  it('stores a picked side of an Xparkle box as its axis mapping (#314)', () => {
+    let learned: unknown = null;
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting: {
+          getRawReading: () => ({ pitchDeg: 0, rollDeg: 0 }),
+          getLearnedMounting: () => learned as null,
+          setLearnedMounting: (mapping) => void (learned = mapping),
+        },
+      }),
+    );
+    expect(section.installElement.textContent).toContain('Pick the direction');
+    pickerButton(section.installElement, 'rear').click();
+    expect(learned).toEqual({ swap: false, pitchSign: -1, rollSign: -1 });
+    expect(section.installElement.textContent).toContain('Direction set: points to the rear');
+  });
+});
+
+describe('the position step alone, for the first-run wizard (#317)', () => {
+  it('is the live position step, without the direction or the zero', () => {
+    let tilt = { pitchDeg: -88, rollDeg: 3 };
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getCalibratedTilt: () => tilt,
+      }),
+    );
+    const wizardStep = document.createElement('div');
+    wizardStep.append(section.positionElement);
+    expect(wizardStep.textContent).toContain('Lying down: stand it upright');
+    expect(wizardStep.textContent).not.toContain('Zero now');
+    tilt = { pitchDeg: 1, rollDeg: -2 };
+    section.refreshLive();
+    expect(wizardStep.textContent).toContain('Stands upright');
+  });
+});
+
+describe('the position step, live (#304, #314)', () => {
+  it('says an upright box stands, and guides a lying one without blocking anything', () => {
+    let tilt = { pitchDeg: 1, rollDeg: -2 };
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getCalibratedTilt: () => tilt,
+      }),
+    );
+    expect(section.installElement.textContent).toContain('Stands upright');
+    tilt = { pitchDeg: -88, rollDeg: 3 };
+    section.refreshLive();
+    expect(section.installElement.textContent).toContain('Lying down: stand it upright');
+    // Never a gate: zeroing is still right there.
+    expect(findButton(section.installElement, 'Zero now').disabled).toBe(false);
+  });
+
+  it('asks a flat box to lie flat, never to stand', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getCalibratedTilt: () => ({ pitchDeg: 70, rollDeg: 0 }),
+      }),
+    );
+    expect(section.installElement.textContent).toContain('lay it flat, top up');
+    expect(section.installElement.textContent).not.toContain('upright');
   });
 });
 
@@ -456,13 +522,13 @@ describe('the learn-the-mounting guide on the device page (#293)', () => {
         learnMounting,
       }),
     );
-    expect(section.installElement.textContent).toContain('Learn the mounting');
+    expect(section.installElement.textContent).toContain('Learn it by raising the front');
   });
 
   it('is not offered for a box that does not', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', learnMounting }),
     );
-    expect(section.installElement.textContent).not.toContain('Learn the mounting');
+    expect(section.installElement.textContent).not.toContain('Learn it by raising the front');
   });
 });

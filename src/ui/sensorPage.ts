@@ -112,6 +112,7 @@ export function createSensorPage(
     // never grows longer than the detail pages its chevrons lead to.
     page.body.append(section.connectElement);
     statusPage.settingsSlot.append(section.installElement);
+    statusPage.moreSlot.append(section.moreElement);
     sources.push({ id: sensor.id, statusPage, section });
   }
 
@@ -132,7 +133,9 @@ export function createSensorPage(
     },
     refreshLive: () => {
       for (const source of sources) {
-        if (source.statusPage.isOpen()) source.statusPage.refresh();
+        if (!source.statusPage.isOpen()) continue;
+        source.statusPage.refresh();
+        source.section.refreshLive();
       }
     },
   };
