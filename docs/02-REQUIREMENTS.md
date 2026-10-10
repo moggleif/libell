@@ -1175,9 +1175,18 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   is the very same component the onboarding wizard embeds — never a second,
   page-specific rebuild.
 - **Given** the External sensor page (R32)
-- **Then** it carries none of the above: only the intro, the Connect/Reconnect action
-  and the sensor row that leads here. A list of sources never grows longer than the
-  page it links to.
+- **Then** it carries none of the above: only the browser requirement (said once), and
+  per box its row plus a Connect action while that box is not the one in use (#315).
+  It never offers Connect or Reconnect for the box already in use, connected or lost
+  — reconnecting happens on the box's own page (R51), which the row opens. A list of
+  sources never grows longer than the page it links to.
+- **Given** a box is the active source, connected or lost (#315)
+- **When** I tap the sensor icon in the top bar
+- **Then** that box's own page opens directly, not the list: its state, Reconnect and
+  setup are all there.
+- **Given** the phone's own sensor is the active source
+- **When** I tap the sensor icon
+- **Then** the list opens, the place to connect a box.
 - **Given** this status page is open
 - **Then** every value on it keeps refreshing every frame for as long as it stays
   open — the same "runs every frame regardless of what else is open" discipline the

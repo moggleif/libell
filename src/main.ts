@@ -894,9 +894,15 @@ function bootstrap(root: HTMLElement): void {
   // only entry point to `sensorPage` now that the ☰ menu no longer
   // carries "External sensor" — visible whenever Web Bluetooth exists at
   // all, not just once connected (`sensorStatusIndicator.ts`).
-  const sensorStatus = createSensorStatusIndicator(externalSensorSupported, showIosGuide, () =>
-    sensorPage?.open(),
-  );
+  // With a box in use (connected or lost), the icon opens that box's own
+  // page directly (#315, the #309 UX review): its state, Reconnect and
+  // setup are all there, so the list in between was one tap too many. The
+  // list stays the way to add or switch boxes while the phone is active.
+  const sensorStatus = createSensorStatusIndicator(externalSensorSupported, showIosGuide, () => {
+    const source = sensor().getSource();
+    if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
+    else sensorPage?.open();
+  });
   // Into the pinned top-bar corner — not the #indicators cluster — so the
   // icon and the Install button beside it always own the top-right
   // corner and the other top-bar items wrap or shift left of them (#244).

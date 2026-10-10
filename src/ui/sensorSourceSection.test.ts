@@ -43,8 +43,21 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
     const disconnectButton = findButton(section.element, 'Disconnect');
     expect(disconnectButton.hidden).toBe(false);
-    const connectButton = findButton(section.element, 'Reconnect EasyLevel sensor');
-    expect(connectButton.textContent).not.toBe('');
+  });
+
+  it('never offers Connect or Reconnect on the list for the box already in use (#315)', () => {
+    for (const state of ['granted', 'disconnected'] as const) {
+      const section = createSensorSourceSection(
+        makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => state }),
+      );
+      expect(findButton(section.element, 'Connect EasyLevel sensor').hidden).toBe(true);
+      expect(section.connectElement.textContent).not.toContain('Reconnect');
+    }
+  });
+
+  it('has no intro paragraph on the list, just the row (#315)', () => {
+    const section = createSensorSourceSection(makeOptions());
+    expect(section.connectElement.textContent).not.toContain('alternative');
   });
 
   it('clicking connect calls connectSensor() and reflects a successful result', async () => {
@@ -285,8 +298,7 @@ describe('createSensorSourceSection halves (#226)', () => {
     expect(listPage).not.toContain('Battery');
     expect(listPage).not.toContain('Signal strength');
     expect(listPage).not.toContain('Temperature');
-    // What it must still carry: the connect action and the sensor row.
-    expect(listPage).toContain('Reconnect EasyLevel sensor');
+    // What it must still carry: the sensor row.
     expect(listPage).toContain('Connected to the EasyLevel sensor.');
   });
 

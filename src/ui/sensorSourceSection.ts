@@ -15,7 +15,7 @@
  * halves and the callers decide where they go, because they answer
  * different questions:
  *   - `connectElement` — "which source is feeding readings, and how do I
- *     connect it": intro, Connect/Reconnect, and the sensor row. This is
+ *     connect it": Connect (while not active) and the sensor row. This is
  *     the whole of the External sensor *list* page (`sensorPage.ts`).
  *   - `installElement` — the mounting picker (#217/#222, R43) and the
  *     installation offset (#131, R34): per-device *configuration*, so
@@ -134,7 +134,7 @@ export interface SensorSourceSection {
    * which is fine: nothing here reads `element`'s children after
    * construction. */
   element: HTMLElement;
-  /** Connect half alone: intro, Connect/Reconnect, sensor row — see the
+  /** Connect half alone: Connect (while not active), sensor row — see the
    * module doc comment's "Where each half is shown". */
   connectElement: HTMLElement;
   /** Mounting + installation-offset half alone — see `connectElement`. */
@@ -159,14 +159,9 @@ export function createSensorSourceSection(
   onSourceChanged?: () => void,
 ): SensorSourceSection {
   const body = document.createElement('div');
-  // Wraps intro/connect/health — the "get connected" half (design review).
+  // Wraps connect/row/note — the "get connected" half (design review).
   // A plain div changes nothing visually; see the return statement below.
   const connectSection = document.createElement('div');
-
-  const intro = document.createElement('p');
-  intro.className = 'menu__text';
-  intro.textContent = t('sensorSource.intro', { name: options.sensor.displayName });
-  connectSection.append(intro);
 
   const connectButton = document.createElement('button');
   connectButton.type = 'button';
@@ -481,13 +476,16 @@ export function createSensorSourceSection(
   body.append(connectSection, installSection, moreSection);
 
   /** Button labels/visibility only — never touches `status`, so an
-   * in-flight connect's status text survives a `refresh()` call. */
+   * in-flight connect's status text survives a `refresh()` call.
+   *
+   * The list only lists and adds boxes (#315, the #309 UX review): once
+   * this box is the active source there is no Connect/Reconnect here — a
+   * lost box is reconnected from its own page, which the row opens, so the
+   * list never offers "Reconnect" next to a box that is connected. */
   function refreshButtons(): void {
     const connected = options.getSensorSource() === options.sensor.id;
-    const name = { name: options.sensor.displayName };
-    connectButton.textContent = connected
-      ? t('sensorSource.reconnect', name)
-      : t('sensorSource.connect', name);
+    connectButton.textContent = t('sensorSource.connect', { name: options.sensor.displayName });
+    connectButton.hidden = connected;
     disconnectButton.hidden = !connected;
   }
 
