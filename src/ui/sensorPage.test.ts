@@ -270,3 +270,19 @@ describe('a device page shows only its own device (#272)', () => {
     expect(text.split('Requires Chrome').length - 1).toBe(1);
   });
 });
+
+describe('createSensorPage.openSource (#285)', () => {
+  it("opens straight to that source's own device page, not the list", () => {
+    const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () => makeOptions());
+    document.body.append(page.element, ...page.statusElements);
+    page.openSource(EASYLEVEL_DESCRIPTOR.id);
+    expect(page.statusElements[0]!.hasAttribute('hidden')).toBe(false);
+    expect(page.statusElements[0]!.isConnected).toBe(true);
+    page.refreshLive(); // only refreshes when a device page is open — must not throw
+  });
+
+  it('ignores an unknown source id', () => {
+    const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () => makeOptions());
+    expect(() => page.openSource('nope' as never)).not.toThrow();
+  });
+});

@@ -8,7 +8,7 @@ plan for the ramps you actually own: which wheels to drive up, onto which step, 
 your ramps can't finish the job at all.
 
 Lay the phone flat inside the vehicle (for example on the table) with the **top edge of
-the phone pointing toward the front**. Libell shows a top-down view of the RV: green
+the phone pointing toward the front**. (With an external sensor box the phone can be anywhere — the box measures.) Libell shows a top-down view of the RV: green
 wheels are already within tolerance, orange wheels show which ramp step to drive up onto
 and how many mm they are missing, gray wheels are low but get no ramp because your ramp
 set doesn't stretch that far, and red means even your tallest step can't fix that wheel

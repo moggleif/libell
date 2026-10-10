@@ -36,6 +36,8 @@ URL and must keep working with no signal.
 - **Then** the app derives side/side (roll) and front/back (pitch) tilt from gravity,
   preferring `DeviceMotionEvent.accelerationIncludingGravity` and falling back to
   `DeviceOrientationEvent`, and the reading is smoothed so it does not jitter.
+- This describes the phone sensor. With an external sensor box (R33) the phone's own
+  placement does not matter; the box is installed as R34 and R43 describe (#285).
 
 ## R3 — The app computes how much to raise each wheel
 
@@ -267,6 +269,18 @@ URL and must keep working with no signal.
 - **Then** an overlay says what to do ("lay the phone flat" / "turn to portrait")
   instead of showing wrong wheel guidance; the overlay clears with hysteresis (only
   once clearly flat again) so it cannot flicker at the boundary.
+- **Given** an external sensor box is the active source (R33, R40)
+- **Then** none of the above applies: the box is permanently mounted, so the phone's
+  pose is irrelevant and the phone may lie anywhere or be held in landscape. The only
+  pose check left is on the box itself: if it is tilted past 45° (cleared again below
+  40°) — lying on its side, hanging on a wall — or reads fully upside-down (R43), the
+  overlay says the sensor sits in an extreme position, or looks mounted upside-down,
+  instead of guidance (#285). A vehicle on ramps tilts a mounted box by only a few
+  degrees, far below that limit.
+- **Given** that overlay is shown for an external sensor
+- **Then** it also says what to do — check the sensor's live values and mounting — and
+  carries an "Open sensor page" button that goes straight to that sensor's own page
+  (R40), not the source list (#285).
 
 ## R18 — A first-run introduction, skippable and reopenable
 
@@ -913,6 +927,12 @@ cross-platform goal — they are not this app's code and are not covered here.
 - The amber calibration lamp (R11) follows the same rule: it checks the phone's pair
   while the phone is active, or just the box's installation offset while EasyLevel
   is — never both pairs at once.
+- **Given** an external sensor is the active source
+- **Then** the Calibration section (R11, R24) is disabled and says why: the phone's
+  sensor calibration, flip calibration and vehicle zero are not applied to a box's
+  readings, so capturing one would silently do nothing (or capture the box's tilt as
+  the phone's). The stored phone values are kept untouched and become editable again on
+  switching back to the phone (#285).
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
   External sensor page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
@@ -1237,8 +1257,10 @@ offset (R34) cannot rescue them — it subtracts a _constant_, while a half turn
 _sign inversion_. Level still reads level, so the calibration looks like it
 succeeded, and only then does the app start confidently naming the wrong wheel.
 Mounting the box fully upside-down (inverted Z) stays out of scope and fails safely
-rather than silently: `domain/pose.ts` reads ~180° of total tilt and shows R17's
-"lay it flat" overlay instead of guidance.
+rather than silently: `isUpsideDown` in `domain/pose.ts` sees gravity pointing out of
+the sensor's back and shows R17's "sensor looks mounted upside-down" overlay instead of
+guidance (#285; the phone's own "lay it flat" wording no longer applies to a box).
+`createExternalPoseDetector` also flags any other extreme tilt (> 45°) of a mounted box.
 
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this

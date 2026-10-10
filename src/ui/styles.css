@@ -2367,11 +2367,32 @@ body {
   display: none;
 }
 
+.pose-overlay {
+  flex-direction: column;
+  gap: 12px;
+}
+
 .pose-overlay__text {
   margin: 0;
   color: var(--on-surface);
   font-size: 1.3rem;
   font-weight: 600;
+}
+
+.pose-overlay__hint {
+  margin: 0;
+  color: var(--on-surface-muted);
+  font-size: 0.95rem;
+}
+
+.pose-overlay__hint[hidden],
+.pose-overlay .menu__action[hidden] {
+  display: none;
+}
+
+.pose-overlay .menu__action {
+  max-width: 280px;
+  margin-top: 4px;
 }
 
 /* Stale-data overlay (#132): sensor data has stopped refreshing — a

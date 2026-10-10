@@ -20,7 +20,7 @@ import {
   type TargetPreset,
 } from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
-import { createPoseDetector } from './domain/pose';
+import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
 import {
   easyLevelSettings,
   formatLength,
@@ -508,6 +508,7 @@ function bootstrap(root: HTMLElement): void {
         maybeRebuildScreen();
       },
       getCalibration: () => calibration,
+      isPhoneActive: () => sensor().getSource() === 'phone',
       calibrate: () => calibrateNow(),
       readTilt: () => readTiltNow(),
       applyCalibration(next) {
@@ -597,6 +598,7 @@ function bootstrap(root: HTMLElement): void {
       maybeRebuildScreen();
     },
     getCalibration: () => calibration,
+    isPhoneActive: () => sensor().getSource() === 'phone',
     calibrate: () => calibrateNow(),
     readTilt: () => readTiltNow(),
     applyCalibration(next: Calibration) {
@@ -1146,7 +1148,20 @@ function bootstrap(root: HTMLElement): void {
     poseOverlay.hidden = true;
     const poseText = document.createElement('p');
     poseText.className = 'pose-overlay__text';
-    poseOverlay.append(poseText);
+    // External sensor only (#285): what to do about a sensor that reads
+    // wrong, with a direct link to its own page (live values, mounting).
+    const poseHint = document.createElement('p');
+    poseHint.className = 'pose-overlay__hint';
+    poseHint.textContent = t('pose.sensorHint');
+    const poseSensorButton = document.createElement('button');
+    poseSensorButton.type = 'button';
+    poseSensorButton.className = 'menu__action';
+    poseSensorButton.textContent = t('pose.openSensorPage');
+    poseSensorButton.addEventListener('click', () => {
+      const source = sensor().getSource();
+      if (source !== 'phone') externalSensorPage?.openSource(source);
+    });
+    poseOverlay.append(poseText, poseHint, poseSensorButton);
     root.append(poseOverlay);
 
     // Stale-data overlay (#132): a third, distinct state from the pose
@@ -1163,6 +1178,7 @@ function bootstrap(root: HTMLElement): void {
     root.append(staleOverlay);
 
     const detectPose = createPoseDetector();
+    const detectExternalPose = createExternalPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
     // Rocking vehicle (people moving around): show "Measuring…" until the
     // reading has been calm for a moment (#86); the diagram itself stays
@@ -1275,9 +1291,23 @@ function bootstrap(root: HTMLElement): void {
         }
         staleOverlay.hidden = true;
         // Invalid pose: pause the guidance and say what to do instead.
-        const badPose = detectPose(gravity) === 'not-flat';
-        if (badPose || landscape.matches) {
-          poseText.textContent = badPose ? t('pose.layFlat') : t('pose.portrait');
+        // The phone pose rules (R17) only apply to the phone itself; a
+        // mounted external box is never laid flat or turned (#285). It is
+        // only checked for positions too extreme to be a real mount
+        // (on its side, face-down — R43).
+        const phoneActive = sensor().getSource() === 'phone';
+        const externalPose = phoneActive ? 'ok' : detectExternalPose(gravity);
+        const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : externalPose !== 'ok';
+        const badLandscape = phoneActive && landscape.matches;
+        if (badPose || badLandscape) {
+          poseText.textContent = !badPose
+            ? t('pose.portrait')
+            : phoneActive
+              ? t('pose.layFlat')
+              : externalPose === 'upside-down'
+                ? t('pose.sensorUpsideDown')
+                : t('pose.sensorExtreme');
+          poseHint.hidden = poseSensorButton.hidden = phoneActive;
           poseOverlay.hidden = false;
           levelOverlay.hideNow();
           requestAnimationFrame(frame);
