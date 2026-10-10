@@ -199,18 +199,22 @@ describe('falling back to the phone (#265)', () => {
 });
 
 describe('retrying (#134, #211)', () => {
-  it('reconnects the active source with its own device id', async () => {
+  it('opens the picker for the active source, as the connect button does (#307)', async () => {
     const easylevel = fakeExternal('easylevel');
     const { controller, calls } = makeController({}, { easylevel: easylevel.sensor });
 
     await controller.connect('easylevel');
+    easylevel.calls.start = 0;
     await controller.retry();
 
-    expect(easylevel.calls.reconnect).toEqual(['device-1']);
+    expect(easylevel.calls.start).toBe(1);
+    // A silent reconnect cannot reach the box on Chrome for Android once
+    // the page has lost the device it picked, so the tap never relies on one.
+    expect(easylevel.calls.reconnect).toEqual([]);
     expect(calls.status).toBe(1);
   });
 
-  it('falls back to the remembered id when the adapter has none', async () => {
+  it('auto-retries with the remembered id when the adapter has none', async () => {
     const easylevel = fakeExternal('easylevel', { getDeviceId: () => null });
     const { controller } = makeController(
       { loadDeviceId: () => 'remembered-1', getPreferredSource: () => 'easylevel' },
@@ -219,7 +223,8 @@ describe('retrying (#134, #211)', () => {
 
     await controller.attemptAutoReconnect();
     easylevel.calls.reconnect.length = 0;
-    await controller.retry();
+    controller.maybeAutoRetry(1000);
+    await Promise.resolve();
 
     expect(easylevel.calls.reconnect).toEqual(['remembered-1']);
   });
@@ -230,6 +235,7 @@ describe('retrying (#134, #211)', () => {
 
     await controller.retry();
 
+    expect(easylevel.calls.start).toBe(0);
     expect(easylevel.calls.reconnect).toEqual([]);
     expect(calls.status).toBe(0);
   });

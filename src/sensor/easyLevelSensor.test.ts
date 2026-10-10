@@ -213,6 +213,23 @@ describe('createEasyLevelSensor (#116)', () => {
     expect(sensor.getState()).toBe('denied');
   });
 
+  it('stays disconnected when a Retry picker is cancelled after the box was lost (#307)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const transport: EasyLevelTransport = {
+      connect: () => Promise.reject(new Error('User cancelled the requestDevice() chooser.')),
+      reconnect: async () => null,
+    };
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.reconnect('device-1');
+    expect(sensor.getState()).toBe('disconnected');
+
+    // Still 'disconnected', so the prompt and its background retry stay.
+    expect(await sensor.start()).toBe('disconnected');
+  });
+
   it('never fails to connect just because the status characteristic subscription throws (best-effort, #116)', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },

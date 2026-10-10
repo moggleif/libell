@@ -498,8 +498,10 @@ export function createEasyLevelSensor(
       } catch {
         // Covers a cancelled device picker, a GATT connect failure, or a
         // missing service — all surfaced the same way the phone sensor
-        // surfaces a denied permission.
-        state = 'denied';
+        // surfaces a denied permission. A box that was already lost stays
+        // lost (#307): Retry's picker being cancelled must not hide the
+        // unavailable prompt or stop its background retry.
+        if (state !== 'disconnected') state = 'denied';
         return state;
       }
     },
