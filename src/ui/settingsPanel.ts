@@ -879,8 +879,10 @@ export function createSettingsForm(
     // uses standalone (#109) — not a reimplementation. Its status text
     // is refreshed whenever this tab becomes visible, since the form
     // (and this embedded copy) is only built once, not on every open.
+    // As a two-step checklist (#330), like the box's own setup.
     const embeddedCalibration = createCalibrationSection(
       calibrationOptions ?? inertCalibrationOptions(),
+      'checklist',
     );
     calibrationPanel.append(embeddedCalibration.element);
 

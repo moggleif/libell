@@ -122,6 +122,8 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     menu.open('calibration');
     const calibrationBody = menu.element.querySelector('.menu-page__body');
     expect(calibrationBody?.querySelector('form.settings__form')).toBeNull();
+    // The same two-step checklist as Modern's tab (#330).
+    expect(calibrationBody?.querySelectorAll('.box-step')).toHaveLength(2);
 
     menu.open('targets');
     expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain(

@@ -218,6 +218,22 @@ URL and must keep working with no signal.
 - **Given** I have never saved vehicle settings, or never calibrated
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
   tapping it opens the matching menu section, and it disappears once handled.
+- **Given** the phone is the active sensor and Settings → Calibration is open (Modern tab
+  or Classic page)
+- **Then** it is a checklist of two steps, the same pattern as the box's own setup
+  (R51, #330): **1. the phone** and **2. the vehicle zero** (R24). A done step shows ✓
+  and its age (R26); an undone one its one action. Only the next undone step is
+  expanded, every step opens on a tap, and a step showing a message (an error, a check
+  result) stays open.
+  - Step 1 says to lay the phone on something flat, with **Calibrate now**, and a quiet
+    link "No flat surface? Flip the phone" that reveals the flip calibration.
+  - Step 2 says to level the vehicle with a spirit level and put the phone in its usual
+    spot, with **Set as level**.
+  - Check and Clear sit under a collapsed **More** in each step. There is no "Two
+    layers" intro.
+  - While an external box is active the steps are hidden and the box's own calibration
+    shows in their place, as before (#316). The first-run wizard keeps its own
+    one-calibration-per-step cards.
 
 ## R12 — Feedback without a backend
 

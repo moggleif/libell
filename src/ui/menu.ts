@@ -308,7 +308,8 @@ export function createMenu(options: MenuOptions): Menu {
 
   // --- Calibration (one-shot + flip) — the one page that stays fully
   // standalone, outside the shared settingsForm (#122, ADR 0013 above).
-  const calibrationSection = createCalibrationSection(options);
+  // As a two-step checklist (#330), same as Modern's tab.
+  const calibrationSection = createCalibrationSection(options, 'checklist');
   const refreshCalibration = calibrationSection.refresh;
   addSection('calibration', t('menu.calibration'), calibrationSection.element);
 

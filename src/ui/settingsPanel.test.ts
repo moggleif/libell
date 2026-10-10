@@ -653,6 +653,12 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(form.querySelector('.klossar__footer-model')?.textContent).toBe('Custom set');
   });
 
+  it('shows the calibration tab as a two-step checklist (#330)', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const steps = tabPanel(form, 'calibration').querySelectorAll('.box-step');
+    expect(steps).toHaveLength(2);
+  });
+
   it('embeds a working calibration section in the Kalibrering tab (#109)', () => {
     const calibrate = vi.fn(() => null);
     const form = createSettingsForm(modern, vi.fn(), {

@@ -382,6 +382,13 @@ export const MESSAGES = {
     'calibration.status': 'Calibrated: side/side {roll}°, front/back {pitch}°.',
     'calibration.status.none': 'Not calibrated — using the raw sensor.',
     'calibration.now': 'Calibrate now',
+    'calibration.step.phone.done': 'Phone calibrated',
+    'calibration.step.phone.hint': 'Lay the phone on something flat.',
+    'calibration.step.flipLink': 'No flat surface? Flip the phone',
+    'calibration.step.vehicle.done': 'Vehicle zero set',
+    'calibration.step.vehicle.hint':
+      'Level the vehicle with a spirit level and put the phone in its usual spot.',
+    'calibration.step.vehicle.now': 'Set as level',
     'calibration.clear': 'Clear calibration',
     'calibration.err.notRunning':
       'The tilt sensor is not running yet — tap Start on the main screen first.',
@@ -395,11 +402,6 @@ export const MESSAGES = {
     // Design review: the two-layer overview used to live only on the Help
     // page ('help.calibration.t' below) — moved to the top of the actual
     // Kalibrering tab, where it is actionable, not just informational.
-    'calibration.guide.intro':
-      'Two layers:\n' +
-      '1. Calibrate the phone once on a level surface (or with the 180° flip).\n' +
-      "2. With the vehicle verifiably level, set the phone's normal spot as the " +
-      'vehicle zero — then a slightly tilting table is cancelled out too.',
     'calibration.vehicle.intro':
       'The sensor calibration zeroes the phone — not the spot where it lies. If the ' +
       'table tilts slightly, the app would always show that tilt. Level the vehicle ' +
@@ -494,9 +496,9 @@ export const MESSAGES = {
       'The app then picks where your ramps do the most good — and, within the ' +
       'tolerance, leaves the drain side lowest so sink and shower keep draining.',
     'help.calibration.h': 'Calibration',
-    // Design review: the step-by-step "how" moved to the actual
-    // Kalibrering tab ('calibration.guide.intro' above) where it is
-    // actionable — this stays the "why" instead of repeating it.
+    // Design review: the step-by-step "how" lives on the Kalibrering tab's
+    // checklist (#330), where it is actionable — this stays the "why"
+    // instead of repeating it.
     'help.calibration.t':
       "The phone reads its own tilt, not the ground's — and a vehicle floor is rarely " +
       'perfectly flat either. Calibrating corrects for both, so what the app shows is ' +
@@ -873,6 +875,13 @@ export const MESSAGES = {
     'calibration.status': 'Kalibrerad: sidled {roll}°, längsled {pitch}°.',
     'calibration.status.none': 'Inte kalibrerad — använder sensorn som den är.',
     'calibration.now': 'Kalibrera nu',
+    'calibration.step.phone.done': 'Telefonen kalibrerad',
+    'calibration.step.phone.hint': 'Lägg telefonen på något plant.',
+    'calibration.step.flipLink': 'Inget plant underlag? Vänd telefonen',
+    'calibration.step.vehicle.done': 'Nolläget satt',
+    'calibration.step.vehicle.hint':
+      'Ställ fordonet plant med ett vattenpass och lägg telefonen på sin vanliga plats.',
+    'calibration.step.vehicle.now': 'Sätt som plant',
     'calibration.clear': 'Rensa kalibrering',
     'calibration.err.notRunning':
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
@@ -880,11 +889,6 @@ export const MESSAGES = {
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
     'calibration.sensor.h': 'Kalibrera telefonen',
     'calibration.vehicle.h': 'Kalibrera fordonets nolläge',
-    'calibration.guide.intro':
-      'Två lager:\n' +
-      '1. Kalibrera telefonen en gång på en plan yta (eller med 180°-vändningen).\n' +
-      '2. När fordonet står verifierat plant: sätt telefonens vanliga plats som ' +
-      'fordonets nolläge — då räknas även ett lutande bord bort.',
     'calibration.vehicle.intro':
       'Sensorkalibreringen nollar telefonen — inte platsen där den ligger. Lutar ' +
       'bordet lite visar appen alltid den lutningen. Ställ fordonet verifierat ' +
@@ -1338,6 +1342,13 @@ export const MESSAGES = {
     'calibration.status': 'Étalonné : latéral {roll}°, longitudinal {pitch}°.',
     'calibration.status.none': 'Non étalonné — capteur brut utilisé.',
     'calibration.now': 'Étalonner maintenant',
+    'calibration.step.phone.done': 'Téléphone étalonné',
+    'calibration.step.phone.hint': 'Posez le téléphone sur une surface plane.',
+    'calibration.step.flipLink': 'Pas de surface plane ? Retournez le téléphone',
+    'calibration.step.vehicle.done': 'Zéro du véhicule défini',
+    'calibration.step.vehicle.hint':
+      'Mettez le véhicule de niveau avec un niveau à bulle et posez le téléphone à sa place habituelle.',
+    'calibration.step.vehicle.now': 'Définir comme niveau',
     'calibration.clear': 'Effacer l’étalonnage',
     'calibration.err.notRunning':
       'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
@@ -1346,11 +1357,6 @@ export const MESSAGES = {
       'Le téléphone ne semble pas à plat — posez-le sur une surface de niveau et réessayez.',
     'calibration.sensor.h': 'Étalonner le téléphone',
     'calibration.vehicle.h': 'Étalonner le zéro du véhicule',
-    'calibration.guide.intro':
-      'Deux couches :\n' +
-      '1. Étalonnez le téléphone une fois sur une surface de niveau (ou avec le retournement à 180°).\n' +
-      '2. Le véhicule étant vérifiablement de niveau, définissez l’emplacement habituel du ' +
-      'téléphone comme zéro du véhicule — une table légèrement inclinée est alors compensée elle aussi.',
     'calibration.vehicle.intro':
       'L’étalonnage du capteur met le téléphone à zéro — pas l’endroit où il repose. Si la ' +
       'table penche un peu, l’application afficherait toujours cette inclinaison. Mettez le ' +
@@ -1808,6 +1814,13 @@ export const MESSAGES = {
     'calibration.status': 'Calibrado: lado/lado {roll}°, delante/detrás {pitch}°.',
     'calibration.status.none': 'Sin calibrar: se usa el sensor en bruto.',
     'calibration.now': 'Calibrar ahora',
+    'calibration.step.phone.done': 'Teléfono calibrado',
+    'calibration.step.phone.hint': 'Deja el teléfono sobre algo plano.',
+    'calibration.step.flipLink': '¿Nada plano? Gira el teléfono',
+    'calibration.step.vehicle.done': 'Cero del vehículo fijado',
+    'calibration.step.vehicle.hint':
+      'Nivela el vehículo con un nivel de burbuja y pon el teléfono en su sitio habitual.',
+    'calibration.step.vehicle.now': 'Fijar como nivelado',
     'calibration.clear': 'Borrar la calibración',
     'calibration.err.notRunning':
       'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
@@ -1815,11 +1828,6 @@ export const MESSAGES = {
       'El móvil no parece estar plano: ponlo sobre una superficie nivelada e inténtalo de nuevo.',
     'calibration.sensor.h': 'Calibrar el móvil',
     'calibration.vehicle.h': 'Calibrar el cero del vehículo',
-    'calibration.guide.intro':
-      'Dos capas:\n' +
-      '1. Calibra el móvil una vez sobre una superficie nivelada (o con el giro de 180°).\n' +
-      '2. Con el vehículo verificablemente nivelado, fija el sitio habitual del móvil como ' +
-      'cero del vehículo: así también se compensa una mesa algo inclinada.',
     'calibration.vehicle.intro':
       'La calibración del sensor pone a cero el móvil, no el sitio donde está apoyado. Si la ' +
       'mesa se inclina un poco, la app mostraría siempre esa inclinación. Nivela el vehículo ' +
@@ -2277,6 +2285,13 @@ export const MESSAGES = {
     'calibration.status': 'Kalibriert: seitlich {roll}°, längs {pitch}°.',
     'calibration.status.none': 'Nicht kalibriert — der Rohwert des Sensors wird verwendet.',
     'calibration.now': 'Jetzt kalibrieren',
+    'calibration.step.phone.done': 'Handy kalibriert',
+    'calibration.step.phone.hint': 'Leg das Handy auf etwas Ebenes.',
+    'calibration.step.flipLink': 'Nichts Ebenes da? Handy drehen',
+    'calibration.step.vehicle.done': 'Fahrzeug-Nullpunkt gesetzt',
+    'calibration.step.vehicle.hint':
+      'Richte das Fahrzeug mit einer Wasserwaage aus und leg das Handy an seinen üblichen Platz.',
+    'calibration.step.vehicle.now': 'Als waagerecht setzen',
     'calibration.clear': 'Kalibrierung löschen',
     'calibration.err.notRunning':
       'Der Neigungssensor läuft noch nicht — tippe zuerst auf dem Hauptbildschirm auf Start.',
@@ -2285,11 +2300,6 @@ export const MESSAGES = {
       'versuche es erneut.',
     'calibration.sensor.h': 'Handy kalibrieren',
     'calibration.vehicle.h': 'Fahrzeug-Nullpunkt kalibrieren',
-    'calibration.guide.intro':
-      'Zwei Ebenen:\n' +
-      '1. Kalibriere das Handy einmal auf einer waagerechten Fläche (oder mit der 180°-Drehung).\n' +
-      '2. Setze bei nachweislich waagerechtem Fahrzeug den gewohnten Platz des Handys als ' +
-      'Fahrzeug-Nullpunkt — dann wird auch ein leicht schiefer Tisch herausgerechnet.',
     'calibration.vehicle.intro':
       'Die Sensorkalibrierung stellt das Handy auf null — nicht den Platz, auf dem es liegt. ' +
       'Steht der Tisch leicht schief, würde die App diese Neigung immer anzeigen. Stelle das ' +
