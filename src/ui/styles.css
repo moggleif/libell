@@ -1515,7 +1515,8 @@ body {
   transition: transform 0.15s ease;
 }
 
-.sensor-status__debug[open] > .sensor-status__debug-summary::before {
+.sensor-status__debug[open] > .sensor-status__debug-summary::before,
+.sensor-status__advanced[open] > .sensor-status__debug-summary::before {
   transform: rotate(90deg);
 }
 
