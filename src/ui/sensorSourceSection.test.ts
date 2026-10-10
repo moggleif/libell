@@ -26,17 +26,22 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
 }
 
 function findButton(root: HTMLElement, text: string): HTMLButtonElement {
-  const button = [...root.querySelectorAll('button')].find((b) => b.textContent === text);
+  const button = [...root.querySelectorAll('button')].find(
+    (b) => b.textContent === text || b.getAttribute('aria-label') === text,
+  );
   if (!button) throw new Error(`no button with text "${text}"`);
   return button;
 }
 
 describe('createSensorSourceSection (#116)', () => {
-  it('shows "Connect" and hides the disconnect button while the phone is the active source', () => {
+  it('shows the box’s name and a Connect link while the phone is the active source (#324)', () => {
     const section = createSensorSourceSection(makeOptions());
-    expect(section.element.textContent).toContain('Connect');
-    const disconnectButton = [...section.element.querySelectorAll('button')].find((b) => b.hidden);
-    expect(disconnectButton).toBeDefined();
+    const connect = findButton(section.connectElement, 'Connect EasyLevel sensor');
+    expect(connect.hidden).toBe(false);
+    expect(connect.textContent).toBe('Connect');
+    expect(connect.classList.contains('link-button')).toBe(true);
+    expect(section.connectElement.textContent).toContain('EasyLevel');
+    expect(section.connectElement.textContent).not.toContain('Disconnect');
   });
 
   it('shows the connected status and a visible disconnect button once EasyLevel is active', () => {
@@ -61,8 +66,14 @@ describe('createSensorSourceSection (#116)', () => {
   });
 
   it('clicking connect calls connectSensor() and reflects a successful result', async () => {
-    const connectSensor = vi.fn(() => Promise.resolve<'granted'>('granted'));
-    const section = createSensorSourceSection(makeOptions({ connectSensor }));
+    let source: 'phone' | 'easylevel' = 'phone';
+    const connectSensor = vi.fn(() => {
+      source = 'easylevel';
+      return Promise.resolve<'granted'>('granted');
+    });
+    const section = createSensorSourceSection(
+      makeOptions({ connectSensor, getSensorSource: () => source }),
+    );
     const button = findButton(section.element, 'Connect EasyLevel sensor');
     button.click();
     expect(connectSensor).toHaveBeenCalledOnce();
@@ -103,10 +114,11 @@ describe('createSensorSourceSection (#116)', () => {
         },
       }),
     );
-    const disconnectButton = findButton(section.element, 'Disconnect');
-    disconnectButton.click();
+    // Disconnect lives on the box's own page now (#324), under "More".
+    findButton(section.moreElement, 'Disconnect').click();
     expect(disconnectSensor).toHaveBeenCalledOnce();
-    expect(disconnectButton.hidden).toBe(true);
+    expect(section.moreElement.hidden).toBe(true);
+    expect(findButton(section.connectElement, 'Connect EasyLevel sensor').hidden).toBe(false);
   });
 
   it('refresh() re-reads the current source (menu re-opened after a connect elsewhere)', () => {
@@ -124,8 +136,8 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
-    expect(section.element.textContent).toContain('lost');
-    expect(section.element.textContent).not.toContain('Connected to the EasyLevel sensor.');
+    expect(section.connectElement.textContent).toContain('No contact');
+    expect(section.connectElement.textContent).not.toContain('Connected');
   });
 
   it('shows the zero step as not done until one is captured, once EasyLevel is active (#314)', () => {
@@ -298,8 +310,9 @@ describe('createSensorSourceSection halves (#226)', () => {
     expect(listPage).not.toContain('Battery');
     expect(listPage).not.toContain('Signal strength');
     expect(listPage).not.toContain('Temperature');
-    // What it must still carry: the sensor row.
-    expect(listPage).toContain('Connected to the EasyLevel sensor.');
+    // What it must still carry: the box and its state.
+    expect(listPage).toContain('EasyLevel');
+    expect(listPage).toContain('Connected');
   });
 
   it('keeps the setup checklist on the install half, not the connect half (#314)', () => {
@@ -485,12 +498,13 @@ describe('one row per source, each answering for itself (#272)', () => {
       makeOptions({ getSensorSource: () => 'xparkle', getSensorState: () => 'granted' }),
     );
     // The bag's descriptor is EasyLevel's, and a different box is active.
-    expect(section.connectElement.textContent).toContain('Not in use');
+    expect(section.connectElement.classList.contains('is-active')).toBe(false);
+    expect(findButton(section.connectElement, 'Connect EasyLevel sensor').hidden).toBe(false);
   });
 
-  it('says "using the phone" only when the phone really is active', () => {
+  it('never says per card which sensor is in use; the list says it once (#324)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
-    expect(section.connectElement.textContent).toContain("phone's own sensor");
+    expect(section.connectElement.textContent).not.toContain('phone');
   });
 
   it('tells the caller when connecting here makes the other rows stale', async () => {

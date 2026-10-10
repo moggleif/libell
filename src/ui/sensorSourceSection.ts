@@ -166,35 +166,27 @@ export function createSensorSourceSection(
   const body = document.createElement('div');
   // Wraps connect/row/note — the "get connected" half (design review).
   // A plain div changes nothing visually; see the return statement below.
+  // One card per box (#324, flow D of the #309 UX review, as drawn in its
+  // mockup): a mark (✓ in use, ! lost, + not in use), the box's name, and
+  // one line under it — its state, or a quiet Connect link. The card of the
+  // box in use opens that box's own page, where Reconnect, its setup and
+  // Disconnect live; the list never offers them itself.
   const connectSection = document.createElement('div');
-
-  const connectButton = document.createElement('button');
-  connectButton.type = 'button';
-  connectButton.className = 'menu__action';
-  connectSection.append(connectButton);
-
-  // The listed sensor + its disconnect action, side by side (screen-cleanup
-  // follow-up): "Disconnect" now reads as belonging to the connected
-  // sensor named beside it, instead of being a second stray full-width
-  // button underneath "Connect" — and hidden entirely whenever there is no
-  // sensor connected to disconnect (unchanged rule, just relocated).
-  const sensorRow = document.createElement('div');
-  sensorRow.className = 'sensor-row';
-  // A button, not a plain <p> (screen-cleanup follow-up): opens the deeper
-  // status page when one is wired. The status text itself lives in a
-  // nested span, not directly as the button's textContent, so `refresh()`
-  // below can update it without wiping the chevron appended once here.
+  connectSection.className = 'sensor-card';
+  const mark = document.createElement('span');
+  mark.className = 'sensor-card__mark';
+  mark.setAttribute('aria-hidden', 'true');
+  const cardText = document.createElement('div');
+  cardText.className = 'sensor-card__text';
+  // A button, not a plain heading, so the box's page stays reachable by
+  // keyboard; inert (aria-disabled, no chevron) while the box is not in
+  // use, since the page behind it is that box's own (#244).
   const status = document.createElement('button');
   status.type = 'button';
-  status.className = 'menu__text menu__text--status sensor-row__status-button';
+  status.className = 'sensor-card__name sensor-row__status-button';
   const statusText = document.createElement('span');
+  statusText.textContent = options.sensor.displayName;
   status.append(statusText);
-  // The chevron and the click only make sense while an EasyLevel box is
-  // the active source, since the page behind them is that box's own
-  // status page. While the phone's own sensor is active the row says so
-  // and is a plain status line — nothing to tap (#244): it used to offer
-  // a chevron into the EasyLevel status page from a row that had just
-  // said the phone was in use.
   const chevron = document.createElement('span');
   if (onOpenStatus) {
     chevron.className = 'sensor-row__chevron';
@@ -205,19 +197,24 @@ export function createSensorSourceSection(
       if (options.getSensorSource() === options.sensor.id) onOpenStatus();
     });
   }
-  const disconnectButton = document.createElement('button');
-  disconnectButton.type = 'button';
-  disconnectButton.className = 'menu__action menu__action--secondary menu__action--inline';
-  disconnectButton.textContent = t('sensorSource.disconnect');
-  sensorRow.append(status, disconnectButton);
-  connectSection.append(sensorRow);
-  // An actionable line under the row when a source has something specific
-  // to say about why it is not working (#272) — hidden the rest of the
-  // time, which is nearly always.
+  const stateLine = document.createElement('p');
+  stateLine.className = 'sensor-card__state';
+  const connectButton = document.createElement('button');
+  connectButton.type = 'button';
+  connectButton.className = 'link-button sensor-card__connect';
+  connectButton.textContent = t('box.connect');
+  connectButton.setAttribute(
+    'aria-label',
+    t('sensorSource.connect', { name: options.sensor.displayName }),
+  );
+  // An actionable line when a source has something specific to say about
+  // why it is not working (#272) — hidden the rest of the time, which is
+  // nearly always.
   const noteRow = document.createElement('p');
   noteRow.className = 'menu__text menu__text--warning';
   noteRow.hidden = true;
-  connectSection.append(noteRow);
+  cardText.append(status, stateLine, connectButton, noteRow);
+  connectSection.append(mark, cardText);
 
   // The box's setup (#314, the #309 UX review): one checklist of three
   // steps instead of three stacked sections of paragraphs and buttons —
@@ -480,42 +477,30 @@ export function createSensorSourceSection(
   });
   body.append(connectSection, installSection, moreSection);
 
-  /** Button labels/visibility only — never touches `status`, so an
-   * in-flight connect's status text survives a `refresh()` call.
-   *
-   * The list only lists and adds boxes (#315, the #309 UX review): once
-   * this box is the active source there is no Connect/Reconnect here — a
-   * lost box is reconnected from its own page, which the row opens, so the
-   * list never offers "Reconnect" next to a box that is connected. */
-  function refreshButtons(): void {
-    const connected = options.getSensorSource() === options.sensor.id;
-    connectButton.textContent = t('sensorSource.connect', { name: options.sensor.displayName });
-    connectButton.hidden = connected;
-    disconnectButton.hidden = !connected;
-  }
-
-  function refresh(): void {
-    refreshButtons();
-    // This section's own source, not "any external source" (#272): with
-    // more than one listed, each row answers for itself.
+  /** The line under the name: empty while not in use (Connect shows
+   * instead), else Connected or No contact. */
+  function refreshCard(): void {
     const active = options.getSensorSource() === options.sensor.id;
-    // Plain text, not a link, whenever the box is not the active source —
-    // see the chevron's own comment above (#244).
+    const lost = active && options.getSensorState() === 'disconnected';
+    mark.textContent = !active ? '+' : lost ? '!' : '✓';
+    connectSection.classList.toggle('is-active', active && !lost);
+    connectSection.classList.toggle('is-lost', lost);
+    connectButton.hidden = active;
+    stateLine.hidden = !active;
+    stateLine.textContent = active ? t(lost ? 'box.state.lost' : 'box.state.connected') : '';
     if (onOpenStatus) {
       chevron.hidden = !active;
       status.classList.toggle('sensor-row__status-button--plain', !active);
       if (active) status.removeAttribute('aria-disabled');
       else status.setAttribute('aria-disabled', 'true');
     }
-    statusText.textContent = !active
-      ? // With more than one source listed, "using the phone" is only true
-        // when the phone really is the active one (#272).
-        options.getSensorSource() === 'phone'
-        ? t('sensorSource.status.phone')
-        : t('sensorSource.status.inactive')
-      : options.getSensorState() === 'disconnected'
-        ? t('sensorSource.status.disconnected', { name: options.sensor.displayName })
-        : t('sensorSource.status.connected', { name: options.sensor.displayName });
+  }
+
+  function refresh(): void {
+    refreshCard();
+    // This section's own source, not "any external source" (#272): with
+    // more than one listed, each card answers for itself.
+    const active = options.getSensorSource() === options.sensor.id;
     const note = options.getSensorNote?.() ?? null;
     noteRow.hidden = note === null;
     if (note !== null) noteRow.textContent = note;
@@ -525,23 +510,21 @@ export function createSensorSourceSection(
   }
 
   connectButton.addEventListener('click', () => {
-    statusText.textContent = t('sensorSource.status.connecting');
+    connectButton.hidden = true;
+    stateLine.hidden = false;
+    stateLine.textContent = t('sensorSource.status.connecting');
     void options.connectSensor().then((state) => {
-      statusText.textContent =
-        state === 'granted'
-          ? t('sensorSource.status.connected', { name: options.sensor.displayName })
-          : state === 'unsupported'
+      refreshCard();
+      if (state !== 'granted') {
+        // Said under the name, with Connect still there to try again.
+        stateLine.hidden = false;
+        stateLine.textContent =
+          state === 'unsupported'
             ? t('sensorSource.err.unsupported')
             : t('sensorSource.err.failed', { name: options.sensor.displayName });
-      refreshButtons();
+      }
       onSourceChanged?.();
     });
-  });
-
-  disconnectButton.addEventListener('click', () => {
-    options.disconnectSensor();
-    refresh();
-    onSourceChanged?.();
   });
 
   refresh();

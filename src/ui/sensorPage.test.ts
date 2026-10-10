@@ -68,7 +68,8 @@ describe('createSensorPage', () => {
     page.open();
     const button = [...page.element.querySelectorAll('button')].find(
       (b) =>
-        b.textContent === t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
+        b.getAttribute('aria-label') ===
+        t('sensorSource.connect', { name: EASYLEVEL_DESCRIPTOR.displayName }),
     )!;
     button.click();
     expect(connectSensor).toHaveBeenCalledOnce();
@@ -134,7 +135,7 @@ describe('createSensorPage', () => {
         }),
       );
       const connect = [...page.element.querySelectorAll('button')].find(
-        (b) => b.textContent === 'Connect EasyLevel sensor',
+        (b) => b.getAttribute('aria-label') === 'Connect EasyLevel sensor',
       )!;
       connect.click();
       await Promise.resolve();
@@ -142,7 +143,7 @@ describe('createSensorPage', () => {
 
       // Straight in via the sensor row — no closing the list page first.
       const statusButton = [...page.element.querySelectorAll('button')].find((b) =>
-        b.textContent?.includes('Connected to the EasyLevel sensor'),
+        b.classList.contains('sensor-card__name'),
       )!;
       statusButton.click();
 
@@ -174,7 +175,7 @@ describe('createSensorPage', () => {
         }),
       );
       const statusButton = [...page.element.querySelectorAll('button')].find((b) =>
-        b.textContent?.includes('Connected to the EasyLevel sensor'),
+        b.classList.contains('sensor-card__name'),
       )!;
       statusButton.click();
       expect(page.statusElements[0]!.textContent).toContain('Battery: 80%');
@@ -263,12 +264,14 @@ describe('a device page shows only its own device (#272)', () => {
     expect(page.statusElements[0]!.textContent?.toLowerCase()).toContain('debug');
   });
 
-  it('says the browser requirement once, not once per source', () => {
+  it('names no browser, and says once what is used while no box is (#320, #324)', () => {
     const page = createSensorPage([EASYLEVEL_DESCRIPTOR, SECOND_BOX], (sensor) =>
       makeOptions({ sensor }),
     );
     const text = page.element.textContent ?? '';
-    expect(text.split('Requires Chrome').length - 1).toBe(1);
+    expect(text).not.toContain('Chrome');
+    expect(text.split(t('sensorList.phone')).length - 1).toBe(1);
+    expect(page.element.querySelectorAll('.sensor-card')).toHaveLength(2);
   });
 });
 

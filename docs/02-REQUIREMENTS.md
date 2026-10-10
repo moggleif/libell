@@ -1187,12 +1187,16 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   vehicle) and its zero (R34), showing current values whenever the page is opened. It
   is the very same component the onboarding wizard embeds its position step from (#317) — never a second,
   page-specific rebuild.
-- **Given** the External sensor page (R32)
-- **Then** it carries none of the above: only the browser requirement (said once), and
-  per box its row plus a Connect action while that box is not the one in use (#315).
-  It never offers Connect or Reconnect for the box already in use, connected or lost
-  — reconnecting happens on the box's own page (R51), which the row opens. A list of
-  sources never grows longer than the page it links to.
+- **Given** the sensor list (R32), titled "Sensors"
+- **Then** it carries none of the above: one card per box (#324) — a mark (✓ in use,
+  ! no contact, + not in use), the box's name, and one line under it: its state, or a
+  quiet "Connect" link while it is not the box in use. The card of the box in use opens
+  its own page (R51), where Reconnect, its setup and Disconnect live; the list never
+  offers Connect, Reconnect or Disconnect for that box itself. Under the cards one line
+  says, once, that the phone's own sensor is used while no box is connected. It names
+  no browser (#320): the list only exists where Web Bluetooth does, so naming one was
+  wrong in the others, such as Bluefy on iOS. A list of sources never grows longer
+  than the page it links to.
 - **Given** a box is the active source, connected or lost (#315)
 - **When** I tap the sensor icon in the top bar
 - **Then** that box's own page opens directly, not the list: its state, Reconnect and

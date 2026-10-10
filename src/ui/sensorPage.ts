@@ -81,14 +81,8 @@ export function createSensorPage(
   const refreshAll = () => {
     for (const source of sources) source.section.refresh();
   };
-  const page = createStandalonePage(t('menu.sensorSource'), refreshAll);
-
-  // The browser requirement is the same for every box, so it is said once
-  // here rather than repeated in each source's own intro (#272).
-  const requirements = document.createElement('p');
-  requirements.className = 'menu__text';
-  requirements.textContent = t('sensorSource.intro.requirements');
-  page.body.append(requirements);
+  // Titled for what it lists (#324): every box this browser can use.
+  const page = createStandalonePage(t('sensorList.title'), refreshAll);
 
   for (const sensor of sensors) {
     const options = optionsFor(sensor);
@@ -115,6 +109,15 @@ export function createSensorPage(
     statusPage.moreSlot.append(section.moreElement);
     sources.push({ id: sensor.id, statusPage, section });
   }
+
+  // Said once, under the cards (#324), never per box: what is used while
+  // no box is. No browser requirement here: this page only exists where
+  // Web Bluetooth does, so naming one browser was wrong in the others
+  // (#320, Bluefy on iOS).
+  const phoneLine = document.createElement('p');
+  phoneLine.className = 'menu__text sensor-list__phone';
+  phoneLine.textContent = t('sensorList.phone');
+  page.body.append(phoneLine);
 
   return {
     element: page.element,
