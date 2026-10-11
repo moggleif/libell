@@ -111,6 +111,7 @@ import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu, type MenuSection } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
+import { takeReopenSettings } from './ui/reopenSettings';
 import { createInfoPage } from './ui/infoMenu';
 import { createSensorPage, type ExternalSensorPage } from './ui/sensorPage';
 import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
@@ -759,6 +760,12 @@ function bootstrap(root: HTMLElement): void {
   }
   const isMenuOpen = () =>
     isModern ? (settingsPage?.isOpen() ?? false) : (menu?.isOpen() ?? false);
+  // Just reloaded for a new appearance or language from Settings (#345):
+  // back on General, where the choice was made, not on the main screen.
+  if (takeReopenSettings()) {
+    if (isModern) settingsPage?.openTab('general');
+    else menu?.open('general');
+  }
 
   // External sensor (screen-cleanup follow-up): its own page, reached
   // only from the top-right sensor-status icon now that the ☰ menu no

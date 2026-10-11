@@ -154,6 +154,13 @@ URL and must keep working with no signal.
     the two sound switches with one sentence of hint, and a collapsed **More** holding
     Fine-tuning (Stability and both response delays) and "Reset all settings". More is
     never opened by itself, even when a value in it is not the default.
+- **Given** Settings › General
+- **When** I pick another Appearance or Language (both reload the app, unlike Theme,
+  which applies live)
+- **Then** the app reloads and opens straight back on Settings › General, so I see the
+  result where I made the choice and can switch again (#345). An ordinary start never
+  opens Settings by itself, and the first-run wizard's own Language and Appearance
+  steps keep their place in the wizard.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height

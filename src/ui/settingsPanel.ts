@@ -40,6 +40,7 @@ import {
   clearLanguage,
 } from '../data/settingsStore';
 import { showActionToast } from './toast';
+import { markReopenSettings } from './reopenSettings';
 import { applyAppearance, applyTheme } from './theme';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createTargetsSection, type TargetsOptions } from './targetsSection';
@@ -595,6 +596,9 @@ export function createSettingsForm(
     const value = languageSelect.value;
     if (isLanguage(value)) saveLanguage(value);
     else clearLanguage();
+    // Back on Settings › General after the reload (#345); the wizard's
+    // language step keeps its own place instead.
+    if (!compact) markReopenSettings();
     location.reload();
   });
   languageField.append(languageCaption, languageSelect);
@@ -664,6 +668,7 @@ export function createSettingsForm(
       return;
     }
     saveSettings(currentSettings());
+    markReopenSettings(); // #345, see the Language select above
     location.reload();
   });
   appearanceField.append(appearanceCaption, appearanceSelect);
