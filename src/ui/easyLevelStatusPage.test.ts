@@ -539,3 +539,81 @@ describe('a box that rejects its password, on its own page (#367)', () => {
     expect(block.textContent).toContain(t('box.password.invalid'));
   });
 });
+
+// Pins (#375) of what the page does for each box, before the page loses
+// its EasyLevel name: it serves every registered source, and only the
+// descriptor's capabilities decide which rows a box gets.
+describe('the same page for every box (#375)', () => {
+  const health = { batteryPercent: 15, temperatureCelsius: 21.5, firmwareLabel: '3' };
+
+  for (const sensor of [EASYLEVEL_DESCRIPTOR, XPARKLE_DESCRIPTOR]) {
+    describe(sensor.displayName, () => {
+      const active = (overrides: Partial<EasyLevelStatusOptions> = {}) =>
+        createEasyLevelStatusPage(
+          makeOptions({
+            sensor,
+            getSensorSource: () => sensor.id,
+            getHealth: () => health,
+            ...overrides,
+          }),
+        );
+
+      it('is titled after the box', () => {
+        expect(active().element.textContent).toContain(
+          t('sensorStatus.title', { name: sensor.displayName }),
+        );
+      });
+
+      it('says connected with the battery while the box is in use', () => {
+        expect(active().element.textContent).toContain('Connected · battery 15 %');
+      });
+
+      it('warns about a low battery', () => {
+        expect(active().element.textContent).toContain('Low battery');
+      });
+
+      it('shows the box’s own live tilt', () => {
+        const page = active({ getCalibratedTilt: () => ({ rollDeg: 0.7, pitchDeg: -1.4 }) });
+        expect(page.element.textContent).toContain('Side/side 0.7°');
+        expect(page.element.textContent).toContain('Front/back -1.4°');
+      });
+
+      it('says not connected, with a dash for the tilt, while another source is in use', () => {
+        const page = active({ getSensorSource: () => 'phone' });
+        expect(page.element.textContent).toContain(t('box.state.notConnected'));
+        expect(page.element.textContent).toContain(t('sensorStatus.reading', { value: '—' }));
+      });
+
+      it('says lost contact once the connection drops', () => {
+        expect(active({ getSensorState: () => 'disconnected' }).element.textContent).toContain(
+          t('box.state.lost'),
+        );
+      });
+    });
+  }
+
+  it('gives the EasyLevel its debug disclosure: temperature, raw values and the connect delay', () => {
+    const page = createEasyLevelStatusPage(
+      makeOptions({ getSensorSource: () => 'easylevel', getHealth: () => health }),
+    );
+    const debug = page.element.querySelector('.sensor-status__debug');
+    expect(debug).not.toBeNull();
+    expect(debug!.textContent).toContain('Temperature: 21.5°C');
+    expect(debug!.textContent).toContain('Firmware tier: 3');
+    expect(debug!.querySelector('input[type="number"]')).not.toBeNull();
+  });
+
+  it('gives the Xparkle no debug disclosure, temperature or connect delay — it has none', () => {
+    const page = createEasyLevelStatusPage(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getHealth: () => health,
+      }),
+    );
+    expect(page.element.querySelector('.sensor-status__debug')).toBeNull();
+    expect(page.element.textContent).not.toContain('Temperature');
+    expect(page.element.textContent).not.toContain(t('sensorStatus.debug.copy'));
+    expect(page.element.querySelector('input[type="number"]')).toBeNull();
+  });
+});
