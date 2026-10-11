@@ -30,6 +30,9 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
     // The bottom bar's mute toggle (#161) can change soundOnLevel/
     // soundGuidance while this page is closed — resync every reopen.
     settingsForm.resyncSoundFields?.(options.getSoundPrefs());
+    // And the open tab: a box connected or disconnected elsewhere changes
+    // what Kalibrering shows.
+    settingsForm.refreshOpenTab?.();
   });
 
   const settingsForm: SettingsFormElement = createSettingsForm(

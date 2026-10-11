@@ -148,6 +148,13 @@ export type SettingsFormElement = HTMLFormElement & {
    * was requested.
    */
   refreshTargetsPage?: () => void;
+  /**
+   * Redraws the tab on screen from the host's current state (Modern only):
+   * the calibration and targets tabs read the sensor and presets, which
+   * change while Settings is closed — e.g. a box disconnected from its own
+   * page. The Settings page calls this every time it (re)opens.
+   */
+  refreshOpenTab?: () => void;
 };
 
 export interface SettingsFormOptions {
@@ -1091,7 +1098,9 @@ export function createSettingsForm(
     const embeddedTargets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
     targetsPanel.append(...levelGroup(embeddedTargets.element));
 
+    let openTab: TabId = 'vehicle';
     selectTab = (id: TabId): void => {
+      openTab = id;
       for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
       for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
       if (id === 'calibration') embeddedCalibration.refresh();
@@ -1100,6 +1109,7 @@ export function createSettingsForm(
     form.selectCalibrationTab = () => selectTab?.('calibration');
     form.selectTargetsTab = () => selectTab?.('targets');
     form.selectTab = (id) => selectTab?.(id);
+    form.refreshOpenTab = () => selectTab?.(openTab);
 
     // --- Fordon tab: the vehicle only (#329) — no Advanced, no unit.
     vehiclePanel.append(
