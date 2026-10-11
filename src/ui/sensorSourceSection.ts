@@ -298,6 +298,8 @@ export function createSensorSourceSection(
             options.learnMounting?.setLearnedMounting(
               axisMappingForFacing(facing, AXIS_REFERENCE_FACING),
             );
+          // Stays open on the pick, so the choice is seen; closed by hand (#347).
+          openedByHand = directionStep.element;
           refreshSteps();
         },
       })
@@ -309,6 +311,7 @@ export function createSensorSourceSection(
           ...options.learnMounting,
           setLearnedMounting: (mapping) => {
             options.learnMounting?.setLearnedMounting(mapping);
+            if (directionStep) openedByHand = directionStep.element;
             refreshSteps();
           },
         })

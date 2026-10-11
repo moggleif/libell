@@ -1746,7 +1746,9 @@ and what its first step checks differ, read from its descriptor's capabilities (
      raising the front" opens that guide instead. Which choice equals the Xparkle box's
      unrotated output is assumed to be "back toward the front" until checked on
      hardware; the lift guide measures instead of assuming. Once a direction has been
-     learned, a "Forget the direction" link sits in this step.
+     learned, a "Forget the direction" link sits in this step. Picking a side, or
+     finishing the lift guide, keeps the step open so the choice is seen; it closes
+     only by hand (#347).
   2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
      **Zero now** (R34; the Xparkle box zeroes itself, #290), then "Zeroed" with its age.
      A done zero drops the first-time instruction and offers **Zero again**, with

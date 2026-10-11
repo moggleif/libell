@@ -411,6 +411,30 @@ describe('picking the mounting by tapping a side of the vehicle (#217, #222, #31
     expect(setMounting).toHaveBeenCalledWith('rotated90');
   });
 
+  it('stays open after a side is tapped, so the choice is seen (#347)', () => {
+    let stored: ReturnType<
+      NonNullable<SensorSourceOptions['learnMounting']>['getLearnedMounting']
+    > = null;
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting: {
+          getRawReading: () => null,
+          getLearnedMounting: () => stored,
+          setLearnedMounting: (mapping) => {
+            stored = mapping;
+          },
+        },
+      }),
+    );
+    pickerButton(section.installElement, 'rear').click();
+    expect(stored).not.toBeNull();
+    const picker = section.installElement.querySelector<HTMLElement>('.mounting-picker');
+    expect(picker?.closest<HTMLElement>('.box-step__body')?.hidden).toBe(false);
+    expect(section.installElement.textContent).toContain('Direction set: points to the rear');
+  });
+
   it('refresh() re-reads the stored rotation (changed elsewhere, e.g. another open page)', () => {
     let mounting: 'standard' | 'rotated90' = 'standard';
     const section = createSensorSourceSection(
