@@ -548,24 +548,63 @@ describe('the position step, live (#304, #314)', () => {
   });
 });
 
-describe('a source with something to say about why it is not working (#272)', () => {
-  it('shows the note under the row, so the user knows what to fix', () => {
+describe('a box that rejects its password (#272, #367)', () => {
+  function rejecting(tryPassword = vi.fn(() => Promise.resolve<boolean | null>(true))) {
+    let rejected = true;
+    tryPassword.mockImplementation(() => {
+      rejected = false;
+      return Promise.resolve(true);
+    });
     const section = createSensorSourceSection(
       makeOptions({
-        getSensorState: () => 'denied',
-        getSensorNote: () => 'The box did not accept its password.',
+        getSensorSource: () => 'easylevel',
+        password: { isRejected: () => rejected, tryPassword },
       }),
     );
-    expect(section.connectElement.textContent).toContain('did not accept its password');
+    return { section, tryPassword };
+  }
+
+  it('says so on the card, never "Connected", and guides within Libell', () => {
+    const { section } = rejecting();
+    const card = section.connectElement;
+    expect(card.textContent).toContain(t('box.state.password'));
+    expect(card.textContent).not.toContain(t('box.state.connected'));
+    expect(card.classList.contains('is-active')).toBe(false);
+    expect(card.textContent).toContain(
+      t('sensorSource.err.password', { name: EASYLEVEL_DESCRIPTOR.displayName }),
+    );
+    expect(card.querySelector('input')).not.toBeNull();
+  });
+
+  it('tries the typed code with one tap and goes back to Connected once accepted', async () => {
+    const { section, tryPassword } = rejecting();
+    const card = section.connectElement;
+    card.querySelector('input')!.value = '1234';
+    [...card.querySelectorAll('button')]
+      .find((button) => button.textContent === t('box.password.retry'))!
+      .click();
+    expect(tryPassword).toHaveBeenCalledWith('1234');
+    await Promise.resolve();
+    await Promise.resolve();
+    section.refreshLive();
+    expect(card.textContent).toContain(t('box.state.connected'));
+    expect((card.querySelector('.box-password') as HTMLElement).hidden).toBe(true);
   });
 
   it('says nothing when there is nothing to say, which is nearly always', () => {
-    const section = createSensorSourceSection(makeOptions({ getSensorNote: () => null }));
-    const warnings = [...section.connectElement.querySelectorAll('.menu__text--warning')];
-    expect(warnings.every((row) => (row as HTMLElement).hidden)).toBe(true);
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        password: { isRejected: () => false, tryPassword: () => Promise.resolve(true) },
+      }),
+    );
+    expect((section.connectElement.querySelector('.box-password') as HTMLElement).hidden).toBe(
+      true,
+    );
+    expect(section.connectElement.textContent).toContain(t('box.state.connected'));
   });
 
-  it('works for a source that offers no note at all', () => {
+  it('works for a source that has no password at all', () => {
     expect(() => createSensorSourceSection(makeOptions())).not.toThrow();
   });
 });

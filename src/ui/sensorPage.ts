@@ -59,7 +59,7 @@ export interface ExternalSensorPage extends SensorPage {
    * `element` (see the module doc comment for why the order matters). */
   statusElements: HTMLElement[];
   /** Re-reads the open device page's live values, but only while one is
-   * actually open — call unconditionally every animation frame, same
+   * actually open, and the list's cards while it is — call unconditionally every animation frame, same
    * "runs every frame regardless of what's open" discipline `main.ts`
    * already uses for the top-bar sensor-status dot. */
   refreshLive(): void;
@@ -137,6 +137,10 @@ export function createSensorPage(
     },
     refreshLive: () => {
       for (const source of sources) {
+        // The list's own cards too: a box's password verdict arrives after
+        // the connect that drew them (#367). Cheap — a card redraws only
+        // when what it shows has changed.
+        if (page.isOpen() && !source.statusPage.isOpen()) source.section.refreshLive();
         if (!source.statusPage.isOpen()) continue;
         // The position first: the status page's live line starts with it.
         source.section.refreshLive();

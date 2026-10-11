@@ -104,6 +104,10 @@ export const XPARKLE_POLL_INTERVAL_MS = 500;
  */
 export const XPARKLE_READ_TIMEOUT_MS = 2000;
 
+/** How long "try again" waits for the box's password verdict (#367)
+ * before saying nothing came back — the same bound as a live read. */
+export const XPARKLE_PASSWORD_REPLY_TIMEOUT_MS = XPARKLE_READ_TIMEOUT_MS;
+
 /** The shared advertisement wait (#288), under the name this adapter's
  * tests and callers have always used. */
 export const XPARKLE_ADVERTISEMENT_WAIT_MS = BLE_ADVERTISEMENT_WAIT_MS;
@@ -151,6 +155,14 @@ export interface XparkleSensor extends ExternalSensor {
    * rather than blaming the hardware.
    */
   isPasswordRejected(): boolean;
+  /**
+   * Offer the password again on the live link (#367) — the code the user
+   * just typed in Libell, read through `getPassword` — and resolve with the
+   * box's verdict: true accepted, false rejected, null when no box is
+   * connected, the code is not four digits, or no answer came in time.
+   * Never reconnects: readings keep flowing while the code is tried.
+   */
+  verifyPassword(): Promise<boolean | null>;
   /**
    * Zero the box where it sits, with its own `resetZero` command (#290):
    * from then on it reports angles relative to this position. The box must
@@ -204,6 +216,8 @@ export function createXparkleSensor(
   let reading: XparkleReading | null = null;
   let orientation: XparkleOrientation | null = null;
   let passwordRejected = false;
+  // Waiting for the next password verdict (#367), if anyone is.
+  let onPasswordVerdict: ((accepted: boolean | null) => void) | null = null;
   let deviceId: string | null = null;
   let lastSampleAt: number | null = null;
   let pollTimer: number | null = null;
@@ -236,7 +250,10 @@ export function createXparkleSensor(
     }
     // The only other reply this adapter cares about is the password
     // verdict; command byte 4, per `XPARKLE_COMMAND.password`.
-    if (frame.length > 2 && frame[2] === 0x04) passwordRejected = !passwordAccepted(frame);
+    if (frame.length > 2 && frame[2] === 0x04) {
+      passwordRejected = !passwordAccepted(frame);
+      onPasswordVerdict?.(!passwordRejected);
+    }
   }
 
   async function pollOnce(): Promise<void> {
@@ -396,6 +413,32 @@ export function createXparkleSensor(
     getReading: () => reading,
     getOrientation: () => orientation,
     isPasswordRejected: () => passwordRejected,
+
+    async verifyPassword() {
+      const live = connection;
+      const frame = buildPasswordFrame(
+        XPARKLE_PASSWORD_MODE.verify,
+        XPARKLE_DEFAULT_PASSWORD,
+        getPassword(),
+      );
+      if (!live || !frame) return null;
+      const verdict = new Promise<boolean | null>((resolve) => {
+        const timer = setTimer(() => finish(null), XPARKLE_PASSWORD_REPLY_TIMEOUT_MS);
+        function finish(result: boolean | null): void {
+          clearTimer(timer);
+          onPasswordVerdict = null;
+          resolve(result);
+        }
+        onPasswordVerdict = finish;
+      });
+      try {
+        await live.write(frame);
+      } catch {
+        // A failed write says nothing about the code itself.
+        onPasswordVerdict?.(null);
+      }
+      return verdict;
+    },
 
     async zeroBox() {
       const live = connection;

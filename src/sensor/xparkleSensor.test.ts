@@ -210,6 +210,67 @@ describe('the password (#270, open against hardware in #273)', () => {
   });
 });
 
+describe('trying the password again (#367)', () => {
+  it('offers the code the user typed on the live link and reports the verdict', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    let password = '0000';
+    const sensor = createXparkleSensor(transport, { ...timers, getPassword: () => password });
+    await sensor.start();
+    box.reply(buildCommandFrame(XPARKLE_COMMAND.password, [1]));
+    expect(sensor.isPasswordRejected()).toBe(true);
+
+    password = '1234';
+    const before = box.writes.length;
+    const verdict = sensor.verifyPassword();
+    await Promise.resolve();
+    // One password frame, carrying the new code — no reconnect.
+    expect(box.writes).toHaveLength(before + 1);
+    expect(box.writes[before]![2]).toBe(XPARKLE_COMMAND.password);
+    expect([...box.writes[before]!.subarray(5, 9)]).toEqual([1, 2, 3, 4]);
+    box.reply(buildCommandFrame(XPARKLE_COMMAND.password, [0]));
+
+    expect(await verdict).toBe(true);
+    expect(sensor.isPasswordRejected()).toBe(false);
+  });
+
+  it('reports a second rejection as rejected', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+
+    const verdict = sensor.verifyPassword();
+    await Promise.resolve();
+    box.reply(buildCommandFrame(XPARKLE_COMMAND.password, [1]));
+
+    expect(await verdict).toBe(false);
+    expect(sensor.isPasswordRejected()).toBe(true);
+  });
+
+  it('gives up with no verdict when the box never answers', async () => {
+    const timers = fakeTimers();
+    const { transport } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+
+    const verdict = sensor.verifyPassword();
+    await Promise.resolve();
+    await timers.flush();
+
+    expect(await verdict).toBeNull();
+  });
+
+  it('sends nothing while no box is connected', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+
+    expect(await sensor.verifyPassword()).toBeNull();
+    expect(box.writes).toHaveLength(0);
+  });
+});
+
 describe('the box’s stored orientation (#270)', () => {
   it('reads it for display, and never applies a rotation of its own', async () => {
     const timers = fakeTimers();

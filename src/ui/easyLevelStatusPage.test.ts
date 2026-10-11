@@ -459,3 +459,83 @@ describe('createEasyLevelStatusPage', () => {
     });
   });
 });
+
+describe('a box that rejects its password, on its own page (#367)', () => {
+  function rejectingPage(verdict: boolean | null) {
+    let rejected = true;
+    const tryPassword = vi.fn(() => {
+      if (verdict) rejected = false;
+      return Promise.resolve(verdict);
+    });
+    const page = createEasyLevelStatusPage(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        password: { isRejected: () => rejected, tryPassword },
+      }),
+    );
+    page.refresh();
+    const block = page.element.querySelector<HTMLElement>('.box-password')!;
+    const input = block.querySelector('input')!;
+    const retry = [...block.querySelectorAll('button')].find(
+      (button) => button.textContent === t('box.password.retry'),
+    )!;
+    return { page, block, input, retry, tryPassword };
+  }
+
+  async function settle(): Promise<void> {
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+
+  it('says what to do in Libell, never to open the vendor app, with one button to try again', () => {
+    const { page, block, retry } = rejectingPage(true);
+    const header = page.element.querySelector('.box-header__state')!;
+    expect(header.textContent).toBe(t('box.state.password'));
+    expect(header.classList.contains('is-connected')).toBe(false);
+    expect(block.hidden).toBe(false);
+    const message = t('sensorSource.err.password', { name: XPARKLE_DESCRIPTOR.displayName });
+    expect(block.textContent).toContain(message);
+    expect(message.toLowerCase()).not.toContain('app');
+    expect(retry).toBeDefined();
+  });
+
+  it('tries the typed code and shows Connected once the box accepts it', async () => {
+    const { page, block, input, retry, tryPassword } = rejectingPage(true);
+    input.value = '1234';
+    retry.click();
+    expect(tryPassword).toHaveBeenCalledWith('1234');
+    await settle();
+    page.refresh();
+    expect(block.hidden).toBe(true);
+    expect(page.element.querySelector('.box-header__state')!.textContent).toContain(
+      t('box.state.connected'),
+    );
+  });
+
+  it('says when the box rejects that code too', async () => {
+    const { page, block, input, retry } = rejectingPage(false);
+    input.value = '5678';
+    retry.click();
+    await settle();
+    page.refresh();
+    expect(block.textContent).toContain(t('box.password.wrong'));
+  });
+
+  it('says when the box did not answer, and that the code is kept', async () => {
+    const { page, block, input, retry } = rejectingPage(null);
+    input.value = '5678';
+    retry.click();
+    await settle();
+    page.refresh();
+    expect(block.textContent).toContain(t('box.password.noAnswer'));
+  });
+
+  it('explains a code that is not four digits instead of sending it', () => {
+    const { block, input, retry, tryPassword } = rejectingPage(true);
+    input.value = '12';
+    retry.click();
+    expect(tryPassword).not.toHaveBeenCalled();
+    expect(block.textContent).toContain(t('box.password.invalid'));
+  });
+});

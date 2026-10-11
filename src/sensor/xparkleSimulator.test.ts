@@ -3,6 +3,7 @@ import {
   createSimulatedXparkleTransport,
   isRememberedXparkleDeviceUsable,
   simulatedXparkleParameters,
+  SIMULATED_XPARKLE_BAD_PASSWORD_CODE,
   SIMULATED_XPARKLE_DEVICE_ID,
   SIMULATED_XPARKLE_DROP_AFTER_MS,
   SIMULATED_XPARKLE_OUTAGE_MS,
@@ -131,6 +132,33 @@ describe('driving the real adapter with the simulated box (#271)', () => {
     // was changed in the vendor app — and the least likely to be right on
     // the first try.
     const sensor = createXparkleSensor(createSimulatedXparkleTransport('badpassword'));
+    await sensor.start();
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(sensor.isPasswordRejected()).toBe(true);
+  });
+
+  it('accepts its own code once the user types it in Libell (#367)', async () => {
+    let password = '0000';
+    const sensor = createXparkleSensor(createSimulatedXparkleTransport('badpassword'), {
+      getPassword: () => password,
+    });
+    await sensor.start();
+    await vi.advanceTimersByTimeAsync(100);
+    expect(sensor.isPasswordRejected()).toBe(true);
+
+    password = SIMULATED_XPARKLE_BAD_PASSWORD_CODE;
+    const verdict = sensor.verifyPassword();
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(await verdict).toBe(true);
+    expect(sensor.isPasswordRejected()).toBe(false);
+  });
+
+  it('rejects a wrong code on an ordinary box too (#367)', async () => {
+    const sensor = createXparkleSensor(createSimulatedXparkleTransport('steady'), {
+      getPassword: () => '9999',
+    });
     await sensor.start();
     await vi.advanceTimersByTimeAsync(100);
 

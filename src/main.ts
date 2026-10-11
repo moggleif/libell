@@ -121,6 +121,7 @@ import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { takeReopenSettings } from './ui/reopenSettings';
 import { createInfoPage } from './ui/infoMenu';
 import { createSensorPage, type ExternalSensorPage } from './ui/sensorPage';
+import type { BoxPasswordOptions } from './ui/boxPasswordBlock';
 import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
 import { isIos } from './ui/platform';
 import { createTargetBadge } from './ui/targetBadge';
@@ -419,6 +420,9 @@ function bootstrap(root: HTMLElement): void {
       // takes effect on the very next reading.
       return createXparkleSensor(createXparkleTransport(), {
         getAxisMapping: () => xparkleSettings(settings).axisMapping,
+        // The code typed on the box's page after a rejection (#367), else
+        // the factory one.
+        getPassword: () => xparkleSettings(settings).password,
       });
     }
     if (source !== 'easylevel') return null;
@@ -532,17 +536,23 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /**
-   * A short, actionable line about why a source is not working, or null
-   * (#272). Today the one case is the Xparkle box rejecting its password:
-   * without this the user would see the ordinary "could not connect" and
-   * have no way to know the box is fine and the password is not.
+   * The box's password, for a source that has one (#272, #367): while the
+   * box rejects the code it was offered, the user types the right one in
+   * Libell and it is tried at once on the live link, then kept for every
+   * later connect. Never routed through the vendor app.
    */
-  function sensorNoteFor(source: SensorSource): string | null {
-    if (source !== 'xparkle') return null;
-    const sensor = externalSensors.getSensor('xparkle');
-    return sensor && (sensor as XparkleSensor).isPasswordRejected()
-      ? t('sensorSource.err.password')
-      : null;
+  function passwordFor(source: SensorSource): BoxPasswordOptions | undefined {
+    if (source !== 'xparkle') return undefined;
+    const box = () => externalSensors.getSensor('xparkle') as XparkleSensor | null;
+    return {
+      isRejected: () => box()?.isPasswordRejected() ?? false,
+      tryPassword(code) {
+        settings = withXparkleSettings(settings, { password: code });
+        saveSettings(settings);
+        const sensor = box();
+        return sensor ? sensor.verifyPassword() : Promise.resolve(null);
+      },
+    };
   }
 
   /**
@@ -671,7 +681,7 @@ function bootstrap(root: HTMLElement): void {
         sensor: descriptor,
         connectSensor: () => externalSensors.connect(descriptor.id),
         disconnectSensor: () => externalSensors.disconnect(),
-        getSensorNote: () => sensorNoteFor(descriptor.id),
+        password: passwordFor(descriptor.id),
         getInstallCalibration: () => installOffsetOf(descriptor.id),
         calibrateInstall: () => calibrateInstallNow(descriptor.id),
         getInstallCalibrationCapturedAt: () =>
@@ -860,7 +870,7 @@ function bootstrap(root: HTMLElement): void {
         connectSensor: () => externalSensors.connect(descriptor.id),
         disconnectSensor: () => externalSensors.disconnect(),
         getHealth: () => healthOf(descriptor.id),
-        getSensorNote: () => sensorNoteFor(descriptor.id),
+        password: passwordFor(descriptor.id),
         // Each source's installation offset is its own (#263): where one
         // box is bolted in says nothing about where another is.
         getInstallCalibration: () => installOffsetOf(descriptor.id),

@@ -58,6 +58,7 @@ import { ageText } from './calibrationAge';
 import { t } from './i18n';
 import { createMountingPicker, createPlacementPicker, type BoxShape } from './mountingPicker';
 import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
+import { createBoxPasswordBlock, type BoxPasswordOptions } from './boxPasswordBlock';
 
 export interface SensorSourceOptions {
   /**
@@ -87,12 +88,12 @@ export interface SensorSourceOptions {
   /** Explicit disconnect — falls back to the phone sensor. */
   disconnectSensor(): void;
   /**
-   * A short, actionable line about why this source is not working, or null
-   * (#272) — a wrong box password, say. Shown under the status text, so a
-   * user is told what to fix rather than left with a generic failure.
-   * Optional: most sources have nothing to add.
+   * The box's password (#272, #367), for a box that asks for one: while it
+   * rejects the code it was offered, the card says so instead of
+   * "Connected" and offers a field to type the right code and try again.
+   * Optional: most sources have no password.
    */
-  getSensorNote?(): string | null;
+  password?: BoxPasswordOptions;
   /**
    * The box's installation offset (#131, ADR 0014) — where the
    * permanently-mounted enclosure physically sits, mirroring
@@ -209,13 +210,13 @@ export function createSensorSourceSection(
     'aria-label',
     t('sensorSource.connect', { name: options.sensor.displayName }),
   );
-  // An actionable line when a source has something specific to say about
-  // why it is not working (#272) — hidden the rest of the time, which is
-  // nearly always.
-  const noteRow = document.createElement('p');
-  noteRow.className = 'menu__text menu__text--warning';
-  noteRow.hidden = true;
-  cardText.append(status, stateLine, connectButton, noteRow);
+  // A rejected password (#272, #367), with the way out right on the card —
+  // hidden the rest of the time, which is nearly always.
+  const passwordBlock = options.password
+    ? createBoxPasswordBlock(options.password, options.sensor.displayName)
+    : null;
+  cardText.append(status, stateLine, connectButton);
+  if (passwordBlock) cardText.append(passwordBlock.element);
   connectSection.append(mark, cardText);
 
   // The box's setup (#314, the #309 UX review): one checklist of three
@@ -559,17 +560,26 @@ export function createSensorSourceSection(
   });
   body.append(connectSection, installSection, moreSection);
 
+  function passwordRejected(): boolean {
+    return options.password?.isRejected() ?? false;
+  }
+
   /** The line under the name: empty while not in use (Connect shows
-   * instead), else Connected or No contact. */
+   * instead), else Connected, No contact, or — never "Connected" while the
+   * box says no to its password (#367) — Wrong password. */
   function refreshCard(): void {
     const active = options.getSensorSource() === options.sensor.id;
     const lost = active && options.getSensorState() === 'disconnected';
-    mark.textContent = !active ? '+' : lost ? '!' : '✓';
-    connectSection.classList.toggle('is-active', active && !lost);
-    connectSection.classList.toggle('is-lost', lost);
+    const rejected = active && !lost && passwordRejected();
+    mark.textContent = !active ? '+' : lost || rejected ? '!' : '✓';
+    connectSection.classList.toggle('is-active', active && !lost && !rejected);
+    connectSection.classList.toggle('is-lost', lost || rejected);
     connectButton.hidden = active;
     stateLine.hidden = !active;
-    stateLine.textContent = active ? t(lost ? 'box.state.lost' : 'box.state.connected') : '';
+    stateLine.textContent = active
+      ? t(lost ? 'box.state.lost' : rejected ? 'box.state.password' : 'box.state.connected')
+      : '';
+    passwordBlock?.refresh();
     if (onOpenStatus) {
       chevron.hidden = !active;
       status.classList.toggle('sensor-row__status-button--plain', !active);
@@ -580,17 +590,18 @@ export function createSensorSourceSection(
 
   // What the page was last drawn for, so a connect or a drop from anywhere
   // (the page's own header button included) redraws it at once (#343).
+  // The password verdict arrives on its own, after the connect (#367), so
+  // it is part of what the card was drawn for.
   let drawnFor = '';
+  const drawKey = () =>
+    `${options.getSensorSource()}|${options.getSensorState()}|${passwordRejected()}`;
 
   function refresh(): void {
-    drawnFor = `${options.getSensorSource()}|${options.getSensorState()}`;
+    drawnFor = drawKey();
     refreshCard();
     // This section's own source, not "any external source" (#272): with
     // more than one listed, each card answers for itself.
     const active = options.getSensorSource() === options.sensor.id;
-    const note = options.getSensorNote?.() ?? null;
-    noteRow.hidden = note === null;
-    if (note !== null) noteRow.textContent = note;
     installSection.hidden = !active;
     moreSection.hidden = !active;
     if (active) refreshSteps();
@@ -622,7 +633,7 @@ export function createSensorSourceSection(
     moreElement: moreSection,
     refresh,
     refreshLive: () => {
-      if (`${options.getSensorSource()}|${options.getSensorState()}` !== drawnFor) refresh();
+      if (drawKey() !== drawnFor) refresh();
       else refreshPosition();
     },
     positionElement,

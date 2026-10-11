@@ -415,6 +415,25 @@ describe('Xparkle device settings (#293)', () => {
   });
 });
 
+describe('the Xparkle box password (#367)', () => {
+  it('defaults to the factory code', () => {
+    expect(xparkleSettings(parseSettings({})).password).toBe('0000');
+  });
+
+  it('round-trips a code the user typed in Libell', () => {
+    const saved = withXparkleSettings(parseSettings({}), { password: '1234' });
+    const reloaded = parseSettings(JSON.parse(JSON.stringify(saved)));
+    expect(xparkleSettings(reloaded).password).toBe('1234');
+  });
+
+  it('falls back to the factory code for anything that is not four digits', () => {
+    for (const password of ['12', '12345', 'abcd', 1234, null]) {
+      const raw = { sensorDevices: { xparkle: { password } } };
+      expect(xparkleSettings(parseSettings(raw)).password).toBe('0000');
+    }
+  });
+});
+
 describe('whether the EasyLevel placement was ever picked (#359)', () => {
   const pickedOf = (easylevel: Record<string, unknown>) =>
     easyLevelSettings(parseSettings({ sensorDevices: { easylevel } })).mountingPicked;

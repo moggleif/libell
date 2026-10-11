@@ -81,7 +81,7 @@ src/
   screenshot or test the app on any sensorless machine.
 - **`?easylevel-sim` / `?xparkle-sim` query flags**: a simulated BLE box at that
   device's transport seam (`=drop` adds periodic connection loss; `?xparkle-sim=badpassword`
-  a box that rejects the password) — the way to exercise the external-sensor flow with no
+  a box that rejects the factory password and accepts `1234`) — the way to exercise the external-sensor flow with no
   hardware and no Web Bluetooth.
 - **Versioning**: `VERSION` holds major.minor; first deploy of a minor is the release
   (`vX.Y.0`), later merges deploy as QA candidates shown as `X.Y.0 – CR<PR>` and tagged

@@ -99,9 +99,10 @@ export const MESSAGES = {
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     // Some boxes ask for a password before they will talk (#272). Kept
     // separate from the generic failure so the user knows the hardware is
-    // fine and only the password is wrong.
+    // fine and only the password is wrong — and fixed in Libell, never in
+    // the vendor app (#367).
     'sensorSource.err.password':
-      'The {name} box did not accept its password. Change it back in the manufacturer’s own app, or reset the box.',
+      'The {name} box did not accept its password. Type the box’s four-digit code below and tap Try again. The factory code is 0000.',
     'sensorSource.err.failed': 'Could not connect to the {name} sensor.',
 
     // iOS Safari has no Web Bluetooth and Apple has no plans to add it
@@ -576,6 +577,14 @@ export const MESSAGES = {
     'mounting.facing.left': 'Points to the left',
     'box.state.connected': 'Connected',
     'box.state.lost': 'No contact',
+    'box.state.password': 'Wrong password',
+    'box.password.label': 'Box code',
+    'box.password.retry': 'Try again',
+    'box.password.checking': 'Trying the code…',
+    'box.password.invalid': 'The code is four digits.',
+    'box.password.wrong': 'The box did not accept that code either.',
+    'box.password.noAnswer':
+      'The box did not answer. The code is saved and tried the next time the box connects.',
     'box.state.notConnected': 'Not connected',
     'box.state.battery': 'battery {value}',
     'box.connect': 'Connect',
@@ -663,7 +672,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Ansluter…',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
     'sensorSource.err.password':
-      '{name}-boxen godtog inte lösenordet. Ändra tillbaka det i tillverkarens egen app, eller nollställ boxen.',
+      '{name}-boxen godtog inte lösenordet. Skriv boxens fyrsiffriga kod nedan och tryck Försök igen. Fabrikskoden är 0000.',
     'sensorSource.err.failed': 'Kunde inte ansluta till {name}-sensorn.',
 
     'sensorSource.ios.intro':
@@ -1045,6 +1054,14 @@ export const MESSAGES = {
     'mounting.facing.left': 'Pekar åt vänster',
     'box.state.connected': 'Ansluten',
     'box.state.lost': 'Ingen kontakt',
+    'box.state.password': 'Fel lösenord',
+    'box.password.label': 'Boxens kod',
+    'box.password.retry': 'Försök igen',
+    'box.password.checking': 'Provar koden…',
+    'box.password.invalid': 'Koden är fyra siffror.',
+    'box.password.wrong': 'Boxen godtog inte heller den koden.',
+    'box.password.noAnswer':
+      'Boxen svarade inte. Koden är sparad och provas nästa gång boxen ansluter.',
     'box.state.notConnected': 'Inte ansluten',
     'box.state.battery': 'batteri {value}',
     'box.connect': 'Anslut',
@@ -1129,7 +1146,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Connexion…',
     'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
     'sensorSource.err.password':
-      'Le boîtier {name} n’a pas accepté son mot de passe. Rétablissez-le dans l’application du fabricant, ou réinitialisez le boîtier.',
+      'Le boîtier {name} n’a pas accepté son mot de passe. Saisissez ci-dessous le code à quatre chiffres du boîtier et touchez Réessayer. Le code d’usine est 0000.',
     'sensorSource.err.failed': 'Impossible de se connecter au capteur {name}.',
 
     'sensorSource.ios.intro':
@@ -1524,6 +1541,14 @@ export const MESSAGES = {
     'mounting.facing.left': 'Vers la gauche',
     'box.state.connected': 'Connecté',
     'box.state.lost': 'Aucun contact',
+    'box.state.password': 'Mot de passe incorrect',
+    'box.password.label': 'Code du boîtier',
+    'box.password.retry': 'Réessayer',
+    'box.password.checking': 'Essai du code…',
+    'box.password.invalid': 'Le code comporte quatre chiffres.',
+    'box.password.wrong': 'Le boîtier n’a pas accepté ce code non plus.',
+    'box.password.noAnswer':
+      'Le boîtier n’a pas répondu. Le code est enregistré et sera essayé à la prochaine connexion du boîtier.',
     'box.state.notConnected': 'Non connecté',
     'box.state.battery': 'batterie {value}',
     'box.connect': 'Connecter',
@@ -1610,7 +1635,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Conectando…',
     'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
     'sensorSource.err.password':
-      'La caja {name} no ha aceptado su contraseña. Restablécela en la aplicación del fabricante o reinicia la caja.',
+      'La caja {name} no ha aceptado su contraseña. Escribe abajo el código de cuatro cifras de la caja y toca Reintentar. El código de fábrica es 0000.',
     'sensorSource.err.failed': 'No se ha podido conectar con el sensor {name}.',
 
     'sensorSource.ios.intro':
@@ -2000,6 +2025,14 @@ export const MESSAGES = {
     'mounting.facing.left': 'Hacia la izquierda',
     'box.state.connected': 'Conectada',
     'box.state.lost': 'Sin contacto',
+    'box.state.password': 'Contraseña incorrecta',
+    'box.password.label': 'Código de la caja',
+    'box.password.retry': 'Reintentar',
+    'box.password.checking': 'Probando el código…',
+    'box.password.invalid': 'El código tiene cuatro cifras.',
+    'box.password.wrong': 'La caja tampoco ha aceptado ese código.',
+    'box.password.noAnswer':
+      'La caja no ha respondido. El código está guardado y se probará la próxima vez que se conecte la caja.',
     'box.state.notConnected': 'No conectada',
     'box.state.battery': 'batería {value}',
     'box.connect': 'Conectar',
@@ -2085,7 +2118,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Verbinden…',
     'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
     'sensorSource.err.password':
-      'Die {name}-Box hat ihr Passwort nicht akzeptiert. Stelle es in der App des Herstellers zurück, oder setze die Box zurück.',
+      'Die {name}-Box hat ihr Passwort nicht akzeptiert. Gib unten den vierstelligen Code der Box ein und tippe auf Erneut versuchen. Der Werkscode ist 0000.',
     'sensorSource.err.failed': 'Verbindung zum {name}-Sensor nicht möglich.',
 
     'sensorSource.ios.intro':
@@ -2474,6 +2507,14 @@ export const MESSAGES = {
     'mounting.facing.left': 'Zeigt nach links',
     'box.state.connected': 'Verbunden',
     'box.state.lost': 'Kein Kontakt',
+    'box.state.password': 'Falsches Passwort',
+    'box.password.label': 'Code der Box',
+    'box.password.retry': 'Erneut versuchen',
+    'box.password.checking': 'Code wird geprüft…',
+    'box.password.invalid': 'Der Code hat vier Ziffern.',
+    'box.password.wrong': 'Die Box hat auch diesen Code nicht akzeptiert.',
+    'box.password.noAnswer':
+      'Die Box hat nicht geantwortet. Der Code ist gespeichert und wird beim nächsten Verbinden der Box versucht.',
     'box.state.notConnected': 'Nicht verbunden',
     'box.state.battery': 'Akku {value}',
     'box.connect': 'Verbinden',
