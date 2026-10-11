@@ -370,13 +370,16 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
           ? notAvailable
           : `${health.temperatureCelsius.toFixed(1)}°C`,
     });
-    const tilt = options.getCalibratedTilt();
+    // Only this box's own reading: while it is not in use, or has lost
+    // contact, the tilt would be the phone's or stale, so a dash (#343).
+    const tilt = isActive && !lost ? options.getCalibratedTilt() : null;
     // After the position when there is one ("✓ Stands upright · Side…"),
-    // else on its own; nothing at all before the first reading.
-    const separator = positionSlot.childElementCount > 0 ? ' · ' : '';
+    // else on its own.
+    const hasPosition = [...positionSlot.children].some((c) => !(c as HTMLElement).hidden);
+    const separator = hasPosition ? ' · ' : '';
     tiltText.textContent = tilt
       ? `${separator}${t('tilt.sideSide')} ${tilt.rollDeg.toFixed(1)}° · ${t('tilt.frontBack')} ${tilt.pitchDeg.toFixed(1)}°`
-      : positionSlot.childElementCount > 0
+      : hasPosition
         ? ''
         : t('sensorStatus.reading', { value: '—' });
 

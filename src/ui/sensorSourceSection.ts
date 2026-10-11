@@ -390,6 +390,14 @@ export function createSensorSourceSection(
   let zeroMessage: string | null = null;
 
   function refreshPosition(): void {
+    // Only this box's own reading says how it stands: while it is not the
+    // source in use, or has lost contact, the reading is the phone's or
+    // stale, so nothing is said (#343).
+    const delivering =
+      options.getSensorSource() === options.sensor.id &&
+      options.getSensorState() !== 'disconnected';
+    positionElement.hidden = !delivering;
+    if (!delivering) return;
     const tilt = options.getCalibratedTilt?.() ?? null;
     if (!tilt) {
       positionTitle.textContent = t('box.step.position.waiting');
@@ -541,9 +549,7 @@ export function createSensorSourceSection(
     installElement: installSection,
     moreElement: moreSection,
     refresh,
-    refreshLive: () => {
-      if (options.getSensorSource() === options.sensor.id) refreshPosition();
-    },
+    refreshLive: refreshPosition,
     positionElement,
   };
 }

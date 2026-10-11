@@ -500,6 +500,23 @@ describe('the position step, live (#304, #314)', () => {
     expect(findButton(section.installElement, 'Zero now').disabled).toBe(false);
   });
 
+  it('says nothing about the position while the box is not delivering — no guess from the phone (#343)', () => {
+    for (const overrides of [
+      { getSensorSource: () => 'phone' as const },
+      { getSensorSource: () => 'xparkle' as const, getSensorState: () => 'disconnected' as const },
+    ]) {
+      const section = createSensorSourceSection(
+        makeOptions({
+          sensor: XPARKLE_DESCRIPTOR,
+          getCalibratedTilt: () => ({ pitchDeg: 0, rollDeg: 0 }),
+          ...overrides,
+        }),
+      );
+      section.refreshLive();
+      expect(section.positionElement.hidden).toBe(true);
+    }
+  });
+
   it('asks a flat box to lie flat, never to stand', () => {
     const section = createSensorSourceSection(
       makeOptions({

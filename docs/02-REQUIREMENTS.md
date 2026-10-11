@@ -1667,6 +1667,9 @@ and what its first step checks differ, read from its descriptor's capabilities (
   lay it flat, top up". Past 45° on either axis is wrong, and the line turns to the
   warning colour with "!" instead of "✓". It is a status line, not a step: there is
   nothing to press (#332).
+- **Given** the box is not the source in use, or has lost contact (#343)
+- **Then** that line reads "Tilt now: —" and says nothing about the position: the only
+  reading there is the phone's or a stale one, and neither tells how the box stands.
 - **Given** the box is the active source
 - **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded (in a neutral frame: green means done, never "open", #343); every step can be opened and run at any time — guidance,
