@@ -7,7 +7,7 @@ import { showToast } from './ui/toast';
 import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
 import { combineCalibrations } from './domain/calibration';
-import { easyLevelSettings, type LevelSettings } from './domain/settings';
+import type { LevelSettings } from './domain/settings';
 import {
   applyVehicleGeometry,
   decodeVehicleGeometry,
@@ -40,12 +40,7 @@ import {
   type OrientationSensor,
   type SensorState,
 } from './sensor/orientation';
-import {
-  availableExternalSensors,
-  hasAvailableExternalSensor,
-  type ExternalSensorDescriptor,
-} from './sensor/externalSensors';
-import { EASYLEVEL_DESCRIPTOR, type EasyLevelSensor } from './sensor/easyLevelSensor';
+import { availableExternalSensors, hasAvailableExternalSensor } from './sensor/externalSensors';
 import type { XparkleSensor } from './sensor/xparkleSensor';
 import { createExternalSensorController } from './sensor/externalSensorController';
 import { createMenu, type Menu } from './ui/menu';
@@ -61,9 +56,7 @@ import { resolveLanguage, setLanguage, t } from './ui/i18n';
 import {
   createExternalSensor,
   hasPersistentDeviceAccess,
-  healthOf,
   isRememberedDeviceUsable,
-  withEasyLevelConnectDelay,
   type BoxWiring,
   type LibellExternalSensor,
   type SettingsAccess,
@@ -71,19 +64,13 @@ import {
 import { createInstallOffsets } from './app/installOffsets';
 import { createBoxZeroing } from './app/boxZero';
 import { createPhoneCalibration } from './app/phoneCalibration';
-import {
-  boxConnectionOptions,
-  boxSetupOptions,
-  boxStatusOptions,
-  calibrationOptions,
-  easyLevelMountingOptions,
-  sensorSourceOptions,
-  targetOptions,
-  type MenuOptionDeps,
-} from './app/menuOptionParts';
+import type { MenuOptionDeps } from './app/menuOptionParts';
+import { boxPageOptions, buildMenuOptions, wizardBoxOptions } from './app/menuOptions';
+import { createOnboardingLauncher } from './app/onboardingLauncher';
+import { createSettingsAdoption } from './app/settingsAdoption';
 import { buildLevelScreen, createLevelScreenHost } from './app/levelScreen';
 import { createTargets } from './app/targets';
-import { calibratedTilt, readTilt } from './app/tiltReading';
+import { readTilt } from './app/tiltReading';
 import { createNavigation } from './app/navigation';
 import {
   createBoxPending,
@@ -283,11 +270,7 @@ function bootstrap(root: HTMLElement): void {
     getSensor: (source) => externalSensors.getSensor(source),
     onMountingChanged: () => lamps.refresh(),
   };
-  // Debug-only (#212), from the EasyLevel page's debug disclosure; the
-  // transport reads `settings` live, so it applies on the next connect.
   const sound = createSound();
-  const setEasyLevelConnectDelay = (enabled: boolean, ms: number) =>
-    settingsAccess.set(withEasyLevelConnectDelay(settings, enabled, ms));
 
   /**
    * The external-sensor lifecycle (#265) — connect, disconnect, the silent
@@ -329,11 +312,6 @@ function bootstrap(root: HTMLElement): void {
     onStatusChanged: () => sensorStatus.refresh(),
   });
 
-  // While the menu or the wizard is open the user is reading, phone in
-  // hand — pause the guidance loop so the pose guard and the level
-  // celebration cannot nag over the page.
-  let onboardingOpen = false;
-
   // The option groups the wizard, the menu and the box pages share,
   // built once so no field is wired two ways (#374).
   const optionDeps: MenuOptionDeps = {
@@ -346,107 +324,45 @@ function bootstrap(root: HTMLElement): void {
     externalSensors,
     boxWiring,
   };
-  const calibration = calibrationOptions(optionDeps);
-  const sensorSource = sensorSourceOptions(optionDeps);
-  // The top-level box fields are EasyLevel's: connection and mounting
-  // only, never another box's password or guide.
-  const easyLevelBox = {
-    ...boxConnectionOptions(EASYLEVEL_DESCRIPTOR, optionDeps),
-    ...easyLevelMountingOptions(boxWiring),
-  };
-
-  // First-run wizard: placement, measurements, calibration. Skippable —
-  // the warning lamps stay lit for whatever was skipped (#43).
-  const openOnboarding = () => {
-    onboardingOpen = true;
-    showOnboarding({
-      initialSettings: settings,
-      appearance: settings.appearance,
-      onSettingsSaved(next) {
-        settings = next;
-        applyTheme(settings.theme);
-        applyAppearance(settings.appearance);
-        lamps.refresh();
-        levelScreen.rebuildIfChanged();
-      },
-      ...calibration,
-      // Sensor source choice (#135, ADR 0014): same fields, same
-      // callbacks as `createMenu` below wires up — the wizard's
-      // external-sensor step embeds the exact same `sensorSourceSection`
-      // component the real menu page uses, never a duplicate.
-      ...sensorSource,
-      // The onboarding wizard offers one external source; #268's list
-      // page is where more than one becomes visible.
-      ...easyLevelBox,
-      // With more than one box available the wizard offers them all
-      // rather than picking one for the user (#272).
-      sensorOptionsFor: (descriptor: ExternalSensorDescriptor) => ({
-        ...menuOptions,
-        ...boxConnectionOptions(descriptor, optionDeps),
-        ...boxSetupOptions(descriptor, optionDeps),
-      }),
-      onFinished(done, path) {
-        onboardingOpen = false;
-        markOnboardingSeen();
-        if (done) markOnboardingDone();
-        // A box chosen but not connected (#365): see `createBoxPending`.
-        if (done) boxPending.settle(path === 'external' && sensor().getSource() === 'phone');
-        lamps.refresh();
-      },
-    });
-  };
-
-  // Shared options bag (#screen-cleanup follow-up): every field the ☰
-  // Classic menu, the Modern Settings page, and the External sensor page
-  // (including its nested status/debug page) each need — reused as-is by
-  // whichever of those get constructed below, never duplicated.
-  const menuOptions = {
-    initialSettings: settings,
-    appearance: settings.appearance,
-    openOnboarding,
-    hasSavedSettings: () => demo || hasStoredMeasurements(),
-    onSettingsSaved(next: LevelSettings) {
-      settings = next;
-      applyTheme(settings.theme);
-      applyAppearance(settings.appearance);
-      // A settings change comes from a tap, a user gesture — the right moment to unlock
-      // audio for the opt-in level chime and/or continuous guidance.
-      if (settings.soundOnLevel || settings.soundGuidance) sound.unlock();
+  const adoption = createSettingsAdoption({
+    adopt: (next) => (settings = next),
+    applyLook(next) {
+      applyTheme(next.theme);
+      applyAppearance(next.appearance);
+    },
+    unlockAudio: sound.unlock,
+    refresh() {
       lamps.refresh();
       levelScreen.rebuildIfChanged();
     },
-    ...calibration,
+  });
+
+  // First-run wizard: placement, measurements, calibration (#43).
+  const onboarding = createOnboardingLauncher({
+    show: showOnboarding,
+    settings: () => settings,
+    onSettingsSaved: adoption.fromWizard,
+    parts: optionDeps,
+    sensorOptionsFor: (descriptor) => wizardBoxOptions(menuOptions, descriptor, optionDeps),
+    progress: { markSeen: markOnboardingSeen, markDone: markOnboardingDone },
+    boxPending,
+    activeSource: () => sensor().getSource(),
+    refreshLamps: () => lamps.refresh(),
+  });
+
+  // Every field the Settings page, the ☰ menu and the box pages need.
+  const menuOptions = buildMenuOptions({
+    parts: optionDeps,
+    settings: () => settings,
+    demo,
+    hasStoredMeasurements,
+    onSettingsSaved: adoption.fromSettings,
+    openOnboarding: onboarding.open,
     // Declared further down; only ever called after start-up (#316).
     openExternalSensor: () => navigation.openActiveSensorPage(),
-    ...targetOptions(targets),
-    ...sensorSource,
-    ...easyLevelBox,
-    getCalibratedTilt: () => calibratedTilt(sensor(), effectiveCalibration()),
-    getVehicleType: () => settings.vehicleType,
-    getActiveTargetName: () => targets.activeName(),
-    getHealth: () => healthOf('easylevel', externalSensors.getSensor('easylevel')),
-    // Raw status bytes are EasyLevel's own debug surface, gated by its
-    // descriptor's `debugBytes` capability (#268) — a source without them
-    // never draws the row.
-    getEasyLevelStatusBytes: () => {
-      const sensor = externalSensors.getSensor('easylevel');
-      return sensor && sensor.getSource() === 'easylevel'
-        ? (sensor as EasyLevelSensor).getStatusBytes()
-        : null;
-    },
-    getEasyLevelConnectDelay: () => ({
-      enabled: easyLevelSettings(settings).connectDelayEnabled,
-      ms: easyLevelSettings(settings).connectDelayMs,
-    }),
-    setEasyLevelConnectDelay,
-    getSoundPrefs: () => ({
-      soundOnLevel: settings.soundOnLevel,
-      soundGuidance: settings.soundGuidance,
-    }),
-    onShareVehicleSetup: (current: LevelSettings) => {
-      void shareVehicleSetup(pickVehicleGeometry(current));
-    },
-  };
+    effectiveCalibration,
+    shareVehicleSetup: (current) => void shareVehicleSetup(pickVehicleGeometry(current)),
+  });
 
   // Modern (screen-cleanup follow-up): the gear icon opens the Settings
   // page directly (Vehicle/Ramps/Calibration/Level/General as tabs), never a
@@ -501,12 +417,9 @@ function bootstrap(root: HTMLElement): void {
     ? // One section and one device page per available source (#268); the
       // options bag is per source, so each renders its own name, rows and
       // controls.
-      createSensorPage(availableExternalSensors(), (descriptor) => ({
-        ...menuOptions,
-        ...boxConnectionOptions(descriptor, optionDeps),
-        ...boxStatusOptions(descriptor, optionDeps),
-        ...boxSetupOptions(descriptor, optionDeps),
-      }))
+      createSensorPage(availableExternalSensors(), (descriptor) =>
+        boxPageOptions(menuOptions, descriptor, optionDeps),
+      )
     : null;
   const sensorPage = externalSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);
   if (sensorPage) document.body.append(sensorPage.element);
@@ -528,7 +441,7 @@ function bootstrap(root: HTMLElement): void {
   // Settings; each Help topic ends in a button to the place it talks
   // about (#326).
   const infoPage = createInfoPage({
-    openOnboarding,
+    openOnboarding: onboarding.open,
     hasDoneOnboarding,
     hasSensorPage: sensorPage !== null,
     openTarget: navigation.openHelpTarget,
@@ -590,7 +503,10 @@ function bootstrap(root: HTMLElement): void {
         settings: () => settings,
         calibration: effectiveCalibration,
         isPaused: () =>
-          isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen,
+          isMenuOpen() ||
+          infoPage.isOpen() ||
+          (sensorPage?.isOpen() ?? false) ||
+          onboarding.isOpen(),
         refreshStatus() {
           sensorStatus.refresh();
           // The box page's live rows: a no-op unless that page is open.
@@ -650,7 +566,7 @@ function bootstrap(root: HTMLElement): void {
       },
     });
   } else if (!demo && !hasSeenOnboarding()) {
-    openOnboarding();
+    onboarding.open();
   }
 
   if (demo) {
