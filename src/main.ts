@@ -6,16 +6,13 @@ import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
 import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
-import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
+import { computeLeveling, WHEEL_IDS, type GravityVector } from './domain/leveling';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
 import { combineCalibrations } from './domain/calibration';
-import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
-import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from './domain/staleness';
 import { deficitMagnitude } from './domain/rampPlan';
-import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
+import type { GuidanceDirection } from './domain/audioGuidance';
 import { createCaravanDiagram } from './ui/caravanDiagram';
-import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
 import {
   easyLevelSettings,
   formatLength,
@@ -57,13 +54,11 @@ import {
 } from './sensor/orientation';
 import {
   availableExternalSensors,
-  externalSensorById,
   hasAvailableExternalSensor,
   type ExternalSensorDescriptor,
 } from './sensor/externalSensors';
 import { EASYLEVEL_DESCRIPTOR, type EasyLevelSensor } from './sensor/easyLevelSensor';
 import type { XparkleSensor } from './sensor/xparkleSensor';
-import { isSensorUnavailable } from './sensor/sensorFallback';
 import { createExternalSensorController } from './sensor/externalSensorController';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
@@ -105,6 +100,7 @@ import {
   targetOptions,
   type MenuOptionDeps,
 } from './app/menuOptionParts';
+import { createLevelFrame, type EngineTick } from './app/levelFrame';
 import { createTargets } from './app/targets';
 import { calibratedTilt, readTilt } from './app/tiltReading';
 
@@ -825,10 +821,6 @@ function bootstrap(root: HTMLElement): void {
 
     // Vehicle engine (#72): compute → stabilize → render for the chosen
     // vehicle type, reporting what the celebration/re-arm logic needs.
-    interface EngineTick {
-      isLevel: boolean;
-      maxCorrectionMm: number;
-    }
     let engineElement: HTMLElement;
     let engineTick: (gravity: GravityVector, nowMs: number) => EngineTick;
     if (settings.vehicleType === 'caravan') {
@@ -950,183 +942,71 @@ function bootstrap(root: HTMLElement): void {
     staleOverlay.append(staleText, staleSensorButton);
     root.append(staleOverlay);
 
-    const detectPose = createPoseDetector();
-    const detectExternalPose = createExternalPoseDetector();
     const landscape = window.matchMedia('(orientation: landscape)');
-    // Rocking vehicle (people moving around): show "Measuring…" until the
-    // reading has been calm for a moment (#86); the diagram itself stays
-    // at full opacity — the status text is enough (#96).
-    const isStill = createStillnessDetector();
-
-    let wasLevel = false;
-    // Celebration arming (field feedback, twice): the vibration + overlay
-    // fire once per actual leveling. The trigger re-arms only after the
-    // vehicle has been CLEARLY un-level — well past the tolerance, and
-    // sustained — so jitter at the boundary can never celebrate again,
-    // no matter how long the vehicle parks right on the edge.
-    let celebrateArmed = false;
-    let clearlyUnlevelSince: number | null = null;
-    let lastCelebrate = -Infinity;
-    const REARM_MARGIN_MM = 15;
-    const REARM_SUSTAIN_MS = 3000;
-    const CELEBRATE_COOLDOWN_MS = 20000;
-
-    // Continuous audio guidance (#121, opt-in): pulse rate/pitch track the
-    // STABILIZED maxCorrectionMm the engine already produces — never a raw
-    // reading. The guidance state is still fed every frame (so its own
-    // direction hysteresis keeps working smoothly), but a pulse is only
-    // actually scheduled while still (R25) and the setting is on.
-    const guideAudio = createAudioGuidance();
-    let lastGuidancePulseAt = -Infinity;
-
-    const celebrate = () => {
-      if (!celebrateArmed || document.visibilityState !== 'visible') return;
-      const now = performance.now();
-      if (now - lastCelebrate < CELEBRATE_COOLDOWN_MS) return;
-      celebrateArmed = false;
-      lastCelebrate = now;
-      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-      if (settings.soundOnLevel) playChime();
-      levelOverlay.celebrate();
-    };
+    const levelFrame = createLevelFrame({
+      sensor,
+      isPaused: () =>
+        isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen,
+      refreshStatus() {
+        updateSensorStatus();
+        // The box page's live rows: a no-op unless that page is open.
+        externalSensorPage?.refreshLive();
+      },
+      externalSensors,
+      hasSensorPage: externalSensorPage !== null,
+      isLandscape: () => landscape.matches,
+      isVisible: () => document.visibilityState === 'visible',
+      settings: () => settings,
+      playGuidancePulse,
+      view: {
+        pause() {
+          poseOverlay.hidden = true;
+          staleOverlay.hidden = true;
+          fallbackPrompt.update(false, true);
+          levelOverlay.hideNow();
+        },
+        showNoData(unavailable, canRetrySilently) {
+          showNoData(true);
+          fallbackPrompt.update(unavailable, canRetrySilently);
+          // The plain hint and the Retry prompt never show at once.
+          waiting.hidden = unavailable;
+          if (!unavailable) waiting.textContent = t('main.waiting');
+        },
+        showReading() {
+          showNoData(false);
+          waiting.hidden = true;
+          fallbackPrompt.update(false, true);
+        },
+        showStale(offerSensorPage) {
+          staleSensorButton.hidden = !offerSensorPage;
+          staleOverlay.hidden = false;
+        },
+        hideStale: () => (staleOverlay.hidden = true),
+        showPose(problem) {
+          poseText.textContent = t(problem.message);
+          poseHint.textContent = t(problem.hint);
+          poseHint.hidden = poseSensorButton.hidden = !problem.offerSensorPage;
+          poseOverlay.hidden = false;
+        },
+        hidePose: () => (poseOverlay.hidden = true),
+        tick: engineTick,
+        showMeasuring() {
+          setStatus(t('status.measuring'));
+          status.classList.remove('status-line--level');
+        },
+        celebrate() {
+          if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+          if (settings.soundOnLevel) playChime();
+          levelOverlay.celebrate();
+        },
+        hideCelebration: () => levelOverlay.hideNow(),
+      },
+    });
 
     const frame = () => {
       // A rebuilt screen (vehicle type change) owns the loop from here.
       if (generation !== screenGeneration) return;
-      // Refreshed every frame (#129), including while the menu is open
-      // (see below) — a lost EasyLevel connection is only ever observed
-      // by polling `getState()` (Web Bluetooth's `gattserverdisconnected`
-      // has no separate callback into this module), the same way the
-      // "waiting" hint below already discovers it.
-      updateSensorStatus();
-      // Live battery/temperature/reading on the sensor status page
-      // (screen-cleanup follow-up to #133/#129): same "every frame,
-      // regardless of what's open" discipline as `updateSensorStatus()`
-      // above — `refreshLive()` itself is the no-op guard when that page
-      // isn't the one currently open.
-      externalSensorPage?.refreshLive();
-      // Settings, info page, sensor page, or wizard open: the user is
-      // reading, phone in hand — no pose nagging, no overlays, no
-      // celebration until they are back.
-      if (isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen) {
-        poseOverlay.hidden = true;
-        staleOverlay.hidden = true;
-        fallbackPrompt.update(false, true);
-        levelOverlay.hideNow();
-        requestAnimationFrame(frame);
-        return;
-      }
-      const gravity = sensor().getGravity();
-      if (!gravity) {
-        // No reading yet — or, for an external source (#116), no longer:
-        // an EasyLevel disconnect clears `getGravity()` back to null after
-        // readings were already flowing. Either way, say so instead of
-        // freezing the diagram on its last frame (#116's acceptance
-        // criteria) — this hint was already the "waiting for the very
-        // first reading" case.
-        //
-        // Unreachable EasyLevel (#134) gets the actionable Retry/"Use
-        // phone sensor" prompt instead of the plain text — never both at
-        // once. Every other case here (first load, still connecting) is
-        // unchanged: the plain "waiting for the tilt sensor" hint.
-        const unavailable = isSensorUnavailable(sensor().getState());
-        // No data: never leave the last frame's steps looking live (#312).
-        showNoData(true);
-        fallbackPrompt.update(unavailable, externalSensors.canRetrySilently());
-        waiting.hidden = unavailable;
-        if (unavailable) {
-          // Background auto-retry (#211) — see `maybeAutoRetryEasyLevel`.
-          externalSensors.maybeAutoRetry(performance.now());
-        } else {
-          waiting.textContent = t('main.waiting');
-          // Reset so a *later* disconnect retries immediately rather than
-          // waiting out a stale interval left over from this one.
-        }
-      } else {
-        showNoData(false);
-        waiting.hidden = true;
-        fallbackPrompt.update(false, true);
-        const now = performance.now();
-        // Stale data (#132): the sensor still reports a reading, but it
-        // hasn't refreshed in a while — a BLE box whose notifications
-        // silently stopped while the GATT link stayed "connected", or a
-        // phone sensor stalled by tab backgrounding/OS throttling. Checked
-        // before the pose guard below: a reading old enough to be untrusted
-        // isn't safe to judge the pose from either, and the two overlays
-        // must never both fight for the screen at once.
-        // Each external source declares its own timeout (#266); the phone
-        // is not an external source and keeps the domain layer's own.
-        const staleTimeoutMs =
-          externalSensorById(sensor().getSource())?.staleTimeoutMs ?? STALE_TIMEOUT_PHONE_MS;
-        if (isSensorStale(sensor().getLastSampleAt(), now, staleTimeoutMs)) {
-          staleSensorButton.hidden = !externalSensorPage || sensor().getSource() === 'phone';
-          staleOverlay.hidden = false;
-          poseOverlay.hidden = true;
-          levelOverlay.hideNow();
-          requestAnimationFrame(frame);
-          return;
-        }
-        staleOverlay.hidden = true;
-        // Invalid pose: pause the guidance and say what to do instead.
-        // The phone pose rules (R17) only apply to the phone itself; a
-        // mounted external box is never laid flat or turned (#285). It is
-        // only checked for positions too extreme to be a real mount
-        // (on its side, face-down — R43).
-        const phoneActive = sensor().getSource() === 'phone';
-        const externalPose = phoneActive ? 'ok' : detectExternalPose(gravity);
-        const badPose = phoneActive ? detectPose(gravity) === 'not-flat' : externalPose !== 'ok';
-        const badLandscape = phoneActive && landscape.matches;
-        if (badPose || badLandscape) {
-          // A box built to stand (#304) is told to stand, never to lie flat.
-          const upright = externalSensorById(sensor().getSource())?.capabilities.upright ?? false;
-          poseText.textContent = !badPose
-            ? t('pose.portrait')
-            : phoneActive
-              ? t('pose.layFlat')
-              : upright
-                ? t('pose.sensorNotUpright')
-                : externalPose === 'upside-down'
-                  ? t('pose.sensorUpsideDown')
-                  : t('pose.sensorExtreme');
-          poseHint.textContent = t(upright ? 'pose.sensorHintUpright' : 'pose.sensorHint');
-          poseHint.hidden = poseSensorButton.hidden = phoneActive;
-          poseOverlay.hidden = false;
-          levelOverlay.hideNow();
-          requestAnimationFrame(frame);
-          return;
-        }
-        poseOverlay.hidden = true;
-        const tilt = tiltFromGravity(gravity, null);
-        const still = isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, now);
-        const { isLevel, maxCorrectionMm } = engineTick(gravity, now);
-        if (!still) {
-          // Momentary readings are meaningless while the vehicle rocks —
-          // say so instead of flickering advice, and never celebrate.
-          setStatus(t('status.measuring'));
-          status.classList.remove('status-line--level');
-        }
-        if (still && isLevel && !wasLevel) celebrate();
-        if (!isLevel) levelOverlay.hideNow();
-        wasLevel = isLevel;
-        const guidance = guideAudio(maxCorrectionMm, isLevel, settings, now);
-        if (
-          settings.soundGuidance &&
-          still &&
-          guidance.pulseIntervalMs !== null &&
-          guidance.pitchHz !== null &&
-          now - lastGuidancePulseAt >= guidance.pulseIntervalMs
-        ) {
-          playGuidancePulse(guidance.pitchHz, guidance.direction);
-          lastGuidancePulseAt = now;
-        }
-        // Re-arm the celebration only once clearly un-level, sustained.
-        if (!isLevel && maxCorrectionMm > settings.toleranceMm + REARM_MARGIN_MM) {
-          clearlyUnlevelSince ??= now;
-          if (now - clearlyUnlevelSince >= REARM_SUSTAIN_MS) celebrateArmed = true;
-        } else {
-          clearlyUnlevelSince = null;
-        }
-      }
+      levelFrame(performance.now());
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
