@@ -18,7 +18,7 @@
  *   the two boxes and the thing most likely to be got wrong.
  * - **The login handshake.** Writes are parsed, and the password command
  *   is answered with a real reply frame — accepted, or rejected in
- *   `'badpassword'` mode. That case is the one most likely to reach a real
+ *   `'badpassword'` mode until the user types that box's code (#367). That case is the one most likely to reach a real
  *   user first (a box whose password was changed in the vendor app) and
  *   the least likely to be right first time, so it needs to be reachable
  *   deliberately rather than only by owning a box.
@@ -34,6 +34,7 @@ import {
   buildCommandFrame,
   parseParameterReply,
   XPARKLE_COMMAND,
+  XPARKLE_DEFAULT_PASSWORD,
   XPARKLE_FRAME_HEADER,
 } from './xparkleProtocol';
 import type { XparkleConnection, XparkleTransport } from './xparkleSensor';
@@ -59,6 +60,19 @@ export function xparkleSimulationMode(
   if (value === 'drop') return 'drop';
   if (value === 'badpassword') return 'badpassword';
   return 'steady';
+}
+
+/**
+ * The code the `'badpassword'` box answers to (#367): not the factory
+ * `"0000"` Libell offers first, so the rejection is reached, but one a
+ * tester can type on the box's page to see the way out of it.
+ */
+export const SIMULATED_XPARKLE_BAD_PASSWORD_CODE = '1234';
+
+/** The code a simulated box accepts: the factory one, unless it is the
+ * box whose password was changed. */
+function simulatedXparklePassword(mode: XparkleSimulationMode): string {
+  return mode === 'badpassword' ? SIMULATED_XPARKLE_BAD_PASSWORD_CODE : XPARKLE_DEFAULT_PASSWORD;
 }
 
 /** Stable fake device id, so the remembered-device store (#130/R33) and
@@ -183,8 +197,11 @@ export function createSimulatedXparkleTransport(
         }
         if (frame[2] === XPARKLE_COMMAND.password) {
           // Byte 4 of the reply is the verdict: 0 accepted, anything else
-          // rejected, per the app's own `setPwd(bArr[4] == 0)`.
-          answer(buildCommandFrame(XPARKLE_COMMAND.password, [mode === 'badpassword' ? 1 : 0]));
+          // rejected, per the app's own `setPwd(bArr[4] == 0)`. The code
+          // offered is the frame's "new" field, bytes 5–8 (#367).
+          const offered = [...frame.subarray(5, 9)].join('');
+          const accepted = offered === simulatedXparklePassword(mode);
+          answer(buildCommandFrame(XPARKLE_COMMAND.password, [accepted ? 0 : 1]));
         } else if (frame[2] === XPARKLE_COMMAND.queryParameters) {
           answer(buildCommandFrame(XPARKLE_COMMAND.queryParameters, SIM_PARAMETERS));
         } else if (frame[2] === XPARKLE_COMMAND.resetZero) {

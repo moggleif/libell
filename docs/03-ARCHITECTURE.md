@@ -158,6 +158,26 @@ adapter synthesizes the `GravityVector` the seam takes; it applies its own store
 orientation, so Libell applies none. `xparkleSimulator.ts` (#271, R48) plugs a simulated
 box into that same transport seam behind `?xparkle-sim`.
 
+**A rejected Xparkle password is fixed in Libell (#367).** What Libell can do about it,
+weighed against the protocol (`docs/competitor-notes.md`):
+
+- _Offer the factory code_ (`"0000"`): already what every connect does first.
+- _Let the user type the box's code_: what the vendor app itself does when the box
+  rejects the stored one. Chosen. The code lives in `XparkleSettings.password`
+  (`domain/settings.ts`, four digits or the factory code), is offered on every connect,
+  and "Try again" offers it at once on the live link (`XparkleSensor.verifyPassword()`)
+  and waits a bounded time for the verdict — no reconnect, since readings keep flowing
+  either way (the box does not gate `fff2` on the password, #273).
+- _Change the password_ (command `4`, mode `1`): needs the old code, which is exactly
+  what the user does not know, and Libell does not change box passwords (Morgan,
+  2026-10-11). A forgotten code is changed in the Xparkle app; the message says so.
+- _Factory reset_ (command `1`): wipes everything the box stores, and whether a box
+  accepts it without the right password is unknown. Under R49's rule that Libell never
+  rewrites the box's stored state, it is not offered.
+
+`boxPasswordBlock.ts` renders the message, the field and the one button, on the box's
+card and on its own page; while the box rejects its code neither says "Connected".
+
 **The registry** (`src/sensor/externalSensors.ts`, #262, ADR 0016) is what everything
 above the seam asks instead of naming a device: each external source publishes a
 descriptor with its `id` (the `SensorSource` member, and the key its storage and

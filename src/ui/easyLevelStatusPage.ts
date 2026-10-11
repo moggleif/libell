@@ -34,6 +34,7 @@ import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSenso
 import type { SensorState } from '../sensor/orientation';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import { CHROME_FLAGS_ADDRESS, offersSilentReconnectTip } from '../sensor/silentReconnect';
+import { createBoxPasswordBlock, type BoxPasswordOptions } from './boxPasswordBlock';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import { showToast } from './toast';
@@ -86,6 +87,10 @@ export interface EasyLevelStatusOptions {
   /** Whether to offer the silent-reconnect tip (#310); defaults to asking
    * the browser itself. */
   offersSilentReconnectTip?(): boolean;
+  /** The box's password (#367), for a box that asks for one: while it is
+   * rejected the header says so, never "Connected", and the way to type
+   * the right code sits right under it. */
+  password?: BoxPasswordOptions;
 }
 
 export interface EasyLevelStatusPage {
@@ -167,6 +172,9 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     });
   });
   header.append(stateRow, connectButton);
+  const passwordBlock = options.password
+    ? createBoxPasswordBlock(options.password, options.sensor.displayName)
+    : null;
   // No signal-strength row (#228). Web Bluetooth exposes RSSI only through
   // `advertisementreceived` (via `watchAdvertisements()`), never for an
   // established GATT connection — and a BLE peripheral generally stops
@@ -189,7 +197,9 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
   lowBatteryRow.hidden = true;
   let wasLowBattery = false;
   const capabilities = options.sensor.capabilities;
-  page.body.append(header, readingRow);
+  page.body.append(header);
+  if (passwordBlock) page.body.append(passwordBlock.element);
+  page.body.append(readingRow);
   if (capabilities.battery) page.body.append(lowBatteryRow);
 
   // This sensor's own setup (#226, #314): the checklist built by
@@ -342,8 +352,10 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
     const state = options.getSensorState();
     const isActive = source === options.sensor.id;
     const lost = isActive && state === 'disconnected';
-    stateRow.classList.toggle('is-connected', isActive && !lost);
-    stateRow.classList.toggle('is-lost', lost);
+    const rejected = isActive && !lost && (options.password?.isRejected() ?? false);
+    stateRow.classList.toggle('is-connected', isActive && !lost && !rejected);
+    stateRow.classList.toggle('is-lost', lost || rejected);
+    passwordBlock?.refresh();
 
     const health = isActive ? options.getHealth() : null;
     const batteryKnown = capabilities.battery && health?.batteryPercent != null;
@@ -351,11 +363,13 @@ export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): Easy
       ? t('box.state.notConnected')
       : lost
         ? t('box.state.lost')
-        : batteryKnown
-          ? `${t('box.state.connected')} · ${t('box.state.battery', {
-              value: `${Math.round(health?.batteryPercent ?? 0)} %`,
-            })}`
-          : t('box.state.connected');
+        : rejected
+          ? t('box.state.password')
+          : batteryKnown
+            ? `${t('box.state.connected')} · ${t('box.state.battery', {
+                value: `${Math.round(health?.batteryPercent ?? 0)} %`,
+              })}`
+            : t('box.state.connected');
     connectButton.hidden = !options.connectSensor || (isActive && !lost);
     connectButton.disabled = connecting;
     connectButton.textContent = connecting

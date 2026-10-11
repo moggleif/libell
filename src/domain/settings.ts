@@ -287,12 +287,25 @@ export interface XparkleSettings {
    * it". Applied to every reading before anything else sees it.
    */
   axisMapping: AxisMapping | null;
+  /**
+   * The box's four-digit password (#367), offered on every connect. The
+   * factory code unless the user typed another on the box's page after the
+   * box rejected it — so a code changed in the vendor app is fixed here.
+   */
+  password: string;
 }
 
 export const DEFAULT_XPARKLE_SETTINGS: XparkleSettings = {
   // Nothing learned: the box's own axes, exactly as before #293.
   axisMapping: null,
+  // The factory code every box ships with (`XPARKLE_DEFAULT_PASSWORD`).
+  password: '0000',
 };
+
+/** A box password is exactly four decimal digits (#367). */
+function isXparklePassword(value: unknown): value is string {
+  return typeof value === 'string' && /^\d{4}$/.test(value);
+}
 
 export const DEFAULT_SETTINGS: LevelSettings = {
   vehicleType: 'motorhome',
@@ -575,7 +588,10 @@ export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
 export function xparkleSettings(settings: LevelSettings): XparkleSettings {
   const stored = settings.sensorDevices.xparkle;
   const raw = isRecord(stored) ? stored : {};
-  return { axisMapping: parseAxisMapping(raw.axisMapping) };
+  return {
+    axisMapping: parseAxisMapping(raw.axisMapping),
+    password: isXparklePassword(raw.password) ? raw.password : DEFAULT_XPARKLE_SETTINGS.password,
+  };
 }
 
 /** Settings with the Xparkle entry patched (#293). */

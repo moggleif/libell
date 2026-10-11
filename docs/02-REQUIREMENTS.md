@@ -1687,6 +1687,8 @@ and the login handshake is answered with real reply frames.
 - **Then** the box rejects the password, so the "wrong password" state can be reached
   deliberately — the case most likely to reach a real user first (a box whose password
   was changed in the vendor app) and the least likely to be right on the first try.
+  Its code is `1234` (#367), so typing it on the box's page shows the way out; an
+  ordinary simulated box accepts only the factory `0000`.
 - **Given** `?xparkle-sim=drop`
 - **Then** the simulated connection is lost a short while after (re)connecting and stays
   unreachable for a few seconds before recovering — over and over, so the lost-connection
@@ -1763,6 +1765,16 @@ present this source as more proven than it is.
 - **Then** the Sensor box page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
   rather than at the setting that is actually wrong.
+- **Given** the box rejects the password (#367)
+- **When** I look at the box's card or its own page
+- **Then** neither says "Connected": the state reads "Wrong password", and the message
+  tells me to type the box's four-digit code in Libell (the factory code is 0000), with
+  a field and one "Try again" button; only a code the user does not know is changed in
+  the Xparkle app, since Libell never changes a box's password. Try again offers
+  the code to the connected box at once and says whether it was accepted, rejected, or
+  not answered; a code that is not four digits is explained, not sent. The code is kept
+  in Libell's settings and offered on every later connect. Readings keep flowing
+  throughout: nothing is blocked while the code is wrong.
 - **Given** the Xparkle box is connected and the user taps "Set vehicle level" — on its
   own page (R34) or in the Calibration tab (R11)
 - **Then** Libell has the box zero itself with its own command (#290), so its readings

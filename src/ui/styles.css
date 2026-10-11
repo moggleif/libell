@@ -3474,6 +3474,23 @@ body {
   gap: 4px;
 }
 
+/* A rejected box password (#367): the message, the code and Try again,
+   stacked under the state they explain. */
+.box-password {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.box-password[hidden] {
+  display: none;
+}
+
+.box-password__input {
+  letter-spacing: 0.2em;
+}
+
 .box-header__state {
   display: flex;
   align-items: center;
