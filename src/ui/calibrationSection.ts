@@ -439,7 +439,7 @@ export function createCalibrationSection(
     };
     const makeMore = (...buttons: HTMLButtonElement[]): HTMLDetailsElement => {
       const more = document.createElement('details');
-      more.className = 'menu__detail box-more';
+      more.className = 'menu__detail';
       const summary = document.createElement('summary');
       summary.className = 'sensor-status__debug-summary';
       summary.textContent = t('settings.more');
