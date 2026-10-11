@@ -476,6 +476,33 @@ async function wizardBoxFlow(browser, connect) {
   await context.close();
 }
 
+// The wizard's box step is the same card as the box page, password and all.
+async function wizardPasswordFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'xparkle-sim=badpassword', {
+    'libell.onboarded': null,
+  });
+  await nextUntil(page, 'How do you want to measure?');
+  await wizard(page).getByText('Sensor box', { exact: true }).click();
+  await nextUntil(page, 'Sensor box');
+  await button(wizard(page), 'Connect').click();
+  await wizard(page).getByText('Connected', { exact: true }).waitFor();
+  // The connect step is drawn once, so the verdict that arrives after the
+  // connect shows when the step is drawn again.
+  await button(wizard(page), 'Next').click();
+  await button(wizard(page), 'Back').click();
+  const password = wizard(page).locator('.box-password');
+  await password.waitFor();
+  await password.locator('input').fill('1234');
+  await button(password, '').click();
+  await password.waitFor({ state: 'hidden' });
+  assert(
+    (await storedSettings(page)).sensorDevices.xparkle.password === '1234',
+    'a password typed in the wizard should be kept for later connects',
+  );
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
   cwd: root,
   stdio: 'ignore',
@@ -505,8 +532,9 @@ try {
   await wizardPhoneFlow(browser);
   await wizardBoxFlow(browser, true);
   await wizardBoxFlow(browser, false);
+  await wizardPasswordFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password',
   );
 } finally {
   await browser?.close();
