@@ -1,9 +1,10 @@
-// Flows test (#374): drives the built app through the external-sensor
-// flows that only exist as wiring in `src/main.ts` — connecting a box,
-// its health and live rows, picking or learning its direction, zeroing
-// it, its password, its debug knob, and the silent reconnect after a
-// reload. Each flow runs against the simulated boxes (`?xparkle-sim`,
-// `?easylevel-sim`), so it needs no hardware and no Web Bluetooth.
+// Flows test (#374): drives the built app through the flows that only
+// exist as wiring in `src/main.ts`. For the boxes: connecting one, its
+// health and live rows, picking or learning its direction, zeroing it,
+// its password, its debug knob, and the silent reconnect after a reload,
+// against the simulated boxes (`?xparkle-sim`, `?easylevel-sim`). For the
+// phone: calibrating, zeroing and checking it, and target presets, against
+// `?demo`'s fixed tilt. None of it needs hardware or Web Bluetooth.
 //
 // It exists to pin today's behaviour while `main.ts` is split into
 // modules: the unit tests reach each module, but only a whole running app
@@ -24,18 +25,20 @@ function assert(condition, message) {
   if (!condition) throw new Error(`flows test failed: ${message}`);
 }
 
-/** A fresh page, past the first-run wizard, in English. */
-async function openApp(browser, query) {
+/** A fresh page, past the first-run wizard, in English, with `seed`
+ * written to localStorage before the app first reads it. */
+async function openApp(browser, query, seed = {}) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.addInitScript(() => {
+  await page.addInitScript((extra) => {
     if (sessionStorage.getItem('flows.seeded')) return;
     sessionStorage.setItem('flows.seeded', '1');
     localStorage.setItem('libell.onboarded', '1');
     localStorage.setItem('libell.language', 'en');
-  });
+    for (const [key, value] of Object.entries(extra)) localStorage.setItem(key, value);
+  }, seed);
   await page.goto(`${BASE}?${query}`);
   return { context, page, errors };
 }
@@ -239,6 +242,121 @@ async function easyLevelFlow(browser) {
   await context.close();
 }
 
+/** Open Settings on one of its tabs. */
+async function openSettingsTab(page, tab) {
+  await page.click('#settings-button');
+  await page.locator(`.menu-page.is-visible [role=tab][data-tab=${tab}]`).click();
+  return page.locator('.menu-page.is-visible').first();
+}
+
+// ?demo's fixed tilt, in degrees (`createDemoSensor` in main.ts).
+const DEMO_ROLL = -1.2;
+const DEMO_PITCH = -0.35;
+const near = (a, b) => Math.abs(a - b) < 0.01;
+
+async function phoneCalibrationFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'demo');
+  const settings = await openSettingsTab(page, 'calibration');
+
+  // Calibrating stores the phone's reading as its bias.
+  await button(settings, 'Calibrate now').click();
+  await settings.getByText('Phone calibrated (today)').waitFor();
+  const calibration = JSON.parse(await storage(page, 'libell.calibration'));
+  assert(
+    near(calibration.rollDeg, DEMO_ROLL) && near(calibration.pitchDeg, DEMO_PITCH),
+    `calibration should be the demo tilt, got ${JSON.stringify(calibration)}`,
+  );
+
+  // The vehicle zero is stored sensor-corrected: nothing left over here.
+  await button(settings, 'Zero now').click();
+  await settings.getByText('Zeroed (today)').waitFor();
+  const zero = JSON.parse(await storage(page, 'libell.vehicleCalibration'));
+  assert(
+    near(zero.rollDeg, 0) && near(zero.pitchDeg, 0),
+    `vehicle zero should be sensor-corrected to 0/0, got ${JSON.stringify(zero)}`,
+  );
+
+  // Check compares the reading against calibration plus zero.
+  await button(settings, 'Zeroed (today)').click();
+  await settings.locator('summary:visible').filter({ hasText: 'More' }).click();
+  await button(settings, 'Check').click();
+  await settings.getByText('Still good — off by 0.0°.').waitFor();
+
+  // Forgetting the zero clears it.
+  await button(settings, 'Forget the zero').click();
+  await eventually(
+    async () => (await storage(page, 'libell.vehicleCalibration')) === null,
+    'forgetting the vehicle zero should clear it from storage',
+  );
+
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+async function phoneCheckOffFlow(browser) {
+  // A calibration and zero taken elsewhere: the demo tilt now reads as off.
+  const level = JSON.stringify({ rollDeg: 0, pitchDeg: 0, capturedAt: Date.now() });
+  const { context, page, errors } = await openApp(browser, 'demo', {
+    'libell.calibration': level,
+    'libell.vehicleCalibration': level,
+  });
+  const settings = await openSettingsTab(page, 'calibration');
+  await button(settings, 'Zeroed (today)').click();
+  await settings.locator('summary:visible').filter({ hasText: 'More' }).click();
+  await button(settings, 'Check').click();
+  await settings.getByText('Off by 1.2° — consider recalibrating.').waitFor();
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+async function targetsFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'demo');
+  const settings = await openSettingsTab(page, 'targets');
+
+  // Saving a target stores the tilt relative to the zero (none here).
+  await settings.locator('.targets__name-input').fill('Ferry');
+  await button(settings, 'Save current tilt as new target').click();
+  await settings.locator('.targets__row-label').filter({ hasText: 'Ferry' }).waitFor();
+  const [preset] = JSON.parse(await storage(page, 'libell.targetPresets'));
+  assert(
+    preset.name === 'Ferry' &&
+      near(preset.offset.rollDeg, DEMO_ROLL) &&
+      near(preset.offset.pitchDeg, DEMO_PITCH),
+    `the preset should hold the demo tilt, got ${JSON.stringify(preset)}`,
+  );
+
+  // An unnamed target gets the next free default name.
+  await button(settings, 'Save current tilt as new target').click();
+  await settings.locator('.targets__row-label').filter({ hasText: 'Target 1' }).waitFor();
+
+  // Selecting it stores it and shows the badge on the main screen.
+  await button(settings, 'Ferry').click();
+  assert(
+    (await storage(page, 'libell.activeTarget')) === JSON.stringify(preset.id),
+    'selecting a target should store it as active',
+  );
+  await closeAllPages(page);
+  await page.locator('.target-badge:visible').filter({ hasText: 'Ferry' }).waitFor();
+
+  // Deleting the active target falls back to Normal and hides the badge.
+  await page.locator('.target-badge').click();
+  const targets = page.locator('.menu-page.is-visible').first();
+  await targets.locator('.targets__row-delete[aria-label*="Ferry"]').click();
+  await eventually(
+    async () => JSON.parse(await storage(page, 'libell.targetPresets')).length === 1,
+    'deleting a target should remove it from storage',
+  );
+  assert(
+    (await storage(page, 'libell.activeTarget')) === null,
+    'deleting the active target should fall back to Normal',
+  );
+  await closeAllPages(page);
+  await page.locator('.target-badge').waitFor({ state: 'hidden' });
+
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
   cwd: root,
   stdio: 'ignore',
@@ -261,7 +379,12 @@ try {
   await xparkleFlow(browser);
   await xparklePasswordFlow(browser);
   await easyLevelFlow(browser);
-  console.log('flows test passed: Xparkle, Xparkle password, EasyLevel');
+  await phoneCalibrationFlow(browser);
+  await phoneCheckOffFlow(browser);
+  await targetsFlow(browser);
+  console.log(
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets',
+  );
 } finally {
   await browser?.close();
   preview.kill();
