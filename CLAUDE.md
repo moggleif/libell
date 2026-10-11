@@ -29,8 +29,8 @@ waiting to drift.
 
 ```
 src/
-├── main.ts        # entry point: wires sensor → state → render
-├── app/           # wiring modules main.ts composes (#374), each with its own tests
+├── main.ts        # entry point: only creates the app/ modules and connects them
+├── app/           # the modules main.ts composes (#374, #392), each with its own tests
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
 ├── data/          # settingsStore.ts (settings + calibration), easyLevelDeviceStore.ts
 │                  # (remembered EasyLevel device id, #130) — all localStorage

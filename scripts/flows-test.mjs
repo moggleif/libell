@@ -271,7 +271,7 @@ async function openSettingsTab(page, tab) {
   return page.locator('.menu-page.is-visible').first();
 }
 
-// ?demo's fixed tilt, in degrees (`createDemoSensor` in main.ts).
+// ?demo's fixed tilt, in degrees (`DEMO_TILT_DEG` in src/app/demoSensor.ts).
 const DEMO_ROLL = -1.2;
 const DEMO_PITCH = -0.35;
 const near = (a, b) => Math.abs(a - b) < 0.01;
@@ -953,6 +953,189 @@ async function settingsSaveFlow(browser) {
   await app.context.close();
 }
 
+/** Records what the app hands the share sheet. */
+function fakeShare() {
+  navigator.share = (data) => {
+    window.__shared = data;
+    return Promise.resolve();
+  };
+}
+
+const appHint = (page) => page.locator('#app .app__hint').first();
+
+// Start-up: the top bar, the storage migrations, an incoming vehicle-setup
+// link, and how the phone sensor is started.
+async function startupFlow(browser) {
+  // Chromium 153 offers iOS's requestPermission too; these hide it so a
+  // case pins the start-up without the Start tap, or stub it as iOS's.
+  const permission = (motion, orientation) => `
+    for (const [api, value] of [
+      [window.DeviceMotionEvent, ${motion}],
+      [window.DeviceOrientationEvent, ${orientation}],
+    ]) {
+      if (api) Object.defineProperty(api, 'requestPermission', { value });
+    }
+  `;
+  const notIos = permission('undefined', 'undefined');
+
+  // The top bar is labelled and reserves the corner its icon sits in.
+  let app = await openApp(browser, 'xparkle-sim', {}, undefined, notIos);
+  let { page } = app;
+  assert(
+    (await page.locator('#settings-button').getAttribute('aria-label')) === 'Settings',
+    'the settings button should be labelled',
+  );
+  assert(
+    (await page.locator('#help-button').getAttribute('aria-label')) === 'Help',
+    'the help button should be labelled',
+  );
+  assert(
+    (await page.locator('#install-hint').textContent()) === 'Tap Share, then "Add to Home Screen".',
+    'the install hint should be translated',
+  );
+  assert(
+    (await page.locator('#install-button').textContent()) === 'Install',
+    'the install button should be translated',
+  );
+  const corner = await page
+    .locator('.topbar')
+    .evaluate((bar) => [
+      bar.classList.contains('topbar--has-corner'),
+      bar.style.getPropertyValue('--topbar-corner'),
+    ]);
+  assert(
+    corner[0] && /^\d+px$/.test(corner[1]) && corner[1] !== '0px',
+    `the corner should be reserved, got ${corner}`,
+  );
+  assert(
+    (await page.locator('#sensor-slot .sensor-status').count()) === 1,
+    'the icon sits in the corner',
+  );
+  // Headless Chromium has motion events but never fires one: waiting.
+  await page.locator('#app.app--level').waitFor();
+  assert((await appHint(page).textContent()) === 'Waiting for the tilt sensor…', 'should wait');
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // Storage from before the per-source keys is carried over once (#263).
+  const legacyZero = JSON.stringify({ rollDeg: 1, pitchDeg: 2, capturedAt: 5 });
+  app = await openApp(
+    browser,
+    'xparkle-sim',
+    {
+      'libell.easyLevelDeviceId': 'old-box',
+      'libell.easyLevelInstallCalibration': legacyZero,
+      'libell.settings': JSON.stringify({ wheelbaseMm: 3700 }),
+    },
+    undefined,
+    notIos,
+  );
+  page = app.page;
+  await page.locator('#app.app--level').waitFor();
+  assert((await storage(page, 'libell.sensorDevice.easylevel')) === 'old-box', 'device id moved');
+  assert(
+    (await storage(page, 'libell.installCalibration.easylevel')) === legacyZero,
+    'box zero moved',
+  );
+  assert((await storage(page, 'libell.measurementsSaved')) === '1', 'saved settings count');
+  assert(!(await lamps(page)).includes('⚠ Measurements'), 'no measurements lamp after it');
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // A shared vehicle setup arrives as a link, instead of the wizard.
+  app = await openApp(
+    browser,
+    'demo',
+    { 'libell.settings': JSON.stringify({ wheelbaseMm: 4321 }) },
+    undefined,
+    fakeShare,
+  );
+  page = app.page;
+  const vehicle = await openSettingsTab(page, 'vehicle');
+  await button(vehicle, 'Share to another phone').click();
+  await eventually(() => page.evaluate(() => window.__shared !== undefined), 'shared');
+  const { url } = await page.evaluate(() => window.__shared);
+  assert(url.includes('#setup='), `the shared link should carry the setup, got ${url}`);
+  await app.context.close();
+
+  const setupHash = url.slice(url.indexOf('#'));
+  app = await openApp(browser, `xparkle-sim${setupHash}`, { 'libell.onboarded': null });
+  page = app.page;
+  const incoming = page.locator('.incoming-setup');
+  await incoming.waitFor();
+  assert((await wizard(page).count()) === 0, 'the link should show instead of the wizard');
+  assert(!(await page.evaluate(() => location.hash)), 'the link should be taken off the URL');
+  await button(incoming, 'Use these values').click();
+  await eventually(
+    async () => (await storedSettings(page)).wheelbaseMm === 4321,
+    'the shared wheelbase should be applied',
+  );
+  assert((await storage(page, 'libell.measurementsSaved')) === '1', 'applied counts as saved');
+  await eventually(
+    async () => !(await lamps(page)).includes('⚠ Measurements'),
+    'applied measurements should clear the lamp',
+  );
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // A broken link changes nothing and says so.
+  app = await openApp(browser, 'xparkle-sim#setup=not-a-setup');
+  page = app.page;
+  await page.getByText("That vehicle-setup link couldn't be read — nothing was changed.").waitFor();
+  assert((await page.locator('.incoming-setup').count()) === 0, 'no setup to apply');
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // iOS asks for motion access on a tap: Start, then the level screen.
+  for (const [answer, expected] of [
+    ['granted', null],
+    ['denied', 'denied'],
+  ]) {
+    app = await openApp(
+      browser,
+      'xparkle-sim',
+      {},
+      undefined,
+      permission(...Array(2).fill(`() => Promise.resolve('${answer}')`)),
+    );
+    page = app.page;
+    assert(
+      (await appHint(page).textContent()) ===
+        'Lay your phone flat inside the vehicle, top edge toward the front.',
+      'iOS should explain before asking',
+    );
+    await button(page.locator('#app'), 'Start').click();
+    if (expected === null) {
+      await page.locator('#app.app--level').waitFor();
+    } else {
+      await eventually(
+        async () => (await appHint(page).textContent()).startsWith('Motion access was denied'),
+        `a refusal should say so, got ${await appHint(page).textContent()}`,
+      );
+    }
+    assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+    await app.context.close();
+  }
+
+  // No motion sensors at all.
+  app = await openApp(
+    browser,
+    'xparkle-sim',
+    {},
+    undefined,
+    `
+    delete window.DeviceMotionEvent;
+    delete window.DeviceOrientationEvent;
+  `,
+  );
+  page = app.page;
+  await page
+    .getByText('This device does not expose motion sensors, so Libell cannot read the tilt.')
+    .waitFor();
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+}
+
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
   cwd: root,
   stdio: 'ignore',
@@ -990,8 +1173,9 @@ try {
   await levelScreenFlow(browser);
   await navigationFlow(browser);
   await settingsSaveFlow(browser);
+  await startupFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up',
   );
 } finally {
   await browser?.close();
