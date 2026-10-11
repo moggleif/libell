@@ -5,8 +5,9 @@
 // against the simulated boxes (`?xparkle-sim`, `?easylevel-sim`). For the
 // phone: calibrating, zeroing and checking it, and target presets, against
 // `?demo`'s fixed tilt. Settings' Calibration tab while a box is in use. For the first-run wizard: its phone calibration
-// and its box path, connected or not. None of it needs hardware or Web
-// Bluetooth.
+// and its box path, connected or not. For the level screen: the pose
+// guard, the level celebration, and a lost box coming back. None of it
+// needs hardware or Web Bluetooth.
 //
 // It exists to pin today's behaviour while `main.ts` is split into
 // modules: the unit tests reach each module, but only a whole running app
@@ -30,8 +31,8 @@ function assert(condition, message) {
 /** A fresh page, past the first-run wizard, in English, with `seed`
  * written to localStorage before the app first reads it (a null value
  * removes the key). */
-async function openApp(browser, query, seed = {}) {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+async function openApp(browser, query, seed = {}, viewport = { width: 390, height: 844 }) {
+  const context = await browser.newContext({ viewport });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -503,6 +504,60 @@ async function wizardPasswordFlow(browser) {
   await context.close();
 }
 
+const poseOverlay = (page) => page.locator('.pose-overlay');
+const fallbackPrompt = (page) => page.locator('.sensor-fallback');
+
+// The level screen's frame loop: the pose guard pauses while a page is open.
+async function landscapeFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'demo', {}, { width: 844, height: 390 });
+  await poseOverlay(page)
+    .getByText('Turn the phone upright (portrait)', { exact: false })
+    .waitFor();
+  await page.click('#settings-button');
+  await poseOverlay(page).waitFor({ state: 'hidden' });
+  await closeAllPages(page);
+  await poseOverlay(page).waitFor();
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+// Clearly off level for a while arms the celebration; zeroing the vehicle
+// then makes it level, and the overlay celebrates once back on the screen.
+async function celebrationFlow(browser) {
+  const flat = JSON.stringify({ rollDeg: 0, pitchDeg: 0, capturedAt: Date.now() });
+  const { context, page, errors } = await openApp(browser, 'demo', { 'libell.calibration': flat });
+  await page.locator('.rv-diagram').first().waitFor();
+  await page.waitForTimeout(3500);
+  const settings = await openSettingsTab(page, 'calibration');
+  await button(settings, 'Zero now').click();
+  await settings.getByText('Zeroed (today)').waitFor();
+  await closeAllPages(page);
+  await page.locator('.level-overlay.is-visible').waitFor({ timeout: 5000 });
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+// A lost box dims the screen and offers the way back; the background
+// retry brings it back on its own once the simulated outage is over.
+async function lostBoxFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'easylevel-sim=drop');
+  await connectAndOpenBox(page, 'EasyLevel');
+  await closeAllPages(page);
+  await fallbackPrompt(page).getByText('Lost contact with the box').waitFor({ timeout: 20000 });
+  assert(
+    (await page.locator('.is-no-data').count()) > 0,
+    'a lost box should dim the diagram and readout',
+  );
+  await eventually(
+    async () => (await page.locator('.is-no-data').count()) === 0,
+    'readings back should undim the diagram',
+    20000,
+  );
+  assert(await fallbackPrompt(page).isHidden(), 'readings back should hide the prompt');
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
   cwd: root,
   stdio: 'ignore',
@@ -533,8 +588,11 @@ try {
   await wizardBoxFlow(browser, true);
   await wizardBoxFlow(browser, false);
   await wizardPasswordFlow(browser);
+  await landscapeFlow(browser);
+  await celebrationFlow(browser);
+  await lostBoxFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box',
   );
 } finally {
   await browser?.close();
