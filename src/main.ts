@@ -8,18 +8,12 @@ import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
-import { averageReadings, combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
+import { combineCalibrations } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
 import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from './domain/staleness';
 import { deficitMagnitude } from './domain/rampPlan';
 import { createAudioGuidance, type GuidanceDirection } from './domain/audioGuidance';
-import {
-  offsetTooSteep,
-  presetOffsetFromReading,
-  targetOffsetFor,
-  type TargetPreset,
-} from './domain/targetPresets';
 import { createCaravanDiagram } from './ui/caravanDiagram';
 import { createExternalPoseDetector, createPoseDetector } from './domain/pose';
 import {
@@ -38,8 +32,6 @@ import {
   pickVehicleGeometry,
 } from './domain/vehicleShare';
 import {
-  clearCalibration,
-  clearVehicleCalibration,
   hasDoneOnboarding,
   hasSeenOnboarding,
   hasStoredMeasurements,
@@ -47,20 +39,12 @@ import {
   setBoxPending,
   markMeasurementsSaved,
   migrateMeasurementsSaved,
-  loadActiveTargetId,
-  loadCalibrationInfo,
   migrateLegacyInstallCalibration,
   loadLanguage,
   loadSettings,
-  loadTargetPresets,
-  loadVehicleCalibrationInfo,
   markOnboardingDone,
   markOnboardingSeen,
-  saveActiveTargetId,
-  saveCalibration,
   saveSettings,
-  saveTargetPresets,
-  saveVehicleCalibration,
 } from './data/settingsStore';
 import {
   loadRememberedDeviceId,
@@ -81,7 +65,7 @@ import {
   type ExternalSensorDescriptor,
 } from './sensor/externalSensors';
 import { EASYLEVEL_DESCRIPTOR, type EasyLevelSensor } from './sensor/easyLevelSensor';
-import { XPARKLE_DESCRIPTOR, type XparkleSensor } from './sensor/xparkleSensor';
+import type { XparkleSensor } from './sensor/xparkleSensor';
 import { isSensorUnavailable } from './sensor/sensorFallback';
 import { createExternalSensorController } from './sensor/externalSensorController';
 import { createRvDiagram } from './ui/rvDiagram';
@@ -116,6 +100,10 @@ import {
   type SettingsAccess,
 } from './app/externalSensorWiring';
 import { createInstallOffsets } from './app/installOffsets';
+import { createBoxZeroing } from './app/boxZero';
+import { createPhoneCalibration } from './app/phoneCalibration';
+import { createTargets } from './app/targets';
+import { calibratedTilt, readTilt } from './app/tiltReading';
 
 // Clickjacking guard (#67): GitHub Pages cannot send response headers and
 // browsers ignore `frame-ancestors` in a <meta>-delivered CSP (ADR 0005),
@@ -186,13 +174,6 @@ installUpdateReload();
 const identityEl = document.querySelector<HTMLElement>('.topbar__identity');
 if (identityEl) attachUpdateCheck(identityEl);
 
-const RAD_TO_DEG = 180 / Math.PI;
-const MAX_CALIBRATION_DEG = 15;
-/** How long an EasyLevel zero averages the box's samples (see `zeroEasyLevelNow`). */
-const EASYLEVEL_ZERO_SAMPLE_MS = 1500;
-/** A check reading within this of zero counts as "still good" (#87). */
-const CALIBRATION_CHECK_GOOD_DEG = 0.3;
-
 /** Fixed synthetic tilt for ?demo mode and screenshots. */
 function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
   const rad = (deg: number) => (deg * Math.PI) / 180;
@@ -261,11 +242,9 @@ function playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void 
 }
 
 // Started only once every top-level const/function above it is actually
-// initialized — `bootstrap` (a hoisted function declaration) transitively
-// reads RAD_TO_DEG and friends the moment it runs (createDiagnosticsSection
-// calls refresh() synchronously at construction), so this call must stay
-// textually after their declarations, not just after their own hoisted
-// binding exists.
+// initialized — `bootstrap` (a hoisted function declaration) may read them
+// the moment it runs, so this call must stay textually after their
+// declarations, not just after their own hoisted binding exists.
 const app = document.querySelector<HTMLElement>('#app');
 if (app) {
   bootstrap(app);
@@ -290,14 +269,6 @@ function bootstrap(root: HTMLElement): void {
   const pendingVehicleSetupCode = takePendingVehicleSetupCode();
 
   let settings: LevelSettings = loadSettings();
-  const storedSensor = loadCalibrationInfo();
-  let calibration: Calibration | null = storedSensor?.value ?? null;
-  let calibrationCapturedAt: number | null = storedSensor?.capturedAt ?? null;
-  // The vehicle zero (#83): the phone spot's own tilt, applied on top of
-  // the sensor calibration — the leveling math subtracts their sum.
-  const storedVehicle = loadVehicleCalibrationInfo();
-  let vehicleCalibration: Calibration | null = storedVehicle?.value ?? null;
-  let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
   // The wizard's box path was finished with no box connected (#365): until
   // a box connects, or the phone is calibrated after all, the amber lamp
   // asks for the box rather than ⚠ Calibrate for a phone the user chose
@@ -316,24 +287,39 @@ function bootstrap(root: HTMLElement): void {
   // means while it is the source.
   const installOffsets = createInstallOffsets();
   const activeInstallOffset = () => installOffsets.valueOf(sensor().getSource());
-  // The two-layer calibration sum — what "level" means, untouched by
-  // target presets below (#122, ADR 0013). Selected per the ACTIVE sensor
-  // source (#131, ADR 0014): each source supplies its own sensor-bias/
-  // installation-offset pair, so switching sources never mixes one
+  const readTiltNow = () => readTilt(sensor());
+  // The phone's sensor bias and vehicle zero (#83, ADR 0010). Taking
+  // either means the user is using the phone after all, so a box chosen
+  // in the wizard is no longer awaited (#365).
+  const phoneCalibration = createPhoneCalibration({
+    readTilt: readTiltNow,
+    onCaptured() {
+      settleBoxPending(false);
+      updateIndicators();
+    },
+    onCleared: () => updateIndicators(),
+  });
+  const boxZero = createBoxZeroing({
+    activeSensor: () => sensor(),
+    getXparkle: () => externalSensors.getSensor('xparkle') as XparkleSensor | null,
+    offsets: installOffsets,
+    readTilt: readTiltNow,
+    onChanged: () => updateIndicators(),
+  });
+  // What "level" means, untouched by target presets (#122, ADR 0013).
+  // Selected per the ACTIVE sensor source (#131, ADR 0014): each source
+  // supplies its own calibration, so switching sources never mixes one
   // source's calibration into the other's readings.
   const zeroCalibration = () =>
-    sensor().getSource() === 'phone'
-      ? combineCalibrations(calibration, vehicleCalibration)
-      : activeInstallOffset();
-  // Target presets (#122, ADR 0013): an intentional NON-level target,
-  // applied as a THIRD additive term on top of the two-layer sum above —
-  // never conflated with it, never stored in the same field. "Normal"
-  // (activeTargetId === null) leaves effectiveCalibration identical to
-  // zeroCalibration (regression guard).
-  let targetPresets: TargetPreset[] = loadTargetPresets();
-  let activeTargetId: string | null = loadActiveTargetId(targetPresets);
-  const effectiveCalibration = () =>
-    combineCalibrations(zeroCalibration(), targetOffsetFor(targetPresets, activeTargetId));
+    sensor().getSource() === 'phone' ? phoneCalibration.zero() : activeInstallOffset();
+  const targets = createTargets({
+    readTilt: readTiltNow,
+    zeroCalibration,
+    onActiveChanged: () => updateTargetBadge(),
+  });
+  // The active target is a THIRD additive term on top of the zero; Normal
+  // leaves the two identical (regression guard).
+  const effectiveCalibration = () => combineCalibrations(zeroCalibration(), targets.activeOffset());
   applyTheme(settings.theme);
   applyAppearance(settings.appearance);
   followSystemTheme(() => settings.theme);
@@ -433,38 +419,21 @@ function bootstrap(root: HTMLElement): void {
         updateIndicators();
         maybeRebuildScreen();
       },
-      getCalibration: () => calibration,
+      getCalibration: () => phoneCalibration.bias(),
       isPhoneActive: () => sensor().getSource() === 'phone',
       getExternalSensor: () => externalCalibrationStateFor(sensor().getSource(), installOffsets),
-      calibrateExternalSensor: () => calibrateInstallNow(sensor().getSource()),
-      calibrate: () => calibrateNow(),
-      readTilt: () => readTiltNow(),
-      applyCalibration(next) {
-        calibration = next;
-        calibrationCapturedAt = Date.now();
-        saveCalibration(next, undefined, calibrationCapturedAt);
-        settleBoxPending(false);
-        updateIndicators();
-      },
-      clearCalibration() {
-        calibration = null;
-        calibrationCapturedAt = null;
-        clearCalibration();
-        updateIndicators();
-      },
-      getVehicleCalibration: () => vehicleCalibration,
-      getCalibrationCapturedAt: () => calibrationCapturedAt,
-      getVehicleCalibrationCapturedAt: () => vehicleCalibrationCapturedAt,
-      checkCalibration: () => checkAgainst(calibration),
-      checkVehicleCalibration: () =>
-        checkAgainst(combineCalibrations(calibration, vehicleCalibration)),
-      calibrateVehicle: () => calibrateVehicleNow(),
-      clearVehicleCalibration() {
-        vehicleCalibration = null;
-        vehicleCalibrationCapturedAt = null;
-        clearVehicleCalibration();
-        updateIndicators();
-      },
+      calibrateExternalSensor: () => boxZero.zero(sensor().getSource()),
+      calibrate: () => phoneCalibration.calibrate(),
+      readTilt: readTiltNow,
+      applyCalibration: (next) => phoneCalibration.applyBias(next),
+      clearCalibration: () => phoneCalibration.clearBias(),
+      getVehicleCalibration: () => phoneCalibration.vehicleZero(),
+      getCalibrationCapturedAt: () => phoneCalibration.biasCapturedAt(),
+      getVehicleCalibrationCapturedAt: () => phoneCalibration.vehicleZeroCapturedAt(),
+      checkCalibration: () => phoneCalibration.checkBias(),
+      checkVehicleCalibration: () => phoneCalibration.checkZero(),
+      calibrateVehicle: () => phoneCalibration.zeroVehicle(),
+      clearVehicleCalibration: () => phoneCalibration.clearVehicleZero(),
       // Sensor source choice (#135, ADR 0014): same fields, same
       // callbacks as `createMenu` below wires up — the wizard's
       // external-sensor step embeds the exact same `sensorSourceSection`
@@ -483,17 +452,17 @@ function bootstrap(root: HTMLElement): void {
         disconnectSensor: () => externalSensors.disconnect(),
         password: passwordFor(descriptor.id, boxWiring),
         getInstallCalibration: () => installOffsets.valueOf(descriptor.id),
-        calibrateInstall: () => calibrateInstallNow(descriptor.id),
+        calibrateInstall: () => boxZero.zero(descriptor.id),
         getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf(descriptor.id),
-        clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+        clearInstallCalibration: () => boxZero.clear(descriptor.id),
         learnMounting: learnMountingFor(descriptor.id, boxWiring),
       }),
       connectSensor: () => externalSensors.connect('easylevel'),
       disconnectSensor: () => externalSensors.disconnect(),
       getInstallCalibration: () => installOffsets.valueOf('easylevel'),
-      calibrateInstall: () => calibrateInstallNow('easylevel'),
+      calibrateInstall: () => boxZero.zero('easylevel'),
       getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf('easylevel'),
-      clearInstallCalibration: () => clearInstallOffset('easylevel'),
+      clearInstallCalibration: () => boxZero.clear('easylevel'),
       getMounting: () => easyLevelSettings(settings).mounting,
       isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
       setMounting: setEasyLevelMounting,
@@ -527,63 +496,46 @@ function bootstrap(root: HTMLElement): void {
       updateIndicators();
       maybeRebuildScreen();
     },
-    getCalibration: () => calibration,
+    getCalibration: () => phoneCalibration.bias(),
     isPhoneActive: () => sensor().getSource() === 'phone',
     getExternalSensor: () => externalCalibrationStateFor(sensor().getSource(), installOffsets),
-    calibrateExternalSensor: () => calibrateInstallNow(sensor().getSource()),
+    calibrateExternalSensor: () => boxZero.zero(sensor().getSource()),
     // Declared further down; only ever called after start-up (#316).
     openExternalSensor: () => {
       const source = sensor().getSource();
       if (source !== 'phone') externalSensorPage?.openSource(source);
     },
-    calibrate: () => calibrateNow(),
-    readTilt: () => readTiltNow(),
-    applyCalibration(next: Calibration) {
-      calibration = next;
-      calibrationCapturedAt = Date.now();
-      saveCalibration(next, undefined, calibrationCapturedAt);
-      settleBoxPending(false);
-      updateIndicators();
-    },
-    clearCalibration() {
-      calibration = null;
-      calibrationCapturedAt = null;
-      clearCalibration();
-      updateIndicators();
-    },
-    getVehicleCalibration: () => vehicleCalibration,
-    getCalibrationCapturedAt: () => calibrationCapturedAt,
-    getVehicleCalibrationCapturedAt: () => vehicleCalibrationCapturedAt,
-    checkCalibration: () => checkAgainst(calibration),
-    checkVehicleCalibration: () =>
-      checkAgainst(combineCalibrations(calibration, vehicleCalibration)),
-    calibrateVehicle: () => calibrateVehicleNow(),
-    clearVehicleCalibration() {
-      vehicleCalibration = null;
-      vehicleCalibrationCapturedAt = null;
-      clearVehicleCalibration();
-      updateIndicators();
-    },
-    getTargetPresets: () => targetPresets,
-    getActiveTargetId: () => activeTargetId,
-    selectTarget: (id: string | null) => selectTargetNow(id),
-    addTargetPreset: (name: string) => addTargetPresetNow(name),
-    deleteTargetPreset: (id: string) => deleteTargetPresetNow(id),
+    calibrate: () => phoneCalibration.calibrate(),
+    readTilt: readTiltNow,
+    applyCalibration: (next: Calibration) => phoneCalibration.applyBias(next),
+    clearCalibration: () => phoneCalibration.clearBias(),
+    getVehicleCalibration: () => phoneCalibration.vehicleZero(),
+    getCalibrationCapturedAt: () => phoneCalibration.biasCapturedAt(),
+    getVehicleCalibrationCapturedAt: () => phoneCalibration.vehicleZeroCapturedAt(),
+    checkCalibration: () => phoneCalibration.checkBias(),
+    checkVehicleCalibration: () => phoneCalibration.checkZero(),
+    calibrateVehicle: () => phoneCalibration.zeroVehicle(),
+    clearVehicleCalibration: () => phoneCalibration.clearVehicleZero(),
+    getTargetPresets: () => targets.presets(),
+    getActiveTargetId: () => targets.activeId(),
+    selectTarget: (id: string | null) => targets.select(id),
+    addTargetPreset: (name: string) => targets.add(name),
+    deleteTargetPreset: (id: string) => targets.remove(id),
     getSensorSource: () => sensor().getSource(),
     getSensorState: () => sensor().getState(),
     sensor: EASYLEVEL_DESCRIPTOR,
     connectSensor: () => externalSensors.connect('easylevel'),
     disconnectSensor: () => externalSensors.disconnect(),
     getInstallCalibration: () => installOffsets.valueOf('easylevel'),
-    calibrateInstall: () => calibrateInstallNow('easylevel'),
+    calibrateInstall: () => boxZero.zero('easylevel'),
     getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf('easylevel'),
-    clearInstallCalibration: () => clearInstallOffset('easylevel'),
+    clearInstallCalibration: () => boxZero.clear('easylevel'),
     getMounting: () => easyLevelSettings(settings).mounting,
     isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
     setMounting: setEasyLevelMounting,
-    getCalibratedTilt: () => calibratedTiltNow(),
+    getCalibratedTilt: () => calibratedTilt(sensor(), effectiveCalibration()),
     getVehicleType: () => settings.vehicleType,
-    getActiveTargetName: () => activeTargetName(),
+    getActiveTargetName: () => targets.activeName(),
     getHealth: () => boxHealth('easylevel'),
     // Raw status bytes are EasyLevel's own debug surface, gated by its
     // descriptor's `debugBytes` capability (#268) — a source without them
@@ -674,9 +626,9 @@ function bootstrap(root: HTMLElement): void {
         // Each source's installation offset is its own (#263): where one
         // box is bolted in says nothing about where another is.
         getInstallCalibration: () => installOffsets.valueOf(descriptor.id),
-        calibrateInstall: () => calibrateInstallNow(descriptor.id),
+        calibrateInstall: () => boxZero.zero(descriptor.id),
         getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf(descriptor.id),
-        clearInstallCalibration: () => clearInstallOffset(descriptor.id),
+        clearInstallCalibration: () => boxZero.clear(descriptor.id),
         learnMounting: learnMountingFor(descriptor.id, boxWiring),
       }))
     : null;
@@ -791,7 +743,10 @@ function bootstrap(root: HTMLElement): void {
         : awaitingBox
           ? 'zero'
           : phone
-            ? phoneCalibrationLamp(calibration !== null, vehicleCalibration !== null)
+            ? phoneCalibrationLamp(
+                phoneCalibration.bias() !== null,
+                phoneCalibration.vehicleZero() !== null,
+              )
             : activeInstallOffset() !== null
               ? null
               : 'zero',
@@ -811,7 +766,7 @@ function bootstrap(root: HTMLElement): void {
   });
   document.querySelector('#indicators')?.append(targetBadge.element);
   const updateTargetBadge = () => {
-    targetBadge.update(activeTargetName());
+    targetBadge.update(targets.activeName());
   };
   updateTargetBadge();
 
@@ -835,206 +790,6 @@ function bootstrap(root: HTMLElement): void {
   syncTopbarCorner();
   const updateSensorStatus = () => sensorStatus.update(sensor().getSource(), sensor().getState());
   updateSensorStatus();
-
-  function selectTargetNow(id: string | null): void {
-    activeTargetId = id;
-    saveActiveTargetId(id);
-    updateTargetBadge();
-  }
-
-  /** Capture the current tilt, relative to the zero point (never to any
-   * currently active preset), as a new named preset. */
-  function addTargetPresetNow(name: string): string | null {
-    const reading = readTiltNow();
-    if (typeof reading === 'string') return reading;
-    const offset = presetOffsetFromReading(reading, zeroCalibration());
-    if (offsetTooSteep(offset)) return t('targets.err.tooSteep');
-    const id =
-      typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `preset-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    targetPresets = [...targetPresets, { id, name, offset }];
-    saveTargetPresets(targetPresets);
-    return null;
-  }
-
-  function deleteTargetPresetNow(id: string): void {
-    targetPresets = targetPresets.filter((preset) => preset.id !== id);
-    saveTargetPresets(targetPresets);
-    if (activeTargetId === id) selectTargetNow(null);
-    else updateTargetBadge();
-  }
-
-  /** The active target preset's own name, or null for "Normal" — shared by
-   * the main-screen badge and the Targets section so the two can never
-   * disagree about what "effective target" means. */
-  function activeTargetName(): string | null {
-    return targetPresets.find((preset) => preset.id === activeTargetId)?.name ?? null;
-  }
-
-  /** The sensor status page's live reading row (`boxStatusPage.ts`):
-   * the same effective calibration (sensor bias + vehicle zero + active
-   * target, #122) the leveling math itself subtracts — reused via
-   * `tiltFromGravity`, not recomputed. Never `readTiltNow()`, which starts
-   * the sensor as a side effect when there is no reading yet; a passive
-   * status-page refresh must never itself trigger a permission prompt. */
-  function calibratedTiltNow(): Calibration | null {
-    const gravity = sensor().getGravity();
-    if (!gravity) return null;
-    const tilt = tiltFromGravity(gravity, effectiveCalibration());
-    return { rollDeg: tilt.roll * RAD_TO_DEG, pitchDeg: tilt.pitch * RAD_TO_DEG };
-  }
-
-  // Shared by the menu and the onboarding wizard. Starting the sensor on
-  // demand makes calibration work from the wizard before the main screen
-  // (the tap itself is the iOS permission gesture).
-  function readTiltNow(): Calibration | string {
-    const gravity = sensor().getGravity();
-    if (!gravity) {
-      void sensor().start();
-      return t('calibration.err.notRunning');
-    }
-    return {
-      rollDeg: Math.atan2(gravity.x, gravity.z) * RAD_TO_DEG,
-      pitchDeg: Math.atan2(gravity.y, gravity.z) * RAD_TO_DEG,
-    };
-  }
-
-  function calibrateNow(): string | null {
-    const reading = readTiltNow();
-    if (typeof reading === 'string') return reading;
-    if (
-      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
-      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
-    ) {
-      return t('calibration.err.notFlat');
-    }
-    calibration = reading;
-    calibrationCapturedAt = Date.now();
-    saveCalibration(calibration, undefined, calibrationCapturedAt);
-    settleBoxPending(false);
-    updateIndicators();
-    return null;
-  }
-
-  /** How far off (degrees) the current reading is from a calibration's
-   * promise of zero — the "check calibration" verdict text (#87). */
-  function checkAgainst(offset: Calibration | null): string {
-    const reading = readTiltNow();
-    if (typeof reading === 'string') return reading;
-    const off = Math.max(
-      Math.abs(reading.rollDeg - (offset?.rollDeg ?? 0)),
-      Math.abs(reading.pitchDeg - (offset?.pitchDeg ?? 0)),
-    );
-    return off <= CALIBRATION_CHECK_GOOD_DEG
-      ? t('calibration.check.good', { off: off.toFixed(1) })
-      : t('calibration.check.off', { off: off.toFixed(1) });
-  }
-
-  function calibrateVehicleNow(): string | null {
-    const reading = readTiltNow();
-    if (typeof reading === 'string') return reading;
-    if (
-      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
-      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
-    ) {
-      return t('calibration.vehicle.err.notFlat');
-    }
-    // Stored sensor-corrected: pure placement tilt, so it survives a
-    // later sensor recalibration (ADR 0010).
-    vehicleCalibration = vehicleZeroFromReading(reading, calibration);
-    vehicleCalibrationCapturedAt = Date.now();
-    saveVehicleCalibration(vehicleCalibration, undefined, vehicleCalibrationCapturedAt);
-    settleBoxPending(false);
-    updateIndicators();
-    return null;
-  }
-
-  /** "Set vehicle level" for the EasyLevel box (#131, ADR 0014): the same
-   * capture/validate/store flow as `calibrateVehicleNow` above, generalized
-   * to this external source and kept in its own storage/state so the two
-   * can never be conflated. There is no separate EasyLevel hardware-bias
-   * layer to subtract (unlike the phone's `calibration`) — `null` here
-   * simply means "none yet", the same shape `vehicleZeroFromReading`
-   * already handles, so a future hardware-bias layer could subtract from
-   * it without migrating anything already stored. */
-  function calibrateInstallNow(source: SensorSource): string | null | Promise<string | null> {
-    if (source === 'xparkle') return zeroXparkleNow();
-    if (source === 'easylevel') return zeroEasyLevelNow();
-    const reading = readTiltNow();
-    if (typeof reading === 'string') return reading;
-    return storeInstallZero(source, reading);
-  }
-
-  /**
-   * "Zero" for the EasyLevel box: averaged over `EASYLEVEL_ZERO_SAMPLE_MS`
-   * of its own samples rather than taken from one. The box streams raw,
-   * unsmoothed readings, and its own app says to press OK a few times
-   * until the value settles; this does that settling in one tap, showing
-   * "Zeroing…" meanwhile. If the box drops while sampling, nothing is
-   * stored and the user is told why.
-   */
-  async function zeroEasyLevelNow(): Promise<string | null> {
-    const first = readTiltNow();
-    if (typeof first === 'string') return first;
-    const readings = [first];
-    let lastAt = sensor().getLastSampleAt();
-    const end = performance.now() + EASYLEVEL_ZERO_SAMPLE_MS;
-    while (performance.now() < end) {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      if (sensor().getSource() !== 'easylevel' || sensor().getState() !== 'granted') {
-        return t('calibration.external.err.notConnected', {
-          name: EASYLEVEL_DESCRIPTOR.displayName,
-        });
-      }
-      const at = sensor().getLastSampleAt();
-      if (at === null || at === lastAt) continue;
-      lastAt = at;
-      const reading = readTiltNow();
-      if (typeof reading !== 'string') readings.push(reading);
-    }
-    return storeInstallZero('easylevel', averageReadings(readings) ?? first);
-  }
-
-  /** Store a box's zero from a reading, refusing only an implausible one. */
-  function storeInstallZero(source: SensorSource, reading: Calibration): string | null {
-    if (
-      Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
-      Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG
-    ) {
-      return t('calibration.vehicle.err.notFlat');
-    }
-    installOffsets.store(source, vehicleZeroFromReading(reading, null), Date.now());
-    updateIndicators();
-    return null;
-  }
-
-  /**
-   * "Set vehicle level" for the Xparkle box (#290): the box zeroes itself
-   * (`resetZero`). The box must stand upright for a zero to hold (#273);
-   * nothing is refused here — its page shows live whether it stands, and
-   * guides the user when it does not (#304). Libell then stores a zero
-   * installation offset with the time: it changes no reading (the box already reports from its new zero), but
-   * it is what the calibration lamp, the age text and "Check" go by, and
-   * it replaces any older Libell-side offset so two zeros are never
-   * stacked.
-   */
-  async function zeroXparkleNow(): Promise<string | null> {
-    const name = XPARKLE_DESCRIPTOR.displayName;
-    const box = externalSensors.getSensor('xparkle') as XparkleSensor | null;
-    if (!box || box.getState() !== 'granted') {
-      return t('calibration.external.err.notConnected', { name });
-    }
-    if (!(await box.zeroBox())) return t('calibration.external.err.failed', { name });
-    installOffsets.store('xparkle', { rollDeg: 0, pitchDeg: 0 }, Date.now());
-    updateIndicators();
-    return null;
-  }
-
-  function clearInstallOffset(source: SensorSource): void {
-    installOffsets.clear(source);
-    updateIndicators();
-  }
 
   const showMessage = (text: string) => {
     root.replaceChildren();
