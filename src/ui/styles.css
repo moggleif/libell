@@ -556,42 +556,6 @@ body {
   stroke: var(--warning);
 }
 
-/* EasyLevel mounting-orientation picker (#217): a small schematic diagram
- * next to the choice, so it reads visually rather than requiring the
- * user to translate a label into a physical orientation. */
-.mounting-choice {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.mounting-icon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-}
-
-.mounting-icon__front {
-  stroke: var(--on-surface-muted);
-  stroke-width: 2;
-  fill: var(--on-surface-muted);
-}
-
-.mounting-icon__box {
-  fill: none;
-  stroke: var(--on-surface);
-  stroke-width: 2;
-  stroke-linejoin: round;
-}
-
-.mounting-icon__box rect {
-  fill: var(--surface-raised);
-}
-
-.mounting-icon__box polygon {
-  fill: var(--on-surface);
-}
-
 .target-badge {
   font: inherit;
   font-size: 0.75rem;
@@ -1246,112 +1210,6 @@ body {
   font-size: 1.25rem;
 }
 
-.menu__primary-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-}
-
-.menu__card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 44px;
-  padding: 14px;
-  font: inherit;
-  text-align: left;
-  color: var(--on-surface);
-  background: var(--surface-raised);
-  border: 1px solid var(--outline);
-  border-radius: 16px;
-  cursor: pointer;
-}
-
-.menu__card-dot {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--outline);
-}
-
-.menu__card-dot--pending {
-  background: var(--warning);
-}
-
-.menu__card-title {
-  flex: 1;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.menu__card-status {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--warning);
-}
-
-.menu__card-chevron {
-  color: var(--on-surface-muted);
-  font-size: 1.1rem;
-}
-
-.menu__others-heading {
-  width: 100%;
-  margin: 14px 0 2px;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  color: var(--on-surface-muted);
-}
-
-.menu__others-list {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.menu__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  padding: 14px 4px;
-  font: inherit;
-  font-size: 0.9375rem;
-  text-align: left;
-  color: var(--on-surface);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--surface-raised);
-  cursor: pointer;
-}
-
-.menu__others-list .menu__row:last-child {
-  border-bottom: 0;
-}
-
-.menu__row-chevron {
-  color: var(--on-surface-muted);
-  font-size: 1.1rem;
-}
-
-.menu__version {
-  width: 100%;
-  margin: auto 0 0;
-  padding-top: 20px;
-  text-align: center;
-  font-size: 0.6875rem;
-  color: var(--on-surface-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.menu__section {
-  padding: 10px 4px 14px;
-}
-
 .menu__heading {
   margin: 8px 0 4px;
   font-size: 1rem;
@@ -1509,24 +1367,6 @@ body {
   cursor: default;
 }
 
-/* The listed sensor + its disconnect action, side by side (screen-cleanup
- * follow-up to #116/#129) — disconnect reads as belonging to the sensor
- * it's next to, not as a second stray page-level button. */
-.sensor-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  /* Set apart from the Connect button above it (#244): at the old 6px it
-   * read as part of that button rather than as the sensor it found, which
-   * is a different thing on a different line. */
-  margin: 18px 0 6px;
-}
-
-.sensor-row .menu__text--status {
-  margin: 0;
-}
-
 /* The sensor row's status text doubles as a button opening the deeper
  * status page — reset button chrome so it still reads as plain status
  * text, plus a chevron affordance so it's clear it's tappable. */
@@ -1592,16 +1432,6 @@ body {
  * DOM append order. */
 .sensor-status-page {
   z-index: 13;
-}
-
-.menu__action--inline {
-  display: inline-block;
-  flex-shrink: 0;
-  width: auto;
-  margin-top: 0;
-  padding: 6px 14px;
-  min-height: 36px;
-  font-size: 0.875rem;
 }
 
 /* `display: block` above would otherwise win over the UA [hidden] rule
@@ -3414,11 +3244,6 @@ body {
 
 .box-glyph__ref {
   fill: var(--warning);
-}
-
-.box-glyph__arrow {
-  stroke: var(--warning);
-  stroke-width: 2;
 }
 
 /* EasyLevel placement picker (#359): the manual's two placements side by
