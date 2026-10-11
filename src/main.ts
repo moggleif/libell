@@ -1356,7 +1356,7 @@ function bootstrap(root: HTMLElement): void {
     let engineElement: HTMLElement;
     let engineTick: (gravity: GravityVector, nowMs: number) => EngineTick;
     if (settings.vehicleType === 'caravan') {
-      const diagram = createCaravanDiagram(settings.rearAxle);
+      const diagram = createCaravanDiagram(settings.rearAxle, settings.appearance);
       const stabilize = createCaravanStabilizer();
       // Nothing left to say here (#252): the caravan diagram draws the
       // jockey wheel's direction, its action and its amount inside the
