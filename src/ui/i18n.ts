@@ -230,6 +230,10 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
       'finished later from Settings.',
+    // Only where an external sensor is an option (#365): the box is not in
+    // Settings, so "later from Settings" alone pointed the wrong way.
+    'onboard.welcome.sensor':
+      'A sensor box can be connected any time with the sensor icon at the top right.',
     // Sound step (design review): Chime + Continuous audio guidance
     // together, split out of #189's combined 'general' step. No existing
     // section heading covers just these two (unlike 'settings.language'/
@@ -249,7 +253,7 @@ export const MESSAGES = {
     'onboard.source.phone': 'This phone',
     // #287: shown on the source step only while a box is the active source.
     'onboard.source.externalActive':
-      'A sensor box is active now. Choosing this phone skips the phone calibration steps — to calibrate the phone, first tap "Disconnect" on the Sensor box page.',
+      'A sensor box is active now. Choosing this phone skips the phone calibration. To calibrate the phone, open the box with the sensor icon at the top right and tap "{disconnect}" first.',
     // Vehicle step: which vehicle every later step's imagery and field
     // labels are drawn for. Reuses 'vehicle.motorhome'/'vehicle.caravan' —
     // the exact same labels Settings uses — rather than separate copy.
@@ -264,12 +268,20 @@ export const MESSAGES = {
     'onboard.close': 'Close the introduction',
     'onboard.done': 'Done',
     'onboard.skipStep': 'Skip',
-    'onboard.skipDefaults': 'Skip — use defaults',
-    // What skipping actually means (#189) — "Skip" alone never said a
-    // warning lamp (R11) stays lit until the step is done, or that the
-    // shipped defaults are used meanwhile.
-    'onboard.skip.consequence':
-      'Skip for now — a warning lamp will remind you until it’s done. The defaults are used meanwhile, and they often work reasonably well.',
+    // What leaving a step undone means, per step (#365; #189 had one
+    // shared note on every step). {lamp} and {next} are filled in from
+    // 'lamp.*' and 'onboard.next', so the note always names the real lamp
+    // and button.
+    'onboard.note.measurements':
+      'Skip, and the default measurements are used; {lamp} stays lit until you save yours.',
+    'onboard.note.ramps':
+      'Skip, and the default ramps are used. You can pick yours later in Settings.',
+    'onboard.note.calibrate':
+      'No flat surface right now? Tap {next}; {lamp} reminds you until it’s done.',
+    'onboard.note.connect':
+      'No box at hand? Tap {next} and connect later with the sensor icon at the top right.',
+    'onboard.zeroLater':
+      'You zero the vehicle the first time you park on level ground. {lamp} reminds you until it’s done.',
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
@@ -604,6 +616,10 @@ export const MESSAGES = {
     'onboard.boxPosition.h': "The box's position",
     'onboard.boxPosition.later':
       "Direction and zero are set the first time you park. The box's page guides you, and the ⚠ Zero lamp reminds you until it's done.",
+    // The box path with no box connected (#365): said once, Next goes on —
+    // never "waiting for a reading" with nothing to wait for.
+    'onboard.boxPosition.notConnected':
+      'No box is connected yet, so its position can’t be shown. Tap {next} and connect later with the sensor icon at the top right.',
     'sensorList.title': 'Sensor box',
     'sensorList.phone': "The phone's own sensor is used when no box is connected.",
     'box.step.zero.again': 'Zero again',
@@ -767,13 +783,15 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Den här snabbguiden ställer in ditt fordon och din telefon. Varje steg går att ' +
       'hoppa över och avsluta senare från Inställningar.',
+    'onboard.welcome.sensor':
+      'En sensorbox ansluter du när som helst med sensorikonen uppe till höger.',
     'onboard.sound.h': 'Ljud',
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro':
       'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',
     'onboard.source.phone': 'Den här telefonen',
     'onboard.source.externalActive':
-      'En sensorbox är aktiv nu. Väljer du telefonen hoppar guiden över telefonens kalibrering — för att kalibrera telefonen, tryck först på "Koppla från" på sidan Sensorbox.',
+      'En sensorbox är aktiv nu. Väljer du telefonen hoppar guiden över telefonens kalibrering. Vill du kalibrera telefonen: öppna boxen med sensorikonen uppe till höger och tryck först på "{disconnect}".',
     'onboard.vehicle.h': 'Vad ska nivelleras?',
     'onboard.vehicle.intro': 'Välj fordon — resten av guiden anpassas efter det.',
     'onboard.step1.h': 'Lägg telefonen så här',
@@ -782,9 +800,16 @@ export const MESSAGES = {
     'onboard.close': 'Stäng introduktionen',
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
-    'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
-    'onboard.skip.consequence':
-      'Hoppa över nu — en varningslampa påminner dig tills det är klart. Standardvärdena används under tiden, och de fungerar ofta någorlunda bra.',
+    'onboard.note.measurements':
+      'Hoppar du över används standardmåtten, och {lamp} lyser tills du har sparat dina.',
+    'onboard.note.ramps':
+      'Hoppar du över används standardklossarna. Du kan välja dina senare under Inställningar.',
+    'onboard.note.calibrate':
+      'Inget plant underlag just nu? Tryck {next}, så påminner {lamp} tills det är gjort.',
+    'onboard.note.connect':
+      'Ingen box till hands? Tryck {next} och anslut senare med sensorikonen uppe till höger.',
+    'onboard.zeroLater':
+      'Fordonet nollställer du första gången du parkerar på plan mark. {lamp} påminner tills det är gjort.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
@@ -1077,6 +1102,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Boxens läge',
     'onboard.boxPosition.later':
       'Riktning och nollställning gör du första gången du parkerar. Boxens sida guidar dig, och lampan ⚠ Nollställ påminner tills det är gjort.',
+    'onboard.boxPosition.notConnected':
+      'Ingen box är ansluten än, så läget kan inte visas. Tryck {next} och anslut senare med sensorikonen uppe till höger.',
     'sensorList.title': 'Sensorbox',
     'sensorList.phone': 'Telefonens egen sensor används när ingen box är ansluten.',
     'box.step.zero.again': 'Nollställ igen',
@@ -1238,6 +1265,8 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Ce guide rapide configure votre véhicule et votre téléphone. Chaque étape peut ' +
       'être passée et terminée plus tard depuis les Réglages.',
+    'onboard.welcome.sensor':
+      'Un boîtier capteur se connecte à tout moment avec l’icône du capteur en haut à droite.',
     'onboard.sound.h': 'Son',
     'onboard.source.h': 'Comment voulez-vous mesurer ?',
     'onboard.source.intro':
@@ -1245,7 +1274,7 @@ export const MESSAGES = {
       'utilisent simplement le téléphone.',
     'onboard.source.phone': 'Ce téléphone',
     'onboard.source.externalActive':
-      'Un boîtier capteur est actif. Si vous choisissez ce téléphone, le guide saute l’étalonnage du téléphone — pour étalonner le téléphone, touchez d’abord « Déconnecter » sur la page Boîtier capteur.',
+      'Un boîtier capteur est actif. Si vous choisissez ce téléphone, le guide saute l’étalonnage du téléphone. Pour étalonner le téléphone, ouvrez le boîtier avec l’icône du capteur en haut à droite et touchez d’abord « {disconnect} ».',
     'onboard.vehicle.h': 'Que mettez-vous de niveau ?',
     'onboard.vehicle.intro': 'Choisissez votre véhicule — la suite du guide s’y adapte.',
     'onboard.step1.h': 'Posez le téléphone comme ceci',
@@ -1254,10 +1283,16 @@ export const MESSAGES = {
     'onboard.close': 'Fermer l’introduction',
     'onboard.done': 'Terminé',
     'onboard.skipStep': 'Passer',
-    'onboard.skipDefaults': 'Passer — utiliser les valeurs par défaut',
-    'onboard.skip.consequence':
-      'Passer pour l’instant — un voyant vous le rappellera jusqu’à ce que ce soit fait. ' +
-      'Les valeurs par défaut sont utilisées en attendant, et elles conviennent souvent assez bien.',
+    'onboard.note.measurements':
+      'Si vous passez, les mesures par défaut sont utilisées et {lamp} reste allumé jusqu’à ce que vous enregistriez les vôtres.',
+    'onboard.note.ramps':
+      'Si vous passez, les rampes par défaut sont utilisées. Vous pourrez choisir les vôtres plus tard dans les Réglages.',
+    'onboard.note.calibrate':
+      'Pas de surface plane pour l’instant ? Touchez « {next} » ; {lamp} vous le rappelle jusqu’à ce que ce soit fait.',
+    'onboard.note.connect':
+      'Pas de boîtier sous la main ? Touchez « {next} » et connectez-le plus tard avec l’icône du capteur en haut à droite.',
+    'onboard.zeroLater':
+      'Vous mettez le véhicule à zéro la première fois que vous vous garez sur un sol plat. {lamp} vous le rappelle jusqu’à ce que ce soit fait.',
     'onboard.legend.ok': 'Vert ✓ — cette roue est de niveau.',
     'onboard.legend.up': 'Orange ↑ — montez cette roue sur le palier indiqué.',
     'onboard.legend.no': 'Rouge ✕ — aucun palier ne suffit ; allez sur un endroit plus plat.',
@@ -1562,6 +1597,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Position du boîtier',
     'onboard.boxPosition.later':
       'La direction et le zéro se règlent la première fois que vous vous garez. La page du boîtier vous guide, et le voyant ⚠ Mettre à zéro vous le rappelle jusque-là.',
+    'onboard.boxPosition.notConnected':
+      'Aucun boîtier n’est encore connecté, sa position ne peut donc pas être affichée. Touchez « {next} » et connectez-le plus tard avec l’icône du capteur en haut à droite.',
     'sensorList.title': 'Boîtier capteur',
     'sensorList.phone': 'Le capteur du téléphone est utilisé quand aucun boîtier n’est connecté.',
     'box.step.zero.again': 'Remettre à zéro',
@@ -1722,13 +1759,15 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Esta guía rápida configura tu vehículo y tu móvil. Puedes saltarte cualquier paso y ' +
       'terminarlo más tarde desde Ajustes.',
+    'onboard.welcome.sensor':
+      'Puedes conectar una caja sensora cuando quieras con el icono del sensor arriba a la derecha.',
     'onboard.sound.h': 'Sonido',
     'onboard.source.h': '¿Cómo quieres medir?',
     'onboard.source.intro':
       'Elige de qué sensor debe leer Libell la inclinación: la mayoría simplemente usa el móvil.',
     'onboard.source.phone': 'Este móvil',
     'onboard.source.externalActive':
-      'Hay una caja sensora activa. Si eliges este móvil, la guía omite la calibración del móvil; para calibrarlo, toca primero «Desconectar» en la página Caja sensora.',
+      'Hay una caja sensora activa. Si eliges este móvil, la guía omite la calibración del móvil. Para calibrarlo, abre la caja con el icono del sensor arriba a la derecha y toca primero «{disconnect}».',
     'onboard.vehicle.h': '¿Qué vas a nivelar?',
     'onboard.vehicle.intro': 'Elige tu vehículo: el resto de la guía se adapta a él.',
     'onboard.step1.h': 'Coloca el móvil así',
@@ -1737,10 +1776,16 @@ export const MESSAGES = {
     'onboard.close': 'Cerrar la introducción',
     'onboard.done': 'Listo',
     'onboard.skipStep': 'Saltar',
-    'onboard.skipDefaults': 'Saltar: usar los valores predeterminados',
-    'onboard.skip.consequence':
-      'Saltar por ahora: un aviso te lo recordará hasta que esté hecho. Mientras tanto se ' +
-      'usan los valores predeterminados, que a menudo funcionan bastante bien.',
+    'onboard.note.measurements':
+      'Si lo saltas, se usan las medidas predeterminadas y {lamp} sigue encendido hasta que guardes las tuyas.',
+    'onboard.note.ramps':
+      'Si lo saltas, se usan las rampas predeterminadas. Puedes elegir las tuyas más tarde en Ajustes.',
+    'onboard.note.calibrate':
+      '¿No tienes una superficie plana ahora? Toca «{next}»; {lamp} te lo recordará hasta que esté hecho.',
+    'onboard.note.connect':
+      '¿No tienes la caja a mano? Toca «{next}» y conéctala más tarde con el icono del sensor arriba a la derecha.',
+    'onboard.zeroLater':
+      'El vehículo se pone a cero la primera vez que aparcas en suelo llano. {lamp} te lo recordará hasta que esté hecho.',
     'onboard.legend.ok': 'Verde ✓: esa rueda está nivelada.',
     'onboard.legend.up': 'Naranja ↑: sube esa rueda al nivel indicado.',
     'onboard.legend.no': 'Rojo ✕: ningún nivel basta; muévete a un sitio más llano.',
@@ -2041,6 +2086,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Posición de la caja',
     'onboard.boxPosition.later':
       'La dirección y el cero se ajustan la primera vez que aparcas. La página de la caja te guía y el piloto ⚠ Poner a cero te lo recuerda hasta entonces.',
+    'onboard.boxPosition.notConnected':
+      'Todavía no hay ninguna caja conectada, así que no se puede mostrar su posición. Toca «{next}» y conéctala más tarde con el icono del sensor arriba a la derecha.',
     'sensorList.title': 'Caja sensora',
     'sensorList.phone': 'Se usa el sensor del propio móvil cuando no hay ninguna caja conectada.',
     'box.step.zero.again': 'Volver a poner a cero',
@@ -2199,13 +2246,15 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Diese kurze Einführung richtet Fahrzeug und Handy ein. Jeder Schritt lässt sich ' +
       'überspringen und später in den Einstellungen erledigen.',
+    'onboard.welcome.sensor':
+      'Eine Sensorbox verbindest du jederzeit über das Sensorsymbol oben rechts.',
     'onboard.sound.h': 'Ton',
     'onboard.source.h': 'Wie möchtest du messen?',
     'onboard.source.intro':
       'Wähle, von welchem Sensor Libell die Neigung lesen soll — die meisten nehmen einfach das Handy.',
     'onboard.source.phone': 'Dieses Handy',
     'onboard.source.externalActive':
-      'Eine Sensorbox ist aktiv. Wählst du dieses Handy, überspringt der Assistent die Kalibrierung des Handys – um das Handy zu kalibrieren, tippe zuerst auf der Seite „Sensorbox“ auf „Trennen“.',
+      'Eine Sensorbox ist aktiv. Wählst du dieses Handy, überspringt der Assistent die Kalibrierung des Handys. Um das Handy zu kalibrieren, öffne die Box über das Sensorsymbol oben rechts und tippe zuerst auf „{disconnect}“.',
     'onboard.vehicle.h': 'Was richtest du aus?',
     'onboard.vehicle.intro':
       'Wähle dein Fahrzeug — der Rest dieser Einführung richtet sich danach.',
@@ -2215,10 +2264,16 @@ export const MESSAGES = {
     'onboard.close': 'Einführung schließen',
     'onboard.done': 'Fertig',
     'onboard.skipStep': 'Überspringen',
-    'onboard.skipDefaults': 'Überspringen — Standardwerte nutzen',
-    'onboard.skip.consequence':
-      'Vorerst überspringen — eine Warnleuchte erinnert dich daran, bis es erledigt ist. So ' +
-      'lange gelten die Standardwerte, die oft schon ganz gut passen.',
+    'onboard.note.measurements':
+      'Überspringst du, gelten die Standardmaße, und {lamp} leuchtet, bis du deine gespeichert hast.',
+    'onboard.note.ramps':
+      'Überspringst du, gelten die Standard-Keile. Deine eigenen wählst du später in den Einstellungen.',
+    'onboard.note.calibrate':
+      'Gerade keine ebene Fläche? Tippe auf „{next}“; {lamp} erinnert dich, bis es erledigt ist.',
+    'onboard.note.connect':
+      'Keine Box zur Hand? Tippe auf „{next}“ und verbinde sie später über das Sensorsymbol oben rechts.',
+    'onboard.zeroLater':
+      'Das Fahrzeug nullst du, wenn du das erste Mal auf ebenem Boden parkst. {lamp} erinnert dich, bis es erledigt ist.',
     'onboard.legend.ok': 'Grün ✓ — dieses Rad steht waagerecht.',
     'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe fahren.',
     'onboard.legend.no': 'Rot ✕ — keine Stufe reicht; such dir einen ebeneren Platz.',
@@ -2519,6 +2574,8 @@ export const MESSAGES = {
     'onboard.boxPosition.h': 'Lage der Box',
     'onboard.boxPosition.later':
       'Richtung und Nullpunkt stellst du beim ersten Parken ein. Die Seite der Box führt dich, und die Lampe ⚠ Nullen erinnert dich bis dahin.',
+    'onboard.boxPosition.notConnected':
+      'Noch ist keine Box verbunden, daher lässt sich ihre Lage nicht anzeigen. Tippe auf „{next}“ und verbinde sie später über das Sensorsymbol oben rechts.',
     'sensorList.title': 'Sensorbox',
     'sensorList.phone': 'Der Sensor des Handys wird verwendet, wenn keine Box verbunden ist.',
     'box.step.zero.again': 'Erneut nullen',

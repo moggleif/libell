@@ -67,6 +67,10 @@ const ONBOARDED_KEY = 'libell.onboarded';
 // introduction" checks to decide whether it still reads as an unfinished
 // first-run task (green) or a plain re-launch (secondary).
 const ONBOARDING_DONE_KEY = 'libell.onboardingDone';
+// The wizard's box path finished with no box connected (#365): the user
+// chose a box, so until one connects (or they calibrate the phone after
+// all) the amber lamp asks for the box instead of ⚠ Calibrate.
+const BOX_PENDING_KEY = 'libell.boxPending';
 // Separate keys from the calibration ones above (#122, ADR 0013): a
 // preset is never stored in the same field as either calibration layer.
 const TARGET_PRESETS_KEY = 'libell.targetPresets';
@@ -381,6 +385,28 @@ export function hasDoneOnboarding(storage: KeyValueStorage | null = defaultStora
 export function markOnboardingDone(storage: KeyValueStorage | null = defaultStorage()): void {
   try {
     storage?.setItem(ONBOARDING_DONE_KEY, '1');
+  } catch {
+    // Non-fatal.
+  }
+}
+
+/** True while the wizard's box path was finished without a box connected
+ * (#365) — see `BOX_PENDING_KEY`. */
+export function isBoxPending(storage: KeyValueStorage | null = defaultStorage()): boolean {
+  try {
+    return storage?.getItem(BOX_PENDING_KEY) === '1';
+  } catch {
+    return false; // Storage unavailable — the ordinary phone lamp, not a box nag.
+  }
+}
+
+export function setBoxPending(
+  pending: boolean,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  try {
+    if (pending) storage?.setItem(BOX_PENDING_KEY, '1');
+    else storage?.removeItem(BOX_PENDING_KEY);
   } catch {
     // Non-fatal.
   }

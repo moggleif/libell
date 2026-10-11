@@ -2,10 +2,16 @@
  * First-run onboarding wizard (issue #43, reworked #184, design-reviewed
  * for #189 and again since): what Libell does, language/appearance/sound
  * preferences, which vehicle is being leveled, how to place the phone,
- * the vehicle measurements, the ramp model, calibration. Every step but
- * welcome, sensor-source and vehicle-type can be skipped; whatever is
- * skipped stays flagged by the warning lamps, so the wizard guides
- * without ever blocking.
+ * the vehicle measurements, the ramp model, calibration. Nothing has to be
+ * done to go on: Next always advances, and whatever is left undone stays
+ * flagged by the warning lamps, so the wizard guides without ever blocking.
+ *
+ * One path for zeroing (#365): neither path asks to zero the vehicle. A
+ * first run is usually at home, not parked level, so both say the zero
+ * happens the first time the user parks, and the lamp reminds until then.
+ * Skip is only offered where Next would save something (measurements,
+ * ramps); everywhere else Next is the one way on, and a step-specific note
+ * says what leaving it undone means.
  *
  * Reuses the real settings form and calibration section for every
  * step's actual FIELDS and LOGIC — one source of truth, never a
@@ -37,16 +43,10 @@
  * already match — see `settingsPanel.ts`'s existing vehicle-aware
  * relabeling, reused as-is.
  *
- * Calibration (#184, split into two steps on a design review):
- * `calibrationSection.ts` is still the single source of truth for both
- * halves' copy and behavior — Settings → Calibration and the wizard show
- * the exact same UI, never a wizard-only rebuild of either half. What
- * changed is pacing: the two concepts (sensor calibration, vehicle zero)
- * now get one wizard step each, `sensorElement`/`vehicleElement` from
- * `createCalibrationSection`, instead of both stacked under one heading
- * with up to seven buttons on screen at once. Splitting by step also
- * replaces the ordering hint a combined step needed ("do the sensor
- * first") — the steps are already in that order.
+ * Calibration (#184): `calibrationSection.ts` is still the single source
+ * of truth for the phone-calibration copy and behavior — the wizard shows
+ * its `sensorElement`, never a wizard-only rebuild. The vehicle-zero step
+ * a design review once split off is gone again (#365), see above.
  *
  * Sensor source choice (#135, ADR 0014): when an external sensor option
  * actually exists (`hasAvailableExternalSensor()` — the exact same gate
@@ -81,8 +81,8 @@
  * Usability pass for less tech-savvy users (#189: a persona like seniors
  * leveling their first motorhome): a "Back" button (from the second step
  * on) so a wrong tap doesn't require finishing the wizard or restarting
- * it; every skippable step that can leave a warning lamp (R11) lit pairs
- * its Skip control with a note saying so. `currentSettings` tracks the
+ * it; every step that can leave something undone carries a note saying
+ * what that means, specific to the step (#365). `currentSettings` tracks the
  * wizard's own latest save (from either embedded form) so a Back visit
  * after Next auto-saved shows what was just entered, not the wizard's
  * original snapshot.
@@ -96,17 +96,15 @@
  * + Continuous audio guidance is one "what it sounds like" decision. All
  * three reuse the exact fields/handlers the full form's General section
  * has (`createSettingsForm`'s 'language'/'appearance'/'sound' compact
- * modes). Skippable (the shipped defaults are already a complete choice);
- * unlike the other skippable steps they get no warning-lamp hint, since
- * skipping any of them never lights one.
+ * modes). Only Back and Next (#365): Skip did exactly what Next does, since
+ * the form shows the shipped defaults until changed.
  *
  * Ramps step (design review): the ready-made ramp model/custom
  * step-height picker and ramp count — reachable from Settings before, but
  * never from the wizard, even though it's what the ramp catalog and
  * per-wheel step guidance actually run on. Reuses the same
  * `createSettingsForm`'s 'ramps' compact mode as the measurements step
- * pattern: skippable, with the warning-lamp consequence hint, since
- * skipping it leaves the shipped default ramp model in place.
+ * pattern: skippable, with a note that the default ramps stay in place.
  */
 import type { LevelSettings, VehicleType } from '../domain/settings';
 import { createSettingsForm } from './settingsPanel';
@@ -146,13 +144,13 @@ export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptio
    * "Show introduction" still reads as an unfinished first-run task
    * (green) or a plain re-launch (secondary), see `infoMenu.ts`.
    */
-  onFinished(done: boolean): void;
+  onFinished(done: boolean, path: SensorChoice): void;
 }
 
 /** Which source the first step's radios currently have selected — 'phone'
  * until the user picks otherwise, so an unfinished/closed wizard always
  * resolves to the phone sensor (see the module doc comment above). */
-type SensorChoice = 'phone' | 'external';
+export type SensorChoice = 'phone' | 'external';
 
 // 'menu.sensorSource' ("External sensor") is reused verbatim for the
 // external radio's label (screen-cleanup follow-up) — no separate
@@ -238,18 +236,18 @@ function buildClassicProgress(current: number, total: number): HTMLElement {
 }
 
 /**
- * `skipConsequence` marks the skippable steps whose Skip lights a warning
- * lamp (R11) — the note saying so is rendered once by `renderStep`, right
- * above the nav buttons it explains, instead of each step appending its
- * own copy to the end of its (scrollable) body. See #239: as the last
- * element of the body it was both the first thing pushed out of view and
- * three lines of the height budget on every one of those steps.
+ * `skippable` is only set where Next saves a form (#365) — elsewhere Skip
+ * did exactly what Next does. `note` says what leaving this step undone
+ * means, specific to the step (#365; #189 had one generic note on every
+ * step). `renderStep` puts it right above the nav buttons it explains,
+ * not at the end of the (scrollable) body — see #239: there it was both
+ * the first thing pushed out of view and three lines of the height budget.
  */
 type Step = {
   title: string;
   build: () => Element[];
-  skipLabel?: string;
-  skipConsequence?: true;
+  skippable?: true;
+  note?: () => string;
 };
 
 export function showOnboarding(options: OnboardingOptions): void {
@@ -304,7 +302,12 @@ export function showOnboarding(options: OnboardingOptions): void {
       const guide = document.createElement('p');
       guide.className = isModern ? 'onboarding__text--modern' : 'menu__text';
       guide.textContent = t('onboard.welcome.t');
-      return [what, guide];
+      if (!sourceChoiceAvailable) return [what, guide];
+      // The box is not in Settings (#365): say where it lives.
+      const sensor = document.createElement('p');
+      sensor.className = guide.className;
+      sensor.textContent = t('onboard.welcome.sensor');
+      return [what, guide, sensor];
     },
   };
 
@@ -337,18 +340,14 @@ export function showOnboarding(options: OnboardingOptions): void {
     },
   };
 
-  // A skippable step's consequence, spelled out (#189): "Skip" alone never
-  // said what happens next — the warning lamp (R11) that stays lit is
-  // documented in the requirements but was never shown to the user here.
-  // Lives in the nav next to the Skip button it explains, not at the end
-  // of the step's body (#239): the note reads as a caption for that
-  // button, it stays visible when a tall step's body scrolls, and it no
-  // longer spends three body lines' worth of the height budget on every
-  // skippable step.
-  function skipConsequenceHint(): HTMLParagraphElement {
+  // What leaving a step undone means (#189, made step-specific by #365).
+  // Lives in the nav next to the buttons it explains, not at the end of
+  // the step's body (#239): it reads as their caption, it stays visible
+  // when a tall step's body scrolls, and it costs no body height.
+  function stepNote(text: string): HTMLParagraphElement {
     const hint = document.createElement('p');
     hint.className = 'onboarding__skip-hint';
-    hint.textContent = t('onboard.skip.consequence');
+    hint.textContent = text;
     return hint;
   }
 
@@ -357,12 +356,8 @@ export function showOnboarding(options: OnboardingOptions): void {
     // ("Settings") — #189 follow-up. This step only ever shows wheelbase/
     // track widths.
     title: t('help.settings.h'),
-    // Plain "Skip" (#189 follow-up), not "Skip — use defaults": skipping
-    // this step does light a warning lamp (see skipConsequenceHint below),
-    // same as Calibration/External sensor — "use defaults" is reserved for
-    // the one step (General) that truly has no consequence.
-    skipLabel: t('onboard.skipStep'),
-    skipConsequence: true,
+    skippable: true,
+    note: () => t('onboard.note.measurements', { lamp: t('lamp.setup') }),
     build: () => [
       // vehicleType is overridden to the vehicle step's choice (#184) so
       // this reduced form's field labels/visibility already match —
@@ -384,9 +379,9 @@ export function showOnboarding(options: OnboardingOptions): void {
     ],
   };
 
-  // A skippable step with no real-world consequence — the shipped
-  // defaults are already a complete, valid choice, so skipping never
-  // lights a warning lamp (R11) — reused by the three steps below (#189,
+  // A preference step — the shipped defaults are already a complete,
+  // valid choice, so there is nothing to skip and no note (#365) — reused
+  // by the three steps below (#189,
   // split by a design review into one step per actual decision: was one
   // combined 'general' step covering all five fields just because they
   // used to share a Settings section header, not because they're one
@@ -413,7 +408,6 @@ export function showOnboarding(options: OnboardingOptions): void {
   // other four share that reason to lead.
   const languageStep: Step = {
     title: t('settings.language'),
-    skipLabel: t('onboard.skipDefaults'),
     build: () => buildCosmeticStep('language'),
   };
 
@@ -422,7 +416,6 @@ export function showOnboarding(options: OnboardingOptions): void {
   // unrelated setting that happened to share a header with it.
   const appearanceStep: Step = {
     title: t('settings.appearance'),
-    skipLabel: t('onboard.skipDefaults'),
     build: () => buildCosmeticStep('appearance'),
   };
 
@@ -430,7 +423,6 @@ export function showOnboarding(options: OnboardingOptions): void {
   // it sounds like" decision.
   const soundStep: Step = {
     title: t('onboard.sound.h'),
-    skipLabel: t('onboard.skipDefaults'),
     build: () => buildCosmeticStep('sound'),
   };
 
@@ -440,12 +432,11 @@ export function showOnboarding(options: OnboardingOptions): void {
   // yet it never had a wizard step of its own before. Same "vehicle
   // setup" bucket as the measurements step: skippable, but skipping it
   // does leave the shipped default ramp model in place, which may not
-  // match what the user actually owns — plain "Skip", with the same
-  // warning-lamp consequence hint measurements/calibration get.
+  // match what the user actually owns — the note says so (#365).
   const rampsStep: Step = {
     title: t('settings.tab.ramps'),
-    skipLabel: t('onboard.skipStep'),
-    skipConsequence: true,
+    skippable: true,
+    note: () => t('onboard.note.ramps'),
     build: () => [
       createSettingsForm(
         currentSettings,
@@ -459,25 +450,23 @@ export function showOnboarding(options: OnboardingOptions): void {
     ],
   };
 
-  // Split into two steps (design review): was one step embedding both
-  // calibration-card halves at once, up to seven buttons deep. Each half
-  // is still `calibrationSection.ts`'s own real UI, unmodified — only the
-  // wizard-level pacing changed, not the calibration UI itself. The step
-  // order (sensor, then vehicle zero) already says which to do first, so
-  // there's no separate ordering hint to write here the way the combined
-  // step needed one.
+  // The phone's own calibration only (#365): the vehicle zero needs the
+  // vehicle parked level, which a first run at home rarely is, so it waits
+  // for the first parking on both paths — said here, reminded by the lamp.
+  // `calibrationSection.ts`'s real card, without Check/Clear: nothing to
+  // check or clear on a first run, and Settings keeps them under More.
   const sensorCalibrationStep: Step = {
     title: t('calibration.sensor.h'),
-    skipLabel: t('onboard.skipStep'),
-    skipConsequence: true,
-    build: () => [createCalibrationSection(options).sensorElement],
-  };
-
-  const vehicleZeroStep: Step = {
-    title: t('calibration.vehicle.h'),
-    skipLabel: t('onboard.skipStep'),
-    skipConsequence: true,
-    build: () => [createCalibrationSection(options).vehicleElement],
+    note: () => t('onboard.note.calibrate', { next: t('onboard.next'), lamp: t('lamp.calibrate') }),
+    build: () => {
+      const section = createCalibrationSection(options, 'wizard').sensorElement;
+      // Inside the card, in its own text style: part of the same advice.
+      const later = document.createElement('p');
+      later.className = isModern ? 'calibration-card__body' : 'menu__text';
+      later.textContent = t('onboard.zeroLater', { lamp: t('lamp.zero') });
+      section.append(later);
+      return [section];
+    },
   };
 
   // External path's calibration equivalent (#135, ADR 0014): connect the
@@ -488,9 +477,9 @@ export function showOnboarding(options: OnboardingOptions): void {
   //
   // Connecting is asynchronous (a live Web Bluetooth device picker, then a
   // GATT connect), so it's possible to tap Next before it resolves. The
-  // position step then shows "waiting for a reading", same as visiting it
-  // before ever connecting at all — no special guard, matching the
-  // wizard's "never block, always recoverable via Back" rule (#189).
+  // position step then says no box is connected yet and that Next goes on
+  // (#365), and redraws itself if the connection lands while it is shown —
+  // no guard, matching the wizard's "never block" rule (#189).
   /** One option bag per available source (#272). Falls back to this bag
    * alone when the caller supplies no per-source factory. */
   function sourceBags(): SensorSourceOptions[] {
@@ -501,8 +490,7 @@ export function showOnboarding(options: OnboardingOptions): void {
 
   const connectStep: Step = {
     title: t('menu.sensorSource'),
-    skipLabel: t('onboard.skipStep'),
-    skipConsequence: true,
+    note: () => t('onboard.note.connect', { next: t('onboard.next') }),
     build: () => sourceBags().map((bag) => createSensorSourceSection(bag).connectElement),
   };
 
@@ -512,30 +500,39 @@ export function showOnboarding(options: OnboardingOptions): void {
   // them and the amber lamp reminds until they are done.
   const boxPositionStep: Step = {
     title: t('onboard.boxPosition.h'),
-    skipLabel: t('onboard.skipStep'),
-    skipConsequence: true,
     build: () => {
-      const sections = sourceBags()
-        .filter((bag) => bag.getSensorSource() === bag.sensor.id)
-        .map((bag) => createSensorSourceSection(bag));
-      const positions: HTMLElement[] = sections.map((section) => section.positionElement);
-      if (positions.length === 0) {
-        const waiting = document.createElement('p');
-        waiting.className = 'menu__text menu__text--status';
-        waiting.textContent = t('box.step.position.waiting');
-        positions.push(waiting);
-      }
+      const textClass = isModern ? 'onboarding__text--modern' : 'menu__text';
+      const bags = sourceBags();
+      const isActive = (bag: SensorSourceOptions) => bag.getSensorSource() === bag.sensor.id;
+      const sections = bags.filter(isActive).map((bag) => createSensorSourceSection(bag));
       const later = document.createElement('p');
-      later.className = isModern ? 'onboarding__text--modern' : 'menu__text';
+      later.className = textClass;
       later.textContent = t('onboard.boxPosition.later');
+      if (sections.length === 0) {
+        // No box connected (#365): say so, and that Next goes on. Should a
+        // connection started on the previous step land while this is
+        // shown, the step redraws with the live position.
+        const notConnected = document.createElement('p');
+        notConnected.className = textClass;
+        notConnected.textContent = t('onboard.boxPosition.notConnected', {
+          next: t('onboard.next'),
+        });
+        const wait = () => {
+          if (!notConnected.isConnected) return;
+          if (bags.some(isActive)) renderStep();
+          else requestAnimationFrame(wait);
+        };
+        requestAnimationFrame(wait);
+        return [notConnected, later];
+      }
       // Live while the step is shown; stops once it is left.
       const tick = () => {
         if (!later.isConnected) return;
         for (const section of sections) section.refreshLive();
         requestAnimationFrame(tick);
       };
-      if (sections.length > 0) requestAnimationFrame(tick);
-      return [...positions, later];
+      requestAnimationFrame(tick);
+      return [...sections.map((section) => section.positionElement), later];
     },
   };
 
@@ -588,7 +585,9 @@ export function showOnboarding(options: OnboardingOptions): void {
       if (externalActive) {
         const note = document.createElement('p');
         note.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-        note.textContent = t('onboard.source.externalActive');
+        note.textContent = t('onboard.source.externalActive', {
+          disconnect: t('sensorSource.disconnect'),
+        });
         externalNote.push(note);
       }
       return [
@@ -644,12 +643,12 @@ export function showOnboarding(options: OnboardingOptions): void {
   // An external sensor already active (#287): the wizard never switches
   // the source (✕ must leave it as it was, ADR 0014), and #285 disables
   // every phone-calibration action while a box is active — so the phone
-  // path leaves both calibration steps out rather than leading into
-  // screens where nothing can be pressed. The source step says so.
+  // path leaves the calibration step out rather than leading into a
+  // screen where nothing can be pressed. The source step says so.
   const externalActive = options.getSensorSource() !== 'phone';
   const phoneSteps = externalActive
     ? [placementStep, settingsStep, rampsStep]
-    : [placementStep, settingsStep, rampsStep, sensorCalibrationStep, vehicleZeroStep];
+    : [placementStep, settingsStep, rampsStep, sensorCalibrationStep];
   const externalSteps = [connectStep, boxPositionStep, readScreenStep, settingsStep, rampsStep];
 
   // welcomeStep, then languageStep/appearanceStep/soundStep, always lead
@@ -676,7 +675,7 @@ export function showOnboarding(options: OnboardingOptions): void {
 
   function finish(done: boolean): void {
     overlay.remove();
-    options.onFinished(done);
+    options.onFinished(done, sourceChoiceAvailable ? sensorChoice : 'phone');
   }
 
   function renderStep(): void {
@@ -734,9 +733,9 @@ export function showOnboarding(options: OnboardingOptions): void {
 
     const nav = document.createElement('div');
     nav.className = isModern ? 'onboarding__nav onboarding__nav--modern' : 'onboarding__nav';
-    // The consequence note first, so it reads as a caption for the Skip
-    // button right under it (#239 — see skipConsequenceHint above).
-    if (step.skipConsequence) nav.append(skipConsequenceHint());
+    // The note first, so it reads as a caption for the buttons right under
+    // it (#239 — see stepNote above).
+    if (step.note) nav.append(stepNote(step.note()));
     // Back and Skip share one row above Next (#239): stacked full width
     // they were three buttons and 174 px of a 553 px iPhone SE screen,
     // spent entirely on navigation. Side by side they are one 43 px row,
@@ -762,13 +761,13 @@ export function showOnboarding(options: OnboardingOptions): void {
       });
       secondaryRow.append(back);
     }
-    if (step.skipLabel) {
+    if (step.skippable) {
       const skip = document.createElement('button');
       skip.type = 'button';
       skip.className = isModern
         ? 'menu__action menu__action--secondary onboarding__skip--modern'
         : 'menu__action menu__action--secondary';
-      skip.textContent = step.skipLabel;
+      skip.textContent = t('onboard.skipStep');
       skip.addEventListener('click', () => {
         index += 1;
         renderStep();

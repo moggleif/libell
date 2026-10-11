@@ -5,6 +5,8 @@ import {
   hasDoneOnboarding,
   hasStoredMeasurements,
   hasStoredSettings,
+  isBoxPending,
+  setBoxPending,
   markMeasurementsSaved,
   migrateMeasurementsSaved,
   loadCalibration,
@@ -150,6 +152,37 @@ describe('onboarding completion tracking', () => {
     };
     expect(hasDoneOnboarding(throwingStorage)).toBe(true);
     expect(() => markOnboardingDone(throwingStorage)).not.toThrow();
+  });
+});
+
+// #365: the wizard's box path, finished with no box connected. Remembered so
+// the amber lamp asks for the box rather than ⚠ Calibrate for a phone the
+// user chose not to use.
+describe('box chosen in the wizard but not connected (#365)', () => {
+  it('is false until set, then true, and false again once cleared', () => {
+    const storage = memoryStorage();
+    expect(isBoxPending(storage)).toBe(false);
+    setBoxPending(true, storage);
+    expect(isBoxPending(storage)).toBe(true);
+    setBoxPending(false, storage);
+    expect(isBoxPending(storage)).toBe(false);
+  });
+
+  it('defaults to false when storage access throws', () => {
+    const throwingStorage: KeyValueStorage = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+      removeItem: () => {
+        throw new Error('blocked');
+      },
+    };
+    expect(isBoxPending(throwingStorage)).toBe(false);
+    expect(() => setBoxPending(true, throwingStorage)).not.toThrow();
+    expect(() => setBoxPending(false, throwingStorage)).not.toThrow();
   });
 });
 
