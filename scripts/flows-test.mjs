@@ -6,7 +6,8 @@
 // phone: calibrating, zeroing and checking it, and target presets, against
 // `?demo`'s fixed tilt. Settings' Calibration tab while a box is in use. For the first-run wizard: its phone calibration
 // and its box path, connected or not. For the level screen: the pose
-// guard, the level celebration, and a lost box coming back. None of it
+// guard, the level celebration, and a lost box coming back. The mute
+// button and the sounds, against a stand-in for WebAudio. None of it
 // needs hardware or Web Bluetooth.
 //
 // It exists to pin today's behaviour while `main.ts` is split into
@@ -30,12 +31,19 @@ function assert(condition, message) {
 
 /** A fresh page, past the first-run wizard, in English, with `seed`
  * written to localStorage before the app first reads it (a null value
- * removes the key). */
-async function openApp(browser, query, seed = {}, viewport = { width: 390, height: 844 }) {
+ * removes the key), and `initScript` run before the app's own code. */
+async function openApp(
+  browser,
+  query,
+  seed = {},
+  viewport = { width: 390, height: 844 },
+  initScript = null,
+) {
   const context = await browser.newContext({ viewport });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  if (initScript) await page.addInitScript(initScript);
   await page.addInitScript((extra) => {
     if (sessionStorage.getItem('flows.seeded')) return;
     sessionStorage.setItem('flows.seeded', '1');
@@ -558,6 +566,125 @@ async function lostBoxFlow(browser) {
   await context.close();
 }
 
+/** Stands in for WebAudio: counts contexts and resumes, and records every
+ * tone by its frequency when it starts. */
+function fakeAudio() {
+  const log = { created: 0, resumed: 0, tones: [] };
+  window.__audio = log;
+  class Param {
+    value = 0;
+    setValueAtTime(value) {
+      this.value = value;
+    }
+    linearRampToValueAtTime() {}
+    exponentialRampToValueAtTime() {}
+  }
+  class Node {
+    connect(next) {
+      return next;
+    }
+  }
+  window.AudioContext = class {
+    currentTime = 0;
+    destination = new Node();
+    constructor() {
+      log.created += 1;
+    }
+    resume() {
+      log.resumed += 1;
+      return Promise.resolve();
+    }
+    createOscillator() {
+      const osc = new Node();
+      osc.frequency = new Param();
+      osc.start = () => log.tones.push(osc.frequency.value);
+      osc.stop = () => {};
+      return osc;
+    }
+    createGain() {
+      const gain = new Node();
+      gain.gain = new Param();
+      return gain;
+    }
+  };
+}
+
+const audioLog = (page) => page.evaluate(() => window.__audio);
+const CHIME = [880, 1174.7];
+
+// The mute button, the audio unlock, the guidance pulse and the chime.
+async function soundFlow(browser) {
+  const flat = JSON.stringify({ rollDeg: 0, pitchDeg: 0, capturedAt: Date.now() });
+  const { context, page, errors } = await openApp(
+    browser,
+    'demo',
+    {
+      'libell.calibration': flat,
+      'libell.settings': JSON.stringify({ soundOnLevel: true, soundGuidance: true }),
+    },
+    undefined,
+    fakeAudio,
+  );
+  await page.locator('.rv-diagram').first().waitFor();
+  const sound = page.locator('#sound-button');
+  assert((await sound.getAttribute('aria-label')) === 'Mute sound', 'sound should start unmuted');
+  assert(await page.locator('#sound-icon-mute').isHidden(), 'the mute icon should start hidden');
+
+  // No sound before a gesture unlocks it.
+  await page.waitForTimeout(500);
+  assert((await audioLog(page)).created === 0, 'audio should wait for a user gesture');
+
+  // Muting turns both sounds off and stores it, without unlocking audio.
+  await sound.click();
+  await eventually(async () => {
+    const stored = await storedSettings(page);
+    return stored.soundOnLevel === false && stored.soundGuidance === false;
+  }, 'muting should store both sounds off');
+  assert((await sound.getAttribute('aria-label')) === 'Unmute sound', 'muted label');
+  assert(
+    await sound.evaluate((b) => b.classList.contains('bottombar__button--muted')),
+    'muted class',
+  );
+  assert(await page.locator('#sound-icon-waves').isHidden(), 'muted hides the waves');
+  assert((await audioLog(page)).created === 0, 'muting should not unlock audio');
+
+  // Unmuting restores both and is the gesture that unlocks audio.
+  await sound.click();
+  await eventually(async () => {
+    const stored = await storedSettings(page);
+    return stored.soundOnLevel === true && stored.soundGuidance === true;
+  }, 'unmuting should restore both sounds');
+  assert((await sound.getAttribute('aria-label')) === 'Mute sound', 'unmuted label');
+  assert(await page.locator('#sound-icon-mute').isHidden(), 'unmuted hides the mute icon');
+  const unlocked = await audioLog(page);
+  assert(unlocked.created === 1 && unlocked.resumed === 1, 'unmuting should unlock audio once');
+
+  // Off level, the guidance pulses play.
+  await eventually(
+    async () => (await audioLog(page)).tones.length > 0,
+    'guidance should pulse while off level',
+    5000,
+  );
+  assert(
+    (await audioLog(page)).tones.every((hz) => !CHIME.includes(hz)),
+    'no chime before level',
+  );
+
+  // Level after the zero: the chime plays its two tones.
+  await page.waitForTimeout(3000);
+  const settings = await openSettingsTab(page, 'calibration');
+  await button(settings, 'Zero now').click();
+  await settings.getByText('Zeroed (today)').waitFor();
+  await closeAllPages(page);
+  await page.locator('.level-overlay.is-visible').waitFor({ timeout: 5000 });
+  const tones = (await audioLog(page)).tones;
+  const at = tones.indexOf(CHIME[0]);
+  assert(at >= 0 && tones[at + 1] === CHIME[1], `the chime should play, got ${tones.join(', ')}`);
+
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
   cwd: root,
   stdio: 'ignore',
@@ -591,8 +718,9 @@ try {
   await landscapeFlow(browser);
   await celebrationFlow(browser);
   await lostBoxFlow(browser);
+  await soundFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound',
   );
 } finally {
   await browser?.close();
