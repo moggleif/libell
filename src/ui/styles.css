@@ -3456,6 +3456,8 @@ body {
 }
 
 .placement-picker__button {
+  /* Both names the same height, however the label wraps. */
+  flex: 1;
   padding: 8px;
   background: var(--surface-raised);
   color: var(--on-surface);

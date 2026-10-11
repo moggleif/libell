@@ -87,7 +87,7 @@ function boxGlyph(shape: BoxShape, facing: Facing): SVGGElement {
  */
 function placementGlyph(placement: EasyLevelPlacement): SVGGElement {
   const group = svgEl('g', { class: 'box-glyph' });
-  const [w, h] = placement === 'wide' ? [30, 18] : [18, 30];
+  const [w, h] = placement === 'wide' ? [38, 23] : [23, 38];
   group.append(
     svgEl('rect', {
       x: String(-w / 2),
