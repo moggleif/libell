@@ -81,31 +81,45 @@ function boxGlyph(shape: BoxShape, facing: Facing): SVGGElement {
 
 /**
  * The EasyLevel box from above in one of its manual's two placements
- * (#359): the box turned so its wide or its short side faces the front,
- * and in both an arrow on the lid pointing forward. Sized like the real
- * box (94 × 58 mm).
+ * (#359), drawn like the real lid: a near-square lid on a base whose
+ * mounting tabs stick out at the long sides' ends, and the lid's two
+ * arrows — one up, one to the left, as printed on it. Long side forward
+ * is the box as printed (the up arrow forward); short side forward is the
+ * same box a quarter turn clockwise (the left arrow forward), the official
+ * app's `sensor_Placing` 2 and Libell's `rotated90`.
  */
 function placementGlyph(placement: EasyLevelPlacement): SVGGElement {
-  const group = svgEl('g', { class: 'box-glyph' });
-  const [w, h] = placement === 'wide' ? [38, 23] : [23, 38];
+  const group = svgEl('g', {
+    class: 'box-glyph',
+    transform: `scale(1.15) rotate(${placement === 'wide' ? 0 : 90})`,
+  });
   group.append(
+    // Base with its two mounting tabs (the long sides).
     svgEl('rect', {
-      x: String(-w / 2),
-      y: String(-h / 2),
-      width: String(w),
-      height: String(h),
+      x: '-22',
+      y: '-11',
+      width: '44',
+      height: '22',
+      rx: '2',
       class: 'box-glyph__body',
     }),
-    // The arrow on the lid, pointing forward.
-    svgEl('line', {
-      x1: '0',
-      y1: String(h / 2 - 4),
-      x2: '0',
-      y2: String(-h / 2 + 7),
-      class: 'box-glyph__arrow',
+    // The lid.
+    svgEl('rect', {
+      x: '-15',
+      y: '-14',
+      width: '30',
+      height: '28',
+      rx: '3',
+      class: 'box-glyph__body',
     }),
+    // Up arrow (forward when the long side faces the front).
     svgEl('polygon', {
-      points: `0,${-h / 2 + 3} -4,${-h / 2 + 8} 4,${-h / 2 + 8}`,
+      points: '4,-12 10,-5 6.5,-5 6.5,0 1.5,0 1.5,-5 -2,-5',
+      class: 'box-glyph__ref',
+    }),
+    // Left arrow.
+    svgEl('polygon', {
+      points: '-13,6 -6,0 -6,3.5 2,3.5 2,8.5 -6,8.5 -6,12',
       class: 'box-glyph__ref',
     }),
   );

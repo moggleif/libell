@@ -438,7 +438,13 @@ export function createSensorSourceSection(
       return;
     }
     const ok = isMountedRight(tilt);
-    positionTitle.textContent = t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
+    // A flat box past a right angle has its lid down (#362). Libell does
+    // not support that mounting; it says so, and how to fix it.
+    const upsideDown =
+      shape === 'flat' && (Math.abs(tilt.pitchDeg) > 90 || Math.abs(tilt.rollDeg) > 90);
+    positionTitle.textContent = upsideDown
+      ? t('box.step.position.flat.upsideDown')
+      : t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
     positionMark.textContent = ok ? '✓ ' : '! ';
     positionElement.classList.toggle('is-done', ok);
     positionElement.classList.toggle('is-warning', !ok);

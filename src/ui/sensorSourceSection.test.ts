@@ -532,6 +532,20 @@ describe('the position step, live (#304, #314)', () => {
     expect(section.positionElement.textContent).toContain('lay it flat, top up');
     expect(section.positionElement.textContent).not.toContain('upright');
   });
+
+  it('says so when a flat box is upside down, and how to fix it — never blocks (#362)', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        // Gravity out of the lid: atan2 against a negative z reads near 180°.
+        getCalibratedTilt: () => ({ pitchDeg: 178, rollDeg: -2 }),
+      }),
+    );
+    expect(section.positionElement.textContent).toContain(t('box.step.position.flat.upsideDown'));
+    expect(section.positionElement.classList.contains('is-warning')).toBe(true);
+    // Every step is still there to use.
+    expect(section.installElement.querySelector('.placement-picker')).not.toBeNull();
+  });
 });
 
 describe('a source with something to say about why it is not working (#272)', () => {

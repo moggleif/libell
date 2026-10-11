@@ -583,6 +583,8 @@ export const MESSAGES = {
     'box.step.position.upright.bad': 'Lying down: stand it upright, facing any way',
     'box.step.position.flat.ok': 'Lies flat',
     'box.step.position.flat.bad': 'Tilted too far: lay it flat, top up',
+    'box.step.position.flat.upsideDown':
+      'Upside down: turn it lid up. The maker advises against mounting it upside down.',
     'box.step.position.waiting': 'Position: waiting for a reading',
     'box.step.direction.todo': 'Pick the direction',
     'box.step.direction.done': 'Direction set',
@@ -1050,6 +1052,8 @@ export const MESSAGES = {
     'box.step.position.upright.bad': 'Ligger ner – ställ den upprätt, åt vilket håll som helst',
     'box.step.position.flat.ok': 'Ligger plant',
     'box.step.position.flat.bad': 'Lutar för mycket – lägg den plant med ovansidan upp',
+    'box.step.position.flat.upsideDown':
+      'Upp och ner – vänd den med locket uppåt. Tillverkaren avråder från att montera den upp och ner.',
     'box.step.position.waiting': 'Läge: väntar på mätvärde',
     'box.step.direction.todo': 'Välj riktning',
     'box.step.direction.done': 'Riktning vald',
@@ -1527,6 +1531,8 @@ export const MESSAGES = {
     'box.step.position.upright.bad': 'Couché : mettez-le debout, dans n’importe quel sens',
     'box.step.position.flat.ok': 'À plat',
     'box.step.position.flat.bad': 'Trop incliné : posez-le à plat, face vers le haut',
+    'box.step.position.flat.upsideDown':
+      'À l’envers : retournez-le couvercle vers le haut. Le fabricant déconseille de le monter à l’envers.',
     'box.step.position.waiting': 'Position : en attente d’une mesure',
     'box.step.direction.todo': 'Choisir l’orientation',
     'box.step.direction.done': 'Orientation choisie',
@@ -2001,6 +2007,8 @@ export const MESSAGES = {
     'box.step.position.upright.bad': 'Tumbada: ponla de pie, hacia cualquier lado',
     'box.step.position.flat.ok': 'Está en plano',
     'box.step.position.flat.bad': 'Demasiado inclinada: ponla en plano, cara arriba',
+    'box.step.position.flat.upsideDown':
+      'Al revés: dale la vuelta con la tapa hacia arriba. El fabricante desaconseja montarla al revés.',
     'box.step.position.waiting': 'Posición: esperando una lectura',
     'box.step.direction.todo': 'Elegir la orientación',
     'box.step.direction.done': 'Orientación elegida',
@@ -2473,6 +2481,8 @@ export const MESSAGES = {
     'box.step.position.upright.bad': 'Liegt: stelle sie aufrecht, Richtung egal',
     'box.step.position.flat.ok': 'Liegt flach',
     'box.step.position.flat.bad': 'Zu stark geneigt: lege sie flach, Oberseite nach oben',
+    'box.step.position.flat.upsideDown':
+      'Verkehrt herum: dreh sie mit dem Deckel nach oben. Der Hersteller rät von einer Montage über Kopf ab.',
     'box.step.position.waiting': 'Lage: wartet auf einen Messwert',
     'box.step.direction.todo': 'Richtung wählen',
     'box.step.direction.done': 'Richtung gewählt',

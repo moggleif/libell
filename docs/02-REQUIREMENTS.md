@@ -1445,6 +1445,16 @@ guidance (#285; the phone's own "lay it flat" wording no longer applies to a box
   one of the two placements is stored as picked; one showing the arrow backward or
   sideways says to turn the box so an arrow points forward and try again; a mirrored
   one says the box seems upside down or the wrong side was raised. Neither is stored.
+- **Given** an EasyLevel box mounted upside down, lid down (the official app's
+  "Inverterad", which the manufacturer advises against: vibration, and the battery can
+  fall out)
+- **Then** Libell does not support that mounting, but never blocks: the box page's
+  position line says "Upside down: turn it lid up", with the manufacturer's advice, and
+  the main screen keeps R17's "box looks upside down" overlay (#362, Morgan 2026-10-11).
+- **Given** the placement pictures
+- **Then** they draw the box as its lid is printed: two arrows, one up and one to the
+  left. Long side forward is the box as printed (up arrow forward); short side forward
+  is a quarter turn clockwise (left arrow forward).
 - **Given** a box physically mounted any of the other ways
 - **When** its rotation is applied
 - **Then** that rotation of the (x, y) pair — `(-y, x)` at 90° (the exact transform
