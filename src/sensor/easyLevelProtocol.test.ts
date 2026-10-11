@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { tiltFromGravity } from '../domain/leveling';
+import { applyAxisMapping } from '../domain/axisMapping';
+import { axisMappingForEasyLevelMounting } from '../domain/mountingFacing';
 import {
   applyEasyLevelMounting,
   firmwareTierFromByte,
@@ -499,5 +502,21 @@ describe('applyEasyLevelMounting — all four physical rotations (#222)', () => 
       JSON.stringify(applyEasyLevelMounting(READING, mounting)),
     );
     expect(new Set(results).size).toBe(EASYLEVEL_MOUNTINGS.length);
+  });
+});
+
+describe('the lift guide’s mapping agrees with applyEasyLevelMounting (#360)', () => {
+  it('reads the same vehicle tilt either way, for all four rotations', () => {
+    const raw = { x: 120, y: -340, z: 9800 };
+    const toDeg = (g: { x: number; y: number; z: number }) => {
+      const tilt = tiltFromGravity(g, null);
+      return { pitchDeg: (tilt.pitch * 180) / Math.PI, rollDeg: (tilt.roll * 180) / Math.PI };
+    };
+    for (const mounting of ['standard', 'rotated90', 'rotated180', 'rotated270'] as const) {
+      const viaRotation = toDeg(applyEasyLevelMounting(raw, mounting));
+      const viaMapping = applyAxisMapping(toDeg(raw), axisMappingForEasyLevelMounting(mounting));
+      expect(viaMapping.pitchDeg).toBeCloseTo(viaRotation.pitchDeg, 9);
+      expect(viaMapping.rollDeg).toBeCloseTo(viaRotation.rollDeg, 9);
+    }
   });
 });

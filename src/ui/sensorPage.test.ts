@@ -31,6 +31,7 @@ function makeOptions(overrides: Partial<Options> = {}): Options {
     getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
     setEasyLevelConnectDelay: () => {},
     getMounting: () => 'standard',
+    isMountingPicked: () => false,
     setMounting: () => {},
     ...overrides,
   };
@@ -109,7 +110,8 @@ describe('createSensorPage', () => {
       expect(page.element.textContent).not.toContain('Zero on level ground');
       expect(page.element.textContent).not.toContain('Battery');
       // Per-device setup and health live on the sensor's own page (#314).
-      expect(page.statusElements[0]!.textContent).toContain('Direction set');
+      // Not picked yet, so the step asks (#359).
+      expect(page.statusElements[0]!.textContent).toContain('Pick the direction');
       expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
       expect(page.statusElements[0]!.textContent).toContain('Temperature');
     });
@@ -130,7 +132,8 @@ describe('createSensorPage', () => {
             source = 'easylevel';
             return Promise.resolve('granted');
           },
-          getMounting: () => 'rotated180',
+          getMounting: () => 'rotated90',
+          isMountingPicked: () => true,
         }),
       );
       const connect = [...page.element.querySelectorAll('button')].find(
@@ -149,7 +152,7 @@ describe('createSensorPage', () => {
       const checklist = page.statusElements[0]!.querySelector('.box-setup');
       expect(checklist?.closest('[hidden]')).toBeNull();
       // Populated from the current setting, not left at its initial value.
-      expect(page.statusElements[0]!.textContent).toContain('Direction set: points to the rear');
+      expect(page.statusElements[0]!.textContent).toContain('Direction set: short side forward');
       expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
     });
 

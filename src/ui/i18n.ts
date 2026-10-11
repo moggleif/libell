@@ -167,6 +167,10 @@ export const MESSAGES = {
       'The vehicle hardly moved. Raise it a little more and try again.',
     'sensorSource.learn.err.ambiguous':
       'Both directions moved about as much. Raise only the front, then only the right side, and try again.',
+    'sensorSource.learn.err.arrow':
+      'No arrow points forward. Turn the box so an arrow on its lid points forward, then try again.',
+    'sensorSource.learn.err.mirrored':
+      'The box seems upside down, or the wrong side was raised. Check, then try again.',
     'sensorSource.learn.err.sameAxis':
       'Both lifts tilted the same way. Raise the front first, then the right side, and try again.',
 
@@ -480,6 +484,7 @@ export const MESSAGES = {
       'A box in the vehicle can measure instead of the phone.\n' +
       'Tap the sensor icon at the top right to connect. The box’s page shows the rest step by step.\n' +
       'The Xparkle must stand upright.\n' +
+      'A box with arrows on its lid lies flat, with one arrow pointing forward.\n' +
       'On iPhone you need the Bluefy browser.',
     'help.targets.h': 'Targets and sound',
     'help.targets.t':
@@ -561,7 +566,10 @@ export const MESSAGES = {
     // Box page (#314, the #309 UX review): the mounting picker, the
     // header and the three-step setup checklist.
     'mounting.prompt.upright': 'Tap where the box’s back (the screw mount) points.',
-    'mounting.prompt.flat': 'Tap where the arrow on the box points.',
+    'mounting.prompt.arrow':
+      'An arrow on the lid points forward. Which side of the box faces the front?',
+    'mounting.placement.wide': 'Long side forward',
+    'mounting.placement.short': 'Short side forward',
     'mounting.facing.front': 'Points to the front',
     'mounting.facing.right': 'Points to the right',
     'mounting.facing.rear': 'Points to the rear',
@@ -699,6 +707,10 @@ export const MESSAGES = {
     'sensorSource.learn.err.tooSmall': 'Fordonet rörde sig knappt. Höj lite mer och försök igen.',
     'sensorSource.learn.err.ambiguous':
       'Båda riktningarna rörde sig ungefär lika mycket. Höj bara fronten, sedan bara höger sida, och försök igen.',
+    'sensorSource.learn.err.arrow':
+      'Ingen pil pekar framåt. Vrid boxen så att en pil på locket pekar framåt och försök igen.',
+    'sensorSource.learn.err.mirrored':
+      'Boxen verkar sitta upp och ner, eller så lyftes fel sida. Kontrollera och försök igen.',
     'sensorSource.learn.err.sameAxis':
       'Båda lyften lutade åt samma håll. Höj fronten först och sedan höger sida, och försök igen.',
 
@@ -948,6 +960,7 @@ export const MESSAGES = {
       'En box i fordonet kan mäta i stället för telefonen.\n' +
       'Tryck på sensorikonen uppe till höger för att ansluta. Boxens sida visar resten steg för steg.\n' +
       'Xparkle ska stå upprätt.\n' +
+      'En box med pilar på locket ska ligga plant, med en pil framåt.\n' +
       'På iPhone behövs webbläsaren Bluefy.',
     'help.targets.h': 'Mål och ljud',
     'help.targets.t':
@@ -1020,7 +1033,9 @@ export const MESSAGES = {
     'sensorFallback.retry': 'Återanslut',
     'sensorFallback.usePhone': 'Använd telefonen i stället',
     'mounting.prompt.upright': 'Tryck där boxens baksida (skruvfästet) pekar.',
-    'mounting.prompt.flat': 'Tryck där pilen på boxen pekar.',
+    'mounting.prompt.arrow': 'En pil på locket pekar framåt. Vilken sida av boxen är vänd framåt?',
+    'mounting.placement.wide': 'Långsidan framåt',
+    'mounting.placement.short': 'Kortsidan framåt',
     'mounting.facing.front': 'Pekar mot fronten',
     'mounting.facing.right': 'Pekar åt höger',
     'mounting.facing.rear': 'Pekar bakåt',
@@ -1154,6 +1169,10 @@ export const MESSAGES = {
       'Le véhicule a à peine bougé. Soulevez un peu plus et réessayez.',
     'sensorSource.learn.err.ambiguous':
       'Les deux directions ont bougé à peu près autant. Soulevez seulement l’avant, puis seulement le côté droit, et réessayez.',
+    'sensorSource.learn.err.arrow':
+      'Aucune flèche ne pointe vers l’avant. Tournez le boîtier pour qu’une flèche du couvercle pointe vers l’avant, puis réessayez.',
+    'sensorSource.learn.err.mirrored':
+      'Le boîtier semble à l’envers, ou le mauvais côté a été soulevé. Vérifiez, puis réessayez.',
     'sensorSource.learn.err.sameAxis':
       'Les deux levages ont incliné dans le même sens. Soulevez d’abord l’avant, puis le côté droit, et réessayez.',
 
@@ -1410,6 +1429,7 @@ export const MESSAGES = {
       'Un boîtier dans le véhicule peut mesurer à la place du téléphone.\n' +
       'Touchez l’icône du capteur en haut à droite pour le connecter. La page du boîtier montre la suite étape par étape.\n' +
       'Le Xparkle doit être posé debout.\n' +
+      'Un boîtier avec des flèches sur le couvercle se pose à plat, une flèche vers l’avant.\n' +
       'Sur iPhone, il faut le navigateur Bluefy.',
     'help.targets.h': 'Cibles et son',
     'help.targets.t':
@@ -1489,7 +1509,10 @@ export const MESSAGES = {
     'sensorFallback.usePhone': 'Utiliser plutôt le téléphone',
     'mounting.prompt.upright':
       'Touchez le côté vers lequel pointe l’arrière du boîtier (la fixation à vis).',
-    'mounting.prompt.flat': 'Touchez le côté vers lequel pointe la flèche du boîtier.',
+    'mounting.prompt.arrow':
+      'Une flèche du couvercle pointe vers l’avant. Quel côté du boîtier est tourné vers l’avant ?',
+    'mounting.placement.wide': 'Côté large vers l’avant',
+    'mounting.placement.short': 'Côté étroit vers l’avant',
     'mounting.facing.front': 'Vers l’avant',
     'mounting.facing.right': 'Vers la droite',
     'mounting.facing.rear': 'Vers l’arrière',
@@ -1624,6 +1647,10 @@ export const MESSAGES = {
       'El vehículo apenas se movió. Levántalo un poco más e inténtalo de nuevo.',
     'sensorSource.learn.err.ambiguous':
       'Las dos direcciones se movieron casi lo mismo. Levanta solo la parte delantera, luego solo el lado derecho, e inténtalo de nuevo.',
+    'sensorSource.learn.err.arrow':
+      'Ninguna flecha apunta hacia delante. Gira la caja para que una flecha de la tapa apunte hacia delante e inténtalo de nuevo.',
+    'sensorSource.learn.err.mirrored':
+      'La caja parece estar al revés, o se levantó el lado equivocado. Compruébalo e inténtalo de nuevo.',
     'sensorSource.learn.err.sameAxis':
       'Los dos levantamientos inclinaron hacia el mismo lado. Levanta primero la parte delantera y luego el lado derecho, e inténtalo de nuevo.',
 
@@ -1875,6 +1902,7 @@ export const MESSAGES = {
       'Una caja en el vehículo puede medir en lugar del móvil.\n' +
       'Toca el icono del sensor arriba a la derecha para conectarla. La página de la caja muestra el resto paso a paso.\n' +
       'El Xparkle debe ir de pie.\n' +
+      'Una caja con flechas en la tapa va plana, con una flecha hacia delante.\n' +
       'En iPhone necesitas el navegador Bluefy.',
     'help.targets.h': 'Objetivos y sonido',
     'help.targets.t':
@@ -1955,7 +1983,10 @@ export const MESSAGES = {
     'sensorFallback.usePhone': 'Usar el móvil en su lugar',
     'mounting.prompt.upright':
       'Toca el lado hacia el que apunta la parte trasera de la caja (el soporte de tornillo).',
-    'mounting.prompt.flat': 'Toca el lado hacia el que apunta la flecha de la caja.',
+    'mounting.prompt.arrow':
+      'Una flecha de la tapa apunta hacia delante. ¿Qué lado de la caja mira hacia delante?',
+    'mounting.placement.wide': 'Lado largo hacia delante',
+    'mounting.placement.short': 'Lado corto hacia delante',
     'mounting.facing.front': 'Hacia delante',
     'mounting.facing.right': 'Hacia la derecha',
     'mounting.facing.rear': 'Hacia atrás',
@@ -2090,6 +2121,10 @@ export const MESSAGES = {
       'Das Fahrzeug hat sich kaum bewegt. Hebe es etwas mehr an und versuche es erneut.',
     'sensorSource.learn.err.ambiguous':
       'Beide Richtungen haben sich etwa gleich stark bewegt. Hebe nur die Front, dann nur die rechte Seite an und versuche es erneut.',
+    'sensorSource.learn.err.arrow':
+      'Kein Pfeil zeigt nach vorn. Drehe die Box so, dass ein Pfeil auf dem Deckel nach vorn zeigt, und versuche es erneut.',
+    'sensorSource.learn.err.mirrored':
+      'Die Box scheint verkehrt herum zu sitzen, oder die falsche Seite wurde angehoben. Prüfe es und versuche es erneut.',
     'sensorSource.learn.err.sameAxis':
       'Beide Anhebungen haben in dieselbe Richtung geneigt. Hebe zuerst die Front, dann die rechte Seite an und versuche es erneut.',
 
@@ -2344,6 +2379,7 @@ export const MESSAGES = {
       'Eine Box im Fahrzeug kann statt des Handys messen.\n' +
       'Tippe oben rechts auf das Sensorsymbol, um sie zu verbinden. Die Seite der Box zeigt den Rest Schritt für Schritt.\n' +
       'Die Xparkle muss aufrecht stehen.\n' +
+      'Eine Box mit Pfeilen auf dem Deckel liegt flach, mit einem Pfeil nach vorn.\n' +
       'Auf dem iPhone brauchst du den Browser Bluefy.',
     'help.targets.h': 'Ziele und Ton',
     'help.targets.t':
@@ -2419,7 +2455,10 @@ export const MESSAGES = {
     'sensorFallback.usePhone': 'Stattdessen das Handy verwenden',
     'mounting.prompt.upright':
       'Tippe auf die Seite, auf die die Rückseite der Box (die Schraubhalterung) zeigt.',
-    'mounting.prompt.flat': 'Tippe auf die Seite, auf die der Pfeil auf der Box zeigt.',
+    'mounting.prompt.arrow':
+      'Ein Pfeil auf dem Deckel zeigt nach vorn. Welche Seite der Box zeigt nach vorn?',
+    'mounting.placement.wide': 'Lange Seite nach vorn',
+    'mounting.placement.short': 'Kurze Seite nach vorn',
     'mounting.facing.front': 'Zeigt nach vorne',
     'mounting.facing.right': 'Zeigt nach rechts',
     'mounting.facing.rear': 'Zeigt nach hinten',

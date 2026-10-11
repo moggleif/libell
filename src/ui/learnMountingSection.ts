@@ -26,6 +26,13 @@ export interface LearnMountingOptions {
   getLearnedMounting(): AxisMapping | null;
   /** Store (or with null, forget) the mapping; takes effect on the next reading. */
   setLearnedMounting(mapping: AxisMapping | null): void;
+  /**
+   * Why a learned mapping cannot be used for this box, or null (#360): the
+   * EasyLevel box allows only its manual's two placements, so a lift that
+   * shows its arrow pointing backward is explained rather than stored.
+   * Optional: a box that takes any mapping has nothing to say.
+   */
+  check?(mapping: AxisMapping): MessageKey | null;
 }
 
 export interface LearnMountingSection {
@@ -116,6 +123,11 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
     const result = learnAxisMapping(baseline, frontRaised, rightRaised);
     if (!result.ok) {
       show('idle', t(`sensorSource.learn.err.${result.error}`));
+      return;
+    }
+    const problem = options.check?.(result.mapping) ?? null;
+    if (problem) {
+      show('idle', t(problem));
       return;
     }
     options.setLearnedMounting(result.mapping);

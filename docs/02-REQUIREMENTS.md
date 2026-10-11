@@ -1417,15 +1417,31 @@ guidance (#285; the phone's own "lay it flat" wording no longer applies to a box
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this
   setting sits alongside — both moved here from the External sensor page by #226)
-- **Then** the four rotations are offered as R51's direction step: a picture of the
-  vehicle with one button at each side, each showing the box (with an arrow on it)
-  turned so the arrow points out to that side — the front is "Standard", the right
-  "Rotated 90°", the rear "Rotated 180°", the left "Rotated 270°" (#314). The choice is
-  made by matching the picture, never through the official app's `"sensor_Placing"`
-  terminology. Which physical edge of the EasyLevel box the arrow stands for is still
-  to be confirmed on hardware; the picture says "the arrow" until then.
-- **Given** a box physically mounted any of the other three ways
-- **When** the user selects the matching option
+- **Then** R51's direction step offers the two placements the manufacturer's manual
+  allows (#359): an arrow on the lid always points forward, and the box's **long side**
+  or its **short side** faces the front — the official app's `sensor_Placing` 1 and 2,
+  Libell's "Standard" and "Rotated 90°". (CaraTech AB's manual, French edition: "L'une
+  des flèches (peu importe laquelle) doit pointer vers l'avant", then "Montage avec le
+  côté large vers l'avant" / "Montage avec le côté vers l'avant".) Each is a picture of
+  the vehicle with the box in it, arrow forward, named under it; the choice is made by
+  matching the picture, never through the official app's `"sensor_Placing"`
+  terminology. The half and three-quarter turns (#222) put every arrow backward or
+  sideways, which the manual does not allow, so they are no longer offered.
+- **Given** the user has never picked a placement (#359)
+- **Then** the step reads "Pick the direction", unticked, and is the open step;
+  readings use "Standard" meanwhile. A stored setting from before #359 counts as picked
+  only when it is not "Standard" (the default every save wrote).
+- **Given** a "Rotated 180°" or "Rotated 270°" stored before #359
+- **Then** it is still applied to every reading (nothing changes silently), and the
+  step asks the user to pick one of the two placements.
+- **Given** the user is unsure how the box sits
+- **Then** "Not sure? Learn it by raising the front" opens the lift guide (R49, #293),
+  which learns from the box's readings before any rotation (#360). A result matching
+  one of the two placements is stored as picked; one showing the arrow backward or
+  sideways says to turn the box so an arrow points forward and try again; a mirrored
+  one says the box seems upside down or the wrong side was raised. Neither is stored.
+- **Given** a box physically mounted any of the other ways
+- **When** its rotation is applied
 - **Then** that rotation of the (x, y) pair — `(-y, x)` at 90° (the exact transform
   the official app's own `sensor_Placing: 2` applies, derived from its decompiled
   `LO0/e;->k()` placement branches), `(-x, -y)` at 180°, `(y, -x)` at 270° — is
@@ -1762,18 +1778,21 @@ and what its first step checks differ, read from its descriptor's capabilities (
 - **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded (in a neutral frame: green means done, never "open", #343); every step can be opened and run at any time — guidance,
   never a gate:
-  1. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
-     from the vehicle setting — with one button at each of its four sides. Each shows
-     the box turned so its reference side points out that way: the Xparkle box's back
-     (the screw mount), the EasyLevel box's arrow. The user taps where it points; the
-     box drawn inside the vehicle follows, and the step's title names the side ("Direction
-     set: points to the rear"). It takes effect on the next reading. For the EasyLevel
-     box the choice is R43's rotation. For the Xparkle box it is a quarter-turn axis
-     mapping, the same kind the lift guide (R49, #293) learns; "Not sure? Learn it by
-     raising the front" opens that guide instead. Which choice equals the Xparkle box's
+  1. **Direction**: for the Xparkle box, a top-down picture of the user's own vehicle —
+     motorhome or caravan, from the vehicle setting — with one button at each of its four
+     sides. Each shows the box turned so its back (the screw mount) points out that way.
+     The user taps where it points; the box drawn inside the vehicle follows, and the
+     step's title names the side ("Direction set: points to the rear"). For the
+     EasyLevel box, R43's two placements instead: two pictures of the vehicle with the
+     box in it, arrow forward, long side or short side facing the front ("Direction set:
+     short side forward"), unpicked until the user picks (#359). Either takes effect on
+     the next reading. For the Xparkle box the choice is a quarter-turn axis mapping, the
+     same kind the lift guide (R49, #293) learns; for both boxes "Not sure? Learn it by
+     raising the front" opens that guide instead (#360). Which choice equals the Xparkle box's
      unrotated output is assumed to be "back toward the front" until checked on
      hardware; the lift guide measures instead of assuming. Once a direction has been
-     learned, a "Forget the direction" link sits in this step. Picking a side, or
+     picked or learned, a "Forget the direction" link sits in this step, for both boxes
+     (#359). Picking a side, or
      finishing the lift guide, keeps the step open so the choice is seen; it closes
      only by hand (#347).
   2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and

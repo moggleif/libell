@@ -102,3 +102,40 @@ describe('learn the mounting in Libell (#293)', () => {
     expect(section.element.querySelectorAll('button')).toHaveLength(4);
   });
 });
+
+describe('a box that allows only some mappings (#360)', () => {
+  it('explains a mapping it cannot use and stores nothing', () => {
+    const options = makeOptions(
+      [
+        { pitchDeg: 0, rollDeg: 0 },
+        { pitchDeg: -3, rollDeg: 0 },
+        { pitchDeg: 0, rollDeg: -2 },
+      ],
+      { check: () => 'sensorSource.learn.err.arrow' },
+    );
+    const section = createLearnMountingSection(options);
+    button(section.element, t('sensorSource.learn.start')).click();
+    button(section.element, t('sensorSource.learn.capture.front')).click();
+    button(section.element, t('sensorSource.learn.capture.right')).click();
+
+    expect(options.saved).toEqual([]);
+    expect(section.element.textContent).toContain(t('sensorSource.learn.err.arrow'));
+  });
+
+  it('stores a mapping the check accepts', () => {
+    const options = makeOptions(
+      [
+        { pitchDeg: 0, rollDeg: 0 },
+        { pitchDeg: 3, rollDeg: 0 },
+        { pitchDeg: 0, rollDeg: 2 },
+      ],
+      { check: () => null },
+    );
+    const section = createLearnMountingSection(options);
+    button(section.element, t('sensorSource.learn.start')).click();
+    button(section.element, t('sensorSource.learn.capture.front')).click();
+    button(section.element, t('sensorSource.learn.capture.right')).click();
+
+    expect(options.saved).toEqual([{ swap: false, pitchSign: 1, rollSign: 1 }]);
+  });
+});

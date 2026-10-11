@@ -6,6 +6,11 @@ import {
   facingForAxisMapping,
   facingForEasyLevelMounting,
   FACINGS,
+  axisMappingForEasyLevelMounting,
+  EASYLEVEL_PLACEMENTS,
+  easyLevelMountingForAxisMapping,
+  easyLevelMountingForPlacement,
+  easyLevelPlacementOf,
 } from './mountingFacing';
 
 describe('picking the facing by hand (#314)', () => {
@@ -62,5 +67,37 @@ describe('picking the facing by hand (#314)', () => {
     }
     expect(facingForAxisMapping({ swap: false, pitchSign: 1, rollSign: -1 }, 'front')).toBeNull();
     expect(facingForAxisMapping(null, 'front')).toBeNull();
+  });
+});
+
+describe('the EasyLevel manual’s two placements (#359)', () => {
+  it('are the official app’s sensor_Placing 1 and 2: wide side forward, short side forward', () => {
+    expect(EASYLEVEL_PLACEMENTS).toEqual(['wide', 'short']);
+    expect(easyLevelMountingForPlacement('wide')).toBe('standard');
+    expect(easyLevelMountingForPlacement('short')).toBe('rotated90');
+  });
+
+  it('shows a placement only once it was picked, and only for those two', () => {
+    expect(easyLevelPlacementOf({ mounting: 'standard', mountingPicked: false })).toBeNull();
+    expect(easyLevelPlacementOf({ mounting: 'standard', mountingPicked: true })).toBe('wide');
+    expect(easyLevelPlacementOf({ mounting: 'rotated90', mountingPicked: true })).toBe('short');
+    // Arrow backward or sideways: not one the manual allows, so pick again.
+    expect(easyLevelPlacementOf({ mounting: 'rotated180', mountingPicked: true })).toBeNull();
+    expect(easyLevelPlacementOf({ mounting: 'rotated270', mountingPicked: true })).toBeNull();
+  });
+});
+
+describe('learning the EasyLevel placement by lifting (#360)', () => {
+  it('turns each rotation into the mapping the lift guide learns, and back', () => {
+    for (const mounting of ['standard', 'rotated90', 'rotated180', 'rotated270'] as const) {
+      expect(easyLevelMountingForAxisMapping(axisMappingForEasyLevelMounting(mounting))).toBe(
+        mounting,
+      );
+    }
+  });
+
+  it('has no rotation for a mirrored result (a box upside down)', () => {
+    expect(easyLevelMountingForAxisMapping({ swap: false, pitchSign: 1, rollSign: -1 })).toBeNull();
+    expect(easyLevelMountingForAxisMapping({ swap: true, pitchSign: 1, rollSign: 1 })).toBeNull();
   });
 });

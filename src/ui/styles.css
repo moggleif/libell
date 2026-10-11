@@ -3420,6 +3420,55 @@ body {
   fill: var(--warning);
 }
 
+.box-glyph__arrow {
+  stroke: var(--warning);
+  stroke-width: 2;
+}
+
+/* EasyLevel placement picker (#359): the manual's two placements side by
+   side, each a picture of the vehicle with the box in it, named under it. */
+.placement-picker__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.placement-picker__choice {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+}
+
+.placement-picker__picture {
+  padding: 6px 14px;
+  border: 2px solid var(--outline);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  cursor: pointer;
+}
+
+.placement-picker__picture.is-picked,
+.placement-picker__button.is-picked {
+  border-color: var(--level);
+}
+
+.placement-picker__button {
+  padding: 8px;
+  background: var(--surface-raised);
+  color: var(--on-surface);
+  border: 2px solid var(--outline);
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.placement-picker__button.is-picked {
+  font-weight: 700;
+}
+
 /* Box page (#314): header with the connection state and its one fix. */
 .box-header {
   display: flex;

@@ -202,7 +202,9 @@ export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
     installCalibration: true,
     debugBytes: true,
     reportedOrientation: false,
-    learnMounting: false,
+    // Its placement can be learned by lifting too (#360), limited to the
+    // manual's two placements (#359).
+    learnMounting: true,
     upright: false,
     zeroesItself: false,
   },
@@ -394,6 +396,9 @@ export interface EasyLevelSensor extends OrientationSensor {
    * `getGravity()`, when the connection is lost — never a stale reading
    * shown as live. */
   getStatus(): EasyLevelStatus | null;
+  /** The latest reading before the mounting rotation is applied (#360),
+   * or null whenever `getGravity()` is — for the lift guide only. */
+  getRawGravity(): GravityVector | null;
   /** The connected device's Web Bluetooth id (#130), or null before a
    * successful `start()`/`reconnect()` — the caller remembers this to make
    * a later `reconnect()` possible. */
@@ -430,6 +435,10 @@ export function createEasyLevelSensor(
 ): EasyLevelSensor {
   let state: SensorState = 'idle';
   let gravity: GravityVector | null = null;
+  // The same reading before the mounting rotation (#360): what the lift
+  // guide learns the placement from, so a rotation already stored never
+  // skews what it measures.
+  let rawGravity: GravityVector | null = null;
   let statusBytes: Uint8Array | null = null;
   let status: EasyLevelStatus | null = null;
   let connection: EasyLevelConnection | null = null;
@@ -470,6 +479,7 @@ export function createEasyLevelSensor(
     // offer reconnection instead of silently freezing on the last value.
     state = 'disconnected';
     gravity = null;
+    rawGravity = null;
     lastSampleAt = null;
     // Same "never show stale as live" rule R35 already applies to gravity
     // (#132) — a battery/temperature reading from before the drop is not
@@ -530,6 +540,7 @@ export function createEasyLevelSensor(
         // reconnect that loses it, clearing `status` back to null) takes
         // effect immediately rather than needing its own plumbing.
         const calibrated = parseAccelPacket(view, status?.calibration);
+        rawGravity = calibrated;
         gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
         lastSampleAt = now();
       });
@@ -594,6 +605,7 @@ export function createEasyLevelSensor(
     },
     getState: () => state,
     getGravity: () => gravity,
+    getRawGravity: () => rawGravity,
     getDeviceId: () => connection?.deviceId ?? null,
     getSource: (): SensorSource => 'easylevel',
     getLastSampleAt: () => lastSampleAt,
@@ -605,6 +617,7 @@ export function createEasyLevelSensor(
       connection = null;
       state = 'idle';
       gravity = null;
+      rawGravity = null;
       lastSampleAt = null;
       status = null;
     },

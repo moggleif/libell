@@ -502,6 +502,22 @@ describe('createEasyLevelSensor() startup ordering and initial-calibration gate 
     expect(rotated?.y).toBe(500);
     expect(rotated?.z).toBe(9800);
   });
+
+  it('keeps the unrotated reading too, for the lift guide to learn the placement from (#360)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitStatus, emitDisconnect } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport, () => 'rotated180');
+    await sensor.start();
+    emitStatus(statusBytes(2500, 0));
+    emitAccel(accelBytes(500, -200, 9800));
+    expect(sensor.getRawGravity()).toEqual({ x: 500, y: -200, z: 9800 });
+    expect(sensor.getGravity()).toEqual({ x: -500, y: 200, z: 9800 });
+    emitDisconnect();
+    expect(sensor.getRawGravity()).toBeNull();
+  });
 });
 
 describe('createEasyLevelSensor().reconnect() (#130)', () => {

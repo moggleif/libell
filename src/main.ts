@@ -8,6 +8,13 @@ import { showToast } from './ui/toast';
 import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
+import {
+  axisMappingForEasyLevelMounting,
+  EASYLEVEL_PLACEMENTS,
+  easyLevelMountingForAxisMapping,
+  easyLevelMountingForPlacement,
+  easyLevelPlacementOf,
+} from './domain/mountingFacing';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
 import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
@@ -365,9 +372,15 @@ function bootstrap(root: HTMLElement): void {
    * install-offset calibration right next to it on that same page already
    * behaves.
    */
-  function setEasyLevelMounting(mounting: EasyLevelMounting): void {
-    settings = withEasyLevelSettings(settings, { mounting });
+  function setEasyLevelMounting(mounting: EasyLevelMounting | null): void {
+    // Null forgets the pick (#359): back to the standard placement, and
+    // the box's page asks again.
+    settings = withEasyLevelSettings(settings, {
+      mounting: mounting ?? 'standard',
+      mountingPicked: mounting !== null,
+    });
     saveSettings(settings);
+    updateIndicators();
   }
 
   /**
@@ -460,10 +473,11 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /**
-   * The "learn the mounting" guide's wiring (#293), for the one box that
-   * offers it; undefined for every other source, so no guide is drawn.
+   * The "learn the mounting" guide's wiring (#293), for the boxes that
+   * offer it; undefined for every other source, so no guide is drawn.
    */
   function learnMountingFor(source: SensorSource): Omit<LearnMountingOptions, 'name'> | undefined {
+    if (source === 'easylevel') return learnEasyLevelPlacement();
     if (source !== 'xparkle') return undefined;
     return {
       getRawReading: () => {
@@ -478,6 +492,40 @@ function bootstrap(root: HTMLElement): void {
         saveSettings(settings);
         updateIndicators();
       },
+    };
+  }
+
+  /**
+   * The lift guide for the EasyLevel box (#360): it learns from the box's
+   * reading before any rotation, and stores the result as one of the
+   * manual's two placements (#359). A lift showing the arrow backward or
+   * sideways, or a mirrored one, is explained instead of stored.
+   */
+  function learnEasyLevelPlacement(): Omit<LearnMountingOptions, 'name'> {
+    return {
+      getRawReading: () => {
+        const box = externalSensors.getSensor('easylevel') as EasyLevelSensor | null;
+        const raw = box && box.getState() === 'granted' ? box.getRawGravity() : null;
+        if (!raw) return null;
+        const tilt = tiltFromGravity(raw, null);
+        return { pitchDeg: tilt.pitch * RAD_TO_DEG, rollDeg: tilt.roll * RAD_TO_DEG };
+      },
+      getLearnedMounting: () => {
+        const device = easyLevelSettings(settings);
+        return easyLevelPlacementOf(device)
+          ? axisMappingForEasyLevelMounting(device.mounting)
+          : null;
+      },
+      check: (mapping) => {
+        const mounting = easyLevelMountingForAxisMapping(mapping);
+        if (!mounting) return 'sensorSource.learn.err.mirrored';
+        const allowed = EASYLEVEL_PLACEMENTS.some(
+          (placement) => easyLevelMountingForPlacement(placement) === mounting,
+        );
+        return allowed ? null : 'sensorSource.learn.err.arrow';
+      },
+      setLearnedMounting: (mapping) =>
+        setEasyLevelMounting(mapping ? easyLevelMountingForAxisMapping(mapping) : null),
     };
   }
 
@@ -636,7 +684,8 @@ function bootstrap(root: HTMLElement): void {
       getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
       clearInstallCalibration: () => clearInstallOffset('easylevel'),
       getMounting: () => easyLevelSettings(settings).mounting,
-      setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
+      isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
+      setMounting: (mounting: EasyLevelMounting | null) => setEasyLevelMounting(mounting),
       onFinished(done) {
         onboardingOpen = false;
         markOnboardingSeen();
@@ -716,7 +765,8 @@ function bootstrap(root: HTMLElement): void {
     getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
     clearInstallCalibration: () => clearInstallOffset('easylevel'),
     getMounting: () => easyLevelSettings(settings).mounting,
-    setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
+    isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
+    setMounting: (mounting: EasyLevelMounting | null) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
     getVehicleType: () => settings.vehicleType,
     getActiveTargetName: () => activeTargetName(),
