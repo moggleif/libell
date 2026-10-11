@@ -511,6 +511,8 @@ function bootstrap(root: HTMLElement): void {
    * for every source rather than one device. `main.ts` keeps only the
    * wiring: which screen to build, and which indicators to refresh.
    */
+  // The source Settings last drew its Calibration tab for (#353).
+  let lastSettingsSource: ReturnType<OrientationSensor['getSource']> = 'phone';
   const externalSensors = createExternalSensorController<LibellExternalSensor>({
     phoneSensor,
     createSensor: createExternalSensor,
@@ -537,7 +539,19 @@ function bootstrap(root: HTMLElement): void {
     onLevelScreenNeeded: () => showLevelScreen(),
     // The amber calibration lamp checks whichever source is active (#131),
     // so switching source alone still has to refresh it.
-    onIndicatorsChanged: () => updateIndicators(),
+    onIndicatorsChanged: () => {
+      updateIndicators();
+      // Settings may be open under the box's own page: when the source
+      // flips (box connected or disconnected there), redraw its open tab
+      // so closing the box page shows the right calibration (#353). Only
+      // on a real change, so a silent reconnect never redraws mid-read.
+      const source = sensor().getSource();
+      if (source !== lastSettingsSource) {
+        lastSettingsSource = source;
+        if (isModern) settingsPage?.refreshOpenTab();
+        else menu?.refresh();
+      }
+    },
     onStatusChanged: () => updateSensorStatus(),
   });
 
