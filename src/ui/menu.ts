@@ -99,7 +99,7 @@ export interface MenuOptions {
   getInstallCalibrationCapturedAt(): number | null;
   clearInstallCalibration(): void;
   /**
-   * The sensor status page's live reading row (`easyLevelStatusPage.ts`) —
+   * The sensor status page's live reading row (`boxStatusPage.ts`) —
    * the same effective calibration (sensor bias + vehicle zero + active
    * target, #122) the leveling math itself uses. Unused by this
    * Classic-only menu now; kept here since this options bag is shared.
@@ -108,7 +108,7 @@ export interface MenuOptions {
   /** The active target preset's name (#122), or null for "Normal". */
   getActiveTargetName(): string | null;
   /**
-   * EasyLevel-only debug info (`easyLevelStatusPage.ts`'s "Debug info"
+   * EasyLevel-only debug info (`boxStatusPage.ts`'s "Debug info"
    * disclosure) — raw values straight off the box, for troubleshooting a
    * box that isn't behaving as expected. Unused by this Classic-only menu
    * now; kept here since this options bag is shared.

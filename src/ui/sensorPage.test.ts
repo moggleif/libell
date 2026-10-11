@@ -2,14 +2,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSensorPage } from './sensorPage';
 import type { SensorSourceOptions } from './sensorSourceSection';
-import type { EasyLevelStatusOptions } from './easyLevelStatusPage';
+import type { BoxStatusOptions } from './boxStatusPage';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-type Options = SensorSourceOptions & EasyLevelStatusOptions;
+type Options = SensorSourceOptions & BoxStatusOptions;
 
 function makeOptions(overrides: Partial<Options> = {}): Options {
   return {

@@ -357,7 +357,7 @@ function clamp(value: number, min: number, max: number): number {
  * step, so byte7 ≥ 128 would already be an unheard-of tier 8+), but this
  * matches the app's own byte-for-byte behavior rather than a plausible-
  * looking guess, for the exact "unfamiliar firmware tier" case the debug
- * page (`easyLevelStatusPage.ts`) exists to surface honestly.
+ * page (`boxStatusPage.ts`) exists to surface honestly.
  */
 export function firmwareTierFromByte(byte7: number): number {
   const signed = byte7 >= 128 ? byte7 - 256 : byte7;

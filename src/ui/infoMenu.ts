@@ -8,7 +8,7 @@
  * Diagnostics (#133, R36) used to be a fourth tab here — removed (design
  * review): its generic phone-or-EasyLevel framing didn't earn its keep.
  * Whatever EasyLevel-specific troubleshooting value it had now lives in
- * `easyLevelStatusPage.ts`'s own "Debug info" disclosure instead, reading
+ * `boxStatusPage.ts`'s own "Debug info" disclosure instead, reading
  * raw values straight off the box rather than a generic sensor snapshot.
  *
  * This page owns no shared navigation state (`standalonePage.ts`): a

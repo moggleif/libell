@@ -275,7 +275,7 @@ describe('createSensorSourceSection (#116)', () => {
   });
 
   // The sensor row's status text doubles as a button opening the deeper
-  // status page (`easyLevelStatusPage.ts`) — but only when a caller
+  // status page (`boxStatusPage.ts`) — but only when a caller
   // actually wants that wired up, and only while the box that page
   // describes is the active source (#244).
   describe('onOpenStatus (status row opens the deeper status page)', () => {

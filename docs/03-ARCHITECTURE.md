@@ -241,7 +241,7 @@ while it is — there is no separate EasyLevel hardware-bias layer yet, so
 `vehicleZeroFromReading(reading, null)` (unmodified from R24) is reused directly for
 the capture. The UI is built by `sensorSourceSection.ts` (not inside `calibrationSection.ts`) and,
 since #226, placed by `sensorPage.ts` on the sensor's own page
-(`easyLevelStatusPage.ts`'s `settingsSlot`) rather than on the External sensor list
+(`boxStatusPage.ts`'s `settingsSlot`) rather than on the External sensor list
 page — that section returns its `connectElement`/`installElement` halves separately
 precisely so each caller can place them where they belong (the onboarding wizard puts
 them on separate steps). Visible whenever EasyLevel is the active source,

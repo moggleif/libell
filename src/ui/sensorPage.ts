@@ -31,11 +31,7 @@ import {
   type SensorSourceOptions,
   type SensorSourceSection,
 } from './sensorSourceSection';
-import {
-  createEasyLevelStatusPage,
-  type EasyLevelStatusOptions,
-  type EasyLevelStatusPage,
-} from './easyLevelStatusPage';
+import { createBoxStatusPage, type BoxStatusOptions, type BoxStatusPage } from './boxStatusPage';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
@@ -68,7 +64,7 @@ export interface ExternalSensorPage extends SensorPage {
   openSource(id: string): void;
 }
 
-export type SensorPageOptions = SensorSourceOptions & EasyLevelStatusOptions;
+export type SensorPageOptions = SensorSourceOptions & BoxStatusOptions;
 
 export function createSensorPage(
   sensors: readonly ExternalSensorDescriptor[],
@@ -76,8 +72,7 @@ export function createSensorPage(
 ): ExternalSensorPage {
   // Declared before the page so its `onOpen` can close over it; filled
   // immediately below, and never read until the page is actually opened.
-  const sources: { id: string; statusPage: EasyLevelStatusPage; section: SensorSourceSection }[] =
-    [];
+  const sources: { id: string; statusPage: BoxStatusPage; section: SensorSourceSection }[] = [];
   const refreshAll = () => {
     for (const source of sources) source.section.refresh();
   };
@@ -86,7 +81,7 @@ export function createSensorPage(
 
   for (const sensor of sensors) {
     const options = optionsFor(sensor);
-    const statusPage = createEasyLevelStatusPage(options);
+    const statusPage = createBoxStatusPage(options);
     const section = createSensorSourceSection(
       options,
       () => {

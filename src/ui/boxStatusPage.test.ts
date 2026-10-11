@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
-import { createEasyLevelStatusPage, type EasyLevelStatusOptions } from './easyLevelStatusPage';
+import { createBoxStatusPage, type BoxStatusOptions } from './boxStatusPage';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevelStatusOptions {
+function makeOptions(overrides: Partial<BoxStatusOptions> = {}): BoxStatusOptions {
   return {
     sensor: EASYLEVEL_DESCRIPTOR,
     getSensorSource: () => 'phone',
@@ -24,15 +24,15 @@ function makeOptions(overrides: Partial<EasyLevelStatusOptions> = {}): EasyLevel
   };
 }
 
-describe('createEasyLevelStatusPage', () => {
+describe('createBoxStatusPage', () => {
   it('shows the phone-sensor status and "not available yet" battery/temperature while the phone is active', () => {
-    const page = createEasyLevelStatusPage(makeOptions());
+    const page = createBoxStatusPage(makeOptions());
     expect(page.element.textContent).toContain(t('box.state.notConnected'));
     expect(page.element.textContent).toContain('Not available yet');
   });
 
   it('shows real battery/temperature once EasyLevel is active and a status notification has arrived (#123)', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getHealth: () => ({
@@ -56,7 +56,7 @@ describe('createEasyLevelStatusPage', () => {
       firmwareLabel: null,
       reportedOrientation: 'rear' as const,
     };
-    const xparkle = createEasyLevelStatusPage(
+    const xparkle = createBoxStatusPage(
       makeOptions({
         sensor: XPARKLE_DESCRIPTOR,
         getSensorSource: () => 'xparkle',
@@ -67,7 +67,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('shows a distinct disconnected status once the connection is lost (#129), not the plain "connected" text', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
     expect(page.element.textContent).toContain(t('box.state.lost'));
@@ -77,7 +77,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('shows the live calibrated reading while this box is the source in use', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getCalibratedTilt: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }),
@@ -95,7 +95,7 @@ describe('createEasyLevelStatusPage', () => {
         getSensorState: () => 'disconnected' as const,
       },
     ]) {
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({ ...overrides, getCalibratedTilt: () => ({ rollDeg: 30.9, pitchDeg: 74.8 }) }),
       );
       expect(page.element.textContent).not.toContain('30.9');
@@ -104,7 +104,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('surfaces the low-battery warning below the threshold (#123), reusing the exact inline-detail wording', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getHealth: () => ({
@@ -118,7 +118,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('never shows the low-battery warning while battery is healthy', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getHealth: () => ({
@@ -135,7 +135,7 @@ describe('createEasyLevelStatusPage', () => {
   // block they cover: these are R32 behaviors that simply live on this
   // page now instead of the External sensor list page.
   it('shows no signal-strength row at all — a field that can never be populated is not displayed (#228)', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getSensorState: () => 'granted',
@@ -156,7 +156,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('still spells out the temperature for a dropped connection — not omitted on disconnect (#226)', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
     expect(page.element.textContent).toContain('Temperature: Not available yet');
@@ -164,7 +164,7 @@ describe('createEasyLevelStatusPage', () => {
 
   it('holds the low-battery warning through the hysteresis band, hiding only once clearly recovered (#123, #226)', () => {
     let battery = 15;
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getHealth: () => ({
@@ -196,7 +196,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('hosts this sensor\u2019s own settings — mounting and installation offset — via settingsSlot (#226)', () => {
-    const page = createEasyLevelStatusPage(makeOptions());
+    const page = createBoxStatusPage(makeOptions());
     // Empty until `sensorPage.ts` fills it; the slot itself is the
     // contract, and it sits above the debug disclosure.
     expect(page.settingsSlot).toBeInstanceOf(HTMLElement);
@@ -208,7 +208,7 @@ describe('createEasyLevelStatusPage', () => {
 
   it('re-reads every value on refresh() — a live battery reading updates without reopening the page', () => {
     let battery = 80;
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getHealth: () => ({
@@ -226,20 +226,20 @@ describe('createEasyLevelStatusPage', () => {
 
   describe('debug info (EasyLevel only)', () => {
     it('is hidden entirely while the phone sensor is active', () => {
-      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'phone' }));
+      const page = createBoxStatusPage(makeOptions({ getSensorSource: () => 'phone' }));
       const details = page.element.querySelector<HTMLDetailsElement>('.sensor-status__debug');
       expect(details?.hidden).toBe(true);
     });
 
     it('shows, closed by default, once EasyLevel is the active source', () => {
-      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+      const page = createBoxStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
       const details = page.element.querySelector<HTMLDetailsElement>('.sensor-status__debug');
       expect(details?.hidden).toBe(false);
       expect(details?.open).toBe(false);
     });
 
     it('shows the device id, raw accelerometer vector, firmware tier and raw status bytes as hex', () => {
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
           getEasyLevelDeviceId: () => 'device-42',
@@ -260,7 +260,7 @@ describe('createEasyLevelStatusPage', () => {
     });
 
     it('shows "not available yet" for every raw field before anything has arrived', () => {
-      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+      const page = createBoxStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
       const text = page.element.textContent ?? '';
       const notAvailableCount = (text.match(/Not available yet/g) ?? []).length;
       // Temperature, device ID, raw accelerometer, firmware tier, raw status
@@ -271,7 +271,7 @@ describe('createEasyLevelStatusPage', () => {
     it('copies a plain-text debug summary to the clipboard', async () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
           getEasyLevelDeviceId: () => 'device-42',
@@ -289,14 +289,14 @@ describe('createEasyLevelStatusPage', () => {
     });
 
     describe('connect-delay workaround (#212)', () => {
-      function checkboxAndNumberInput(page: ReturnType<typeof createEasyLevelStatusPage>) {
+      function checkboxAndNumberInput(page: ReturnType<typeof createBoxStatusPage>) {
         const checkbox = page.element.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
         const number = page.element.querySelector<HTMLInputElement>('input[type="number"]')!;
         return { checkbox, number };
       }
 
       it('reflects the stored enabled/ms values once the page is opened', () => {
-        const page = createEasyLevelStatusPage(
+        const page = createBoxStatusPage(
           makeOptions({ getEasyLevelConnectDelay: () => ({ enabled: true, ms: 750 }) }),
         );
         page.open();
@@ -307,7 +307,7 @@ describe('createEasyLevelStatusPage', () => {
       });
 
       it('disables the ms field while the toggle is off', () => {
-        const page = createEasyLevelStatusPage(
+        const page = createBoxStatusPage(
           makeOptions({ getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }) }),
         );
         page.open();
@@ -319,7 +319,7 @@ describe('createEasyLevelStatusPage', () => {
         // page is open (`sensorPage.ts`'s refreshLive()); if it also reset
         // this field from the stored value, mid-edit keystrokes would be
         // fought on the very next frame.
-        const page = createEasyLevelStatusPage(
+        const page = createBoxStatusPage(
           makeOptions({ getEasyLevelConnectDelay: () => ({ enabled: true, ms: 300 }) }),
         );
         page.open();
@@ -331,7 +331,7 @@ describe('createEasyLevelStatusPage', () => {
 
       it('commits enabled + ms together, clamped/parsed by the caller, on either control changing', () => {
         const setEasyLevelConnectDelay = vi.fn();
-        const page = createEasyLevelStatusPage(
+        const page = createBoxStatusPage(
           makeOptions({
             getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
             setEasyLevelConnectDelay,
@@ -352,7 +352,7 @@ describe('createEasyLevelStatusPage', () => {
   });
 
   it('open()/close()/isOpen() delegate to the underlying standalone page', () => {
-    const page = createEasyLevelStatusPage(makeOptions());
+    const page = createBoxStatusPage(makeOptions());
     expect(page.isOpen()).toBe(false);
     page.open();
     expect(page.isOpen()).toBe(true);
@@ -366,7 +366,7 @@ describe('createEasyLevelStatusPage', () => {
     }
 
     it('says connected with the battery, and offers no button when all is well', () => {
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
           getHealth: () => ({ batteryPercent: 62, temperatureCelsius: null, firmwareLabel: null }),
@@ -379,7 +379,7 @@ describe('createEasyLevelStatusPage', () => {
 
     it('offers Reconnect on the page itself once the connection is lost', () => {
       const connectSensor = vi.fn(() => Promise.resolve('granted' as const));
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
           getSensorState: () => 'disconnected',
@@ -393,7 +393,7 @@ describe('createEasyLevelStatusPage', () => {
     });
 
     it('offers Connect while the box is not the active source', () => {
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({ connectSensor: () => Promise.resolve('granted') }),
       );
       expect(button(page)?.hidden).toBe(false);
@@ -401,7 +401,7 @@ describe('createEasyLevelStatusPage', () => {
     });
 
     it('has no "More" — the footer below the steps hosts Disconnect, debug info stays last (#332)', () => {
-      const page = createEasyLevelStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+      const page = createBoxStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
       expect(page.element.querySelector('.box-more')).toBeNull();
       expect(page.element.textContent).not.toContain('More');
       const footer = page.element.querySelector('.box-footer');
@@ -413,7 +413,7 @@ describe('createEasyLevelStatusPage', () => {
     });
 
     it('puts the box position at the start of the live tilt line (#332)', () => {
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
           getCalibratedTilt: () => ({ pitchDeg: 0, rollDeg: 0 }),
@@ -430,7 +430,7 @@ describe('createEasyLevelStatusPage', () => {
 
   describe('silent-reconnect tip (#310)', () => {
     it('sits closed under Advanced when the browser lacks silent reconnect', () => {
-      const page = createEasyLevelStatusPage(
+      const page = createBoxStatusPage(
         makeOptions({ sensor: XPARKLE_DESCRIPTOR, offersSilentReconnectTip: () => true }),
       );
       const details = page.element.querySelector<HTMLDetailsElement>('.sensor-status__advanced');
@@ -446,15 +446,13 @@ describe('createEasyLevelStatusPage', () => {
         value: { writeText },
         configurable: true,
       });
-      const page = createEasyLevelStatusPage(makeOptions({ offersSilentReconnectTip: () => true }));
+      const page = createBoxStatusPage(makeOptions({ offersSilentReconnectTip: () => true }));
       page.element.querySelector<HTMLButtonElement>('.sensor-status__advanced button')!.click();
       expect(writeText).toHaveBeenCalledWith('chrome://flags');
     });
 
     it('is not shown when silent reconnect already works', () => {
-      const page = createEasyLevelStatusPage(
-        makeOptions({ offersSilentReconnectTip: () => false }),
-      );
+      const page = createBoxStatusPage(makeOptions({ offersSilentReconnectTip: () => false }));
       expect(page.element.querySelector('.sensor-status__advanced')).toBeNull();
     });
   });
@@ -467,7 +465,7 @@ describe('a box that rejects its password, on its own page (#367)', () => {
       if (verdict) rejected = false;
       return Promise.resolve(verdict);
     });
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         sensor: XPARKLE_DESCRIPTOR,
         getSensorSource: () => 'xparkle',
@@ -548,8 +546,8 @@ describe('the same page for every box (#375)', () => {
 
   for (const sensor of [EASYLEVEL_DESCRIPTOR, XPARKLE_DESCRIPTOR]) {
     describe(sensor.displayName, () => {
-      const active = (overrides: Partial<EasyLevelStatusOptions> = {}) =>
-        createEasyLevelStatusPage(
+      const active = (overrides: Partial<BoxStatusOptions> = {}) =>
+        createBoxStatusPage(
           makeOptions({
             sensor,
             getSensorSource: () => sensor.id,
@@ -593,7 +591,7 @@ describe('the same page for every box (#375)', () => {
   }
 
   it('gives the EasyLevel its debug disclosure: temperature, raw values and the connect delay', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({ getSensorSource: () => 'easylevel', getHealth: () => health }),
     );
     const debug = page.element.querySelector('.sensor-status__debug');
@@ -604,7 +602,7 @@ describe('the same page for every box (#375)', () => {
   });
 
   it('gives the Xparkle no debug disclosure, temperature or connect delay — it has none', () => {
-    const page = createEasyLevelStatusPage(
+    const page = createBoxStatusPage(
       makeOptions({
         sensor: XPARKLE_DESCRIPTOR,
         getSensorSource: () => 'xparkle',
