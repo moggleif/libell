@@ -14,9 +14,9 @@ function makeOptions(overrides: Partial<BoxStatusOptions> = {}): BoxStatusOption
     getSensorState: () => 'granted',
     getHealth: () => null,
     getCalibratedTilt: () => null,
-    getEasyLevelDeviceId: () => null,
-    getEasyLevelLastSampleAt: () => null,
-    getEasyLevelRawAccel: () => null,
+    getDeviceId: () => null,
+    getLastSampleAt: () => null,
+    getRawAccel: () => null,
     getEasyLevelStatusBytes: () => null,
     getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
     setEasyLevelConnectDelay: () => {},
@@ -242,8 +242,8 @@ describe('createBoxStatusPage', () => {
       const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
-          getEasyLevelDeviceId: () => 'device-42',
-          getEasyLevelRawAccel: () => ({ x: 120, y: -45, z: 980 }),
+          getDeviceId: () => 'device-42',
+          getRawAccel: () => ({ x: 120, y: -45, z: 980 }),
           getHealth: () => ({
             batteryPercent: 80,
             temperatureCelsius: 20,
@@ -274,7 +274,7 @@ describe('createBoxStatusPage', () => {
       const page = createBoxStatusPage(
         makeOptions({
           getSensorSource: () => 'easylevel',
-          getEasyLevelDeviceId: () => 'device-42',
+          getDeviceId: () => 'device-42',
           getEasyLevelStatusBytes: () => new Uint8Array([1, 2]),
         }),
       );

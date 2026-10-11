@@ -25,7 +25,6 @@
  */
 import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
-import type { GravityVector } from '../domain/leveling';
 import type { ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
@@ -90,7 +89,7 @@ export interface MenuOptions {
   disconnectSensor(): void;
   getHealth(): ExternalSensorHealth | null;
   /**
-   * The EasyLevel box's installation offset (#131, ADR 0014). Unused by
+   * The box's installation offset (#131, ADR 0014). Unused by
    * this Classic-only menu now; kept here since this options bag is
    * shared with `sensorPage.ts`.
    */
@@ -107,16 +106,6 @@ export interface MenuOptions {
   getCalibratedTilt(): Calibration | null;
   /** The active target preset's name (#122), or null for "Normal". */
   getActiveTargetName(): string | null;
-  /**
-   * EasyLevel-only debug info (`boxStatusPage.ts`'s "Debug info"
-   * disclosure) — raw values straight off the box, for troubleshooting a
-   * box that isn't behaving as expected. Unused by this Classic-only menu
-   * now; kept here since this options bag is shared.
-   */
-  getEasyLevelDeviceId(): string | null;
-  getEasyLevelLastSampleAt(): number | null;
-  getEasyLevelRawAccel(): GravityVector | null;
-  getEasyLevelStatusBytes(): Uint8Array | null;
   /** Live soundOnLevel/soundGuidance (#161) — the bottom bar's mute
    * toggle can change these outside this form, so the Settings page
    * resyncs from here every time it (re)opens. */

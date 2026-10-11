@@ -1,6 +1,6 @@
 /**
  * Sensor unavailable fallback prompt (#134) — the interactive recovery UI
- * for when the active EasyLevel connection cannot be reached: never a
+ * for when the active box connection cannot be reached: never a
  * frozen or ambiguous screen, always an explicit choice between Retry and
  * "Use phone sensor" (the issue's own example wording). This is the
  * actionable form of the plain "waiting" hint `main.ts`'s frame loop

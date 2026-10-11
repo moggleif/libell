@@ -1,8 +1,8 @@
 /**
- * Sensor source section (#116, ADR 0014): the "Connect EasyLevel sensor"
- * controls and the sensor row that opens the box's own page — the only
- * working `sensorSource` choice beyond the phone's built-in sensor. Only
- * ever built when EasyLevel is available at all (`main.ts` checks
+ * Sensor source section (#116, ADR 0014): one box's connect controls and
+ * the sensor row that opens the box's own page — the `sensorSource`
+ * choices beyond the phone's built-in sensor. Only ever built when an
+ * external box is available at all (`main.ts` checks
  * `hasAvailableExternalSensor()` before creating the pages that embed this
  * section) — never a silent failure on Safari/iOS, per #116's acceptance
  * criteria.
@@ -32,9 +32,9 @@
  * wizard-only rebuild.
  *
  * #131's installation offset is here rather than inside the Calibration
- * menu section because it only makes sense once EasyLevel is (or was)
+ * menu section because it only makes sense once a box is (or was)
  * connected: the same "vehicle zero" concept R24 gives the phone (ADR
- * 0010), generalized to this external source per ADR 0014's three-way
+ * 0010), generalized to an external source per ADR 0014's three-way
  * calibration split.
  *
  * The sensor row's status text doubles as a button, opening
@@ -72,8 +72,8 @@ export interface SensorSourceOptions {
   getSensorSource(): SensorSource;
   /**
    * The active sensor's current state (#129) — in particular
-   * `'disconnected'`, reached when a previously-granted EasyLevel
-   * connection drops while it stays the selected source (see
+   * `'disconnected'`, reached when a previously-granted box connection
+   * drops while it stays the selected source (see, for example,
    * `easyLevelSensor.ts`'s `onGattDisconnected`).
    */
   getSensorState(): SensorState;

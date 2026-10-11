@@ -142,7 +142,7 @@ export const MESSAGES = {
     // permanently-mounted external sensor — the ">15° looks wrong",
     // "age", and "Check" copy is intentionally reused from
     // `calibration.vehicle.*` / `calibration.*` rather than re-invented.
-    // Shown only once EasyLevel is connected: an install offset means
+    // Shown only once a box is connected: an install offset means
     // nothing until there is a live reading to capture.
     'sensorSource.install.now': 'Zero now',
     'sensorSource.install.clear': 'Forget the zero',
@@ -183,8 +183,8 @@ export const MESSAGES = {
     // itself doesn't have to leave this page to see it move.
     'sensorStatus.title': '{name} sensor',
     'sensorStatus.reading': 'Tilt now: {value}',
-    // Debug info (EasyLevel only — hidden while the phone's own sensor is
-    // active): raw values straight off the box, for troubleshooting a box
+    // Debug info (only for a box with the `debugBytes` capability, hidden
+    // while the phone's own sensor is active): raw values straight off the box, for troubleshooting a box
     // that isn't behaving as expected — not everyday reading material.
     'sensorStatus.debug': 'Debug info',
     'sensorStatus.debug.intro':

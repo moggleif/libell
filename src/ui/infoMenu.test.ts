@@ -42,10 +42,6 @@ function makeMenuOptions(): MenuOptions {
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
     getHealth: () => null,
-    getEasyLevelDeviceId: () => null,
-    getEasyLevelLastSampleAt: () => null,
-    getEasyLevelRawAccel: () => null,
-    getEasyLevelStatusBytes: () => null,
     getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false }),
   };
 }
