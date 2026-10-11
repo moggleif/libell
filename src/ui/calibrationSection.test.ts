@@ -48,7 +48,7 @@ describe('calibration section (#83)', () => {
   it('sets the current position as level via the host callback', () => {
     const calibrateVehicle = vi.fn<() => string | null>(() => null);
     const section = createCalibrationSection(makeOptions({ calibrateVehicle }));
-    buttonByText(section.element, 'Set current position as level').click();
+    buttonByText(section.element, 'Zero now').click();
     expect(calibrateVehicle).toHaveBeenCalledTimes(1);
   });
 
@@ -56,9 +56,9 @@ describe('calibration section (#83)', () => {
     const section = createCalibrationSection(
       makeOptions({ calibrateVehicle: () => 'not level enough' }),
     );
-    const clear = buttonByText(section.element, 'Clear vehicle zero');
+    const clear = buttonByText(section.element, 'Forget the zero');
     expect(clear.disabled).toBe(true);
-    buttonByText(section.element, 'Set current position as level').click();
+    buttonByText(section.element, 'Zero now').click();
     expect(
       [...section.element.querySelectorAll('.menu__text--status')].some(
         (s) => s.textContent === 'not level enough',
@@ -99,7 +99,7 @@ describe('calibration section (#83)', () => {
         },
       }),
     );
-    const clear = buttonByText(section.element, 'Clear vehicle zero');
+    const clear = buttonByText(section.element, 'Forget the zero');
     expect(clear.disabled).toBe(false);
     clear.click();
     expect(clear.disabled).toBe(true);
@@ -209,10 +209,10 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     expect(checkCalibration).toHaveBeenCalledTimes(1);
     expect(checkVehicleCalibration).not.toHaveBeenCalled();
 
-    buttonByText(section.element, 'Set current position as level').click();
+    buttonByText(section.element, 'Zero now').click();
     expect(calibrateVehicle).toHaveBeenCalledTimes(1);
 
-    buttonByText(section.element, 'Clear vehicle zero').click();
+    buttonByText(section.element, 'Forget the zero').click();
     expect(clearVehicleCalibration).toHaveBeenCalledTimes(1);
 
     // The flip flow (#50): first click captures, second click (after a
@@ -226,7 +226,7 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     for (const appearance of ['classic', 'modern'] as const) {
       const section = createCalibrationSection(makeOptions({ appearance }));
       const calibrateBtn = buttonByText(section.element, 'Calibrate now');
-      const vehicleBtn = buttonByText(section.element, 'Set current position as level');
+      const vehicleBtn = buttonByText(section.element, 'Zero now');
       const flipBtn = buttonByText(section.element, 'Calibrate by flipping');
       expect(calibrateBtn.className).not.toContain('menu__action--secondary');
       expect(vehicleBtn.className).not.toContain('menu__action--secondary');
@@ -291,7 +291,7 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
   it('offers it, named, only while an external sensor is active', () => {
     const { options, setPhone } = externalOptions();
     const section = createCalibrationSection(options);
-    expect(section.element.textContent).toContain('Calibrate Xparkle RVS01');
+    expect(section.element.textContent).toContain('Zero Xparkle RVS01');
     const button = buttonByText(section.element, 'Zero now');
     expect(button.closest('[hidden]')).toBeNull();
     expect(button.disabled).toBe(false);
@@ -301,7 +301,7 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     expect(button.closest('[hidden]')).not.toBeNull();
   });
 
-  it('waits for a box that zeroes itself, then says it is calibrated', async () => {
+  it('waits for a box that zeroes itself, then says it is zeroed', async () => {
     let answer: (error: string | null) => void = () => {};
     const calibrateExternalSensor = vi.fn(
       () =>
@@ -315,13 +315,13 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     button.click();
     expect(calibrateExternalSensor).toHaveBeenCalledOnce();
     expect(button.disabled).toBe(true);
-    expect(section.element.textContent).toContain('Calibrating');
+    expect(section.element.textContent).toContain('Zeroing');
 
     answer(null);
     await Promise.resolve();
     await Promise.resolve();
     expect(button.disabled).toBe(false);
-    expect(section.element.textContent).toContain('Xparkle RVS01 is calibrated');
+    expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
   });
 
   it('links to the box’s own page for the rest of its setup (#316)', () => {
@@ -341,7 +341,7 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     const section = createCalibrationSection(options);
     buttonByText(section.element, 'Zero now').click();
     expect(section.element.textContent).toContain('is not connected');
-    expect(section.element.textContent).not.toContain('is calibrated');
+    expect(section.element.textContent).not.toContain('is zeroed');
   });
 });
 

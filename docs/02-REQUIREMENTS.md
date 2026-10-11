@@ -235,12 +235,19 @@ URL and must keep working with no signal.
   - Step 1 says to lay the phone on something flat, with **Calibrate now**, and a quiet
     link "No flat surface? Flip the phone" that reveals the flip calibration.
   - Step 2 says to level the vehicle with a spirit level and put the phone in its usual
-    spot, with **Set as level**.
+    spot, with **Zero now**.
   - Check and Clear sit under a collapsed **More** in each step. There is no "Two
     layers" intro.
   - While an external box is active the steps are hidden and the box's own calibration
     shows in their place, as before (#316). The first-run wizard keeps its own
     one-calibration-per-step cards.
+
+- **Given** any text that names these steps, in any language (#349)
+- **Then** "calibrate" is only ever the phone's own sensor (step 1, on a flat surface);
+  setting the vehicle's level position is always "zero" (sv _nollställ_), with the phone
+  and with a box alike. The calibration lamp reads "⚠ Calibrate" while the phone is the
+  source and "⚠ Zero" while a box is (its title names the box). The Settings tab keeps
+  the name Calibration.
 
 ## R12 — Feedback without a backend
 
@@ -569,7 +576,7 @@ URL and must keep working with no signal.
   the phone lies (a table tilting 0.4° in a level vehicle reads as a tilted vehicle)
 - **When** the vehicle stands verifiably level (spirit level, or after leveling with
   the ramps) and the phone lies in its normal place
-- **Then** "Set current position as level" in the Calibration section stores that
+- **Then** "Zero now" in the Calibration section stores that
   placement's roll/pitch as the vehicle zero, and every reading is corrected by the
   **sum** of the sensor offset and the vehicle zero — back in its spot, the phone
   shows level even on a tilting table.

@@ -44,8 +44,9 @@ export const MESSAGES = {
     'lamp.setup': '⚠ Setup',
     'lamp.setup.title': 'Vehicle settings have never been saved — tap to open Settings',
     'lamp.calibrate': '⚠ Calibrate',
+    'lamp.zero': '⚠ Zero',
     'lamp.calibrate.title': 'The phone is not calibrated — tap to open Calibration',
-    'lamp.calibrate.title.sensor': 'The sensor is not calibrated — tap to open Calibration',
+    'lamp.calibrate.title.sensor': 'The box is not zeroed — tap to open the box',
 
     // Main-screen external-sensor indicator (#129): shown only while an
     // external source (today: EasyLevel) is active — never in phone mode.
@@ -142,8 +143,8 @@ export const MESSAGES = {
     // nothing until there is a live reading to capture.
     'sensorSource.install.now': 'Zero now',
     'sensorSource.install.clear': 'Forget the zero',
-    'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
-    'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
+    'sensorSource.install.status': 'Zero: side/side {roll}°, front/back {pitch}°.',
+    'sensorSource.install.status.none': 'Not zeroed yet — the box measures as it sits.',
 
     // Learn the mounting (#293): Libell watches the box while the user
     // lifts the front, then the right side — no vendor app needed.
@@ -378,10 +379,10 @@ export const MESSAGES = {
     'calibration.step.phone.done': 'Phone calibrated',
     'calibration.step.phone.hint': 'Lay the phone on something flat.',
     'calibration.step.flipLink': 'No flat surface? Flip the phone',
-    'calibration.step.vehicle.done': 'Vehicle zero set',
+    'calibration.step.vehicle.done': 'Zeroed',
     'calibration.step.vehicle.hint':
       'Level the vehicle with a spirit level and put the phone in its usual spot.',
-    'calibration.step.vehicle.now': 'Set as level',
+    'calibration.step.vehicle.now': 'Zero now',
     'calibration.clear': 'Clear calibration',
     'calibration.err.notRunning':
       'The tilt sensor is not running yet — tap Start on the main screen first.',
@@ -391,17 +392,14 @@ export const MESSAGES = {
     // — they used to name what each card was about ("Phone sensor",
     // "Vehicle zero position") without naming the shared action.
     'calibration.sensor.h': 'Calibrate the phone',
-    'calibration.vehicle.h': 'Calibrate the vehicle zero',
+    'calibration.vehicle.h': 'Zero the vehicle',
     // Design review: the two-layer overview used to live only on the Help
     // page ('help.calibration.t' below) — moved to the top of the actual
     // Kalibrering tab, where it is actionable, not just informational.
     'calibration.vehicle.intro':
-      'The sensor calibration zeroes the phone — not the spot where it lies. If the ' +
-      'table tilts slightly, the app would always show that tilt. Level the vehicle ' +
-      'verifiably once (spirit level, or after leveling with your ramps), put the ' +
-      'phone in its normal place, and set that as level.',
-    'calibration.vehicle.now': 'Set current position as level',
-    'calibration.vehicle.clear': 'Clear vehicle zero',
+      'Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero.',
+    'calibration.vehicle.now': 'Zero now',
+    'calibration.vehicle.clear': 'Forget the zero',
     'calibration.vehicle.status': 'Vehicle zero: side/side {roll}°, front/back {pitch}°.',
     'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
     'calibration.vehicle.err.notFlat':
@@ -471,12 +469,12 @@ export const MESSAGES = {
       'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.',
     'help.ramps.t':
       'Pick your ramps or type in the step heights. Libell puts them where they help most.',
-    'help.calibration.h': 'Calibration',
+    'help.calibration.h': 'Calibrate and zero',
     'help.calibration.t':
-      'Lay the phone on a flat surface and tap Calibrate now. You do it once.\n' +
-      'Is the phone’s spot a little crooked? Set a zero position when the vehicle is level.\n' +
-      'The ⚠ Calibrate lamp stays on until it is done.\n' +
-      'With a sensor box, this is done on the box’s page instead.',
+      'Calibrate the phone once: lay it on a flat surface and tap Calibrate now.\n' +
+      'Then zero when the vehicle is level, with the phone in its usual place.\n' +
+      'With a sensor box you zero on the box’s page. It needs no calibration.\n' +
+      'The ⚠ Calibrate or ⚠ Zero lamp stays on until it is done.',
     'help.sensor.h': 'Sensor box',
     'help.sensor.t':
       'A box in the vehicle can measure instead of the phone.\n' +
@@ -537,14 +535,13 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'The box looks upside down',
     'pose.sensorNotUpright': 'The box is lying down',
     'pose.sensorHintUpright': 'It only measures right standing up.',
-    'calibration.external.h': 'Calibrate {name}',
-    'calibration.external.intro':
-      "Level the vehicle verifiably once (spirit level, or after leveling with your ramps), then set the sensor's current reading as level.",
-    'calibration.external.working': 'Calibrating…',
-    'calibration.external.done': '{name} is calibrated: this position now counts as level.',
+    'calibration.external.h': 'Zero {name}',
+    'calibration.external.intro': 'Level the vehicle once with a spirit level, then zero.',
+    'calibration.external.working': 'Zeroing…',
+    'calibration.external.done': '{name} is zeroed: this position now counts as level.',
     'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',
     'calibration.external.err.failed':
-      'Could not calibrate {name}. Nothing was changed. Check the connection and try again.',
+      'Could not zero {name}. Nothing was changed. Check the connection and try again.',
     'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
 
     'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
@@ -630,8 +627,9 @@ export const MESSAGES = {
     'lamp.setup.title':
       'Fordonsinställningarna har aldrig sparats — tryck för att öppna Inställningar',
     'lamp.calibrate': '⚠ Kalibrera',
+    'lamp.zero': '⚠ Nollställ',
     'lamp.calibrate.title': 'Telefonen är inte kalibrerad — tryck för att öppna Kalibrering',
-    'lamp.calibrate.title.sensor': 'Sensorn är inte kalibrerad — tryck för att öppna Kalibrering',
+    'lamp.calibrate.title.sensor': 'Boxen är inte nollställd — tryck för att öppna boxen',
 
     'menu.title': 'Meny',
     'menu.close': 'Stäng menyn',
@@ -679,9 +677,8 @@ export const MESSAGES = {
     // monterad extern sensor.
     'sensorSource.install.now': 'Nollställ nu',
     'sensorSource.install.clear': 'Glöm nolläget',
-    'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
-    'sensorSource.install.status.none':
-      'Inget installationsoffset — den råa avläsningen räknas som plan.',
+    'sensorSource.install.status': 'Nolläge: sidled {roll}°, längsled {pitch}°.',
+    'sensorSource.install.status.none': 'Inget nolläge ännu — boxen mäter som den sitter.',
 
     // Lär in monteringen (#293): Libell följer boxen medan användaren
     // höjer fronten och sedan höger sida — ingen tillverkarapp behövs.
@@ -860,24 +857,21 @@ export const MESSAGES = {
     'calibration.step.phone.done': 'Telefonen kalibrerad',
     'calibration.step.phone.hint': 'Lägg telefonen på något plant.',
     'calibration.step.flipLink': 'Inget plant underlag? Vänd telefonen',
-    'calibration.step.vehicle.done': 'Nolläget satt',
+    'calibration.step.vehicle.done': 'Nollställd',
     'calibration.step.vehicle.hint':
       'Ställ fordonet plant med ett vattenpass och lägg telefonen på sin vanliga plats.',
-    'calibration.step.vehicle.now': 'Sätt som plant',
+    'calibration.step.vehicle.now': 'Nollställ nu',
     'calibration.clear': 'Rensa kalibrering',
     'calibration.err.notRunning':
       'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
     'calibration.err.notFlat':
       'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
     'calibration.sensor.h': 'Kalibrera telefonen',
-    'calibration.vehicle.h': 'Kalibrera fordonets nolläge',
+    'calibration.vehicle.h': 'Nollställ fordonet',
     'calibration.vehicle.intro':
-      'Sensorkalibreringen nollar telefonen — inte platsen där den ligger. Lutar ' +
-      'bordet lite visar appen alltid den lutningen. Ställ fordonet verifierat ' +
-      'plant en gång (vattenpass, eller efter nivellering med ramperna), lägg ' +
-      'telefonen på sin vanliga plats och sätt det som plant.',
-    'calibration.vehicle.now': 'Sätt nuvarande läge som plant',
-    'calibration.vehicle.clear': 'Rensa nolläget',
+      'Kalibreringen gäller telefonen, inte platsen där den ligger. Lutar bordet lite visar appen den lutningen. Ställ fordonet plant en gång med ett vattenpass, lägg telefonen på sin vanliga plats och nollställ.',
+    'calibration.vehicle.now': 'Nollställ nu',
+    'calibration.vehicle.clear': 'Glöm nolläget',
     'calibration.vehicle.status': 'Fordonets nolläge: sidled {roll}°, längsled {pitch}°.',
     'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
     'calibration.vehicle.err.notFlat':
@@ -943,12 +937,12 @@ export const MESSAGES = {
       'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.',
     'help.ramps.t':
       'Välj dina klossar eller skriv in stegens höjder. Libell lägger dem där de gör mest nytta.',
-    'help.calibration.h': 'Kalibrering',
+    'help.calibration.h': 'Kalibrera och nollställ',
     'help.calibration.t':
-      'Lägg telefonen på en plan yta och tryck Kalibrera nu. Det görs en gång.\n' +
-      'Ligger telefonens plats lite snett? Sätt ett nolläge när fordonet står i våg.\n' +
-      'Lampan ⚠ Kalibrera lyser tills det är gjort.\n' +
-      'Med en sensorbox görs det i stället på boxens sida.',
+      'Kalibrera telefonen en gång: lägg den på en plan yta och tryck Kalibrera nu.\n' +
+      'Nollställ sedan när fordonet står i våg, med telefonen på sin vanliga plats.\n' +
+      'Med en sensorbox nollställer du på boxens sida. Den behöver ingen kalibrering.\n' +
+      'Lampan ⚠ Kalibrera eller ⚠ Nollställ lyser tills det är gjort.',
     'help.sensor.h': 'Sensorbox',
     'help.sensor.t':
       'En box i fordonet kan mäta i stället för telefonen.\n' +
@@ -1005,14 +999,14 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Boxen verkar sitta upp och ner',
     'pose.sensorNotUpright': 'Boxen ligger ner',
     'pose.sensorHintUpright': 'Den mäter bara rätt stående.',
-    'calibration.external.h': 'Kalibrera {name}',
+    'calibration.external.h': 'Nollställ {name}',
     'calibration.external.intro':
-      'Ställ fordonet verifierat plant en gång (vattenpass, eller efter nivellering med ramperna) och sätt sedan sensorns aktuella avläsning som plan.',
-    'calibration.external.working': 'Kalibrerar…',
-    'calibration.external.done': '{name} är kalibrerad: det här läget räknas nu som plant.',
+      'Ställ fordonet plant en gång med ett vattenpass och nollställ sedan.',
+    'calibration.external.working': 'Nollställer…',
+    'calibration.external.done': '{name} är nollställd: det här läget räknas nu som plant.',
     'calibration.external.err.notConnected': '{name} är inte ansluten. Anslut den och försök igen.',
     'calibration.external.err.failed':
-      'Kunde inte kalibrera {name}. Inget ändrades. Kontrollera anslutningen och försök igen.',
+      'Kunde inte nollställa {name}. Inget ändrades. Kontrollera anslutningen och försök igen.',
     'pose.portrait': 'Vänd telefonen på höjden (porträtt) — ovansidan ska peka framåt',
 
     'stale.dataUnavailable':
@@ -1085,9 +1079,10 @@ export const MESSAGES = {
     'lamp.setup.title':
       'Les réglages du véhicule n’ont jamais été enregistrés — touchez pour ouvrir les Réglages',
     'lamp.calibrate': '⚠ Étalonner',
+    'lamp.zero': '⚠ Mettre à zéro',
     'lamp.calibrate.title': 'Le téléphone n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
     'lamp.calibrate.title.sensor':
-      'Le capteur n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
+      'Le boîtier n’est pas mis à zéro — touchez pour ouvrir le boîtier',
 
     'sensorStatus.connected': 'Capteur externe connecté',
     'sensorStatus.disconnected': 'Connexion au capteur externe perdue — touchez pour les détails',
@@ -1135,10 +1130,9 @@ export const MESSAGES = {
 
     'sensorSource.install.now': 'Mettre à zéro',
     'sensorSource.install.clear': 'Oublier le zéro',
-    'sensorSource.install.status':
-      'Décalage d’installation : latéral {roll}°, longitudinal {pitch}°.',
+    'sensorSource.install.status': 'Zéro : latéral {roll}°, longitudinal {pitch}°.',
     'sensorSource.install.status.none':
-      'Aucun décalage d’installation — la lecture brute compte comme le niveau.',
+      'Pas encore mis à zéro — le boîtier mesure tel qu’il est posé.',
 
     'sensorSource.learn.h': 'Apprendre le montage',
     'sensorSource.learn.intro':
@@ -1327,10 +1321,10 @@ export const MESSAGES = {
     'calibration.step.phone.done': 'Téléphone étalonné',
     'calibration.step.phone.hint': 'Posez le téléphone sur une surface plane.',
     'calibration.step.flipLink': 'Pas de surface plane ? Retournez le téléphone',
-    'calibration.step.vehicle.done': 'Zéro du véhicule défini',
+    'calibration.step.vehicle.done': 'Mis à zéro',
     'calibration.step.vehicle.hint':
       'Mettez le véhicule de niveau avec un niveau à bulle et posez le téléphone à sa place habituelle.',
-    'calibration.step.vehicle.now': 'Définir comme niveau',
+    'calibration.step.vehicle.now': 'Mettre à zéro',
     'calibration.clear': 'Effacer l’étalonnage',
     'calibration.err.notRunning':
       'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
@@ -1338,14 +1332,11 @@ export const MESSAGES = {
     'calibration.err.notFlat':
       'Le téléphone ne semble pas à plat — posez-le sur une surface de niveau et réessayez.',
     'calibration.sensor.h': 'Étalonner le téléphone',
-    'calibration.vehicle.h': 'Étalonner le zéro du véhicule',
+    'calibration.vehicle.h': 'Mettre le véhicule à zéro',
     'calibration.vehicle.intro':
-      'L’étalonnage du capteur met le téléphone à zéro — pas l’endroit où il repose. Si la ' +
-      'table penche un peu, l’application afficherait toujours cette inclinaison. Mettez le ' +
-      'véhicule de niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé ' +
-      'avec vos rampes), posez le téléphone à sa place habituelle et définissez cela comme le niveau.',
-    'calibration.vehicle.now': 'Définir la position actuelle comme de niveau',
-    'calibration.vehicle.clear': 'Effacer le zéro du véhicule',
+      'L’étalonnage concerne le téléphone, pas l’endroit où il repose. Si la table penche un peu, l’application affiche cette inclinaison. Mettez le véhicule de niveau une fois avec un niveau à bulle, posez le téléphone à sa place habituelle et mettez à zéro.',
+    'calibration.vehicle.now': 'Mettre à zéro',
+    'calibration.vehicle.clear': 'Oublier le zéro',
     'calibration.vehicle.status': 'Zéro du véhicule : latéral {roll}°, longitudinal {pitch}°.',
     'calibration.vehicle.status.none':
       'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
@@ -1408,12 +1399,12 @@ export const MESSAGES = {
       'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.',
     'help.ramps.t':
       'Choisissez vos rampes ou saisissez les hauteurs des paliers. Libell les place là où elles servent le plus.',
-    'help.calibration.h': 'Étalonnage',
+    'help.calibration.h': 'Étalonner et mettre à zéro',
     'help.calibration.t':
-      'Posez le téléphone sur une surface plane et touchez Étalonner maintenant. Cela se fait une fois.\n' +
-      'L’emplacement du téléphone est un peu de travers ? Définissez une position zéro quand le véhicule est de niveau.\n' +
-      'Le voyant ⚠ Étalonner reste allumé tant que ce n’est pas fait.\n' +
-      'Avec un boîtier capteur, cela se fait plutôt sur la page du boîtier.',
+      'Étalonnez le téléphone une fois : posez-le sur une surface plane et touchez Étalonner maintenant.\n' +
+      'Mettez ensuite à zéro quand le véhicule est de niveau, le téléphone à sa place habituelle.\n' +
+      'Avec un boîtier capteur, la mise à zéro se fait sur la page du boîtier. Il n’a pas besoin d’étalonnage.\n' +
+      'Le voyant ⚠ Étalonner ou ⚠ Mettre à zéro reste allumé tant que ce n’est pas fait.',
     'help.sensor.h': 'Boîtier capteur',
     'help.sensor.t':
       'Un boîtier dans le véhicule peut mesurer à la place du téléphone.\n' +
@@ -1473,16 +1464,16 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Le boîtier semble à l’envers',
     'pose.sensorNotUpright': 'Le boîtier est couché',
     'pose.sensorHintUpright': 'Il ne mesure correctement que debout.',
-    'calibration.external.h': 'Étalonner {name}',
+    'calibration.external.h': 'Mettre {name} à zéro',
     'calibration.external.intro':
-      'Mettez le véhicule de niveau de façon vérifiable une fois (niveau à bulle, ou après avoir calé avec vos cales), puis définissez la lecture actuelle du capteur comme le niveau.',
-    'calibration.external.working': 'Étalonnage…',
+      'Mettez le véhicule de niveau une fois avec un niveau à bulle, puis mettez à zéro.',
+    'calibration.external.working': 'Mise à zéro…',
     'calibration.external.done':
-      '{name} est étalonné : cette position compte désormais comme le niveau.',
+      '{name} est mis à zéro : cette position compte désormais comme le niveau.',
     'calibration.external.err.notConnected':
       '{name} n’est pas connecté. Connectez-le et réessayez.',
     'calibration.external.err.failed':
-      'Impossible d’étalonner {name}. Rien n’a été modifié. Vérifiez la connexion et réessayez.',
+      'Impossible de mettre {name} à zéro. Rien n’a été modifié. Vérifiez la connexion et réessayez.',
     'pose.portrait':
       'Tournez le téléphone à la verticale (portrait) — le bord supérieur doit pointer vers l’avant',
 
@@ -1559,8 +1550,9 @@ export const MESSAGES = {
     'lamp.setup': '⚠ Ajustes',
     'lamp.setup.title': 'Los ajustes del vehículo nunca se han guardado: toca para abrir Ajustes',
     'lamp.calibrate': '⚠ Calibrar',
+    'lamp.zero': '⚠ Poner a cero',
     'lamp.calibrate.title': 'El móvil no está calibrado: toca para abrir Calibración',
-    'lamp.calibrate.title.sensor': 'El sensor no está calibrado: toca para abrir Calibración',
+    'lamp.calibrate.title.sensor': 'La caja no está puesta a cero: toca para abrir la caja',
 
     'sensorStatus.connected': 'Sensor externo conectado',
     'sensorStatus.disconnected':
@@ -1609,10 +1601,8 @@ export const MESSAGES = {
 
     'sensorSource.install.now': 'Poner a cero',
     'sensorSource.install.clear': 'Olvidar el cero',
-    'sensorSource.install.status':
-      'Desfase de instalación: lado/lado {roll}°, delante/detrás {pitch}°.',
-    'sensorSource.install.status.none':
-      'Sin desfase de instalación: la lectura en bruto cuenta como nivel.',
+    'sensorSource.install.status': 'Cero: lado/lado {roll}°, delante/detrás {pitch}°.',
+    'sensorSource.install.status.none': 'Aún sin poner a cero: la caja mide tal como está montada.',
 
     'sensorSource.learn.h': 'Aprender el montaje',
     'sensorSource.learn.intro':
@@ -1796,24 +1786,21 @@ export const MESSAGES = {
     'calibration.step.phone.done': 'Teléfono calibrado',
     'calibration.step.phone.hint': 'Deja el teléfono sobre algo plano.',
     'calibration.step.flipLink': '¿Nada plano? Gira el teléfono',
-    'calibration.step.vehicle.done': 'Cero del vehículo fijado',
+    'calibration.step.vehicle.done': 'Puesto a cero',
     'calibration.step.vehicle.hint':
       'Nivela el vehículo con un nivel de burbuja y pon el teléfono en su sitio habitual.',
-    'calibration.step.vehicle.now': 'Fijar como nivelado',
+    'calibration.step.vehicle.now': 'Poner a cero',
     'calibration.clear': 'Borrar la calibración',
     'calibration.err.notRunning':
       'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
     'calibration.err.notFlat':
       'El móvil no parece estar plano: ponlo sobre una superficie nivelada e inténtalo de nuevo.',
     'calibration.sensor.h': 'Calibrar el móvil',
-    'calibration.vehicle.h': 'Calibrar el cero del vehículo',
+    'calibration.vehicle.h': 'Poner el vehículo a cero',
     'calibration.vehicle.intro':
-      'La calibración del sensor pone a cero el móvil, no el sitio donde está apoyado. Si la ' +
-      'mesa se inclina un poco, la app mostraría siempre esa inclinación. Nivela el vehículo ' +
-      'de forma verificable una vez (con un nivel de burbuja, o después de nivelar con tus ' +
-      'rampas), pon el móvil en su sitio habitual y fija eso como nivel.',
-    'calibration.vehicle.now': 'Fijar la posición actual como nivelada',
-    'calibration.vehicle.clear': 'Borrar el cero del vehículo',
+      'La calibración es del móvil, no del sitio donde está apoyado. Si la mesa se inclina un poco, la app muestra esa inclinación. Nivela el vehículo una vez con un nivel de burbuja, pon el móvil en su sitio habitual y ponlo a cero.',
+    'calibration.vehicle.now': 'Poner a cero',
+    'calibration.vehicle.clear': 'Olvidar el cero',
     'calibration.vehicle.status': 'Cero del vehículo: lado/lado {roll}°, delante/detrás {pitch}°.',
     'calibration.vehicle.status.none':
       'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
@@ -1877,12 +1864,12 @@ export const MESSAGES = {
       'En una caravana, la distancia entre ejes va del eje a la rueda jockey.',
     'help.ramps.t':
       'Elige tus rampas o escribe la altura de los escalones. Libell las coloca donde más ayudan.',
-    'help.calibration.h': 'Calibración',
+    'help.calibration.h': 'Calibrar y poner a cero',
     'help.calibration.t':
-      'Coloca el móvil sobre una superficie plana y toca Calibrar ahora. Se hace una vez.\n' +
-      '¿El sitio del móvil está algo torcido? Fija una posición cero cuando el vehículo esté nivelado.\n' +
-      'La luz ⚠ Calibrar sigue encendida hasta que esté hecho.\n' +
-      'Con una caja sensora, esto se hace en la página de la caja.',
+      'Calibra el móvil una vez: colócalo sobre una superficie plana y toca Calibrar ahora.\n' +
+      'Después pon a cero cuando el vehículo esté nivelado, con el móvil en su sitio habitual.\n' +
+      'Con una caja sensora, la puesta a cero se hace en la página de la caja. No necesita calibración.\n' +
+      'La luz ⚠ Calibrar o ⚠ Poner a cero sigue encendida hasta que esté hecho.',
     'help.sensor.h': 'Caja sensora',
     'help.sensor.t':
       'Una caja en el vehículo puede medir en lugar del móvil.\n' +
@@ -1943,15 +1930,16 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'La caja parece estar del revés',
     'pose.sensorNotUpright': 'La caja está tumbada',
     'pose.sensorHintUpright': 'Solo mide bien de pie.',
-    'calibration.external.h': 'Calibrar {name}',
+    'calibration.external.h': 'Poner {name} a cero',
     'calibration.external.intro':
-      'Nivela el vehículo de forma verificable una vez (con un nivel de burbuja o tras nivelar con tus calzos) y luego fija la lectura actual del sensor como nivelada.',
-    'calibration.external.working': 'Calibrando…',
-    'calibration.external.done': '{name} está calibrado: esta posición cuenta ahora como nivelada.',
+      'Nivela el vehículo una vez con un nivel de burbuja y luego pon a cero.',
+    'calibration.external.working': 'Poniendo a cero…',
+    'calibration.external.done':
+      '{name} está puesto a cero: esta posición cuenta ahora como nivelada.',
     'calibration.external.err.notConnected':
       '{name} no está conectado. Conéctalo e inténtalo de nuevo.',
     'calibration.external.err.failed':
-      'No se pudo calibrar {name}. No se ha cambiado nada. Comprueba la conexión e inténtalo de nuevo.',
+      'No se pudo poner {name} a cero. No se ha cambiado nada. Comprueba la conexión e inténtalo de nuevo.',
     'pose.portrait':
       'Pon el móvil en vertical (retrato): el borde superior debe apuntar hacia delante',
 
@@ -2028,9 +2016,9 @@ export const MESSAGES = {
     'lamp.setup.title':
       'Die Fahrzeugeinstellungen wurden noch nie gespeichert — zum Öffnen der Einstellungen tippen',
     'lamp.calibrate': '⚠ Kalibrieren',
+    'lamp.zero': '⚠ Nullen',
     'lamp.calibrate.title': 'Das Handy ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
-    'lamp.calibrate.title.sensor':
-      'Der Sensor ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
+    'lamp.calibrate.title.sensor': 'Die Box ist nicht genullt — tippen, um die Box zu öffnen',
 
     'sensorStatus.connected': 'Externer Sensor verbunden',
     'sensorStatus.disconnected': 'Verbindung zum externen Sensor verloren — für Details tippen',
@@ -2079,8 +2067,8 @@ export const MESSAGES = {
 
     'sensorSource.install.now': 'Jetzt nullen',
     'sensorSource.install.clear': 'Nullpunkt vergessen',
-    'sensorSource.install.status': 'Einbau-Offset: seitlich {roll}°, längs {pitch}°.',
-    'sensorSource.install.status.none': 'Kein Einbau-Offset — der Rohwert gilt als waagerecht.',
+    'sensorSource.install.status': 'Nullpunkt: seitlich {roll}°, längs {pitch}°.',
+    'sensorSource.install.status.none': 'Noch nicht genullt — die Box misst so, wie sie sitzt.',
 
     'sensorSource.learn.h': 'Montage anlernen',
     'sensorSource.learn.intro':
@@ -2265,10 +2253,10 @@ export const MESSAGES = {
     'calibration.step.phone.done': 'Handy kalibriert',
     'calibration.step.phone.hint': 'Leg das Handy auf etwas Ebenes.',
     'calibration.step.flipLink': 'Nichts Ebenes da? Handy drehen',
-    'calibration.step.vehicle.done': 'Fahrzeug-Nullpunkt gesetzt',
+    'calibration.step.vehicle.done': 'Genullt',
     'calibration.step.vehicle.hint':
       'Richte das Fahrzeug mit einer Wasserwaage aus und leg das Handy an seinen üblichen Platz.',
-    'calibration.step.vehicle.now': 'Als waagerecht setzen',
+    'calibration.step.vehicle.now': 'Jetzt nullen',
     'calibration.clear': 'Kalibrierung löschen',
     'calibration.err.notRunning':
       'Der Neigungssensor läuft noch nicht — tippe zuerst auf dem Hauptbildschirm auf Start.',
@@ -2276,14 +2264,11 @@ export const MESSAGES = {
       'Das Handy scheint nicht flach zu liegen — lege es auf eine waagerechte Fläche und ' +
       'versuche es erneut.',
     'calibration.sensor.h': 'Handy kalibrieren',
-    'calibration.vehicle.h': 'Fahrzeug-Nullpunkt kalibrieren',
+    'calibration.vehicle.h': 'Fahrzeug nullen',
     'calibration.vehicle.intro':
-      'Die Sensorkalibrierung stellt das Handy auf null — nicht den Platz, auf dem es liegt. ' +
-      'Steht der Tisch leicht schief, würde die App diese Neigung immer anzeigen. Stelle das ' +
-      'Fahrzeug einmal nachweislich waagerecht (Wasserwaage, oder nach dem Auffahren auf die ' +
-      'Keile), lege das Handy an seinen gewohnten Platz und setze das als waagerecht.',
-    'calibration.vehicle.now': 'Aktuelle Lage als waagerecht setzen',
-    'calibration.vehicle.clear': 'Fahrzeug-Nullpunkt löschen',
+      'Die Kalibrierung gilt dem Handy, nicht dem Platz, auf dem es liegt. Steht der Tisch leicht schief, zeigt die App diese Neigung. Stell das Fahrzeug einmal mit einer Wasserwaage waagerecht, leg das Handy an seinen gewohnten Platz und nulle.',
+    'calibration.vehicle.now': 'Jetzt nullen',
+    'calibration.vehicle.clear': 'Nullpunkt vergessen',
     'calibration.vehicle.status': 'Fahrzeug-Nullpunkt: seitlich {roll}°, längs {pitch}°.',
     'calibration.vehicle.status.none':
       'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
@@ -2348,12 +2333,12 @@ export const MESSAGES = {
       'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.',
     'help.ramps.t':
       'Wähle deine Keile oder gib die Stufenhöhen ein. Libell legt sie dorthin, wo sie am meisten bringen.',
-    'help.calibration.h': 'Kalibrierung',
+    'help.calibration.h': 'Kalibrieren und nullen',
     'help.calibration.t':
-      'Leg das Handy auf eine ebene Fläche und tippe auf Jetzt kalibrieren. Das machst du einmal.\n' +
-      'Liegt das Handy an seinem Platz etwas schief? Setz eine Nullstellung, wenn das Fahrzeug waagerecht steht.\n' +
-      'Die Lampe ⚠ Kalibrieren leuchtet, bis es erledigt ist.\n' +
-      'Mit einer Sensorbox geht das stattdessen auf der Seite der Box.',
+      'Kalibriere das Handy einmal: leg es auf eine ebene Fläche und tippe auf Jetzt kalibrieren.\n' +
+      'Nulle dann, wenn das Fahrzeug waagerecht steht, mit dem Handy an seinem gewohnten Platz.\n' +
+      'Mit einer Sensorbox nullst du auf der Seite der Box. Sie braucht keine Kalibrierung.\n' +
+      'Die Lampe ⚠ Kalibrieren oder ⚠ Nullen leuchtet, bis es erledigt ist.',
     'help.sensor.h': 'Sensorbox',
     'help.sensor.t':
       'Eine Box im Fahrzeug kann statt des Handys messen.\n' +
@@ -2411,15 +2396,15 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Die Box scheint kopfüber zu sitzen',
     'pose.sensorNotUpright': 'Die Box liegt',
     'pose.sensorHintUpright': 'Sie misst nur stehend richtig.',
-    'calibration.external.h': '{name} kalibrieren',
+    'calibration.external.h': '{name} nullen',
     'calibration.external.intro':
-      'Bringen Sie das Fahrzeug einmal nachweislich in die Waage (Wasserwaage oder nach dem Ausgleichen mit Ihren Keilen) und legen Sie dann den aktuellen Messwert des Sensors als waagerecht fest.',
-    'calibration.external.working': 'Wird kalibriert…',
-    'calibration.external.done': '{name} ist kalibriert: Diese Lage gilt jetzt als waagerecht.',
+      'Stell das Fahrzeug einmal mit einer Wasserwaage waagerecht und nulle dann.',
+    'calibration.external.working': 'Wird genullt…',
+    'calibration.external.done': '{name} ist genullt: Diese Lage gilt jetzt als waagerecht.',
     'calibration.external.err.notConnected':
       '{name} ist nicht verbunden. Verbinden Sie ihn und versuchen Sie es erneut.',
     'calibration.external.err.failed':
-      '{name} konnte nicht kalibriert werden. Es wurde nichts geändert. Prüfen Sie die Verbindung und versuchen Sie es erneut.',
+      '{name} konnte nicht genullt werden. Es wurde nichts geändert. Prüf die Verbindung und versuch es erneut.',
     'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',
 
     'stale.dataUnavailable': 'Keine neuen Sensordaten — die Führung pausiert, bis sie zurückkommen',
