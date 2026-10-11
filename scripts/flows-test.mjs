@@ -271,7 +271,7 @@ async function openSettingsTab(page, tab) {
   return page.locator('.menu-page.is-visible').first();
 }
 
-// ?demo's fixed tilt, in degrees (`createDemoSensor` in main.ts).
+// ?demo's fixed tilt, in degrees (`DEMO_TILT_DEG` in src/app/demoSensor.ts).
 const DEMO_ROLL = -1.2;
 const DEMO_PITCH = -0.35;
 const near = (a, b) => Math.abs(a - b) < 0.01;

@@ -11,13 +11,20 @@
 
 ```
 src/
-├── main.ts        # entry point; requests wake lock; wires sensor → state → render
-├── app/           # wiring main.ts composes (#374): externalSensorWiring.ts (box adapters,
-│                  # health, learn guide, password), installOffsets.ts (each box's zero),
-│                  # boxZero.ts (zeroing a box), phoneCalibration.ts (bias + vehicle zero),
-│                  # targets.ts (target presets), tiltReading.ts (sensor tilt in degrees),
-│                  # menuOptionParts.ts (option groups the menu, wizard and box pages share),
-│                  # levelFrame.ts (one level-screen frame: overlays, celebration, audio)
+├── main.ts        # entry point: only creates the app/ modules and connects them (#392)
+├── app/           # the modules main.ts composes (#374, #392), each with its own tests:
+│                  # externalSensorWiring.ts (box adapters, health, learn guide, password),
+│                  # installOffsets.ts (each box's zero), boxZero.ts (zeroing a box),
+│                  # phoneCalibration.ts (bias + vehicle zero), targets.ts (target presets),
+│                  # tiltReading.ts (sensor tilt in degrees), demoSensor.ts (?demo's tilt),
+│                  # menuOptionParts.ts + menuOptions.ts (the options bags),
+│                  # onboardingLauncher.ts, settingsAdoption.ts (what a save reaches),
+│                  # settingsSurface.ts, sensorPages.ts, navigation.ts (where shortcuts lead),
+│                  # indicatorState.ts + indicatorWiring.ts (lamps, badge, sensor icon),
+│                  # levelEngine.ts, levelScreenView.ts, levelFrame.ts, levelScreen.ts
+│                  # (the level screen), sound.ts (chime, guidance pulse, mute),
+│                  # topBar.ts, frameGuard.ts, startupMigrations.ts, incomingSetup.ts,
+│                  # sensorStartup.ts (start-up)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
@@ -117,10 +124,10 @@ The sensor module exposes an explicit state (`unsupported`, `needs-permission`, 
 `OrientationSensor` is the multi-source seam (#128, ADR 0014): `start()/getState()/
 getGravity()/getSource()/getLastSampleAt()` is the whole contract every gravity source
 implements — the
-phone sensor above, the fixed-tilt `?demo` stand-in in `main.ts`, and
+phone sensor above, the fixed-tilt `?demo` stand-in in `src/app/demoSensor.ts`, and
 `src/sensor/easyLevelSensor.ts` (#116, R32: the EasyLevel BLE box, opt-in via the menu's
 "External sensor" page, only shown when `navigator.bluetooth` exists). `main.ts` selects
-between implementations at one `let sensor` binding; `domain/` never learns which one is
+between implementations through the external-sensor controller's active sensor; `domain/` never learns which one is
 active. `easyLevelSensor.ts` keeps Web Bluetooth GATT transport separate from payload
 parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardware or
 `navigator.bluetooth` needed); `easyLevelSimulator.ts` (#220, R44) plugs a simulated
@@ -290,12 +297,14 @@ responsive and must stay usable in landscape rather than relying on a hard lock.
 
 ## State (`src/main.ts`)
 
-The entry point subscribes to the sensor, reads settings from the store, runs
-`computeLeveling`, and hands the resulting `LevelingResult` to the render functions in
-`ui/`. Rendering is driven by `requestAnimationFrame` so sensor events do not force a
-layout on every tick. What each frame shows (no data, stale, wrong pose, the guidance)
-and when the level celebration and audio guidance fire is decided in
-`src/app/levelFrame.ts`; `main.ts` keeps the screen's elements behind its view.
+The entry point only creates the `src/app/` modules and connects them. The level screen
+reads the active sensor, runs `computeLeveling` (or the caravan's) in
+`src/app/levelEngine.ts`, and hands the result to the render functions in `ui/`.
+Rendering is driven by `requestAnimationFrame` (`src/app/levelScreen.ts`) so sensor
+events do not force a layout on every tick. What each frame shows (no data, stale, wrong
+pose, the guidance) and when the level celebration and audio guidance fire is decided in
+`src/app/levelFrame.ts`; the screen's elements live behind its view in
+`src/app/levelScreenView.ts`.
 
 ## Settings (`src/data/settingsStore.ts`)
 
