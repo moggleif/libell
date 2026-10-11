@@ -11,7 +11,12 @@
  * main way, the lift-the-vehicle guide (#293), which stays as a quiet
  * link for anyone unsure.
  */
-import { FACINGS, type Facing } from '../domain/mountingFacing';
+import {
+  EASYLEVEL_PLACEMENTS,
+  FACINGS,
+  type EasyLevelPlacement,
+  type Facing,
+} from '../domain/mountingFacing';
 import type { VehicleType } from '../domain/settings';
 import { t } from './i18n';
 
@@ -74,7 +79,54 @@ function boxGlyph(shape: BoxShape, facing: Facing): SVGGElement {
   return group;
 }
 
-function vehicleDrawing(type: VehicleType, shape: BoxShape, facing: Facing | null): SVGSVGElement {
+/**
+ * The EasyLevel box from above in one of its manual's two placements
+ * (#359), drawn like the real lid: a near-square lid on a base whose
+ * mounting tabs stick out at the long sides' ends, and the lid's two
+ * arrows — one up, one to the left, as printed on it. Long side forward
+ * is the box as printed (the up arrow forward); short side forward is the
+ * same box a quarter turn clockwise (the left arrow forward), the official
+ * app's `sensor_Placing` 2 and Libell's `rotated90`.
+ */
+function placementGlyph(placement: EasyLevelPlacement): SVGGElement {
+  const group = svgEl('g', {
+    class: 'box-glyph',
+    transform: `scale(1.15) rotate(${placement === 'wide' ? 0 : 90})`,
+  });
+  group.append(
+    // Base with its two mounting tabs (the long sides).
+    svgEl('rect', {
+      x: '-22',
+      y: '-11',
+      width: '44',
+      height: '22',
+      rx: '2',
+      class: 'box-glyph__body',
+    }),
+    // The lid.
+    svgEl('rect', {
+      x: '-15',
+      y: '-14',
+      width: '30',
+      height: '28',
+      rx: '3',
+      class: 'box-glyph__body',
+    }),
+    // Up arrow (forward when the long side faces the front).
+    svgEl('polygon', {
+      points: '4,-12 10,-5 6.5,-5 6.5,0 1.5,0 1.5,-5 -2,-5',
+      class: 'box-glyph__ref',
+    }),
+    // Left arrow.
+    svgEl('polygon', {
+      points: '-13,6 -6,0 -6,3.5 2,3.5 2,8.5 -6,8.5 -6,12',
+      class: 'box-glyph__ref',
+    }),
+  );
+  return group;
+}
+
+function vehicleDrawing(type: VehicleType, glyph: SVGGElement | null): SVGSVGElement {
   const svg = svgEl('svg', {
     viewBox: '0 0 100 160',
     class: 'mounting-picker__vehicle',
@@ -147,9 +199,9 @@ function vehicleDrawing(type: VehicleType, shape: BoxShape, facing: Facing | nul
   });
   front.textContent = `${t('diagram.front').toUpperCase()} ↑`;
   svg.append(front);
-  if (facing) {
+  if (glyph) {
     const placed = svgEl('g', { transform: 'translate(50 100)' });
-    placed.append(boxGlyph(shape, facing));
+    placed.append(glyph);
     svg.append(placed);
   }
   return svg;
@@ -161,9 +213,10 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 
   const prompt = document.createElement('p');
   prompt.className = 'menu__text';
-  prompt.textContent = t(
-    options.shape === 'upright' ? 'mounting.prompt.upright' : 'mounting.prompt.flat',
-  );
+  // A box lying flat with an arrow has its own two-choice picker below
+  // (#359); this one only ever asks the upright box.
+  prompt.textContent = t('mounting.prompt.upright');
+  prompt.hidden = options.shape !== 'upright';
 
   const grid = document.createElement('div');
   grid.className = 'mounting-picker__grid';
@@ -198,7 +251,72 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
       button.classList.toggle('is-picked', on);
       button.setAttribute('aria-pressed', String(on));
     }
-    center.replaceChildren(vehicleDrawing(options.getVehicleType(), options.shape, picked));
+    center.replaceChildren(
+      vehicleDrawing(options.getVehicleType(), picked ? boxGlyph(options.shape, picked) : null),
+    );
+  }
+
+  refresh();
+  return { element, refresh };
+}
+
+export interface PlacementPickerOptions {
+  getVehicleType(): VehicleType;
+  /** The picked placement, or null until one is picked. */
+  getPlacement(): EasyLevelPlacement | null;
+  setPlacement(placement: EasyLevelPlacement): void;
+}
+
+/**
+ * The EasyLevel box's placement (#359), as its manual has it: an arrow on
+ * the lid points forward, and the user taps the picture whose box faces
+ * the front the way theirs does, wide side or short side. Two pictures of
+ * the vehicle with the box in it, each named under it — no rotations to
+ * think about, and none the manual does not allow.
+ */
+export function createPlacementPicker(options: PlacementPickerOptions): MountingPicker {
+  const element = document.createElement('div');
+  element.className = 'placement-picker';
+
+  const prompt = document.createElement('p');
+  prompt.className = 'menu__text';
+  prompt.textContent = t('mounting.prompt.arrow');
+
+  const row = document.createElement('div');
+  row.className = 'placement-picker__row';
+  const parts = new Map<EasyLevelPlacement, { button: HTMLButtonElement; picture: HTMLElement }>();
+  for (const placement of EASYLEVEL_PLACEMENTS) {
+    const choice = document.createElement('div');
+    choice.className = 'placement-picker__choice';
+    const picture = document.createElement('div');
+    picture.className = 'placement-picker__picture';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `placement-picker__button placement-picker__button--${placement}`;
+    button.textContent = t(`mounting.placement.${placement}`);
+    const pick = () => {
+      options.setPlacement(placement);
+      refresh();
+    };
+    button.addEventListener('click', pick);
+    // The picture is the bigger target; the button stays the one control
+    // keyboards and screen readers reach.
+    picture.addEventListener('click', pick);
+    choice.append(picture, button);
+    row.append(choice);
+    parts.set(placement, { button, picture });
+  }
+  element.append(prompt, row);
+
+  function refresh(): void {
+    const picked = options.getPlacement();
+    for (const [placement, { button, picture }] of parts) {
+      const on = placement === picked;
+      button.classList.toggle('is-picked', on);
+      button.setAttribute('aria-pressed', String(on));
+      picture.classList.toggle('is-picked', on);
+      picture.replaceChildren(vehicleDrawing(options.getVehicleType(), placementGlyph(placement)));
+    }
   }
 
   refresh();

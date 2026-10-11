@@ -68,3 +68,20 @@ export function flipCalibration(a: Calibration, b: Calibration): FlipResult {
     Math.abs(bias.rollDeg) <= MAX_BIAS_DEG && Math.abs(bias.pitchDeg) <= MAX_BIAS_DEG;
   return { bias, surface, consistent };
 }
+
+/**
+ * The mean of several readings, axis by axis, or null for none. A box
+ * that streams raw, unsmoothed samples (EasyLevel) is zeroed from a short
+ * run of them rather than one: its own app says to press OK a few times
+ * until the value settles.
+ */
+export function averageReadings(readings: readonly Calibration[]): Calibration | null {
+  if (readings.length === 0) return null;
+  let roll = 0;
+  let pitch = 0;
+  for (const reading of readings) {
+    roll += reading.rollDeg;
+    pitch += reading.pitchDeg;
+  }
+  return { rollDeg: roll / readings.length, pitchDeg: pitch / readings.length };
+}

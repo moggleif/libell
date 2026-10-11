@@ -288,6 +288,8 @@ describe('per-source device settings (#264)', () => {
     });
     expect(easyLevelSettings(parsed)).toEqual({
       mounting: 'rotated180',
+      // Legacy entry with a non-default rotation: someone chose it (#359).
+      mountingPicked: true,
       connectDelayEnabled: DEFAULT_EASYLEVEL_SETTINGS.connectDelayEnabled,
       connectDelayMs: DEFAULT_EASYLEVEL_SETTINGS.connectDelayMs,
     });
@@ -303,6 +305,7 @@ describe('per-source device settings (#264)', () => {
     });
     expect(easyLevelSettings(parsed)).toEqual({
       mounting: 'rotated270',
+      mountingPicked: true,
       connectDelayEnabled: true,
       connectDelayMs: 1200,
     });
@@ -409,5 +412,40 @@ describe('Xparkle device settings (#293)', () => {
       sensorDevices: { xparkle: { axisMapping: { swap: 1, pitchSign: 1, rollSign: 1 } } },
     };
     expect(xparkleSettings(parseSettings(raw)).axisMapping).toBeNull();
+  });
+});
+
+describe('whether the EasyLevel placement was ever picked (#359)', () => {
+  const pickedOf = (easylevel: Record<string, unknown>) =>
+    easyLevelSettings(parseSettings({ sensorDevices: { easylevel } })).mountingPicked;
+
+  it('starts unpicked', () => {
+    expect(DEFAULT_EASYLEVEL_SETTINGS.mountingPicked).toBe(false);
+    expect(easyLevelSettings(parseSettings({})).mountingPicked).toBe(false);
+  });
+
+  it('keeps an explicit answer, either way', () => {
+    expect(pickedOf({ mounting: 'standard', mountingPicked: true })).toBe(true);
+    expect(pickedOf({ mounting: 'rotated90', mountingPicked: false })).toBe(false);
+  });
+
+  it('reads an entry from before #359 by its rotation: only a changed one was chosen', () => {
+    // `standard` was the default every save wrote, so it says nothing.
+    expect(pickedOf({ mounting: 'standard' })).toBe(false);
+    expect(pickedOf({ mounting: 'rotated90' })).toBe(true);
+    expect(pickedOf({ mounting: 'rotated270' })).toBe(true);
+    expect(
+      easyLevelSettings(parseSettings({ easyLevelMounting: 'rotated90' })).mountingPicked,
+    ).toBe(true);
+  });
+
+  it('round-trips through withEasyLevelSettings', () => {
+    const next = withEasyLevelSettings(parseSettings({}), {
+      mounting: 'standard',
+      mountingPicked: true,
+    });
+    expect(easyLevelSettings(parseSettings(JSON.parse(JSON.stringify(next)))).mountingPicked).toBe(
+      true,
+    );
   });
 });

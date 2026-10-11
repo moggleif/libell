@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
+  EASYLEVEL_DESCRIPTOR,
   EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS,
+  EASYLEVEL_SILENCE_LIMIT_MS,
   isEasyLevelAvailable,
   isEasyLevelInitialCalibrationWaitExpired,
   isWebBluetoothSupported,
@@ -12,6 +14,7 @@ import {
   type EasyLevelConnection,
   type EasyLevelTransport,
 } from './easyLevelSensor';
+import { BLE_ADVERTISEMENT_WAIT_MS } from './bleAdvertisement';
 
 /** Little-endian int16 triplet, matching the real faf52c21 payload shape. */
 function accelBytes(x: number, y: number, z: number): Uint8Array {
@@ -499,6 +502,22 @@ describe('createEasyLevelSensor() startup ordering and initial-calibration gate 
     expect(rotated?.y).toBe(500);
     expect(rotated?.z).toBe(9800);
   });
+
+  it('keeps the unrotated reading too, for the lift guide to learn the placement from (#360)', async () => {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitAccel, emitStatus, emitDisconnect } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport, () => 'rotated180');
+    await sensor.start();
+    emitStatus(statusBytes(2500, 0));
+    emitAccel(accelBytes(500, -200, 9800));
+    expect(sensor.getRawGravity()).toEqual({ x: 500, y: -200, z: 9800 });
+    expect(sensor.getGravity()).toEqual({ x: -500, y: 200, z: 9800 });
+    emitDisconnect();
+    expect(sensor.getRawGravity()).toBeNull();
+  });
 });
 
 describe('createEasyLevelSensor().reconnect() (#130)', () => {
@@ -978,5 +997,213 @@ describe('Retry without getDevices() (#288, Chrome on Android)', () => {
     const transport = createWebBluetoothTransport();
     await transport.connect(vi.fn());
     expect(await transport.reconnect('device-2', vi.fn())).toBeNull();
+  });
+});
+
+/** A device as `getDevices()` or the picker returns it — a real
+ * EventTarget, so `advertisementreceived` can be dispatched at it (#356). */
+function fakeAdvertisingDevice(options: { watch?: boolean; advertises?: boolean } = {}) {
+  const calls: string[] = [];
+  const characteristic = {
+    addEventListener: vi.fn(),
+    startNotifications: vi.fn().mockResolvedValue(undefined),
+  };
+  const service = { getCharacteristic: vi.fn().mockResolvedValue(characteristic) };
+  const server = {
+    connect: vi.fn(() => {
+      calls.push('connect');
+      return Promise.resolve(server);
+    }),
+    disconnect: vi.fn(),
+    getPrimaryService: vi.fn().mockResolvedValue(service),
+  };
+  const device = Object.assign(new EventTarget(), {
+    id: 'easylevel-1',
+    gatt: server,
+  }) as EventTarget & BluetoothDevice & { signal?: AbortSignal };
+  if (options.watch !== false) {
+    device.watchAdvertisements = vi.fn((watchOptions?: { signal?: AbortSignal }) => {
+      calls.push('watch');
+      device.signal = watchOptions?.signal;
+      if (options.advertises !== false) {
+        queueMicrotask(() => device.dispatchEvent(new Event('advertisementreceived')));
+      }
+      return Promise.resolve();
+    });
+  }
+  return { device, server, calls };
+}
+
+describe('the EasyLevel silent reconnect waits to hear the box first (#356, as Xparkle #288)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function remember(device: BluetoothDevice): void {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { getDevices: () => Promise.resolve([device]) } },
+      configurable: true,
+    });
+  }
+
+  it('watches for an advertisement before connecting, and stops watching after', async () => {
+    const { device, calls } = fakeAdvertisingDevice();
+    remember(device);
+    const connection = await createWebBluetoothTransport().reconnect('easylevel-1', vi.fn());
+
+    expect(connection).not.toBeNull();
+    expect(calls).toEqual(['watch', 'connect']);
+    expect(device.signal?.aborted).toBe(true);
+  });
+
+  it('still tries the connect when no advertisement arrives in time', async () => {
+    vi.useFakeTimers();
+    const { device, calls } = fakeAdvertisingDevice({ advertises: false });
+    remember(device);
+    const pending = createWebBluetoothTransport().reconnect('easylevel-1', vi.fn());
+    await vi.advanceTimersByTimeAsync(BLE_ADVERTISEMENT_WAIT_MS);
+
+    expect(await pending).not.toBeNull();
+    expect(calls).toEqual(['watch', 'connect']);
+  });
+
+  it('connects directly where the browser cannot watch advertisements', async () => {
+    const { device, calls } = fakeAdvertisingDevice({ watch: false });
+    remember(device);
+    const connection = await createWebBluetoothTransport().reconnect('easylevel-1', vi.fn());
+
+    expect(connection).not.toBeNull();
+    expect(calls).toEqual(['connect']);
+  });
+});
+
+describe('EasyLevel connect tries once more when the picked box will not connect at once (#357, as Xparkle #322)', () => {
+  function pickable(device: BluetoothDevice): void {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+  }
+
+  it('waits to hear the box and connects again', async () => {
+    const { device, server, calls } = fakeAdvertisingDevice();
+    server.connect.mockImplementationOnce(() => {
+      calls.push('connect');
+      return Promise.reject(new Error('GATT Server is disconnected.'));
+    });
+    pickable(device);
+    const connection = await createWebBluetoothTransport().connect(vi.fn());
+    expect(connection.deviceId).toBe('easylevel-1');
+    expect(calls).toEqual(['connect', 'watch', 'connect']);
+  });
+
+  it('gives up after that one extra try, so the caller can say it could not connect', async () => {
+    const { device, server } = fakeAdvertisingDevice({ watch: false });
+    server.connect.mockImplementation(() =>
+      Promise.reject(new Error('GATT Server is disconnected.')),
+    );
+    pickable(device);
+    await expect(createWebBluetoothTransport().connect(vi.fn())).rejects.toThrow();
+    expect(server.connect).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not try again when the user cancels the picker', async () => {
+    const requestDevice = vi.fn().mockRejectedValue(new Error('User cancelled'));
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice } },
+      configurable: true,
+    });
+    await expect(createWebBluetoothTransport().connect(vi.fn())).rejects.toThrow();
+    expect(requestDevice).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('a silent EasyLevel stream counts as lost contact (#358)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function connected() {
+    vi.useFakeTimers();
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const fake = fakeTransport();
+    const sensor = createEasyLevelSensor(
+      fake.transport,
+      () => 'standard',
+      () => Date.now(),
+    );
+    await sensor.start();
+    fake.emitStatus(statusBytes(2500, 0));
+    fake.emitAccel(accelBytes(0, 0, 9810));
+    return { ...fake, sensor };
+  }
+
+  it('stays connected while notifications keep arriving', async () => {
+    const { sensor, emitAccel } = await connected();
+    for (let i = 0; i < 30; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+      emitAccel(accelBytes(0, 0, 9810));
+    }
+    expect(sensor.getState()).toBe('granted');
+  });
+
+  it('closes the link and reports disconnected once the box has been silent too long', async () => {
+    const { sensor, connection } = await connected();
+    await vi.advanceTimersByTimeAsync(EASYLEVEL_SILENCE_LIMIT_MS - 1000);
+    expect(sensor.getState()).toBe('granted');
+
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(sensor.getState()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+    // Closed actively, so a half-open link cannot hide the box (#219).
+    expect(connection.disconnect).toHaveBeenCalled();
+    // Still knows which box to reconnect to.
+    expect(sensor.getDeviceId()).toBe('fake-device-id');
+  });
+
+  it('allows the slow first connect the manual warns about: silence counts only once connected', async () => {
+    vi.useFakeTimers();
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const { transport, emitStatus, emitAccel } = fakeTransport();
+    const sensor = createEasyLevelSensor(
+      transport,
+      () => 'standard',
+      () => Date.now(),
+    );
+    // Nothing is watched before the connection exists.
+    await vi.advanceTimersByTimeAsync(EASYLEVEL_SILENCE_LIMIT_MS * 3);
+    await sensor.start();
+    emitStatus(statusBytes(2500, 0));
+    emitAccel(accelBytes(0, 0, 9810));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(sensor.getState()).toBe('granted');
+  });
+
+  it('can be reconnected after a silent drop and is watched again', async () => {
+    const { sensor, emitAccel } = await connected();
+    await vi.advanceTimersByTimeAsync(EASYLEVEL_SILENCE_LIMIT_MS + 2000);
+    expect(sensor.getState()).toBe('disconnected');
+
+    expect(await sensor.reconnect('fake-device-id')).toBe('granted');
+    emitAccel(accelBytes(0, 0, 9810));
+    await vi.advanceTimersByTimeAsync(EASYLEVEL_SILENCE_LIMIT_MS + 2000);
+    expect(sensor.getState()).toBe('disconnected');
+  });
+
+  it('stops watching after an explicit disconnect', async () => {
+    const { sensor } = await connected();
+    sensor.disconnect();
+    await vi.advanceTimersByTimeAsync(EASYLEVEL_SILENCE_LIMIT_MS * 2);
+    expect(sensor.getState()).toBe('idle');
+  });
+
+  it('gives the box more time than the stale-data overlay, which covers the gap first (R35)', () => {
+    expect(EASYLEVEL_SILENCE_LIMIT_MS).toBeGreaterThan(EASYLEVEL_DESCRIPTOR.staleTimeoutMs);
   });
 });

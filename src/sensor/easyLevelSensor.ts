@@ -75,6 +75,7 @@ import {
 } from './easyLevelProtocol';
 import { easyLevelSimulationMode } from './easyLevelSimulator';
 import type { ExternalSensorDescriptor } from './externalSensors';
+import { waitForAdvertisement } from './bleAdvertisement';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -136,6 +137,24 @@ export function isEasyLevelInitialCalibrationWaitExpired(
   return nowMs - connectedAtMs >= EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS;
 }
 
+/**
+ * How long the box may stay silent, link still open, before Libell treats
+ * it as lost contact (#358): it closes the link and reports
+ * `'disconnected'`, so the card says "No contact", Reconnect is offered
+ * and the background auto-retry (#211) starts, exactly as for an outright
+ * drop. The Xparkle adapter gets the same outcome from its read timeout.
+ *
+ * Longer than the descriptor's `staleTimeoutMs`, so R35's "no new sensor
+ * data" overlay always covers the gap first and an ordinary BLE hiccup
+ * only ever shows that overlay. Counted only once connected: the manual's
+ * "connecting can take up to 60 seconds" is the connect itself, which
+ * Libell leaves to the browser with no limit of its own.
+ */
+export const EASYLEVEL_SILENCE_LIMIT_MS = 10000;
+
+/** How often the silence above is checked while connected. */
+const SILENCE_CHECK_INTERVAL_MS = 1000;
+
 /** Web Bluetooth is Chrome/Android only — never Safari/iOS. */
 export function isWebBluetoothSupported(): boolean {
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
@@ -183,7 +202,9 @@ export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
     installCalibration: true,
     debugBytes: true,
     reportedOrientation: false,
-    learnMounting: false,
+    // Its placement can be learned by lifting too (#360), limited to the
+    // manual's two placements (#359).
+    learnMounting: true,
     upright: false,
     zeroesItself: false,
   },
@@ -324,7 +345,17 @@ export function createWebBluetoothTransport(
         optionalServices: [EASYLEVEL_SERVICE_UUID],
       });
       picked = device;
-      return connectToDevice(device, onDisconnect);
+      try {
+        return await connectToDevice(device, onDisconnect);
+      } catch {
+        // Picked, but the link would not come up (#357): a box can take a
+        // moment before it advertises and accepts a connection again, for
+        // example right after Disconnect. Wait to hear it, the same way the
+        // silent reconnect does (#356), and try once more. A second failure
+        // is the caller's ordinary "could not connect".
+        await waitForAdvertisement(device);
+        return connectToDevice(device, onDisconnect);
+      }
     },
     async reconnect(deviceId, onDisconnect): Promise<EasyLevelConnection | null> {
       try {
@@ -339,6 +370,10 @@ export function createWebBluetoothTransport(
           device = devices.find((candidate) => candidate.id === deviceId) ?? null;
         }
         if (!device) return null;
+        // Hear the box first (#356, found on an Xparkle box in #288): a
+        // connect to a box no scan has seen since the drop often fails
+        // even with the box in range.
+        await waitForAdvertisement(device);
         return await connectToDevice(device, onDisconnect);
       } catch {
         // A GATT connect failure (box out of range, powered off, ...) —
@@ -361,6 +396,9 @@ export interface EasyLevelSensor extends OrientationSensor {
    * `getGravity()`, when the connection is lost — never a stale reading
    * shown as live. */
   getStatus(): EasyLevelStatus | null;
+  /** The latest reading before the mounting rotation is applied (#360),
+   * or null whenever `getGravity()` is — for the lift guide only. */
+  getRawGravity(): GravityVector | null;
   /** The connected device's Web Bluetooth id (#130), or null before a
    * successful `start()`/`reconnect()` — the caller remembers this to make
    * a later `reconnect()` possible. */
@@ -397,6 +435,10 @@ export function createEasyLevelSensor(
 ): EasyLevelSensor {
   let state: SensorState = 'idle';
   let gravity: GravityVector | null = null;
+  // The same reading before the mounting rotation (#360): what the lift
+  // guide learns the placement from, so a rotation already stored never
+  // skews what it measures.
+  let rawGravity: GravityVector | null = null;
   let statusBytes: Uint8Array | null = null;
   let status: EasyLevelStatus | null = null;
   let connection: EasyLevelConnection | null = null;
@@ -405,12 +447,39 @@ export function createEasyLevelSensor(
   // link merely still being open (this issue's first example: notifications
   // silently stopping while the connection stays "connected").
   let lastSampleAt: number | null = null;
+  // #358: when the box was last heard at all — any accel notification,
+  // including one still held back by the initial-calibration wait — or
+  // when the link came up. Only the silence watchdog reads it.
+  let lastHeardAt = 0;
+  let silenceTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopSilenceWatch(): void {
+    if (silenceTimer !== null) clearInterval(silenceTimer);
+    silenceTimer = null;
+  }
+
+  /** Watch a live link for a stream that has stopped (#358). */
+  function startSilenceWatch(): void {
+    stopSilenceWatch();
+    lastHeardAt = now();
+    silenceTimer = setInterval(() => {
+      if (state !== 'granted' || now() - lastHeardAt <= EASYLEVEL_SILENCE_LIMIT_MS) return;
+      // Closed actively (#219): a half-open link keeps the box from
+      // advertising, so no reconnect could find it. The transport's
+      // teardown reports nothing through `onDisconnect`, so the lost state
+      // is set here, keeping `connection` for its device id.
+      connection?.disconnect();
+      onGattDisconnected();
+    }, SILENCE_CHECK_INTERVAL_MS);
+  }
 
   function onGattDisconnected(): void {
+    stopSilenceWatch();
     // Lost, not denied: surfaces distinctly (#116's AC) so the UI can
     // offer reconnection instead of silently freezing on the last value.
     state = 'disconnected';
     gravity = null;
+    rawGravity = null;
     lastSampleAt = null;
     // Same "never show stale as live" rule R35 already applies to gravity
     // (#132) — a battery/temperature reading from before the drop is not
@@ -458,6 +527,7 @@ export function createEasyLevelSensor(
     }
     try {
       await connection.subscribeAccel((view) => {
+        lastHeardAt = now();
         if (awaitingInitialCalibration) {
           if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) {
             return; // still within the grace window — drop this sample
@@ -470,6 +540,7 @@ export function createEasyLevelSensor(
         // reconnect that loses it, clearing `status` back to null) takes
         // effect immediately rather than needing its own plumbing.
         const calibrated = parseAccelPacket(view, status?.calibration);
+        rawGravity = calibrated;
         gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
         lastSampleAt = now();
       });
@@ -496,6 +567,7 @@ export function createEasyLevelSensor(
       try {
         await wireConnection(await transport.connect(onGattDisconnected));
         state = 'granted';
+        startSilenceWatch();
         return state;
       } catch {
         // Covers a cancelled device picker, a GATT connect failure, or a
@@ -521,6 +593,7 @@ export function createEasyLevelSensor(
         }
         await wireConnection(result);
         state = 'granted';
+        startSilenceWatch();
         return state;
       } catch {
         // A subscribe failure after a successful GATT connect, say — same
@@ -532,16 +605,19 @@ export function createEasyLevelSensor(
     },
     getState: () => state,
     getGravity: () => gravity,
+    getRawGravity: () => rawGravity,
     getDeviceId: () => connection?.deviceId ?? null,
     getSource: (): SensorSource => 'easylevel',
     getLastSampleAt: () => lastSampleAt,
     getStatusBytes: () => statusBytes,
     getStatus: () => status,
     disconnect(): void {
+      stopSilenceWatch();
       connection?.disconnect();
       connection = null;
       state = 'idle';
       gravity = null;
+      rawGravity = null;
       lastSampleAt = null;
       status = null;
     },

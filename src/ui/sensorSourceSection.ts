@@ -45,9 +45,10 @@
 import type { Calibration, EasyLevelMounting, SensorSource, VehicleType } from '../domain/settings';
 import {
   axisMappingForFacing,
-  easyLevelMountingForFacing,
+  easyLevelMountingForPlacement,
+  easyLevelPlacementOf,
   facingForAxisMapping,
-  facingForEasyLevelMounting,
+  type EasyLevelPlacement,
   type Facing,
 } from '../domain/mountingFacing';
 import { isMountedRight } from '../domain/uprightMount';
@@ -55,7 +56,7 @@ import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
-import { createMountingPicker, type BoxShape } from './mountingPicker';
+import { createMountingPicker, createPlacementPicker, type BoxShape } from './mountingPicker';
 import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
 
 export interface SensorSourceOptions {
@@ -112,8 +113,11 @@ export interface SensorSourceOptions {
   /** Which physical mounting orientation this box is installed in (#217,
    * R43) — only rendered when the descriptor declares `mounting`. */
   getMounting(): EasyLevelMounting;
-  /** Takes effect on the very next reading, no reconnect needed. */
-  setMounting(mounting: EasyLevelMounting): void;
+  /** Whether the user has picked it (#359); until then the step asks. */
+  isMountingPicked(): boolean;
+  /** Takes effect on the very next reading, no reconnect needed; null
+   * forgets the pick and goes back to the standard placement (#359). */
+  setMounting(mounting: EasyLevelMounting | null): void;
   /** The "learn the mounting" guide (#293) — only rendered when the
    * descriptor declares `learnMounting` and this is supplied. */
   learnMounting?: Omit<LearnMountingOptions, 'name'>;
@@ -281,29 +285,56 @@ export function createSensorSourceSection(
    * lift guide below measures instead, for anyone whose box disagrees. */
   const AXIS_REFERENCE_FACING: Facing = 'front';
   function currentFacing(): Facing | null {
-    if (usesEasyLevelMounting) return facingForEasyLevelMounting(options.getMounting());
     return facingForAxisMapping(
       options.learnMounting?.getLearnedMounting() ?? null,
       AXIS_REFERENCE_FACING,
     );
   }
-  const picker = directionStep
-    ? createMountingPicker({
-        shape,
-        getVehicleType: () => options.getVehicleType?.() ?? 'motorhome',
-        getFacing: currentFacing,
-        setFacing: (facing) => {
-          if (usesEasyLevelMounting) options.setMounting(easyLevelMountingForFacing(facing));
-          else
+  /** The EasyLevel box's picked placement (#359), or null until picked. */
+  function currentPlacement(): EasyLevelPlacement | null {
+    return easyLevelPlacementOf({
+      mounting: options.getMounting(),
+      mountingPicked: options.isMountingPicked(),
+    });
+  }
+  /** What the closed step names as picked, or null while it still asks. */
+  function directionLabel(): string | null {
+    if (usesEasyLevelMounting) {
+      const placement = currentPlacement();
+      return placement ? t(`mounting.placement.${placement}`) : null;
+    }
+    const facing = currentFacing();
+    return facing ? t(`mounting.facing.${facing}`) : null;
+  }
+  /** Stays open on the pick, so the choice is seen; closed by hand (#347). */
+  function afterPick(): void {
+    if (directionStep) openedByHand = directionStep.element;
+    refreshSteps();
+  }
+  // The EasyLevel box: its manual's two placements (#359). Any other box
+  // with a direction: a tap on the side its reference side points to.
+  const picker = !directionStep
+    ? null
+    : usesEasyLevelMounting
+      ? createPlacementPicker({
+          getVehicleType: () => options.getVehicleType?.() ?? 'motorhome',
+          getPlacement: currentPlacement,
+          setPlacement: (placement) => {
+            options.setMounting(easyLevelMountingForPlacement(placement));
+            afterPick();
+          },
+        })
+      : createMountingPicker({
+          shape,
+          getVehicleType: () => options.getVehicleType?.() ?? 'motorhome',
+          getFacing: currentFacing,
+          setFacing: (facing) => {
             options.learnMounting?.setLearnedMounting(
               axisMappingForFacing(facing, AXIS_REFERENCE_FACING),
             );
-          // Stays open on the pick, so the choice is seen; closed by hand (#347).
-          openedByHand = directionStep.element;
-          refreshSteps();
-        },
-      })
-    : null;
+            afterPick();
+          },
+        });
   const learnSection =
     capabilities.learnMounting && options.learnMounting
       ? createLearnMountingSection({
@@ -331,12 +362,13 @@ export function createSensorSourceSection(
       directionStep.body.append(learnLink, learnSection.element);
     }
   }
-  // Undoing a learned direction, where it applies (#332: was under "More").
+  // Undoing a picked or learned direction (#332: was under "More"; #359
+  // for the EasyLevel box too).
   const forgetDirectionButton = document.createElement('button');
   forgetDirectionButton.type = 'button';
   forgetDirectionButton.className = 'link-button';
   forgetDirectionButton.textContent = t('box.forgetDirection');
-  if (directionStep && usesAxisMapping) directionStep.body.append(forgetDirectionButton);
+  if (directionStep) directionStep.body.append(forgetDirectionButton);
 
   // 2. Zero.
   const zeroStep = capabilities.installCalibration ? makeStep(2, true) : null;
@@ -406,7 +438,13 @@ export function createSensorSourceSection(
       return;
     }
     const ok = isMountedRight(tilt);
-    positionTitle.textContent = t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
+    // A flat box past a right angle has its lid down (#362). Libell does
+    // not support that mounting; it says so, and how to fix it.
+    const upsideDown =
+      shape === 'flat' && (Math.abs(tilt.pitchDeg) > 90 || Math.abs(tilt.rollDeg) > 90);
+    positionTitle.textContent = upsideDown
+      ? t('box.step.position.flat.upsideDown')
+      : t(`box.step.position.${shape}.${ok ? 'ok' : 'bad'}`);
     positionMark.textContent = ok ? '✓ ' : '! ';
     positionElement.classList.toggle('is-done', ok);
     positionElement.classList.toggle('is-warning', !ok);
@@ -430,12 +468,12 @@ export function createSensorSourceSection(
       delete button.dataset.offline;
     }
     refreshPosition();
-    const directionDone = currentFacing() !== null;
+    const picked = directionLabel();
+    const directionDone = picked !== null;
     if (directionStep) {
-      const facing = currentFacing();
       // Says which way, so the closed step still shows what was picked.
-      directionStep.title.textContent = facing
-        ? `${t('box.step.direction.done')}: ${t(`mounting.facing.${facing}`).toLowerCase()}`
+      directionStep.title.textContent = picked
+        ? `${t('box.step.direction.done')}: ${picked.toLowerCase()}`
         : t('box.step.direction.todo');
       setDone(directionStep, directionDone, 1);
       picker?.refresh();
@@ -457,7 +495,9 @@ export function createSensorSourceSection(
       installStatus.textContent = zeroMessage ?? '';
     }
     installClearButton.disabled = !offset;
-    forgetDirectionButton.hidden = options.learnMounting?.getLearnedMounting() == null;
+    forgetDirectionButton.hidden = usesEasyLevelMounting
+      ? !options.isMountingPicked()
+      : options.learnMounting?.getLearnedMounting() == null;
     // Without the box nothing can be set: every action greyed out until it
     // is back, while the steps still open to show what is set (#343).
     if (!delivering()) {
@@ -507,7 +547,8 @@ export function createSensorSourceSection(
     refreshSteps();
   });
   forgetDirectionButton.addEventListener('click', () => {
-    options.learnMounting?.setLearnedMounting(null);
+    if (usesEasyLevelMounting) options.setMounting(null);
+    else options.learnMounting?.setLearnedMounting(null);
     openedByHand = null;
     refreshSteps();
   });

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { combineCalibrations, flipCalibration, vehicleZeroFromReading } from './calibration';
+import {
+  averageReadings,
+  combineCalibrations,
+  flipCalibration,
+  vehicleZeroFromReading,
+} from './calibration';
 import { createPoseDetector, totalTiltDeg } from './pose';
 
 describe('flipCalibration', () => {
@@ -99,5 +104,21 @@ describe('two-layer calibration (#83)', () => {
     const combined = combineCalibrations(newBias, vehicle)!;
     expect(combined.rollDeg).toBeCloseTo(newBias.rollDeg + table.rollDeg);
     expect(combined.pitchDeg).toBeCloseTo(newBias.pitchDeg + table.pitchDeg);
+  });
+});
+
+describe('averaging a zero over several readings (EasyLevel manual: "press OK until it settles")', () => {
+  it('averages each axis', () => {
+    expect(
+      averageReadings([
+        { rollDeg: 1, pitchDeg: -2 },
+        { rollDeg: 3, pitchDeg: 0 },
+        { rollDeg: 2, pitchDeg: -1 },
+      ]),
+    ).toEqual({ rollDeg: 2, pitchDeg: -1 });
+  });
+
+  it('has nothing to average without readings', () => {
+    expect(averageReadings([])).toBeNull();
   });
 });

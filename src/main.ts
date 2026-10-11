@@ -8,8 +8,15 @@ import { showToast } from './ui/toast';
 import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
 import { computeLeveling, tiltFromGravity, WHEEL_IDS, type GravityVector } from './domain/leveling';
+import {
+  axisMappingForEasyLevelMounting,
+  EASYLEVEL_PLACEMENTS,
+  easyLevelMountingForAxisMapping,
+  easyLevelMountingForPlacement,
+  easyLevelPlacementOf,
+} from './domain/mountingFacing';
 import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
-import { combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
+import { averageReadings, combineCalibrations, vehicleZeroFromReading } from './domain/calibration';
 import { createStillnessDetector } from './domain/stillness';
 import { createDisplayStabilizer } from './domain/stability';
 import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from './domain/staleness';
@@ -197,6 +204,8 @@ if (identityEl) attachUpdateCheck(identityEl);
 
 const RAD_TO_DEG = 180 / Math.PI;
 const MAX_CALIBRATION_DEG = 15;
+/** How long an EasyLevel zero averages the box's samples (see `zeroEasyLevelNow`). */
+const EASYLEVEL_ZERO_SAMPLE_MS = 1500;
 /** A check reading within this of zero counts as "still good" (#87). */
 const CALIBRATION_CHECK_GOOD_DEG = 0.3;
 
@@ -365,9 +374,15 @@ function bootstrap(root: HTMLElement): void {
    * install-offset calibration right next to it on that same page already
    * behaves.
    */
-  function setEasyLevelMounting(mounting: EasyLevelMounting): void {
-    settings = withEasyLevelSettings(settings, { mounting });
+  function setEasyLevelMounting(mounting: EasyLevelMounting | null): void {
+    // Null forgets the pick (#359): back to the standard placement, and
+    // the box's page asks again.
+    settings = withEasyLevelSettings(settings, {
+      mounting: mounting ?? 'standard',
+      mountingPicked: mounting !== null,
+    });
     saveSettings(settings);
+    updateIndicators();
   }
 
   /**
@@ -460,10 +475,11 @@ function bootstrap(root: HTMLElement): void {
   }
 
   /**
-   * The "learn the mounting" guide's wiring (#293), for the one box that
-   * offers it; undefined for every other source, so no guide is drawn.
+   * The "learn the mounting" guide's wiring (#293), for the boxes that
+   * offer it; undefined for every other source, so no guide is drawn.
    */
   function learnMountingFor(source: SensorSource): Omit<LearnMountingOptions, 'name'> | undefined {
+    if (source === 'easylevel') return learnEasyLevelPlacement();
     if (source !== 'xparkle') return undefined;
     return {
       getRawReading: () => {
@@ -478,6 +494,40 @@ function bootstrap(root: HTMLElement): void {
         saveSettings(settings);
         updateIndicators();
       },
+    };
+  }
+
+  /**
+   * The lift guide for the EasyLevel box (#360): it learns from the box's
+   * reading before any rotation, and stores the result as one of the
+   * manual's two placements (#359). A lift showing the arrow backward or
+   * sideways, or a mirrored one, is explained instead of stored.
+   */
+  function learnEasyLevelPlacement(): Omit<LearnMountingOptions, 'name'> {
+    return {
+      getRawReading: () => {
+        const box = externalSensors.getSensor('easylevel') as EasyLevelSensor | null;
+        const raw = box && box.getState() === 'granted' ? box.getRawGravity() : null;
+        if (!raw) return null;
+        const tilt = tiltFromGravity(raw, null);
+        return { pitchDeg: tilt.pitch * RAD_TO_DEG, rollDeg: tilt.roll * RAD_TO_DEG };
+      },
+      getLearnedMounting: () => {
+        const device = easyLevelSettings(settings);
+        return easyLevelPlacementOf(device)
+          ? axisMappingForEasyLevelMounting(device.mounting)
+          : null;
+      },
+      check: (mapping) => {
+        const mounting = easyLevelMountingForAxisMapping(mapping);
+        if (!mounting) return 'sensorSource.learn.err.mirrored';
+        const allowed = EASYLEVEL_PLACEMENTS.some(
+          (placement) => easyLevelMountingForPlacement(placement) === mounting,
+        );
+        return allowed ? null : 'sensorSource.learn.err.arrow';
+      },
+      setLearnedMounting: (mapping) =>
+        setEasyLevelMounting(mapping ? easyLevelMountingForAxisMapping(mapping) : null),
     };
   }
 
@@ -636,7 +686,8 @@ function bootstrap(root: HTMLElement): void {
       getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
       clearInstallCalibration: () => clearInstallOffset('easylevel'),
       getMounting: () => easyLevelSettings(settings).mounting,
-      setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
+      isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
+      setMounting: (mounting: EasyLevelMounting | null) => setEasyLevelMounting(mounting),
       onFinished(done) {
         onboardingOpen = false;
         markOnboardingSeen();
@@ -716,7 +767,8 @@ function bootstrap(root: HTMLElement): void {
     getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
     clearInstallCalibration: () => clearInstallOffset('easylevel'),
     getMounting: () => easyLevelSettings(settings).mounting,
-    setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
+    isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
+    setMounting: (mounting: EasyLevelMounting | null) => setEasyLevelMounting(mounting),
     getCalibratedTilt: () => calibratedTiltNow(),
     getVehicleType: () => settings.vehicleType,
     getActiveTargetName: () => activeTargetName(),
@@ -1083,8 +1135,44 @@ function bootstrap(root: HTMLElement): void {
    * it without migrating anything already stored. */
   function calibrateInstallNow(source: SensorSource): string | null | Promise<string | null> {
     if (source === 'xparkle') return zeroXparkleNow();
+    if (source === 'easylevel') return zeroEasyLevelNow();
     const reading = readTiltNow();
     if (typeof reading === 'string') return reading;
+    return storeInstallZero(source, reading);
+  }
+
+  /**
+   * "Zero" for the EasyLevel box: averaged over `EASYLEVEL_ZERO_SAMPLE_MS`
+   * of its own samples rather than taken from one. The box streams raw,
+   * unsmoothed readings, and its own app says to press OK a few times
+   * until the value settles; this does that settling in one tap, showing
+   * "Zeroing…" meanwhile. If the box drops while sampling, nothing is
+   * stored and the user is told why.
+   */
+  async function zeroEasyLevelNow(): Promise<string | null> {
+    const first = readTiltNow();
+    if (typeof first === 'string') return first;
+    const readings = [first];
+    let lastAt = sensor().getLastSampleAt();
+    const end = performance.now() + EASYLEVEL_ZERO_SAMPLE_MS;
+    while (performance.now() < end) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      if (sensor().getSource() !== 'easylevel' || sensor().getState() !== 'granted') {
+        return t('calibration.external.err.notConnected', {
+          name: EASYLEVEL_DESCRIPTOR.displayName,
+        });
+      }
+      const at = sensor().getLastSampleAt();
+      if (at === null || at === lastAt) continue;
+      lastAt = at;
+      const reading = readTiltNow();
+      if (typeof reading !== 'string') readings.push(reading);
+    }
+    return storeInstallZero('easylevel', averageReadings(readings) ?? first);
+  }
+
+  /** Store a box's zero from a reading, refusing only an implausible one. */
+  function storeInstallZero(source: SensorSource, reading: Calibration): string | null {
     if (
       Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||
       Math.abs(reading.pitchDeg) > MAX_CALIBRATION_DEG

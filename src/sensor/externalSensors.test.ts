@@ -111,7 +111,8 @@ describe('the EasyLevel descriptor (#262)', () => {
       installCalibration: true,
       debugBytes: true,
       reportedOrientation: false,
-      learnMounting: false,
+      // Its placement can be learned by lifting too (#360).
+      learnMounting: true,
       upright: false,
       zeroesItself: false,
     });

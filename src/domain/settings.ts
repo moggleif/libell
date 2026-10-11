@@ -145,6 +145,14 @@ export interface EasyLevelSettings {
    */
   mounting: EasyLevelMounting;
   /**
+   * Whether the user has picked the placement (#359), so the box's page
+   * asks until they have, as it does for the Xparkle box. Readings use
+   * `mounting` either way; this only decides what the direction step says.
+   * An entry saved before #359 counts as picked when its rotation is not
+   * the default, which only a choice could have stored.
+   */
+  mountingPicked: boolean;
+  /**
    * Debug-only hardware-compatibility workaround (#212), reached from the
    * EasyLevel status page's "Debug info" disclosure, never the normal
    * settings panel. Off by default — zero behavior change for anyone who
@@ -263,6 +271,7 @@ export const DEFAULT_EASYLEVEL_SETTINGS: EasyLevelSettings = {
   // Matches the official app's own default `sensor_Placing` (#217) — most
   // boxes are never touched by this setting at all.
   mounting: 'standard',
+  mountingPicked: false,
   connectDelayEnabled: false,
   // The official app's own "not bonded" delay (see `connectDelayMs`'s doc
   // comment), not its bonded 1600ms — an EasyLevel box has no reason to
@@ -534,10 +543,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
   const stored = settings.sensorDevices.easylevel;
   const raw = isRecord(stored) ? stored : {};
+  const mounting = EASYLEVEL_MOUNTINGS.includes(raw.mounting as EasyLevelMounting)
+    ? (raw.mounting as EasyLevelMounting)
+    : DEFAULT_EASYLEVEL_SETTINGS.mounting;
   return {
-    mounting: EASYLEVEL_MOUNTINGS.includes(raw.mounting as EasyLevelMounting)
-      ? (raw.mounting as EasyLevelMounting)
-      : DEFAULT_EASYLEVEL_SETTINGS.mounting,
+    mounting,
+    mountingPicked:
+      typeof raw.mountingPicked === 'boolean'
+        ? raw.mountingPicked
+        : mounting !== DEFAULT_EASYLEVEL_SETTINGS.mounting,
     // Presence check (#212), same discipline as soundOnLevel: absent
     // (never saved) falls back to the off default; an explicit prior
     // choice, true or false, is never overridden.

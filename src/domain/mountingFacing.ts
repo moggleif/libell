@@ -75,3 +75,66 @@ export function facingForAxisMapping(
   });
   return facing ?? null;
 }
+
+/**
+ * The EasyLevel box's placement as its manual describes it (#359): one of
+ * the arrows on its lid always points forward, and the only choice is
+ * whether the box's wide side or its short side faces the front. These
+ * are the official app's `sensor_Placing` 1 and 2 (#217), Libell's
+ * `standard` and `rotated90`. The other two rotations (#222) put the
+ * arrows backward or sideways, which the manual does not allow; they are
+ * still applied if stored, but never offered.
+ */
+export type EasyLevelPlacement = 'wide' | 'short';
+
+export const EASYLEVEL_PLACEMENTS: readonly EasyLevelPlacement[] = ['wide', 'short'];
+
+const EASYLEVEL_BY_PLACEMENT: Record<EasyLevelPlacement, EasyLevelMounting> = {
+  wide: 'standard',
+  short: 'rotated90',
+};
+
+export function easyLevelMountingForPlacement(placement: EasyLevelPlacement): EasyLevelMounting {
+  return EASYLEVEL_BY_PLACEMENT[placement];
+}
+
+/** The placement to show as picked: null until the user has picked one,
+ * and for a stored rotation the manual does not allow. */
+export function easyLevelPlacementOf(device: {
+  mounting: EasyLevelMounting;
+  mountingPicked: boolean;
+}): EasyLevelPlacement | null {
+  if (!device.mountingPicked) return null;
+  return EASYLEVEL_PLACEMENTS.find((p) => EASYLEVEL_BY_PLACEMENT[p] === device.mounting) ?? null;
+}
+
+/**
+ * Each EasyLevel rotation as the lift guide (#293) would learn it from
+ * the box's unrotated readings (#360). `applyEasyLevelMounting` turns the
+ * (x, y) gravity pair; seen as tilt, that is a swap of pitch and roll
+ * plus a sign on each — checked against it in `easyLevelProtocol.test.ts`.
+ */
+const AXIS_MAPPING_BY_EASYLEVEL: Record<EasyLevelMounting, AxisMapping> = {
+  standard: { swap: false, pitchSign: 1, rollSign: 1 },
+  rotated90: { swap: true, pitchSign: 1, rollSign: -1 },
+  rotated180: { swap: false, pitchSign: -1, rollSign: -1 },
+  rotated270: { swap: true, pitchSign: -1, rollSign: 1 },
+};
+
+export function axisMappingForEasyLevelMounting(mounting: EasyLevelMounting): AxisMapping {
+  return AXIS_MAPPING_BY_EASYLEVEL[mounting];
+}
+
+/** The rotation a learned mapping describes, or null for a mirrored one,
+ * which no turn of a box lying top up produces. */
+export function easyLevelMountingForAxisMapping(mapping: AxisMapping): EasyLevelMounting | null {
+  const found = (Object.keys(AXIS_MAPPING_BY_EASYLEVEL) as EasyLevelMounting[]).find((m) => {
+    const candidate = AXIS_MAPPING_BY_EASYLEVEL[m];
+    return (
+      candidate.swap === mapping.swap &&
+      candidate.pitchSign === mapping.pitchSign &&
+      candidate.rollSign === mapping.rollSign
+    );
+  });
+  return found ?? null;
+}
