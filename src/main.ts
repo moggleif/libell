@@ -1092,7 +1092,7 @@ function bootstrap(root: HTMLElement): void {
     return targetPresets.find((preset) => preset.id === activeTargetId)?.name ?? null;
   }
 
-  /** The sensor status page's live reading row (`easyLevelStatusPage.ts`):
+  /** The sensor status page's live reading row (`boxStatusPage.ts`):
    * the same effective calibration (sensor bias + vehicle zero + active
    * target, #122) the leveling math itself subtracts — reused via
    * `tiltFromGravity`, not recomputed. Never `readTiltNow()`, which starts

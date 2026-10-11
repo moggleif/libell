@@ -20,7 +20,7 @@
  *   - `installElement` — the mounting picker (#217/#222, R43) and the
  *     installation offset (#131, R34): per-device *configuration*, so
  *     `sensorPage.ts` places it on that device's own page
- *     (`easyLevelStatusPage.ts`'s `settingsSlot`), alongside the live
+ *     (`boxStatusPage.ts`'s `settingsSlot`), alongside the live
  *     battery/temperature/reading rows, rather than stacking it on the
  *     list that merely links there. Before #226 both halves sat on the
  *     list page, which left it longer than the detail page behind its own
@@ -38,7 +38,7 @@
  * calibration split.
  *
  * The sensor row's status text doubles as a button, opening
- * `easyLevelStatusPage.ts` when `onOpenStatus` is supplied — optional
+ * `boxStatusPage.ts` when `onOpenStatus` is supplied — optional
  * purely so callers/tests that don't need that page (the onboarding
  * wizard) can construct this section without threading a callback through.
  */

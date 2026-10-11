@@ -39,7 +39,7 @@ import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import { showToast } from './toast';
 
-export interface EasyLevelStatusOptions {
+export interface BoxStatusOptions {
   /** The external source this page describes (#262) — its `displayName`
    * fills the page title and the connection text (#267). */
   sensor: ExternalSensorDescriptor;
@@ -93,7 +93,7 @@ export interface EasyLevelStatusOptions {
   password?: BoxPasswordOptions;
 }
 
-export interface EasyLevelStatusPage {
+export interface BoxStatusPage {
   element: HTMLElement;
   /** Container for this sensor's own settings blocks (#226) — the
    * mounting picker and installation offset, appended by `sensorPage.ts`
@@ -130,7 +130,7 @@ function hexBytes(bytes: Uint8Array | null): string | null {
   return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join(' ');
 }
 
-export function createEasyLevelStatusPage(options: EasyLevelStatusOptions): EasyLevelStatusPage {
+export function createBoxStatusPage(options: BoxStatusOptions): BoxStatusPage {
   const notAvailable = t('sensorSource.detail.notAvailable');
 
   const page = createStandalonePage(
