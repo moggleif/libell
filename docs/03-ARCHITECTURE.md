@@ -169,7 +169,8 @@ weighed against the protocol (`docs/competitor-notes.md`):
   and waits a bounded time for the verdict — no reconnect, since readings keep flowing
   either way (the box does not gate `fff2` on the password, #273).
 - _Change the password_ (command `4`, mode `1`): needs the old code, which is exactly
-  what the user does not know. Not offered.
+  what the user does not know, and Libell does not change box passwords (Morgan,
+  2026-10-11). A forgotten code is changed in the Xparkle app; the message says so.
 - _Factory reset_ (command `1`): wipes everything the box stores, and whether a box
   accepts it without the right password is unknown. Under R49's rule that Libell never
   rewrites the box's stored state, it is not offered.

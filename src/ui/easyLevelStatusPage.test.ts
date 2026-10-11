@@ -488,7 +488,7 @@ describe('a box that rejects its password, on its own page (#367)', () => {
     await Promise.resolve();
   }
 
-  it('says what to do in Libell, never to open the vendor app, with one button to try again', () => {
+  it('says what to do in Libell, with a code field and one button to try again', () => {
     const { page, block, retry } = rejectingPage(true);
     const header = page.element.querySelector('.box-header__state')!;
     expect(header.textContent).toBe(t('box.state.password'));
@@ -496,7 +496,7 @@ describe('a box that rejects its password, on its own page (#367)', () => {
     expect(block.hidden).toBe(false);
     const message = t('sensorSource.err.password', { name: XPARKLE_DESCRIPTOR.displayName });
     expect(block.textContent).toContain(message);
-    expect(message.toLowerCase()).not.toContain('app');
+    expect(block.querySelector('input')).not.toBeNull();
     expect(retry).toBeDefined();
   });
 

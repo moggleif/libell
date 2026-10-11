@@ -99,10 +99,11 @@ export const MESSAGES = {
     'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
     // Some boxes ask for a password before they will talk (#272). Kept
     // separate from the generic failure so the user knows the hardware is
-    // fine and only the password is wrong — and fixed in Libell, never in
-    // the vendor app (#367).
+    // fine and only the password is wrong. The code is typed in Libell; only
+    // a forgotten code is changed in the vendor app, since Libell never
+    // changes a box's password (#367).
     'sensorSource.err.password':
-      'The {name} box did not accept its password. Type the box’s four-digit code below and tap Try again. The factory code is 0000.',
+      'The {name} box did not accept its password. Type the box’s four-digit code below and tap Try again. The factory code is 0000. If you don’t know the code, change it in the Xparkle app.',
     'sensorSource.err.failed': 'Could not connect to the {name} sensor.',
 
     // iOS Safari has no Web Bluetooth and Apple has no plans to add it
@@ -672,7 +673,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Ansluter…',
     'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
     'sensorSource.err.password':
-      '{name}-boxen godtog inte lösenordet. Skriv boxens fyrsiffriga kod nedan och tryck Försök igen. Fabrikskoden är 0000.',
+      '{name}-boxen godtog inte lösenordet. Skriv boxens fyrsiffriga kod nedan och tryck Försök igen. Fabrikskoden är 0000. Kan du inte koden byter du den i Xparkle-appen.',
     'sensorSource.err.failed': 'Kunde inte ansluta till {name}-sensorn.',
 
     'sensorSource.ios.intro':
@@ -1146,7 +1147,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Connexion…',
     'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
     'sensorSource.err.password':
-      'Le boîtier {name} n’a pas accepté son mot de passe. Saisissez ci-dessous le code à quatre chiffres du boîtier et touchez Réessayer. Le code d’usine est 0000.',
+      'Le boîtier {name} n’a pas accepté son mot de passe. Saisissez ci-dessous le code à quatre chiffres du boîtier et touchez Réessayer. Le code d’usine est 0000. Si vous ne connaissez pas le code, changez-le dans l’application Xparkle.',
     'sensorSource.err.failed': 'Impossible de se connecter au capteur {name}.',
 
     'sensorSource.ios.intro':
@@ -1635,7 +1636,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Conectando…',
     'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
     'sensorSource.err.password':
-      'La caja {name} no ha aceptado su contraseña. Escribe abajo el código de cuatro cifras de la caja y toca Reintentar. El código de fábrica es 0000.',
+      'La caja {name} no ha aceptado su contraseña. Escribe abajo el código de cuatro cifras de la caja y toca Reintentar. El código de fábrica es 0000. Si no sabes el código, cámbialo en la aplicación Xparkle.',
     'sensorSource.err.failed': 'No se ha podido conectar con el sensor {name}.',
 
     'sensorSource.ios.intro':
@@ -2118,7 +2119,7 @@ export const MESSAGES = {
     'sensorSource.status.connecting': 'Verbinden…',
     'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
     'sensorSource.err.password':
-      'Die {name}-Box hat ihr Passwort nicht akzeptiert. Gib unten den vierstelligen Code der Box ein und tippe auf Erneut versuchen. Der Werkscode ist 0000.',
+      'Die {name}-Box hat ihr Passwort nicht akzeptiert. Gib unten den vierstelligen Code der Box ein und tippe auf Erneut versuchen. Der Werkscode ist 0000. Wenn du den Code nicht kennst, ändere ihn in der Xparkle-App.',
     'sensorSource.err.failed': 'Verbindung zum {name}-Sensor nicht möglich.',
 
     'sensorSource.ios.intro':

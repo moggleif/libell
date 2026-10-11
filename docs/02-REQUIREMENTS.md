@@ -1722,7 +1722,8 @@ present this source as more proven than it is.
 - **When** I look at the box's card or its own page
 - **Then** neither says "Connected": the state reads "Wrong password", and the message
   tells me to type the box's four-digit code in Libell (the factory code is 0000), with
-  a field and one "Try again" button — never to open the vendor app. Try again offers
+  a field and one "Try again" button; only a code the user does not know is changed in
+  the Xparkle app, since Libell never changes a box's password. Try again offers
   the code to the connected box at once and says whether it was accepted, rejected, or
   not answered; a code that is not four digits is explained, not sent. The code is kept
   in Libell's settings and offered on every later connect. Readings keep flowing
