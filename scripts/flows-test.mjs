@@ -967,18 +967,7 @@ const appHint = (page) => page.locator('#app .app__hint').first();
 // link, and how the phone sensor is started.
 async function startupFlow(browser) {
   // The top bar is labelled and reserves the corner its icon sits in.
-  // Newer Chromium may offer iOS's requestPermission too; take it away so
-  // this case pins the start-up without the Start tap (iOS's is below).
-  let app = await openApp(
-    browser,
-    'xparkle-sim',
-    {},
-    undefined,
-    `
-    if (window.DeviceMotionEvent) delete DeviceMotionEvent.requestPermission;
-    if (window.DeviceOrientationEvent) delete DeviceOrientationEvent.requestPermission;
-  `,
-  );
+  let app = await openApp(browser, 'xparkle-sim');
   let { page } = app;
   assert(
     (await page.locator('#settings-button').getAttribute('aria-label')) === 'Settings',
@@ -1011,7 +1000,19 @@ async function startupFlow(browser) {
     'the icon sits in the corner',
   );
   // Headless Chromium has motion events but never fires one: waiting.
-  await page.locator('#app.app--level').waitFor();
+  await page
+    .locator('#app.app--level')
+    .waitFor({ timeout: 10000 })
+    .catch(async () => {
+      const seen = await page.evaluate(() => ({
+        app: document.querySelector('#app')?.className,
+        text: document.querySelector('#app')?.textContent?.slice(0, 200),
+        motion: typeof window.DeviceMotionEvent,
+        orientation: typeof window.DeviceOrientationEvent,
+        secure: window.isSecureContext,
+      }));
+      throw new Error(`no level screen: ${JSON.stringify(seen)}; errors: ${app.errors}`);
+    });
   assert((await appHint(page).textContent()) === 'Waiting for the tilt sensor…', 'should wait');
   assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
   await app.context.close();
