@@ -48,28 +48,28 @@ function svgEl<K extends keyof SVGElementTagNameMap>(
   return el;
 }
 
-/** Step/lift text for one wheel — shared by the classic on-SVG labels
- * and the modern wheel cards, so both read the same plan the same way. */
-function stepAndLiftText(
+/** Step and height text for one wheel — shared by the classic on-SVG
+ * labels, the modern wheel cards and both caravan drawings, so every
+ * view reads the same plan the same way (#368): the step to drive up onto
+ * by name, and one height, the wheel's missing lift. The step's own height
+ * is not repeated next to its name; two millimetre figures side by side
+ * read as two answers. A gray wheel gets no figure at all: it asks for no
+ * action, and a height on a wheel to leave alone only begs the question
+ * of what to do with it (the status row says how far the ramps fall short). */
+export function stepAndLiftText(
   severity: DisplayResult['wheels'][WheelId]['severity'],
   stepMm: number,
   displayMm: number,
   unit: 'mm' | 'cm',
   stepHeightsMm: number[],
-): { step: string; stepHeight: string; lift: string } {
-  if (severity === 'none') {
-    return { step: '', stepHeight: '', lift: formatLength(displayMm, unit) };
-  }
-  if (stepMm <= 0) {
-    // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel —
-    // say so instead of leaving the step line blank (screen-cleanup
-    // follow-up).
-    return { step: t('diagram.noRamp'), stepHeight: '', lift: formatLength(displayMm, unit) };
-  }
+): { step: string; lift: string } {
+  if (severity === 'none') return { step: '', lift: formatLength(displayMm, unit) };
+  // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel — say
+  // so instead of leaving the step line blank (screen-cleanup follow-up).
+  if (stepMm <= 0) return { step: t('diagram.noRamp'), lift: '' };
   const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
   return {
     step: stepNumber > 0 ? t('diagram.step', { n: stepNumber }) : `↑ ${formatLength(stepMm, unit)}`,
-    stepHeight: stepNumber > 0 ? `(${formatLength(stepMm, unit)})` : '',
     lift: formatLength(displayMm, unit),
   };
 }
@@ -87,10 +87,11 @@ export function createRvDiagram(
 }
 
 /** Shared bubble-level physics: lerp toward the high side, snap under
- * reduced motion, flip to the "level" fill when settled there. */
-function updateBubble(
+ * reduced motion, flip to the "level" fill when settled there. Used by
+ * the caravan drawings too. */
+export function updateBubble(
   bubble: SVGCircleElement,
-  result: DisplayResult,
+  result: Pick<DisplayResult, 'rollDeg' | 'pitchDeg' | 'isLevel'>,
   center: { x: number; y: number },
   travel: number,
   fullScaleDeg: number,
@@ -119,8 +120,7 @@ interface ClassicWheelRefs {
   /** One rect for a single wheel, two for a boggie pair (ADR 0009). */
   markers: SVGRectElement[];
   glyph: SVGTextElement;
-  stepName: SVGTSpanElement;
-  stepHeight: SVGTSpanElement;
+  stepLabel: SVGTextElement;
   liftLabel: SVGTextElement;
 }
 
@@ -207,19 +207,14 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
   for (const id of WHEEL_IDS) {
     const { x, y } = CLASSIC_WHEEL_POS[id];
     const markers = wheelMarkers(x, y, rearAxle === 'boggie' && id.startsWith('rear'));
-    // Above the wheel, two lines: which ramp step to drive up onto, then
-    // its height parenthesized and small. Below the wheel: the lift.
+    // Above the wheel: which ramp step to drive up onto. Below it: the
+    // lift, the wheel's one height figure (#368).
     const stepLabel = svgEl('text', {
+      x: String(x),
+      y: String(y - 34),
       'text-anchor': 'middle',
       class: 'rv-diagram__step-label',
     });
-    const stepName = svgEl('tspan', { x: String(x), y: String(y - 48) });
-    const stepHeight = svgEl('tspan', {
-      x: String(x),
-      y: String(y - 32),
-      class: 'rv-diagram__mm',
-    });
-    stepLabel.append(stepName, stepHeight);
     const liftLabel = svgEl('text', {
       x: String(x),
       y: String(y + 42),
@@ -232,7 +227,7 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
       class: 'rv-diagram__wheel-glyph',
     });
     svg.append(...markers, glyph, stepLabel, liftLabel);
-    wheels[id] = { markers, glyph, stepName, stepHeight, liftLabel };
+    wheels[id] = { markers, glyph, stepLabel, liftLabel };
   }
 
   // Bubble level in the middle of the vehicle.
@@ -275,23 +270,14 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
         // Values arrive hysteresis-stabilized — a still phone shows a
         // still diagram.
         const { displayMm, stepMm, severity } = result.wheels[id];
-        const { markers, glyph, stepName, stepHeight, liftLabel } = wheels[id];
+        const { markers, glyph, stepLabel, liftLabel } = wheels[id];
         // A boggie pair shares one severity — both wheels get equal steps.
         for (const marker of markers)
           marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
         glyph.textContent = SEVERITY_GLYPH[severity];
         const text = stepAndLiftText(severity, stepMm, displayMm, unit, stepHeightsMm);
-        stepName.textContent = text.step;
-        stepHeight.textContent = text.stepHeight;
+        stepLabel.textContent = text.step;
         liftLabel.textContent = severity === 'none' ? '' : text.lift;
-        // An unserved wheel (low, but no ramp left for it — ADR 0011) is
-        // toned down: it asks for no action, so it must not shout.
-        liftLabel.setAttribute(
-          'class',
-          severity === 'unserved'
-            ? 'rv-diagram__lift-label rv-diagram__lift-label--dim'
-            : 'rv-diagram__lift-label',
-        );
       }
       updateBubble(
         bubble,
@@ -339,9 +325,12 @@ interface ModernWheelRefs {
   cardMm: HTMLDivElement;
 }
 
-function buildWheelCard(
-  id: WheelId,
-  side: 'left' | 'right',
+/** One floating wheel card, empty until the diagram's `update` fills it.
+ * Exported for the Modern caravan (#368), whose axle and jockey wheels
+ * use the same cards; `label` is the card's aria-label. */
+export function buildWheelCard(
+  label: string,
+  side: 'left' | 'right' | 'center',
 ): {
   card: HTMLDivElement;
   markerGlyph: HTMLSpanElement;
@@ -353,7 +342,7 @@ function buildWheelCard(
   // No visible position text (#161 follow-up): the card's position over
   // the silhouette already says which wheel it is. The name still reaches
   // anyone not reading the layout visually, via aria-label.
-  card.setAttribute('aria-label', t(WHEEL_LABEL[id]));
+  card.setAttribute('aria-label', label);
   const marker = document.createElement('div');
   marker.className = 'wheel-card__marker';
   const markerGlyph = document.createElement('span');
@@ -540,7 +529,7 @@ function createModernDiagram(): RvDiagram {
   cardLayer.className = 'wheel-card-layer';
   for (const id of WHEEL_IDS) {
     const side = id.endsWith('Left') ? 'left' : 'right';
-    const { card, markerGlyph, step, mm } = buildWheelCard(id, side);
+    const { card, markerGlyph, step, mm } = buildWheelCard(t(WHEEL_LABEL[id]), side);
     // Measured from the centre of the *drawn* vehicle, not of the stage
     // around it (#241): the stage is deliberately wider than the drawing
     // so the cards have margins to sit in, and the drawing letterboxes
@@ -601,7 +590,6 @@ function createModernDiagram(): RvDiagram {
         const text = stepAndLiftText(severity, stepMm, displayMm, unit, stepHeightsMm);
         refs.cardStep.textContent = severity === 'none' ? t('diagram.done') : text.step;
         refs.cardMm.textContent = text.lift;
-        refs.cardMm.classList.toggle('wheel-card__mm--dim', severity === 'unserved');
       }
       updateBubble(
         bubble,

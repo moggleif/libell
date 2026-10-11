@@ -92,18 +92,22 @@ URL and must keep working with no signal.
   on the shown step, red only when not even the highest step could fix that wheel by
   itself — move the vehicle instead — and toned-down gray (–) when it is low but gets
   no ramp: fewer ramps than low wheels, nothing to do at that wheel. A wheel a step
-  could fix is never red, even while the global plan leaves it short. Colored wheels
-  show their required lift in whole mm (muted for the gray state); the gray state's
-  own step line reads "No ramp" (screen-cleanup follow-up) rather than sitting blank,
-  so it reads as "nothing to do here", never as "level".
+  could fix is never red, even while the global plan leaves it short. Orange and red
+  wheels show their required lift in whole mm. The gray state shows no height at all
+  (#368: a figure on a wheel to leave alone only raised the question of what it meant;
+  the status row says how far the ramps fall short, R6), and its step line reads "No
+  ramp" (screen-cleanup follow-up) rather than sitting blank, so it reads as "nothing
+  to do here", never as "level".
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
 - **Given** the RV is not level
 - **Then** each wheel needing a lift shows, on the diagram itself, which ramp step to
-  drive up onto above the wheel ("Step 2") with the step's height parenthesized and
-  smaller, and the missing height in whole mm below the wheel; wheels within
-  tolerance are green and unlabeled.
+  drive up onto ("Step 2") and one height: the missing lift in whole mm. The step's own
+  height is not shown beside its name (#368): two millimetre figures side by side read
+  as two answers. This holds in every appearance and for the caravan alike — Classic
+  puts the step above the wheel and the lift below it, Modern puts both on the wheel
+  card. Wheels within tolerance are green, unlabeled in Classic and "Done" in Modern.
 - **Given** all wheels are within tolerance
 - **Then** every wheel reads green and ticked, and the level celebration (R16) fires
   once. No sentence under the diagram says it as well (#252): "Your RV is level!" and
@@ -574,9 +578,16 @@ URL and must keep working with no signal.
 - **When** I look at the main screen
 - **Then** the diagram shows a caravan from above — drawbar and jockey wheel at the
   front, one axle pair — and the guidance splits by mechanism: roll drives a ramp
-  recommendation for the low axle wheel (step name, height, lift — as for the
-  motorhome), while pitch drives a signed jockey correction ("Crank up"/"Crank down"
-  with the amount in mm). The jockey is never red — any amount is crankable.
+  recommendation for the low axle wheel (step name and lift — as for the motorhome,
+  R6), while pitch drives a signed jockey correction ("Crank up"/"Crank down" with the
+  amount in mm). The jockey is never red — any amount is crankable.
+- **Given** appearance Modern (#368)
+- **Then** the caravan is drawn in the Modern style like the motorhome, with the same
+  wheel cards: one per axle side in the margins, and one for the jockey wheel centred on
+  the drawbar where the wheel is. Classic and Glossy keep the Classic drawing.
+- **Given** Help → "Reading the screen"
+- **Then** one line of its own explains the jockey wheel's "Crank up"/"Crank down" and
+  its amount (#368).
 - **Given** the caravan's measurements
 - **Then** the wheelbase field reads "Axle to jockey wheel", the front track width is
   hidden (one axle), and the axle uses the rear track width; switching vehicle type

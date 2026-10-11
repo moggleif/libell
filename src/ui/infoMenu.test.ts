@@ -233,6 +233,17 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       return topics(info).find((el) => el.dataset.topic === id)!;
     }
 
+    it('explains the caravan jockey wheel’s Crank up/down in one line of its own (#368)', () => {
+      const info = createInfoPage(makeOptions());
+      const lines = [...body(topic(info, 'screen')).querySelectorAll('p')].map(
+        (p) => p.textContent,
+      );
+      expect(lines).toContain(t('help.screen.caravan'));
+      expect(t('help.screen.caravan')).toContain(t('caravan.crankUp'));
+      expect(t('help.screen.caravan')).toContain(t('caravan.crankDown'));
+      expect(t('help.screen.caravan')).not.toContain('\n');
+    });
+
     it('lists the topics in order, each titled', () => {
       const info = createInfoPage(makeOptions());
       expect(topics(info).map((el) => el.dataset.topic)).toEqual([
