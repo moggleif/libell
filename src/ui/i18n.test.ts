@@ -1,5 +1,16 @@
-import { describe, expect, it } from 'vitest';
-import { LANGUAGE_NAMES, LANGUAGES, MESSAGES, isLanguage, resolveLanguage } from './i18n';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
+import {
+  LANGUAGE_NAMES,
+  LANGUAGES,
+  MESSAGES,
+  getLanguage,
+  isLanguage,
+  resolveLanguage,
+  setLanguage,
+  t,
+  type Language,
+  type MessageKey,
+} from './i18n';
 import { EXTERNAL_SENSORS } from '../sensor/externalSensors';
 
 /** Every shipped dictionary, so adding a language (#178) automatically
@@ -187,5 +198,73 @@ describe('i18n terminology (#366)', () => {
         );
       }
     }
+  });
+});
+
+// The public interface every component relies on (#377), pinned so the
+// dictionaries can move into one module per language without it changing.
+describe('i18n public interface (#377)', () => {
+  afterEach(() => {
+    setLanguage('en');
+    vi.unstubAllGlobals();
+  });
+
+  it('types Language as the five shipped languages', () => {
+    expectTypeOf<Language>().toEqualTypeOf<'sv' | 'en' | 'fr' | 'es' | 'de'>();
+  });
+
+  it('types MessageKey as exactly the English keys', () => {
+    expectTypeOf<MessageKey>().toEqualTypeOf<keyof (typeof MESSAGES)['en']>();
+    expectTypeOf<'menu.title'>().toMatchTypeOf<MessageKey>();
+    expectTypeOf<'no.such.key'>().not.toMatchTypeOf<MessageKey>();
+  });
+
+  it('looks a key up in the current language', () => {
+    setLanguage('en');
+    expect(t('menu.title')).toBe('Menu');
+    for (const lang of ALL) {
+      setLanguage(lang);
+      expect(getLanguage()).toBe(lang);
+      expect(t('menu.title'), lang).toBe(MESSAGES[lang]['menu.title']);
+    }
+  });
+
+  it('substitutes every {placeholder} from vars, numbers included', () => {
+    setLanguage('en');
+    const key = 'onboard.boxPosition.notConnected';
+    expect(MESSAGES.en[key]).toContain('{next}');
+    const text = t(key, { next: 'Next' });
+    expect(text).not.toContain('{next}');
+    expect(text).toBe(MESSAGES.en[key].replaceAll('{next}', 'Next'));
+    expect(t(key, { next: 7 })).toBe(MESSAGES.en[key].replaceAll('{next}', '7'));
+  });
+
+  it('leaves the text untouched without vars, and ignores vars it has no slot for', () => {
+    setLanguage('en');
+    const key = 'onboard.boxPosition.notConnected';
+    expect(t(key)).toBe(MESSAGES.en[key]);
+    expect(t('menu.title', { unused: 'x' })).toBe('Menu');
+  });
+
+  it('detects the language from the locale subtag, falling back to English', () => {
+    const detect = (language: string | undefined) => {
+      vi.stubGlobal('navigator', { language });
+      return resolveLanguage(null);
+    };
+    expect(detect('de-AT')).toBe('de');
+    expect(detect('DE')).toBe('de');
+    expect(detect('sv-SE')).toBe('sv');
+    expect(detect('fr')).toBe('fr');
+    expect(detect('es-MX')).toBe('es');
+    expect(detect('en-GB')).toBe('en');
+    expect(detect('nb-NO')).toBe('en');
+    expect(detect(undefined)).toBe('en');
+  });
+
+  it('prefers a valid stored language over the detected one', () => {
+    vi.stubGlobal('navigator', { language: 'de-DE' });
+    expect(resolveLanguage('sv')).toBe('sv');
+    expect(resolveLanguage('xx')).toBe('de');
+    expect(resolveLanguage(42)).toBe('de');
   });
 });
