@@ -6,7 +6,8 @@
 // phone: calibrating, zeroing and checking it, and target presets, against
 // `?demo`'s fixed tilt. Settings' Calibration tab while a box is in use. For the first-run wizard: its phone calibration
 // and its box path, connected or not. For the level screen: the pose
-// guard, the level celebration, and a lost box coming back. The mute
+// guard, the level celebration, a lost box coming back, the status row
+// per vehicle, and the rebuild after a saved change. The mute
 // button and the sounds, against a stand-in for WebAudio. None of it
 // needs hardware or Web Bluetooth.
 //
@@ -566,6 +567,78 @@ async function lostBoxFlow(browser) {
   await context.close();
 }
 
+const statusLine = (page) => page.locator('.status-line');
+const diagramLabel = (page) =>
+  page.locator('#app .rv-diagram svg').first().getAttribute('aria-label');
+
+// The level screen per vehicle: the status row speaks only for what the
+// wheel cards cannot show, and a saved change rebuilds the screen only
+// when it changes what the screen is built from.
+async function levelScreenFlow(browser) {
+  // Nearly within the tolerance: how little is left.
+  let app = await openApp(browser, 'demo', {
+    'libell.settings': JSON.stringify({ toleranceMm: 60 }),
+  });
+  await statusLine(app.page).getByText('Almost level — 3 mm left').waitFor();
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // Ramps whose first step is far too high: they do not reach.
+  app = await openApp(browser, 'demo', {
+    'libell.settings': JSON.stringify({ rampStepHeightsMm: [200] }),
+  });
+  await statusLine(app.page).getByText('Your ramps are way off here — move the vehicle').waitFor();
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // A caravan: its own diagram, and nothing for the status row to say.
+  app = await openApp(browser, 'demo', {
+    'libell.settings': JSON.stringify({ vehicleType: 'caravan' }),
+  });
+  await app.page.locator('.rv-diagram svg').first().waitFor();
+  assert((await diagramLabel(app.page)).includes('caravan'), 'a caravan should get its diagram');
+  await app.page.waitForTimeout(1000);
+  assert(await statusLine(app.page).isHidden(), 'the caravan status row should stay hidden');
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  const { context, page, errors } = await openApp(browser, 'demo');
+  await page.locator('.rv-diagram svg').first().waitFor();
+  assert((await diagramLabel(page)).includes('motorhome'), 'a motorhome should get its diagram');
+  await page.locator('#app .rv-diagram').evaluate((el) => (el.dataset.flowsMark = 'first'));
+  const firstScreen = () =>
+    page
+      .locator('#app .rv-diagram[data-flows-mark=first]')
+      .count()
+      .then((n) => n === 1);
+
+  // A save that the screen is not built from keeps the same screen.
+  const general = await openSettingsTab(page, 'general');
+  await general.getByText('Chime when level').click();
+  await eventually(
+    async () => (await storedSettings(page)).soundOnLevel === false,
+    'unticking the chime should be stored',
+  );
+  await closeAllPages(page);
+  assert(await firstScreen(), 'a sound setting should not rebuild the screen');
+
+  // Switching the vehicle type rebuilds it for the caravan.
+  const vehicle = await openSettingsTab(page, 'vehicle');
+  await vehicle.locator('select:visible').first().selectOption('caravan');
+  await closeAllPages(page);
+  await eventually(
+    async () => (await diagramLabel(page)).includes('caravan'),
+    'switching to a caravan should rebuild the screen',
+  );
+  assert(!(await firstScreen()), 'the rebuilt screen should be a new one');
+  assert(
+    (await page.locator('#app .rv-diagram').count()) === 1,
+    'the rebuilt screen should hold one diagram',
+  );
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
 /** Stands in for WebAudio: counts contexts and resumes, and records every
  * tone by its frequency when it starts. */
 function fakeAudio() {
@@ -719,8 +792,9 @@ try {
   await celebrationFlow(browser);
   await lostBoxFlow(browser);
   await soundFlow(browser);
+  await levelScreenFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen',
   );
 } finally {
   await browser?.close();

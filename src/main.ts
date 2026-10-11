@@ -6,13 +6,8 @@ import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
 import { attachUpdateCheck, installUpdateReload } from './ui/appUpdate';
 import { keepScreenAwake } from './ui/wakeLock';
-import { computeLeveling, WHEEL_IDS, type GravityVector } from './domain/leveling';
-import { computeCaravanLeveling, createCaravanStabilizer } from './domain/caravan';
 import { combineCalibrations } from './domain/calibration';
-import { createDisplayStabilizer } from './domain/stability';
-import { deficitMagnitude } from './domain/rampPlan';
-import { createCaravanDiagram } from './ui/caravanDiagram';
-import { easyLevelSettings, formatLength, type LevelSettings } from './domain/settings';
+import { easyLevelSettings, type LevelSettings } from './domain/settings';
 import {
   applyVehicleGeometry,
   decodeVehicleGeometry,
@@ -53,8 +48,6 @@ import {
 import { EASYLEVEL_DESCRIPTOR, type EasyLevelSensor } from './sensor/easyLevelSensor';
 import type { XparkleSensor } from './sensor/xparkleSensor';
 import { createExternalSensorController } from './sensor/externalSensorController';
-import { createRvDiagram } from './ui/rvDiagram';
-import { createTiltReadout } from './ui/tiltReadout';
 import { createMenu, type Menu, type MenuSection } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { takeReopenSettings } from './ui/reopenSettings';
@@ -66,8 +59,6 @@ import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
 import { createIndicators, phoneCalibrationLamp } from './ui/indicators';
 import { createSensorStatusIndicator } from './ui/sensorStatusIndicator';
-import { createSensorFallbackPrompt } from './ui/sensorFallbackPrompt';
-import { createLevelOverlay } from './ui/levelOverlay';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 import {
@@ -93,7 +84,7 @@ import {
   targetOptions,
   type MenuOptionDeps,
 } from './app/menuOptionParts';
-import { createLevelFrame, type EngineTick } from './app/levelFrame';
+import { buildLevelScreen, createLevelScreenHost } from './app/levelScreen';
 import { createTargets } from './app/targets';
 import { calibratedTilt, readTilt } from './app/tiltReading';
 import { createMuteToggle, createSound } from './app/sound';
@@ -324,7 +315,7 @@ function bootstrap(root: HTMLElement): void {
     // The level screen may never have been built yet (e.g. a desktop
     // without phone motion sensors) — build it now that a real source is
     // feeding readings; harmless to rebuild if it already exists.
-    onLevelScreenNeeded: () => showLevelScreen(),
+    onLevelScreenNeeded: () => levelScreen.show(),
     // The amber calibration lamp checks whichever source is active (#131),
     // so switching source alone still has to refresh it.
     onIndicatorsChanged: () => {
@@ -381,7 +372,7 @@ function bootstrap(root: HTMLElement): void {
         applyTheme(settings.theme);
         applyAppearance(settings.appearance);
         updateIndicators();
-        maybeRebuildScreen();
+        levelScreen.rebuildIfChanged();
       },
       ...calibration,
       // Sensor source choice (#135, ADR 0014): same fields, same
@@ -427,7 +418,7 @@ function bootstrap(root: HTMLElement): void {
       // audio for the opt-in level chime and/or continuous guidance.
       if (settings.soundOnLevel || settings.soundGuidance) sound.unlock();
       updateIndicators();
-      maybeRebuildScreen();
+      levelScreen.rebuildIfChanged();
     },
     ...calibration,
     // Declared further down; only ever called after start-up (#316).
@@ -671,277 +662,50 @@ function bootstrap(root: HTMLElement): void {
     root.append(message);
   };
 
-  // A settings save can switch the vehicle type or change what the ramp
-  // plan is computed from; the level screen is then rebuilt (dropping the
-  // stabilizer's history so the new plan applies at once), and the
-  // generation counter stops the superseded frame loop.
-  const levelScreenKey = (s: LevelSettings) =>
-    JSON.stringify([
-      s.vehicleType,
-      s.rearAxle,
-      s.wheelbaseMm,
-      s.trackWidthFrontMm,
-      s.trackWidthRearMm,
-      s.rampStepHeightsMm,
-      s.rampCount,
-      s.drainPosition,
-      s.toleranceMm,
-      // Modern's silhouette/wheel-card markup differs structurally from
-      // Classic's on-diagram text (#106) — a saved appearance change
-      // needs the same rebuild axle/vehicle-type changes already get.
-      s.appearance,
-    ]);
-  let screenGeneration = 0;
-  let screenKey: string | null = null;
-  const maybeRebuildScreen = () => {
-    if (screenKey !== null && screenKey !== levelScreenKey(settings)) showLevelScreen();
+  // The active external sensor's own page, not the source list (#285,
+  // #286): shared by every main-screen surface that links to it.
+  const openActiveSensorPage = () => {
+    const source = sensor().getSource();
+    if (source !== 'phone') externalSensorPage?.openSource(source);
   };
 
-  function showLevelScreen(): void {
-    const generation = ++screenGeneration;
-    screenKey = levelScreenKey(settings);
-    root.replaceChildren();
-    root.classList.add('app--level');
-
-    // The status row now speaks only when it has something the diagram
-    // cannot show (#252): "2 wheels to raise" and "level!" were the
-    // diagram's own wheel cards written out in words, so they are gone and
-    // the row is empty most of the time. What it still says — readings
-    // that cannot be trusted, ramps that do not reach and by how much, how
-    // little is left — has no icon, so it appears when it applies and the
-    // row hides itself otherwise rather than holding a blank line.
-    const status = document.createElement('p');
-    status.className = 'status-line';
-    status.setAttribute('aria-live', 'polite');
-    const setStatus = (text: string): void => {
-      status.textContent = text;
-      status.hidden = text === '';
-    };
-    setStatus('');
-    const tilt = createTiltReadout();
-
-    const waiting = document.createElement('p');
-    waiting.className = 'app__hint';
-    waiting.textContent = t('main.waiting');
-
-    // The active external sensor's own page, not the source list (#285,
-    // #286): shared by every main-screen surface that links to it.
-    const openActiveSensorPage = () => {
-      const source = sensor().getSource();
-      if (source !== 'phone') externalSensorPage?.openSource(source);
-    };
-
-    // Sensor unavailable fallback prompt (#134): the actionable form of
-    // the plain "waiting" hint above, shown instead of it once the active
-    // EasyLevel connection is unreachable (`isSensorUnavailable`,
-    // `sensor/sensorFallback.ts`) — never both at once, see `frame()`.
-    const fallbackPrompt = createSensorFallbackPrompt(
-      () => externalSensors.retry(),
-      () => externalSensors.usePhoneSensor(),
-    );
-
-    // Full-screen confirmation shown briefly when level is reached (#124:
-    // animated fade/scale, reduced-motion-aware — see levelOverlay.ts).
-    const levelOverlay = createLevelOverlay();
-    root.append(levelOverlay.element);
-
-    // Vehicle engine (#72): compute → stabilize → render for the chosen
-    // vehicle type, reporting what the celebration/re-arm logic needs.
-    let engineElement: HTMLElement;
-    let engineTick: (gravity: GravityVector, nowMs: number) => EngineTick;
-    if (settings.vehicleType === 'caravan') {
-      const diagram = createCaravanDiagram(settings.rearAxle, settings.appearance);
-      const stabilize = createCaravanStabilizer();
-      // Nothing left to say here (#252): the caravan diagram draws the
-      // jockey wheel's direction, its action and its amount inside the
-      // drawing itself, and the axle wheels carry their own severity — so
-      // every message this used to produce was the picture in words. The
-      // "measuring" warning below is set on the row directly and is
-      // unaffected.
-      const caravanStatusText = (): string => '';
-      engineElement = diagram.element;
-      engineTick = (gravity, nowMs) => {
-        const result = stabilize(
-          computeCaravanLeveling(gravity, settings, effectiveCalibration()),
-          settings,
-          nowMs,
-        );
-        diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
-        setStatus(caravanStatusText());
-        status.classList.toggle('status-line--level', result.isLevel);
-        tilt.update(result);
-        const maxAxleMm = Math.max(result.axle.left.displayMm, result.axle.right.displayMm);
-        const jockeyMm = result.jockey.direction === 'ok' ? 0 : result.jockey.displayMm;
-        return { isLevel: result.isLevel, maxCorrectionMm: Math.max(maxAxleMm, jockeyMm) };
-      };
-    } else {
-      const diagram = createRvDiagram(settings.rearAxle, settings.appearance);
-      const stabilize = createDisplayStabilizer();
-      const statusText = (result: ReturnType<typeof stabilize>): string => {
-        // Level, and which wheels to raise, are what the wheel cards say —
-        // in colour, glyph and step number, per wheel (#252). Saying it
-        // again in a sentence added nothing but a line.
-        if (result.isLevel) return '';
-        const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
-        // How little is left, and whether the ramps reach at all, are the
-        // two things no wheel card can show: a grey wheel says the ramps
-        // do not reach, never by how much.
-        if (maxMm <= settings.toleranceMm + 10) {
-          return t('status.almost', {
-            left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
-          });
-        }
-        // Wheels the plan actually asks to drive up (#93) — a red wheel
-        // without a step is one the owned ramps cannot serve.
-        const toRaise = WHEEL_IDS.filter(
-          (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
-        ).length;
-        if (toRaise === 0) {
-          const magnitude = deficitMagnitude(result.maxDeficitMm, settings.toleranceMm);
-          return t(magnitude === 'close' ? 'status.cantLevel.close' : 'status.cantLevel.far');
-        }
-        return '';
-      };
-      engineElement = diagram.element;
-      engineTick = (gravity, nowMs) => {
-        const result = stabilize(
-          computeLeveling(gravity, settings, effectiveCalibration()),
-          settings,
-          nowMs,
-        );
-        diagram.update(result, settings.displayUnit, settings.rampStepHeightsMm);
-        setStatus(statusText(result));
-        status.classList.toggle('status-line--level', result.isLevel);
-        tilt.update(result);
-        const maxMm = Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
-        return { isLevel: result.isLevel, maxCorrectionMm: maxMm };
-      };
-    }
-
-    root.append(engineElement, status, tilt.element, waiting, fallbackPrompt.element);
-
-    // While there is no reading at all (first load, or a lost external
-    // sensor), the diagram and readout are dimmed and say nothing (#312):
-    // the last frame's steps must never stay on screen looking live.
-    const showNoData = (noData: boolean): void => {
-      engineElement.classList.toggle('is-no-data', noData);
-      tilt.element.classList.toggle('is-no-data', noData);
-      if (noData) setStatus('');
-    };
-
-    // Pose guard: wrong-pose overlay instead of wrong guidance (#51).
-    const poseOverlay = document.createElement('div');
-    poseOverlay.className = 'pose-overlay';
-    poseOverlay.hidden = true;
-    const poseText = document.createElement('p');
-    poseText.className = 'pose-overlay__text';
-    // External sensor only (#285): what to do about a sensor that reads
-    // wrong, with a direct link to its own page (live values, mounting).
-    const poseHint = document.createElement('p');
-    poseHint.className = 'pose-overlay__hint';
-    poseHint.textContent = t('pose.sensorHint');
-    const poseSensorButton = document.createElement('button');
-    poseSensorButton.type = 'button';
-    poseSensorButton.className = 'menu__action';
-    poseSensorButton.textContent = t('pose.openSensorPage');
-    poseSensorButton.addEventListener('click', openActiveSensorPage);
-    poseOverlay.append(poseText, poseHint, poseSensorButton);
-    root.append(poseOverlay);
-
-    // Stale-data overlay (#132): a third, distinct state from the pose
-    // overlay above and R25's "Measuring…" — there is no trustworthy data
-    // at all (the active sensor has gone quiet, connected or not), so the
-    // wheel/ramp guidance is hidden rather than left frozen mid-display.
-    const staleOverlay = document.createElement('div');
-    staleOverlay.className = 'stale-overlay';
-    staleOverlay.hidden = true;
-    const staleText = document.createElement('p');
-    staleText.className = 'stale-overlay__text';
-    staleText.textContent = t('stale.dataUnavailable');
-    // External sensor only (#286): the way to its own page (live values,
-    // connection), as the pose overlay above already has.
-    const staleSensorButton = document.createElement('button');
-    staleSensorButton.type = 'button';
-    staleSensorButton.className = 'menu__action';
-    staleSensorButton.textContent = t('pose.openSensorPage');
-    staleSensorButton.addEventListener('click', openActiveSensorPage);
-    staleOverlay.append(staleText, staleSensorButton);
-    root.append(staleOverlay);
-
-    const landscape = window.matchMedia('(orientation: landscape)');
-    const levelFrame = createLevelFrame({
-      sensor,
-      isPaused: () =>
-        isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen,
-      refreshStatus() {
-        updateSensorStatus();
-        // The box page's live rows: a no-op unless that page is open.
-        externalSensorPage?.refreshLive();
-      },
-      externalSensors,
-      hasSensorPage: externalSensorPage !== null,
-      isLandscape: () => landscape.matches,
-      isVisible: () => document.visibilityState === 'visible',
-      settings: () => settings,
-      playGuidancePulse: sound.playGuidancePulse,
-      view: {
-        pause() {
-          poseOverlay.hidden = true;
-          staleOverlay.hidden = true;
-          fallbackPrompt.update(false, true);
-          levelOverlay.hideNow();
+  // A settings save can switch the vehicle type or change what the ramp
+  // plan is computed from; the level screen is then rebuilt.
+  const levelScreen = createLevelScreenHost({
+    settings: () => settings,
+    build() {
+      const landscape = window.matchMedia('(orientation: landscape)');
+      return buildLevelScreen(root, {
+        sensor,
+        settings: () => settings,
+        calibration: effectiveCalibration,
+        isPaused: () =>
+          isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen,
+        refreshStatus() {
+          updateSensorStatus();
+          // The box page's live rows: a no-op unless that page is open.
+          externalSensorPage?.refreshLive();
         },
-        showNoData(unavailable, canRetrySilently) {
-          showNoData(true);
-          fallbackPrompt.update(unavailable, canRetrySilently);
-          // The plain hint and the Retry prompt never show at once.
-          waiting.hidden = unavailable;
-          if (!unavailable) waiting.textContent = t('main.waiting');
+        externalSensors,
+        hasSensorPage: externalSensorPage !== null,
+        isLandscape: () => landscape.matches,
+        isVisible: () => document.visibilityState === 'visible',
+        openActiveSensorPage,
+        retry: () => externalSensors.retry(),
+        usePhoneSensor: () => externalSensors.usePhoneSensor(),
+        playChime: sound.playChime,
+        playGuidancePulse: sound.playGuidancePulse,
+        vibrate(pattern) {
+          if ('vibrate' in navigator) navigator.vibrate(pattern);
         },
-        showReading() {
-          showNoData(false);
-          waiting.hidden = true;
-          fallbackPrompt.update(false, true);
-        },
-        showStale(offerSensorPage) {
-          staleSensorButton.hidden = !offerSensorPage;
-          staleOverlay.hidden = false;
-        },
-        hideStale: () => (staleOverlay.hidden = true),
-        showPose(problem) {
-          poseText.textContent = t(problem.message);
-          poseHint.textContent = t(problem.hint);
-          poseHint.hidden = poseSensorButton.hidden = !problem.offerSensorPage;
-          poseOverlay.hidden = false;
-        },
-        hidePose: () => (poseOverlay.hidden = true),
-        tick: engineTick,
-        showMeasuring() {
-          setStatus(t('status.measuring'));
-          status.classList.remove('status-line--level');
-        },
-        celebrate() {
-          if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-          if (settings.soundOnLevel) sound.playChime();
-          levelOverlay.celebrate();
-        },
-        hideCelebration: () => levelOverlay.hideNow(),
-      },
-    });
-
-    const frame = () => {
-      // A rebuilt screen (vehicle type change) owns the loop from here.
-      if (generation !== screenGeneration) return;
-      levelFrame(performance.now());
-      requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
-  }
+      });
+    },
+  });
 
   const handleState = (state: SensorState) => {
     switch (state) {
       case 'granted':
-        showLevelScreen();
+        levelScreen.show();
         break;
       case 'denied':
         showMessage(t('main.denied'));
@@ -969,7 +733,7 @@ function bootstrap(root: HTMLElement): void {
         saveSettings(settings);
         markMeasurementsSaved();
         updateIndicators();
-        maybeRebuildScreen();
+        levelScreen.rebuildIfChanged();
       },
       onDismiss: () => {
         // Nothing to do — the link is already consumed off the URL.
@@ -980,7 +744,7 @@ function bootstrap(root: HTMLElement): void {
   }
 
   if (demo) {
-    showLevelScreen();
+    levelScreen.show();
     return;
   }
 

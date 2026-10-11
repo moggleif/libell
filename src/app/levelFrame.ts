@@ -1,7 +1,7 @@
 /**
  * One frame of the level screen (#374): what the screen shows for the
  * reading at hand, and when the level celebration and the audio guidance
- * fire. The screen's elements stay in `main.ts` behind `LevelFrameView`;
+ * fire. The screen's elements live in `levelScreenView.ts` behind `LevelFrameView`;
  * this module only decides.
  */
 import { createAudioGuidance, type GuidanceDirection } from '../domain/audioGuidance';
