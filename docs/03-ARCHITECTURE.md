@@ -16,7 +16,8 @@ src/
 │                  # health, learn guide, password), installOffsets.ts (each box's zero),
 │                  # boxZero.ts (zeroing a box), phoneCalibration.ts (bias + vehicle zero),
 │                  # targets.ts (target presets), tiltReading.ts (sensor tilt in degrees),
-│                  # menuOptionParts.ts (option groups the menu, wizard and box pages share)
+│                  # menuOptionParts.ts (option groups the menu, wizard and box pages share),
+│                  # levelFrame.ts (one level-screen frame: overlays, celebration, audio)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
@@ -264,7 +265,7 @@ connection stayed open) is visible even though `getGravity()` still returns its 
 non-null value. `domain/staleness.ts`'s `isSensorStale(lastSampleAtMs, nowMs,
 timeoutMs)` is the one pure predicate both sources share — time is always a parameter,
 matching R25's stillness detector and the display stabilizer's dwell timers, so it is
-unit-tested without real timers. `main.ts`'s frame loop checks it every frame with a
+unit-tested without real timers. The frame loop (`src/app/levelFrame.ts`) checks it every frame with a
 per-source timeout (2s phone, continuously sampling; 4s EasyLevel, whose event-driven
 BLE notifications can have larger natural gaps) and, while stale, shows a dedicated
 overlay instead of the pose overlay or the diagram — a third state, never conflated
@@ -292,7 +293,9 @@ responsive and must stay usable in landscape rather than relying on a hard lock.
 The entry point subscribes to the sensor, reads settings from the store, runs
 `computeLeveling`, and hands the resulting `LevelingResult` to the render functions in
 `ui/`. Rendering is driven by `requestAnimationFrame` so sensor events do not force a
-layout on every tick.
+layout on every tick. What each frame shows (no data, stale, wrong pose, the guidance)
+and when the level celebration and audio guidance fire is decided in
+`src/app/levelFrame.ts`; `main.ts` keeps the screen's elements behind its view.
 
 ## Settings (`src/data/settingsStore.ts`)
 
