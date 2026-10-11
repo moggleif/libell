@@ -76,6 +76,8 @@ interface Topic {
   id: TopicId;
   h: MessageKey;
   text: MessageKey;
+  /** A last line of its own, for what only applies to a caravan (#368). */
+  caravanLine?: MessageKey;
   picture?: (label: string) => Element;
   go?: { label: () => string; target: HelpTarget | 'feedback' };
 }
@@ -83,7 +85,13 @@ interface Topic {
 const openTab = (tab: MessageKey) => () => t('help.open', { name: t(tab) });
 
 const TOPICS: Topic[] = [
-  { id: 'screen', h: 'help.screen.h', text: 'help.screen.t', picture: legendIllustration },
+  {
+    id: 'screen',
+    h: 'help.screen.h',
+    text: 'help.screen.t',
+    caravanLine: 'help.screen.caravan',
+    picture: legendIllustration,
+  },
   { id: 'place', h: 'onboard.step1.h', text: 'help.what.t', picture: placementIllustration },
   {
     id: 'measures',
@@ -224,6 +232,12 @@ function buildHelpPanel(
     p.className = 'menu__text';
     p.textContent = t(topic.text);
     body.append(p);
+    if (topic.caravanLine) {
+      const line = document.createElement('p');
+      line.className = 'menu__text';
+      line.textContent = t(topic.caravanLine);
+      body.append(line);
+    }
     if (topic.go && hasTarget(topic.go.target)) {
       const target = topic.go.target;
       const action = document.createElement('button');

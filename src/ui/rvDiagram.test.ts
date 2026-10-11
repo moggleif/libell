@@ -32,8 +32,7 @@ function labelsOf(element: HTMLElement) {
   const stepLabels = [...element.querySelectorAll('.rv-diagram__step-label')];
   return {
     // Wheels append in WHEEL_IDS order: FL, FR, RL, RR.
-    stepName: (i: number) => stepLabels[i]?.children[0]?.textContent,
-    stepHeight: (i: number) => stepLabels[i]?.children[1]?.textContent,
+    stepName: (i: number) => stepLabels[i]?.textContent,
     lift: (i: number) => [...element.querySelectorAll('.rv-diagram__lift-label')][i]?.textContent,
     glyph: (i: number) => [...element.querySelectorAll('.rv-diagram__wheel-glyph')][i]?.textContent,
     wheelClass: (i: number) =>
@@ -53,7 +52,7 @@ describe('rvDiagram front arrow (screen-cleanup follow-up)', () => {
 });
 
 describe('rvDiagram wheel labels', () => {
-  it('shows the step name, its parenthesized height and the plain lift for an orange wheel', () => {
+  it('shows the step name and one height, the lift, for an orange wheel (#368)', () => {
     const diagram = createRvDiagram();
     diagram.update(
       result({ frontLeft: { displayMm: 63, stepMm: 78, severity: 'small' } }),
@@ -62,8 +61,9 @@ describe('rvDiagram wheel labels', () => {
     );
     const l = labelsOf(diagram.element);
     expect(l.stepName(0)).toBe('Step 2');
-    expect(l.stepHeight(0)).toBe('(78 mm)');
     expect(l.lift(0)).toBe('63 mm');
+    // The step's own height is no longer shown next to its name (#368).
+    expect(diagram.element.textContent).not.toContain('78 mm');
     expect(l.glyph(0)).toBe('↑');
     expect(l.wheelClass(0)).toContain('rv-diagram__wheel--small');
   });
@@ -73,7 +73,6 @@ describe('rvDiagram wheel labels', () => {
     diagram.update(result({}), 'mm', STEPS);
     const l = labelsOf(diagram.element);
     expect(l.stepName(1)).toBe('');
-    expect(l.stepHeight(1)).toBe('');
     expect(l.lift(1)).toBe('');
     expect(l.glyph(1)).toBe('✓');
     expect(l.wheelClass(1)).toContain('rv-diagram__wheel--none');
@@ -88,13 +87,12 @@ describe('rvDiagram wheel labels', () => {
     );
     const l = labelsOf(diagram.element);
     expect(l.stepName(2)).toBe('Step 3');
-    expect(l.stepHeight(2)).toBe('(112 mm)');
     expect(l.lift(2)).toBe('200 mm');
     expect(l.glyph(2)).toBe('✕');
     expect(l.wheelClass(2)).toContain('rv-diagram__wheel--large');
   });
 
-  it('says "No ramp" for a gray/unserved wheel instead of a blank step line (screen-cleanup follow-up)', () => {
+  it('says "No ramp" and shows no height for a gray/unserved wheel (screen-cleanup follow-up, #368)', () => {
     const diagram = createRvDiagram();
     diagram.update(
       result({ rearLeft: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
@@ -103,7 +101,7 @@ describe('rvDiagram wheel labels', () => {
     );
     const l = labelsOf(diagram.element);
     expect(l.stepName(2)).toBe('No ramp');
-    expect(l.stepHeight(2)).toBe('');
+    expect(l.lift(2)).toBe('');
   });
 
   it('falls back to the plain height when the step is not in the configured list', () => {
@@ -115,7 +113,7 @@ describe('rvDiagram wheel labels', () => {
     );
     const l = labelsOf(diagram.element);
     expect(l.stepName(3)).toBe('↑ 60 mm');
-    expect(l.stepHeight(3)).toBe('');
+    expect(l.lift(3)).toBe('40 mm');
   });
 
   it('formats labels in cm when that display unit is chosen', () => {
@@ -126,7 +124,6 @@ describe('rvDiagram wheel labels', () => {
       STEPS,
     );
     const l = labelsOf(diagram.element);
-    expect(l.stepHeight(0)).toBe('(7.8 cm)');
     expect(l.lift(0)).toBe('6.3 cm');
   });
 
@@ -161,7 +158,6 @@ describe('rvDiagram wheel labels', () => {
     diagram.update(result({}), 'mm', STEPS);
     const l = labelsOf(diagram.element);
     expect(l.stepName(0)).toBe('');
-    expect(l.stepHeight(0)).toBe('');
     expect(l.lift(0)).toBe('');
   });
 });
@@ -226,15 +222,15 @@ describe('rvDiagram — modern appearance (#106)', () => {
     expect(c.severityClass(0)).toContain('wheel-card--small');
   });
 
-  it('dims the mm figure for an unserved wheel, same convention as classic', () => {
+  it('shows no height for an unserved wheel, same as classic (#368)', () => {
     const diagram = createRvDiagram('single', 'modern');
     diagram.update(
       result({ rearRight: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
       'mm',
       STEPS,
     );
-    const mm = diagram.element.querySelectorAll('.wheel-card__mm')[3];
-    expect(mm?.classList.contains('wheel-card__mm--dim')).toBe(true);
+    const c = cardsOf(diagram.element);
+    expect(c.mm(3)).toBe('');
   });
 
   it('says "No ramp" for an unserved wheel instead of a blank step line (screen-cleanup follow-up)', () => {

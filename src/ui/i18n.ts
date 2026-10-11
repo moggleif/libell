@@ -529,6 +529,13 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'REAR R',
     'caravan.crankUp': 'Crank up',
     'caravan.crankDown': 'Crank down',
+    // Modern caravan wheel cards' aria-labels (#368).
+    'caravan.axleLeft': 'Left axle wheel',
+    'caravan.axleRight': 'Right axle wheel',
+    'caravan.jockeyWheel': 'Jockey wheel',
+    // Help → Reading the screen, for a caravan's jockey wheel (#368).
+    'help.screen.caravan':
+      'Caravan: the jockey wheel says Crank up or Crank down, and by how much.',
 
     'tilt.frontBack': 'Front/back',
     'tilt.sideSide': 'Side/side',
@@ -1003,6 +1010,10 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'H BAK',
     'caravan.crankUp': 'Veva upp',
     'caravan.crankDown': 'Veva ner',
+    'caravan.axleLeft': 'Vänster axelhjul',
+    'caravan.axleRight': 'Höger axelhjul',
+    'caravan.jockeyWheel': 'Stödhjul',
+    'help.screen.caravan': 'Husvagn: stödhjulet visar Veva upp eller Veva ner, och hur mycket.',
 
     'tilt.frontBack': 'Längsled',
     'tilt.sideSide': 'Sidled',
@@ -1478,6 +1489,11 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'ARRIÈRE D',
     'caravan.crankUp': 'Monter à la manivelle',
     'caravan.crankDown': 'Descendre à la manivelle',
+    'caravan.axleLeft': 'Roue d’essieu gauche',
+    'caravan.axleRight': 'Roue d’essieu droite',
+    'caravan.jockeyWheel': 'Roue jockey',
+    'help.screen.caravan':
+      'Caravane : la roue jockey indique Monter ou Descendre à la manivelle, et de combien.',
 
     'tilt.frontBack': 'Longitudinal',
     'tilt.sideSide': 'Latéral',
@@ -1954,6 +1970,11 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'TRAS DER',
     'caravan.crankUp': 'Subir con la manivela',
     'caravan.crankDown': 'Bajar con la manivela',
+    'caravan.axleLeft': 'Rueda izquierda del eje',
+    'caravan.axleRight': 'Rueda derecha del eje',
+    'caravan.jockeyWheel': 'Rueda jockey',
+    'help.screen.caravan':
+      'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
 
     'tilt.frontBack': 'Delante/detrás',
     'tilt.sideSide': 'Lado/lado',
@@ -2430,6 +2451,11 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'HINTEN R',
     'caravan.crankUp': 'Hochkurbeln',
     'caravan.crankDown': 'Herunterkurbeln',
+    'caravan.axleLeft': 'Linkes Achsrad',
+    'caravan.axleRight': 'Rechtes Achsrad',
+    'caravan.jockeyWheel': 'Stützrad',
+    'help.screen.caravan':
+      'Wohnwagen: Das Stützrad zeigt Hochkurbeln oder Herunterkurbeln und um wie viel.',
 
     'tilt.frontBack': 'Längs',
     'tilt.sideSide': 'Quer',
