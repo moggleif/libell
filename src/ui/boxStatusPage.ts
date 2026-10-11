@@ -7,16 +7,17 @@
  * `refreshLive()`, the same "runs every frame regardless of what's open"
  * pattern `main.ts` already uses for the top-bar sensor-status dot).
  *
- * The primary rows work for either sensor source. The "Debug info"
- * disclosure below them does not (design review — the earlier version
- * embedded the universal, sensor-agnostic Diagnostics page here, which was
- * cut entirely for being too generic to earn its keep): it is EasyLevel-
- * only, hidden while the phone's own sensor is active, and shows raw
- * values straight off the box — device id, last-sample age, the raw accel
- * int16 triplet, firmware tier, and the raw status-characteristic bytes as
- * hex — the kind of detail that matters when a box isn't behaving as
- * expected (wrong reading, no data arriving, an unfamiliar firmware tier),
- * not everyday reading material.
+ * The primary rows work for every box. The "Debug info" disclosure below
+ * them does not (design review — the earlier version embedded the
+ * universal, sensor-agnostic Diagnostics page here, which was cut entirely
+ * for being too generic to earn its keep): it is drawn only for a box whose
+ * descriptor has the `debugBytes` capability (today the EasyLevel), hidden
+ * while the phone's own sensor is active, and shows raw values straight
+ * off the box — device id, last-sample age, the raw accel triplet,
+ * firmware tier, and the raw status-characteristic bytes as hex — the kind
+ * of detail that matters when a box isn't behaving as expected (wrong
+ * reading, no data arriving, an unfamiliar firmware tier), not everyday
+ * reading material.
  *
  * Battery/temperature reuse the exact `sensorSource.detail.*` wording
  * `sensorSourceSection.ts` already shows inline on the External sensor
@@ -52,20 +53,20 @@ export interface BoxStatusOptions {
    * rendered is decided by `sensor.capabilities`, not by the value. */
   getHealth(): ExternalSensorHealth | null;
   /** Calibrated roll/pitch — the same effective calibration the leveling
-   * math itself uses — or null before the first sample. Shown for either
-   * sensor source, unlike the EasyLevel-only fields below. */
+   * math itself uses — or null before the first sample. Shown for every
+   * box, unlike the debug fields below. */
   getCalibratedTilt(): Calibration | null;
-  /** The connected box's Web Bluetooth device id (#130), or null. */
-  getEasyLevelDeviceId(): string | null;
-  /** `performance.now()` at the box's last accepted accel notification, or
-   * null — the EasyLevel sensor's own value, not whichever source happens
-   * to be active, so this still means something while the phone sensor is
-   * the active source but a box was connected before. */
-  getEasyLevelLastSampleAt(): number | null;
-  /** The raw accel int16 triplet straight off the box (`easyLevelSensor.ts`
-   * doesn't scale it — see `easyLevelProtocol.ts`), or null. */
-  getEasyLevelRawAccel(): GravityVector | null;
-  /** Raw `faf52c22-...` bytes, or null. */
+  /** This box's Web Bluetooth device id (#130), or null. */
+  getDeviceId(): string | null;
+  /** `performance.now()` at this box's last accepted sample, or null —
+   * the box's own value, not whichever source happens to be active, so
+   * this still means something while the phone sensor is the active
+   * source but the box was connected before. */
+  getLastSampleAt(): number | null;
+  /** The accel triplet as this box's adapter reports it (the EasyLevel's
+   * is raw int16, unscaled — see `easyLevelProtocol.ts`), or null. */
+  getRawAccel(): GravityVector | null;
+  /** The EasyLevel's raw `faf52c22-...` status bytes, or null. */
   getEasyLevelStatusBytes(): Uint8Array | null;
   /**
    * Debug hardware-compatibility workaround (#212): whether an extra fixed
@@ -117,7 +118,7 @@ export interface BoxStatusPage {
 }
 
 /** "0.4 s ago" from a `performance.now()`-based sample timestamp — never a
- * wall-clock date, since `getEasyLevelLastSampleAt()` is monotonic and
+ * wall-clock date, since `getLastSampleAt()` is monotonic and
  * page-relative, not a `Date.now()` epoch value. */
 function ageText(lastSampleAt: number | null, nowMs: number): string {
   if (lastSampleAt === null) return '—';
@@ -211,7 +212,7 @@ export function createBoxStatusPage(options: BoxStatusOptions): BoxStatusPage {
   footerSlot.className = 'box-footer';
   page.body.append(footerSlot);
 
-  // Debug info (EasyLevel only): closed by default, same native-<details>
+  // Debug info (a `debugBytes` box only): closed by default, same native-<details>
   // discipline as the settings page's Advanced disclosure (#157) — no JS
   // needed to track open/closed state. The whole block is hidden while the
   // phone's own sensor is active — there is no "raw box data" to show.
@@ -408,12 +409,12 @@ export function createBoxStatusPage(options: BoxStatusOptions): BoxStatusPage {
     debugDetails.hidden = !isActive;
     if (isActive) {
       deviceIdRow.textContent = t('sensorStatus.debug.deviceId', {
-        value: options.getEasyLevelDeviceId() ?? notAvailable,
+        value: options.getDeviceId() ?? notAvailable,
       });
       lastSampleRow.textContent = t('sensorStatus.debug.lastSample', {
-        value: ageText(options.getEasyLevelLastSampleAt(), performance.now()),
+        value: ageText(options.getLastSampleAt(), performance.now()),
       });
-      const rawAccel = options.getEasyLevelRawAccel();
+      const rawAccel = options.getRawAccel();
       rawAccelRow.textContent = t('sensorStatus.debug.rawAccel', {
         value: rawAccel ? `${rawAccel.x}, ${rawAccel.y}, ${rawAccel.z}` : notAvailable,
       });
@@ -428,12 +429,12 @@ export function createBoxStatusPage(options: BoxStatusOptions): BoxStatusPage {
 
   copyDebugButton.addEventListener('click', () => {
     const health = options.getHealth();
-    const rawAccel = options.getEasyLevelRawAccel();
+    const rawAccel = options.getRawAccel();
     const text = [
       `Libell ${options.sensor.displayName} debug info`,
       `Connection state: ${options.getSensorState()}`,
-      `Device ID: ${options.getEasyLevelDeviceId() ?? notAvailable}`,
-      `Last sample: ${ageText(options.getEasyLevelLastSampleAt(), performance.now())}`,
+      `Device ID: ${options.getDeviceId() ?? notAvailable}`,
+      `Last sample: ${ageText(options.getLastSampleAt(), performance.now())}`,
       `Raw accelerometer (x/y/z): ${rawAccel ? `${rawAccel.x}, ${rawAccel.y}, ${rawAccel.z}` : notAvailable}`,
       `Firmware: ${health?.firmwareLabel ?? notAvailable}`,
       `Raw status bytes: ${hexBytes(options.getEasyLevelStatusBytes()) ?? notAvailable}`,

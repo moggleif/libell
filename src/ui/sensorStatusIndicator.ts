@@ -105,7 +105,7 @@ export function createSensorStatusIndicator(
     update(source, state) {
       if (!visible) return;
       // The guide-only dot never reflects source/state — there is no
-      // `EasyLevelSensor` behind it to connect or disconnect, only a page
+      // box behind it to connect or disconnect, only a page
       // explaining Bluefy (R39).
       if (guideOnly) {
         const label = t('sensorStatus.idle.guide');

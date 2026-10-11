@@ -17,21 +17,21 @@
  * `domain/staleness.ts`'s is (see that file's doc comment): the moment
  * `state` moves off 'disconnected' — a successful Retry reaching
  * 'granted', or the user's explicit "Use phone sensor" switch (which
- * moves the active source off EasyLevel entirely) — the very next call
+ * moves the active source off the box entirely) — the very next call
  * reports false again; there is no separate flag for `main.ts` to clear
  * itself.
  *
  * `EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS`/`isExternalSensorAutoRetryDue` (#211)
  * revise #134's original "one tap, one attempt, no retry loop" choice —
  * that rule was about never *switching source* automatically (ADR 0014:
- * phone vs. EasyLevel have independent calibration references, so an
+ * phone vs. box have independent calibration references, so an
  * unannounced switch could show a plausible-looking but wrong reading),
  * not about reconnecting the *same already-known box*, which has no such
  * ambiguity. Requiring a manual tap to recover from a routine BLE hiccup
  * assumes a user comfortable enough with app UI conventions to notice the
  * prompt and know what "Retry" means — not a safe assumption for this
  * app's actual users. `main.ts` drives the loop (calling the exact same
- * `EasyLevelSensor.reconnect()` the manual button already uses, never a
+ * `ExternalSensor.reconnect()` the manual button already uses, never a
  * second implementation); this module only owns the pure "is it time to
  * try again yet" check, the same time-as-parameter discipline
  * `domain/staleness.ts`'s `isSensorStale` already follows. The manual

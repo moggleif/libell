@@ -802,10 +802,6 @@ function bootstrap(root: HTMLElement): void {
     getVehicleType: () => settings.vehicleType,
     getActiveTargetName: () => activeTargetName(),
     getHealth: () => healthOf('easylevel'),
-    getEasyLevelDeviceId: () => externalSensors.getSensor('easylevel')?.getDeviceId() ?? null,
-    getEasyLevelLastSampleAt: () =>
-      externalSensors.getSensor('easylevel')?.getLastSampleAt() ?? null,
-    getEasyLevelRawAccel: () => externalSensors.getSensor('easylevel')?.getGravity() ?? null,
     // Raw status bytes are EasyLevel's own debug surface, gated by its
     // descriptor's `debugBytes` capability (#268) — a source without them
     // never draws the row.
@@ -889,6 +885,9 @@ function bootstrap(root: HTMLElement): void {
         connectSensor: () => externalSensors.connect(descriptor.id),
         disconnectSensor: () => externalSensors.disconnect(),
         getHealth: () => healthOf(descriptor.id),
+        getDeviceId: () => externalSensors.getSensor(descriptor.id)?.getDeviceId() ?? null,
+        getLastSampleAt: () => externalSensors.getSensor(descriptor.id)?.getLastSampleAt() ?? null,
+        getRawAccel: () => externalSensors.getSensor(descriptor.id)?.getGravity() ?? null,
         password: passwordFor(descriptor.id),
         // Each source's installation offset is its own (#263): where one
         // box is bolted in says nothing about where another is.
