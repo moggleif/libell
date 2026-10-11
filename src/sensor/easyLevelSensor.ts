@@ -75,6 +75,7 @@ import {
 } from './easyLevelProtocol';
 import { easyLevelSimulationMode } from './easyLevelSimulator';
 import type { ExternalSensorDescriptor } from './externalSensors';
+import { waitForAdvertisement } from './bleAdvertisement';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -135,6 +136,24 @@ export function isEasyLevelInitialCalibrationWaitExpired(
 ): boolean {
   return nowMs - connectedAtMs >= EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS;
 }
+
+/**
+ * How long the box may stay silent, link still open, before Libell treats
+ * it as lost contact (#358): it closes the link and reports
+ * `'disconnected'`, so the card says "No contact", Reconnect is offered
+ * and the background auto-retry (#211) starts, exactly as for an outright
+ * drop. The Xparkle adapter gets the same outcome from its read timeout.
+ *
+ * Longer than the descriptor's `staleTimeoutMs`, so R35's "no new sensor
+ * data" overlay always covers the gap first and an ordinary BLE hiccup
+ * only ever shows that overlay. Counted only once connected: the manual's
+ * "connecting can take up to 60 seconds" is the connect itself, which
+ * Libell leaves to the browser with no limit of its own.
+ */
+export const EASYLEVEL_SILENCE_LIMIT_MS = 10000;
+
+/** How often the silence above is checked while connected. */
+const SILENCE_CHECK_INTERVAL_MS = 1000;
 
 /** Web Bluetooth is Chrome/Android only — never Safari/iOS. */
 export function isWebBluetoothSupported(): boolean {
@@ -324,7 +343,17 @@ export function createWebBluetoothTransport(
         optionalServices: [EASYLEVEL_SERVICE_UUID],
       });
       picked = device;
-      return connectToDevice(device, onDisconnect);
+      try {
+        return await connectToDevice(device, onDisconnect);
+      } catch {
+        // Picked, but the link would not come up (#357): a box can take a
+        // moment before it advertises and accepts a connection again, for
+        // example right after Disconnect. Wait to hear it, the same way the
+        // silent reconnect does (#356), and try once more. A second failure
+        // is the caller's ordinary "could not connect".
+        await waitForAdvertisement(device);
+        return connectToDevice(device, onDisconnect);
+      }
     },
     async reconnect(deviceId, onDisconnect): Promise<EasyLevelConnection | null> {
       try {
@@ -339,6 +368,10 @@ export function createWebBluetoothTransport(
           device = devices.find((candidate) => candidate.id === deviceId) ?? null;
         }
         if (!device) return null;
+        // Hear the box first (#356, found on an Xparkle box in #288): a
+        // connect to a box no scan has seen since the drop often fails
+        // even with the box in range.
+        await waitForAdvertisement(device);
         return await connectToDevice(device, onDisconnect);
       } catch {
         // A GATT connect failure (box out of range, powered off, ...) —
@@ -405,8 +438,34 @@ export function createEasyLevelSensor(
   // link merely still being open (this issue's first example: notifications
   // silently stopping while the connection stays "connected").
   let lastSampleAt: number | null = null;
+  // #358: when the box was last heard at all — any accel notification,
+  // including one still held back by the initial-calibration wait — or
+  // when the link came up. Only the silence watchdog reads it.
+  let lastHeardAt = 0;
+  let silenceTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopSilenceWatch(): void {
+    if (silenceTimer !== null) clearInterval(silenceTimer);
+    silenceTimer = null;
+  }
+
+  /** Watch a live link for a stream that has stopped (#358). */
+  function startSilenceWatch(): void {
+    stopSilenceWatch();
+    lastHeardAt = now();
+    silenceTimer = setInterval(() => {
+      if (state !== 'granted' || now() - lastHeardAt <= EASYLEVEL_SILENCE_LIMIT_MS) return;
+      // Closed actively (#219): a half-open link keeps the box from
+      // advertising, so no reconnect could find it. The transport's
+      // teardown reports nothing through `onDisconnect`, so the lost state
+      // is set here, keeping `connection` for its device id.
+      connection?.disconnect();
+      onGattDisconnected();
+    }, SILENCE_CHECK_INTERVAL_MS);
+  }
 
   function onGattDisconnected(): void {
+    stopSilenceWatch();
     // Lost, not denied: surfaces distinctly (#116's AC) so the UI can
     // offer reconnection instead of silently freezing on the last value.
     state = 'disconnected';
@@ -458,6 +517,7 @@ export function createEasyLevelSensor(
     }
     try {
       await connection.subscribeAccel((view) => {
+        lastHeardAt = now();
         if (awaitingInitialCalibration) {
           if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) {
             return; // still within the grace window — drop this sample
@@ -496,6 +556,7 @@ export function createEasyLevelSensor(
       try {
         await wireConnection(await transport.connect(onGattDisconnected));
         state = 'granted';
+        startSilenceWatch();
         return state;
       } catch {
         // Covers a cancelled device picker, a GATT connect failure, or a
@@ -521,6 +582,7 @@ export function createEasyLevelSensor(
         }
         await wireConnection(result);
         state = 'granted';
+        startSilenceWatch();
         return state;
       } catch {
         // A subscribe failure after a successful GATT connect, say — same
@@ -538,6 +600,7 @@ export function createEasyLevelSensor(
     getStatusBytes: () => statusBytes,
     getStatus: () => status,
     disconnect(): void {
+      stopSilenceWatch();
       connection?.disconnect();
       connection = null;
       state = 'idle';

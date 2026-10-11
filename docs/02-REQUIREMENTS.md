@@ -982,7 +982,22 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Given** I pick the box in the device picker, right after disconnecting it (#322)
 - **When** the first connect to it fails
 - **Then** the app waits to hear the box advertise (as the silent reconnect does,
-  #288) and tries once more before saying it could not connect.
+  #288) and tries once more before saying it could not connect. This holds for the
+  EasyLevel box as for the Xparkle box (#357).
+- **Given** the EasyLevel box was lost and the silent reconnect runs (R37's background
+  retry, or the next app open)
+- **Then** it first waits a bounded time to hear the box advertise, where the browser
+  can watch for that, and then connects — the same wait the Xparkle box gets (#356,
+  #288), since a connect to a box no scan has seen since the drop often fails even in
+  range.
+- **Given** the EasyLevel box is connected but its notifications stop while the link
+  stays open (#358)
+- **When** it has been silent for longer than `EASYLEVEL_SILENCE_LIMIT_MS` (longer than
+  R35's staleness timeout, so the "no new sensor data" overlay covers the gap first)
+- **Then** the app closes the link itself and treats it as lost contact: the box's card
+  says "No contact", Reconnect is offered and R37's background retry starts, exactly as
+  for an outright drop. Only a live link is watched: connecting itself, which the
+  manufacturer's manual says can take up to 60 seconds, has no limit of Libell's own.
 
 ## R34 — EasyLevel box: installation calibration ("Set vehicle level")
 
