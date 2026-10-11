@@ -13,7 +13,9 @@
 src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
 ├── app/           # wiring main.ts composes (#374): externalSensorWiring.ts (box adapters,
-│                  # health, learn guide, password), installOffsets.ts (each box's zero)
+│                  # health, learn guide, password), installOffsets.ts (each box's zero),
+│                  # boxZero.ts (zeroing a box), phoneCalibration.ts (bias + vehicle zero),
+│                  # targets.ts (target presets), tiltReading.ts (sensor tilt in degrees)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
