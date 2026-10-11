@@ -112,3 +112,80 @@ describe('product names never live in a catalogue (#267)', () => {
     }
   });
 });
+
+// Terminology, round two (#366): one word per thing, in every language.
+describe('i18n terminology (#366)', () => {
+  it('Swedish says kloss, never ramp, in every user-facing string', () => {
+    for (const [key, text] of Object.entries(MESSAGES.sv)) {
+      expect(text, `sv:${key}`).not.toMatch(/ramp/i);
+    }
+  });
+
+  it('every zero action has one heading per language, phone and box alike', () => {
+    for (const lang of ALL) {
+      const heading = MESSAGES[lang]['calibration.vehicle.h'];
+      expect(MESSAGES[lang]['calibration.external.h'], lang).toBe(heading);
+      expect(MESSAGES[lang]['box.step.zero.todo'], lang).toBe(heading);
+    }
+  });
+
+  it('names the box and its lost contact the same way everywhere', () => {
+    for (const lang of ALL) {
+      const box = MESSAGES[lang]['help.sensor.h'];
+      expect(MESSAGES[lang]['menu.sensorSource'], lang).toBe(box);
+      expect(MESSAGES[lang]['sensorList.title'], lang).toBe(box);
+      for (const key of [
+        'sensorStatus.connected',
+        'sensorStatus.disconnected',
+        'sensorStatus.idle',
+        'sensorStatus.idle.guide',
+      ] as const) {
+        expect(MESSAGES[lang][key], `${lang}:${key}`).toContain(box);
+      }
+      expect(MESSAGES[lang]['sensorStatus.disconnected'].toLowerCase(), lang).toContain(
+        MESSAGES[lang]['box.state.lost'].toLowerCase(),
+      );
+    }
+  });
+
+  it('the setup lamp names the measurements, as the help heading does', () => {
+    const word: Record<string, string> = {
+      en: 'Measurements',
+      sv: 'Mått',
+      fr: 'Mesures',
+      es: 'Medidas',
+      de: 'Maße',
+    };
+    for (const lang of ALL) {
+      expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
+    }
+  });
+
+  it('the box-path wizard points at the zero lamp by its name, not its colour', () => {
+    for (const lang of ALL) {
+      expect(MESSAGES[lang]['onboard.boxPosition.later'], lang).toContain(
+        MESSAGES[lang]['lamp.zero'],
+      );
+    }
+  });
+
+  it('About and the welcome step no longer say "no spirit level"', () => {
+    const spiritLevel = /vattenpass|spirit level|bubble|niveau à bulle|burbuja|Libelle,/i;
+    for (const lang of ALL) {
+      expect(MESSAGES[lang]['about.text'], lang).not.toMatch(spiritLevel);
+    }
+  });
+
+  it('the level overlay and the start hint do not call a caravan a motorhome', () => {
+    for (const lang of ALL) {
+      for (const key of ['main.level', 'main.hint'] as const) {
+        expect(MESSAGES[lang][key], `${lang}:${key}`).not.toContain(
+          MESSAGES[lang]['vehicle.motorhome'].toLowerCase(),
+        );
+        expect(MESSAGES[lang][key], `${lang}:${key}`).not.toContain(
+          MESSAGES[lang]['vehicle.motorhome'],
+        );
+      }
+    }
+  });
+});

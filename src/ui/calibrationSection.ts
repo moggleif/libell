@@ -150,7 +150,7 @@ export function createCalibrationSection(
     const external = options.getExternalSensor?.() ?? null;
     externalSection.hidden = external === null;
     if (!external) return;
-    externalHeading.textContent = t('calibration.external.h', { name: external.name });
+    externalHeading.textContent = t('calibration.external.h');
     if (message !== undefined) {
       externalStatus.textContent = message;
     } else if (external.offset) {

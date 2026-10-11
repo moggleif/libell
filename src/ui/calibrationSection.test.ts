@@ -288,10 +288,12 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     return { options, setPhone: () => (active = false) };
   }
 
-  it('offers it, named, only while an external sensor is active', () => {
+  it('offers it, under the one zero heading, only while an external sensor is active', () => {
     const { options, setPhone } = externalOptions();
     const section = createCalibrationSection(options);
-    expect(section.element.textContent).toContain('Zero Xparkle RVS01');
+    expect(section.element.textContent).toContain(
+      'Level the vehicle once with a spirit level, then zero.',
+    );
     const button = buttonByText(section.element, 'Zero now');
     expect(button.closest('[hidden]')).toBeNull();
     expect(button.disabled).toBe(false);
