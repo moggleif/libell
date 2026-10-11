@@ -112,7 +112,7 @@ describe('createSensorPage', () => {
       // Per-device setup and health live on the sensor's own page (#314).
       expect(page.statusElements[0]!.textContent).toContain('Direction set');
       expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
-      expect(page.statusElements[0]!.textContent).toContain('Battery');
+      expect(page.statusElements[0]!.textContent).toContain('Temperature');
     });
 
     it('shows the settings blocks straight after connecting, with no close-and-reopen (#226)', async () => {
@@ -178,10 +178,10 @@ describe('createSensorPage', () => {
         b.classList.contains('sensor-card__name'),
       )!;
       statusButton.click();
-      expect(page.statusElements[0]!.textContent).toContain('Battery: 80%');
+      expect(page.statusElements[0]!.textContent).toContain('battery 80 %');
       battery = 55;
       page.refreshLive();
-      expect(page.statusElements[0]!.textContent).toContain('Battery: 55%');
+      expect(page.statusElements[0]!.textContent).toContain('battery 55 %');
     });
   });
 });
@@ -228,8 +228,8 @@ describe('createSensorPage with more than one source (#268)', () => {
   it('draws only the rows a device can fill — no permanently empty ones (#228)', () => {
     const page = createSensorPage([SECOND], (sensor) => makeOptions({ sensor }));
     const devicePage = page.statusElements[0]!;
-    expect(devicePage.textContent).toContain('Battery');
     expect(devicePage.textContent).not.toContain('Temperature');
+    expect(devicePage.textContent).not.toContain('Not available yet');
   });
 
   it('refreshes whichever device page is open, and no others', () => {
