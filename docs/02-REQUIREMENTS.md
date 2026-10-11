@@ -1015,6 +1015,11 @@ cross-platform goal — they are not this app's code and are not covered here.
   every subsequent reading from the box is corrected by it — the same "capture the
   current tilt as zero" mechanism R24 already gives the phone's vehicle zero, applied
   to this source instead.
+- **Given** the box streams raw, unsmoothed samples, and its own app says to press OK
+  a few times until the value settles
+- **Then** one tap zeroes from the average of the box's samples over a short window
+  (`EASYLEVEL_ZERO_SAMPLE_MS`), showing "Zeroing…" meanwhile; if the box drops while
+  sampling, nothing is stored and the page says the box is not connected.
 - **Given** the capture looks like more than placement tilt (>15°)
 - **Then** it is rejected with an explanation, the same guard R11/R24 already use.
 - **Given** a stored installation offset
