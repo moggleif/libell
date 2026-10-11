@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
-import { setLanguage } from './i18n';
+import { setLanguage, t } from './i18n';
 import type { Calibration } from '../domain/settings';
 
 setLanguage('en');
@@ -342,5 +342,133 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     buttonByText(section.element, 'Zero now').click();
     expect(section.element.textContent).toContain('is not connected');
     expect(section.element.textContent).not.toContain('is calibrated');
+  });
+});
+
+// Settings → Calibration (#330): the same checklist pattern as the box's
+// own setup (#314) — two steps, only the next undone one expanded.
+describe('calibration checklist in Settings (#330)', () => {
+  function steps(section: ReturnType<typeof createCalibrationSection>): HTMLElement[] {
+    return [...section.element.querySelectorAll<HTMLElement>('.box-step')];
+  }
+  function body(step: HTMLElement): HTMLElement {
+    return step.querySelector<HTMLElement>('.box-step__body')!;
+  }
+
+  it('shows two steps with the phone expanded first, and no "Two layers" intro', () => {
+    const section = createCalibrationSection(makeOptions(), 'checklist');
+    const [phone, vehicle] = steps(section);
+    expect(steps(section)).toHaveLength(2);
+    expect(phone!.querySelector('.box-step__mark')?.textContent).toBe('1');
+    expect(body(phone!).hidden).toBe(false);
+    expect(body(vehicle!).hidden).toBe(true);
+    expect(body(phone!).textContent).toContain(t('calibration.step.phone.hint'));
+    expect(buttonByText(body(phone!), t('calibration.now'))).toBeDefined();
+    expect(section.element.textContent).not.toContain('Two layers');
+  });
+
+  it('keeps Check and Clear under a collapsed More in each step', () => {
+    const section = createCalibrationSection(makeOptions(), 'checklist');
+    for (const step of steps(section)) {
+      const more = step.querySelector<HTMLDetailsElement>('details')!;
+      expect(more.open).toBe(false);
+      expect(more.querySelector('summary')?.textContent).toBe(t('settings.more'));
+      expect(buttonByText(more, t('calibration.check'))).toBeDefined();
+    }
+  });
+
+  it('marks a done step with ✓ and its age, and expands the next one', () => {
+    const section = createCalibrationSection(
+      makeOptions({
+        getCalibration: () => ({ rollDeg: 1, pitchDeg: 0 }),
+        getCalibrationCapturedAt: () => Date.now() - 3 * 86_400_000,
+      }),
+      'checklist',
+    );
+    const [phone, vehicle] = steps(section);
+    expect(phone!.classList.contains('is-done')).toBe(true);
+    expect(phone!.querySelector('.box-step__mark')?.textContent).toBe('✓');
+    expect(phone!.querySelector('.box-step__title')?.textContent).toBe(
+      t('calibration.step.phone.done') + ' ' + t('calibration.age.days', { n: 3 }),
+    );
+    expect(body(phone!).hidden).toBe(true);
+    expect(body(vehicle!).hidden).toBe(false);
+    expect(body(vehicle!).textContent).toContain(t('calibration.step.vehicle.hint'));
+    expect(buttonByText(body(vehicle!), t('calibration.step.vehicle.now'))).toBeDefined();
+  });
+
+  it('moves on to the vehicle zero once the phone is calibrated', () => {
+    let calibration: Calibration | null = null;
+    const section = createCalibrationSection(
+      makeOptions({
+        getCalibration: () => calibration,
+        calibrate: () => {
+          calibration = { rollDeg: 0, pitchDeg: 0 };
+          return null;
+        },
+      }),
+      'checklist',
+    );
+    const [phone, vehicle] = steps(section);
+    buttonByText(body(phone!), t('calibration.now')).click();
+    expect(body(phone!).hidden).toBe(true);
+    expect(body(vehicle!).hidden).toBe(false);
+  });
+
+  it('keeps the step open with the reason when calibrating fails', () => {
+    const section = createCalibrationSection(
+      makeOptions({ calibrate: () => 'hold still' }),
+      'checklist',
+    );
+    const [phone] = steps(section);
+    buttonByText(body(phone!), t('calibration.now')).click();
+    expect(body(phone!).hidden).toBe(false);
+    expect(body(phone!).textContent).toContain('hold still');
+  });
+
+  it('lets every step be opened at any time', () => {
+    const section = createCalibrationSection(
+      makeOptions({
+        getCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }),
+        getVehicleCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }),
+      }),
+      'checklist',
+    );
+    const [phone, vehicle] = steps(section);
+    expect(body(phone!).hidden).toBe(true);
+    expect(body(vehicle!).hidden).toBe(true);
+    phone!.querySelector<HTMLButtonElement>('.box-step__header')!.click();
+    expect(body(phone!).hidden).toBe(false);
+    vehicle!.querySelector<HTMLButtonElement>('.box-step__header')!.click();
+    expect(body(vehicle!).hidden).toBe(false);
+    expect(body(phone!).hidden).toBe(true);
+  });
+
+  it('runs the flip calibration from the quiet link', () => {
+    const applyCalibration = vi.fn();
+    const section = createCalibrationSection(makeOptions({ applyCalibration }), 'checklist');
+    const [phone] = steps(section);
+    const flip = buttonByText(body(phone!), t('calibration.flip.start'));
+    expect(flip.closest('[hidden]')).not.toBeNull();
+    const link = body(phone!).querySelector<HTMLButtonElement>('button.link-button')!;
+    expect(link.textContent).toBe(t('calibration.step.flipLink'));
+    link.click();
+    expect(flip.closest('[hidden]')).toBeNull();
+    flip.click();
+    buttonByText(body(phone!), t('calibration.flip.capture')).click();
+    expect(applyCalibration).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the checklist while an external box is active, as before (#316)', () => {
+    const section = createCalibrationSection(
+      makeOptions({
+        isPhoneActive: () => false,
+        getExternalSensor: () => ({ name: 'Xparkle RVS01', offset: null, capturedAt: null }),
+        calibrateExternalSensor: () => null,
+      }),
+      'checklist',
+    );
+    expect(section.element.querySelector('.box-setup')?.closest('[hidden]')).not.toBeNull();
+    expect(buttonByText(section.element, 'Zero now').closest('[hidden]')).toBeNull();
   });
 });

@@ -33,8 +33,10 @@ export interface StandalonePage {
   isOpen(): boolean;
   /** Open programmatically (e.g. from a warning lamp or badge tap). */
   open(): void;
-  /** Close programmatically (e.g. after a successful Save). */
-  close(): void;
+  /** Close programmatically (e.g. after a successful Save). `after` runs
+   * once this close's own back-navigation has landed, so it can safely
+   * open another page (#326, Help's topic buttons). */
+  close(after?: () => void): void;
   /** Wires a button to toggle this page open/closed. */
   attach(button: HTMLButtonElement): void;
   setTitle(title: string): void;
@@ -49,10 +51,17 @@ const openStack: (() => void)[] = [];
 // so the one popstate it produces doesn't also pop the stack a second
 // time — that call's own effect has already been applied directly.
 let suppressNextPopstate = false;
+// What to run once that suppressed popstate has landed (#326). Deferred one
+// more task, so every other popstate listener (the Classic ☰ menu's own
+// depth counter) has seen this event before `after` opens anything.
+let afterSuppressedPopstate: (() => void) | null = null;
 
 window.addEventListener('popstate', () => {
   if (suppressNextPopstate) {
     suppressNextPopstate = false;
+    const after = afterSuppressedPopstate;
+    afterSuppressedPopstate = null;
+    if (after) setTimeout(after, 0);
     return;
   }
   openStack.pop()?.();
@@ -111,16 +120,17 @@ export function createStandalonePage(initialTitle: string, onOpen?: () => void):
     onOpen?.();
   }
 
-  function close(): void {
+  function close(after?: () => void): void {
     if (!open) return;
     applyClosed();
     const at = openStack.lastIndexOf(applyClosed);
     if (at !== -1) openStack.splice(at, 1);
     suppressNextPopstate = true;
+    afterSuppressedPopstate = after ?? null;
     history.back();
   }
 
-  closeButton.addEventListener('click', close);
+  closeButton.addEventListener('click', () => close());
 
   return {
     element: page,

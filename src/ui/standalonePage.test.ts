@@ -89,4 +89,18 @@ describe('createStandalonePage (screen-cleanup follow-up)', () => {
     window.dispatchEvent(new PopStateEvent('popstate'));
     expect(a.isOpen()).toBe(false);
   });
+
+  // #326: Help's topic buttons close the "?" page and then open another
+  // page. The close's own history.back() lands asynchronously; opening the
+  // next page before it lands would let that popstate reach the Classic
+  // ☰ menu's own listener and close what was just opened.
+  it('close(after) runs `after` only once its own back-navigation has landed', async () => {
+    const page = createStandalonePage('Title');
+    page.open();
+    const after = vi.fn();
+    page.close(after);
+    expect(page.isOpen()).toBe(false);
+    expect(after).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(after).toHaveBeenCalledOnce());
+  });
 });

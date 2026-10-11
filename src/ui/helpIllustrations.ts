@@ -194,18 +194,3 @@ export function measuresIllustration(
   );
   return root;
 }
-
-/** Flip calibration: phone, 180° turn, phone. */
-export function calibrationIllustration(label: string): SVGSVGElement {
-  const root = svg('0 0 220 90', label);
-  root.append(
-    el('rect', { x: '30', y: '20', width: '34', height: '56', rx: '6', class: 'illu__phone' }),
-    el('circle', { cx: '40', cy: '30', r: '3', class: 'illu__screen' }),
-    el('path', { d: 'M84 46 A 26 26 0 1 1 136 46', class: 'illu__rotate' }),
-    el('path', { d: 'M136 46 L130 36 L143 38 Z', class: 'illu__accent' }),
-    el('text', { x: '110', y: '18', class: 'illu__label' }, '180°'),
-    el('rect', { x: '156', y: '20', width: '34', height: '56', rx: '6', class: 'illu__phone' }),
-    el('circle', { cx: '180', cy: '66', r: '3', class: 'illu__screen' }),
-  );
-  return root;
-}
