@@ -29,7 +29,7 @@ const pendingHide = new WeakMap<
 function cancelPendingHide(el: HTMLElement): void {
   const pending = pendingHide.get(el);
   if (!pending) return;
-  window.clearTimeout(pending.timeoutId);
+  clearTimeout(pending.timeoutId);
   el.removeEventListener('transitionend', pending.onEnd);
   pendingHide.delete(el);
 }
@@ -72,6 +72,8 @@ export function setVisible(el: HTMLElement, visible: boolean, visibleClass = 'is
   el.addEventListener('transitionend', onEnd);
   // Fallback in case no transition actually runs (e.g. the element has
   // no matching transition-property) — never leave it un-hidden.
-  const timeoutId = window.setTimeout(finish, 400);
+  // Global timers, not window.*: a timer still pending when a test file
+  // tears down its DOM must not crash on a missing `window`.
+  const timeoutId = setTimeout(finish, 400);
   pendingHide.set(el, { timeoutId, onEnd });
 }
