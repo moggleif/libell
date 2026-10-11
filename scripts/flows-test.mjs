@@ -966,20 +966,20 @@ const appHint = (page) => page.locator('#app .app__hint').first();
 // Start-up: the top bar, the storage migrations, an incoming vehicle-setup
 // link, and how the phone sensor is started.
 async function startupFlow(browser) {
-  // The top bar is labelled and reserves the corner its icon sits in.
-  // Chromium 153 offers iOS's requestPermission too; hide it so this case
-  // pins the start-up without the Start tap (iOS's cases are below).
-  let app = await openApp(
-    browser,
-    'xparkle-sim',
-    {},
-    undefined,
-    `
-    for (const api of [window.DeviceMotionEvent, window.DeviceOrientationEvent]) {
-      if (api) Object.defineProperty(api, 'requestPermission', { value: undefined });
+  // Chromium 153 offers iOS's requestPermission too; these hide it so a
+  // case pins the start-up without the Start tap, or stub it as iOS's.
+  const permission = (motion, orientation) => `
+    for (const [api, value] of [
+      [window.DeviceMotionEvent, ${motion}],
+      [window.DeviceOrientationEvent, ${orientation}],
+    ]) {
+      if (api) Object.defineProperty(api, 'requestPermission', { value });
     }
-  `,
-  );
+  `;
+  const notIos = permission('undefined', 'undefined');
+
+  // The top bar is labelled and reserves the corner its icon sits in.
+  let app = await openApp(browser, 'xparkle-sim', {}, undefined, notIos);
   let { page } = app;
   assert(
     (await page.locator('#settings-button').getAttribute('aria-label')) === 'Settings',
@@ -1012,30 +1012,24 @@ async function startupFlow(browser) {
     'the icon sits in the corner',
   );
   // Headless Chromium has motion events but never fires one: waiting.
-  await page
-    .locator('#app.app--level')
-    .waitFor({ timeout: 10000 })
-    .catch(async () => {
-      const seen = await page.evaluate(() => ({
-        app: document.querySelector('#app')?.className,
-        text: document.querySelector('#app')?.textContent?.slice(0, 200),
-        motion: typeof window.DeviceMotionEvent,
-        orientation: typeof window.DeviceOrientationEvent,
-        secure: window.isSecureContext,
-      }));
-      throw new Error(`no level screen: ${JSON.stringify(seen)}; errors: ${app.errors}`);
-    });
+  await page.locator('#app.app--level').waitFor();
   assert((await appHint(page).textContent()) === 'Waiting for the tilt sensor…', 'should wait');
   assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
   await app.context.close();
 
   // Storage from before the per-source keys is carried over once (#263).
   const legacyZero = JSON.stringify({ rollDeg: 1, pitchDeg: 2, capturedAt: 5 });
-  app = await openApp(browser, 'xparkle-sim', {
-    'libell.easyLevelDeviceId': 'old-box',
-    'libell.easyLevelInstallCalibration': legacyZero,
-    'libell.settings': JSON.stringify({ wheelbaseMm: 3700 }),
-  });
+  app = await openApp(
+    browser,
+    'xparkle-sim',
+    {
+      'libell.easyLevelDeviceId': 'old-box',
+      'libell.easyLevelInstallCalibration': legacyZero,
+      'libell.settings': JSON.stringify({ wheelbaseMm: 3700 }),
+    },
+    undefined,
+    notIos,
+  );
   page = app.page;
   await page.locator('#app.app--level').waitFor();
   assert((await storage(page, 'libell.sensorDevice.easylevel')) === 'old-box', 'device id moved');
@@ -1102,9 +1096,7 @@ async function startupFlow(browser) {
       'xparkle-sim',
       {},
       undefined,
-      `
-      DeviceMotionEvent.requestPermission = () => Promise.resolve('${answer}');
-    `,
+      permission(...Array(2).fill(`() => Promise.resolve('${answer}')`)),
     );
     page = app.page;
     assert(
