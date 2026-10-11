@@ -46,6 +46,7 @@ export const MESSAGES = {
     'lamp.calibrate': '⚠ Calibrate',
     'lamp.zero': '⚠ Zero',
     'lamp.calibrate.title': 'The phone is not calibrated — tap to open Calibration',
+    'lamp.zero.title': 'The vehicle is not zeroed — tap to open Calibration',
     'lamp.calibrate.title.sensor': 'The box is not zeroed — tap to open the box',
 
     // Main-screen external-sensor indicator (#129): shown only while an
@@ -639,6 +640,7 @@ export const MESSAGES = {
     'lamp.calibrate': '⚠ Kalibrera',
     'lamp.zero': '⚠ Nollställ',
     'lamp.calibrate.title': 'Telefonen är inte kalibrerad — tryck för att öppna Kalibrering',
+    'lamp.zero.title': 'Fordonet är inte nollställt — tryck för att öppna Kalibrering',
     'lamp.calibrate.title.sensor': 'Boxen är inte nollställd — tryck för att öppna boxen',
 
     'menu.title': 'Meny',
@@ -1101,6 +1103,7 @@ export const MESSAGES = {
     'lamp.calibrate': '⚠ Étalonner',
     'lamp.zero': '⚠ Mettre à zéro',
     'lamp.calibrate.title': 'Le téléphone n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
+    'lamp.zero.title': 'Le véhicule n’est pas mis à zéro — touchez pour ouvrir l’Étalonnage',
     'lamp.calibrate.title.sensor':
       'Le boîtier n’est pas mis à zéro — touchez pour ouvrir le boîtier',
 
@@ -1582,6 +1585,7 @@ export const MESSAGES = {
     'lamp.calibrate': '⚠ Calibrar',
     'lamp.zero': '⚠ Poner a cero',
     'lamp.calibrate.title': 'El móvil no está calibrado: toca para abrir Calibración',
+    'lamp.zero.title': 'El vehículo no está puesto a cero: toca para abrir Calibración',
     'lamp.calibrate.title.sensor': 'La caja no está puesta a cero: toca para abrir la caja',
 
     'sensorStatus.connected': 'Sensor externo conectado',
@@ -2058,6 +2062,7 @@ export const MESSAGES = {
     'lamp.calibrate': '⚠ Kalibrieren',
     'lamp.zero': '⚠ Nullen',
     'lamp.calibrate.title': 'Das Handy ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
+    'lamp.zero.title': 'Das Fahrzeug ist nicht genullt — zum Öffnen der Kalibrierung tippen',
     'lamp.calibrate.title.sensor': 'Die Box ist nicht genullt — tippen, um die Box zu öffnen',
 
     'sensorStatus.connected': 'Externer Sensor verbunden',
