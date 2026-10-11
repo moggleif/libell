@@ -49,6 +49,14 @@ const INSTALL_CALIBRATION_MIGRATED_KEY = 'libell.installCalibration.migrated';
 function installCalibrationKey(source: SensorSource): string {
   return `${INSTALL_CALIBRATION_KEY_PREFIX}${source}`;
 }
+// Set once the vehicle measurements (wheelbase, track widths) have been
+// saved (#364): the ⚠ Setup lamp's own condition. Any other save also
+// writes STORAGE_KEY, so its mere presence can't say this — the wizard's
+// Language step used to put the lamp out before the measurements step.
+const MEASUREMENTS_SAVED_KEY = 'libell.measurementsSaved';
+/** Set on the first start that knows MEASUREMENTS_SAVED_KEY, so the
+ * one-off carry-over for existing users never runs twice. */
+const MEASUREMENTS_MIGRATED_KEY = 'libell.measurementsSaved.migrated';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
 // Distinct from ONBOARDED_KEY (design review, follow-up): that one means
@@ -113,6 +121,41 @@ export function hasStoredSettings(storage: KeyValueStorage | null = defaultStora
     return storage?.getItem(STORAGE_KEY) != null;
   } catch {
     return false;
+  }
+}
+
+/** True once the vehicle measurements have been saved (#364). */
+export function hasStoredMeasurements(storage: KeyValueStorage | null = defaultStorage()): boolean {
+  try {
+    return storage?.getItem(MEASUREMENTS_SAVED_KEY) != null;
+  } catch {
+    return false;
+  }
+}
+
+export function markMeasurementsSaved(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    storage?.setItem(MEASUREMENTS_SAVED_KEY, '1');
+  } catch {
+    // Same graceful degradation as saveSettings.
+  }
+}
+
+/**
+ * Carries existing users over to MEASUREMENTS_SAVED_KEY (#364): before it
+ * existed, stored settings were the lamp's whole condition, so anyone who
+ * already has them keeps an unlit lamp. Runs once ever — on the very
+ * first start too, where nothing is stored yet — so a wizard that saves
+ * the language and reloads can never be mistaken for an older install.
+ */
+export function migrateMeasurementsSaved(storage: KeyValueStorage | null = defaultStorage()): void {
+  try {
+    if (storage === null) return;
+    if (storage.getItem(MEASUREMENTS_MIGRATED_KEY) !== null) return;
+    if (storage.getItem(STORAGE_KEY) !== null) storage.setItem(MEASUREMENTS_SAVED_KEY, '1');
+    storage.setItem(MEASUREMENTS_MIGRATED_KEY, '1');
+  } catch {
+    // Storage unavailable: nothing is saved either way.
   }
 }
 

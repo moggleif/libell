@@ -139,7 +139,7 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getSensorState: () => 'disconnected' }),
     );
-    expect(section.connectElement.textContent).toContain('No contact');
+    expect(section.connectElement.textContent).toContain('Lost contact');
     expect(section.connectElement.textContent).not.toContain('Connected');
   });
 
@@ -148,7 +148,7 @@ describe('createSensorSourceSection (#116)', () => {
       makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => null }),
     );
     expect(section.installElement.hidden).toBe(false);
-    expect(section.installElement.textContent).toContain('Zero on level ground');
+    expect(section.installElement.textContent).toContain('Zero the vehicle');
     expect(section.installElement.textContent).toContain('Zero now');
   });
 
@@ -354,12 +354,12 @@ describe('createSensorSourceSection halves (#226)', () => {
 
   it('keeps the setup checklist on the install half, not the connect half (#314)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
-    expect(section.connectElement.textContent).not.toContain('Zero on level ground');
+    expect(section.connectElement.textContent).not.toContain('Zero the vehicle');
     // The position is a status line, not a step (#332).
     expect(section.installElement.textContent).not.toContain('Position');
     expect(section.positionElement.textContent).toContain('Position: waiting for a reading');
     expect(section.installElement.textContent).toContain('Pick the direction');
-    expect(section.installElement.textContent).toContain('Zero on level ground');
+    expect(section.installElement.textContent).toContain('Zero the vehicle');
   });
 });
 

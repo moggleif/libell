@@ -3,9 +3,12 @@ import { DEFAULT_SETTINGS } from '../domain/settings';
 import {
   clearCalibration,
   hasDoneOnboarding,
+  hasStoredMeasurements,
   hasStoredSettings,
   isBoxPending,
   setBoxPending,
+  markMeasurementsSaved,
+  migrateMeasurementsSaved,
   loadCalibration,
   loadSettings,
   markOnboardingDone,
@@ -87,6 +90,39 @@ describe('settingsStore', () => {
     expect(hasStoredSettings(storage)).toBe(false);
     saveSettings(DEFAULT_SETTINGS, storage);
     expect(hasStoredSettings(storage)).toBe(true);
+  });
+});
+
+// #364: the ⚠ Setup lamp follows the measurements, not any saved setting.
+describe('measurements-saved tracking', () => {
+  it('stays false when other settings are saved, true once marked', () => {
+    const storage = memoryStorage();
+    migrateMeasurementsSaved(storage);
+    saveSettings({ ...DEFAULT_SETTINGS, theme: 'dark' }, storage);
+    expect(hasStoredMeasurements(storage)).toBe(false);
+    markMeasurementsSaved(storage);
+    expect(hasStoredMeasurements(storage)).toBe(true);
+  });
+
+  it('keeps an existing user, who already has stored settings, free of the lamp', () => {
+    const storage = memoryStorage();
+    saveSettings(DEFAULT_SETTINGS, storage); // saved by an older version
+    migrateMeasurementsSaved(storage);
+    expect(hasStoredMeasurements(storage)).toBe(true);
+  });
+
+  it('runs once ever, so a first-run wizard save and reload is not taken for an old install', () => {
+    const storage = memoryStorage();
+    migrateMeasurementsSaved(storage); // first start: nothing stored yet
+    saveSettings({ ...DEFAULT_SETTINGS, theme: 'dark' }, storage); // Language step + reload
+    migrateMeasurementsSaved(storage);
+    expect(hasStoredMeasurements(storage)).toBe(false);
+  });
+
+  it('never throws without storage', () => {
+    expect(() => migrateMeasurementsSaved(null)).not.toThrow();
+    expect(() => markMeasurementsSaved(null)).not.toThrow();
+    expect(hasStoredMeasurements(null)).toBe(false);
   });
 });
 

@@ -56,9 +56,11 @@ import {
   clearVehicleCalibration,
   hasDoneOnboarding,
   hasSeenOnboarding,
-  hasStoredSettings,
+  hasStoredMeasurements,
   isBoxPending,
   setBoxPending,
+  markMeasurementsSaved,
+  migrateMeasurementsSaved,
   loadActiveTargetId,
   loadCalibrationInfo,
   loadInstallCalibrationInfo,
@@ -127,7 +129,7 @@ import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
 import { isIos } from './ui/platform';
 import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
-import { createIndicators } from './ui/indicators';
+import { createIndicators, phoneCalibrationLamp } from './ui/indicators';
 import { createSensorStatusIndicator } from './ui/sensorStatusIndicator';
 import { createSensorFallbackPrompt } from './ui/sensorFallbackPrompt';
 import { createLevelOverlay } from './ui/levelOverlay';
@@ -298,6 +300,7 @@ function bootstrap(root: HTMLElement): void {
   // overwrite or resurrect anything — see the two functions for why the
   // legacy keys are copied rather than moved.
   migrateLegacyInstallCalibration();
+  migrateMeasurementsSaved();
   migrateLegacyRememberedDeviceId();
 
   // Incoming "share vehicle setup" link (R41, #207): consumed off the URL
@@ -720,7 +723,7 @@ function bootstrap(root: HTMLElement): void {
     initialSettings: settings,
     appearance: settings.appearance,
     openOnboarding,
-    hasSavedSettings: () => demo || hasStoredSettings(),
+    hasSavedSettings: () => demo || hasStoredMeasurements(),
     onSettingsSaved(next: LevelSettings) {
       settings = next;
       applyTheme(settings.theme);
@@ -977,27 +980,31 @@ function bootstrap(root: HTMLElement): void {
     else if (isModern) settingsPage!.open();
     else menu!.open(section);
   });
-  // Which pair of calibrations the amber lamp checks follows the ACTIVE
-  // source (#131, ADR 0014), same as `zeroCalibration()` above: the
-  // phone's sensor calibration + vehicle zero while the phone is active,
-  // or just the EasyLevel installation offset while it is — never both
-  // pairs at once, so connecting EasyLevel with no installation offset yet
+  // Which calibrations the amber lamp checks follows the ACTIVE source
+  // (#131, ADR 0014), same as `zeroCalibration()` above: the phone's
+  // sensor calibration, then its vehicle zero (#364), while the phone is
+  // active, or just the box's installation offset while a box is — never
+  // both at once, so connecting a box with no installation offset yet
   // still warns even if the phone was calibrated long ago, and vice versa.
-  // A box chosen in the wizard but not connected yet (#365) counts as the
-  // box for the lamp: ⚠ Zero, opening the sensor list to connect it.
+  // The Setup lamp follows the vehicle measurements, not any saved
+  // setting (#364). A box chosen in the wizard but not connected yet
+  // (#365) counts as the box for the lamp: ⚠ Zero, opening the sensor list
+  // to connect it.
   const updateIndicators = () => {
     const phone = sensor().getSource() === 'phone';
     if (!phone) settleBoxPending(false);
     const awaitingBox = phone && boxPending;
     indicators.update({
-      settingsSaved: demo || hasStoredSettings(),
-      calibrated:
-        demo ||
-        (awaitingBox
-          ? false
+      settingsSaved: demo || hasStoredMeasurements(),
+      calibrationLamp: demo
+        ? null
+        : awaitingBox
+          ? 'zero'
           : phone
-            ? calibration !== null || vehicleCalibration !== null
-            : activeInstallOffset() !== null),
+            ? phoneCalibrationLamp(calibration !== null, vehicleCalibration !== null)
+            : activeInstallOffset() !== null
+              ? null
+              : 'zero',
       externalSensor: !phone || awaitingBox,
     });
   };
@@ -1678,6 +1685,7 @@ function bootstrap(root: HTMLElement): void {
       onApply: () => {
         settings = applyVehicleGeometry(settings, pendingVehicleGeometry);
         saveSettings(settings);
+        markMeasurementsSaved();
         updateIndicators();
         maybeRebuildScreen();
       },

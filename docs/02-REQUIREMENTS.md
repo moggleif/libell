@@ -137,7 +137,7 @@ URL and must keep working with no signal.
   Settings opens on Vehicle. Classic (no tabs) keeps a small ☰ drawer instead, holding
   the same five in the same order as full-screen drawer pages. Vehicle/Ramps/Level/
   General share one settings form under the hood, same as Modern's tabs do. The
-  introduction relaunch and External sensor stay off this drawer entirely (on the "?"
+  introduction relaunch and Sensor box stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"
   button.
@@ -225,6 +225,19 @@ URL and must keep working with no signal.
 - **Given** I have never saved vehicle settings, or never calibrated
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
   tapping it opens the matching menu section, and it disappears once handled.
+- **Given** the vehicle measurements (wheelbase, track widths) have never been saved, or
+  the wizard's measurements step was skipped
+- **When** other settings (language, theme, sound) are saved
+- **Then** the ⚠ Setup lamp stays lit until a measurement is saved: changed in
+  Settings, confirmed with Next on the wizard's measurements step, or imported from a
+  shared vehicle setup (#364). Users whose settings were already stored before this
+  rule keep an unlit lamp.
+- **Given** the phone is the active sensor (#364)
+- **Then** the amber lamp follows the Calibration checklist's order: **⚠ Calibrate**
+  while the phone is not calibrated, then **⚠ Zero** while the vehicle is not zeroed
+  (R24); both open Calibration, which expands the step not yet done. Once both are
+  done there is no amber lamp. With a box active the lamp is the box's ⚠ Zero, as
+  before.
 - **Given** the phone is the active sensor and Settings → Calibration is open (Modern tab
   or Classic page)
 - **Then** it is a checklist of two steps, the same pattern as the box's own setup
@@ -253,6 +266,20 @@ URL and must keep working with no signal.
   and with a box alike. The calibration lamp reads "⚠ Calibrate" while the phone is the
   source and "⚠ Zero" while a box is (its title names the box). The Settings tab keeps
   the name Calibration.
+- **Given** any zero action, phone or box, on any screen (#366)
+- **Then** it has one heading per language, "Zero the vehicle" (sv _Nollställ fordonet_),
+  never the box's model name or "on level ground".
+- **Given** any text that names the box or a lost link to it, in any language (#366)
+- **Then** the box is the "Sensor box" (sv _Sensorbox_) everywhere: the menu page, the
+  list, the main-screen dot and the wizard's source choice; a lost link is "Lost
+  contact" (sv _Tappade kontakten_). A lamp is named by its label, never its colour. The
+  vehicle-measurements lamp reads "⚠ Measurements" (sv _⚠ Mått_) in every language.
+- **Given** Swedish (#366)
+- **Then** a ramp is always _kloss/klossar_, never _ramp_.
+- **Given** text shown for any vehicle type (#366)
+- **Then** it does not call a caravan a motorhome: the level overlay and the start hint
+  say "vehicle". About and the welcome step do not promise "no spirit level", since
+  zeroing asks for one.
 
 ## R12 — Feedback without a backend
 
@@ -430,7 +457,7 @@ URL and must keep working with no signal.
   phone path's last step.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra step, "How do you want to measure?", right
-  after the Sound step, offering "This phone" (pre-selected) or "External sensor" — the
+  after the Sound step, offering "This phone" (pre-selected) or "Sensor box" — the
   same name and wording the sensor-status icon and its page use (R32) elsewhere, never
   a separate "Libell Sensor" product name, which was never real; every other browser
   gets exactly the nine-step flow above, with no added step and no dead radio button
@@ -448,7 +475,7 @@ URL and must keep working with no signal.
   started on the previous step land while it is shown, it switches to the live
   position. Direction and zero are not asked here (#317): the zero needs level
   ground, which a first run rarely has, so the step says they are set the first time
-  the user parks, guided by the box's page and reminded by the amber lamp (R34). It
+  the user parks, guided by the box's page and reminded by the ⚠ Zero lamp (R34). It
   then rejoins the shared vehicle-measurements and ramps steps before finishing. No phone-placement step
   and no phone calibration steps are shown on this path.
 - **Given** the wizard was finished on the external-sensor path with no box connected
@@ -598,8 +625,9 @@ URL and must keep working with no signal.
 - **Given** a later sensor recalibration or clear
 - **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
   placement tilt (ADR 0010).
-- The amber calibration lamp (R11) clears when at least one of the two calibrations
-  exists; the Calibration section shows each one's status with its own clear button.
+- The amber calibration lamp (R11) clears only when both calibrations exist: it reads
+  ⚠ Calibrate, then ⚠ Zero (#364); the Calibration section shows each one's status with
+  its own clear button.
 
 ## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
 
@@ -798,7 +826,7 @@ URL and must keep working with no signal.
 ## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support
-- **When** the user opens the External sensor page and taps "Connect
+- **When** the user opens the Sensor box page and taps "Connect
   EasyLevel sensor"
 - **Then** the app finds the box by scanning for its advertised `669a0c20-...` service
   UUID (falling back to any device named `CARATI...`, for older boxes that don't
@@ -811,7 +839,7 @@ URL and must keep working with no signal.
   automatically; connecting is always an explicit, reversible choice.
 - **Given** a browser without Web Bluetooth (e.g. Safari/iOS, most desktop browsers)
 - **When** the user opens the menu
-- **Then** the "External sensor" page is not shown at all — never a silent failure or a
+- **Then** the "Sensor box" page is not shown at all — never a silent failure or a
   button that does nothing when tapped.
 - **Given** the EasyLevel box is the active source
 - **When** its BLE connection is lost (out of range, powered off) while the app stays
@@ -833,8 +861,8 @@ URL and must keep working with no signal.
   no numbers, no clutter (#129). While the phone's own sensor is active instead, the
   same dot stays visible but in a third, neutral "tap to connect" look rather than
   disappearing (screen-cleanup follow-up: it is now the only way to reach the
-  External sensor page at all, R38) — visible whenever Web Bluetooth exists in this
-  browser, hidden only when it doesn't. Tapping the dot opens the External sensor
+  Sensor box page at all, R38) — visible whenever Web Bluetooth exists in this
+  browser, hidden only when it doesn't. Tapping the dot opens the Sensor box
   page, the same "tap the indicator to jump to its own page" pattern the R11 warning
   lamps use.
 - **Given** the box disconnects, or its data goes stale
@@ -846,7 +874,7 @@ URL and must keep working with no signal.
   (R51) and the temperature in its debug info, as real decoded values once the first
   `faf52c22-...` status notification has arrived — the temperature reads "not
   available yet" only in the brief window before that, or before EasyLevel has ever
-  connected (#123). These values lived on the External sensor page itself until #226
+  connected (#123). These values lived on the Sensor box page itself until #226
   moved them here, and appear in exactly one place each (#332).
 - **Given** signal strength (RSSI)
 - **Then** it is not shown at all (#228). Web Bluetooth exposes RSSI only through
@@ -936,7 +964,7 @@ URL and must keep working with no signal.
 - **When** its reported battery percentage drops below a threshold (20%, with a few
   percentage points of hysteresis so it doesn't flicker right at the line — see
   `easyLevelProtocol.ts`'s `isLowBattery`)
-- **Then** a warning is shown on the External sensor page, never as
+- **Then** a warning is shown on the Sensor box page, never as
   a leveling-screen interruption — the main leveling view is unaffected either way.
 
 ## R33 — EasyLevel box: remember the selection and auto-reconnect on open (#130)
@@ -963,7 +991,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   connect otherwise fails
 - **Then** the attempt fails cleanly and the app honestly shows the box as the
   active-but-disconnected source via the same connection-lost UI a live drop uses (R32
-  above): the main-screen dot and the "External sensor" menu page, both offering the
+  above): the main-screen dot and the "Sensor box" menu page, both offering the
   existing one-tap manual reconnect. **Revised by #211:** a single failed attempt is
   no longer the end of it — R37's automatic background retry keeps trying on the same
   remembered box on its own, so recovery does not depend on the user noticing the
@@ -980,7 +1008,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   own user gesture, since that is what a fresh `requestDevice()` picker always requires.
   This is a genuine platform ceiling, not a bug: the app never pretends a browser can
   auto-reconnect when it can't.
-- **Given** the user taps "Disconnect" on the External sensor page
+- **Given** the user taps "Disconnect" on the Sensor box page
 - **Then** the box stays remembered (its device id is not forgotten), but
   `sensorSource` reverts to `'phone'` — the next app open does not attempt to
   auto-reconnect until the user connects again, honoring an explicit "not right now"
@@ -1003,7 +1031,7 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **When** it has been silent for longer than `EASYLEVEL_SILENCE_LIMIT_MS` (longer than
   R35's staleness timeout, so the "no new sensor data" overlay covers the gap first)
 - **Then** the app closes the link itself and treats it as lost contact: the box's card
-  says "No contact", Reconnect is offered and R37's background retry starts, exactly as
+  says "Lost contact", Reconnect is offered and R37's background retry starts, exactly as
   for an outright drop. Only a live link is watched: connecting itself, which the
   manufacturer's manual says can take up to 60 seconds, has no limit of Libell's own.
 
@@ -1015,7 +1043,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   installer to level the _vehicle_ once and capture that as the box's own
   installation offset (ADR 0014's three-way calibration split), after which the
   box's physical orientation inside its enclosure stops mattering.
-- **Given** the External sensor page, once EasyLevel is (or was) the active
+- **Given** the Sensor box page, once EasyLevel is (or was) the active
   source
 - **When** the vehicle stands verifiably level (spirit level, or after leveling with
   the ramps) and I tap "Set vehicle level"
@@ -1067,7 +1095,7 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Then** the box's own page opens rather than the Calibration tab, its checklist
   (R51) expanding the next step not yet done: the direction before the zero.
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
-  External sensor page itself until #226 moved it, along with the mounting picker,
+  Sensor box page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
   not inside the Calibration menu section, since it only makes sense once an external
   source exists to calibrate.
@@ -1118,7 +1146,7 @@ noisy samples to arrive; this fires when no new samples arrive at all).
 ## R37 — Sensor unavailable: an explicit Retry / "Use phone sensor" prompt (#134)
 
 R32/R33 already report a lost or unreachable EasyLevel connection honestly (the
-main-screen dot, the External sensor page, a failed silent reconnect at open).
+main-screen dot, the Sensor box page, a failed silent reconnect at open).
 This requirement makes that moment actionable instead of a dead end the user can only
 fix by opening the menu — and, per ADR 0014, never by switching source on its own:
 phone and EasyLevel keep independent calibration references, so an automatic,
@@ -1167,7 +1195,7 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** the fallback prompt is shown
 - **When** I tap "Use the phone instead"
 - **Then** the app switches the active source to the phone sensor via the exact same
-  explicit switch the External sensor page's own "Disconnect" action already performs
+  explicit switch the Sensor box page's own "Disconnect" action already performs
   (never a parallel code path). If the phone is not lying flat, R17's wrong-pose overlay
   says so right after the switch — the one place the phone's pose rule is stated.
 - **Given** I have switched to the phone sensor from this prompt
@@ -1193,7 +1221,7 @@ unannounced switch could show a plausible-looking but wrong reading.
   the reservation holds whatever language the Install label is in. The install
   prompt (R20) is otherwise unaffected, still using the
   `#install-hint` banner under the top bar. The sensor-status icon (R32/R33,
-  screen-cleanup follow-up) is now the _only_ way to reach External sensor — it
+  screen-cleanup follow-up) is now the _only_ way to reach Sensor box — it
   stays visible whenever Web Bluetooth exists at all (a neutral "tap to connect"
   look while the phone's own sensor is active, not just once EasyLevel is
   connected), opening its own page with a ✕ to close.
@@ -1217,7 +1245,7 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
   never a stale display that could silently undo the mute on an unrelated change.
 
-## R39 — External sensor on iOS: a Bluefy workaround guide, not a hidden option (#119)
+## R39 — Sensor box on iOS: a Bluefy workaround guide, not a hidden option (#119)
 
 Safari/WebKit has no Web Bluetooth and Apple has no plans to add it, so unlike other
 unsupported browsers (R32's plain hidden case) iOS gets a guide instead of nothing —
@@ -1235,16 +1263,16 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 - **Given** that guide page
 - **Then** it never shows a "Connect EasyLevel sensor" button or any health/battery
   detail — there is no `navigator.bluetooth` behind this page to drive any of that,
-  so it is a different page from the ordinary External sensor page (R32), not a
+  so it is a different page from the ordinary Sensor box page (R32), not a
   variant of it.
 - **Given** the same phone, but opened inside Bluefy instead (Web Bluetooth now
   exists)
-- **Then** the ordinary External sensor page (R32) shows instead, with no code
+- **Then** the ordinary Sensor box page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
 
 ## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
 
-The External sensor page (R32) lists every external sensor Libell supports that can
+The Sensor box page (R32) lists every external sensor Libell supports that can
 work in this browser — one row each, one today (#268); tapping a row's status opens a
 deeper, focused page for that sensor alone, refreshed continuously while it stays open
 — not just once when opened. Each page draws only the rows its own device can fill:
@@ -1257,12 +1285,12 @@ better served by raw values read straight off the box.
 Since #226 it is also where that sensor is **configured**, not only observed: the
 mounting picker (R43) and the installation offset (R34) moved here from the list page,
 which had grown longer than the detail page its own chevron led to, and repeated
-battery and temperature on both. The division is now plain — the External sensor page
+battery and temperature on both. The division is now plain — the Sensor box page
 answers "which source, and how do I connect it", and this page answers everything
 about one specific box. It is titled for that box ("EasyLevel sensor") rather than
 "Sensor status", since configuration lives here too.
 
-- **Given** the External sensor page with EasyLevel as the active source
+- **Given** the Sensor box page with EasyLevel as the active source
 - **When** I tap the sensor's status row ("Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state with its
   battery (R51's header) and a live reading —
@@ -1429,7 +1457,7 @@ guidance (#285; the phone's own "lay it flat" wording no longer applies to a box
 
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this
-  setting sits alongside — both moved here from the External sensor page by #226)
+  setting sits alongside — both moved here from the Sensor box page by #226)
 - **Then** R51's direction step offers the two placements the manufacturer's manual
   allows (#359): an arrow on the lid always points forward, and the box's **long side**
   or its **short side** faces the front — the official app's `sensor_Placing` 1 and 2,
@@ -1636,7 +1664,7 @@ and the login handshake is answered with real reply frames.
 - **Given** any browser, with or without Web Bluetooth
 - **When** the app is opened with `?xparkle-sim`
 - **Then** the Xparkle box presents as available everywhere it normally would (the
-  External sensor page, the sensor-status dot, onboarding's source step — one shared
+  Sensor box page, the sensor-status dot, onboarding's source step — one shared
   gate, `isXparkleAvailable()`), and connecting reaches a simulated box with no picker:
   live payloads in the real 1/100° format resolving to the same small fixed tilt `?demo`
   and R44 use, plus a slight deterministic wobble (a pure function of the sample index,
@@ -1673,7 +1701,7 @@ installation orientation, is still open there. Until that is closed, the app mus
 present this source as more proven than it is.
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support (or `?xparkle-sim`)
-- **When** the user connects the Xparkle box from the External sensor page
+- **When** the user connects the Xparkle box from the Sensor box page
 - **Then** the app finds it by its advertised name (`RVLevel`/`RVbalance`, what the
   vendor app itself matches on) or its `0000fff0-...` service, runs the vendor app's own
   connect handshake — password, then a parameter query — and the wheel/bubble UI updates
@@ -1721,7 +1749,7 @@ present this source as more proven than it is.
   works, there is no Web Bluetooth, or the browser is not Chromium — any browser on
   iPhone or iPad, Bluefy included, has no `chrome://flags` — the disclosure is not shown.
 - **Given** the box rejects the password it is offered
-- **Then** the External sensor page says so specifically, and says where to fix it —
+- **Then** the Sensor box page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
   rather than at the setting that is actually wrong.
 - **Given** the Xparkle box is connected and the user taps "Set vehicle level" — on its
