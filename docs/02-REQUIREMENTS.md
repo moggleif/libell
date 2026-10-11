@@ -130,24 +130,30 @@ URL and must keep working with no signal.
 ## R9 — Vehicle parameters are configurable and persist
 
 - **Given** I tap the gear icon
-- **Then** in Modern, it opens straight to the Settings tabs (General/Kalibrering/
-  Vehicle/Ramps/Targets, screen-cleanup follow-up — General and Kalibrering lead since
-  they color how the rest of the screen reads and are the other must-do besides the
-  vehicle's own measurements) as its own page with a ✕ to
+- **Then** in Modern, it opens straight to the Settings tabs as its own page with a ✕ to
   close — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
-  page (R38). Classic (no tabs) keeps a small ☰ drawer instead, now holding the same
-  five sections in the same order — General/Calibration/Vehicle/Ramps/Targets (design
-  review) — as five full-screen drawer pages instead of tabs, one page per decision
-  rather than the old single flat page that bundled Vehicle's own fields with Ramps
-  and General underneath it. General/Vehicle/Ramps/Targets share one settings
-  form/save state under the hood, same as Modern's tabs do — Save from any of the
-  four still persists the current values of all four, not just the page on screen,
-  and every one of the four shows the exact same Reset/Undo/Save row (Calibration
-  alone stays exempt, the one page with no "unsaved" form state at all). The
+  page (R38). The tabs are, in this order, Vehicle, Ramps, Calibration, Level, General
+  (#329): the order a new owner sets things up in, with the app-wide preferences last.
+  Settings opens on Vehicle. Classic (no tabs) keeps a small ☰ drawer instead, holding
+  the same five in the same order as full-screen drawer pages. Vehicle/Ramps/Level/
+  General share one settings form under the hood, same as Modern's tabs do. The
   introduction relaunch and External sensor stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"
   button.
+- **Given** the five tabs or pages (#329)
+- **Then** each holds one subject, with at most one sentence of hint per field and no
+  "Advanced" section:
+  - **Vehicle**: type, axle, the three measurements, one hint, and a quiet "Share to
+    another phone" link (R41). No unit field.
+  - **Ramps**: the ramp, its step heights and Number of ramps (R27, R47).
+  - **Calibration**: R11/R24.
+  - **Level**: Tolerance, Drain side (R27, hidden for a caravan) and the saved targets
+    (R31).
+  - **General**: Language, Theme, Appearance (no reload hint), Show lengths in (R14),
+    the two sound switches with one sentence of hint, and a collapsed **More** holding
+    Fine-tuning (Stability and both response delays) and "Reset all settings". More is
+    never opened by itself, even when a value in it is not the default.
 - **When** I edit Wheelbase (mm), Track width front (mm), Track width rear (mm), Ramp
   step heights
   (mm, semicolon-separated — a leveling ramp is a staircase, so every available height
@@ -159,19 +165,37 @@ URL and must keep working with no signal.
   live mm figure right after a change has just been adopted and a further change keeps
   the same direction — e.g. still driving up a ramp — never for the very first change or
   one reversing direction, so it can never weaken the noise guard above), display unit
-  (R14), language (R13), theme (R15) or level chime (R16) and save
-- **Then** the values persist across app restarts (`localStorage`) and immediately affect
-  the calculation. The defaults are `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see
-  `docs/03-ARCHITECTURE.md` § Settings). Not the first-run wizard, which keeps its own
-  Skip/Next flow — a successful Save here also returns to the main level screen (#159),
-  so the effect is visible without an extra tap — regardless of which Modern tab
-  (General/Kalibrering/Vehicle/Ramps/Targets) Save was tapped from.
+  (R14), language (R13), theme (R15) or level chime (R16)
+- **Then** each change is stored the moment it is made (#328) — a select, switch, ramp
+  choice or step height at once, a number field when I leave it or press Enter, never
+  half-typed — persists across app restarts (`localStorage`) and immediately affects the
+  calculation. There is no Save, Undo changes or Reset row on any tab or page, so
+  closing Settings can never leave a change unsaved. A short toast says "Saved" with
+  **Undo**, which puts the previous values back and stores them. The defaults are
+  `DEFAULT_SETTINGS` in `src/domain/settings.ts` (see `docs/03-ARCHITECTURE.md` §
+  Settings). Saving never closes the page; only ✕/back do. Not the first-run wizard,
+  which keeps its own Skip/Next flow (R18).
+- **Given** I type a number that cannot be used (empty, zero, or negative where only a
+  positive value makes sense)
+- **When** I leave the field
+- **Then** the value in effect stays, in the field and in storage, and one line under the
+  field says what was wrong and that the previous value still applies (#328). Nothing is
+  blocked; the next usable value is saved as usual and the line goes away.
+- **Given** a change is saved from Settings while an external sensor was picked or set
+  up after Settings was opened
+- **Then** the save keeps that sensor choice and its settings: Settings only ever writes
+  the fields it shows (#328).
+- **Given** General › More › "Reset all settings"
+- **Then** every field on every tab goes back to its default and is stored, with the same
+  Undo toast. The appearance is kept, since changing it rebuilds the app.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
 - **Given** the measurement fields (also in the wizard's measurements step, which
   reuses the same form)
-- **Then** a short muted hint says where the numbers are found (registration document /
-  handbook, or a tape measure — a few cm of error hardly matters).
+- **Then** a one-sentence muted hint says where the numbers are found: the registration
+  document for a motorhome; for a caravan, whose first field is the axle-to-jockey
+  distance that document does not list, to measure from the axle to the jockey wheel
+  (#327). Either way, a few cm off doesn't matter.
 
 ## R10 — The app installs to the home screen and works offline
 
@@ -194,6 +218,22 @@ URL and must keep working with no signal.
 - **Given** I have never saved vehicle settings, or never calibrated
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
   tapping it opens the matching menu section, and it disappears once handled.
+- **Given** the phone is the active sensor and Settings → Calibration is open (Modern tab
+  or Classic page)
+- **Then** it is a checklist of two steps, the same pattern as the box's own setup
+  (R51, #330): **1. the phone** and **2. the vehicle zero** (R24). A done step shows ✓
+  and its age (R26); an undone one its one action. Only the next undone step is
+  expanded, every step opens on a tap, and a step showing a message (an error, a check
+  result) stays open.
+  - Step 1 says to lay the phone on something flat, with **Calibrate now**, and a quiet
+    link "No flat surface? Flip the phone" that reveals the flip calibration.
+  - Step 2 says to level the vehicle with a spirit level and put the phone in its usual
+    spot, with **Set as level**.
+  - Check and Clear sit under a collapsed **More** in each step. There is no "Two
+    layers" intro.
+  - While an external box is active the steps are hidden and the box's own calibration
+    shows in their place, as before (#316). The first-run wizard keeps its own
+    one-calibration-per-step cards.
 
 ## R12 — Feedback without a backend
 
@@ -323,11 +363,9 @@ URL and must keep working with no signal.
   already a complete, valid choice.
 - **Given** any step that embeds a real Settings form — Language, Appearance, Sound,
   measurements, ramps (design review)
-- **Then** the embedded form shows only its fields — no Save/Undo/Reset row. A wizard
-  step's Next already submits the form (see below), so a second, identically-styled
-  "confirm" control next to Next no longer asks a first-time user to parse two
-  different actions that do almost the same thing. Save/Undo/Reset are unaffected on
-  the real, full Settings page — only the wizard's compact forms drop the row.
+- **Then** the embedded form shows only its fields, and is saved by the step's Next (see
+  below) rather than on each change as on the full Settings page (#328): no Undo toast,
+  no "Reset all settings".
 - **Given** the vehicle step (#184)
 - **Then** it asks "What are you leveling?" with the same Motorhome/Caravan choice and
   labels Settings uses, pre-selected to whatever is already stored (not hardcoded to
@@ -349,7 +387,8 @@ URL and must keep working with no signal.
   numbers the step's own hint text says come from the registration document, labeled
   for whichever vehicle the vehicle step chose. Everything else the full Settings form
   has beyond what the Language/Appearance/Sound steps (#189) already covered (Rear axle
-  — Vehicle tab; Tolerance, Stability — Advanced) is reachable from Settings afterward,
+  — Vehicle tab; Tolerance — Level tab; Stability — General › More) is reachable from
+  Settings afterward,
   not hidden from the app, just not shown on this reduced step.
 - **Given** the ramps step (design review: never had a wizard step before, despite
   being what the ramp catalog and per-wheel step guidance actually run on — arguably
@@ -358,7 +397,7 @@ URL and must keep working with no signal.
 - **Then** it shows the same ready-made ramp model/custom step-height picker and ramp
   count Classic mode's own Ramps section uses — a single `<select>` + chip editor, not
   Modern's scrolling brand-filtered catalog grid, proportionate to a reduced first-run
-  step either way. Drain position stays Advanced-tier, reachable from Settings
+  step either way. Drain position is on the Level tab, reachable from Settings
   afterward. Skippable, with the same warning-lamp consequence hint as measurements —
   skipping it leaves the shipped default ramp model in place, which may not match what
   the user actually owns.
@@ -619,7 +658,7 @@ URL and must keep working with no signal.
 - **Given** a topic about a place in the app (measurements, ramps, calibration, sensor
   box, targets)
 - **Then** it ends in a button to that place: "Open Vehicle", "Open Ramps", "Open
-  Calibration", "Open Targets" (named after the Settings tab they open, so they follow
+  Calibration", "Open Level" (named after the Settings tab they open, so they follow
   its name), and "Open the sensor". Tapping one closes Help, then opens that Settings
   tab (Classic: that ☰ section). Calibration with a sensor box in use opens the box's
   page instead, and "Open the sensor" goes where the top-right sensor icon goes — the
@@ -698,16 +737,17 @@ URL and must keep working with no signal.
 - **Given** no target preset has ever been selected (the default, "Normal")
 - **Then** the app behaves exactly as it does today: leveling targets true level, and
   the main screen shows nothing about targets at all (regression guard; ADR 0013).
-- **Given** the Targets menu section (reached from the menu, or from the main-screen
-  badge below once a target is active), listing "Normal" first and then any saved
-  presets
-- **When** I tap "Save current tilt as new target" and type a name
+- **Given** the saved targets on Settings' Level tab or page (#329; reached from Settings,
+  or from the main-screen badge below once a target is active), listing "Normal" first
+  and then any saved presets
+- **When** I tap "Save current tilt as new target", with or without typing a name
 - **Then** the current tilt — relative to whatever the sensor calibration and vehicle
   zero (R11, R24) already define as level — is captured and stored as a new preset
-  under that name; a capture reading more than 15° from that zero is rejected, the
+  under that name — or, with no name typed, as "Target N", the lowest number not already
+  taken (#329; nothing is disabled); a capture reading more than 15° from that zero is rejected, the
   same implausible-capture guard R24 already uses.
 - **Given** a saved preset
-- **When** I tap it in the Targets section
+- **When** I tap it in that list
 - **Then** it becomes the active target: every reading on the main screen is now
   measured against that preset's tilt instead of true level — a THIRD offset summed
   on top of the sensor calibration + vehicle zero sum (R24), never stored in the same
@@ -775,13 +815,12 @@ URL and must keep working with no signal.
   dot is the visible half of the "never leave apparently-live instructions on screen"
   guarantee; the freeze/stale-data logic that backs it is separate (#132).
 - **Given** the sensor's own page (R40), whether connected or disconnected
-- **Then** it spells out the connection state in full, and shows battery and
-  temperature as real decoded values once the first `faf52c22-...` status
-  notification has arrived — "not available yet" only in the brief window before
-  that, or before EasyLevel has ever connected (#123); that wording is honest for
-  these two, which really do arrive. These rows lived on the External sensor page
-  itself until #226 moved them here, so that battery and temperature appear in
-  exactly one place rather than on both pages.
+- **Then** it spells out the connection state in full, with the battery in its header
+  (R51) and the temperature in its debug info, as real decoded values once the first
+  `faf52c22-...` status notification has arrived — the temperature reads "not
+  available yet" only in the brief window before that, or before EasyLevel has ever
+  connected (#123). These values lived on the External sensor page itself until #226
+  moved them here, and appear in exactly one place each (#332).
 - **Given** signal strength (RSSI)
 - **Then** it is not shown at all (#228). Web Bluetooth exposes RSSI only through
   `advertisementreceived` (via `watchAdvertisements()`), never for an established
@@ -1129,7 +1168,7 @@ unannounced switch could show a plausible-looking but wrong reading.
   never forces a setting back on that was already off before I muted.
 - **Given** I mute or unmute from the bottom bar, then later open Settings
 - **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
-  never a stale display that could silently undo the mute on an unrelated Save.
+  never a stale display that could silently undo the mute on an unrelated change.
 
 ## R39 — External sensor on iOS: a Bluefy workaround guide, not a hidden option (#119)
 
@@ -1179,8 +1218,7 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 - **Given** the External sensor page with EasyLevel as the active source
 - **When** I tap the sensor's status row ("Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state with its
-  battery (R51's header), the battery and temperature rows (R32's values) inside its
-  collapsed "More", and a live reading —
+  battery (R51's header) and a live reading —
   the same calibrated roll/pitch the leveling math itself uses — so a box can be
   confirmed alive by watching the number move, without leaving this page.
 - **Given** the phone's own sensor is the active source (#244)
@@ -1194,8 +1232,8 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   reports on.
 - **Given** EasyLevel is (or was) the active source
 - **Then** below those rows the same page carries this box's own setup checklist
-  (R51): its position, its direction (R43's rotations, picked by tapping a side of the
-  vehicle) and its zero (R34), showing current values whenever the page is opened. It
+  (R51): its direction (R43's rotations, picked by tapping a side of the vehicle) and
+  its zero (R34), with its position in the live line above, showing current values whenever the page is opened. It
   is the very same component the onboarding wizard embeds its position step from (#317) — never a second,
   page-specific rebuild.
 - **Given** the sensor list (R32), titled "Sensors"
@@ -1222,10 +1260,10 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   or a tilt change shows up immediately, never only after closing and reopening the
   page.
 - **Given** EasyLevel is the active source
-- **When** I expand its "Debug info" disclosure (inside "More", R51; closed by default,
+- **When** I expand its "Debug info" disclosure (last on the page, R51; closed by default,
   a native `<details>` — no separate tap-and-wait)
 - **Then** it shows raw values straight off the box, for troubleshooting a box that
-  isn't behaving as expected — not everyday reading material: the box's Web
+  isn't behaving as expected — not everyday reading material: its temperature, the box's Web
   Bluetooth device id, time since its last accepted accel notification, the raw
   accelerometer int16 triplet (`easyLevelProtocol.ts`'s unscaled x/y/z — never run
   through the leveling math), the firmware tier decoded from the status
@@ -1235,9 +1273,7 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 - **Given** the phone's own sensor is active instead of EasyLevel
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
   show — as are the EasyLevel-only mounting and installation-offset blocks, while the
-  state/battery/temperature/reading rows above them still work, reading "Using the
-  phone's own sensor" and "not available yet" for battery/temperature (R32's exact
-  wording).
+  state and reading lines above them still work, reading "Not connected".
 - **Given** any raw debug field before its data has ever arrived (no box connected
   yet, or connected but no status/accel notification received yet)
 - **Then** it reads "not available yet" — the same wording every other not-yet-
@@ -1255,7 +1291,7 @@ one vehicle, ADR 0010/0014) and every UI/behavior preference (tolerance, stabili
 dwell, unit, sound, theme, appearance, sensor source) are deliberately excluded.
 
 - **Given** I am on the Settings page's Vehicle section
-- **When** I tap "Share vehicle setup"
+- **When** I tap "Share to another phone"
 - **Then** a link is generated encoding only the fields listed above in the URL
   fragment (never sent to any server — no backend exists, `SECURITY.md`), and handed
   to the same native share sheet / clipboard fallback the app-link share button
@@ -1465,7 +1501,9 @@ Reported from a phone, with the duplicates circled: the chosen ramp was on scree
 times over — a pinned card above the catalogue, its own row inside the catalogue, and
 the footer, with the card and the footer both spelling out the same step heights.
 
-- **Given** the Ramps tab in Modern
+- **Given** the Ramps tab in Modern, or ☰ → Ramps in Classic and Glossy (#331: the same
+  page, only styled differently; the first-run wizard's ramps step keeps its compact
+  ready-made-ramp select)
 - **Then** the catalogue is the picker and exactly one place outside it says what is
   chosen: a block reading top-down as a statement — "Selected", the model's name,
   "Step heights (mm)", then the heights themselves. The same numbers are never printed
@@ -1473,25 +1511,20 @@ the footer, with the card and the footer both spelling out the same step heights
 - **Given** the tab's running order
 - **Then** the answer comes first and the means of changing it below: what is set (the
   model and its step heights), the settings that follow from it (number of ramps), the
-  picker for changing your mind, the Advanced disclosure (drain position), and Save
-  last. Someone opening this tab is usually checking what is set rather than
-  re-choosing; whoever is re-choosing opens the picker. "Change ramp" sits above
-  Advanced rather than below it because of what picking "Custom set" does — the
-  step-height editor appears up under the block showing those heights, and every row
-  between the list and the editor that answers it is distance the eye has to travel;
-  Advanced is the one block nobody needs while choosing, so it is what goes below. The
-  custom step-height editor stays directly under the block showing those heights, since
-  that is what it edits.
+  picker for changing your mind last. Someone opening this tab is usually checking what
+  is set rather than re-choosing; whoever is re-choosing opens the picker. The custom
+  step-height editor stays directly under the block showing those heights, since that
+  is what it edits. Drain position is not on this tab: it is about which way the vehicle
+  may lean, so it sits with Tolerance on the Level tab (#329).
 - **Given** the choice "Custom set"
 - **Then** it is the _first_ entry of the catalogue inside that disclosure, not a
   separate control below it: entering your own step heights is one of the choices, and the one that is relevant
   whatever brand you own, so it leads rather than trailing eleven models you may already
   have ruled out. The brand filter never hides it — narrowing to a brand says which
   ready-made models to show, it does not withdraw the option of entering your own.
-- **Given** the settings that depend on the chosen ramp (number of ramps, the drain
-  position under Advanced)
+- **Given** the setting that depends on the chosen ramp (number of ramps)
 - **Then** they sit below the block naming that choice, not above the answer they belong
-  to. Save/Undo/Reset stay last.
+  to.
 - **Given** the tab on any phone (usability review against #189's persona — someone
   setting up their first motorhome, reading at arm's length in poor light)
 - **Then** the catalogue is not a scroll region inside the scrolling settings page: every
@@ -1509,14 +1542,12 @@ the footer, with the card and the footer both spelling out the same step heights
   have to put out, and that the app places them where they help most. Modern used to
   carry that as two separate help texts a few lines apart — this one and a general
   ramp-placement note — saying overlapping things and costing the tab a line it did not
-  have. Classic still shows the placement note on its own, where it stands alone.
-- **Given** the tab on a 375x553 screen (an iPhone SE in Safari)
-- **Then** it does not fit whole: it is about 105 px too tall in Swedish, 126 px in French
-  and German, and scrolls by that much with everything reachable. The remaining space is
-  in the Reset/Undo/Save row and the block naming the choice and its step heights, and in
-  labels sized for readability — closing it would mean taking back type this tab was
-  given for exactly that reason. The one-screen promise is therefore made, and checked,
-  from 393x745 upward.
+  have. Only the wizard's ramps step still shows the placement note, where it stands
+  alone.
+- **Given** the tab on any phone the fit test holds to one screen, down to a 375x553
+  screen (an iPhone SE in Safari)
+- **Then** it fits whole in every language with the picker closed. It did not while the
+  Save row and the Advanced block were on it; both are gone (#328, #329).
 
 ## R48 — Simulated Xparkle box (`?xparkle-sim`): the whole flow, no hardware (#271)
 
@@ -1630,7 +1661,7 @@ present this source as more proven than it is.
   hardware, a box lying on its back changes both angles whenever it turns about its own
   axis, so no zero taken there holds
 - **When** the box's own page is open
-- **Then** its setup checklist's first step (R51) shows live whether the box stands
+- **Then** its live position line (R51) shows whether the box stands
   upright; past 45° on either axis it says the box is lying down and to stand it up,
   whichever way it faces. Libell guides and never blocks: zeroing and picking the
   direction always run, so a box that was zeroed lying down earlier is recovered by
@@ -1658,7 +1689,7 @@ present this source as more proven than it is.
 - **Then** the update is found and the app reloads into it once, without a second
   relaunch.
 
-## R51 — The box's own page: one header, a three-step setup checklist (#314)
+## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
 The #309 UX review found the box page three stacked sections of paragraphs and buttons,
 jargon ("installation offset", "raw reading"), no order, and — when the connection was
@@ -1671,17 +1702,21 @@ and what its first step checks differ, read from its descriptor's capabilities (
 - **Then** its header says the state in a few words — "Connected · battery 62 %", "No
   contact" or "Not connected" — and, whenever the box is not delivering, carries the
   one button that fixes it: **Reconnect** (lost) or **Connect** (not the active source),
-  the same device picker as everywhere else (#307). Under it, one live line: "Tilt now:
-  side-to-side X° · front-to-back Y°".
+  the same device picker as everywhere else (#307). The battery is shown there and
+  nowhere else on the page (#332).
 - **Given** the box is the active source
-- **Then** the page shows a checklist of three steps, each with a ✓ when done and only
+- **Then** under the header one live line starts with the box's position and goes on
+  with its tilt: "✓ Stands upright · Side/side 0.0° · Front/back 0.0°". A box built
+  to stand (the Xparkle box) "Stands upright" or "Lying down: stand it upright, facing
+  any way"; a box built to lie flat (the EasyLevel box) "Lies flat" or "Tilted too far:
+  lay it flat, top up". Past 45° on either axis is wrong, and the line turns to the
+  warning colour with "!" instead of "✓". It is a status line, not a step: there is
+  nothing to press (#332).
+- **Given** the box is the active source
+- **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded; every step can be opened and run at any time — guidance,
   never a gate:
-  1. **Position**, live: a box built to stand (the Xparkle box) "Stands upright" or
-     "Lying down: stand it upright, facing any way"; a box built to lie flat (the
-     EasyLevel box) "Lies flat" or "Tilted too far: lay it flat, top up". Past 45° on
-     either axis is wrong.
-  2. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
+  1. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
      from the vehicle setting — with one button at each of its four sides. Each shows
      the box turned so its reference side points out that way: the Xparkle box's back
      (the screw mount), the EasyLevel box's arrow. The user taps where it points; the
@@ -1691,17 +1726,22 @@ and what its first step checks differ, read from its descriptor's capabilities (
      mapping, the same kind the lift guide (R49, #293) learns; "Not sure? Learn it by
      raising the front" opens that guide instead. Which choice equals the Xparkle box's
      unrotated output is assumed to be "back toward the front" until checked on
-     hardware; the lift guide measures instead of assuming.
-  3. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
+     hardware; the lift guide measures instead of assuming. Once a direction has been
+     learned, a "Forget the direction" link sits in this step.
+  2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
      **Zero now** (R34; the Xparkle box zeroes itself, #290), then "Zeroed" with its age.
+     A done zero drops the first-time instruction and offers **Zero again**, with
+     **Check** and **Clear the zero** as links under it (#332).
 - **Given** the order of the steps
 - **Then** the direction comes before the zero: the direction is learned from
   differences and works anywhere, while the zero needs level ground — and leveling with
   Libell's own ramp guidance needs the direction first.
-- **Given** the rarely needed actions
-- **Then** they sit in a collapsed **More**: check the zero, clear the zero, forget the
-  direction, disconnect, the battery/temperature/box-setting rows and the debug info
-  (R40).
+- **Given** the rest of the page (#332)
+- **Then** there is no collapsed "More": each action sits in the step it belongs to.
+  Below the steps, **Disconnect** is an outline button in the warning colour, so it does
+  not read as one more setup step, and last comes the closed debug info (R40). The
+  mounting the box reports about itself is not shown: Libell sets the direction itself
+  and never depends on the vendor app.
 - **Given** an external box reads a wrong position on the main screen (R17, #285, #304)
 - **Then** the overlay says it in one sentence and one short reason ("The box is lying
   down" / "It only measures right standing up.") with one button, **Show the box**, which

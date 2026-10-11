@@ -294,7 +294,7 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       ['ramps', 'ramps', t('help.open', { name: t('settings.tab.ramps') })],
       ['calibration', 'calibration', t('help.open', { name: t('menu.calibration') })],
       ['sensor', 'sensor', t('help.open.sensor')],
-      ['targets', 'targets', t('help.open', { name: t('menu.targets') })],
+      ['targets', 'targets', t('help.open', { name: t('settings.tab.level') })],
     ])("the %s topic's button closes Help, then opens %s", async (id, target, label) => {
       const openTarget = vi.fn();
       const info = createInfoPage(

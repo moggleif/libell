@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { createSensorSourceSection, type SensorSourceOptions } from './sensorSourceSection';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
-import { setLanguage } from './i18n';
+import { IDENTITY_AXIS_MAPPING } from '../domain/axisMapping';
+import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
@@ -48,6 +49,8 @@ describe('createSensorSourceSection (#116)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
     const disconnectButton = findButton(section.element, 'Disconnect');
     expect(disconnectButton.hidden).toBe(false);
+    // Its own colour, so it doesn't read as just another step (#332).
+    expect(disconnectButton.classList.contains('box-disconnect')).toBe(true);
   });
 
   it('never offers Connect or Reconnect on the list for the box already in use (#315)', () => {
@@ -159,6 +162,34 @@ describe('createSensorSourceSection (#116)', () => {
     );
     expect(section.installElement.textContent).toContain('Zeroed');
     expect(section.installElement.textContent).toContain('14 days ago');
+  });
+
+  it('drops the first-time instruction once zeroed, offering Zero again with Check and Clear as links (#332)', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getInstallCalibration: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }),
+      }),
+    );
+    const hint = [...section.installElement.querySelectorAll('p')].find(
+      (p) => p.textContent === t('box.step.zero.hint'),
+    );
+    expect(hint?.hidden).toBe(true);
+    expect(findButton(section.installElement, 'Zero again').hidden).toBe(false);
+    const links = section.installElement.querySelector<HTMLElement>('.box-step__links');
+    expect(links?.hidden).toBe(false);
+    expect(findButton(links!, 'Check').classList.contains('link-button')).toBe(true);
+    expect(findButton(links!, 'Clear the zero').classList.contains('link-button')).toBe(true);
+  });
+
+  it('keeps Check and Clear out of the way before the first zero (#332)', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => null }),
+    );
+    expect(section.installElement.querySelector<HTMLElement>('.box-step__links')?.hidden).toBe(
+      true,
+    );
+    expect(section.installElement.textContent).toContain(t('box.step.zero.hint'));
   });
 
   it('clicking "Set vehicle level" calls calibrateInstall() and refreshes the status', () => {
@@ -318,7 +349,9 @@ describe('createSensorSourceSection halves (#226)', () => {
   it('keeps the setup checklist on the install half, not the connect half (#314)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
     expect(section.connectElement.textContent).not.toContain('Zero on level ground');
-    expect(section.installElement.textContent).toContain('Position: waiting for a reading');
+    // The position is a status line, not a step (#332).
+    expect(section.installElement.textContent).not.toContain('Position');
+    expect(section.positionElement.textContent).toContain('Position: waiting for a reading');
     expect(section.installElement.textContent).toContain('Direction set');
     expect(section.installElement.textContent).toContain('Zero on level ground');
   });
@@ -450,10 +483,14 @@ describe('the position step, live (#304, #314)', () => {
         getCalibratedTilt: () => tilt,
       }),
     );
-    expect(section.installElement.textContent).toContain('Stands upright');
+    expect(section.positionElement.textContent).toContain('Stands upright');
+    expect(section.positionElement.classList.contains('is-done')).toBe(true);
     tilt = { pitchDeg: -88, rollDeg: 3 };
     section.refreshLive();
-    expect(section.installElement.textContent).toContain('Lying down: stand it upright');
+    expect(section.positionElement.textContent).toContain('Lying down: stand it upright');
+    expect(section.positionElement.classList.contains('is-warning')).toBe(true);
+    // A status line, not something to press.
+    expect(section.positionElement.querySelector('button')).toBeNull();
     // Never a gate: zeroing is still right there.
     expect(findButton(section.installElement, 'Zero now').disabled).toBe(false);
   });
@@ -465,8 +502,8 @@ describe('the position step, live (#304, #314)', () => {
         getCalibratedTilt: () => ({ pitchDeg: 70, rollDeg: 0 }),
       }),
     );
-    expect(section.installElement.textContent).toContain('lay it flat, top up');
-    expect(section.installElement.textContent).not.toContain('upright');
+    expect(section.positionElement.textContent).toContain('lay it flat, top up');
+    expect(section.positionElement.textContent).not.toContain('upright');
   });
 });
 
@@ -537,6 +574,21 @@ describe('the learn-the-mounting guide on the device page (#293)', () => {
       }),
     );
     expect(section.installElement.textContent).toContain('Learn it by raising the front');
+    // Nothing learned yet, so nothing to forget (#332).
+    expect(findButton(section.installElement, 'Forget the direction').hidden).toBe(true);
+  });
+
+  it('offers Forget the direction in the direction step once one is learned (#332)', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting: { ...learnMounting, getLearnedMounting: () => IDENTITY_AXIS_MAPPING },
+      }),
+    );
+    const forget = findButton(section.installElement, 'Forget the direction');
+    expect(forget.hidden).toBe(false);
+    expect(forget.classList.contains('link-button')).toBe(true);
   });
 
   it('is not offered for a box that does not', () => {

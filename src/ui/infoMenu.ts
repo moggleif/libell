@@ -114,7 +114,7 @@ const TOPICS: Topic[] = [
     id: 'targets',
     h: 'help.targets.h',
     text: 'help.targets.t',
-    go: { label: openTab('menu.targets'), target: 'targets' },
+    go: { label: openTab('settings.tab.level'), target: 'targets' },
   },
   {
     id: 'trouble',
