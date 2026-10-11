@@ -4,7 +4,7 @@
  * saved presets — tap a row to select it, the ✕ to delete it. Adding a
  * preset captures the current tilt (the same capture-first pattern
  * `calibrationSection.ts` uses for the vehicle zero) and names it from
- * the text field.
+ * the text field, or "Target N" when it is left empty (#329).
  *
  * Deliberately NOT part of `calibrationSection.ts`: a preset is a
  * *target*, not a calibration (see the module doc comment in
@@ -12,7 +12,6 @@
  * of a third block there, built from the same `menu__*` classes so it
  * still reads as part of the same UI family in both Classic and Modern.
  */
-import type { Calibration } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
 
@@ -25,17 +24,6 @@ export interface TargetsOptions {
    * error text, or null on success. */
   addTargetPreset(name: string): string | null;
   deleteTargetPreset(id: string): void;
-  /**
-   * The other two additive layers (#160) — read here only to surface a
-   * one-line summary of all three together; this section owns none of
-   * their state, and clearing/redoing either never touches this page's
-   * own list above.
-   */
-  getCalibration(): Calibration | null;
-  getVehicleCalibration(): Calibration | null;
-  /** The active target preset's name, or null for "Normal" (#122) —
-   * the same value the summary line's own third clause restates. */
-  getActiveTargetName(): string | null;
 }
 
 export interface TargetsSection {
@@ -45,18 +33,6 @@ export interface TargetsSection {
 
 export function createTargetsSection(options: TargetsOptions): TargetsSection {
   const body = document.createElement('div');
-
-  // Offset summary (#160): a read-only line stating which of the three
-  // additive layers (sensor calibration, vehicle zero, active target)
-  // currently contribute to "level" — never shown on the main screen
-  // (R31's own regression guard against duplicating info there stays
-  // untouched; this is menu-only, alongside the list below it).
-  const summary = document.createElement('p');
-  summary.className = 'menu__text menu__text--status';
-
-  const intro = document.createElement('p');
-  intro.className = 'menu__text';
-  intro.textContent = t('targets.intro');
 
   const list = document.createElement('div');
   list.className = 'targets__list';
@@ -71,7 +47,6 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
   addButton.type = 'button';
   addButton.className = 'menu__action menu__action--secondary';
   addButton.textContent = t('targets.add');
-  addButton.disabled = true;
 
   const addRow = document.createElement('div');
   addRow.className = 'targets__add';
@@ -79,10 +54,6 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
 
   const addStatus = document.createElement('p');
   addStatus.className = 'menu__text menu__text--status';
-
-  nameInput.addEventListener('input', () => {
-    addButton.disabled = nameInput.value.trim() === '';
-  });
 
   function makeRow(
     labelText: string,
@@ -121,16 +92,7 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
     return row;
   }
 
-  function refreshSummary(): void {
-    summary.textContent = t('menu.offsetSummary', {
-      sensor: options.getCalibration() !== null ? '✓' : '–',
-      vehicleZero: options.getVehicleCalibration() !== null ? '✓' : '–',
-      target: options.getActiveTargetName() ?? t('targets.normal'),
-    });
-  }
-
   function refresh(): void {
-    refreshSummary();
     const presets = options.getTargetPresets();
     const activeId = options.getActiveTargetId();
     list.replaceChildren(
@@ -155,21 +117,29 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
     );
   }
 
+  // Nothing is disabled (#329): a target saved without a name gets the
+  // lowest "Target N" not already taken, and can be told apart later by
+  // its number rather than not being saved at all.
+  function nextDefaultName(): string {
+    const taken = new Set(options.getTargetPresets().map((p) => p.name));
+    let n = 1;
+    while (taken.has(t('targets.defaultName', { n }))) n++;
+    return t('targets.defaultName', { n });
+  }
+
   addButton.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    if (!name) return;
+    const name = nameInput.value.trim() || nextDefaultName();
     const error = options.addTargetPreset(name);
     if (error) {
       addStatus.textContent = error;
       return;
     }
     nameInput.value = '';
-    addButton.disabled = true;
     addStatus.textContent = '';
     refresh();
   });
 
   refresh();
-  body.append(summary, intro, list, addRow, addStatus);
+  body.append(list, addRow, addStatus);
   return { element: body, refresh };
 }
