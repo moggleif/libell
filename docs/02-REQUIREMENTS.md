@@ -225,6 +225,19 @@ URL and must keep working with no signal.
 - **Given** I have never saved vehicle settings, or never calibrated
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
   tapping it opens the matching menu section, and it disappears once handled.
+- **Given** the vehicle measurements (wheelbase, track widths) have never been saved, or
+  the wizard's measurements step was skipped
+- **When** other settings (language, theme, sound) are saved
+- **Then** the ⚠ Setup lamp stays lit until a measurement is saved: changed in
+  Settings, confirmed with Next on the wizard's measurements step, or imported from a
+  shared vehicle setup (#364). Users whose settings were already stored before this
+  rule keep an unlit lamp.
+- **Given** the phone is the active sensor (#364)
+- **Then** the amber lamp follows the Calibration checklist's order: **⚠ Calibrate**
+  while the phone is not calibrated, then **⚠ Zero** while the vehicle is not zeroed
+  (R24); both open Calibration, which expands the step not yet done. Once both are
+  done there is no amber lamp. With a box active the lamp is the box's ⚠ Zero, as
+  before.
 - **Given** the phone is the active sensor and Settings → Calibration is open (Modern tab
   or Classic page)
 - **Then** it is a checklist of two steps, the same pattern as the box's own setup
@@ -604,8 +617,9 @@ URL and must keep working with no signal.
 - **Given** a later sensor recalibration or clear
 - **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
   placement tilt (ADR 0010).
-- The amber calibration lamp (R11) clears when at least one of the two calibrations
-  exists; the Calibration section shows each one's status with its own clear button.
+- The amber calibration lamp (R11) clears only when both calibrations exist: it reads
+  ⚠ Calibrate, then ⚠ Zero (#364); the Calibration section shows each one's status with
+  its own clear button.
 
 ## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
 

@@ -606,6 +606,19 @@ export function withEasyLevelSettings(
 }
 
 /**
+ * Whether the vehicle measurements (wheelbase, track widths) differ
+ * between two settings (#364): saving such a change is what puts the
+ * ⚠ Setup lamp out; saving a theme or a sound does not.
+ */
+export function measurementsDiffer(a: LevelSettings, b: LevelSettings): boolean {
+  return (
+    a.wheelbaseMm !== b.wheelbaseMm ||
+    a.trackWidthFrontMm !== b.trackWidthFrontMm ||
+    a.trackWidthRearMm !== b.trackWidthRearMm
+  );
+}
+
+/**
  * The number only, no unit suffix ("63" / "6.3") — for callers that show
  * several lengths under one shared unit label (R14) rather than repeating
  * "mm"/"cm" on every value.
