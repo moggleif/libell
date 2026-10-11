@@ -243,7 +243,9 @@ URL and must keep working with no signal.
     one-calibration-per-step cards.
   - Whatever is active when Settings opens decides what Calibration shows, every time it
     opens, also when it reopens on the tab it was left on: a box disconnected or
-    connected while Settings was closed is reflected at once (#351).
+    connected while Settings was closed is reflected at once (#351). The same holds
+    while it stays open beneath the box's own page: connecting or disconnecting there
+    redraws it, so closing the box page shows the right steps (#353).
 
 - **Given** any text that names these steps, in any language (#349)
 - **Then** "calibrate" is only ever the phone's own sensor (step 1, on a flat surface);

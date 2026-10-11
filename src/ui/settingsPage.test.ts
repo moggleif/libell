@@ -137,6 +137,28 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     expect(boxHeading === undefined || boxHeading.closest('[hidden]') !== null).toBe(true);
   });
 
+  // #353 (Morgan): the box's own page opens on top of Settings, so
+  // disconnecting there and closing it showed Kalibrering as it was drawn —
+  // with the box. The host now calls refreshOpenTab when the source flips.
+  it('refreshOpenTab redraws Kalibrering while the page stays open (#353)', () => {
+    let phone = false;
+    const sensorOptions: Partial<CalibrationOptions> = {
+      isPhoneActive: () => phone,
+      getExternalSensor: () =>
+        phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null },
+      calibrateExternalSensor: () => null,
+    };
+    const page = createSettingsPage(makeOptions(sensorOptions));
+    page.openCalibration();
+    const steps = () =>
+      page.element.querySelector<HTMLElement>('[data-tab="calibration"] .box-setup')!;
+    expect(steps().hidden).toBe(true);
+
+    phone = true; // disconnected on the box page, Settings still open beneath
+    page.refreshOpenTab();
+    expect(steps().hidden).toBe(false);
+  });
+
   // Design review, follow-up: Save used to close the page back to the main
   // screen (#159) — reversed, since the user may want to change more
   // right after saving. Only the ✕ actually closes it now.

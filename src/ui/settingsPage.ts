@@ -23,6 +23,12 @@ export interface SettingsPage {
   openTargets(): void;
   /** Open directly on any tab — Help's topic buttons (#326). */
   openTab(id: MenuSection): void;
+  /**
+   * Redraw the open tab if the page is open — the active sensor changed
+   * underneath it, e.g. the box disconnected from its own page, which
+   * opens on top of this one (#353).
+   */
+  refreshOpenTab(): void;
 }
 
 export function createSettingsPage(options: MenuOptions): SettingsPage {
@@ -64,6 +70,9 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
     openTab(id) {
       settingsForm.selectTab?.(id);
       page.open();
+    },
+    refreshOpenTab() {
+      if (page.isOpen()) settingsForm.refreshOpenTab?.();
     },
   };
 }

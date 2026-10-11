@@ -135,6 +135,12 @@ export interface Menu {
   attach(button: HTMLButtonElement): void;
   /** True while the drawer or a page is showing — the app pauses guidance. */
   isOpen(): boolean;
+  /**
+   * Redraw the calibration and targets pages if the menu is open — the
+   * active sensor changed underneath it, e.g. the box disconnected from its
+   * own page, which opens on top of this one (#353).
+   */
+  refresh(): void;
 }
 
 export function createMenu(options: MenuOptions): Menu {
@@ -322,6 +328,11 @@ export function createMenu(options: MenuOptions): Menu {
     },
     isOpen() {
       return depth > 0;
+    },
+    refresh() {
+      if (depth === 0) return;
+      refreshCalibration();
+      settingsForm.refreshTargetsPage?.();
     },
     attach(button) {
       button.addEventListener('click', () => {

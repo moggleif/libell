@@ -179,6 +179,28 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     button.click();
     expect(menu.isOpen()).toBe(false);
   });
+
+  // #353: the box's own page opens on top of the menu; disconnecting there
+  // must redraw Calibration beneath it, not leave the box showing.
+  it('refresh() redraws Calibration while it stays open (#353)', () => {
+    let phone = false;
+    const menu = createMenu(
+      makeOptions({
+        initialSettings: classicSettings(),
+        isPhoneActive: () => phone,
+        getExternalSensor: () =>
+          phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null },
+        calibrateExternalSensor: () => null,
+      } as Partial<MenuOptions>),
+    );
+    menu.open('calibration');
+    const steps = () => menu.element.querySelector<HTMLElement>('.box-setup')!;
+    expect(steps().hidden).toBe(true);
+
+    phone = true;
+    menu.refresh();
+    expect(steps().hidden).toBe(false);
+  });
 });
 
 describe('Settings form resyncs sound fields on every reopen (#161)', () => {

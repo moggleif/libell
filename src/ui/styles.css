@@ -3462,6 +3462,12 @@ body {
   margin-top: 12px;
 }
 
+/* Calibration's phone checklist reuses this class and is hidden while a
+   box is active (R11); display: flex above would otherwise win. */
+.box-setup[hidden] {
+  display: none;
+}
+
 .box-step {
   border: 1px solid var(--outline);
   border-radius: 10px;
