@@ -12,6 +12,8 @@
 ```
 src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
+├── app/           # wiring main.ts composes (#374): externalSensorWiring.ts (box adapters,
+│                  # health, learn guide, password), installOffsets.ts (each box's zero)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
@@ -127,14 +129,15 @@ by that source's descriptor. Which rows and controls a device page draws comes f
 descriptor's `capabilities` — battery, temperature, firmware, mounting picker,
 installation offset, debug bytes — so a box that reports no temperature has no
 temperature row, rather than one permanently reading "not available yet" (#228). The UI
-imports no protocol module: each adapter's own struct is mapped in `main.ts` into the
-source-neutral `ExternalSensorHealth`.
+imports no protocol module: each adapter's own struct is mapped in
+`src/app/externalSensorWiring.ts` into the source-neutral `ExternalSensorHealth`.
 
 **The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
 external-sensor lifecycle for every source: lazy adapter construction, connect and
 disconnect, the silent auto-reconnect at app open (#130), the background auto-retry
 (#211) and the "use phone sensor" escape hatch (#134). `main.ts` holds no device-named
-closure of its own — it supplies the adapter factory and three callbacks (build the
+closure of its own — it supplies the adapter factory (`createExternalSensor` in
+`src/app/externalSensorWiring.ts`) and three callbacks (build the
 level screen, refresh the indicators, refresh the status row) and reads
 `getActiveSensor()` fresh on every use. ADR 0014's "never silently switch source" rule
 is enforced by one `adopt()`/`fallBackToPhone()` pair rather than by a dozen call sites,
