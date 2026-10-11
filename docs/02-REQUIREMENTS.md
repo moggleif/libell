@@ -241,6 +241,9 @@ URL and must keep working with no signal.
   - While an external box is active the steps are hidden and the box's own calibration
     shows in their place, as before (#316). The first-run wizard keeps its own
     one-calibration-per-step cards.
+  - Whatever is active when Settings opens decides what Calibration shows, every time it
+    opens, also when it reopens on the tab it was left on: a box disconnected or
+    connected while Settings was closed is reflected at once (#351).
 
 - **Given** any text that names these steps, in any language (#349)
 - **Then** "calibrate" is only ever the phone's own sensor (step 1, on a flat surface);

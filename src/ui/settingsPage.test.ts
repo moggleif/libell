@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createSettingsPage } from './settingsPage';
 import type { MenuOptions } from './menu';
+import type { CalibrationOptions } from './calibrationSection';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
@@ -106,6 +107,34 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     expect(
       page.element.querySelector('[data-tab="calibration"]')?.getAttribute('aria-selected'),
     ).toBe('true');
+  });
+
+  // Reported by Morgan: disconnect the box elsewhere, reopen Settings on
+  // the Kalibrering tab, and it still showed the box instead of the phone
+  // steps — the tab only refreshed when it was clicked, not on reopen.
+  it('reopening on Kalibrering shows what is active now, not what was active before', () => {
+    let phone = false;
+    // The host (main.ts) passes these calibration options in the same bag.
+    const sensorOptions: Partial<CalibrationOptions> = {
+      isPhoneActive: () => phone,
+      getExternalSensor: () =>
+        phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null },
+      calibrateExternalSensor: () => null,
+    };
+    const page = createSettingsPage(makeOptions(sensorOptions));
+    page.openCalibration();
+    const steps = () =>
+      page.element.querySelector<HTMLElement>('[data-tab="calibration"] .box-setup')!;
+    expect(steps().closest('[hidden]')).not.toBeNull();
+    page.element.querySelector<HTMLButtonElement>('.menu-page__back')!.click();
+
+    phone = true; // the box was disconnected while Settings was closed
+    page.open();
+    expect(steps().closest('[hidden]')).toBeNull();
+    const boxHeading = [...page.element.querySelectorAll('h3')].find((h) =>
+      h.textContent?.includes('Xparkle RVS01'),
+    );
+    expect(boxHeading === undefined || boxHeading.closest('[hidden]') !== null).toBe(true);
   });
 
   // Design review, follow-up: Save used to close the page back to the main
