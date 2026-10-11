@@ -90,9 +90,15 @@ async function connectAndOpenBox(page, name) {
 async function closeAllPages(page) {
   for (;;) {
     const back = page.locator('.menu-page.is-visible .menu-page__back');
-    if ((await back.count()) === 0) return;
+    if ((await back.count()) === 0) break;
     await back.last().click();
     await page.waitForTimeout(100);
+  }
+  // Classic's ☰ drawer stays open under its section pages.
+  const drawer = page.locator('.menu:visible .menu__close');
+  if ((await drawer.count()) > 0) {
+    await drawer.click();
+    await page.locator('.menu').waitFor({ state: 'hidden' });
   }
 }
 
@@ -639,6 +645,150 @@ async function levelScreenFlow(browser) {
   await context.close();
 }
 
+const pageTitle = (page) =>
+  page.locator('.menu-page.is-visible .menu-page__title').last().textContent();
+const openTab = (page) =>
+  page.locator('.menu-page.is-visible [role=tab][aria-selected=true]').last().textContent();
+
+/** Where a tap on `target` lands: the open page's title and tab. */
+async function landing(page, target) {
+  await target.click();
+  await page.locator('.menu-page.is-visible').first().waitFor();
+  await page.waitForTimeout(150);
+  const where = `${await pageTitle(page)}${
+    (await page.locator('.menu-page.is-visible [role=tab]').count()) > 0
+      ? ` / ${await openTab(page)}`
+      : ''
+  }`;
+  await closeAllPages(page);
+  return where;
+}
+
+const lamp = (page, text) => page.locator('.indicators__lamp:visible').filter({ hasText: text });
+
+/** Where a Help topic's button leads. */
+async function helpLanding(page, topic) {
+  await page.click('#help-button');
+  const help = page.locator('.menu-page.is-visible').first();
+  const section = help.locator('.help-topic').filter({
+    has: page.locator('.help-topic__toggle', { hasText: topic }),
+  });
+  const toggle = section.locator('.help-topic__toggle');
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  return landing(page, section.locator('.help-topic__go'));
+}
+
+async function expectLanding(actual, expected, what) {
+  assert((await actual) === expected, `${what} should open ${expected}, got ${await actual}`);
+}
+
+// The lamps, the sensor icon, the target badge and Help's buttons each
+// open the right page, per appearance and per sensor.
+async function navigationFlow(browser) {
+  let app = await openApp(browser, 'xparkle-sim');
+  let { page } = app;
+  assert(
+    JSON.stringify(await lamps(page)) === JSON.stringify(['⚠ Measurements', '⚠ Calibrate']),
+    `a fresh phone should light Measurements and Calibrate, got ${await lamps(page)}`,
+  );
+  await expectLanding(
+    landing(page, lamp(page, 'Measurements')),
+    'Settings / Vehicle',
+    'the Measurements lamp',
+  );
+  await expectLanding(
+    landing(page, lamp(page, 'Calibrate')),
+    'Settings / Calibration',
+    'the Calibrate lamp',
+  );
+  await expectLanding(
+    landing(page, page.locator('.sensor-status')),
+    'Sensor box',
+    'the sensor icon',
+  );
+  for (const [topic, expected] of [
+    ['Enter the measurements', 'Settings / Vehicle'],
+    ['Ramps', 'Settings / Ramps'],
+    ['Calibrate and zero', 'Settings / Calibration'],
+    ['Sensor box', 'Sensor box'],
+    ['Targets and sound', 'Settings / Level'],
+  ]) {
+    await expectLanding(helpLanding(page, topic), expected, `Help's ${topic}`);
+  }
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // A calibrated phone asks for its zero, on the same tab.
+  const flat = JSON.stringify({ rollDeg: 0, pitchDeg: 0, capturedAt: Date.now() });
+  app = await openApp(browser, 'xparkle-sim', { 'libell.calibration': flat });
+  page = app.page;
+  assert((await lamps(page)).includes('⚠ Zero'), 'a calibrated phone should light ⚠ Zero');
+  await expectLanding(
+    landing(page, lamp(page, 'Zero')),
+    'Settings / Calibration',
+    "the phone's Zero lamp",
+  );
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // A box chosen in the wizard but not connected: to the box list (#365).
+  app = await openApp(browser, 'xparkle-sim', { 'libell.boxPending': '1' });
+  page = app.page;
+  await expectLanding(landing(page, lamp(page, 'Zero')), 'Sensor box', 'the pending Zero lamp');
+  await expectLanding(
+    helpLanding(page, 'Calibrate and zero'),
+    'Sensor box',
+    "Help's Calibrate and zero with a box pending",
+  );
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // A connected box: the icon, the lamp and Help go to its own page.
+  app = await openApp(browser, 'xparkle-sim');
+  page = app.page;
+  await connectAndOpenBox(page, 'Xparkle RVS01');
+  await closeAllPages(page);
+  await expectLanding(
+    landing(page, page.locator('.sensor-status')),
+    'Xparkle RVS01 sensor',
+    'the icon',
+  );
+  await expectLanding(
+    landing(page, lamp(page, 'Zero')),
+    'Xparkle RVS01 sensor',
+    "the box's Zero lamp",
+  );
+  await expectLanding(
+    helpLanding(page, 'Calibrate and zero'),
+    'Xparkle RVS01 sensor',
+    "Help's Calibrate and zero with a box",
+  );
+  await expectLanding(helpLanding(page, 'Sensor box'), 'Xparkle RVS01 sensor', "Help's Sensor box");
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
+  // Classic: the ☰ menu's sections instead of Settings' tabs.
+  const preset = { id: 'p1', name: 'Ferry', offset: { rollDeg: 1, pitchDeg: 0 } };
+  app = await openApp(browser, 'xparkle-sim', {
+    'libell.settings': JSON.stringify({ appearance: 'classic' }),
+    'libell.targetPresets': JSON.stringify([preset]),
+    'libell.activeTarget': JSON.stringify('p1'),
+  });
+  page = app.page;
+  await expectLanding(landing(page, lamp(page, 'Calibrate')), 'Calibration', 'the Calibrate lamp');
+  await expectLanding(landing(page, page.locator('.target-badge')), 'Level', 'the target badge');
+  for (const [topic, expected] of [
+    ['Enter the measurements', 'Vehicle'],
+    ['Ramps', 'Ramps'],
+    ['Calibrate and zero', 'Calibration'],
+    ['Targets and sound', 'Level'],
+  ]) {
+    await expectLanding(helpLanding(page, topic), expected, `Classic Help's ${topic}`);
+  }
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+}
+
 /** Stands in for WebAudio: counts contexts and resumes, and records every
  * tone by its frequency when it starts. */
 function fakeAudio() {
@@ -793,8 +943,9 @@ try {
   await lostBoxFlow(browser);
   await soundFlow(browser);
   await levelScreenFlow(browser);
+  await navigationFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation',
   );
 } finally {
   await browser?.close();

@@ -48,17 +48,14 @@ import {
 import { EASYLEVEL_DESCRIPTOR, type EasyLevelSensor } from './sensor/easyLevelSensor';
 import type { XparkleSensor } from './sensor/xparkleSensor';
 import { createExternalSensorController } from './sensor/externalSensorController';
-import { createMenu, type Menu, type MenuSection } from './ui/menu';
+import { createMenu, type Menu } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { takeReopenSettings } from './ui/reopenSettings';
 import { createInfoPage } from './ui/infoMenu';
 import { createSensorPage, type ExternalSensorPage } from './ui/sensorPage';
 import { createIosSensorGuidePage } from './ui/iosSensorGuidePage';
 import { isIos } from './ui/platform';
-import { createTargetBadge } from './ui/targetBadge';
 import { applyAppearance, applyTheme, followSystemTheme } from './ui/theme';
-import { createIndicators, phoneCalibrationLamp } from './ui/indicators';
-import { createSensorStatusIndicator } from './ui/sensorStatusIndicator';
 import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 import {
@@ -87,6 +84,13 @@ import {
 import { buildLevelScreen, createLevelScreenHost } from './app/levelScreen';
 import { createTargets } from './app/targets';
 import { calibratedTilt, readTilt } from './app/tiltReading';
+import { createNavigation } from './app/navigation';
+import {
+  createBoxPending,
+  mountLamps,
+  mountSensorStatus,
+  mountTargetBadge,
+} from './app/indicatorWiring';
 import { createMuteToggle, createSound } from './app/sound';
 import { attachMuteButton } from './ui/muteButton';
 
@@ -205,16 +209,7 @@ function bootstrap(root: HTMLElement): void {
   const pendingVehicleSetupCode = takePendingVehicleSetupCode();
 
   let settings: LevelSettings = loadSettings();
-  // The wizard's box path was finished with no box connected (#365): until
-  // a box connects, or the phone is calibrated after all, the amber lamp
-  // asks for the box rather than ⚠ Calibrate for a phone the user chose
-  // not to use.
-  let boxPending = isBoxPending();
-  function settleBoxPending(pending: boolean): void {
-    if (boxPending === pending) return;
-    boxPending = pending;
-    setBoxPending(pending);
-  }
+  const boxPending = createBoxPending({ load: isBoxPending, save: setBoxPending });
   // Each box's installation offset (#131, ADR 0014): the same "vehicle
   // zero" concept as `vehicleCalibration` above, generalized to external
   // sources — independent values, never combined with, or overwriting,
@@ -230,17 +225,17 @@ function bootstrap(root: HTMLElement): void {
   const phoneCalibration = createPhoneCalibration({
     readTilt: readTiltNow,
     onCaptured() {
-      settleBoxPending(false);
-      updateIndicators();
+      boxPending.settle(false);
+      lamps.refresh();
     },
-    onCleared: () => updateIndicators(),
+    onCleared: () => lamps.refresh(),
   });
   const boxZero = createBoxZeroing({
     activeSensor: () => sensor(),
     getXparkle: () => externalSensors.getSensor('xparkle') as XparkleSensor | null,
     offsets: installOffsets,
     readTilt: readTiltNow,
-    onChanged: () => updateIndicators(),
+    onChanged: () => lamps.refresh(),
   });
   // What "level" means, untouched by target presets (#122, ADR 0013).
   // Selected per the ACTIVE sensor source (#131, ADR 0014): each source
@@ -251,7 +246,7 @@ function bootstrap(root: HTMLElement): void {
   const targets = createTargets({
     readTilt: readTiltNow,
     zeroCalibration,
-    onActiveChanged: () => updateTargetBadge(),
+    onActiveChanged: () => targetBadge.refresh(),
   });
   // The active target is a THIRD additive term on top of the zero; Normal
   // leaves the two identical (regression guard).
@@ -286,7 +281,7 @@ function bootstrap(root: HTMLElement): void {
   const boxWiring: BoxWiring = {
     settings: settingsAccess,
     getSensor: (source) => externalSensors.getSensor(source),
-    onMountingChanged: () => updateIndicators(),
+    onMountingChanged: () => lamps.refresh(),
   };
   // Debug-only (#212), from the EasyLevel page's debug disclosure; the
   // transport reads `settings` live, so it applies on the next connect.
@@ -319,7 +314,7 @@ function bootstrap(root: HTMLElement): void {
     // The amber calibration lamp checks whichever source is active (#131),
     // so switching source alone still has to refresh it.
     onIndicatorsChanged: () => {
-      updateIndicators();
+      lamps.refresh();
       // Settings may be open under the box's own page: when the source
       // flips (box connected or disconnected there), redraw its open tab
       // so closing the box page shows the right calibration (#353). Only
@@ -331,7 +326,7 @@ function bootstrap(root: HTMLElement): void {
         else menu?.refresh();
       }
     },
-    onStatusChanged: () => updateSensorStatus(),
+    onStatusChanged: () => sensorStatus.refresh(),
   });
 
   // While the menu or the wizard is open the user is reading, phone in
@@ -371,7 +366,7 @@ function bootstrap(root: HTMLElement): void {
         settings = next;
         applyTheme(settings.theme);
         applyAppearance(settings.appearance);
-        updateIndicators();
+        lamps.refresh();
         levelScreen.rebuildIfChanged();
       },
       ...calibration,
@@ -394,9 +389,9 @@ function bootstrap(root: HTMLElement): void {
         onboardingOpen = false;
         markOnboardingSeen();
         if (done) markOnboardingDone();
-        // A box chosen but not connected (#365): see `boxPending`.
-        if (done) settleBoxPending(path === 'external' && sensor().getSource() === 'phone');
-        updateIndicators();
+        // A box chosen but not connected (#365): see `createBoxPending`.
+        if (done) boxPending.settle(path === 'external' && sensor().getSource() === 'phone');
+        lamps.refresh();
       },
     });
   };
@@ -417,15 +412,12 @@ function bootstrap(root: HTMLElement): void {
       // A settings change comes from a tap, a user gesture — the right moment to unlock
       // audio for the opt-in level chime and/or continuous guidance.
       if (settings.soundOnLevel || settings.soundGuidance) sound.unlock();
-      updateIndicators();
+      lamps.refresh();
       levelScreen.rebuildIfChanged();
     },
     ...calibration,
     // Declared further down; only ever called after start-up (#316).
-    openExternalSensor: () => {
-      const source = sensor().getSource();
-      if (source !== 'phone') externalSensorPage?.openSource(source);
-    },
+    openExternalSensor: () => navigation.openActiveSensorPage(),
     ...targetOptions(targets),
     ...sensorSource,
     ...easyLevelBox,
@@ -523,49 +515,27 @@ function bootstrap(root: HTMLElement): void {
   // page when both happen to be open at once.
   if (externalSensorPage) document.body.append(...externalSensorPage.statusElements);
 
-  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
-  // follow-up) — a fully independent page (universal, both appearances),
-  // not a section of the ☰ Settings menu: sharing that menu's history
-  // depth let its back button pop through to reveal the Settings drawer
-  // underneath by mistake. Each Help topic ends in a button to the place
-  // it talks about (#326), routed the same way the lamps and the sensor
-  // icon route.
+  // Every shortcut to a place in the app goes through one router.
+  const navigation = createNavigation({
+    settings: settingsPage ? { settingsPage } : { menu: menu! },
+    externalSensorPage,
+    sensorPage,
+    activeSource: () => sensor().getSource(),
+    isBoxPending: () => boxPending.isPending(),
+  });
+
+  // "?" opens its own Help/About/Feedback tabbed page, independent of
+  // Settings; each Help topic ends in a button to the place it talks
+  // about (#326).
   const infoPage = createInfoPage({
     openOnboarding,
     hasDoneOnboarding,
     hasSensorPage: sensorPage !== null,
-    openTarget(target) {
-      if (target === 'sensor') openSensor();
-      else if (target === 'calibration') openCalibration();
-      else openSettingsSection(target);
-    },
+    openTarget: navigation.openHelpTarget,
   });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
   if (helpButton) infoPage.attach(helpButton);
-
-  function openSettingsSection(section: MenuSection): void {
-    if (isModern) settingsPage!.openTab(section);
-    else menu!.open(section);
-  }
-  // With a box in use, calibrating is about the box's setup, so it opens
-  // the box's page, where its checklist expands the next step not yet
-  // done — the direction before the zero (#316, the #309 UX review).
-  function openCalibration(): void {
-    const source = sensor().getSource();
-    if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
-    // A box chosen in the wizard, not yet connected (#365): to connect it.
-    else if (boxPending && sensorPage) sensorPage.open();
-    else openSettingsSection('calibration');
-  }
-  // With a box in use (connected or lost), its own page directly (#315,
-  // the #309 UX review): its state, Reconnect and setup are all there.
-  // The list stays the way to add or switch boxes while the phone is active.
-  function openSensor(): void {
-    const source = sensor().getSource();
-    if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
-    else sensorPage?.open();
-  }
 
   // Mute (#161): a single toggle for both sounds, in the bottom bar.
   attachMuteButton(
@@ -577,82 +547,29 @@ function bootstrap(root: HTMLElement): void {
     createMuteToggle(settingsAccess, sound.unlock).toggle,
   );
 
-  // Dashboard-style warning lamps. Demo mode presents as a configured
-  // app (in memory only — nothing is written), so screenshots and demos
-  // show the product, not the first-run warnings (#70).
-  const indicators = createIndicators((section) => {
-    if (section === 'calibration') openCalibration();
-    else if (isModern) settingsPage!.open();
-    else menu!.open(section);
+  // Dashboard-style warning lamps, the target badge, and the sensor icon.
+  const lamps = mountLamps(document.querySelector('#indicators'), {
+    demo,
+    activeSource: () => sensor().getSource(),
+    boxPending,
+    phoneCalibration,
+    activeInstallOffset,
+    measurementsSaved: hasStoredMeasurements,
+    open: navigation.openLamp,
   });
-  // Which calibrations the amber lamp checks follows the ACTIVE source
-  // (#131, ADR 0014), same as `zeroCalibration()` above: the phone's
-  // sensor calibration, then its vehicle zero (#364), while the phone is
-  // active, or just the box's installation offset while a box is — never
-  // both at once, so connecting a box with no installation offset yet
-  // still warns even if the phone was calibrated long ago, and vice versa.
-  // The Setup lamp follows the vehicle measurements, not any saved
-  // setting (#364). A box chosen in the wizard but not connected yet
-  // (#365) counts as the box for the lamp: ⚠ Zero, opening the sensor list
-  // to connect it.
-  const updateIndicators = () => {
-    const phone = sensor().getSource() === 'phone';
-    if (!phone) settleBoxPending(false);
-    const awaitingBox = phone && boxPending;
-    indicators.update({
-      settingsSaved: demo || hasStoredMeasurements(),
-      calibrationLamp: demo
-        ? null
-        : awaitingBox
-          ? 'zero'
-          : phone
-            ? phoneCalibrationLamp(
-                phoneCalibration.bias() !== null,
-                phoneCalibration.vehicleZero() !== null,
-              )
-            : activeInstallOffset() !== null
-              ? null
-              : 'zero',
-      externalSensor: !phone || awaitingBox,
-    });
-  };
-  document.querySelector('#indicators')?.append(indicators.element);
-  updateIndicators();
-
-  // Target badge (#122, ADR 0013): the only main-screen trace of a
-  // target preset — hidden whenever Normal (true level) is active, so
-  // the normal case shows nothing extra. Tapping it jumps straight to
-  // the Targets menu section (fast switching from the main screen).
-  const targetBadge = createTargetBadge(() => {
-    if (isModern) settingsPage!.openTargets();
-    else menu!.open('targets');
+  const targetBadge = mountTargetBadge(document.querySelector('#indicators'), {
+    activeName: () => targets.activeName(),
+    open: navigation.openTargets,
   });
-  document.querySelector('#indicators')?.append(targetBadge.element);
-  const updateTargetBadge = () => {
-    targetBadge.update(targets.activeName());
-  };
-  updateTargetBadge();
-
-  // External-sensor status indicator (#129, screen-cleanup follow-up): the
-  // only entry point to `sensorPage` now that the ☰ menu no longer
-  // carries "External sensor" — visible whenever Web Bluetooth exists at
-  // all, not just once connected (`sensorStatusIndicator.ts`).
-  // With a box in use (connected or lost), the icon opens that box's own
-  // page directly (#315, the #309 UX review): its state, Reconnect and
-  // setup are all there, so the list in between was one tap too many. The
-  // list stays the way to add or switch boxes while the phone is active.
-  const sensorStatus = createSensorStatusIndicator(
-    externalSensorSupported,
+  // Into the pinned top-bar corner, so the icon and the Install button
+  // always own the top-right corner (#244).
+  const sensorStatus = mountSensorStatus(document.querySelector('#sensor-slot'), {
+    supported: externalSensorSupported,
     showIosGuide,
-    openSensor,
-  );
-  // Into the pinned top-bar corner — not the #indicators cluster — so the
-  // icon and the Install button beside it always own the top-right
-  // corner and the other top-bar items wrap or shift left of them (#244).
-  document.querySelector('#sensor-slot')?.append(sensorStatus.element);
+    sensor,
+    open: navigation.openSensor,
+  });
   syncTopbarCorner();
-  const updateSensorStatus = () => sensorStatus.update(sensor().getSource(), sensor().getState());
-  updateSensorStatus();
 
   const showMessage = (text: string) => {
     root.replaceChildren();
@@ -660,13 +577,6 @@ function bootstrap(root: HTMLElement): void {
     message.className = 'app__hint';
     message.textContent = text;
     root.append(message);
-  };
-
-  // The active external sensor's own page, not the source list (#285,
-  // #286): shared by every main-screen surface that links to it.
-  const openActiveSensorPage = () => {
-    const source = sensor().getSource();
-    if (source !== 'phone') externalSensorPage?.openSource(source);
   };
 
   // A settings save can switch the vehicle type or change what the ramp
@@ -682,7 +592,7 @@ function bootstrap(root: HTMLElement): void {
         isPaused: () =>
           isMenuOpen() || infoPage.isOpen() || (sensorPage?.isOpen() ?? false) || onboardingOpen,
         refreshStatus() {
-          updateSensorStatus();
+          sensorStatus.refresh();
           // The box page's live rows: a no-op unless that page is open.
           externalSensorPage?.refreshLive();
         },
@@ -690,7 +600,7 @@ function bootstrap(root: HTMLElement): void {
         hasSensorPage: externalSensorPage !== null,
         isLandscape: () => landscape.matches,
         isVisible: () => document.visibilityState === 'visible',
-        openActiveSensorPage,
+        openActiveSensorPage: navigation.openActiveSensorPage,
         retry: () => externalSensors.retry(),
         usePhoneSensor: () => externalSensors.usePhoneSensor(),
         playChime: sound.playChime,
@@ -732,7 +642,7 @@ function bootstrap(root: HTMLElement): void {
         settings = applyVehicleGeometry(settings, pendingVehicleGeometry);
         saveSettings(settings);
         markMeasurementsSaved();
-        updateIndicators();
+        lamps.refresh();
         levelScreen.rebuildIfChanged();
       },
       onDismiss: () => {
