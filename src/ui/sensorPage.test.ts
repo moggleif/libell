@@ -107,12 +107,12 @@ describe('createSensorPage', () => {
       // The list page is only about picking/connecting a source.
       expect(page.element.textContent).toContain('Connect');
       expect(page.element.textContent).not.toContain('Direction');
-      expect(page.element.textContent).not.toContain('Zero on level ground');
+      expect(page.element.textContent).not.toContain('Zero the vehicle');
       expect(page.element.textContent).not.toContain('Battery');
       // Per-device setup and health live on the sensor's own page (#314).
       // Not picked yet, so the step asks (#359).
       expect(page.statusElements[0]!.textContent).toContain('Pick the direction');
-      expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
+      expect(page.statusElements[0]!.textContent).toContain('Zero the vehicle');
       expect(page.statusElements[0]!.textContent).toContain('Temperature');
     });
 
@@ -153,7 +153,7 @@ describe('createSensorPage', () => {
       expect(checklist?.closest('[hidden]')).toBeNull();
       // Populated from the current setting, not left at its initial value.
       expect(page.statusElements[0]!.textContent).toContain('Direction set: short side forward');
-      expect(page.statusElements[0]!.textContent).toContain('Zero on level ground');
+      expect(page.statusElements[0]!.textContent).toContain('Zero the vehicle');
     });
 
     it('refreshLive() is a no-op while the status page is closed', () => {
