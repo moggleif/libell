@@ -348,19 +348,24 @@ async function checkWizard(page, label, { external = false, fitsWhole = true } =
 }
 
 /** Opens the app with the given preferences already stored. */
-async function open(context, appearance, language, { query = '', onboarded = true } = {}) {
+async function open(
+  context,
+  appearance,
+  language,
+  { query = '', onboarded = true, vehicleType = 'motorhome' } = {},
+) {
   const page = await context.newPage();
   await page.goto(BASE + query);
   await page.evaluate(
-    ([settingsKey, languageKey, onboardedKey, appearance, language, onboarded]) => {
+    ([settingsKey, languageKey, onboardedKey, appearance, language, onboarded, vehicleType]) => {
       localStorage.clear();
-      localStorage.setItem(settingsKey, JSON.stringify({ appearance }));
+      localStorage.setItem(settingsKey, JSON.stringify({ appearance, vehicleType }));
       localStorage.setItem(languageKey, language);
       // Without this the first-run guide auto-opens over whatever view is
       // under test.
       if (onboarded) localStorage.setItem(onboardedKey, '1');
     },
-    [SETTINGS_KEY, LANGUAGE_KEY, ONBOARDED_KEY, appearance, language, onboarded],
+    [SETTINGS_KEY, LANGUAGE_KEY, ONBOARDED_KEY, appearance, language, onboarded, vehicleType],
   );
   await page.reload();
   return page;
@@ -404,6 +409,17 @@ try {
         await level.waitForSelector('.rv-diagram svg');
         await checkLevelScreen(level, at('level'), { fitsWhole: viewport.fitsWhole });
         await auditView(level, at('level'));
+
+        // --- The caravan's level view (#368): its own drawing, and in
+        // Modern its own wheel cards, jockey card included.
+        const caravan = await open(context, appearance, language, {
+          query: '?demo=1',
+          vehicleType: 'caravan',
+        });
+        await caravan.waitForSelector('.rv-diagram svg');
+        await checkLevelScreen(caravan, at('caravan level'), { fitsWhole: viewport.fitsWhole });
+        await auditView(caravan, at('caravan level'));
+        await caravan.close();
 
         // --- Settings: a page in Modern, a drawer in Classic.
         await level.locator('#settings-button').click();

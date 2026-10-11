@@ -1,18 +1,33 @@
 /**
  * Dashboard-style warning lamps in the top bar: one lights up while the
- * vehicle settings have never been saved, another while the phone is not
- * calibrated. Tapping a lamp opens the matching menu section; both
+ * vehicle measurements have never been saved, another while a calibration
+ * step is missing (⚠ Calibrate or ⚠ Zero). Tapping a lamp opens the matching menu section; both
  * disappear once handled — like a car that has nothing to warn about.
  */
 import type { MenuSection } from './menu';
 import { t } from './i18n';
 import { setVisible } from './motion';
 
+/** Which step the amber calibration lamp asks for, or null when none. */
+export type CalibrationLamp = 'calibrate' | 'zero' | null;
+
+/**
+ * The phone's lamp (#364): the phone first, then the vehicle zero — the
+ * same order as the Calibration checklist (R11), so the lamp always
+ * names the step that checklist opens on.
+ */
+export function phoneCalibrationLamp(calibrated: boolean, zeroed: boolean): CalibrationLamp {
+  if (!calibrated) return 'calibrate';
+  if (!zeroed) return 'zero';
+  return null;
+}
+
 export interface Indicators {
   element: HTMLElement;
   update(state: {
+    /** The vehicle measurements have been saved (#364). */
     settingsSaved: boolean;
-    calibrated: boolean;
+    calibrationLamp: CalibrationLamp;
     /** An external sensor is the active source, so it is what the
      * calibration lamp is about — never "the phone". */
     externalSensor?: boolean;
@@ -50,11 +65,18 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
 
   return {
     element: container,
-    update({ settingsSaved, calibrated, externalSensor = false }) {
+    update({ settingsSaved, calibrationLamp: missing, externalSensor = false }) {
+      const calibrated = missing === null;
+      // A box only ever lacks its zero (#349).
+      const step = externalSensor ? 'zero' : (missing ?? 'calibrate');
       const calibrationTitle = t(
-        externalSensor ? 'lamp.calibrate.title.sensor' : 'lamp.calibrate.title',
+        externalSensor
+          ? 'lamp.calibrate.title.sensor'
+          : step === 'zero'
+            ? 'lamp.zero.title'
+            : 'lamp.calibrate.title',
       );
-      calibrationLamp.textContent = t(externalSensor ? 'lamp.zero' : 'lamp.calibrate');
+      calibrationLamp.textContent = t(step === 'zero' ? 'lamp.zero' : 'lamp.calibrate');
       calibrationLamp.title = calibrationTitle;
       calibrationLamp.setAttribute('aria-label', calibrationTitle);
       if (first) {

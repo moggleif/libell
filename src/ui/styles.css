@@ -796,19 +796,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.rv-diagram__lift-label--dim {
-  fill: var(--on-surface-muted);
-  font-weight: 400;
-}
-
-/* The step's height is secondary — parenthesized and smaller than the
- * step name above it. */
-.rv-diagram__mm {
-  fill: var(--on-surface-muted);
-  font-size: 8px;
-  font-weight: 400;
-}
-
 /* State glyph inside each wheel: shape carries the meaning too, so the
  * status never relies on color alone. */
 .rv-diagram__wheel-glyph {
@@ -913,6 +900,19 @@ body {
   right: 4px;
 }
 
+/* The caravan's jockey wheel (#368) sits in the middle, on the drawbar,
+ * not in a side margin. It may grow wider than a side card, since nothing
+ * sits beside it and "Crank down" is long in some languages, but it stays
+ * shorter so it clears the front arrow above and the body below. */
+.wheel-card--center {
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  min-width: 126px;
+  max-width: 190px;
+  min-height: 56px;
+}
+
 .wheel-card__marker {
   flex-shrink: 0;
   /* 32px, not the glyph's own 22px plus a generous margin: every pixel here
@@ -987,10 +987,6 @@ body {
   font-size: 11px;
   color: var(--on-surface-muted);
   font-variant-numeric: tabular-nums;
-}
-
-.wheel-card__mm--dim {
-  opacity: 0.7;
 }
 
 /* ---- Level confirmation + tilt readout ---- */

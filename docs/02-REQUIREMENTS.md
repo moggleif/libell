@@ -92,18 +92,22 @@ URL and must keep working with no signal.
   on the shown step, red only when not even the highest step could fix that wheel by
   itself — move the vehicle instead — and toned-down gray (–) when it is low but gets
   no ramp: fewer ramps than low wheels, nothing to do at that wheel. A wheel a step
-  could fix is never red, even while the global plan leaves it short. Colored wheels
-  show their required lift in whole mm (muted for the gray state); the gray state's
-  own step line reads "No ramp" (screen-cleanup follow-up) rather than sitting blank,
-  so it reads as "nothing to do here", never as "level".
+  could fix is never red, even while the global plan leaves it short. Orange and red
+  wheels show their required lift in whole mm. The gray state shows no height at all
+  (#368: a figure on a wheel to leave alone only raised the question of what it meant;
+  the status row says how far the ramps fall short, R6), and its step line reads "No
+  ramp" (screen-cleanup follow-up) rather than sitting blank, so it reads as "nothing
+  to do here", never as "level".
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
 - **Given** the RV is not level
 - **Then** each wheel needing a lift shows, on the diagram itself, which ramp step to
-  drive up onto above the wheel ("Step 2") with the step's height parenthesized and
-  smaller, and the missing height in whole mm below the wheel; wheels within
-  tolerance are green and unlabeled.
+  drive up onto ("Step 2") and one height: the missing lift in whole mm. The step's own
+  height is not shown beside its name (#368): two millimetre figures side by side read
+  as two answers. This holds in every appearance and for the caravan alike — Classic
+  puts the step above the wheel and the lift below it, Modern puts both on the wheel
+  card. Wheels within tolerance are green, unlabeled in Classic and "Done" in Modern.
 - **Given** all wheels are within tolerance
 - **Then** every wheel reads green and ticked, and the level celebration (R16) fires
   once. No sentence under the diagram says it as well (#252): "Your RV is level!" and
@@ -137,7 +141,7 @@ URL and must keep working with no signal.
   Settings opens on Vehicle. Classic (no tabs) keeps a small ☰ drawer instead, holding
   the same five in the same order as full-screen drawer pages. Vehicle/Ramps/Level/
   General share one settings form under the hood, same as Modern's tabs do. The
-  introduction relaunch and External sensor stay off this drawer entirely (on the "?"
+  introduction relaunch and Sensor box stay off this drawer entirely (on the "?"
   page and the top-right sensor icon, both reachable from Classic too, R38). Help/
   About/Feedback are not part of either — reached only from the bottom bar's "?"
   button.
@@ -225,6 +229,19 @@ URL and must keep working with no signal.
 - **Given** I have never saved vehicle settings, or never calibrated
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
   tapping it opens the matching menu section, and it disappears once handled.
+- **Given** the vehicle measurements (wheelbase, track widths) have never been saved, or
+  the wizard's measurements step was skipped
+- **When** other settings (language, theme, sound) are saved
+- **Then** the ⚠ Setup lamp stays lit until a measurement is saved: changed in
+  Settings, confirmed with Next on the wizard's measurements step, or imported from a
+  shared vehicle setup (#364). Users whose settings were already stored before this
+  rule keep an unlit lamp.
+- **Given** the phone is the active sensor (#364)
+- **Then** the amber lamp follows the Calibration checklist's order: **⚠ Calibrate**
+  while the phone is not calibrated, then **⚠ Zero** while the vehicle is not zeroed
+  (R24); both open Calibration, which expands the step not yet done. Once both are
+  done there is no amber lamp. With a box active the lamp is the box's ⚠ Zero, as
+  before.
 - **Given** the phone is the active sensor and Settings → Calibration is open (Modern tab
   or Classic page)
 - **Then** it is a checklist of two steps, the same pattern as the box's own setup
@@ -253,6 +270,20 @@ URL and must keep working with no signal.
   and with a box alike. The calibration lamp reads "⚠ Calibrate" while the phone is the
   source and "⚠ Zero" while a box is (its title names the box). The Settings tab keeps
   the name Calibration.
+- **Given** any zero action, phone or box, on any screen (#366)
+- **Then** it has one heading per language, "Zero the vehicle" (sv _Nollställ fordonet_),
+  never the box's model name or "on level ground".
+- **Given** any text that names the box or a lost link to it, in any language (#366)
+- **Then** the box is the "Sensor box" (sv _Sensorbox_) everywhere: the menu page, the
+  list, the main-screen dot and the wizard's source choice; a lost link is "Lost
+  contact" (sv _Tappade kontakten_). A lamp is named by its label, never its colour. The
+  vehicle-measurements lamp reads "⚠ Measurements" (sv _⚠ Mått_) in every language.
+- **Given** Swedish (#366)
+- **Then** a ramp is always _kloss/klossar_, never _ramp_.
+- **Given** text shown for any vehicle type (#366)
+- **Then** it does not call a caravan a motorhome: the level overlay and the start hint
+  say "vehicle". About and the welcome step do not promise "no spirit level", since
+  zeroing asks for one.
 
 ## R12 — Feedback without a backend
 
@@ -351,14 +382,13 @@ URL and must keep working with no signal.
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
-- **Then** a ten-step wizard runs: welcome (design review — what Libell is for, before
-  any question), Language (skippable), Appearance — Theme + Appearance (skippable),
-  Sound — Chime + Continuous audio guidance (skippable), which vehicle I'm leveling
-  (motorhome or caravan — #184), how to place the phone and how to read the answer (the
-  wheel-state legend and the bubble), vehicle measurements (skippable), ramp model/count
-  (skippable), phone-sensor calibration (skippable), vehicle-zero position (skippable).
-  It can be closed with ✕ at any point, warning lamps (R11) stay lit for whatever was
-  skipped, and the "Show introduction" button below the "?" page's Help topics
+- **Then** a nine-step wizard runs: welcome (design review — what Libell is for, before
+  any question), Language, Appearance — Theme + Appearance, Sound — Chime + Continuous
+  audio guidance, which vehicle I'm leveling (motorhome or caravan — #184), how to place
+  the phone and how to read the answer (the wheel-state legend and the bubble), vehicle
+  measurements (skippable), ramp model/count (skippable), phone-sensor calibration.
+  Nothing has to be done to go on: Next always advances. It can be closed with ✕ at any
+  point, warning lamps (R11) stay lit for whatever was left undone, and the "Show introduction" button below the "?" page's Help topics
   (R28, screen-cleanup follow-up) reopens it any time. That button reads green
   (primary) until the wizard has actually been stepped through to its end at least
   once — an early ✕ does not count, even though it still counts for the auto-launch
@@ -366,9 +396,10 @@ URL and must keep working with no signal.
   plain re-launch rather than an unfinished first-run task.
 - **Given** the welcome step (design review, always first)
 - **Then** it shows what Libell does (the same one-line pitch the About page uses) and
-  that the guide ahead is short and every step can be skipped and finished later. No
-  form, no Skip control — there is nothing to configure here, only Next. No prior step
-  used to explain why the following questions matter before asking them.
+  that the guide ahead is short and every step can be skipped and finished later from
+  Settings. Where an external sensor is an option (R32's gate) it adds that a sensor is
+  connected any time with the sensor icon at the top right (#365) — the box is not in
+  Settings. No form, no Skip control — there is nothing to configure here, only Next.
 - **Given** the Language, Appearance and Sound steps (#189 introduced these as one
   combined "General" step; a later design review split it into one step per actual
   decision, not per what used to share a Settings section header)
@@ -377,9 +408,8 @@ URL and must keep working with no signal.
   via a full reload immediately on change, same as Settings). Theme and Appearance share
   a step, one "how it looks" decision. Chime and Continuous audio guidance share a step,
   one "what it sounds like" decision. All three reuse the exact fields/handlers Settings
-  → General has. Each is skippable, using the shipped defaults; unlike the other
-  skippable steps, skipping any of them never lights a warning lamp — the defaults are
-  already a complete, valid choice.
+  → General has. Each has only Back and Next (#365): the form shows the shipped
+  defaults until changed, so a Skip did exactly what Next does.
 - **Given** any step that embeds a real Settings form — Language, Appearance, Sound,
   measurements, ramps (design review)
 - **Then** the embedded form shows only its fields, and is saved by the step's Next (see
@@ -417,50 +447,59 @@ URL and must keep working with no signal.
   count Classic mode's own Ramps section uses — a single `<select>` + chip editor, not
   Modern's scrolling brand-filtered catalog grid, proportionate to a reduced first-run
   step either way. Drain position is on the Level tab, reachable from Settings
-  afterward. Skippable, with the same warning-lamp consequence hint as measurements —
-  skipping it leaves the shipped default ramp model in place, which may not match what
-  the user actually owns.
-- **Given** the phone-sensor calibration step and the vehicle-zero step (design review:
-  split from one combined "Calibration" step into two)
-- **Then** each embeds exactly one half of the exact same calibration UI Settings →
-  Calibration shows — the sensor-calibration step gets flip-calibration/check/clear for
-  the phone sensor, the vehicle-zero step gets set/check/clear for the vehicle zero
-  position, never a reduced rendering of either that could drift from the real one
-  (#184). Splitting halves how many buttons either screen shows at once, and the step
-  order itself (sensor first, then vehicle zero) replaces the ordering hint a combined
-  step used to need. Both remain independently skippable.
+  afterward. Skippable, with a note that skipping leaves the shipped default ramps in
+  place (which may not match what the user actually owns) and that they can be picked
+  later in Settings.
+- **Given** the phone-sensor calibration step (#365: one path for zeroing)
+- **Then** it embeds the phone-calibration half of the same calibration UI Settings →
+  Calibration shows (calibrate, or flip where nothing is flat), never a reduced rebuild
+  that could drift from the real one (#184) — without Check / Clear, which a first run
+  has no use for and Settings keeps under More. The wizard does not ask to zero the
+  vehicle: a first run is usually at home, not parked level, so a short line says the
+  vehicle is zeroed the first time the user parks on level ground, and the ⚠ Zero lamp
+  (R11) reminds until it is done — the same advice the box path gives. It is the
+  phone path's last step.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra step, "How do you want to measure?", right
-  after the Sound step, offering "This phone" (pre-selected) or "External sensor" — the
+  after the Sound step, offering "This phone" (pre-selected) or "Sensor box" — the
   same name and wording the sensor-status icon and its page use (R32) elsewhere, never
   a separate "Libell Sensor" product name, which was never real; every other browser
-  gets exactly the ten-step flow above, with no added step and no dead radio button
+  gets exactly the nine-step flow above, with no added step and no dead radio button
   (#135). The vehicle step always follows immediately after this one, so it is answered
   before either device path continues.
 - **Given** the source step, with "This phone" left selected (the default)
-- **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
-  placement, measurements, ramps, sensor calibration, vehicle zero).
+- **Then** the rest of the wizard is the phone flow above (vehicle, placement,
+  measurements, ramps, sensor calibration).
 - **Given** the source step, with the external sensor selected instead
 - **Then** the wizard asks the vehicle step, then branches to two steps built from the
   box's own pages — Connect (R32's list), then the box's position, checked live (R51's
-  first step) — standing in for the phone calibration steps it replaces (skippable on
-  the same terms). Direction and zero are not asked here (#317): the zero needs level
+  first step) — standing in for the phone calibration step it replaces; Next goes on
+  from both, connected or not (#365). With no box connected the position step says so
+  and that Next goes on, never an endless "waiting for a reading"; should a connection
+  started on the previous step land while it is shown, it switches to the live
+  position. Direction and zero are not asked here (#317): the zero needs level
   ground, which a first run rarely has, so the step says they are set the first time
-  the user parks, guided by the box's page and reminded by the amber lamp (R34). It
+  the user parks, guided by the box's page and reminded by the ⚠ Zero lamp (R34). It
   then rejoins the shared vehicle-measurements and ramps steps before finishing. No phone-placement step
   and no phone calibration steps are shown on this path.
+- **Given** the wizard was finished on the external-sensor path with no box connected
+  (#365)
+- **Then** the phone stays the active source (the wizard never switches it), but the
+  amber lamp asks for the box — ⚠ Zero, opening the sensor list to connect one — not
+  ⚠ Calibrate for a phone the user chose not to use. This lasts until a box connects,
+  the phone is calibrated or zeroed after all, or the wizard is finished on the phone
+  path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
   any state, so an interrupted wizard can never leave the active source ambiguous.
 - **Given** an external sensor is already the active source when the wizard opens, and I
   pick "This phone" on the source step (#287)
-- **Then** the phone path leaves out both phone calibration steps (sensor calibration and
-  vehicle zero) — their actions are disabled while a box is active (#285), and the wizard
+- **Then** the phone path leaves out the phone calibration step — its actions are disabled while a box is active (#285), and the wizard
   never switches the source itself (ADR 0014; ✕ still leaves the source exactly as it
   was). The source step says so while a box is active: choosing the phone skips the phone
-  calibration, and to calibrate the phone, tap "Disconnect" on the External sensor page
-  first. The box's own calibration (R34, R49) is unaffected. With the phone already
+  calibration, and to calibrate the phone, open the box with the sensor icon at the top
+  right and tap "Disconnect" there first. The box's own calibration (R34, R49) is unaffected. With the phone already
   active, the wizard is unchanged.
 - **Given** the source step, with the external sensor picked instead of "This phone"
   (style-consistency review follow-up)
@@ -477,16 +516,16 @@ URL and must keep working with no signal.
 - **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
 - **Then** tapping "Next" saves those values before advancing — the only way to persist
   them, since the step shows no separate Save button (see above).
-- **Given** a skippable step (measurements, ramps, sensor calibration, vehicle zero,
-  connect)
-- **Then** its Skip control is paired with a note that a warning lamp (R11) will remind
-  the user later if they skip, and that the shipped defaults are used meanwhile and
-  often work reasonably well — not just "Skip" with no stated consequence. The note sits
-  next to the Skip button it explains, above the wizard's own controls (#239), not at the
-  end of the step's content. Its button reads plain "Skip", since skipping any of these
-  does light that lamp; only the Language/Appearance/Sound steps' Skip reads
-  "Skip — use defaults", since those are the skippable steps with no such consequence
-  (style-consistency review follow-up).
+- **Given** any step (#365, reworking #189's one generic note)
+- **Then** a Skip button is shown only where Next would save something — measurements
+  and ramps; everywhere else Next is the one way on. A step that can leave something
+  undone carries a note specific to it — measurements: the defaults are used and ⚠ Setup
+  stays lit until saved; ramps: the default ramps are used and can be picked later in
+  Settings; phone calibration: no flat surface now, tap Next and ⚠ Calibrate reminds;
+  connect: no box at hand, tap Next and connect later with the sensor icon — and steps
+  with nothing to leave undone have no note. The note names the real lamp and button in
+  every language, and sits right above the wizard's own controls (#239), not at the end
+  of the step's content.
 - **Given** any step of the wizard, on any phone (#239 — reported from an iPhone, where
   the buttons sat below the fold on half the steps), in either appearance and in every
   shipped language
@@ -497,8 +536,8 @@ URL and must keep working with no signal.
   that, in either appearance and in every shipped language. The wizard is sized to the
   _small_ viewport (the height with the browser's toolbars showing) and its bottom padding
   clears the home indicator, so the last control is never left under Safari's bottom bar.
-- **Given** a step that embeds the calibration card (sensor calibration, vehicle zero),
-  in either appearance
+- **Given** the step that embeds the calibration card (sensor calibration), in either
+  appearance
 - **Then** the card's own heading — word for word the step's heading directly above it —
   is not repeated: Modern's status pill ("NOT DONE" / "DONE") moves onto the step heading
   and the duplicate row goes, Classic's bare heading goes the same way, and inside the
@@ -547,9 +586,16 @@ URL and must keep working with no signal.
 - **When** I look at the main screen
 - **Then** the diagram shows a caravan from above — drawbar and jockey wheel at the
   front, one axle pair — and the guidance splits by mechanism: roll drives a ramp
-  recommendation for the low axle wheel (step name, height, lift — as for the
-  motorhome), while pitch drives a signed jockey correction ("Crank up"/"Crank down"
-  with the amount in mm). The jockey is never red — any amount is crankable.
+  recommendation for the low axle wheel (step name and lift — as for the motorhome,
+  R6), while pitch drives a signed jockey correction ("Crank up"/"Crank down" with the
+  amount in mm). The jockey is never red — any amount is crankable.
+- **Given** appearance Modern (#368)
+- **Then** the caravan is drawn in the Modern style like the motorhome, with the same
+  wheel cards: one per axle side in the margins, and one for the jockey wheel centred on
+  the drawbar where the wheel is. Classic and Glossy keep the Classic drawing.
+- **Given** Help → "Reading the screen"
+- **Then** one line of its own explains the jockey wheel's "Crank up"/"Crank down" and
+  its amount (#368).
 - **Given** the caravan's measurements
 - **Then** the wheelbase field reads "Axle to jockey wheel", the front track width is
   hidden (one axle), and the axle uses the rear track width; switching vehicle type
@@ -590,8 +636,9 @@ URL and must keep working with no signal.
 - **Given** a later sensor recalibration or clear
 - **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
   placement tilt (ADR 0010).
-- The amber calibration lamp (R11) clears when at least one of the two calibrations
-  exists; the Calibration section shows each one's status with its own clear button.
+- The amber calibration lamp (R11) clears only when both calibrations exist: it reads
+  ⚠ Calibrate, then ⚠ Zero (#364); the Calibration section shows each one's status with
+  its own clear button.
 
 ## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
 
@@ -790,7 +837,7 @@ URL and must keep working with no signal.
 ## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support
-- **When** the user opens the External sensor page and taps "Connect
+- **When** the user opens the Sensor box page and taps "Connect
   EasyLevel sensor"
 - **Then** the app finds the box by scanning for its advertised `669a0c20-...` service
   UUID (falling back to any device named `CARATI...`, for older boxes that don't
@@ -803,7 +850,7 @@ URL and must keep working with no signal.
   automatically; connecting is always an explicit, reversible choice.
 - **Given** a browser without Web Bluetooth (e.g. Safari/iOS, most desktop browsers)
 - **When** the user opens the menu
-- **Then** the "External sensor" page is not shown at all — never a silent failure or a
+- **Then** the "Sensor box" page is not shown at all — never a silent failure or a
   button that does nothing when tapped.
 - **Given** the EasyLevel box is the active source
 - **When** its BLE connection is lost (out of range, powered off) while the app stays
@@ -825,8 +872,8 @@ URL and must keep working with no signal.
   no numbers, no clutter (#129). While the phone's own sensor is active instead, the
   same dot stays visible but in a third, neutral "tap to connect" look rather than
   disappearing (screen-cleanup follow-up: it is now the only way to reach the
-  External sensor page at all, R38) — visible whenever Web Bluetooth exists in this
-  browser, hidden only when it doesn't. Tapping the dot opens the External sensor
+  Sensor box page at all, R38) — visible whenever Web Bluetooth exists in this
+  browser, hidden only when it doesn't. Tapping the dot opens the Sensor box
   page, the same "tap the indicator to jump to its own page" pattern the R11 warning
   lamps use.
 - **Given** the box disconnects, or its data goes stale
@@ -838,7 +885,7 @@ URL and must keep working with no signal.
   (R51) and the temperature in its debug info, as real decoded values once the first
   `faf52c22-...` status notification has arrived — the temperature reads "not
   available yet" only in the brief window before that, or before EasyLevel has ever
-  connected (#123). These values lived on the External sensor page itself until #226
+  connected (#123). These values lived on the Sensor box page itself until #226
   moved them here, and appear in exactly one place each (#332).
 - **Given** signal strength (RSSI)
 - **Then** it is not shown at all (#228). Web Bluetooth exposes RSSI only through
@@ -928,7 +975,7 @@ URL and must keep working with no signal.
 - **When** its reported battery percentage drops below a threshold (20%, with a few
   percentage points of hysteresis so it doesn't flicker right at the line — see
   `easyLevelProtocol.ts`'s `isLowBattery`)
-- **Then** a warning is shown on the External sensor page, never as
+- **Then** a warning is shown on the Sensor box page, never as
   a leveling-screen interruption — the main leveling view is unaffected either way.
 
 ## R33 — EasyLevel box: remember the selection and auto-reconnect on open (#130)
@@ -955,7 +1002,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   connect otherwise fails
 - **Then** the attempt fails cleanly and the app honestly shows the box as the
   active-but-disconnected source via the same connection-lost UI a live drop uses (R32
-  above): the main-screen dot and the "External sensor" menu page, both offering the
+  above): the main-screen dot and the "Sensor box" menu page, both offering the
   existing one-tap manual reconnect. **Revised by #211:** a single failed attempt is
   no longer the end of it — R37's automatic background retry keeps trying on the same
   remembered box on its own, so recovery does not depend on the user noticing the
@@ -972,7 +1019,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   own user gesture, since that is what a fresh `requestDevice()` picker always requires.
   This is a genuine platform ceiling, not a bug: the app never pretends a browser can
   auto-reconnect when it can't.
-- **Given** the user taps "Disconnect" on the External sensor page
+- **Given** the user taps "Disconnect" on the Sensor box page
 - **Then** the box stays remembered (its device id is not forgotten), but
   `sensorSource` reverts to `'phone'` — the next app open does not attempt to
   auto-reconnect until the user connects again, honoring an explicit "not right now"
@@ -995,7 +1042,7 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **When** it has been silent for longer than `EASYLEVEL_SILENCE_LIMIT_MS` (longer than
   R35's staleness timeout, so the "no new sensor data" overlay covers the gap first)
 - **Then** the app closes the link itself and treats it as lost contact: the box's card
-  says "No contact", Reconnect is offered and R37's background retry starts, exactly as
+  says "Lost contact", Reconnect is offered and R37's background retry starts, exactly as
   for an outright drop. Only a live link is watched: connecting itself, which the
   manufacturer's manual says can take up to 60 seconds, has no limit of Libell's own.
 
@@ -1007,7 +1054,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   installer to level the _vehicle_ once and capture that as the box's own
   installation offset (ADR 0014's three-way calibration split), after which the
   box's physical orientation inside its enclosure stops mattering.
-- **Given** the External sensor page, once EasyLevel is (or was) the active
+- **Given** the Sensor box page, once EasyLevel is (or was) the active
   source
 - **When** the vehicle stands verifiably level (spirit level, or after leveling with
   the ramps) and I tap "Set vehicle level"
@@ -1059,7 +1106,7 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Then** the box's own page opens rather than the Calibration tab, its checklist
   (R51) expanding the next step not yet done: the direction before the zero.
 - This installation-offset step lives on the EasyLevel sensor's own page (R40; the
-  External sensor page itself until #226 moved it, along with the mounting picker,
+  Sensor box page itself until #226 moved it, along with the mounting picker,
   onto the page for the device it configures),
   not inside the Calibration menu section, since it only makes sense once an external
   source exists to calibrate.
@@ -1110,7 +1157,7 @@ noisy samples to arrive; this fires when no new samples arrive at all).
 ## R37 — Sensor unavailable: an explicit Retry / "Use phone sensor" prompt (#134)
 
 R32/R33 already report a lost or unreachable EasyLevel connection honestly (the
-main-screen dot, the External sensor page, a failed silent reconnect at open).
+main-screen dot, the Sensor box page, a failed silent reconnect at open).
 This requirement makes that moment actionable instead of a dead end the user can only
 fix by opening the menu — and, per ADR 0014, never by switching source on its own:
 phone and EasyLevel keep independent calibration references, so an automatic,
@@ -1159,7 +1206,7 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Given** the fallback prompt is shown
 - **When** I tap "Use the phone instead"
 - **Then** the app switches the active source to the phone sensor via the exact same
-  explicit switch the External sensor page's own "Disconnect" action already performs
+  explicit switch the Sensor box page's own "Disconnect" action already performs
   (never a parallel code path). If the phone is not lying flat, R17's wrong-pose overlay
   says so right after the switch — the one place the phone's pose rule is stated.
 - **Given** I have switched to the phone sensor from this prompt
@@ -1185,7 +1232,7 @@ unannounced switch could show a plausible-looking but wrong reading.
   the reservation holds whatever language the Install label is in. The install
   prompt (R20) is otherwise unaffected, still using the
   `#install-hint` banner under the top bar. The sensor-status icon (R32/R33,
-  screen-cleanup follow-up) is now the _only_ way to reach External sensor — it
+  screen-cleanup follow-up) is now the _only_ way to reach Sensor box — it
   stays visible whenever Web Bluetooth exists at all (a neutral "tap to connect"
   look while the phone's own sensor is active, not just once EasyLevel is
   connected), opening its own page with a ✕ to close.
@@ -1209,7 +1256,7 @@ unannounced switch could show a plausible-looking but wrong reading.
 - **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
   never a stale display that could silently undo the mute on an unrelated change.
 
-## R39 — External sensor on iOS: a Bluefy workaround guide, not a hidden option (#119)
+## R39 — Sensor box on iOS: a Bluefy workaround guide, not a hidden option (#119)
 
 Safari/WebKit has no Web Bluetooth and Apple has no plans to add it, so unlike other
 unsupported browsers (R32's plain hidden case) iOS gets a guide instead of nothing —
@@ -1227,16 +1274,16 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 - **Given** that guide page
 - **Then** it never shows a "Connect EasyLevel sensor" button or any health/battery
   detail — there is no `navigator.bluetooth` behind this page to drive any of that,
-  so it is a different page from the ordinary External sensor page (R32), not a
+  so it is a different page from the ordinary Sensor box page (R32), not a
   variant of it.
 - **Given** the same phone, but opened inside Bluefy instead (Web Bluetooth now
   exists)
-- **Then** the ordinary External sensor page (R32) shows instead, with no code
+- **Then** the ordinary Sensor box page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
 
 ## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
 
-The External sensor page (R32) lists every external sensor Libell supports that can
+The Sensor box page (R32) lists every external sensor Libell supports that can
 work in this browser — one row each, one today (#268); tapping a row's status opens a
 deeper, focused page for that sensor alone, refreshed continuously while it stays open
 — not just once when opened. Each page draws only the rows its own device can fill:
@@ -1249,12 +1296,12 @@ better served by raw values read straight off the box.
 Since #226 it is also where that sensor is **configured**, not only observed: the
 mounting picker (R43) and the installation offset (R34) moved here from the list page,
 which had grown longer than the detail page its own chevron led to, and repeated
-battery and temperature on both. The division is now plain — the External sensor page
+battery and temperature on both. The division is now plain — the Sensor box page
 answers "which source, and how do I connect it", and this page answers everything
 about one specific box. It is titled for that box ("EasyLevel sensor") rather than
 "Sensor status", since configuration lives here too.
 
-- **Given** the External sensor page with EasyLevel as the active source
+- **Given** the Sensor box page with EasyLevel as the active source
 - **When** I tap the sensor's status row ("Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state with its
   battery (R51's header) and a live reading —
@@ -1421,7 +1468,7 @@ guidance (#285; the phone's own "lay it flat" wording no longer applies to a box
 
 - **Given** the EasyLevel sensor's own page (R40), once EasyLevel is (or was) the
   active source (same visibility rule as R34's installation offset, which this
-  setting sits alongside — both moved here from the External sensor page by #226)
+  setting sits alongside — both moved here from the Sensor box page by #226)
 - **Then** R51's direction step offers the two placements the manufacturer's manual
   allows (#359): an arrow on the lid always points forward, and the box's **long side**
   or its **short side** faces the front — the official app's `sensor_Placing` 1 and 2,
@@ -1628,7 +1675,7 @@ and the login handshake is answered with real reply frames.
 - **Given** any browser, with or without Web Bluetooth
 - **When** the app is opened with `?xparkle-sim`
 - **Then** the Xparkle box presents as available everywhere it normally would (the
-  External sensor page, the sensor-status dot, onboarding's source step — one shared
+  Sensor box page, the sensor-status dot, onboarding's source step — one shared
   gate, `isXparkleAvailable()`), and connecting reaches a simulated box with no picker:
   live payloads in the real 1/100° format resolving to the same small fixed tilt `?demo`
   and R44 use, plus a slight deterministic wobble (a pure function of the sample index,
@@ -1667,7 +1714,7 @@ installation orientation, is still open there. Until that is closed, the app mus
 present this source as more proven than it is.
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support (or `?xparkle-sim`)
-- **When** the user connects the Xparkle box from the External sensor page
+- **When** the user connects the Xparkle box from the Sensor box page
 - **Then** the app finds it by its advertised name (`RVLevel`/`RVbalance`, what the
   vendor app itself matches on) or its `0000fff0-...` service, runs the vendor app's own
   connect handshake — password, then a parameter query — and the wheel/bubble UI updates
@@ -1715,7 +1762,7 @@ present this source as more proven than it is.
   works, there is no Web Bluetooth, or the browser is not Chromium — any browser on
   iPhone or iPad, Bluefy included, has no `chrome://flags` — the disclosure is not shown.
 - **Given** the box rejects the password it is offered
-- **Then** the External sensor page says so specifically, and says where to fix it —
+- **Then** the Sensor box page says so specifically, and says where to fix it —
   never the generic "could not connect", which would point the user at the hardware
   rather than at the setting that is actually wrong.
 - **Given** the box rejects the password (#367)

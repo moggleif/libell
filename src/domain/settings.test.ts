@@ -7,6 +7,7 @@ import {
   formatLength,
   formatLengthValue,
   formatStepHeightsList,
+  measurementsDiffer,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
   parseStepHeightsList,
   parseSettings,
@@ -467,4 +468,31 @@ describe('whether the EasyLevel placement was ever picked (#359)', () => {
       true,
     );
   });
+});
+
+// #364: the ⚠ Setup lamp is about the vehicle measurements, so only a
+// change to one of them counts as saving them.
+describe('measurementsDiffer', () => {
+  it('is false when only other settings change', () => {
+    expect(
+      measurementsDiffer(DEFAULT_SETTINGS, {
+        ...DEFAULT_SETTINGS,
+        theme: 'dark',
+        soundOnLevel: !DEFAULT_SETTINGS.soundOnLevel,
+        rampCount: 3,
+      }),
+    ).toBe(false);
+  });
+
+  it.each(['wheelbaseMm', 'trackWidthFrontMm', 'trackWidthRearMm'] as const)(
+    'is true when %s changes',
+    (key) => {
+      expect(
+        measurementsDiffer(DEFAULT_SETTINGS, {
+          ...DEFAULT_SETTINGS,
+          [key]: DEFAULT_SETTINGS[key] + 10,
+        }),
+      ).toBe(true);
+    },
+  );
 });

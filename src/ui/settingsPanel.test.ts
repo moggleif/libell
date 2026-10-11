@@ -3,7 +3,12 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
 import { takeReopenSettings } from './reopenSettings';
 import { LANGUAGE_NAMES, LANGUAGES, setLanguage, t } from './i18n';
-import { loadLanguage, loadSettings, saveSettings } from '../data/settingsStore';
+import {
+  hasStoredMeasurements,
+  loadLanguage,
+  loadSettings,
+  saveSettings,
+} from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
@@ -812,6 +817,35 @@ describe('settings form — compact mode (#156)', () => {
     form.dispatchEvent(new Event('input'));
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(4100);
+  });
+
+  // #364: the wizard's measurements step puts the ⚠ Setup lamp out with
+  // its Next, even when the values shown are kept; the Language step's
+  // save must not.
+  it('marks the measurements saved on Next, but a language step save does not', () => {
+    localStorage.clear();
+    const language = createSettingsForm(classic, vi.fn(), undefined, { compact: 'language' });
+    language.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(hasStoredMeasurements()).toBe(false);
+
+    const form = createSettingsForm(classic, vi.fn(), undefined, { compact: 'measurements' });
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(hasStoredMeasurements()).toBe(true);
+  });
+
+  it('marks the measurements saved when one is changed on the full page, not for a theme', () => {
+    localStorage.clear();
+    const form = createSettingsForm(classic, vi.fn());
+    const theme = [...form.querySelectorAll('select')].find((select) =>
+      [...select.options].some((option) => option.value === 'dark'),
+    )!;
+    theme.value = 'dark';
+    form.dispatchEvent(new Event('change'));
+    expect(loadSettings().theme).toBe('dark');
+    expect(hasStoredMeasurements()).toBe(false);
+    input(form, 'wheelbaseMm').value = '4100';
+    form.dispatchEvent(new Event('change'));
+    expect(hasStoredMeasurements()).toBe(true);
   });
 
   it('defaults to the full (non-compact) render when no formOptions are passed', () => {

@@ -17,7 +17,7 @@ export const MESSAGES = {
     'bottombar.sound.mute': 'Mute sound',
     'bottombar.sound.unmute': 'Unmute sound',
     'bottombar.help': 'Help',
-    'share.text': 'Level your motorhome with your phone.',
+    'share.text': 'Level your motorhome or caravan with your phone.',
     'share.copied': 'Link copied!',
     // Update check (#301): tapping the name / version in the top bar.
     'update.check': 'Check for a new version',
@@ -31,7 +31,7 @@ export const MESSAGES = {
     // geometry fields (never calibration, never UI/behavior preferences —
     // see domain/vehicleShare.ts) so a family member using the same
     // vehicle doesn't have to re-measure and retype everything by hand.
-    'share.vehicle.text': "My RV's vehicle setup for Libell — measurements and ramps.",
+    'share.vehicle.text': 'My vehicle setup for Libell — measurements and ramps.',
     'settings.shareVehicle': 'Share to another phone',
     'setup.incoming.h': 'Incoming vehicle setup',
     'setup.incoming.intro': 'A family member shared these vehicle measurements with you:',
@@ -41,27 +41,28 @@ export const MESSAGES = {
     'setup.incoming.dismiss': 'Not now',
     'setup.incoming.invalid': "That vehicle-setup link couldn't be read — nothing was changed.",
 
-    'lamp.setup': '⚠ Setup',
-    'lamp.setup.title': 'Vehicle settings have never been saved — tap to open Settings',
+    'lamp.setup': '⚠ Measurements',
+    'lamp.setup.title': 'The vehicle measurements have never been saved — tap to open Settings',
     'lamp.calibrate': '⚠ Calibrate',
     'lamp.zero': '⚠ Zero',
     'lamp.calibrate.title': 'The phone is not calibrated — tap to open Calibration',
+    'lamp.zero.title': 'The vehicle is not zeroed — tap to open Calibration',
     'lamp.calibrate.title.sensor': 'The box is not zeroed — tap to open the box',
 
     // Main-screen external-sensor indicator (#129): shown only while an
     // external source (today: EasyLevel) is active — never in phone mode.
     // Deliberately just an icon/dot, no numbers — detail lives one tap
     // away in the "External sensor" menu page.
-    'sensorStatus.connected': 'External sensor connected',
-    'sensorStatus.disconnected': 'External sensor connection lost — tap for details',
+    'sensorStatus.connected': 'Sensor box connected',
+    'sensorStatus.disconnected': 'Sensor box — lost contact, tap for details',
     // Screen-cleanup follow-up: shown whenever the phone's own sensor is
     // active but an external one is available to connect — the only
     // remaining entry point to External sensor now that the ☰ menu no
     // longer carries it.
-    'sensorStatus.idle': 'External sensor — tap to connect',
+    'sensorStatus.idle': 'Sensor box — tap to connect',
     // iOS Safari (R39): tapping this opens the Bluefy workaround guide
     // instead of a connect flow that could never work there.
-    'sensorStatus.idle.guide': 'External sensor — tap for iPhone setup guide',
+    'sensorStatus.idle.guide': 'Sensor box — tap for iPhone setup guide',
 
     'menu.title': 'Menu',
     'menu.close': 'Close menu',
@@ -75,7 +76,7 @@ export const MESSAGES = {
     // Short form for the "?" page's tab button (screen-cleanup follow-up)
     // — 'menu.about' above is the full title, too long for a tab pill.
     'menu.about.tab': 'About',
-    'menu.sensorSource': 'External sensor',
+    'menu.sensorSource': 'Sensor box',
     // Modern-only heading (#152) grouping External sensor + Targets above
     // "OTHER" — distinct key from settings.advanced (#157), a different
     // heading in a different part of the UI.
@@ -116,7 +117,7 @@ export const MESSAGES = {
     'sensorSource.ios.step1': 'Install "Bluefy – Web Bluetooth Browser" from the App Store.',
     'sensorSource.ios.step2': 'Open Bluefy and allow the Bluetooth permission.',
     'sensorSource.ios.step3': 'In Bluefy, go to this same Libell address.',
-    'sensorSource.ios.step4': 'Open External sensor here again — it works like on Android.',
+    'sensorSource.ios.step4': 'Open Sensor box here again — it works like on Android.',
     'sensorSource.ios.note':
       'Bluefy is a third-party app, not built by Libell — reconnecting when you open ' +
       'the app may need one manual tap there, instead of happening silently.',
@@ -214,7 +215,7 @@ export const MESSAGES = {
 
     'about.text':
       'Libell helps you level your motorhome or caravan with the phone you ' +
-      'already have — no bubble vials, no guessing.',
+      'already have, without guessing.',
     'about.version': 'Version {v}',
     'about.offline':
       'Works fully offline — the network is only used to fetch updates of the app itself.',
@@ -231,6 +232,10 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
       'finished later from Settings.',
+    // Only where an external sensor is an option (#365): the box is not in
+    // Settings, so "later from Settings" alone pointed the wrong way.
+    'onboard.welcome.sensor':
+      'A sensor box can be connected any time with the sensor icon at the top right.',
     // Sound step (design review): Chime + Continuous audio guidance
     // together, split out of #189's combined 'general' step. No existing
     // section heading covers just these two (unlike 'settings.language'/
@@ -250,7 +255,7 @@ export const MESSAGES = {
     'onboard.source.phone': 'This phone',
     // #287: shown on the source step only while a box is the active source.
     'onboard.source.externalActive':
-      'An external sensor is active now. Choosing this phone skips the phone calibration steps — to calibrate the phone, first tap "Disconnect" on the External sensor page.',
+      'A sensor box is active now. Choosing this phone skips the phone calibration. To calibrate the phone, open the box with the sensor icon at the top right and tap "{disconnect}" first.',
     // Vehicle step: which vehicle every later step's imagery and field
     // labels are drawn for. Reuses 'vehicle.motorhome'/'vehicle.caravan' —
     // the exact same labels Settings uses — rather than separate copy.
@@ -265,12 +270,20 @@ export const MESSAGES = {
     'onboard.close': 'Close the introduction',
     'onboard.done': 'Done',
     'onboard.skipStep': 'Skip',
-    'onboard.skipDefaults': 'Skip — use defaults',
-    // What skipping actually means (#189) — "Skip" alone never said a
-    // warning lamp (R11) stays lit until the step is done, or that the
-    // shipped defaults are used meanwhile.
-    'onboard.skip.consequence':
-      'Skip for now — a warning lamp will remind you until it’s done. The defaults are used meanwhile, and they often work reasonably well.',
+    // What leaving a step undone means, per step (#365; #189 had one
+    // shared note on every step). {lamp} and {next} are filled in from
+    // 'lamp.*' and 'onboard.next', so the note always names the real lamp
+    // and button.
+    'onboard.note.measurements':
+      'Skip, and the default measurements are used; {lamp} stays lit until you save yours.',
+    'onboard.note.ramps':
+      'Skip, and the default ramps are used. You can pick yours later in Settings.',
+    'onboard.note.calibrate':
+      'No flat surface right now? Tap {next}; {lamp} reminds you until it’s done.',
+    'onboard.note.connect':
+      'No box at hand? Tap {next} and connect later with the sensor icon at the top right.',
+    'onboard.zeroLater':
+      'You zero the vehicle the first time you park on level ground. {lamp} reminds you until it’s done.',
     'onboard.legend.ok': 'Green ✓ — that wheel is level.',
     'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
     'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
@@ -503,10 +516,10 @@ export const MESSAGES = {
     'help.open.sensor': 'Open the sensor',
     'help.open.feedback': 'Write a report',
 
-    'main.hint': 'Lay your phone flat inside your motorhome, top edge toward the front.',
+    'main.hint': 'Lay your phone flat inside the vehicle, top edge toward the front.',
     'main.start': 'Start',
     'main.waiting': 'Waiting for the tilt sensor…',
-    'main.level': 'Your motorhome is level!',
+    'main.level': 'Your vehicle is level!',
     'main.denied':
       'Motion access was denied, so Libell cannot read the tilt. ' +
       'Allow motion & orientation access for this site and reload.',
@@ -531,6 +544,13 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'REAR R',
     'caravan.crankUp': 'Crank up',
     'caravan.crankDown': 'Crank down',
+    // Modern caravan wheel cards' aria-labels (#368).
+    'caravan.axleLeft': 'Left axle wheel',
+    'caravan.axleRight': 'Right axle wheel',
+    'caravan.jockeyWheel': 'Jockey wheel',
+    // Help → Reading the screen, for a caravan's jockey wheel (#368).
+    'help.screen.caravan':
+      'Caravan: the jockey wheel says Crank up or Crank down, and by how much.',
 
     'tilt.frontBack': 'Front/back',
     'tilt.sideSide': 'Side/side',
@@ -542,7 +562,7 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'The box looks upside down',
     'pose.sensorNotUpright': 'The box is lying down',
     'pose.sensorHintUpright': 'It only measures right standing up.',
-    'calibration.external.h': 'Zero {name}',
+    'calibration.external.h': 'Zero the vehicle',
     'calibration.external.intro': 'Level the vehicle once with a spirit level, then zero.',
     'calibration.external.working': 'Zeroing…',
     'calibration.external.done': '{name} is zeroed: this position now counts as level.',
@@ -577,7 +597,7 @@ export const MESSAGES = {
     'mounting.facing.rear': 'Points to the rear',
     'mounting.facing.left': 'Points to the left',
     'box.state.connected': 'Connected',
-    'box.state.lost': 'No contact',
+    'box.state.lost': 'Lost contact',
     'box.state.password': 'Wrong password',
     'box.password.label': 'Box code',
     'box.password.retry': 'Try again',
@@ -599,14 +619,18 @@ export const MESSAGES = {
     'box.step.direction.todo': 'Pick the direction',
     'box.step.direction.done': 'Direction set',
     'box.step.direction.learn': 'Not sure? Learn it by raising the front',
-    'box.step.zero.todo': 'Zero on level ground',
+    'box.step.zero.todo': 'Zero the vehicle',
     'box.step.zero.done': 'Zeroed',
     'box.step.zero.hint': 'Level the vehicle with a spirit level, then zero.',
     'box.forgetDirection': 'Forget the direction',
     'onboard.boxPosition.h': "The box's position",
     'onboard.boxPosition.later':
-      "Direction and zero are set the first time you park. The box's page guides you, and the amber lamp reminds you until it's done.",
-    'sensorList.title': 'Sensors',
+      "Direction and zero are set the first time you park. The box's page guides you, and the ⚠ Zero lamp reminds you until it's done.",
+    // The box path with no box connected (#365): said once, Next goes on —
+    // never "waiting for a reading" with nothing to wait for.
+    'onboard.boxPosition.notConnected':
+      'No box is connected yet, so its position can’t be shown. Tap {next} and connect later with the sensor icon at the top right.',
+    'sensorList.title': 'Sensor box',
     'sensorList.phone': "The phone's own sensor is used when no box is connected.",
     'box.step.zero.again': 'Zero again',
   },
@@ -617,7 +641,7 @@ export const MESSAGES = {
     'bottombar.sound.mute': 'Stäng av ljud',
     'bottombar.sound.unmute': 'Slå på ljud',
     'bottombar.help': 'Hjälp',
-    'share.text': 'Få husbilen i våg med telefonen.',
+    'share.text': 'Få husbilen eller husvagnen i våg med telefonen.',
     'share.copied': 'Länken kopierad!',
     'update.check': 'Sök efter ny version',
     'update.checking': 'Söker efter uppdatering…',
@@ -626,7 +650,7 @@ export const MESSAGES = {
     'update.offline': 'Ingen anslutning, kan inte söka efter uppdatering',
     'update.unsupported': 'Uppdateringar är inte tillgängliga här',
     'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',
-    'share.vehicle.text': 'Mina fordonsmått för Libell — mått och ramper.',
+    'share.vehicle.text': 'Mina fordonsmått för Libell — mått och klossar.',
     'settings.shareVehicle': 'Dela till en annan telefon',
     'setup.incoming.h': 'Inkommande fordonsinställning',
     'setup.incoming.intro': 'En familjemedlem har delat de här fordonsmåtten med dig:',
@@ -638,17 +662,17 @@ export const MESSAGES = {
 
     // Main-screen external-sensor indicator (#129): shown only while an
     // external source (today: EasyLevel) is active — never in phone mode.
-    'sensorStatus.connected': 'Extern sensor ansluten',
-    'sensorStatus.disconnected': 'Extern sensor — anslutningen bröts, tryck för detaljer',
-    'sensorStatus.idle': 'Extern sensor — tryck för att ansluta',
-    'sensorStatus.idle.guide': 'Extern sensor — tryck för guide till iPhone',
+    'sensorStatus.connected': 'Sensorbox ansluten',
+    'sensorStatus.disconnected': 'Sensorbox — tappade kontakten, tryck för detaljer',
+    'sensorStatus.idle': 'Sensorbox — tryck för att ansluta',
+    'sensorStatus.idle.guide': 'Sensorbox — tryck för guide till iPhone',
 
     'lamp.setup': '⚠ Mått',
-    'lamp.setup.title':
-      'Fordonsinställningarna har aldrig sparats — tryck för att öppna Inställningar',
+    'lamp.setup.title': 'Fordonets mått har aldrig sparats — tryck för att öppna Inställningar',
     'lamp.calibrate': '⚠ Kalibrera',
     'lamp.zero': '⚠ Nollställ',
     'lamp.calibrate.title': 'Telefonen är inte kalibrerad — tryck för att öppna Kalibrering',
+    'lamp.zero.title': 'Fordonet är inte nollställt — tryck för att öppna Kalibrering',
     'lamp.calibrate.title.sensor': 'Boxen är inte nollställd — tryck för att öppna boxen',
 
     'menu.title': 'Meny',
@@ -661,7 +685,7 @@ export const MESSAGES = {
     'menu.intro': 'Visa introduktionen',
     'menu.about': 'Om Libell',
     'menu.about.tab': 'Om',
-    'menu.sensorSource': 'Extern sensor',
+    'menu.sensorSource': 'Sensorbox',
     'menu.advanced': 'AVANCERAT',
     'menu.others': 'ÖVRIGT',
     'menu.card.notDone': 'Ej gjord',
@@ -681,7 +705,7 @@ export const MESSAGES = {
     'sensorSource.ios.step1': 'Installera "Bluefy – Web Bluetooth Browser" från App Store.',
     'sensorSource.ios.step2': 'Öppna Bluefy och tillåt Bluetooth-behörigheten.',
     'sensorSource.ios.step3': 'Gå till samma Libell-adress i Bluefy.',
-    'sensorSource.ios.step4': 'Öppna Extern sensor här igen — det fungerar som på Android.',
+    'sensorSource.ios.step4': 'Öppna Sensorbox här igen — det fungerar som på Android.',
     'sensorSource.ios.note':
       'Bluefy är en tredjepartsapp som inte byggs av Libell — återanslutning när du öppnar ' +
       'appen kan behöva en manuell tryckning där, istället för att ske tyst.',
@@ -754,7 +778,7 @@ export const MESSAGES = {
 
     'about.text':
       'Libell hjälper dig att få husbilen eller husvagnen i våg med telefonen ' +
-      'du redan har — inget vattenpass, inget gissande.',
+      'du redan har, utan att gissa.',
     'about.version': 'Version {v}',
     'about.offline':
       'Fungerar helt utan internet — nätet används bara för att hämta appens ' +
@@ -769,13 +793,15 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Den här snabbguiden ställer in ditt fordon och din telefon. Varje steg går att ' +
       'hoppa över och avsluta senare från Inställningar.',
+    'onboard.welcome.sensor':
+      'En sensorbox ansluter du när som helst med sensorikonen uppe till höger.',
     'onboard.sound.h': 'Ljud',
     'onboard.source.h': 'Hur vill du mäta?',
     'onboard.source.intro':
       'Välj vilken sensor Libell ska läsa lutning från — de flesta använder bara telefonen.',
     'onboard.source.phone': 'Den här telefonen',
     'onboard.source.externalActive':
-      'En extern sensor är aktiv nu. Väljer du telefonen hoppar guiden över telefonens kalibrering — för att kalibrera telefonen, tryck först på "Koppla från" på sidan Extern sensor.',
+      'En sensorbox är aktiv nu. Väljer du telefonen hoppar guiden över telefonens kalibrering. Vill du kalibrera telefonen: öppna boxen med sensorikonen uppe till höger och tryck först på "{disconnect}".',
     'onboard.vehicle.h': 'Vad ska nivelleras?',
     'onboard.vehicle.intro': 'Välj fordon — resten av guiden anpassas efter det.',
     'onboard.step1.h': 'Lägg telefonen så här',
@@ -784,9 +810,16 @@ export const MESSAGES = {
     'onboard.close': 'Stäng introduktionen',
     'onboard.done': 'Klart',
     'onboard.skipStep': 'Hoppa över',
-    'onboard.skipDefaults': 'Hoppa över — använd standardvärden',
-    'onboard.skip.consequence':
-      'Hoppa över nu — en varningslampa påminner dig tills det är klart. Standardvärdena används under tiden, och de fungerar ofta någorlunda bra.',
+    'onboard.note.measurements':
+      'Hoppar du över används standardmåtten, och {lamp} lyser tills du har sparat dina.',
+    'onboard.note.ramps':
+      'Hoppar du över används standardklossarna. Du kan välja dina senare under Inställningar.',
+    'onboard.note.calibrate':
+      'Inget plant underlag just nu? Tryck {next}, så påminner {lamp} tills det är gjort.',
+    'onboard.note.connect':
+      'Ingen box till hands? Tryck {next} och anslut senare med sensorikonen uppe till höger.',
+    'onboard.zeroLater':
+      'Fordonet nollställer du första gången du parkerar på plan mark. {lamp} påminner tills det är gjort.',
     'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
     'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
     'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
@@ -869,8 +902,8 @@ export const MESSAGES = {
 
     'status.measuring': 'Mäter…',
     'status.almost': 'Nästan i våg — {left} kvar',
-    'status.cantLevel.close': 'Ramperna räcker nästan här — flytta fordonet',
-    'status.cantLevel.far': 'Ramperna räcker inte alls här — flytta fordonet',
+    'status.cantLevel.close': 'Klossarna räcker nästan här — flytta fordonet',
+    'status.cantLevel.far': 'Klossarna räcker inte alls här — flytta fordonet',
 
     'calibration.intro':
       'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +
@@ -989,10 +1022,10 @@ export const MESSAGES = {
     'help.open.sensor': 'Öppna sensorn',
     'help.open.feedback': 'Skriv en rapport',
 
-    'main.hint': 'Lägg telefonen plant i husbilen, med ovansidan mot fronten.',
+    'main.hint': 'Lägg telefonen plant i fordonet, med ovansidan mot fronten.',
     'main.start': 'Start',
     'main.waiting': 'Väntar på lutningssensorn…',
-    'main.level': 'Din husbil står i våg!',
+    'main.level': 'Fordonet står i våg!',
     'main.denied':
       'Åtkomst till rörelsesensorerna nekades, så Libell kan inte läsa lutningen. ' +
       'Tillåt rörelse och orientering för den här webbplatsen och ladda om.',
@@ -1006,13 +1039,17 @@ export const MESSAGES = {
     'diagram.front': 'Fram',
     'diagram.step': 'Steg {n}',
     'diagram.done': 'Klart',
-    'diagram.noRamp': 'Ingen ramp',
+    'diagram.noRamp': 'Ingen kloss',
     'diagram.wheel.frontLeft': 'V FRAM',
     'diagram.wheel.frontRight': 'H FRAM',
     'diagram.wheel.rearLeft': 'V BAK',
     'diagram.wheel.rearRight': 'H BAK',
     'caravan.crankUp': 'Veva upp',
     'caravan.crankDown': 'Veva ner',
+    'caravan.axleLeft': 'Vänster axelhjul',
+    'caravan.axleRight': 'Höger axelhjul',
+    'caravan.jockeyWheel': 'Stödhjul',
+    'help.screen.caravan': 'Husvagn: stödhjulet visar Veva upp eller Veva ner, och hur mycket.',
 
     'tilt.frontBack': 'Längsled',
     'tilt.sideSide': 'Sidled',
@@ -1024,7 +1061,7 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Boxen verkar sitta upp och ner',
     'pose.sensorNotUpright': 'Boxen ligger ner',
     'pose.sensorHintUpright': 'Den mäter bara rätt stående.',
-    'calibration.external.h': 'Nollställ {name}',
+    'calibration.external.h': 'Nollställ fordonet',
     'calibration.external.intro':
       'Ställ fordonet plant en gång med ett vattenpass och nollställ sedan.',
     'calibration.external.working': 'Nollställer…',
@@ -1054,7 +1091,7 @@ export const MESSAGES = {
     'mounting.facing.rear': 'Pekar bakåt',
     'mounting.facing.left': 'Pekar åt vänster',
     'box.state.connected': 'Ansluten',
-    'box.state.lost': 'Ingen kontakt',
+    'box.state.lost': 'Tappade kontakten',
     'box.state.password': 'Fel lösenord',
     'box.password.label': 'Boxens kod',
     'box.password.retry': 'Försök igen',
@@ -1076,14 +1113,16 @@ export const MESSAGES = {
     'box.step.direction.todo': 'Välj riktning',
     'box.step.direction.done': 'Riktning vald',
     'box.step.direction.learn': 'Osäker? Lär in genom att höja fronten',
-    'box.step.zero.todo': 'Nollställ på plan mark',
+    'box.step.zero.todo': 'Nollställ fordonet',
     'box.step.zero.done': 'Nollställd',
     'box.step.zero.hint': 'Ställ fordonet plant med ett vattenpass och nollställ sedan.',
     'box.forgetDirection': 'Glöm riktningen',
     'onboard.boxPosition.h': 'Boxens läge',
     'onboard.boxPosition.later':
-      'Riktning och nollställning gör du första gången du parkerar. Boxens sida guidar dig, och den gula lampan påminner tills det är gjort.',
-    'sensorList.title': 'Sensorer',
+      'Riktning och nollställning gör du första gången du parkerar. Boxens sida guidar dig, och lampan ⚠ Nollställ påminner tills det är gjort.',
+    'onboard.boxPosition.notConnected':
+      'Ingen box är ansluten än, så läget kan inte visas. Tryck {next} och anslut senare med sensorikonen uppe till höger.',
+    'sensorList.title': 'Sensorbox',
     'sensorList.phone': 'Telefonens egen sensor används när ingen box är ansluten.',
     'box.step.zero.again': 'Nollställ igen',
   },
@@ -1094,7 +1133,7 @@ export const MESSAGES = {
     'bottombar.sound.mute': 'Couper le son',
     'bottombar.sound.unmute': 'Activer le son',
     'bottombar.help': 'Aide',
-    'share.text': 'Mettez votre camping-car de niveau avec votre téléphone.',
+    'share.text': 'Mettez votre camping-car ou votre caravane de niveau avec votre téléphone.',
     'share.copied': 'Lien copié !',
     'update.check': 'Rechercher une nouvelle version',
     'update.checking': 'Recherche de mises à jour…',
@@ -1103,7 +1142,7 @@ export const MESSAGES = {
     'update.offline': 'Pas de connexion, impossible de rechercher des mises à jour',
     'update.unsupported': 'Les mises à jour ne sont pas disponibles ici',
     'install.hint': 'Touchez Partager, puis « Sur l’écran d’accueil ».',
-    'share.vehicle.text': 'La configuration de mon camping-car pour Libell — mesures et rampes.',
+    'share.vehicle.text': 'La configuration de mon véhicule pour Libell — mesures et rampes.',
     'settings.shareVehicle': 'Partager vers un autre téléphone',
     'setup.incoming.h': 'Configuration de véhicule reçue',
     'setup.incoming.intro': 'Un proche a partagé ces mesures de véhicule avec vous :',
@@ -1113,19 +1152,20 @@ export const MESSAGES = {
     'setup.incoming.dismiss': 'Pas maintenant',
     'setup.incoming.invalid': 'Ce lien de configuration n’a pas pu être lu — rien n’a été modifié.',
 
-    'lamp.setup': '⚠ Réglages',
+    'lamp.setup': '⚠ Mesures',
     'lamp.setup.title':
-      'Les réglages du véhicule n’ont jamais été enregistrés — touchez pour ouvrir les Réglages',
+      'Les mesures du véhicule n’ont jamais été enregistrées — touchez pour ouvrir les Réglages',
     'lamp.calibrate': '⚠ Étalonner',
     'lamp.zero': '⚠ Mettre à zéro',
     'lamp.calibrate.title': 'Le téléphone n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
+    'lamp.zero.title': 'Le véhicule n’est pas mis à zéro — touchez pour ouvrir l’Étalonnage',
     'lamp.calibrate.title.sensor':
       'Le boîtier n’est pas mis à zéro — touchez pour ouvrir le boîtier',
 
-    'sensorStatus.connected': 'Capteur externe connecté',
-    'sensorStatus.disconnected': 'Connexion au capteur externe perdue — touchez pour les détails',
-    'sensorStatus.idle': 'Capteur externe — touchez pour connecter',
-    'sensorStatus.idle.guide': 'Capteur externe — touchez pour le guide iPhone',
+    'sensorStatus.connected': 'Boîtier capteur connecté',
+    'sensorStatus.disconnected': 'Boîtier capteur — contact perdu, touchez pour les détails',
+    'sensorStatus.idle': 'Boîtier capteur — touchez pour connecter',
+    'sensorStatus.idle.guide': 'Boîtier capteur — touchez pour le guide iPhone',
 
     'menu.title': 'Menu',
     'menu.close': 'Fermer le menu',
@@ -1137,7 +1177,7 @@ export const MESSAGES = {
     'menu.intro': 'Afficher l’introduction',
     'menu.about': 'À propos de Libell',
     'menu.about.tab': 'À propos',
-    'menu.sensorSource': 'Capteur externe',
+    'menu.sensorSource': 'Boîtier capteur',
     'menu.advanced': 'AVANCÉ',
     'menu.others': 'AUTRES',
     'menu.card.notDone': 'Non fait',
@@ -1155,7 +1195,7 @@ export const MESSAGES = {
     'sensorSource.ios.step1': 'Installez « Bluefy – Web Bluetooth Browser » depuis l’App Store.',
     'sensorSource.ios.step2': 'Ouvrez Bluefy et autorisez l’accès au Bluetooth.',
     'sensorSource.ios.step3': 'Dans Bluefy, ouvrez cette même adresse Libell.',
-    'sensorSource.ios.step4': 'Rouvrez Capteur externe ici — cela fonctionne comme sur Android.',
+    'sensorSource.ios.step4': 'Rouvrez Boîtier capteur ici — cela fonctionne comme sur Android.',
     'sensorSource.ios.note':
       'Bluefy est une application tierce, pas développée par Libell — la reconnexion à ' +
       'l’ouverture peut y demander une touche manuelle au lieu de se faire toute seule.',
@@ -1228,7 +1268,7 @@ export const MESSAGES = {
 
     'about.text':
       'Libell vous aide à mettre de niveau votre camping-car ou votre caravane avec le ' +
-      'téléphone que vous avez déjà — sans niveau à bulle, sans deviner.',
+      'téléphone que vous avez déjà, sans deviner.',
     'about.version': 'Version {v}',
     'about.offline':
       'Fonctionne entièrement hors ligne — le réseau ne sert qu’à télécharger les mises ' +
@@ -1243,6 +1283,8 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Ce guide rapide configure votre véhicule et votre téléphone. Chaque étape peut ' +
       'être passée et terminée plus tard depuis les Réglages.',
+    'onboard.welcome.sensor':
+      'Un boîtier capteur se connecte à tout moment avec l’icône du capteur en haut à droite.',
     'onboard.sound.h': 'Son',
     'onboard.source.h': 'Comment voulez-vous mesurer ?',
     'onboard.source.intro':
@@ -1250,7 +1292,7 @@ export const MESSAGES = {
       'utilisent simplement le téléphone.',
     'onboard.source.phone': 'Ce téléphone',
     'onboard.source.externalActive':
-      'Un capteur externe est actif. Si vous choisissez ce téléphone, le guide saute l’étalonnage du téléphone — pour étalonner le téléphone, touchez d’abord « Déconnecter » sur la page Capteur externe.',
+      'Un boîtier capteur est actif. Si vous choisissez ce téléphone, le guide saute l’étalonnage du téléphone. Pour étalonner le téléphone, ouvrez le boîtier avec l’icône du capteur en haut à droite et touchez d’abord « {disconnect} ».',
     'onboard.vehicle.h': 'Que mettez-vous de niveau ?',
     'onboard.vehicle.intro': 'Choisissez votre véhicule — la suite du guide s’y adapte.',
     'onboard.step1.h': 'Posez le téléphone comme ceci',
@@ -1259,10 +1301,16 @@ export const MESSAGES = {
     'onboard.close': 'Fermer l’introduction',
     'onboard.done': 'Terminé',
     'onboard.skipStep': 'Passer',
-    'onboard.skipDefaults': 'Passer — utiliser les valeurs par défaut',
-    'onboard.skip.consequence':
-      'Passer pour l’instant — un voyant vous le rappellera jusqu’à ce que ce soit fait. ' +
-      'Les valeurs par défaut sont utilisées en attendant, et elles conviennent souvent assez bien.',
+    'onboard.note.measurements':
+      'Si vous passez, les mesures par défaut sont utilisées et {lamp} reste allumé jusqu’à ce que vous enregistriez les vôtres.',
+    'onboard.note.ramps':
+      'Si vous passez, les rampes par défaut sont utilisées. Vous pourrez choisir les vôtres plus tard dans les Réglages.',
+    'onboard.note.calibrate':
+      'Pas de surface plane pour l’instant ? Touchez « {next} » ; {lamp} vous le rappelle jusqu’à ce que ce soit fait.',
+    'onboard.note.connect':
+      'Pas de boîtier sous la main ? Touchez « {next} » et connectez-le plus tard avec l’icône du capteur en haut à droite.',
+    'onboard.zeroLater':
+      'Vous mettez le véhicule à zéro la première fois que vous vous garez sur un sol plat. {lamp} vous le rappelle jusqu’à ce que ce soit fait.',
     'onboard.legend.ok': 'Vert ✓ — cette roue est de niveau.',
     'onboard.legend.up': 'Orange ↑ — montez cette roue sur le palier indiqué.',
     'onboard.legend.no': 'Rouge ✕ — aucun palier ne suffit ; allez sur un endroit plus plat.',
@@ -1469,11 +1517,10 @@ export const MESSAGES = {
     'help.open.sensor': 'Ouvrir le capteur',
     'help.open.feedback': 'Écrire un rapport',
 
-    'main.hint':
-      'Posez votre téléphone à plat dans votre camping-car, le bord supérieur vers l’avant.',
+    'main.hint': 'Posez votre téléphone à plat dans le véhicule, le bord supérieur vers l’avant.',
     'main.start': 'Démarrer',
     'main.waiting': 'En attente du capteur d’inclinaison…',
-    'main.level': 'Votre camping-car est de niveau !',
+    'main.level': 'Votre véhicule est de niveau !',
     'main.denied':
       'L’accès aux mouvements a été refusé, Libell ne peut donc pas lire l’inclinaison. ' +
       'Autorisez l’accès au mouvement et à l’orientation pour ce site, puis rechargez.',
@@ -1496,6 +1543,11 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'ARRIÈRE D',
     'caravan.crankUp': 'Monter à la manivelle',
     'caravan.crankDown': 'Descendre à la manivelle',
+    'caravan.axleLeft': 'Roue d’essieu gauche',
+    'caravan.axleRight': 'Roue d’essieu droite',
+    'caravan.jockeyWheel': 'Roue jockey',
+    'help.screen.caravan':
+      'Caravane : la roue jockey indique Monter ou Descendre à la manivelle, et de combien.',
 
     'tilt.frontBack': 'Longitudinal',
     'tilt.sideSide': 'Latéral',
@@ -1507,7 +1559,7 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Le boîtier semble à l’envers',
     'pose.sensorNotUpright': 'Le boîtier est couché',
     'pose.sensorHintUpright': 'Il ne mesure correctement que debout.',
-    'calibration.external.h': 'Mettre {name} à zéro',
+    'calibration.external.h': 'Mettre le véhicule à zéro',
     'calibration.external.intro':
       'Mettez le véhicule de niveau une fois avec un niveau à bulle, puis mettez à zéro.',
     'calibration.external.working': 'Mise à zéro…',
@@ -1541,7 +1593,7 @@ export const MESSAGES = {
     'mounting.facing.rear': 'Vers l’arrière',
     'mounting.facing.left': 'Vers la gauche',
     'box.state.connected': 'Connecté',
-    'box.state.lost': 'Aucun contact',
+    'box.state.lost': 'Contact perdu',
     'box.state.password': 'Mot de passe incorrect',
     'box.password.label': 'Code du boîtier',
     'box.password.retry': 'Réessayer',
@@ -1563,15 +1615,17 @@ export const MESSAGES = {
     'box.step.direction.todo': 'Choisir l’orientation',
     'box.step.direction.done': 'Orientation choisie',
     'box.step.direction.learn': 'Pas sûr ? Apprenez-la en levant l’avant',
-    'box.step.zero.todo': 'Mettre à zéro sur sol plat',
+    'box.step.zero.todo': 'Mettre le véhicule à zéro',
     'box.step.zero.done': 'Mis à zéro',
     'box.step.zero.hint':
       'Mettez le véhicule de niveau avec un niveau à bulle, puis mettez à zéro.',
     'box.forgetDirection': 'Oublier l’orientation',
     'onboard.boxPosition.h': 'Position du boîtier',
     'onboard.boxPosition.later':
-      'La direction et le zéro se règlent la première fois que vous vous garez. La page du boîtier vous guide, et le voyant orange vous le rappelle jusque-là.',
-    'sensorList.title': 'Capteurs',
+      'La direction et le zéro se règlent la première fois que vous vous garez. La page du boîtier vous guide, et le voyant ⚠ Mettre à zéro vous le rappelle jusque-là.',
+    'onboard.boxPosition.notConnected':
+      'Aucun boîtier n’est encore connecté, sa position ne peut donc pas être affichée. Touchez « {next} » et connectez-le plus tard avec l’icône du capteur en haut à droite.',
+    'sensorList.title': 'Boîtier capteur',
     'sensorList.phone': 'Le capteur du téléphone est utilisé quand aucun boîtier n’est connecté.',
     'box.step.zero.again': 'Remettre à zéro',
   },
@@ -1582,7 +1636,7 @@ export const MESSAGES = {
     'bottombar.sound.mute': 'Silenciar el sonido',
     'bottombar.sound.unmute': 'Activar el sonido',
     'bottombar.help': 'Ayuda',
-    'share.text': 'Nivela tu autocaravana con el móvil.',
+    'share.text': 'Nivela tu autocaravana o caravana con el móvil.',
     'share.copied': '¡Enlace copiado!',
     'update.check': 'Buscar una versión nueva',
     'update.checking': 'Buscando actualizaciones…',
@@ -1591,7 +1645,7 @@ export const MESSAGES = {
     'update.offline': 'Sin conexión, no se pueden buscar actualizaciones',
     'update.unsupported': 'Las actualizaciones no están disponibles aquí',
     'install.hint': 'Toca Compartir y luego «Añadir a pantalla de inicio».',
-    'share.vehicle.text': 'La configuración de mi autocaravana para Libell: medidas y rampas.',
+    'share.vehicle.text': 'La configuración de mi vehículo para Libell: medidas y rampas.',
     'settings.shareVehicle': 'Compartir con otro teléfono',
     'setup.incoming.h': 'Configuración de vehículo recibida',
     'setup.incoming.intro':
@@ -1603,18 +1657,18 @@ export const MESSAGES = {
     'setup.incoming.invalid':
       'No se ha podido leer ese enlace de configuración: no se ha cambiado nada.',
 
-    'lamp.setup': '⚠ Ajustes',
-    'lamp.setup.title': 'Los ajustes del vehículo nunca se han guardado: toca para abrir Ajustes',
+    'lamp.setup': '⚠ Medidas',
+    'lamp.setup.title': 'Las medidas del vehículo nunca se han guardado: toca para abrir Ajustes',
     'lamp.calibrate': '⚠ Calibrar',
     'lamp.zero': '⚠ Poner a cero',
     'lamp.calibrate.title': 'El móvil no está calibrado: toca para abrir Calibración',
+    'lamp.zero.title': 'El vehículo no está puesto a cero: toca para abrir Calibración',
     'lamp.calibrate.title.sensor': 'La caja no está puesta a cero: toca para abrir la caja',
 
-    'sensorStatus.connected': 'Sensor externo conectado',
-    'sensorStatus.disconnected':
-      'Se ha perdido la conexión con el sensor externo: toca para ver los detalles',
-    'sensorStatus.idle': 'Sensor externo: toca para conectar',
-    'sensorStatus.idle.guide': 'Sensor externo: toca para ver la guía de iPhone',
+    'sensorStatus.connected': 'Caja sensora conectada',
+    'sensorStatus.disconnected': 'Caja sensora: se perdió el contacto, toca para ver los detalles',
+    'sensorStatus.idle': 'Caja sensora: toca para conectar',
+    'sensorStatus.idle.guide': 'Caja sensora: toca para ver la guía de iPhone',
 
     'menu.title': 'Menú',
     'menu.close': 'Cerrar el menú',
@@ -1626,7 +1680,7 @@ export const MESSAGES = {
     'menu.intro': 'Mostrar la introducción',
     'menu.about': 'Acerca de Libell',
     'menu.about.tab': 'Acerca de',
-    'menu.sensorSource': 'Sensor externo',
+    'menu.sensorSource': 'Caja sensora',
     'menu.advanced': 'AVANZADO',
     'menu.others': 'OTROS',
     'menu.card.notDone': 'Sin hacer',
@@ -1644,7 +1698,7 @@ export const MESSAGES = {
     'sensorSource.ios.step1': 'Instala «Bluefy – Web Bluetooth Browser» desde la App Store.',
     'sensorSource.ios.step2': 'Abre Bluefy y concede el permiso de Bluetooth.',
     'sensorSource.ios.step3': 'En Bluefy, ve a esta misma dirección de Libell.',
-    'sensorSource.ios.step4': 'Vuelve a abrir Sensor externo aquí: funciona igual que en Android.',
+    'sensorSource.ios.step4': 'Vuelve a abrir Caja sensora aquí: funciona igual que en Android.',
     'sensorSource.ios.note':
       'Bluefy es una aplicación de terceros, no creada por Libell: puede que reconectar al ' +
       'abrir la app requiera un toque manual allí en lugar de hacerse solo.',
@@ -1715,8 +1769,8 @@ export const MESSAGES = {
     'sensorStatus.debug.connectDelay.ms': 'Pausa (ms)',
 
     'about.text':
-      'Libell te ayuda a nivelar tu autocaravana o caravana con el móvil que ya tienes: ' +
-      'sin niveles de burbuja y sin adivinar.',
+      'Libell te ayuda a nivelar tu autocaravana o caravana con el móvil que ya tienes, ' +
+      'sin adivinar.',
     'about.version': 'Versión {v}',
     'about.offline':
       'Funciona totalmente sin conexión: la red solo se usa para descargar actualizaciones ' +
@@ -1731,13 +1785,15 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Esta guía rápida configura tu vehículo y tu móvil. Puedes saltarte cualquier paso y ' +
       'terminarlo más tarde desde Ajustes.',
+    'onboard.welcome.sensor':
+      'Puedes conectar una caja sensora cuando quieras con el icono del sensor arriba a la derecha.',
     'onboard.sound.h': 'Sonido',
     'onboard.source.h': '¿Cómo quieres medir?',
     'onboard.source.intro':
       'Elige de qué sensor debe leer Libell la inclinación: la mayoría simplemente usa el móvil.',
     'onboard.source.phone': 'Este móvil',
     'onboard.source.externalActive':
-      'Hay un sensor externo activo. Si eliges este móvil, la guía omite la calibración del móvil; para calibrarlo, toca primero «Desconectar» en la página Sensor externo.',
+      'Hay una caja sensora activa. Si eliges este móvil, la guía omite la calibración del móvil. Para calibrarlo, abre la caja con el icono del sensor arriba a la derecha y toca primero «{disconnect}».',
     'onboard.vehicle.h': '¿Qué vas a nivelar?',
     'onboard.vehicle.intro': 'Elige tu vehículo: el resto de la guía se adapta a él.',
     'onboard.step1.h': 'Coloca el móvil así',
@@ -1746,10 +1802,16 @@ export const MESSAGES = {
     'onboard.close': 'Cerrar la introducción',
     'onboard.done': 'Listo',
     'onboard.skipStep': 'Saltar',
-    'onboard.skipDefaults': 'Saltar: usar los valores predeterminados',
-    'onboard.skip.consequence':
-      'Saltar por ahora: un aviso te lo recordará hasta que esté hecho. Mientras tanto se ' +
-      'usan los valores predeterminados, que a menudo funcionan bastante bien.',
+    'onboard.note.measurements':
+      'Si lo saltas, se usan las medidas predeterminadas y {lamp} sigue encendido hasta que guardes las tuyas.',
+    'onboard.note.ramps':
+      'Si lo saltas, se usan las rampas predeterminadas. Puedes elegir las tuyas más tarde en Ajustes.',
+    'onboard.note.calibrate':
+      '¿No tienes una superficie plana ahora? Toca «{next}»; {lamp} te lo recordará hasta que esté hecho.',
+    'onboard.note.connect':
+      '¿No tienes la caja a mano? Toca «{next}» y conéctala más tarde con el icono del sensor arriba a la derecha.',
+    'onboard.zeroLater':
+      'El vehículo se pone a cero la primera vez que aparcas en suelo llano. {lamp} te lo recordará hasta que esté hecho.',
     'onboard.legend.ok': 'Verde ✓: esa rueda está nivelada.',
     'onboard.legend.up': 'Naranja ↑: sube esa rueda al nivel indicado.',
     'onboard.legend.no': 'Rojo ✕: ningún nivel basta; muévete a un sitio más llano.',
@@ -1952,11 +2014,10 @@ export const MESSAGES = {
     'help.open.sensor': 'Abrir el sensor',
     'help.open.feedback': 'Escribir un informe',
 
-    'main.hint':
-      'Deja el móvil plano dentro de la autocaravana, con el borde superior hacia delante.',
+    'main.hint': 'Deja el móvil plano dentro del vehículo, con el borde superior hacia delante.',
     'main.start': 'Iniciar',
     'main.waiting': 'Esperando al sensor de inclinación…',
-    'main.level': '¡Tu autocaravana está nivelada!',
+    'main.level': '¡Tu vehículo está nivelado!',
     'main.denied':
       'Se ha denegado el acceso al movimiento, así que Libell no puede leer la inclinación. ' +
       'Permite el acceso a movimiento y orientación para este sitio y recarga.',
@@ -1980,6 +2041,11 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'TRAS DER',
     'caravan.crankUp': 'Subir con la manivela',
     'caravan.crankDown': 'Bajar con la manivela',
+    'caravan.axleLeft': 'Rueda izquierda del eje',
+    'caravan.axleRight': 'Rueda derecha del eje',
+    'caravan.jockeyWheel': 'Rueda jockey',
+    'help.screen.caravan':
+      'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
 
     'tilt.frontBack': 'Delante/detrás',
     'tilt.sideSide': 'Lado/lado',
@@ -1991,7 +2057,7 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'La caja parece estar del revés',
     'pose.sensorNotUpright': 'La caja está tumbada',
     'pose.sensorHintUpright': 'Solo mide bien de pie.',
-    'calibration.external.h': 'Poner {name} a cero',
+    'calibration.external.h': 'Poner el vehículo a cero',
     'calibration.external.intro':
       'Nivela el vehículo una vez con un nivel de burbuja y luego pon a cero.',
     'calibration.external.working': 'Poniendo a cero…',
@@ -2025,7 +2091,7 @@ export const MESSAGES = {
     'mounting.facing.rear': 'Hacia atrás',
     'mounting.facing.left': 'Hacia la izquierda',
     'box.state.connected': 'Conectada',
-    'box.state.lost': 'Sin contacto',
+    'box.state.lost': 'Se perdió el contacto',
     'box.state.password': 'Contraseña incorrecta',
     'box.password.label': 'Código de la caja',
     'box.password.retry': 'Reintentar',
@@ -2047,14 +2113,16 @@ export const MESSAGES = {
     'box.step.direction.todo': 'Elegir la orientación',
     'box.step.direction.done': 'Orientación elegida',
     'box.step.direction.learn': '¿No estás seguro? Apréndela levantando la parte delantera',
-    'box.step.zero.todo': 'Poner a cero en suelo llano',
+    'box.step.zero.todo': 'Poner el vehículo a cero',
     'box.step.zero.done': 'Puesta a cero',
     'box.step.zero.hint': 'Nivela el vehículo con un nivel de burbuja y luego pon a cero.',
     'box.forgetDirection': 'Olvidar la orientación',
     'onboard.boxPosition.h': 'Posición de la caja',
     'onboard.boxPosition.later':
-      'La dirección y el cero se ajustan la primera vez que aparcas. La página de la caja te guía y el piloto ámbar te lo recuerda hasta entonces.',
-    'sensorList.title': 'Sensores',
+      'La dirección y el cero se ajustan la primera vez que aparcas. La página de la caja te guía y el piloto ⚠ Poner a cero te lo recuerda hasta entonces.',
+    'onboard.boxPosition.notConnected':
+      'Todavía no hay ninguna caja conectada, así que no se puede mostrar su posición. Toca «{next}» y conéctala más tarde con el icono del sensor arriba a la derecha.',
+    'sensorList.title': 'Caja sensora',
     'sensorList.phone': 'Se usa el sensor del propio móvil cuando no hay ninguna caja conectada.',
     'box.step.zero.again': 'Volver a poner a cero',
   },
@@ -2065,7 +2133,7 @@ export const MESSAGES = {
     'bottombar.sound.mute': 'Ton stummschalten',
     'bottombar.sound.unmute': 'Ton einschalten',
     'bottombar.help': 'Hilfe',
-    'share.text': 'Richte dein Wohnmobil mit dem Handy waagerecht aus.',
+    'share.text': 'Richte dein Wohnmobil oder deinen Wohnwagen mit dem Handy waagerecht aus.',
     'share.copied': 'Link kopiert!',
     'update.check': 'Nach neuer Version suchen',
     'update.checking': 'Suche nach Updates…',
@@ -2074,8 +2142,7 @@ export const MESSAGES = {
     'update.offline': 'Keine Verbindung, Suche nach Updates nicht möglich',
     'update.unsupported': 'Updates sind hier nicht verfügbar',
     'install.hint': 'Auf Teilen tippen, dann „Zum Home-Bildschirm“.',
-    'share.vehicle.text':
-      'Die Fahrzeugkonfiguration meines Wohnmobils für Libell — Maße und Auffahrkeile.',
+    'share.vehicle.text': 'Die Konfiguration meines Fahrzeugs für Libell — Maße und Auffahrkeile.',
     'settings.shareVehicle': 'An ein anderes Handy senden',
     'setup.incoming.h': 'Empfangene Fahrzeugkonfiguration',
     'setup.incoming.intro': 'Jemand aus deiner Familie hat dir diese Fahrzeugmaße geschickt:',
@@ -2086,18 +2153,19 @@ export const MESSAGES = {
     'setup.incoming.invalid':
       'Dieser Konfigurationslink konnte nicht gelesen werden — es wurde nichts geändert.',
 
-    'lamp.setup': '⚠ Einrichten',
+    'lamp.setup': '⚠ Maße',
     'lamp.setup.title':
-      'Die Fahrzeugeinstellungen wurden noch nie gespeichert — zum Öffnen der Einstellungen tippen',
+      'Die Maße des Fahrzeugs wurden noch nie gespeichert — zum Öffnen der Einstellungen tippen',
     'lamp.calibrate': '⚠ Kalibrieren',
     'lamp.zero': '⚠ Nullen',
     'lamp.calibrate.title': 'Das Handy ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
+    'lamp.zero.title': 'Das Fahrzeug ist nicht genullt — zum Öffnen der Kalibrierung tippen',
     'lamp.calibrate.title.sensor': 'Die Box ist nicht genullt — tippen, um die Box zu öffnen',
 
-    'sensorStatus.connected': 'Externer Sensor verbunden',
-    'sensorStatus.disconnected': 'Verbindung zum externen Sensor verloren — für Details tippen',
-    'sensorStatus.idle': 'Externer Sensor — zum Verbinden tippen',
-    'sensorStatus.idle.guide': 'Externer Sensor — für die iPhone-Anleitung tippen',
+    'sensorStatus.connected': 'Sensorbox verbunden',
+    'sensorStatus.disconnected': 'Sensorbox — Verbindung verloren, für Details tippen',
+    'sensorStatus.idle': 'Sensorbox — zum Verbinden tippen',
+    'sensorStatus.idle.guide': 'Sensorbox — für die iPhone-Anleitung tippen',
 
     'menu.title': 'Menü',
     'menu.close': 'Menü schließen',
@@ -2109,7 +2177,7 @@ export const MESSAGES = {
     'menu.intro': 'Einführung anzeigen',
     'menu.about': 'Über Libell',
     'menu.about.tab': 'Über',
-    'menu.sensorSource': 'Externer Sensor',
+    'menu.sensorSource': 'Sensorbox',
     'menu.advanced': 'ERWEITERT',
     'menu.others': 'SONSTIGES',
     'menu.card.notDone': 'Nicht erledigt',
@@ -2127,8 +2195,7 @@ export const MESSAGES = {
     'sensorSource.ios.step1': 'Installiere „Bluefy – Web Bluetooth Browser“ aus dem App Store.',
     'sensorSource.ios.step2': 'Öffne Bluefy und erlaube die Bluetooth-Berechtigung.',
     'sensorSource.ios.step3': 'Rufe in Bluefy dieselbe Libell-Adresse auf.',
-    'sensorSource.ios.step4':
-      'Öffne hier wieder Externer Sensor — es funktioniert wie unter Android.',
+    'sensorSource.ios.step4': 'Öffne hier wieder Sensorbox — es funktioniert wie unter Android.',
     'sensorSource.ios.note':
       'Bluefy ist eine App von Dritten, nicht von Libell — das erneute Verbinden beim Öffnen ' +
       'erfordert dort eventuell einen manuellen Tipp, statt still zu geschehen.',
@@ -2200,7 +2267,7 @@ export const MESSAGES = {
 
     'about.text':
       'Libell hilft dir, dein Wohnmobil oder deinen Wohnwagen mit dem Handy auszurichten, ' +
-      'das du ohnehin dabeihast — ohne Libelle, ohne Raten.',
+      'das du ohnehin dabeihast, ohne Raten.',
     'about.version': 'Version {v}',
     'about.offline':
       'Funktioniert vollständig offline — das Netz wird nur für Updates der App selbst genutzt.',
@@ -2213,13 +2280,15 @@ export const MESSAGES = {
     'onboard.welcome.t':
       'Diese kurze Einführung richtet Fahrzeug und Handy ein. Jeder Schritt lässt sich ' +
       'überspringen und später in den Einstellungen erledigen.',
+    'onboard.welcome.sensor':
+      'Eine Sensorbox verbindest du jederzeit über das Sensorsymbol oben rechts.',
     'onboard.sound.h': 'Ton',
     'onboard.source.h': 'Wie möchtest du messen?',
     'onboard.source.intro':
       'Wähle, von welchem Sensor Libell die Neigung lesen soll — die meisten nehmen einfach das Handy.',
     'onboard.source.phone': 'Dieses Handy',
     'onboard.source.externalActive':
-      'Ein externer Sensor ist aktiv. Wählst du dieses Handy, überspringt der Assistent die Kalibrierung des Handys – um das Handy zu kalibrieren, tippe zuerst auf der Seite „Externer Sensor“ auf „Trennen“.',
+      'Eine Sensorbox ist aktiv. Wählst du dieses Handy, überspringt der Assistent die Kalibrierung des Handys. Um das Handy zu kalibrieren, öffne die Box über das Sensorsymbol oben rechts und tippe zuerst auf „{disconnect}“.',
     'onboard.vehicle.h': 'Was richtest du aus?',
     'onboard.vehicle.intro':
       'Wähle dein Fahrzeug — der Rest dieser Einführung richtet sich danach.',
@@ -2229,10 +2298,16 @@ export const MESSAGES = {
     'onboard.close': 'Einführung schließen',
     'onboard.done': 'Fertig',
     'onboard.skipStep': 'Überspringen',
-    'onboard.skipDefaults': 'Überspringen — Standardwerte nutzen',
-    'onboard.skip.consequence':
-      'Vorerst überspringen — eine Warnleuchte erinnert dich daran, bis es erledigt ist. So ' +
-      'lange gelten die Standardwerte, die oft schon ganz gut passen.',
+    'onboard.note.measurements':
+      'Überspringst du, gelten die Standardmaße, und {lamp} leuchtet, bis du deine gespeichert hast.',
+    'onboard.note.ramps':
+      'Überspringst du, gelten die Standard-Keile. Deine eigenen wählst du später in den Einstellungen.',
+    'onboard.note.calibrate':
+      'Gerade keine ebene Fläche? Tippe auf „{next}“; {lamp} erinnert dich, bis es erledigt ist.',
+    'onboard.note.connect':
+      'Keine Box zur Hand? Tippe auf „{next}“ und verbinde sie später über das Sensorsymbol oben rechts.',
+    'onboard.zeroLater':
+      'Das Fahrzeug nullst du, wenn du das erste Mal auf ebenem Boden parkst. {lamp} erinnert dich, bis es erledigt ist.',
     'onboard.legend.ok': 'Grün ✓ — dieses Rad steht waagerecht.',
     'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe fahren.',
     'onboard.legend.no': 'Rot ✕ — keine Stufe reicht; such dir einen ebeneren Platz.',
@@ -2439,10 +2514,10 @@ export const MESSAGES = {
     'help.open.sensor': 'Sensor öffnen',
     'help.open.feedback': 'Bericht schreiben',
 
-    'main.hint': 'Lege dein Handy flach ins Wohnmobil, die Oberkante nach vorn.',
+    'main.hint': 'Lege dein Handy flach ins Fahrzeug, die Oberkante nach vorn.',
     'main.start': 'Start',
     'main.waiting': 'Warten auf den Neigungssensor…',
-    'main.level': 'Dein Wohnmobil steht waagerecht!',
+    'main.level': 'Dein Fahrzeug steht waagerecht!',
     'main.denied':
       'Der Zugriff auf die Bewegungssensoren wurde verweigert, daher kann Libell die Neigung ' +
       'nicht lesen. Erlaube Bewegung und Orientierung für diese Website und lade neu.',
@@ -2464,6 +2539,11 @@ export const MESSAGES = {
     'diagram.wheel.rearRight': 'HINTEN R',
     'caravan.crankUp': 'Hochkurbeln',
     'caravan.crankDown': 'Herunterkurbeln',
+    'caravan.axleLeft': 'Linkes Achsrad',
+    'caravan.axleRight': 'Rechtes Achsrad',
+    'caravan.jockeyWheel': 'Stützrad',
+    'help.screen.caravan':
+      'Wohnwagen: Das Stützrad zeigt Hochkurbeln oder Herunterkurbeln und um wie viel.',
 
     'tilt.frontBack': 'Längs',
     'tilt.sideSide': 'Quer',
@@ -2475,7 +2555,7 @@ export const MESSAGES = {
     'pose.sensorUpsideDown': 'Die Box scheint kopfüber zu sitzen',
     'pose.sensorNotUpright': 'Die Box liegt',
     'pose.sensorHintUpright': 'Sie misst nur stehend richtig.',
-    'calibration.external.h': '{name} nullen',
+    'calibration.external.h': 'Fahrzeug nullen',
     'calibration.external.intro':
       'Stell das Fahrzeug einmal mit einer Wasserwaage waagerecht und nulle dann.',
     'calibration.external.working': 'Wird genullt…',
@@ -2507,7 +2587,7 @@ export const MESSAGES = {
     'mounting.facing.rear': 'Zeigt nach hinten',
     'mounting.facing.left': 'Zeigt nach links',
     'box.state.connected': 'Verbunden',
-    'box.state.lost': 'Kein Kontakt',
+    'box.state.lost': 'Verbindung verloren',
     'box.state.password': 'Falsches Passwort',
     'box.password.label': 'Code der Box',
     'box.password.retry': 'Erneut versuchen',
@@ -2529,14 +2609,16 @@ export const MESSAGES = {
     'box.step.direction.todo': 'Richtung wählen',
     'box.step.direction.done': 'Richtung gewählt',
     'box.step.direction.learn': 'Unsicher? Durch Anheben der Front einlernen',
-    'box.step.zero.todo': 'Auf ebenem Boden nullen',
+    'box.step.zero.todo': 'Fahrzeug nullen',
     'box.step.zero.done': 'Genullt',
     'box.step.zero.hint': 'Stelle das Fahrzeug mit einer Wasserwaage waagerecht und nulle dann.',
     'box.forgetDirection': 'Richtung vergessen',
     'onboard.boxPosition.h': 'Lage der Box',
     'onboard.boxPosition.later':
-      'Richtung und Nullpunkt stellst du beim ersten Parken ein. Die Seite der Box führt dich, und die gelbe Lampe erinnert dich bis dahin.',
-    'sensorList.title': 'Sensoren',
+      'Richtung und Nullpunkt stellst du beim ersten Parken ein. Die Seite der Box führt dich, und die Lampe ⚠ Nullen erinnert dich bis dahin.',
+    'onboard.boxPosition.notConnected':
+      'Noch ist keine Box verbunden, daher lässt sich ihre Lage nicht anzeigen. Tippe auf „{next}“ und verbinde sie später über das Sensorsymbol oben rechts.',
+    'sensorList.title': 'Sensorbox',
     'sensorList.phone': 'Der Sensor des Handys wird verwendet, wenn keine Box verbunden ist.',
     'box.step.zero.again': 'Erneut nullen',
   },
