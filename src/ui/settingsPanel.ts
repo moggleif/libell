@@ -9,8 +9,8 @@
  *
  * Modern appearance (#108): when `initial.appearance === 'modern'`, the
  * form renders as tabs (Fordon/Klossar/Kalibrering/I våg/Allmänt, #329) instead
- * of one long page, with a redesigned ramp picker (brand filter, pinned current
- * model, scrolling catalog, fixed step-height footer). Which structure to
+ * of one long page, with the Ramps page (#246: the chosen ramp first, then
+ * a brand filter and catalogue behind one disclosure). Which structure to
  * build is decided once, from `initial.appearance`, at construction time
  * — same pattern as `rearAxle` deciding wheel-pair markers in
  * `rvDiagram.ts`. There is no live restructuring if the user changes the
@@ -159,7 +159,7 @@ export type SettingsFormElement = HTMLFormElement & {
   refreshOpenTab?: () => void;
 };
 
-export interface SettingsFormOptions {
+interface SettingsFormOptions {
   /**
    * Reduced onboarding-only renderings, each just its own subset of the
    * same field elements the full form builds — never a wizard-only
@@ -187,22 +187,22 @@ export interface SettingsFormOptions {
    * catalog and per-wheel step guidance actually run on, the thing that
    * most sets this app's leveling apart from a plain bubble-level or
    * sensor-only competitor. Reuses the same classic-style single
-   * `<select>` + chip editor Classic mode's own Ramps section uses, not
-   * Modern's scrolling brand-filtered catalog grid — proportionate to a
-   * reduced first-run step either way. Drain position stays Advanced-tier,
-   * reachable from Settings afterward, same as Tolerance/Stability.
+   * `<select>` + chip editor the flat Classic page uses, not the Ramps
+   * page's brand-filtered catalogue — proportionate to a reduced first-run
+   * step either way. Drain position stays on the Level tab, reachable from
+   * Settings afterward, same as Tolerance/Stability.
    *
    * Any way, everything not listed above (Vehicle type, Rear axle,
-   * Tolerance, Stability, Show lengths in, Drain position — including the
-   * Advanced disclosure from #157, not just collapsed but absent) stays
+   * Tolerance, Stability, Show lengths in, Drain position — including
+   * General › More, not just collapsed but absent) stays
    * reachable from ☰ → Settings afterward.
    */
   compact?: 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps';
   /**
    * Classic split pages (screen-cleanup follow-up): render Classic's
-   * fields as three navigable bodies — General / Vehicle / Ramps, exposed
-   * as `classicPages` on the returned form — instead of one long flat
-   * page, mirroring Modern's General/Fordon/Klossar tab split (#108) now
+   * fields as four navigable bodies — General / Vehicle / Ramps / Level,
+   * exposed as `classicPages` on the returned form — instead of one long
+   * flat page, mirroring Modern's tab split (#108, #329) now
    * that the menu's ☰ drawer has somewhere to put them. Ignored when
    * `appearance === 'modern'` (already split by tabs) or when `compact`
    * is set (the wizard's reduced single-topic steps). Only the ☰ menu
@@ -406,9 +406,9 @@ export function createSettingsForm(
   // Ready-made ramp picker: choosing a catalog model fills the step
   // list; editing the chips afterwards flips the picker back to
   // "custom". Labels carry the mm figures, so they are not unit-aware.
-  // In Modern mode this <select> is not shown — the Klossar tab picks
-  // models from a scrolling catalog list instead — but it is kept alive
-  // (its `.value` and `customChosen` still tracked) as the single source
+  // On the Ramps page (Modern's tab, Classic's ☰ page) this <select> is
+  // not shown — the page picks models from its catalogue instead — but it
+  // is kept alive (its `.value` and `customChosen` still tracked) as the single source
   // of truth for "which model matches the current steps", including the
   // #91 tie-break behavior, shared by both UIs.
   const rampRow = document.createElement('div');
@@ -714,7 +714,7 @@ export function createSettingsForm(
   resetAllButton.type = 'button';
   resetAllButton.className = 'menu__action menu__action--secondary settings__reset-all';
   // Keeps the appearance: it decides the page's whole structure, and
-  // changing it reloads the app (see the Appearance select below), which
+  // changing it reloads the app (see the Appearance select above), which
   // would take the Undo toast with it.
   resetAllButton.addEventListener('click', () => {
     populate({ ...DEFAULT_SETTINGS, appearance: saved.appearance });
@@ -809,9 +809,9 @@ export function createSettingsForm(
     filterDetails.className = 'settings__advanced klossar__picker-details';
     const filterSummary = document.createElement('summary');
     filterSummary.className = 'settings__advanced-summary';
-    // Set here rather than in the shared populate pass below: this element
-    // only exists in the Modern branch, and a language change rebuilds the
-    // whole form anyway.
+    // Set here rather than in `applyUnitEverywhere` below: this element
+    // only exists on the Ramps page, and a language change reloads the
+    // whole app anyway.
     filterSummary.textContent = t('settings.klossar.changeRamp');
     const filterRow = document.createElement('div');
     filterRow.className = 'klossar__filter';
@@ -1130,8 +1130,7 @@ export function createSettingsForm(
     form.append(tabsBar, vehiclePanel, rampsPanel, calibrationPanel, targetsPanel, generalPanel);
     selectTab('vehicle');
 
-    // applyUnitEverywhere sets tab-label text (needs unit/vehicle
-    // resolved captions elsewhere already handled below).
+    // Tab labels are set with every other caption, in applyUnitEverywhere.
     unitAppliers.push(() => {
       generalTab.textContent = t('settings.general');
       calibrationTab.textContent = t('menu.calibration');

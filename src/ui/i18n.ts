@@ -77,12 +77,6 @@ export const MESSAGES = {
     // — 'menu.about' above is the full title, too long for a tab pill.
     'menu.about.tab': 'About',
     'menu.sensorSource': 'Sensor box',
-    // Modern-only heading (#152) grouping External sensor + Targets above
-    // "OTHER" — distinct key from settings.advanced (#157), a different
-    // heading in a different part of the UI.
-    'menu.advanced': 'ADVANCED',
-    'menu.others': 'OTHER',
-    'menu.card.notDone': 'Not done',
 
     // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
     // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
@@ -686,9 +680,6 @@ export const MESSAGES = {
     'menu.about': 'Om Libell',
     'menu.about.tab': 'Om',
     'menu.sensorSource': 'Sensorbox',
-    'menu.advanced': 'AVANCERAT',
-    'menu.others': 'ÖVRIGT',
-    'menu.card.notDone': 'Ej gjord',
 
     // EasyLevel-boxen via BLE (#116) — ett tillval utöver telefonens egen
     // sensor, visas bara när Web Bluetooth finns (`menu.ts`).
@@ -1178,9 +1169,6 @@ export const MESSAGES = {
     'menu.about': 'À propos de Libell',
     'menu.about.tab': 'À propos',
     'menu.sensorSource': 'Boîtier capteur',
-    'menu.advanced': 'AVANCÉ',
-    'menu.others': 'AUTRES',
-    'menu.card.notDone': 'Non fait',
 
     'sensorSource.connect': 'Connecter le capteur {name}',
     'sensorSource.disconnect': 'Déconnecter',
@@ -1681,9 +1669,6 @@ export const MESSAGES = {
     'menu.about': 'Acerca de Libell',
     'menu.about.tab': 'Acerca de',
     'menu.sensorSource': 'Caja sensora',
-    'menu.advanced': 'AVANZADO',
-    'menu.others': 'OTROS',
-    'menu.card.notDone': 'Sin hacer',
 
     'sensorSource.connect': 'Conectar el sensor {name}',
     'sensorSource.disconnect': 'Desconectar',
@@ -2178,9 +2163,6 @@ export const MESSAGES = {
     'menu.about': 'Über Libell',
     'menu.about.tab': 'Über',
     'menu.sensorSource': 'Sensorbox',
-    'menu.advanced': 'ERWEITERT',
-    'menu.others': 'SONSTIGES',
-    'menu.card.notDone': 'Nicht erledigt',
 
     'sensorSource.connect': '{name}-Sensor verbinden',
     'sensorSource.disconnect': 'Trennen',
