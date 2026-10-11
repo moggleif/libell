@@ -53,4 +53,17 @@ describe('createIndicators', () => {
     indicators.update({ settingsSaved: true, calibrated: false });
     expect(calibrationLamp!.title).toBe(t('lamp.calibrate.title'));
   });
+
+  // #349: with a box, the missing step is its zero, not a calibration, so
+  // the lamp says so in the box page's own word.
+  it('reads "Zero" while an external sensor lacks its zero, "Calibrate" for the phone', () => {
+    const indicators = createIndicators(vi.fn());
+    indicators.update({ settingsSaved: true, calibrated: false, externalSensor: true });
+    const [, calibrationLamp] =
+      indicators.element.querySelectorAll<HTMLButtonElement>('.indicators__lamp');
+    expect(calibrationLamp!.textContent).toBe(t('lamp.zero'));
+
+    indicators.update({ settingsSaved: true, calibrated: false });
+    expect(calibrationLamp!.textContent).toBe(t('lamp.calibrate'));
+  });
 });

@@ -54,6 +54,7 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
       const calibrationTitle = t(
         externalSensor ? 'lamp.calibrate.title.sensor' : 'lamp.calibrate.title',
       );
+      calibrationLamp.textContent = t(externalSensor ? 'lamp.zero' : 'lamp.calibrate');
       calibrationLamp.title = calibrationTitle;
       calibrationLamp.setAttribute('aria-label', calibrationTitle);
       if (first) {

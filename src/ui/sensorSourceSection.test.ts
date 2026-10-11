@@ -228,7 +228,7 @@ describe('createSensorSourceSection (#116)', () => {
     const button = findButton(section.element, 'Zero now');
     button.click();
     expect(button.disabled).toBe(true);
-    expect(section.element.textContent).toContain('Calibrating');
+    expect(section.element.textContent).toContain('Zeroing');
 
     answer('Could not calibrate the sensor.');
     await Promise.resolve();
