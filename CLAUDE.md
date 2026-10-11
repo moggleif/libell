@@ -11,16 +11,16 @@ and this guide has a bug — fix the guide in the same change. Clarity over clev
 
 ## Canonical sources — who owns which truth
 
-| Truth                                       | Owner                                          |
-| ------------------------------------------- | ---------------------------------------------- |
-| What the app does (behaviors, G/W/T)        | `docs/02-REQUIREMENTS.md`                      |
-| How it is built (layers, math, sensors, CI) | `docs/03-ARCHITECTURE.md`                      |
-| Why it is built that way (decisions)        | `docs/adr/`                                    |
-| How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                      |
-| Security model and reporting                | `SECURITY.md`                                  |
-| Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts` |
-| User-facing strings                         | `src/ui/i18n.ts` (sv, en, fr, es, de)          |
-| Colors                                      | CSS custom properties in `src/ui/styles.css`   |
+| Truth                                       | Owner                                            |
+| ------------------------------------------- | ------------------------------------------------ |
+| What the app does (behaviors, G/W/T)        | `docs/02-REQUIREMENTS.md`                        |
+| How it is built (layers, math, sensors, CI) | `docs/03-ARCHITECTURE.md`                        |
+| Why it is built that way (decisions)        | `docs/adr/`                                      |
+| How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                        |
+| Security model and reporting                | `SECURITY.md`                                    |
+| Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts`   |
+| User-facing strings                         | `src/ui/messages/<lang>.ts` (sv, en, fr, es, de) |
+| Colors                                      | CSS custom properties in `src/ui/styles.css`     |
 
 Never restate another document's facts — link to them. A fact written twice is a bug
 waiting to drift.
@@ -35,7 +35,8 @@ src/
 ├── data/          # settingsStore.ts (settings + calibration), easyLevelDeviceStore.ts
 │                  # (remembered EasyLevel device id, #130) — all localStorage
 ├── sensor/        # orientation.ts (DeviceMotion / DeviceOrientation)
-└── ui/            # DOM + SVG components, hamburger menu, i18n, styles
+└── ui/            # DOM + SVG components, hamburger menu, i18n (t()), styles
+    └── messages/  # one dictionary per language; en.ts defines the keys
 ```
 
 ## Non-negotiable code rules
