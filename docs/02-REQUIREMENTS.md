@@ -764,13 +764,12 @@ URL and must keep working with no signal.
   dot is the visible half of the "never leave apparently-live instructions on screen"
   guarantee; the freeze/stale-data logic that backs it is separate (#132).
 - **Given** the sensor's own page (R40), whether connected or disconnected
-- **Then** it spells out the connection state in full, and shows battery and
-  temperature as real decoded values once the first `faf52c22-...` status
-  notification has arrived — "not available yet" only in the brief window before
-  that, or before EasyLevel has ever connected (#123); that wording is honest for
-  these two, which really do arrive. These rows lived on the External sensor page
-  itself until #226 moved them here, so that battery and temperature appear in
-  exactly one place rather than on both pages.
+- **Then** it spells out the connection state in full, with the battery in its header
+  (R51) and the temperature in its debug info, as real decoded values once the first
+  `faf52c22-...` status notification has arrived — the temperature reads "not
+  available yet" only in the brief window before that, or before EasyLevel has ever
+  connected (#123). These values lived on the External sensor page itself until #226
+  moved them here, and appear in exactly one place each (#332).
 - **Given** signal strength (RSSI)
 - **Then** it is not shown at all (#228). Web Bluetooth exposes RSSI only through
   `advertisementreceived` (via `watchAdvertisements()`), never for an established
@@ -1168,8 +1167,7 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 - **Given** the External sensor page with EasyLevel as the active source
 - **When** I tap the sensor's status row ("Connected to the EasyLevel sensor" / etc.)
 - **Then** a new page opens on top, showing that sensor's connection state with its
-  battery (R51's header), the battery and temperature rows (R32's values) inside its
-  collapsed "More", and a live reading —
+  battery (R51's header) and a live reading —
   the same calibrated roll/pitch the leveling math itself uses — so a box can be
   confirmed alive by watching the number move, without leaving this page.
 - **Given** the phone's own sensor is the active source (#244)
@@ -1183,8 +1181,8 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   reports on.
 - **Given** EasyLevel is (or was) the active source
 - **Then** below those rows the same page carries this box's own setup checklist
-  (R51): its position, its direction (R43's rotations, picked by tapping a side of the
-  vehicle) and its zero (R34), showing current values whenever the page is opened. It
+  (R51): its direction (R43's rotations, picked by tapping a side of the vehicle) and
+  its zero (R34), with its position in the live line above, showing current values whenever the page is opened. It
   is the very same component the onboarding wizard embeds its position step from (#317) — never a second,
   page-specific rebuild.
 - **Given** the sensor list (R32), titled "Sensors"
@@ -1211,10 +1209,10 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   or a tilt change shows up immediately, never only after closing and reopening the
   page.
 - **Given** EasyLevel is the active source
-- **When** I expand its "Debug info" disclosure (inside "More", R51; closed by default,
+- **When** I expand its "Debug info" disclosure (last on the page, R51; closed by default,
   a native `<details>` — no separate tap-and-wait)
 - **Then** it shows raw values straight off the box, for troubleshooting a box that
-  isn't behaving as expected — not everyday reading material: the box's Web
+  isn't behaving as expected — not everyday reading material: its temperature, the box's Web
   Bluetooth device id, time since its last accepted accel notification, the raw
   accelerometer int16 triplet (`easyLevelProtocol.ts`'s unscaled x/y/z — never run
   through the leveling math), the firmware tier decoded from the status
@@ -1224,9 +1222,7 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
 - **Given** the phone's own sensor is active instead of EasyLevel
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
   show — as are the EasyLevel-only mounting and installation-offset blocks, while the
-  state/battery/temperature/reading rows above them still work, reading "Using the
-  phone's own sensor" and "not available yet" for battery/temperature (R32's exact
-  wording).
+  state and reading lines above them still work, reading "Not connected".
 - **Given** any raw debug field before its data has ever arrived (no box connected
   yet, or connected but no status/accel notification received yet)
 - **Then** it reads "not available yet" — the same wording every other not-yet-
@@ -1619,7 +1615,7 @@ present this source as more proven than it is.
   hardware, a box lying on its back changes both angles whenever it turns about its own
   axis, so no zero taken there holds
 - **When** the box's own page is open
-- **Then** its setup checklist's first step (R51) shows live whether the box stands
+- **Then** its live position line (R51) shows whether the box stands
   upright; past 45° on either axis it says the box is lying down and to stand it up,
   whichever way it faces. Libell guides and never blocks: zeroing and picking the
   direction always run, so a box that was zeroed lying down earlier is recovered by
@@ -1647,7 +1643,7 @@ present this source as more proven than it is.
 - **Then** the update is found and the app reloads into it once, without a second
   relaunch.
 
-## R51 — The box's own page: one header, a three-step setup checklist (#314)
+## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
 The #309 UX review found the box page three stacked sections of paragraphs and buttons,
 jargon ("installation offset", "raw reading"), no order, and — when the connection was
@@ -1660,17 +1656,21 @@ and what its first step checks differ, read from its descriptor's capabilities (
 - **Then** its header says the state in a few words — "Connected · battery 62 %", "No
   contact" or "Not connected" — and, whenever the box is not delivering, carries the
   one button that fixes it: **Reconnect** (lost) or **Connect** (not the active source),
-  the same device picker as everywhere else (#307). Under it, one live line: "Tilt now:
-  side-to-side X° · front-to-back Y°".
+  the same device picker as everywhere else (#307). The battery is shown there and
+  nowhere else on the page (#332).
 - **Given** the box is the active source
-- **Then** the page shows a checklist of three steps, each with a ✓ when done and only
+- **Then** under the header one live line starts with the box's position and goes on
+  with its tilt: "✓ Stands upright · Side/side 0.0° · Front/back 0.0°". A box built
+  to stand (the Xparkle box) "Stands upright" or "Lying down: stand it upright, facing
+  any way"; a box built to lie flat (the EasyLevel box) "Lies flat" or "Tilted too far:
+  lay it flat, top up". Past 45° on either axis is wrong, and the line turns to the
+  warning colour with "!" instead of "✓". It is a status line, not a step: there is
+  nothing to press (#332).
+- **Given** the box is the active source
+- **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded; every step can be opened and run at any time — guidance,
   never a gate:
-  1. **Position**, live: a box built to stand (the Xparkle box) "Stands upright" or
-     "Lying down: stand it upright, facing any way"; a box built to lie flat (the
-     EasyLevel box) "Lies flat" or "Tilted too far: lay it flat, top up". Past 45° on
-     either axis is wrong.
-  2. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
+  1. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
      from the vehicle setting — with one button at each of its four sides. Each shows
      the box turned so its reference side points out that way: the Xparkle box's back
      (the screw mount), the EasyLevel box's arrow. The user taps where it points; the
@@ -1680,17 +1680,22 @@ and what its first step checks differ, read from its descriptor's capabilities (
      mapping, the same kind the lift guide (R49, #293) learns; "Not sure? Learn it by
      raising the front" opens that guide instead. Which choice equals the Xparkle box's
      unrotated output is assumed to be "back toward the front" until checked on
-     hardware; the lift guide measures instead of assuming.
-  3. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
+     hardware; the lift guide measures instead of assuming. Once a direction has been
+     learned, a "Forget the direction" link sits in this step.
+  2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
      **Zero now** (R34; the Xparkle box zeroes itself, #290), then "Zeroed" with its age.
+     A done zero drops the first-time instruction and offers **Zero again**, with
+     **Check** and **Clear the zero** as links under it (#332).
 - **Given** the order of the steps
 - **Then** the direction comes before the zero: the direction is learned from
   differences and works anywhere, while the zero needs level ground — and leveling with
   Libell's own ramp guidance needs the direction first.
-- **Given** the rarely needed actions
-- **Then** they sit in a collapsed **More**: check the zero, clear the zero, forget the
-  direction, disconnect, the battery/temperature/box-setting rows and the debug info
-  (R40).
+- **Given** the rest of the page (#332)
+- **Then** there is no collapsed "More": each action sits in the step it belongs to.
+  Below the steps, **Disconnect** is an outline button in the warning colour, so it does
+  not read as one more setup step, and last comes the closed debug info (R40). The
+  mounting the box reports about itself is not shown: Libell sets the direction itself
+  and never depends on the vendor app.
 - **Given** an external box reads a wrong position on the main screen (R17, #285, #304)
 - **Then** the overlay says it in one sentence and one short reason ("The box is lying
   down" / "It only measures right standing up.") with one button, **Show the box**, which

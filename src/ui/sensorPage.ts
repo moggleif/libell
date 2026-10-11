@@ -106,7 +106,8 @@ export function createSensorPage(
     // never grows longer than the detail pages its chevrons lead to.
     page.body.append(section.connectElement);
     statusPage.settingsSlot.append(section.installElement);
-    statusPage.moreSlot.append(section.moreElement);
+    statusPage.footerSlot.append(section.moreElement);
+    statusPage.positionSlot.append(section.positionElement);
     sources.push({ id: sensor.id, statusPage, section });
   }
 
