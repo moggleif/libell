@@ -108,8 +108,6 @@ export interface SensorSourceOptions {
   calibrateInstall(): string | null | Promise<string | null>;
   /** When the installation offset was captured (R26) — null when unknown. */
   getInstallCalibrationCapturedAt(): number | null;
-  /** Compare the current reading against the installation offset's promise of zero — returns a verdict text (R26). */
-  checkInstallCalibration(): string;
   clearInstallCalibration(): void;
   /** Which physical mounting orientation this box is installed in (#217,
    * R43) — only rendered when the descriptor declares `mounting`. */
@@ -353,15 +351,11 @@ export function createSensorSourceSection(
   // not the first-time instruction again.
   const zeroLinks = document.createElement('div');
   zeroLinks.className = 'box-step__links';
-  const installCheckButton = document.createElement('button');
-  installCheckButton.type = 'button';
-  installCheckButton.className = 'link-button';
-  installCheckButton.textContent = t('calibration.check');
   const installClearButton = document.createElement('button');
   installClearButton.type = 'button';
   installClearButton.className = 'link-button';
   installClearButton.textContent = t('sensorSource.install.clear');
-  zeroLinks.append(installCheckButton, installClearButton);
+  zeroLinks.append(installClearButton);
   zeroStep?.body.append(zeroHint, installButton, zeroLinks, installStatus);
 
   if (directionStep) installSection.append(directionStep.element);
@@ -396,6 +390,11 @@ export function createSensorSourceSection(
   let zeroMessage: string | null = null;
 
   function refreshPosition(): void {
+    // Only this box's own reading says how it stands: while it is not the
+    // source in use, or has lost contact, the reading is the phone's or
+    // stale, so nothing is said (#343).
+    positionElement.hidden = !delivering();
+    if (!delivering()) return;
     const tilt = options.getCalibratedTilt?.() ?? null;
     if (!tilt) {
       positionTitle.textContent = t('box.step.position.waiting');
@@ -410,7 +409,23 @@ export function createSensorSourceSection(
     positionElement.classList.toggle('is-warning', !ok);
   }
 
+  /** Whether this box is the source in use and in contact — what every
+   * setup action needs (#343). */
+  function delivering(): boolean {
+    return (
+      options.getSensorSource() === options.sensor.id && options.getSensorState() !== 'disconnected'
+    );
+  }
+
   function refreshSteps(): void {
+    // Undo the offline greying first; the rules below and the pass at the
+    // end decide afresh.
+    for (const button of installSection.querySelectorAll<HTMLButtonElement>(
+      'button[data-offline]',
+    )) {
+      button.disabled = false;
+      delete button.dataset.offline;
+    }
     refreshPosition();
     const directionDone = currentFacing() !== null;
     if (directionStep) {
@@ -431,14 +446,25 @@ export function createSensorSourceSection(
       setDone(zeroStep, offset !== null, 2);
       // Done: the links instead of the first-time instruction (#332).
       zeroHint.hidden = offset !== null;
-      zeroLinks.hidden = offset === null;
+      // A box that zeroes itself keeps that zero, so there is no Libell
+      // zero to forget (#343).
+      zeroLinks.hidden = offset === null || capabilities.zeroesItself;
       installButton.textContent = t(offset ? 'box.step.zero.again' : 'sensorSource.install.now');
       installStatus.hidden = zeroMessage === null;
       installStatus.textContent = zeroMessage ?? '';
     }
     installClearButton.disabled = !offset;
-    installCheckButton.disabled = !offset;
     forgetDirectionButton.hidden = options.learnMounting?.getLearnedMounting() == null;
+    // Without the box nothing can be set: every action greyed out until it
+    // is back, while the steps still open to show what is set (#343).
+    if (!delivering()) {
+      for (const button of installSection.querySelectorAll<HTMLButtonElement>(
+        'button:not(.box-step__header):not(:disabled)',
+      )) {
+        button.disabled = true;
+        button.dataset.offline = '';
+      }
+    }
     // Expand the step opened by hand, else the next one not yet done.
     const next =
       openedByHand === null
@@ -470,11 +496,6 @@ export function createSensorSourceSection(
       zeroMessage = error;
       refreshSteps();
     });
-  });
-  installCheckButton.addEventListener('click', () => {
-    openedByHand = zeroStep?.element ?? null;
-    zeroMessage = options.checkInstallCalibration();
-    refreshSteps();
   });
   installClearButton.addEventListener('click', () => {
     options.clearInstallCalibration();
@@ -513,7 +534,12 @@ export function createSensorSourceSection(
     }
   }
 
+  // What the page was last drawn for, so a connect or a drop from anywhere
+  // (the page's own header button included) redraws it at once (#343).
+  let drawnFor = '';
+
   function refresh(): void {
+    drawnFor = `${options.getSensorSource()}|${options.getSensorState()}`;
     refreshCard();
     // This section's own source, not "any external source" (#272): with
     // more than one listed, each card answers for itself.
@@ -552,7 +578,8 @@ export function createSensorSourceSection(
     moreElement: moreSection,
     refresh,
     refreshLive: () => {
-      if (options.getSensorSource() === options.sensor.id) refreshPosition();
+      if (`${options.getSensorSource()}|${options.getSensorState()}` !== drawnFor) refresh();
+      else refreshPosition();
     },
     positionElement,
   };

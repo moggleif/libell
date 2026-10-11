@@ -113,6 +113,7 @@ describe('the EasyLevel descriptor (#262)', () => {
       reportedOrientation: false,
       learnMounting: false,
       upright: false,
+      zeroesItself: false,
     });
   });
 });

@@ -611,7 +611,6 @@ function bootstrap(root: HTMLElement): void {
         calibrateInstall: () => calibrateInstallNow(descriptor.id),
         getInstallCalibrationCapturedAt: () =>
           installOffsets.get(descriptor.id)?.capturedAt ?? null,
-        checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
         clearInstallCalibration: () => clearInstallOffset(descriptor.id),
         learnMounting: learnMountingFor(descriptor.id),
       }),
@@ -620,7 +619,6 @@ function bootstrap(root: HTMLElement): void {
       getInstallCalibration: () => installOffsetOf('easylevel'),
       calibrateInstall: () => calibrateInstallNow('easylevel'),
       getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
-      checkInstallCalibration: () => checkAgainst(installOffsetOf('easylevel')),
       clearInstallCalibration: () => clearInstallOffset('easylevel'),
       getMounting: () => easyLevelSettings(settings).mounting,
       setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
@@ -701,7 +699,6 @@ function bootstrap(root: HTMLElement): void {
     getInstallCalibration: () => installOffsetOf('easylevel'),
     calibrateInstall: () => calibrateInstallNow('easylevel'),
     getInstallCalibrationCapturedAt: () => installOffsets.get('easylevel')?.capturedAt ?? null,
-    checkInstallCalibration: () => checkAgainst(installOffsetOf('easylevel')),
     clearInstallCalibration: () => clearInstallOffset('easylevel'),
     getMounting: () => easyLevelSettings(settings).mounting,
     setMounting: (mounting: EasyLevelMounting) => setEasyLevelMounting(mounting),
@@ -797,7 +794,6 @@ function bootstrap(root: HTMLElement): void {
         calibrateInstall: () => calibrateInstallNow(descriptor.id),
         getInstallCalibrationCapturedAt: () =>
           installOffsets.get(descriptor.id)?.capturedAt ?? null,
-        checkInstallCalibration: () => checkAgainst(installOffsetOf(descriptor.id)),
         clearInstallCalibration: () => clearInstallOffset(descriptor.id),
         learnMounting: learnMountingFor(descriptor.id),
       }))

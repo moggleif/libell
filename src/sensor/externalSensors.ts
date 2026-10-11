@@ -60,6 +60,9 @@ export interface ExternalSensorCapabilities {
   /** Must be mounted standing upright, not lying flat (#304) — what the
    * pose overlay tells the user when it reads far off level. */
   upright: boolean;
+  /** Zeroes itself on command and keeps that zero (#290), so Libell has no
+   * zero of its own to forget (#343). */
+  zeroesItself: boolean;
 }
 
 /** A mounting orientation a box stores and reports itself (R49). */

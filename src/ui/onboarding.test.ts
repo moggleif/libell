@@ -65,7 +65,6 @@ function makeOptions(overrides: Partial<OnboardingOptions> = {}): OnboardingOpti
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
-    checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
     getMounting: () => 'standard',
     setMounting: () => {},

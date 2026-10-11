@@ -76,12 +76,31 @@ describe('createEasyLevelStatusPage', () => {
     expect(page.element.textContent).not.toContain('{name}');
   });
 
-  it('shows the live calibrated reading for either sensor source', () => {
+  it('shows the live calibrated reading while this box is the source in use', () => {
     const page = createEasyLevelStatusPage(
-      makeOptions({ getCalibratedTilt: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }) }),
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getCalibratedTilt: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }),
+      }),
     );
     expect(page.element.textContent).toContain('Side/side 1.2°');
     expect(page.element.textContent).toContain('Front/back -0.3°');
+  });
+
+  it('shows a dash, never the phone’s or a stale reading, while the box is not delivering (#343)', () => {
+    for (const overrides of [
+      { getSensorSource: () => 'phone' as const },
+      {
+        getSensorSource: () => 'easylevel' as const,
+        getSensorState: () => 'disconnected' as const,
+      },
+    ]) {
+      const page = createEasyLevelStatusPage(
+        makeOptions({ ...overrides, getCalibratedTilt: () => ({ rollDeg: 30.9, pitchDeg: 74.8 }) }),
+      );
+      expect(page.element.textContent).not.toContain('30.9');
+      expect(page.element.textContent).toContain(t('sensorStatus.reading', { value: '—' }));
+    }
   });
 
   it('surfaces the low-battery warning below the threshold (#123), reusing the exact inline-detail wording', () => {

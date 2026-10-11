@@ -1625,8 +1625,9 @@ present this source as more proven than it is.
   whatever the box already applies, since it is measured rather than described. The
   user never needs the vendor app for this. A lift too small to tell from noise, one
   that moved both angles about equally, or two lifts that moved the same angle are
-  refused with the reason and nothing is stored; the learned mounting can be forgotten,
-  which returns to the box's own directions.
+  refused with the reason and nothing is stored; the learned mounting can be forgotten
+  with the direction step's one "Forget the direction" link (R51; the guide has no
+  button of its own for it, #343), which returns to the box's own directions.
 - **Given** the connection to the box is lost while it stays switched on and in range
 - **When** the background auto-retry runs (R37; a Retry tap opens the picker, #307)
 - **Then** the app reconnects to the same box without the device picker (#288): a read
@@ -1712,9 +1713,20 @@ and what its first step checks differ, read from its descriptor's capabilities (
   lay it flat, top up". Past 45° on either axis is wrong, and the line turns to the
   warning colour with "!" instead of "✓". It is a status line, not a step: there is
   nothing to press (#332).
+- **Given** the box is not the source in use, or has lost contact (#343)
+- **Then** that line reads "Tilt now: —" and says nothing about the position: the only
+  reading there is the phone's or a stale one, and neither tells how the box stands. Every
+  setup action (picking the direction, the lift guide, zeroing, forgetting) is greyed out
+  until the box is back; the steps still open to show what is set. Without the box
+  there is nothing to set it with, so this is the one exception to "guidance, never a
+  gate" (Morgan, 2026-10-11).
+- **Given** the box connects or drops while its page is open — from the page's own
+  Connect/Reconnect button or anywhere else (#343)
+- **Then** the page redraws at once: Disconnect and the live actions appear, or grey
+  out, without leaving and reopening it.
 - **Given** the box is the active source
 - **Then** the page shows a checklist of two steps, each with a ✓ when done and only
-  the next undone one expanded; every step can be opened and run at any time — guidance,
+  the next undone one expanded (in a neutral frame: green means done, never "open", #343); every step can be opened and run at any time — guidance,
   never a gate:
   1. **Direction**: a top-down picture of the user's own vehicle — motorhome or caravan,
      from the vehicle setting — with one button at each of its four sides. Each shows
@@ -1731,14 +1743,14 @@ and what its first step checks differ, read from its descriptor's capabilities (
   2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
      **Zero now** (R34; the Xparkle box zeroes itself, #290), then "Zeroed" with its age.
      A done zero drops the first-time instruction and offers **Zero again**, with
-     **Check** and **Clear the zero** as links under it (#332).
+     a **Forget the zero** link under it (#332), named like "Forget the direction" so it never reads as a second zeroing; forgetting returns the box to its own factory readings. A box that zeroes itself (the Xparkle box) keeps that zero, so it has no such link (#343). There is no separate check here (#343): the live line above already shows the tilt from the zero, so on the ground where it was zeroed it reads 0.0° while the zero still holds.
 - **Given** the order of the steps
 - **Then** the direction comes before the zero: the direction is learned from
   differences and works anywhere, while the zero needs level ground — and leveling with
   Libell's own ramp guidance needs the direction first.
 - **Given** the rest of the page (#332)
 - **Then** there is no collapsed "More": each action sits in the step it belongs to.
-  Below the steps, **Disconnect** is an outline button in the warning colour, so it does
+  Below the steps, with at least a button's height of space (#343), **Disconnect** is an outline button in the warning colour, so it does
   not read as one more setup step, and last comes the closed debug info (R40). The
   mounting the box reports about itself is not shown: Libell sets the direction itself
   and never depends on the vendor app.

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
 import { setLanguage, t } from './i18n';
 import type { AxisMapping } from '../domain/axisMapping';
@@ -91,25 +91,14 @@ describe('learn the mounting in Libell (#293)', () => {
     button(section.element, t('sensorSource.learn.start'));
   });
 
-  it('forgets a learned mounting on request', () => {
-    const setLearnedMounting = vi.fn();
-    const options = makeOptions([{ pitchDeg: 0, rollDeg: 0 }], {
-      getLearnedMounting: () => ({ swap: false, pitchSign: -1, rollSign: -1 }),
-      setLearnedMounting,
-    });
-    const section = createLearnMountingSection(options);
+  it('offers no forget button of its own — the direction step has the one link (#343)', () => {
+    const section = createLearnMountingSection(
+      makeOptions([{ pitchDeg: 0, rollDeg: 0 }], {
+        getLearnedMounting: () => ({ swap: false, pitchSign: -1, rollSign: -1 }),
+      }),
+    );
     section.refresh();
     expect(section.element.textContent).toContain(t('sensorSource.learn.status.learned'));
-    button(section.element, t('sensorSource.learn.clear')).click();
-    expect(setLearnedMounting).toHaveBeenCalledWith(null);
-  });
-
-  it('hides "forget" when nothing has been learned', () => {
-    const section = createLearnMountingSection(makeOptions([{ pitchDeg: 0, rollDeg: 0 }]));
-    section.refresh();
-    const clear = [...section.element.querySelectorAll('button')].find(
-      (b) => b.textContent === t('sensorSource.learn.clear'),
-    );
-    expect(clear?.hidden).toBe(true);
+    expect(section.element.querySelectorAll('button')).toHaveLength(4);
   });
 });

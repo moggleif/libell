@@ -185,6 +185,7 @@ export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
     reportedOrientation: false,
     learnMounting: false,
     upright: false,
+    zeroesItself: false,
   },
   // Notifications are event-driven, not a fixed clock — a connection-
   // interval hiccup or a slow packet can legitimately create a larger gap

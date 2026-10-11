@@ -138,8 +138,9 @@ export function createSensorPage(
     refreshLive: () => {
       for (const source of sources) {
         if (!source.statusPage.isOpen()) continue;
-        source.statusPage.refresh();
+        // The position first: the status page's live line starts with it.
         source.section.refreshLive();
+        source.statusPage.refresh();
       }
     },
   };
