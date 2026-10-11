@@ -393,11 +393,8 @@ export function createSensorSourceSection(
     // Only this box's own reading says how it stands: while it is not the
     // source in use, or has lost contact, the reading is the phone's or
     // stale, so nothing is said (#343).
-    const delivering =
-      options.getSensorSource() === options.sensor.id &&
-      options.getSensorState() !== 'disconnected';
-    positionElement.hidden = !delivering;
-    if (!delivering) return;
+    positionElement.hidden = !delivering();
+    if (!delivering()) return;
     const tilt = options.getCalibratedTilt?.() ?? null;
     if (!tilt) {
       positionTitle.textContent = t('box.step.position.waiting');
@@ -412,7 +409,23 @@ export function createSensorSourceSection(
     positionElement.classList.toggle('is-warning', !ok);
   }
 
+  /** Whether this box is the source in use and in contact — what every
+   * setup action needs (#343). */
+  function delivering(): boolean {
+    return (
+      options.getSensorSource() === options.sensor.id && options.getSensorState() !== 'disconnected'
+    );
+  }
+
   function refreshSteps(): void {
+    // Undo the offline greying first; the rules below and the pass at the
+    // end decide afresh.
+    for (const button of installSection.querySelectorAll<HTMLButtonElement>(
+      'button[data-offline]',
+    )) {
+      button.disabled = false;
+      delete button.dataset.offline;
+    }
     refreshPosition();
     const directionDone = currentFacing() !== null;
     if (directionStep) {
@@ -442,6 +455,16 @@ export function createSensorSourceSection(
     }
     installClearButton.disabled = !offset;
     forgetDirectionButton.hidden = options.learnMounting?.getLearnedMounting() == null;
+    // Without the box nothing can be set: every action greyed out until it
+    // is back, while the steps still open to show what is set (#343).
+    if (!delivering()) {
+      for (const button of installSection.querySelectorAll<HTMLButtonElement>(
+        'button:not(.box-step__header):not(:disabled)',
+      )) {
+        button.disabled = true;
+        button.dataset.offline = '';
+      }
+    }
     // Expand the step opened by hand, else the next one not yet done.
     const next =
       openedByHand === null
@@ -511,7 +534,12 @@ export function createSensorSourceSection(
     }
   }
 
+  // What the page was last drawn for, so a connect or a drop from anywhere
+  // (the page's own header button included) redraws it at once (#343).
+  let drawnFor = '';
+
   function refresh(): void {
+    drawnFor = `${options.getSensorSource()}|${options.getSensorState()}`;
     refreshCard();
     // This section's own source, not "any external source" (#272): with
     // more than one listed, each card answers for itself.
@@ -549,7 +577,10 @@ export function createSensorSourceSection(
     installElement: installSection,
     moreElement: moreSection,
     refresh,
-    refreshLive: refreshPosition,
+    refreshLive: () => {
+      if (`${options.getSensorSource()}|${options.getSensorState()}` !== drawnFor) refresh();
+      else refreshPosition();
+    },
     positionElement,
   };
 }

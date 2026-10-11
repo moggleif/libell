@@ -500,6 +500,50 @@ describe('the position step, live (#304, #314)', () => {
     expect(findButton(section.installElement, 'Zero now').disabled).toBe(false);
   });
 
+  it('greys out every setup action while the box has no contact, and brings them back with it (#343)', () => {
+    let state: 'granted' | 'disconnected' = 'disconnected';
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getSensorState: () => state,
+        learnMounting: {
+          getRawReading: () => null,
+          getLearnedMounting: () => null,
+          setLearnedMounting: () => {},
+        },
+      }),
+    );
+    const zero = findButton(section.installElement, 'Zero now');
+    const picker = section.installElement.querySelector<HTMLButtonElement>(
+      '.mounting-picker__button',
+    )!;
+    expect(zero.disabled).toBe(true);
+    expect(picker.disabled).toBe(true);
+    // The steps still open, to show what is set.
+    for (const header of section.installElement.querySelectorAll<HTMLButtonElement>(
+      '.box-step__header',
+    )) {
+      expect(header.disabled).toBe(false);
+    }
+    state = 'granted';
+    section.refreshLive();
+    expect(zero.disabled).toBe(false);
+    expect(picker.disabled).toBe(false);
+  });
+
+  it('shows Disconnect as soon as the box connects, without reopening the page (#343)', () => {
+    let source: 'phone' | 'xparkle' = 'phone';
+    const section = createSensorSourceSection(
+      makeOptions({ sensor: XPARKLE_DESCRIPTOR, getSensorSource: () => source }),
+    );
+    expect(section.moreElement.hidden).toBe(true);
+    source = 'xparkle';
+    section.refreshLive();
+    expect(section.moreElement.hidden).toBe(false);
+    expect(findButton(section.moreElement, 'Disconnect').hidden).toBe(false);
+  });
+
   it('says nothing about the position while the box is not delivering — no guess from the phone (#343)', () => {
     for (const overrides of [
       { getSensorSource: () => 'phone' as const },

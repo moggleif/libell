@@ -3531,6 +3531,12 @@ button.box-step__header {
   margin-top: 0;
 }
 
+/* Greyed out while the box is not connected (#343). */
+.box-step button:disabled:not(.menu__action) {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .box-step .link-button {
   display: block;
   margin: 4px auto 0;

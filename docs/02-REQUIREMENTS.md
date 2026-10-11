@@ -1669,7 +1669,15 @@ and what its first step checks differ, read from its descriptor's capabilities (
   nothing to press (#332).
 - **Given** the box is not the source in use, or has lost contact (#343)
 - **Then** that line reads "Tilt now: —" and says nothing about the position: the only
-  reading there is the phone's or a stale one, and neither tells how the box stands.
+  reading there is the phone's or a stale one, and neither tells how the box stands. Every
+  setup action (picking the direction, the lift guide, zeroing, forgetting) is greyed out
+  until the box is back; the steps still open to show what is set. Without the box
+  there is nothing to set it with, so this is the one exception to "guidance, never a
+  gate" (Morgan, 2026-10-11).
+- **Given** the box connects or drops while its page is open — from the page's own
+  Connect/Reconnect button or anywhere else (#343)
+- **Then** the page redraws at once: Disconnect and the live actions appear, or grey
+  out, without leaving and reopening it.
 - **Given** the box is the active source
 - **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded (in a neutral frame: green means done, never "open", #343); every step can be opened and run at any time — guidance,
