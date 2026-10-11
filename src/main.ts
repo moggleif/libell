@@ -11,15 +11,8 @@ import { computeCaravanLeveling, createCaravanStabilizer } from './domain/carava
 import { combineCalibrations } from './domain/calibration';
 import { createDisplayStabilizer } from './domain/stability';
 import { deficitMagnitude } from './domain/rampPlan';
-import type { GuidanceDirection } from './domain/audioGuidance';
 import { createCaravanDiagram } from './ui/caravanDiagram';
-import {
-  easyLevelSettings,
-  formatLength,
-  toggleMute,
-  type LevelSettings,
-  type SoundPrefs,
-} from './domain/settings';
+import { easyLevelSettings, formatLength, type LevelSettings } from './domain/settings';
 import {
   applyVehicleGeometry,
   decodeVehicleGeometry,
@@ -103,6 +96,8 @@ import {
 import { createLevelFrame, type EngineTick } from './app/levelFrame';
 import { createTargets } from './app/targets';
 import { calibratedTilt, readTilt } from './app/tiltReading';
+import { createMuteToggle, createSound } from './app/sound';
+import { attachMuteButton } from './ui/muteButton';
 
 // Clickjacking guard (#67): GitHub Pages cannot send response headers and
 // browsers ignore `frame-ancestors` in a <meta>-delivered CSP (ADR 0005),
@@ -189,55 +184,6 @@ function createDemoSensor(): ReturnType<typeof createOrientationSensor> {
     // the screenshot generator must never show the stale-data overlay.
     getLastSampleAt: () => performance.now(),
   };
-}
-
-// Short two-tone chime via WebAudio — no asset needed. The context is
-// created lazily on the save gesture that enables the sound, which also
-// satisfies autoplay policies.
-let audioCtx: AudioContext | null = null;
-export function unlockAudio(): void {
-  if (!audioCtx && typeof AudioContext !== 'undefined') audioCtx = new AudioContext();
-  void audioCtx?.resume();
-}
-function playChime(): void {
-  if (!audioCtx) return;
-  const now = audioCtx.currentTime;
-  for (const [freq, at] of [
-    [880, 0],
-    [1174.7, 0.18],
-  ] as const) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.001, now + at);
-    gain.gain.exponentialRampToValueAtTime(0.2, now + at + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + at + 0.35);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start(now + at);
-    osc.stop(now + at + 0.4);
-  }
-}
-
-// Continuous audio guidance pulse (#121) — a short, soft tone at the pitch
-// the domain layer computed from the stabilized distance, with a brief
-// glide up (improving) or down (worsening) that reads as directional
-// without being alarming. Deliberately quieter and shorter than the
-// two-tone completion chime above so the two never get confused.
-function playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void {
-  if (!audioCtx) return;
-  const now = audioCtx.currentTime;
-  const durationS = 0.09;
-  const glide = direction === 'improving' ? 1.15 : direction === 'worsening' ? 1 / 1.15 : 1;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.setValueAtTime(pitchHz, now);
-  osc.frequency.linearRampToValueAtTime(pitchHz * glide, now + durationS);
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + durationS);
-  osc.connect(gain).connect(audioCtx.destination);
-  osc.start(now);
-  osc.stop(now + durationS + 0.02);
 }
 
 // Started only once every top-level const/function above it is actually
@@ -353,6 +299,7 @@ function bootstrap(root: HTMLElement): void {
   };
   // Debug-only (#212), from the EasyLevel page's debug disclosure; the
   // transport reads `settings` live, so it applies on the next connect.
+  const sound = createSound();
   const setEasyLevelConnectDelay = (enabled: boolean, ms: number) =>
     settingsAccess.set(withEasyLevelConnectDelay(settings, enabled, ms));
 
@@ -478,7 +425,7 @@ function bootstrap(root: HTMLElement): void {
       applyAppearance(settings.appearance);
       // A settings change comes from a tap, a user gesture — the right moment to unlock
       // audio for the opt-in level chime and/or continuous guidance.
-      if (settings.soundOnLevel || settings.soundGuidance) unlockAudio();
+      if (settings.soundOnLevel || settings.soundGuidance) sound.unlock();
       updateIndicators();
       maybeRebuildScreen();
     },
@@ -629,36 +576,15 @@ function bootstrap(root: HTMLElement): void {
     else sensorPage?.open();
   }
 
-  // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
-  // from the bottom bar without opening the menu. `preMuteSound` is the
-  // exact prior values to restore on unmute — see domain/settings.ts's
-  // toggleMute for why this is a pure, unit-tested function rather than
-  // logic inlined here.
-  let preMuteSound: SoundPrefs | null = null;
-  const soundButton = document.querySelector<HTMLButtonElement>('#sound-button');
-  const soundIconWaves = document.querySelector<SVGPathElement>('#sound-icon-waves');
-  const soundIconMute = document.querySelector<SVGPathElement>('#sound-icon-mute');
-  function updateSoundButton(): void {
-    const muted = preMuteSound !== null;
-    soundButton?.classList.toggle('bottombar__button--muted', muted);
-    soundButton?.setAttribute(
-      'aria-label',
-      t(muted ? 'bottombar.sound.unmute' : 'bottombar.sound.mute'),
-    );
-    soundIconWaves?.toggleAttribute('hidden', muted);
-    soundIconMute?.toggleAttribute('hidden', !muted);
-  }
-  soundButton?.addEventListener('click', () => {
-    const result = toggleMute(settings, preMuteSound);
-    settings = { ...settings, ...result.settings };
-    preMuteSound = result.preMute;
-    saveSettings(settings);
-    // Unmuting is itself a real user gesture — the same unlock the
-    // Settings-save path already performs when sound ends up on.
-    if (settings.soundOnLevel || settings.soundGuidance) unlockAudio();
-    updateSoundButton();
-  });
-  updateSoundButton();
+  // Mute (#161): a single toggle for both sounds, in the bottom bar.
+  attachMuteButton(
+    {
+      button: document.querySelector<HTMLButtonElement>('#sound-button'),
+      waves: document.querySelector<SVGPathElement>('#sound-icon-waves'),
+      mute: document.querySelector<SVGPathElement>('#sound-icon-mute'),
+    },
+    createMuteToggle(settingsAccess, sound.unlock).toggle,
+  );
 
   // Dashboard-style warning lamps. Demo mode presents as a configured
   // app (in memory only — nothing is written), so screenshots and demos
@@ -957,7 +883,7 @@ function bootstrap(root: HTMLElement): void {
       isLandscape: () => landscape.matches,
       isVisible: () => document.visibilityState === 'visible',
       settings: () => settings,
-      playGuidancePulse,
+      playGuidancePulse: sound.playGuidancePulse,
       view: {
         pause() {
           poseOverlay.hidden = true;
@@ -996,7 +922,7 @@ function bootstrap(root: HTMLElement): void {
         },
         celebrate() {
           if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-          if (settings.soundOnLevel) playChime();
+          if (settings.soundOnLevel) sound.playChime();
           levelOverlay.celebrate();
         },
         hideCelebration: () => levelOverlay.hideNow(),
