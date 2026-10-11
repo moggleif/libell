@@ -20,10 +20,7 @@ import {
   easyLevelSettings,
   formatLength,
   toggleMute,
-  type Calibration,
-  type EasyLevelMounting,
   type LevelSettings,
-  type SensorSource,
   type SoundPrefs,
 } from './domain/settings';
 import {
@@ -87,13 +84,9 @@ import { showOnboarding } from './ui/onboarding';
 import { resolveLanguage, setLanguage, t } from './ui/i18n';
 import {
   createExternalSensor,
-  externalCalibrationStateFor,
   hasPersistentDeviceAccess,
   healthOf,
   isRememberedDeviceUsable,
-  learnMountingFor,
-  passwordFor,
-  pickEasyLevelMounting,
   withEasyLevelConnectDelay,
   type BoxWiring,
   type LibellExternalSensor,
@@ -102,6 +95,16 @@ import {
 import { createInstallOffsets } from './app/installOffsets';
 import { createBoxZeroing } from './app/boxZero';
 import { createPhoneCalibration } from './app/phoneCalibration';
+import {
+  boxConnectionOptions,
+  boxSetupOptions,
+  boxStatusOptions,
+  calibrationOptions,
+  easyLevelMountingOptions,
+  sensorSourceOptions,
+  targetOptions,
+  type MenuOptionDeps,
+} from './app/menuOptionParts';
 import { createTargets } from './app/targets';
 import { calibratedTilt, readTilt } from './app/tiltReading';
 
@@ -352,9 +355,6 @@ function bootstrap(root: HTMLElement): void {
     getSensor: (source) => externalSensors.getSensor(source),
     onMountingChanged: () => updateIndicators(),
   };
-  const boxHealth = (source: SensorSource) => healthOf(source, externalSensors.getSensor(source));
-  const setEasyLevelMounting = (mounting: EasyLevelMounting | null) =>
-    pickEasyLevelMounting(mounting, boxWiring);
   // Debug-only (#212), from the EasyLevel page's debug disclosure; the
   // transport reads `settings` live, so it applies on the next connect.
   const setEasyLevelConnectDelay = (enabled: boolean, ms: number) =>
@@ -405,6 +405,27 @@ function bootstrap(root: HTMLElement): void {
   // celebration cannot nag over the page.
   let onboardingOpen = false;
 
+  // The option groups the wizard, the menu and the box pages share,
+  // built once so no field is wired two ways (#374).
+  const optionDeps: MenuOptionDeps = {
+    activeSensor: () => sensor(),
+    readTilt: readTiltNow,
+    phoneCalibration,
+    boxZero,
+    installOffsets,
+    targets,
+    externalSensors,
+    boxWiring,
+  };
+  const calibration = calibrationOptions(optionDeps);
+  const sensorSource = sensorSourceOptions(optionDeps);
+  // The top-level box fields are EasyLevel's: connection and mounting
+  // only, never another box's password or guide.
+  const easyLevelBox = {
+    ...boxConnectionOptions(EASYLEVEL_DESCRIPTOR, optionDeps),
+    ...easyLevelMountingOptions(boxWiring),
+  };
+
   // First-run wizard: placement, measurements, calibration. Skippable —
   // the warning lamps stay lit for whatever was skipped (#43).
   const openOnboarding = () => {
@@ -419,53 +440,22 @@ function bootstrap(root: HTMLElement): void {
         updateIndicators();
         maybeRebuildScreen();
       },
-      getCalibration: () => phoneCalibration.bias(),
-      isPhoneActive: () => sensor().getSource() === 'phone',
-      getExternalSensor: () => externalCalibrationStateFor(sensor().getSource(), installOffsets),
-      calibrateExternalSensor: () => boxZero.zero(sensor().getSource()),
-      calibrate: () => phoneCalibration.calibrate(),
-      readTilt: readTiltNow,
-      applyCalibration: (next) => phoneCalibration.applyBias(next),
-      clearCalibration: () => phoneCalibration.clearBias(),
-      getVehicleCalibration: () => phoneCalibration.vehicleZero(),
-      getCalibrationCapturedAt: () => phoneCalibration.biasCapturedAt(),
-      getVehicleCalibrationCapturedAt: () => phoneCalibration.vehicleZeroCapturedAt(),
-      checkCalibration: () => phoneCalibration.checkBias(),
-      checkVehicleCalibration: () => phoneCalibration.checkZero(),
-      calibrateVehicle: () => phoneCalibration.zeroVehicle(),
-      clearVehicleCalibration: () => phoneCalibration.clearVehicleZero(),
+      ...calibration,
       // Sensor source choice (#135, ADR 0014): same fields, same
       // callbacks as `createMenu` below wires up — the wizard's
       // external-sensor step embeds the exact same `sensorSourceSection`
       // component the real menu page uses, never a duplicate.
-      getSensorSource: () => sensor().getSource(),
-      getSensorState: () => sensor().getState(),
+      ...sensorSource,
       // The onboarding wizard offers one external source; #268's list
       // page is where more than one becomes visible.
-      sensor: EASYLEVEL_DESCRIPTOR,
+      ...easyLevelBox,
       // With more than one box available the wizard offers them all
       // rather than picking one for the user (#272).
       sensorOptionsFor: (descriptor: ExternalSensorDescriptor) => ({
         ...menuOptions,
-        sensor: descriptor,
-        connectSensor: () => externalSensors.connect(descriptor.id),
-        disconnectSensor: () => externalSensors.disconnect(),
-        password: passwordFor(descriptor.id, boxWiring),
-        getInstallCalibration: () => installOffsets.valueOf(descriptor.id),
-        calibrateInstall: () => boxZero.zero(descriptor.id),
-        getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf(descriptor.id),
-        clearInstallCalibration: () => boxZero.clear(descriptor.id),
-        learnMounting: learnMountingFor(descriptor.id, boxWiring),
+        ...boxConnectionOptions(descriptor, optionDeps),
+        ...boxSetupOptions(descriptor, optionDeps),
       }),
-      connectSensor: () => externalSensors.connect('easylevel'),
-      disconnectSensor: () => externalSensors.disconnect(),
-      getInstallCalibration: () => installOffsets.valueOf('easylevel'),
-      calibrateInstall: () => boxZero.zero('easylevel'),
-      getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf('easylevel'),
-      clearInstallCalibration: () => boxZero.clear('easylevel'),
-      getMounting: () => easyLevelSettings(settings).mounting,
-      isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
-      setMounting: setEasyLevelMounting,
       onFinished(done, path) {
         onboardingOpen = false;
         markOnboardingSeen();
@@ -496,47 +486,19 @@ function bootstrap(root: HTMLElement): void {
       updateIndicators();
       maybeRebuildScreen();
     },
-    getCalibration: () => phoneCalibration.bias(),
-    isPhoneActive: () => sensor().getSource() === 'phone',
-    getExternalSensor: () => externalCalibrationStateFor(sensor().getSource(), installOffsets),
-    calibrateExternalSensor: () => boxZero.zero(sensor().getSource()),
+    ...calibration,
     // Declared further down; only ever called after start-up (#316).
     openExternalSensor: () => {
       const source = sensor().getSource();
       if (source !== 'phone') externalSensorPage?.openSource(source);
     },
-    calibrate: () => phoneCalibration.calibrate(),
-    readTilt: readTiltNow,
-    applyCalibration: (next: Calibration) => phoneCalibration.applyBias(next),
-    clearCalibration: () => phoneCalibration.clearBias(),
-    getVehicleCalibration: () => phoneCalibration.vehicleZero(),
-    getCalibrationCapturedAt: () => phoneCalibration.biasCapturedAt(),
-    getVehicleCalibrationCapturedAt: () => phoneCalibration.vehicleZeroCapturedAt(),
-    checkCalibration: () => phoneCalibration.checkBias(),
-    checkVehicleCalibration: () => phoneCalibration.checkZero(),
-    calibrateVehicle: () => phoneCalibration.zeroVehicle(),
-    clearVehicleCalibration: () => phoneCalibration.clearVehicleZero(),
-    getTargetPresets: () => targets.presets(),
-    getActiveTargetId: () => targets.activeId(),
-    selectTarget: (id: string | null) => targets.select(id),
-    addTargetPreset: (name: string) => targets.add(name),
-    deleteTargetPreset: (id: string) => targets.remove(id),
-    getSensorSource: () => sensor().getSource(),
-    getSensorState: () => sensor().getState(),
-    sensor: EASYLEVEL_DESCRIPTOR,
-    connectSensor: () => externalSensors.connect('easylevel'),
-    disconnectSensor: () => externalSensors.disconnect(),
-    getInstallCalibration: () => installOffsets.valueOf('easylevel'),
-    calibrateInstall: () => boxZero.zero('easylevel'),
-    getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf('easylevel'),
-    clearInstallCalibration: () => boxZero.clear('easylevel'),
-    getMounting: () => easyLevelSettings(settings).mounting,
-    isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
-    setMounting: setEasyLevelMounting,
+    ...targetOptions(targets),
+    ...sensorSource,
+    ...easyLevelBox,
     getCalibratedTilt: () => calibratedTilt(sensor(), effectiveCalibration()),
     getVehicleType: () => settings.vehicleType,
     getActiveTargetName: () => targets.activeName(),
-    getHealth: () => boxHealth('easylevel'),
+    getHealth: () => healthOf('easylevel', externalSensors.getSensor('easylevel')),
     // Raw status bytes are EasyLevel's own debug surface, gated by its
     // descriptor's `debugBytes` capability (#268) — a source without them
     // never draws the row.
@@ -615,21 +577,9 @@ function bootstrap(root: HTMLElement): void {
       // controls.
       createSensorPage(availableExternalSensors(), (descriptor) => ({
         ...menuOptions,
-        sensor: descriptor,
-        connectSensor: () => externalSensors.connect(descriptor.id),
-        disconnectSensor: () => externalSensors.disconnect(),
-        getHealth: () => boxHealth(descriptor.id),
-        getDeviceId: () => externalSensors.getSensor(descriptor.id)?.getDeviceId() ?? null,
-        getLastSampleAt: () => externalSensors.getSensor(descriptor.id)?.getLastSampleAt() ?? null,
-        getRawAccel: () => externalSensors.getSensor(descriptor.id)?.getGravity() ?? null,
-        password: passwordFor(descriptor.id, boxWiring),
-        // Each source's installation offset is its own (#263): where one
-        // box is bolted in says nothing about where another is.
-        getInstallCalibration: () => installOffsets.valueOf(descriptor.id),
-        calibrateInstall: () => boxZero.zero(descriptor.id),
-        getInstallCalibrationCapturedAt: () => installOffsets.capturedAtOf(descriptor.id),
-        clearInstallCalibration: () => boxZero.clear(descriptor.id),
-        learnMounting: learnMountingFor(descriptor.id, boxWiring),
+        ...boxConnectionOptions(descriptor, optionDeps),
+        ...boxStatusOptions(descriptor, optionDeps),
+        ...boxSetupOptions(descriptor, optionDeps),
       }))
     : null;
   const sensorPage = externalSensorPage ?? (showIosGuide ? createIosSensorGuidePage() : null);

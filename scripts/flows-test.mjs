@@ -4,7 +4,9 @@
 // its password, its debug knob, and the silent reconnect after a reload,
 // against the simulated boxes (`?xparkle-sim`, `?easylevel-sim`). For the
 // phone: calibrating, zeroing and checking it, and target presets, against
-// `?demo`'s fixed tilt. None of it needs hardware or Web Bluetooth.
+// `?demo`'s fixed tilt. Settings' Calibration tab while a box is in use. For the first-run wizard: its phone calibration
+// and its box path, connected or not. None of it needs hardware or Web
+// Bluetooth.
 //
 // It exists to pin today's behaviour while `main.ts` is split into
 // modules: the unit tests reach each module, but only a whole running app
@@ -26,7 +28,8 @@ function assert(condition, message) {
 }
 
 /** A fresh page, past the first-run wizard, in English, with `seed`
- * written to localStorage before the app first reads it. */
+ * written to localStorage before the app first reads it (a null value
+ * removes the key). */
 async function openApp(browser, query, seed = {}) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
@@ -37,7 +40,10 @@ async function openApp(browser, query, seed = {}) {
     sessionStorage.setItem('flows.seeded', '1');
     localStorage.setItem('libell.onboarded', '1');
     localStorage.setItem('libell.language', 'en');
-    for (const [key, value] of Object.entries(extra)) localStorage.setItem(key, value);
+    for (const [key, value] of Object.entries(extra)) {
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    }
   }, seed);
   await page.goto(`${BASE}?${query}`);
   return { context, page, errors };
@@ -357,6 +363,146 @@ async function targetsFlow(browser) {
   await context.close();
 }
 
+async function settingsBoxFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'easylevel-sim');
+  await page.click('.sensor-status');
+  const list = page.locator('.menu-page.is-visible').first();
+  await button(list, 'Connect').click();
+  await list.getByText('Connected', { exact: true }).waitFor();
+  await closeAllPages(page);
+
+  // With a box in use, Settings' Calibration tab zeroes the box.
+  const settings = await openSettingsTab(page, 'calibration');
+  await settings.getByText('Not zeroed yet', { exact: false }).waitFor();
+  await button(settings, 'Zero now').click();
+  await eventually(
+    async () => (await storage(page, 'libell.installCalibration.easylevel')) !== null,
+    "Settings' Zero now should store the box's zero",
+    5000,
+  );
+
+  // And its link opens the box's own page.
+  await button(settings, 'Show the box').click();
+  await boxPage(page).getByText('EasyLevel sensor').waitFor();
+
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+const wizard = (page) => page.locator('.onboarding');
+
+/** Tap the wizard's Next until the step titled `heading` shows. */
+async function nextUntil(page, heading) {
+  for (let step = 0; step < 15; step += 1) {
+    const title = await wizard(page).locator('.onboarding__title').textContent();
+    if (title.startsWith(heading)) return;
+    await button(wizard(page), /^Next$/).click();
+    await page.waitForTimeout(100);
+  }
+  assert(false, `the wizard never reached "${heading}"`);
+}
+
+/** Tap Next to the end, then Done. */
+async function finishWizard(page) {
+  while ((await button(wizard(page), /^Next$/).count()) > 0) {
+    await button(wizard(page), /^Next$/).click();
+    await page.waitForTimeout(100);
+  }
+  await button(wizard(page), /^Done$/).click();
+  await wizard(page).waitFor({ state: 'detached' });
+}
+
+async function wizardPhoneFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'demo');
+  // Demo never opens the wizard by itself; Help does.
+  await page.click('#help-button');
+  await button(page.locator('.menu-page.is-visible'), 'Show introduction').click();
+  await nextUntil(page, 'Calibrate the phone');
+
+  // Flip calibration hands its result back through the wizard's options.
+  // The first tap captures, the second after the half turn.
+  await button(wizard(page), 'Calibrate by flipping').click();
+  await wizard(page).getByText('Now rotate the phone half a turn', { exact: false }).waitFor();
+  await button(wizard(page), 'Capture').click();
+  await wizard(page).getByText('Done! Your surface leans 0.0° — cancelled out.').waitFor();
+  const calibration = JSON.parse(await storage(page, 'libell.calibration'));
+  assert(
+    near(calibration.rollDeg, DEMO_ROLL) && near(calibration.pitchDeg, DEMO_PITCH),
+    `flip calibration should store the demo tilt, got ${JSON.stringify(calibration)}`,
+  );
+
+  await finishWizard(page);
+  assert(
+    (await storage(page, 'libell.onboardingDone')) === '1',
+    'finishing the wizard should mark it done',
+  );
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+/** The wizard's box path; `connect` decides whether a box is connected. */
+async function wizardBoxFlow(browser, connect) {
+  const { context, page, errors } = await openApp(browser, 'xparkle-sim', {
+    'libell.onboarded': null,
+  });
+  await nextUntil(page, 'How do you want to measure?');
+  await wizard(page).getByText('Sensor box', { exact: true }).click();
+  await nextUntil(page, 'Sensor box');
+  if (connect) {
+    await button(wizard(page), 'Connect').click();
+    await wizard(page).getByText('Connected', { exact: true }).waitFor();
+  }
+  await nextUntil(page, "The box's position");
+  if (connect) {
+    await eventually(
+      async () => (await wizard(page).textContent()).includes('Stands upright'),
+      "the wizard should show the connected box's live position",
+    );
+  } else {
+    await wizard(page).getByText('No box is connected yet', { exact: false }).waitFor();
+  }
+  await finishWizard(page);
+
+  // A box chosen but not connected keeps the lamp asking for it (#365).
+  assert(
+    (await storage(page, 'libell.boxPending')) === (connect ? null : '1'),
+    `the box should ${connect ? 'not ' : ''}be pending after the wizard`,
+  );
+  await eventually(
+    async () => (await lamps(page)).includes('⚠ Zero'),
+    'the lamp should ask for the box zero after the wizard',
+  );
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+// The wizard's box step is the same card as the box page, password and all.
+async function wizardPasswordFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'xparkle-sim=badpassword', {
+    'libell.onboarded': null,
+  });
+  await nextUntil(page, 'How do you want to measure?');
+  await wizard(page).getByText('Sensor box', { exact: true }).click();
+  await nextUntil(page, 'Sensor box');
+  await button(wizard(page), 'Connect').click();
+  await wizard(page).getByText('Connected', { exact: true }).waitFor();
+  // The connect step is drawn once, so the verdict that arrives after the
+  // connect shows when the step is drawn again.
+  await button(wizard(page), 'Next').click();
+  await button(wizard(page), 'Back').click();
+  const password = wizard(page).locator('.box-password');
+  await password.waitFor();
+  await password.locator('input').fill('1234');
+  await button(password, '').click();
+  await password.waitFor({ state: 'hidden' });
+  assert(
+    (await storedSettings(page)).sensorDevices.xparkle.password === '1234',
+    'a password typed in the wizard should be kept for later connects',
+  );
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
   cwd: root,
   stdio: 'ignore',
@@ -382,8 +528,13 @@ try {
   await phoneCalibrationFlow(browser);
   await phoneCheckOffFlow(browser);
   await targetsFlow(browser);
+  await settingsBoxFlow(browser);
+  await wizardPhoneFlow(browser);
+  await wizardBoxFlow(browser, true);
+  await wizardBoxFlow(browser, false);
+  await wizardPasswordFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password',
   );
 } finally {
   await browser?.close();
