@@ -24,6 +24,7 @@ import {
   formatLength,
   formatLengthValue,
   MAX_RAMP_COUNT,
+  measurementsDiffer,
   parseSettings,
   type AppearanceSetting,
   type AxleConfig,
@@ -34,6 +35,7 @@ import {
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
 import {
   saveSettings,
+  markMeasurementsSaved,
   loadSettings,
   loadLanguage,
   saveLanguage,
@@ -1364,6 +1366,10 @@ export function createSettingsForm(
   let saved = initial;
   let undoToast: HTMLElement | null = null;
   const persist = (settings: LevelSettings): void => {
+    // The ⚠ Setup lamp goes out with the measurements, not with any save
+    // (#364): a changed measurement, or the wizard's measurements step
+    // confirmed with Next even if the values shown were kept.
+    if (compact === 'measurements' || measurementsDiffer(saved, settings)) markMeasurementsSaved();
     saveSettings(settings);
     saved = settings;
     onSave(settings);
