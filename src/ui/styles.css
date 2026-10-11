@@ -3471,8 +3471,9 @@ body {
   background: var(--surface-raised);
 }
 
+/* Open is not done: a neutral border, so only a ✓ is green (#343). */
 .box-step.is-open {
-  border-color: var(--level);
+  border-color: var(--on-surface-muted);
 }
 
 .box-step.is-warning {
@@ -3567,8 +3568,9 @@ button.box-step__header {
 }
 
 /* Disconnect at the foot of the box page (#332), in the warning colour. */
+/* At least a button's height above Disconnect, apart from the steps (#343). */
 .box-footer {
-  margin-top: 20px;
+  margin-top: 56px;
 }
 
 .box-footer__actions[hidden] {

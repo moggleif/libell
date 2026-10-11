@@ -18,7 +18,6 @@ function makeOptions(overrides: Partial<SensorSourceOptions> = {}): SensorSource
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
-    checkInstallCalibration: () => '',
     clearInstallCalibration: () => {},
     getMounting: () => 'standard',
     setMounting: () => {},
@@ -164,7 +163,7 @@ describe('createSensorSourceSection (#116)', () => {
     expect(section.installElement.textContent).toContain('14 days ago');
   });
 
-  it('drops the first-time instruction once zeroed, offering Zero again with Check and Clear as links (#332)', () => {
+  it('drops the first-time instruction once zeroed, offering Zero again with Forget the zero as a link (#332, #343)', () => {
     const section = createSensorSourceSection(
       makeOptions({
         getSensorSource: () => 'easylevel',
@@ -178,11 +177,26 @@ describe('createSensorSourceSection (#116)', () => {
     expect(findButton(section.installElement, 'Zero again').hidden).toBe(false);
     const links = section.installElement.querySelector<HTMLElement>('.box-step__links');
     expect(links?.hidden).toBe(false);
-    expect(findButton(links!, 'Check').classList.contains('link-button')).toBe(true);
-    expect(findButton(links!, 'Clear the zero').classList.contains('link-button')).toBe(true);
+    // No separate check: the live line above already shows the tilt from the zero (#343).
+    expect(links?.textContent).toBe('Forget the zero');
+    expect(findButton(links!, 'Forget the zero').classList.contains('link-button')).toBe(true);
   });
 
-  it('keeps Check and Clear out of the way before the first zero (#332)', () => {
+  it('offers no Forget the zero for a box that zeroes itself — it keeps its own zero (#343)', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getInstallCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }),
+      }),
+    );
+    expect(findButton(section.installElement, 'Zero again').hidden).toBe(false);
+    expect(section.installElement.querySelector<HTMLElement>('.box-step__links')?.hidden).toBe(
+      true,
+    );
+  });
+
+  it('keeps Forget the zero out of the way before the first zero (#332)', () => {
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => null }),
     );
@@ -234,38 +248,29 @@ describe('createSensorSourceSection (#116)', () => {
     expect(section.element.textContent).toContain('more than placement tilt');
   });
 
-  it('the Check button reuses the shared verdict text and the Clear button reuses clearInstallCalibration()', () => {
-    const checkInstallCalibration = vi.fn(() => 'Still good — off by 0.1°.');
+  it('the Forget-the-zero link reuses clearInstallCalibration()', () => {
     const clearInstallCalibration = vi.fn();
     const section = createSensorSourceSection(
       makeOptions({
         getSensorSource: () => 'easylevel',
         getInstallCalibration: () => ({ rollDeg: 0.2, pitchDeg: 0.1 }),
-        checkInstallCalibration,
         clearInstallCalibration,
       }),
     );
-    const checkButton = findButton(section.element, 'Check');
-    checkButton.click();
-    expect(checkInstallCalibration).toHaveBeenCalledOnce();
-    expect(section.element.textContent).toContain('Still good');
-
-    const clearButton = findButton(section.element, 'Clear the zero');
+    const clearButton = findButton(section.element, 'Forget the zero');
     clearButton.click();
     expect(clearInstallCalibration).toHaveBeenCalledOnce();
   });
 
-  it('disables Check/Clear while nothing is stored, and enables them once something is', () => {
+  it('disables Forget the zero while nothing is stored, and enables them once something is', () => {
     let offset: { rollDeg: number; pitchDeg: number } | null = null;
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', getInstallCalibration: () => offset }),
     );
-    expect(findButton(section.element, 'Check').disabled).toBe(true);
-    expect(findButton(section.element, 'Clear the zero').disabled).toBe(true);
+    expect(findButton(section.element, 'Forget the zero').disabled).toBe(true);
     offset = { rollDeg: 1, pitchDeg: 1 };
     section.refresh();
-    expect(findButton(section.element, 'Check').disabled).toBe(false);
-    expect(findButton(section.element, 'Clear the zero').disabled).toBe(false);
+    expect(findButton(section.element, 'Forget the zero').disabled).toBe(false);
   });
 
   // The sensor row's status text doubles as a button opening the deeper

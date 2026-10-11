@@ -10,6 +10,8 @@
  *   front → "The front is raised" takes the second
  *   right → "The right side is raised" takes the third, then learns
  * Any failure returns to idle with the reason, and stores nothing.
+ * Forgetting is not offered here: the direction step that hosts this guide
+ * has the one "Forget the direction" link (#343).
  */
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { Calibration } from '../domain/settings';
@@ -59,7 +61,6 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
   const frontButton = makeButton('sensorSource.learn.capture.front');
   const rightButton = makeButton('sensorSource.learn.capture.right');
   const cancelButton = makeButton('sensorSource.learn.cancel', true);
-  const clearButton = makeButton('sensorSource.learn.clear', true);
 
   element.append(
     heading,
@@ -70,7 +71,6 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
     rightButton,
     cancelButton,
     status,
-    clearButton,
   );
 
   let step: Step = 'idle';
@@ -87,7 +87,6 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
     rightButton.hidden = step !== 'right';
     cancelButton.hidden = step === 'idle';
     const learned = options.getLearnedMounting() !== null;
-    clearButton.hidden = step !== 'idle' || !learned;
     status.hidden = step !== 'idle';
     status.textContent =
       message ??
@@ -123,10 +122,6 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
     show('idle', t('sensorSource.learn.done'));
   });
   cancelButton.addEventListener('click', () => show('idle'));
-  clearButton.addEventListener('click', () => {
-    options.setLearnedMounting(null);
-    show('idle');
-  });
 
   show('idle');
   return {

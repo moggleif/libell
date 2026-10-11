@@ -142,7 +142,7 @@ export const MESSAGES = {
     // Shown only once EasyLevel is connected: an install offset means
     // nothing until there is a live reading to capture.
     'sensorSource.install.now': 'Zero now',
-    'sensorSource.install.clear': 'Clear the zero',
+    'sensorSource.install.clear': 'Forget the zero',
     'sensorSource.install.status': 'Installation offset: side/side {roll}°, front/back {pitch}°.',
     'sensorSource.install.status.none': 'No installation offset — the raw reading counts as level.',
 
@@ -159,7 +159,6 @@ export const MESSAGES = {
       'Lower the front again. Now raise the right side a few centimetres, then press the button.',
     'sensorSource.learn.capture.right': 'The right side is raised',
     'sensorSource.learn.cancel': 'Cancel',
-    'sensorSource.learn.clear': 'Forget the learned mounting',
     'sensorSource.learn.status.learned': 'Mounting learned.',
     'sensorSource.learn.status.none': 'No mounting learned — the box’s own directions are used.',
     'sensorSource.learn.done':
@@ -699,7 +698,7 @@ export const MESSAGES = {
     // som R24 redan använder för telefonen, generaliserat till en permanent
     // monterad extern sensor.
     'sensorSource.install.now': 'Nollställ nu',
-    'sensorSource.install.clear': 'Rensa nolläget',
+    'sensorSource.install.clear': 'Glöm nolläget',
     'sensorSource.install.status': 'Installationsoffset: sidled {roll}°, längsled {pitch}°.',
     'sensorSource.install.status.none':
       'Inget installationsoffset — den råa avläsningen räknas som plan.',
@@ -717,7 +716,6 @@ export const MESSAGES = {
       'Sänk fronten igen. Höj nu höger sida några centimeter och tryck sedan på knappen.',
     'sensorSource.learn.capture.right': 'Höger sida är höjd',
     'sensorSource.learn.cancel': 'Avbryt',
-    'sensorSource.learn.clear': 'Glöm inlärd montering',
     'sensorSource.learn.status.learned': 'Monteringen är inlärd.',
     'sensorSource.learn.status.none': 'Ingen inlärd montering — boxens egna riktningar används.',
     'sensorSource.learn.done': 'Klart! Kontrollera: höj fronten så ska Libell peka ut bakhjulen.',
@@ -1165,7 +1163,7 @@ export const MESSAGES = {
       '⚠ Batterie faible ({value}) — pensez à remplacer bientôt la pile du boîtier.',
 
     'sensorSource.install.now': 'Mettre à zéro',
-    'sensorSource.install.clear': 'Effacer le zéro',
+    'sensorSource.install.clear': 'Oublier le zéro',
     'sensorSource.install.status':
       'Décalage d’installation : latéral {roll}°, longitudinal {pitch}°.',
     'sensorSource.install.status.none':
@@ -1182,7 +1180,6 @@ export const MESSAGES = {
       'Redescendez l’avant. Soulevez maintenant le côté droit de quelques centimètres, puis appuyez sur le bouton.',
     'sensorSource.learn.capture.right': 'Le côté droit est soulevé',
     'sensorSource.learn.cancel': 'Annuler',
-    'sensorSource.learn.clear': 'Oublier le montage appris',
     'sensorSource.learn.status.learned': 'Montage appris.',
     'sensorSource.learn.status.none':
       'Aucun montage appris — les directions du boîtier sont utilisées.',
@@ -1650,7 +1647,7 @@ export const MESSAGES = {
       '⚠ Batería baja ({value}): conviene cambiar pronto la pila de la caja del sensor.',
 
     'sensorSource.install.now': 'Poner a cero',
-    'sensorSource.install.clear': 'Borrar el cero',
+    'sensorSource.install.clear': 'Olvidar el cero',
     'sensorSource.install.status':
       'Desfase de instalación: lado/lado {roll}°, delante/detrás {pitch}°.',
     'sensorSource.install.status.none':
@@ -1667,7 +1664,6 @@ export const MESSAGES = {
       'Baja otra vez la parte delantera. Ahora levanta el lado derecho unos centímetros y pulsa el botón.',
     'sensorSource.learn.capture.right': 'El lado derecho está levantado',
     'sensorSource.learn.cancel': 'Cancelar',
-    'sensorSource.learn.clear': 'Olvidar el montaje aprendido',
     'sensorSource.learn.status.learned': 'Montaje aprendido.',
     'sensorSource.learn.status.none':
       'Ningún montaje aprendido: se usan las direcciones propias de la caja.',
@@ -2131,7 +2127,7 @@ export const MESSAGES = {
       '⚠ Batterie schwach ({value}) — die Batterie der Sensorbox sollte bald gewechselt werden.',
 
     'sensorSource.install.now': 'Jetzt nullen',
-    'sensorSource.install.clear': 'Nullpunkt löschen',
+    'sensorSource.install.clear': 'Nullpunkt vergessen',
     'sensorSource.install.status': 'Einbau-Offset: seitlich {roll}°, längs {pitch}°.',
     'sensorSource.install.status.none': 'Kein Einbau-Offset — der Rohwert gilt als waagerecht.',
 
@@ -2146,7 +2142,6 @@ export const MESSAGES = {
       'Senke die Front wieder ab. Hebe jetzt die rechte Seite ein paar Zentimeter an und tippe dann auf die Schaltfläche.',
     'sensorSource.learn.capture.right': 'Die rechte Seite ist angehoben',
     'sensorSource.learn.cancel': 'Abbrechen',
-    'sensorSource.learn.clear': 'Angelernte Montage vergessen',
     'sensorSource.learn.status.learned': 'Montage angelernt.',
     'sensorSource.learn.status.none':
       'Keine Montage angelernt — die eigenen Richtungen der Box werden verwendet.',

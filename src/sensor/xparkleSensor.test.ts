@@ -475,6 +475,7 @@ describe('the Xparkle descriptor (#270)', () => {
       reportedOrientation: true,
       learnMounting: true,
       upright: true,
+      zeroesItself: true,
     });
   });
 

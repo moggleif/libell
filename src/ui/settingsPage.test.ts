@@ -42,7 +42,6 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
-    checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,

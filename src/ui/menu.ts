@@ -104,7 +104,6 @@ export interface MenuOptions {
   getInstallCalibration(): Calibration | null;
   calibrateInstall(): string | null | Promise<string | null>;
   getInstallCalibrationCapturedAt(): number | null;
-  checkInstallCalibration(): string;
   clearInstallCalibration(): void;
   /**
    * The sensor status page's live reading row (`easyLevelStatusPage.ts`) —

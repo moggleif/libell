@@ -108,8 +108,6 @@ export interface SensorSourceOptions {
   calibrateInstall(): string | null | Promise<string | null>;
   /** When the installation offset was captured (R26) — null when unknown. */
   getInstallCalibrationCapturedAt(): number | null;
-  /** Compare the current reading against the installation offset's promise of zero — returns a verdict text (R26). */
-  checkInstallCalibration(): string;
   clearInstallCalibration(): void;
   /** Which physical mounting orientation this box is installed in (#217,
    * R43) — only rendered when the descriptor declares `mounting`. */
@@ -353,15 +351,11 @@ export function createSensorSourceSection(
   // not the first-time instruction again.
   const zeroLinks = document.createElement('div');
   zeroLinks.className = 'box-step__links';
-  const installCheckButton = document.createElement('button');
-  installCheckButton.type = 'button';
-  installCheckButton.className = 'link-button';
-  installCheckButton.textContent = t('calibration.check');
   const installClearButton = document.createElement('button');
   installClearButton.type = 'button';
   installClearButton.className = 'link-button';
   installClearButton.textContent = t('sensorSource.install.clear');
-  zeroLinks.append(installCheckButton, installClearButton);
+  zeroLinks.append(installClearButton);
   zeroStep?.body.append(zeroHint, installButton, zeroLinks, installStatus);
 
   if (directionStep) installSection.append(directionStep.element);
@@ -431,13 +425,14 @@ export function createSensorSourceSection(
       setDone(zeroStep, offset !== null, 2);
       // Done: the links instead of the first-time instruction (#332).
       zeroHint.hidden = offset !== null;
-      zeroLinks.hidden = offset === null;
+      // A box that zeroes itself keeps that zero, so there is no Libell
+      // zero to forget (#343).
+      zeroLinks.hidden = offset === null || capabilities.zeroesItself;
       installButton.textContent = t(offset ? 'box.step.zero.again' : 'sensorSource.install.now');
       installStatus.hidden = zeroMessage === null;
       installStatus.textContent = zeroMessage ?? '';
     }
     installClearButton.disabled = !offset;
-    installCheckButton.disabled = !offset;
     forgetDirectionButton.hidden = options.learnMounting?.getLearnedMounting() == null;
     // Expand the step opened by hand, else the next one not yet done.
     const next =
@@ -470,11 +465,6 @@ export function createSensorSourceSection(
       zeroMessage = error;
       refreshSteps();
     });
-  });
-  installCheckButton.addEventListener('click', () => {
-    openedByHand = zeroStep?.element ?? null;
-    zeroMessage = options.checkInstallCalibration();
-    refreshSteps();
   });
   installClearButton.addEventListener('click', () => {
     options.clearInstallCalibration();

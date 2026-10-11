@@ -22,7 +22,6 @@ function makeOptions(overrides: Partial<Options> = {}): Options {
     getInstallCalibration: () => null,
     calibrateInstall: () => null,
     getInstallCalibrationCapturedAt: () => null,
-    checkInstallCalibration: () => 'checked',
     clearInstallCalibration: () => {},
     getCalibratedTilt: () => null,
     getEasyLevelDeviceId: () => null,
@@ -202,6 +201,7 @@ const SECOND_BOX: ExternalSensorDescriptor = {
     reportedOrientation: false,
     learnMounting: false,
     upright: false,
+    zeroesItself: false,
   },
   staleTimeoutMs: 4000,
 };

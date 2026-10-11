@@ -610,6 +610,7 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     reportedOrientation: true,
     learnMounting: true,
     upright: true,
+    zeroesItself: true,
   },
   // Polled every 500 ms, so a silence of several polls is a real fault
   // rather than jitter — but kept at EasyLevel's own 4s rather than
