@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createSettingsForm } from './settingsPanel';
+import { takeReopenSettings } from './reopenSettings';
 import { LANGUAGE_NAMES, LANGUAGES, setLanguage, t } from './i18n';
 import { loadLanguage, loadSettings, saveSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
@@ -177,6 +178,35 @@ describe('settings form', () => {
     expect(reload).not.toHaveBeenCalled();
     expect(localStorage.getItem('libell.settings')).toBeNull();
     reload.mockRestore();
+  });
+
+  // #345: the reload used to land on the main screen, leaving the way
+  // back to Settings to memory. It now reopens Settings › General.
+  for (const pick of ['appearance', 'language'] as const) {
+    it(`changing ${pick} in Settings marks Settings to reopen after the reload (#345)`, () => {
+      const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+      sessionStorage.clear();
+      const form = createSettingsForm(classic, vi.fn());
+      const select = form.querySelectorAll('select')[pick === 'appearance' ? 7 : 5]!;
+      select.value = pick === 'appearance' ? 'modern' : 'sv';
+      select.dispatchEvent(new Event('change'));
+      expect(reload).toHaveBeenCalledOnce();
+      expect(takeReopenSettings()).toBe(true);
+      reload.mockRestore();
+      localStorage.removeItem('libell.language');
+    });
+  }
+
+  it('a wizard step changing language does not reopen Settings after the reload (#345)', () => {
+    const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+    sessionStorage.clear();
+    const form = createSettingsForm(classic, vi.fn(), undefined, { compact: 'language' });
+    const select = form.querySelector('select')!;
+    select.value = 'sv';
+    select.dispatchEvent(new Event('change'));
+    expect(takeReopenSettings()).toBe(false);
+    reload.mockRestore();
+    localStorage.removeItem('libell.language');
   });
 
   it('offers Glossy as a third appearance preset (chat-directed restyle)', () => {
