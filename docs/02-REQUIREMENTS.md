@@ -1420,9 +1420,9 @@ guidance (#285; the phone's own "lay it flat" wording no longer applies to a box
 - **Then** R51's direction step offers the two placements the manufacturer's manual
   allows (#359): an arrow on the lid always points forward, and the box's **long side**
   or its **short side** faces the front — the official app's `sensor_Placing` 1 and 2,
-  Libell's "Standard" and "Rotated 90°". (CaraTech AB's manual, French edition: "L'une
-  des flèches (peu importe laquelle) doit pointer vers l'avant", then "Montage avec le
-  côté large vers l'avant" / "Montage avec le côté vers l'avant".) Each is a picture of
+  Libell's "Standard" and "Rotated 90°". (CaraTech AB's manual: either of the lid's two
+  arrows may point forward, then "Långsidan framåt" / "Kortsidan framåt" in its
+  Swedish edition, https://cdn.shopify.com/s/files/1/0845/7656/7633/files/EasyLevel_SV.pdf.) Each is a picture of
   the vehicle with the box in it, arrow forward, named under it; the choice is made by
   matching the picture, never through the official app's `"sensor_Placing"`
   terminology. The half and three-quarter turns (#222) put every arrow backward or
