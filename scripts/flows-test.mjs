@@ -967,7 +967,19 @@ const appHint = (page) => page.locator('#app .app__hint').first();
 // link, and how the phone sensor is started.
 async function startupFlow(browser) {
   // The top bar is labelled and reserves the corner its icon sits in.
-  let app = await openApp(browser, 'xparkle-sim');
+  // Chromium 153 offers iOS's requestPermission too; hide it so this case
+  // pins the start-up without the Start tap (iOS's cases are below).
+  let app = await openApp(
+    browser,
+    'xparkle-sim',
+    {},
+    undefined,
+    `
+    for (const api of [window.DeviceMotionEvent, window.DeviceOrientationEvent]) {
+      if (api) Object.defineProperty(api, 'requestPermission', { value: undefined });
+    }
+  `,
+  );
   let { page } = app;
   assert(
     (await page.locator('#settings-button').getAttribute('aria-label')) === 'Settings',
