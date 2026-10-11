@@ -109,7 +109,7 @@ import { isSensorUnavailable } from './sensor/sensorFallback';
 import { createExternalSensorController } from './sensor/externalSensorController';
 import { createRvDiagram } from './ui/rvDiagram';
 import { createTiltReadout } from './ui/tiltReadout';
-import { createMenu, type Menu } from './ui/menu';
+import { createMenu, type Menu, type MenuSection } from './ui/menu';
 import { createSettingsPage, type SettingsPage } from './ui/settingsPage';
 import { createInfoPage } from './ui/infoMenu';
 import { createSensorPage, type ExternalSensorPage } from './ui/sensorPage';
@@ -763,17 +763,6 @@ function bootstrap(root: HTMLElement): void {
   const isMenuOpen = () =>
     isModern ? (settingsPage?.isOpen() ?? false) : (menu?.isOpen() ?? false);
 
-  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
-  // follow-up), with the introduction relaunch at the top of the Help tab
-  // — a fully independent page (universal, both appearances), not a
-  // section of the ☰ Settings menu: sharing that menu's history depth let
-  // its back button pop through to reveal the Settings drawer underneath
-  // by mistake.
-  const infoPage = createInfoPage({ openOnboarding, hasDoneOnboarding });
-  document.body.append(infoPage.element);
-  const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
-  if (helpButton) infoPage.attach(helpButton);
-
   // External sensor (screen-cleanup follow-up): its own page, reached
   // only from the top-right sensor-status icon now that the ☰ menu no
   // longer carries an "External sensor" entry — universal, both
@@ -820,6 +809,48 @@ function bootstrap(root: HTMLElement): void {
   // page when both happen to be open at once.
   if (externalSensorPage) document.body.append(...externalSensorPage.statusElements);
 
+  // "?" opens its own Help/About/Feedback tabbed page (screen-cleanup
+  // follow-up) — a fully independent page (universal, both appearances),
+  // not a section of the ☰ Settings menu: sharing that menu's history
+  // depth let its back button pop through to reveal the Settings drawer
+  // underneath by mistake. Each Help topic ends in a button to the place
+  // it talks about (#326), routed the same way the lamps and the sensor
+  // icon route.
+  const infoPage = createInfoPage({
+    openOnboarding,
+    hasDoneOnboarding,
+    hasSensorPage: sensorPage !== null,
+    openTarget(target) {
+      if (target === 'sensor') openSensor();
+      else if (target === 'calibration') openCalibration();
+      else openSettingsSection(target);
+    },
+  });
+  document.body.append(infoPage.element);
+  const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
+  if (helpButton) infoPage.attach(helpButton);
+
+  function openSettingsSection(section: MenuSection): void {
+    if (isModern) settingsPage!.openTab(section);
+    else menu!.open(section);
+  }
+  // With a box in use, calibrating is about the box's setup, so it opens
+  // the box's page, where its checklist expands the next step not yet
+  // done — the direction before the zero (#316, the #309 UX review).
+  function openCalibration(): void {
+    const source = sensor().getSource();
+    if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
+    else openSettingsSection('calibration');
+  }
+  // With a box in use (connected or lost), its own page directly (#315,
+  // the #309 UX review): its state, Reconnect and setup are all there.
+  // The list stays the way to add or switch boxes while the phone is active.
+  function openSensor(): void {
+    const source = sensor().getSource();
+    if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
+    else sensorPage?.open();
+  }
+
   // Mute (#161): a single toggle for soundOnLevel + soundGuidance, reached
   // from the bottom bar without opening the menu. `preMuteSound` is the
   // exact prior values to restore on unmute — see domain/settings.ts's
@@ -855,20 +886,9 @@ function bootstrap(root: HTMLElement): void {
   // app (in memory only — nothing is written), so screenshots and demos
   // show the product, not the first-run warnings (#70).
   const indicators = createIndicators((section) => {
-    // With a box in use the amber lamp is about the box's setup, so it
-    // opens the box's page, where its checklist expands the next step not
-    // yet done — the direction before the zero (#316, the #309 UX review).
-    const source = sensor().getSource();
-    if (section === 'calibration' && source !== 'phone' && externalSensorPage) {
-      externalSensorPage.openSource(source);
-      return;
-    }
-    if (isModern) {
-      if (section === 'calibration') settingsPage!.openCalibration();
-      else settingsPage!.open();
-    } else {
-      menu!.open(section);
-    }
+    if (section === 'calibration') openCalibration();
+    else if (isModern) settingsPage!.open();
+    else menu!.open(section);
   });
   // Which pair of calibrations the amber lamp checks follows the ACTIVE
   // source (#131, ADR 0014), same as `zeroCalibration()` above: the
@@ -911,11 +931,11 @@ function bootstrap(root: HTMLElement): void {
   // page directly (#315, the #309 UX review): its state, Reconnect and
   // setup are all there, so the list in between was one tap too many. The
   // list stays the way to add or switch boxes while the phone is active.
-  const sensorStatus = createSensorStatusIndicator(externalSensorSupported, showIosGuide, () => {
-    const source = sensor().getSource();
-    if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
-    else sensorPage?.open();
-  });
+  const sensorStatus = createSensorStatusIndicator(
+    externalSensorSupported,
+    showIosGuide,
+    openSensor,
+  );
   // Into the pinned top-bar corner — not the #indicators cluster — so the
   // icon and the Install button beside it always own the top-right
   // corner and the other top-bar items wrap or shift left of them (#244).
