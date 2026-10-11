@@ -24,6 +24,8 @@
  * (#314) — ✓ and age when done, the one action when not, only the next
  * undone step expanded and Check/Clear under a collapsed More in each.
  * The wizard keeps the cards: it already shows one calibration per step.
+ * Its `layout: 'wizard'` is those cards without Check/Clear (#365): a first
+ * run has nothing to check or clear yet, and Settings keeps them under More.
  */
 import type { AppearanceSetting, Calibration } from '../domain/settings';
 import { flipCalibration } from '../domain/calibration';
@@ -100,11 +102,13 @@ export interface CalibrationSection {
 
 export function createCalibrationSection(
   options: CalibrationOptions,
-  layout: 'cards' | 'checklist' = 'cards',
+  layout: 'cards' | 'checklist' | 'wizard' = 'cards',
 ): CalibrationSection {
   // Decided once, here — see the module doc comment (#109).
   const modern = options.appearance === 'modern';
   const checklist = layout === 'checklist';
+  /** Check/Clear are offered everywhere but the wizard (#365). */
+  const maintenance = layout !== 'wizard';
   /** Checklist only: the step kept open by the user or by a message
    * shown in it; null follows "the next undone step". */
   let openStep: 'phone' | 'vehicle' | 'none' | null = null;
@@ -549,7 +553,7 @@ export function createCalibrationSection(
       flipIntro,
       flipButton,
       flipStatus,
-      checkClearRow,
+      ...(maintenance ? [checkClearRow] : []),
       calibrationStatus,
     );
 
@@ -561,7 +565,13 @@ export function createCalibrationSection(
     vehicleRow.append(vehicleCheckButton, vehicleClearButton);
     const vehicleCard = document.createElement('div');
     vehicleCard.className = 'calibration-card';
-    vehicleCard.append(vehicleHeader, vehicleIntro, vehicleButton, vehicleRow, vehicleStatus);
+    vehicleCard.append(
+      vehicleHeader,
+      vehicleIntro,
+      vehicleButton,
+      ...(maintenance ? [vehicleRow] : []),
+      vehicleStatus,
+    );
 
     calibrationBody.className = 'calibration-cards';
     if (offersExternal) calibrationBody.append(externalSection);
@@ -583,8 +593,7 @@ export function createCalibrationSection(
       flipIntro,
       flipButton,
       flipStatus,
-      checkButton,
-      clearButton,
+      ...(maintenance ? [checkButton, clearButton] : []),
     );
     const vehicleSection = document.createElement('div');
     vehicleSection.append(
@@ -592,8 +601,7 @@ export function createCalibrationSection(
       vehicleIntro,
       vehicleStatus,
       vehicleButton,
-      vehicleCheckButton,
-      vehicleClearButton,
+      ...(maintenance ? [vehicleCheckButton, vehicleClearButton] : []),
     );
     if (offersExternal) calibrationBody.append(externalSection);
     calibrationBody.append(sensorSection, vehicleSection);

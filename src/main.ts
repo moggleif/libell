@@ -57,6 +57,8 @@ import {
   hasDoneOnboarding,
   hasSeenOnboarding,
   hasStoredSettings,
+  isBoxPending,
+  setBoxPending,
   loadActiveTargetId,
   loadCalibrationInfo,
   loadInstallCalibrationInfo,
@@ -313,6 +315,16 @@ function bootstrap(root: HTMLElement): void {
   const storedVehicle = loadVehicleCalibrationInfo();
   let vehicleCalibration: Calibration | null = storedVehicle?.value ?? null;
   let vehicleCalibrationCapturedAt: number | null = storedVehicle?.capturedAt ?? null;
+  // The wizard's box path was finished with no box connected (#365): until
+  // a box connects, or the phone is calibrated after all, the amber lamp
+  // asks for the box rather than ⚠ Calibrate for a phone the user chose
+  // not to use.
+  let boxPending = isBoxPending();
+  function settleBoxPending(pending: boolean): void {
+    if (boxPending === pending) return;
+    boxPending = pending;
+    setBoxPending(pending);
+  }
   // The EasyLevel box's installation offset (#131, ADR 0014): the same
   // "vehicle zero" concept as `vehicleCalibration` above, generalized to
   // this external source — its own independent value, never combined
@@ -634,6 +646,7 @@ function bootstrap(root: HTMLElement): void {
         calibration = next;
         calibrationCapturedAt = Date.now();
         saveCalibration(next, undefined, calibrationCapturedAt);
+        settleBoxPending(false);
         updateIndicators();
       },
       clearCalibration() {
@@ -688,10 +701,12 @@ function bootstrap(root: HTMLElement): void {
       getMounting: () => easyLevelSettings(settings).mounting,
       isMountingPicked: () => easyLevelSettings(settings).mountingPicked,
       setMounting: (mounting: EasyLevelMounting | null) => setEasyLevelMounting(mounting),
-      onFinished(done) {
+      onFinished(done, path) {
         onboardingOpen = false;
         markOnboardingSeen();
         if (done) markOnboardingDone();
+        // A box chosen but not connected (#365): see `boxPending`.
+        if (done) settleBoxPending(path === 'external' && sensor().getSource() === 'phone');
         updateIndicators();
       },
     });
@@ -731,6 +746,7 @@ function bootstrap(root: HTMLElement): void {
       calibration = next;
       calibrationCapturedAt = Date.now();
       saveCalibration(next, undefined, calibrationCapturedAt);
+      settleBoxPending(false);
       updateIndicators();
     },
     clearCalibration() {
@@ -909,6 +925,8 @@ function bootstrap(root: HTMLElement): void {
   function openCalibration(): void {
     const source = sensor().getSource();
     if (source !== 'phone' && externalSensorPage) externalSensorPage.openSource(source);
+    // A box chosen in the wizard, not yet connected (#365): to connect it.
+    else if (boxPending && sensorPage) sensorPage.open();
     else openSettingsSection('calibration');
   }
   // With a box in use (connected or lost), its own page directly (#315,
@@ -965,16 +983,24 @@ function bootstrap(root: HTMLElement): void {
   // or just the EasyLevel installation offset while it is — never both
   // pairs at once, so connecting EasyLevel with no installation offset yet
   // still warns even if the phone was calibrated long ago, and vice versa.
-  const updateIndicators = () =>
+  // A box chosen in the wizard but not connected yet (#365) counts as the
+  // box for the lamp: ⚠ Zero, opening the sensor list to connect it.
+  const updateIndicators = () => {
+    const phone = sensor().getSource() === 'phone';
+    if (!phone) settleBoxPending(false);
+    const awaitingBox = phone && boxPending;
     indicators.update({
       settingsSaved: demo || hasStoredSettings(),
       calibrated:
         demo ||
-        (sensor().getSource() === 'phone'
-          ? calibration !== null || vehicleCalibration !== null
-          : activeInstallOffset() !== null),
-      externalSensor: sensor().getSource() !== 'phone',
+        (awaitingBox
+          ? false
+          : phone
+            ? calibration !== null || vehicleCalibration !== null
+            : activeInstallOffset() !== null),
+      externalSensor: !phone || awaitingBox,
     });
+  };
   document.querySelector('#indicators')?.append(indicators.element);
   updateIndicators();
 
@@ -1089,6 +1115,7 @@ function bootstrap(root: HTMLElement): void {
     calibration = reading;
     calibrationCapturedAt = Date.now();
     saveCalibration(calibration, undefined, calibrationCapturedAt);
+    settleBoxPending(false);
     updateIndicators();
     return null;
   }
@@ -1121,6 +1148,7 @@ function bootstrap(root: HTMLElement): void {
     vehicleCalibration = vehicleZeroFromReading(reading, calibration);
     vehicleCalibrationCapturedAt = Date.now();
     saveVehicleCalibration(vehicleCalibration, undefined, vehicleCalibrationCapturedAt);
+    settleBoxPending(false);
     updateIndicators();
     return null;
   }

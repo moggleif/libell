@@ -351,14 +351,13 @@ URL and must keep working with no signal.
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
-- **Then** a ten-step wizard runs: welcome (design review — what Libell is for, before
-  any question), Language (skippable), Appearance — Theme + Appearance (skippable),
-  Sound — Chime + Continuous audio guidance (skippable), which vehicle I'm leveling
-  (motorhome or caravan — #184), how to place the phone and how to read the answer (the
-  wheel-state legend and the bubble), vehicle measurements (skippable), ramp model/count
-  (skippable), phone-sensor calibration (skippable), vehicle-zero position (skippable).
-  It can be closed with ✕ at any point, warning lamps (R11) stay lit for whatever was
-  skipped, and the "Show introduction" button below the "?" page's Help topics
+- **Then** a nine-step wizard runs: welcome (design review — what Libell is for, before
+  any question), Language, Appearance — Theme + Appearance, Sound — Chime + Continuous
+  audio guidance, which vehicle I'm leveling (motorhome or caravan — #184), how to place
+  the phone and how to read the answer (the wheel-state legend and the bubble), vehicle
+  measurements (skippable), ramp model/count (skippable), phone-sensor calibration.
+  Nothing has to be done to go on: Next always advances. It can be closed with ✕ at any
+  point, warning lamps (R11) stay lit for whatever was left undone, and the "Show introduction" button below the "?" page's Help topics
   (R28, screen-cleanup follow-up) reopens it any time. That button reads green
   (primary) until the wizard has actually been stepped through to its end at least
   once — an early ✕ does not count, even though it still counts for the auto-launch
@@ -366,9 +365,10 @@ URL and must keep working with no signal.
   plain re-launch rather than an unfinished first-run task.
 - **Given** the welcome step (design review, always first)
 - **Then** it shows what Libell does (the same one-line pitch the About page uses) and
-  that the guide ahead is short and every step can be skipped and finished later. No
-  form, no Skip control — there is nothing to configure here, only Next. No prior step
-  used to explain why the following questions matter before asking them.
+  that the guide ahead is short and every step can be skipped and finished later from
+  Settings. Where an external sensor is an option (R32's gate) it adds that a sensor is
+  connected any time with the sensor icon at the top right (#365) — the box is not in
+  Settings. No form, no Skip control — there is nothing to configure here, only Next.
 - **Given** the Language, Appearance and Sound steps (#189 introduced these as one
   combined "General" step; a later design review split it into one step per actual
   decision, not per what used to share a Settings section header)
@@ -377,9 +377,8 @@ URL and must keep working with no signal.
   via a full reload immediately on change, same as Settings). Theme and Appearance share
   a step, one "how it looks" decision. Chime and Continuous audio guidance share a step,
   one "what it sounds like" decision. All three reuse the exact fields/handlers Settings
-  → General has. Each is skippable, using the shipped defaults; unlike the other
-  skippable steps, skipping any of them never lights a warning lamp — the defaults are
-  already a complete, valid choice.
+  → General has. Each has only Back and Next (#365): the form shows the shipped
+  defaults until changed, so a Skip did exactly what Next does.
 - **Given** any step that embeds a real Settings form — Language, Appearance, Sound,
   measurements, ramps (design review)
 - **Then** the embedded form shows only its fields, and is saved by the step's Next (see
@@ -417,50 +416,59 @@ URL and must keep working with no signal.
   count Classic mode's own Ramps section uses — a single `<select>` + chip editor, not
   Modern's scrolling brand-filtered catalog grid, proportionate to a reduced first-run
   step either way. Drain position is on the Level tab, reachable from Settings
-  afterward. Skippable, with the same warning-lamp consequence hint as measurements —
-  skipping it leaves the shipped default ramp model in place, which may not match what
-  the user actually owns.
-- **Given** the phone-sensor calibration step and the vehicle-zero step (design review:
-  split from one combined "Calibration" step into two)
-- **Then** each embeds exactly one half of the exact same calibration UI Settings →
-  Calibration shows — the sensor-calibration step gets flip-calibration/check/clear for
-  the phone sensor, the vehicle-zero step gets set/check/clear for the vehicle zero
-  position, never a reduced rendering of either that could drift from the real one
-  (#184). Splitting halves how many buttons either screen shows at once, and the step
-  order itself (sensor first, then vehicle zero) replaces the ordering hint a combined
-  step used to need. Both remain independently skippable.
+  afterward. Skippable, with a note that skipping leaves the shipped default ramps in
+  place (which may not match what the user actually owns) and that they can be picked
+  later in Settings.
+- **Given** the phone-sensor calibration step (#365: one path for zeroing)
+- **Then** it embeds the phone-calibration half of the same calibration UI Settings →
+  Calibration shows (calibrate, or flip where nothing is flat), never a reduced rebuild
+  that could drift from the real one (#184) — without Check / Clear, which a first run
+  has no use for and Settings keeps under More. The wizard does not ask to zero the
+  vehicle: a first run is usually at home, not parked level, so a short line says the
+  vehicle is zeroed the first time the user parks on level ground, and the ⚠ Zero lamp
+  (R11) reminds until it is done — the same advice the box path gives. It is the
+  phone path's last step.
 - **Given** Web Bluetooth support exists (an external sensor is actually a real option)
 - **Then** the wizard opens with one extra step, "How do you want to measure?", right
   after the Sound step, offering "This phone" (pre-selected) or "External sensor" — the
   same name and wording the sensor-status icon and its page use (R32) elsewhere, never
   a separate "Libell Sensor" product name, which was never real; every other browser
-  gets exactly the ten-step flow above, with no added step and no dead radio button
+  gets exactly the nine-step flow above, with no added step and no dead radio button
   (#135). The vehicle step always follows immediately after this one, so it is answered
   before either device path continues.
 - **Given** the source step, with "This phone" left selected (the default)
-- **Then** the rest of the wizard is the unchanged phone flow above (vehicle,
-  placement, measurements, ramps, sensor calibration, vehicle zero).
+- **Then** the rest of the wizard is the phone flow above (vehicle, placement,
+  measurements, ramps, sensor calibration).
 - **Given** the source step, with the external sensor selected instead
 - **Then** the wizard asks the vehicle step, then branches to two steps built from the
   box's own pages — Connect (R32's list), then the box's position, checked live (R51's
-  first step) — standing in for the phone calibration steps it replaces (skippable on
-  the same terms). Direction and zero are not asked here (#317): the zero needs level
+  first step) — standing in for the phone calibration step it replaces; Next goes on
+  from both, connected or not (#365). With no box connected the position step says so
+  and that Next goes on, never an endless "waiting for a reading"; should a connection
+  started on the previous step land while it is shown, it switches to the live
+  position. Direction and zero are not asked here (#317): the zero needs level
   ground, which a first run rarely has, so the step says they are set the first time
   the user parks, guided by the box's page and reminded by the amber lamp (R34). It
   then rejoins the shared vehicle-measurements and ramps steps before finishing. No phone-placement step
   and no phone calibration steps are shown on this path.
+- **Given** the wizard was finished on the external-sensor path with no box connected
+  (#365)
+- **Then** the phone stays the active source (the wizard never switches it), but the
+  amber lamp asks for the box — ⚠ Zero, opening the sensor list to connect one — not
+  ⚠ Calibrate for a phone the user chose not to use. This lasts until a box connects,
+  the phone is calibrated or zeroed after all, or the wizard is finished on the phone
+  path.
 - **Given** the source step is left unanswered (closed via ✕, or the wizard is never
   reopened)
 - **Then** the app defaults to the phone sensor — the source step itself never writes
   any state, so an interrupted wizard can never leave the active source ambiguous.
 - **Given** an external sensor is already the active source when the wizard opens, and I
   pick "This phone" on the source step (#287)
-- **Then** the phone path leaves out both phone calibration steps (sensor calibration and
-  vehicle zero) — their actions are disabled while a box is active (#285), and the wizard
+- **Then** the phone path leaves out the phone calibration step — its actions are disabled while a box is active (#285), and the wizard
   never switches the source itself (ADR 0014; ✕ still leaves the source exactly as it
   was). The source step says so while a box is active: choosing the phone skips the phone
-  calibration, and to calibrate the phone, tap "Disconnect" on the External sensor page
-  first. The box's own calibration (R34, R49) is unaffected. With the phone already
+  calibration, and to calibrate the phone, open the box with the sensor icon at the top
+  right and tap "Disconnect" there first. The box's own calibration (R34, R49) is unaffected. With the phone already
   active, the wizard is unchanged.
 - **Given** the source step, with the external sensor picked instead of "This phone"
   (style-consistency review follow-up)
@@ -477,16 +485,16 @@ URL and must keep working with no signal.
 - **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
 - **Then** tapping "Next" saves those values before advancing — the only way to persist
   them, since the step shows no separate Save button (see above).
-- **Given** a skippable step (measurements, ramps, sensor calibration, vehicle zero,
-  connect)
-- **Then** its Skip control is paired with a note that a warning lamp (R11) will remind
-  the user later if they skip, and that the shipped defaults are used meanwhile and
-  often work reasonably well — not just "Skip" with no stated consequence. The note sits
-  next to the Skip button it explains, above the wizard's own controls (#239), not at the
-  end of the step's content. Its button reads plain "Skip", since skipping any of these
-  does light that lamp; only the Language/Appearance/Sound steps' Skip reads
-  "Skip — use defaults", since those are the skippable steps with no such consequence
-  (style-consistency review follow-up).
+- **Given** any step (#365, reworking #189's one generic note)
+- **Then** a Skip button is shown only where Next would save something — measurements
+  and ramps; everywhere else Next is the one way on. A step that can leave something
+  undone carries a note specific to it — measurements: the defaults are used and ⚠ Setup
+  stays lit until saved; ramps: the default ramps are used and can be picked later in
+  Settings; phone calibration: no flat surface now, tap Next and ⚠ Calibrate reminds;
+  connect: no box at hand, tap Next and connect later with the sensor icon — and steps
+  with nothing to leave undone have no note. The note names the real lamp and button in
+  every language, and sits right above the wizard's own controls (#239), not at the end
+  of the step's content.
 - **Given** any step of the wizard, on any phone (#239 — reported from an iPhone, where
   the buttons sat below the fold on half the steps), in either appearance and in every
   shipped language
@@ -497,8 +505,8 @@ URL and must keep working with no signal.
   that, in either appearance and in every shipped language. The wizard is sized to the
   _small_ viewport (the height with the browser's toolbars showing) and its bottom padding
   clears the home indicator, so the last control is never left under Safari's bottom bar.
-- **Given** a step that embeds the calibration card (sensor calibration, vehicle zero),
-  in either appearance
+- **Given** the step that embeds the calibration card (sensor calibration), in either
+  appearance
 - **Then** the card's own heading — word for word the step's heading directly above it —
   is not repeated: Modern's status pill ("NOT DONE" / "DONE") moves onto the step heading
   and the duplicate row goes, Classic's bare heading goes the same way, and inside the
