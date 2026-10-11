@@ -1,0 +1,49 @@
+/**
+ * Each external box's installation offset (#131, ADR 0014): the "vehicle
+ * zero" for that box, held in memory and mirrored to storage.
+ *
+ * One per box (#263/#272): each box sits in its own place in the vehicle,
+ * so two boxes never share a value — ADR 0014's "never conflate" rule,
+ * held here the same way it is held in storage. The phone has no entry:
+ * its own two calibration layers live elsewhere.
+ */
+import type { Calibration, SensorSource } from '../domain/settings';
+import { SENSOR_SOURCES } from '../domain/settings';
+import {
+  clearInstallCalibration,
+  loadInstallCalibrationInfo,
+  saveInstallCalibration,
+  type KeyValueStorage,
+  type StoredCalibration,
+} from '../data/settingsStore';
+
+export interface InstallOffsets {
+  /** The box's zero, or null for none yet (and always for the phone). */
+  valueOf(source: SensorSource): Calibration | null;
+  /** When that zero was taken, or null when unknown or none. */
+  capturedAtOf(source: SensorSource): number | null;
+  store(source: SensorSource, value: Calibration, capturedAt: number): void;
+  clear(source: SensorSource): void;
+}
+
+/** Loads every box's offset once; `storage` defaults to localStorage. */
+export function createInstallOffsets(storage?: KeyValueStorage | null): InstallOffsets {
+  const offsets = new Map<SensorSource, StoredCalibration | null>(
+    SENSOR_SOURCES.filter((source) => source !== 'phone').map((source) => [
+      source,
+      loadInstallCalibrationInfo(source, storage),
+    ]),
+  );
+  return {
+    valueOf: (source) => offsets.get(source)?.value ?? null,
+    capturedAtOf: (source) => offsets.get(source)?.capturedAt ?? null,
+    store(source, value, capturedAt) {
+      offsets.set(source, { value, capturedAt });
+      saveInstallCalibration(source, value, storage, capturedAt);
+    },
+    clear(source) {
+      offsets.set(source, null);
+      clearInstallCalibration(source, storage);
+    },
+  };
+}

@@ -12,6 +12,8 @@
 ```
 src/
 ├── main.ts        # entry point; requests wake lock; wires sensor → state → render
+├── app/           # wiring main.ts composes (#374): externalSensorWiring.ts (box adapters,
+│                  # health, learn guide, password), installOffsets.ts (each box's zero)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
@@ -127,14 +129,15 @@ by that source's descriptor. Which rows and controls a device page draws comes f
 descriptor's `capabilities` — battery, temperature, firmware, mounting picker,
 installation offset, debug bytes — so a box that reports no temperature has no
 temperature row, rather than one permanently reading "not available yet" (#228). The UI
-imports no protocol module: each adapter's own struct is mapped in `main.ts` into the
-source-neutral `ExternalSensorHealth`.
+imports no protocol module: each adapter's own struct is mapped in
+`src/app/externalSensorWiring.ts` into the source-neutral `ExternalSensorHealth`.
 
 **The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
 external-sensor lifecycle for every source: lazy adapter construction, connect and
 disconnect, the silent auto-reconnect at app open (#130), the background auto-retry
 (#211) and the "use phone sensor" escape hatch (#134). `main.ts` holds no device-named
-closure of its own — it supplies the adapter factory and three callbacks (build the
+closure of its own — it supplies the adapter factory (`createExternalSensor` in
+`src/app/externalSensorWiring.ts`) and three callbacks (build the
 level screen, refresh the indicators, refresh the status row) and reads
 `getActiveSensor()` fresh on every use. ADR 0014's "never silently switch source" rule
 is enforced by one `adopt()`/`fallBackToPhone()` pair rather than by a dozen call sites,
@@ -352,8 +355,9 @@ warning lamps, in memory only), so screenshots and demos show the product rather
 the first-run state. The `?easylevel-sim` flag (R44) is its EasyLevel sibling: a
 simulated BLE box behind the transport seam, for exercising the external-sensor flow
 on machines (and CI screenshots) with no hardware. CI runs
-`format:check`, `typecheck`, `test` and `build` on every branch, then two Playwright
-checks against the built app: `smoke` (it renders at all) and `fit` (every view fits a
+`format:check`, `typecheck`, `test` and `build` on every branch, then three Playwright
+checks against the built app: `smoke` (it renders at all), `flows` (the simulated
+boxes connect, report, zero and reconnect through the real wiring — #374) and `fit` (every view fits a
 phone screen — R4/#241, R18/#239 and R40/#243; the unit tests run in happy-dom, which
 has no layout engine and measures every height as zero, so this is the only place a
 too-tall or too-wide view can fail). `fit` also checks the stylesheet directly for the

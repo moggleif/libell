@@ -21,10 +21,11 @@ npm run test          # Vitest unit tests
 npm run build         # icons + typecheck + production build into dist/
 npm run preview       # serve the production build locally
 npm run smoke         # Playwright: the built app renders (needs `build` first)
+npm run flows         # Playwright: the simulated boxes' flows (needs `build` first)
 npm run fit           # Playwright: it all fits a phone screen (needs `build` first)
 ```
 
-The two Playwright scripts need a build to serve, so they are not part of the
+The Playwright scripts need a build to serve, so they are not part of the
 pre-commit set — CI runs them after `build`. `fit` (#239, #241, #243) opens **every**
 view — level, first-run guide, settings, help, external sensor, the iOS sensor guide,
 the incoming shared-setup dialog — against small-phone viewports in both appearances,

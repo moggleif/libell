@@ -43,6 +43,11 @@ jobs:
           npx playwright install --with-deps chromium
           npm run smoke
 
+      # The external-sensor flows through the real wiring in main.ts (#374),
+      # against the simulated boxes.
+      - name: Box flows in the built app
+        run: npm run flows
+
       # The one check that can fail on a view growing taller than a phone
       # screen (#239, #241) — the unit tests run in happy-dom, which has
       # no layout engine and so measures every height as zero.
