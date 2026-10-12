@@ -144,6 +144,8 @@ describe('calibrationOptions', () => {
     });
     box.calibrateExternalSensor();
     expect(boxZero.zero).toHaveBeenCalledWith('xparkle');
+    box.calibrateExternalSensor(true);
+    expect(boxZero.zero).toHaveBeenLastCalledWith('xparkle', true);
   });
 });
 
@@ -183,6 +185,8 @@ describe('boxConnectionOptions', () => {
     expect(options.getInstallCalibrationCapturedAt()).toBe(99);
     options.calibrateInstall();
     expect(boxZero.zero).toHaveBeenCalledWith('xparkle');
+    options.calibrateInstall(true);
+    expect(boxZero.zero).toHaveBeenLastCalledWith('xparkle', true);
     options.clearInstallCalibration();
     expect(boxZero.clear).toHaveBeenCalledWith('xparkle');
   });
