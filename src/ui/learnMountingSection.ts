@@ -31,33 +31,56 @@ export interface LearnMountingSection {
 
 type Step = 'idle' | 'front' | 'right';
 
+/** The guide's elements and progress; the functions below work on one. */
+interface Guide {
+  readonly options: LearnMountingOptions;
+  readonly view: ReturnType<typeof createView>;
+  step: Step;
+  baseline: Calibration | null;
+  frontRaised: Calibration | null;
+}
+
 export function createLearnMountingSection(options: LearnMountingOptions): LearnMountingSection {
+  const guide: Guide = {
+    options,
+    view: createView(),
+    step: 'idle',
+    baseline: null,
+    frontRaised: null,
+  };
+  const { startButton, frontButton, rightButton, cancelButton } = guide.view;
+  startButton.addEventListener('click', () => {
+    guide.baseline = capture(guide);
+    if (guide.baseline) show(guide, 'front');
+  });
+  frontButton.addEventListener('click', () => {
+    guide.frontRaised = capture(guide);
+    if (guide.frontRaised) show(guide, 'right');
+  });
+  rightButton.addEventListener('click', () => finish(guide));
+  cancelButton.addEventListener('click', () => show(guide, 'idle'));
+
+  show(guide, 'idle');
+  return {
+    element: guide.view.element,
+    // Never interrupts a guide in progress.
+    refresh: () => {
+      if (guide.step === 'idle') show(guide, 'idle');
+    },
+  };
+}
+
+function createView() {
   const element = document.createElement('div');
   element.className = 'learn-mounting';
-
-  const heading = document.createElement('h3');
-  heading.className = 'menu__heading';
-  heading.textContent = t('sensorSource.learn.h');
-  const intro = document.createElement('p');
-  intro.className = 'menu__text';
-  intro.textContent = t('sensorSource.learn.intro');
-  const instruction = document.createElement('p');
-  instruction.className = 'menu__text';
-  const status = document.createElement('p');
-  status.className = 'menu__text menu__text--status';
-
-  function makeButton(key: MessageKey, secondary = false): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = secondary ? 'menu__action menu__action--secondary' : 'menu__action';
-    button.textContent = t(key);
-    return button;
-  }
+  const heading = paragraph('h3', 'menu__heading', t('sensorSource.learn.h'));
+  const intro = paragraph('p', 'menu__text', t('sensorSource.learn.intro'));
+  const instruction = paragraph('p', 'menu__text');
+  const status = paragraph('p', 'menu__text menu__text--status');
   const startButton = makeButton('sensorSource.learn.start');
   const frontButton = makeButton('sensorSource.learn.capture.front');
   const rightButton = makeButton('sensorSource.learn.capture.right');
   const cancelButton = makeButton('sensorSource.learn.cancel', true);
-
   element.append(
     heading,
     intro,
@@ -68,67 +91,65 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
     cancelButton,
     status,
   );
+  return { element, instruction, status, startButton, frontButton, rightButton, cancelButton };
+}
 
-  let step: Step = 'idle';
-  let baseline: Calibration | null = null;
-  let frontRaised: Calibration | null = null;
+function paragraph(tag: 'h3' | 'p', className: string, text?: string): HTMLElement {
+  const element = document.createElement(tag);
+  element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
 
-  function show(next: Step, message?: string): void {
-    step = next;
-    instruction.hidden = step === 'idle';
-    if (step === 'front') instruction.textContent = t('sensorSource.learn.step.front');
-    if (step === 'right') instruction.textContent = t('sensorSource.learn.step.right');
-    startButton.hidden = step !== 'idle';
-    frontButton.hidden = step !== 'front';
-    rightButton.hidden = step !== 'right';
-    cancelButton.hidden = step === 'idle';
-    const learned = options.getLearnedMounting() !== null;
-    status.hidden = step !== 'idle';
-    status.textContent =
-      message ??
-      (learned ? t('sensorSource.learn.status.learned') : t('sensorSource.learn.status.none'));
+function makeButton(key: MessageKey, secondary = false): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = secondary ? 'menu__action menu__action--secondary' : 'menu__action';
+  button.textContent = t(key);
+  return button;
+}
+
+function show(guide: Guide, next: Step, message?: string): void {
+  const { instruction, status, startButton, frontButton, rightButton, cancelButton } = guide.view;
+  guide.step = next;
+  const step = next;
+  instruction.hidden = step === 'idle';
+  if (step === 'front') instruction.textContent = t('sensorSource.learn.step.front');
+  if (step === 'right') instruction.textContent = t('sensorSource.learn.step.right');
+  startButton.hidden = step !== 'idle';
+  frontButton.hidden = step !== 'front';
+  rightButton.hidden = step !== 'right';
+  cancelButton.hidden = step === 'idle';
+  const learned = guide.options.getLearnedMounting() !== null;
+  status.hidden = step !== 'idle';
+  status.textContent =
+    message ??
+    (learned ? t('sensorSource.learn.status.learned') : t('sensorSource.learn.status.none'));
+}
+
+function capture(guide: Guide): Calibration | null {
+  const reading = guide.options.getRawReading();
+  if (!reading) {
+    show(guide, 'idle', t('calibration.external.err.notConnected', { name: guide.options.name }));
   }
+  return reading;
+}
 
-  function capture(): Calibration | null {
-    const reading = options.getRawReading();
-    if (!reading) {
-      show('idle', t('calibration.external.err.notConnected', { name: options.name }));
-    }
-    return reading;
+/** The right side raised: learn the mapping, or say why not. */
+function finish(guide: Guide): void {
+  const rightRaised = capture(guide);
+  const { baseline, frontRaised, options } = guide;
+  if (!rightRaised || !baseline || !frontRaised) return;
+  const result = learnAxisMapping(baseline, frontRaised, rightRaised);
+  if (!result.ok) {
+    show(guide, 'idle', t(`sensorSource.learn.err.${result.error}`));
+    return;
   }
-
-  startButton.addEventListener('click', () => {
-    baseline = capture();
-    if (baseline) show('front');
-  });
-  frontButton.addEventListener('click', () => {
-    frontRaised = capture();
-    if (frontRaised) show('right');
-  });
-  rightButton.addEventListener('click', () => {
-    const rightRaised = capture();
-    if (!rightRaised || !baseline || !frontRaised) return;
-    const result = learnAxisMapping(baseline, frontRaised, rightRaised);
-    if (!result.ok) {
-      show('idle', t(`sensorSource.learn.err.${result.error}`));
-      return;
-    }
-    const problem = options.check?.(result.mapping) ?? null;
-    if (problem) {
-      show('idle', t(problem));
-      return;
-    }
-    options.setLearnedMounting(result.mapping);
-    show('idle', t('sensorSource.learn.done'));
-  });
-  cancelButton.addEventListener('click', () => show('idle'));
-
-  show('idle');
-  return {
-    element,
-    // Never interrupts a guide in progress.
-    refresh: () => {
-      if (step === 'idle') show('idle');
-    },
-  };
+  const problem = options.check?.(result.mapping) ?? null;
+  if (problem) {
+    show(guide, 'idle', t(problem));
+    return;
+  }
+  options.setLearnedMounting(result.mapping);
+  show(guide, 'idle', t('sensorSource.learn.done'));
 }

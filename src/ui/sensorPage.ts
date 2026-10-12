@@ -49,48 +49,29 @@ export interface ExternalSensorPage extends SensorPage {
 
 export type SensorPageOptions = SensorSourceOptions & BoxStatusOptions;
 
+/** One source: its row on the list and its own device page. */
+interface Source {
+  id: string;
+  statusPage: BoxStatusPage;
+  section: SensorSourceSection;
+}
+
+type ListPage = ReturnType<typeof createStandalonePage>;
+
 export function createSensorPage(
   sensors: readonly ExternalSensorDescriptor[],
   optionsFor: (sensor: ExternalSensorDescriptor) => SensorPageOptions,
 ): ExternalSensorPage {
   // Declared before the page so its `onOpen` can close over it.
-  const sources: { id: string; statusPage: BoxStatusPage; section: SensorSourceSection }[] = [];
+  const sources: Source[] = [];
   const refreshAll = () => {
     for (const source of sources) source.section.refresh();
   };
   const page = createStandalonePage(t('sensorList.title'), refreshAll);
-
   for (const sensor of sensors) {
-    const options = optionsFor(sensor);
-    const statusPage = createBoxStatusPage(options);
-    const section = createSensorSourceSection(
-      options,
-      () => {
-        // The mounting/offset controls on the device page are refreshed by
-        // this section, not by that page — so re-read them on the way in.
-        section.refresh();
-        statusPage.open();
-      },
-      // Connecting one source changes what every other row should say —
-      // none of them is "using the phone's own sensor" any more.
-      () => refreshAll(),
-    );
-    // Only the connect half here; the per-device settings go on the device
-    // page, so this list never grows longer than the pages it leads to.
-    page.body.append(section.connectElement);
-    statusPage.settingsSlot.append(section.installElement);
-    statusPage.footerSlot.append(section.moreElement);
-    statusPage.positionSlot.append(section.positionElement);
-    sources.push({ id: sensor.id, statusPage, section });
+    sources.push(addSource(page, sensor.id, optionsFor(sensor), refreshAll));
   }
-
-  // Said once, under the cards, never per box: what is used while no box
-  // is. No browser named: this page exists wherever Web Bluetooth does,
-  // including Bluefy on iOS.
-  const phoneLine = document.createElement('p');
-  phoneLine.className = 'menu__text sensor-list__phone';
-  phoneLine.textContent = t('sensorList.phone');
-  page.body.append(phoneLine);
+  page.body.append(createPhoneLine());
 
   return {
     element: page.element,
@@ -101,23 +82,65 @@ export function createSensorPage(
     isOpen: () => page.isOpen() || sources.some((source) => source.statusPage.isOpen()),
     attach: page.attach,
     open: page.open,
-    openSource: (id) => {
-      const source = sources.find((candidate) => candidate.id === id);
-      if (!source) return;
-      source.section.refresh();
-      source.statusPage.open();
-    },
-    refreshLive: () => {
-      for (const source of sources) {
-        // The list's own cards too: a box's password verdict arrives after
-        // the connect that drew them. Cheap — a card redraws only when what
-        // it shows has changed.
-        if (page.isOpen() && !source.statusPage.isOpen()) source.section.refreshLive();
-        if (!source.statusPage.isOpen()) continue;
-        // The position first: the status page's live line starts with it.
-        source.section.refreshLive();
-        source.statusPage.refresh();
-      }
-    },
+    openSource: (id) => openSource(sources, id),
+    refreshLive: () => refreshLive(page, sources),
   };
+}
+
+function addSource(
+  page: ListPage,
+  id: string,
+  options: SensorPageOptions,
+  refreshAll: () => void,
+): Source {
+  const statusPage = createBoxStatusPage(options);
+  const section = createSensorSourceSection(
+    options,
+    () => {
+      // The mounting/offset controls on the device page are refreshed by
+      // this section, not by that page — so re-read them on the way in.
+      section.refresh();
+      statusPage.open();
+    },
+    // Connecting one source changes what every other row should say —
+    // none of them is "using the phone's own sensor" any more.
+    () => refreshAll(),
+  );
+  // Only the connect half here; the per-device settings go on the device
+  // page, so this list never grows longer than the pages it leads to.
+  page.body.append(section.connectElement);
+  statusPage.settingsSlot.append(section.installElement);
+  statusPage.footerSlot.append(section.moreElement);
+  statusPage.positionSlot.append(section.positionElement);
+  return { id, statusPage, section };
+}
+
+/** Said once, under the cards, never per box: what is used while no box
+ * is. No browser named: this page exists wherever Web Bluetooth does,
+ * including Bluefy on iOS. */
+function createPhoneLine(): HTMLParagraphElement {
+  const phoneLine = document.createElement('p');
+  phoneLine.className = 'menu__text sensor-list__phone';
+  phoneLine.textContent = t('sensorList.phone');
+  return phoneLine;
+}
+
+function openSource(sources: Source[], id: string): void {
+  const source = sources.find((candidate) => candidate.id === id);
+  if (!source) return;
+  source.section.refresh();
+  source.statusPage.open();
+}
+
+function refreshLive(page: ListPage, sources: Source[]): void {
+  for (const source of sources) {
+    // The list's own cards too: a box's password verdict arrives after
+    // the connect that drew them. Cheap — a card redraws only when what
+    // it shows has changed.
+    if (page.isOpen() && !source.statusPage.isOpen()) source.section.refreshLive();
+    if (!source.statusPage.isOpen()) continue;
+    // The position first: the status page's live line starts with it.
+    source.section.refreshLive();
+    source.statusPage.refresh();
+  }
 }

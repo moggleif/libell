@@ -116,73 +116,7 @@ function vehicleDrawing(type: VehicleType, glyph: SVGGElement | null): SVGSVGEle
     class: 'mounting-picker__vehicle',
     'aria-hidden': 'true',
   });
-  if (type === 'caravan') {
-    svg.append(
-      svgEl('polyline', { points: '38,30 50,6 62,30', class: 'mounting-picker__drawbar' }),
-      svgEl('circle', { cx: '50', cy: '6', r: '4', class: 'mounting-picker__wheel' }),
-      svgEl('rect', {
-        x: '22',
-        y: '30',
-        width: '56',
-        height: '124',
-        rx: '8',
-        class: 'mounting-picker__body',
-      }),
-      svgEl('rect', {
-        x: '15',
-        y: '96',
-        width: '7',
-        height: '20',
-        class: 'mounting-picker__wheel',
-      }),
-      svgEl('rect', {
-        x: '78',
-        y: '96',
-        width: '7',
-        height: '20',
-        class: 'mounting-picker__wheel',
-      }),
-    );
-  } else {
-    svg.append(
-      svgEl('rect', {
-        x: '20',
-        y: '6',
-        width: '60',
-        height: '148',
-        rx: '12',
-        class: 'mounting-picker__body',
-      }),
-      svgEl('path', {
-        d: 'M27 26 Q50 14 73 26 L70 36 Q50 28 30 36 Z',
-        class: 'mounting-picker__glass',
-      }),
-    );
-    for (const [x, y] of [
-      [13, 30],
-      [80, 30],
-      [13, 118],
-      [80, 118],
-    ] as const) {
-      svg.append(
-        svgEl('rect', {
-          x: String(x),
-          y: String(y),
-          width: '7',
-          height: '18',
-          class: 'mounting-picker__wheel',
-        }),
-      );
-    }
-  }
-  const front = svgEl('text', {
-    x: '50',
-    y: type === 'caravan' ? '48' : '52',
-    'text-anchor': 'middle',
-    class: 'mounting-picker__front',
-  });
-  front.textContent = `${t('diagram.front').toUpperCase()} ↑`;
-  svg.append(front);
+  svg.append(...(type === 'caravan' ? caravanShapes() : motorhomeShapes()), frontLabel(type));
   if (glyph) {
     const placed = svgEl('g', { transform: 'translate(50 100)' });
     placed.append(glyph);
@@ -191,17 +125,68 @@ function vehicleDrawing(type: VehicleType, glyph: SVGGElement | null): SVGSVGEle
   return svg;
 }
 
+function caravanShapes(): SVGElement[] {
+  return [
+    svgEl('polyline', { points: '38,30 50,6 62,30', class: 'mounting-picker__drawbar' }),
+    svgEl('circle', { cx: '50', cy: '6', r: '4', class: 'mounting-picker__wheel' }),
+    svgEl('rect', {
+      x: '22',
+      y: '30',
+      width: '56',
+      height: '124',
+      rx: '8',
+      class: 'mounting-picker__body',
+    }),
+    wheel(15, 96, 20),
+    wheel(78, 96, 20),
+  ];
+}
+
+function motorhomeShapes(): SVGElement[] {
+  return [
+    svgEl('rect', {
+      x: '20',
+      y: '6',
+      width: '60',
+      height: '148',
+      rx: '12',
+      class: 'mounting-picker__body',
+    }),
+    svgEl('path', {
+      d: 'M27 26 Q50 14 73 26 L70 36 Q50 28 30 36 Z',
+      class: 'mounting-picker__glass',
+    }),
+    wheel(13, 30, 18),
+    wheel(80, 30, 18),
+    wheel(13, 118, 18),
+    wheel(80, 118, 18),
+  ];
+}
+
+function wheel(x: number, y: number, height: number): SVGElement {
+  return svgEl('rect', {
+    x: String(x),
+    y: String(y),
+    width: '7',
+    height: String(height),
+    class: 'mounting-picker__wheel',
+  });
+}
+
+function frontLabel(type: VehicleType): SVGElement {
+  const front = svgEl('text', {
+    x: '50',
+    y: type === 'caravan' ? '48' : '52',
+    'text-anchor': 'middle',
+    class: 'mounting-picker__front',
+  });
+  front.textContent = `${t('diagram.front').toUpperCase()} ↑`;
+  return front;
+}
+
 export function createMountingPicker(options: MountingPickerOptions): MountingPicker {
   const element = document.createElement('div');
   element.className = 'mounting-picker';
-
-  const prompt = document.createElement('p');
-  prompt.className = 'menu__text';
-  // A box lying flat with an arrow has its own two-choice picker below;
-  // this one only ever asks the upright box.
-  prompt.textContent = t('mounting.prompt.upright');
-  prompt.hidden = options.shape !== 'upright';
-
   const grid = document.createElement('div');
   grid.className = 'mounting-picker__grid';
   const center = document.createElement('div');
@@ -209,16 +194,7 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 
   const buttons = new Map<Facing, HTMLButtonElement>();
   for (const facing of FACINGS) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `mounting-picker__button mounting-picker__button--${facing}`;
-    const label = t(`mounting.facing.${facing}`);
-    button.setAttribute('aria-label', label);
-    button.title = label;
-    const icon = svgEl('svg', { viewBox: '-22 -22 44 44', 'aria-hidden': 'true' });
-    icon.append(boxGlyph(options.shape, facing));
-    button.append(icon);
-    button.addEventListener('click', () => {
+    const button = createFacingButton(options.shape, facing, () => {
       options.setFacing(facing);
       refresh();
     });
@@ -226,7 +202,7 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
     grid.append(button);
   }
   grid.append(center);
-  element.append(prompt, grid);
+  element.append(createUprightPrompt(options.shape), grid);
 
   function refresh(): void {
     const picked = options.getFacing();
@@ -242,6 +218,30 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 
   refresh();
   return { element, refresh };
+}
+
+/** A box lying flat with an arrow has its own two-choice picker below;
+ * this one only ever asks the upright box. */
+function createUprightPrompt(shape: BoxShape): HTMLParagraphElement {
+  const prompt = document.createElement('p');
+  prompt.className = 'menu__text';
+  prompt.textContent = t('mounting.prompt.upright');
+  prompt.hidden = shape !== 'upright';
+  return prompt;
+}
+
+function createFacingButton(shape: BoxShape, facing: Facing, onPick: () => void) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `mounting-picker__button mounting-picker__button--${facing}`;
+  const label = t(`mounting.facing.${facing}`);
+  button.setAttribute('aria-label', label);
+  button.title = label;
+  const icon = svgEl('svg', { viewBox: '-22 -22 44 44', 'aria-hidden': 'true' });
+  icon.append(boxGlyph(shape, facing));
+  button.append(icon);
+  button.addEventListener('click', onPick);
+  return button;
 }
 
 export interface PlacementPickerOptions {
