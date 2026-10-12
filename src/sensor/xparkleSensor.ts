@@ -79,7 +79,7 @@ export const XPARKLE_POLL_INTERVAL_MS = 500;
 export const XPARKLE_READ_TIMEOUT_MS = 2000;
 
 /** How long "try again" waits for the box's password verdict. */
-export const XPARKLE_PASSWORD_REPLY_TIMEOUT_MS = XPARKLE_READ_TIMEOUT_MS;
+const XPARKLE_PASSWORD_REPLY_TIMEOUT_MS = XPARKLE_READ_TIMEOUT_MS;
 
 export const XPARKLE_ADVERTISEMENT_WAIT_MS = BLE_ADVERTISEMENT_WAIT_MS;
 
@@ -479,13 +479,13 @@ async function wireXparkle(
 
 /** Real Web Bluetooth: Chrome/Android only, never Safari/iOS, where users
  * are pointed at Bluefy instead (R39). */
-export function isXparkleWebBluetoothSupported(): boolean {
+function isXparkleWebBluetoothSupported(): boolean {
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 }
 
 /** Real Web Bluetooth or the simulated box: the one gate for "does this
  * source exist here at all". */
-export function isXparkleAvailable(): boolean {
+function isXparkleAvailable(): boolean {
   return isXparkleWebBluetoothSupported() || xparkleSimulationMode() !== 'off';
 }
 

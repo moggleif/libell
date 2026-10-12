@@ -10,7 +10,7 @@ import { t } from './i18n';
 
 const SETUP_HASH_PREFIX = '#setup=';
 
-export function vehicleSetupUrl(geometry: VehicleGeometry): string {
+function vehicleSetupUrl(geometry: VehicleGeometry): string {
   const url = new URL(appUrl());
   url.hash = `setup=${encodeVehicleGeometry(geometry)}`;
   return url.href;

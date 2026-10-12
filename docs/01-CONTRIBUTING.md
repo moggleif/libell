@@ -122,6 +122,10 @@ they block a merge like any failing test. Each failure names the file and what t
   the guard arrived are listed in `scripts/quality/size-baseline.json`; they may shrink
   but never grow, and the guard asks you to lower or remove an entry once they shrink.
   Never raise a baseline or a limit to get green: split the code instead.
+- **Unused exports:** every exported function, constant or class in `src/` must be
+  imported by some other file (a test or a script counts, see #376). Exported types are
+  left alone, since they describe a module's interface. When the guard fails, drop
+  `export` if the file uses the name itself, or delete the code if nothing does.
 
 ## Workflow
 

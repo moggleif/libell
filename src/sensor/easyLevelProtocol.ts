@@ -77,7 +77,7 @@ import type { EasyLevelMounting } from '../domain/settings';
  * populates the first 6 bytes (accel only, no gyro) — gyro is never read
  * here anyway, since only the accel ratios feed the gravity vector.
  */
-export const ACCEL_PACKET_MIN_BYTES = 6;
+const ACCEL_PACKET_MIN_BYTES = 6;
 
 /** Anything `DataView`-constructible, or a plain byte array (tests). */
 export type PacketBytes = DataView | ArrayBufferLike | ArrayLike<number>;
@@ -106,7 +106,7 @@ export interface EasyLevelCalibration {
 /** Legacy firmware (tier < 3) appends its own accelX/Y/Z bias to the
  * `faf52c21-...` packet at bytes 12–17; tier-≥-3 firmware never sends a
  * payload this long, so its length alone identifies the legacy format. */
-export const ACCEL_PACKET_WITH_LEGACY_CALIBRATION_MIN_BYTES = 18;
+const ACCEL_PACKET_WITH_LEGACY_CALIBRATION_MIN_BYTES = 18;
 
 /**
  * Parse `faf52c21-...`'s payload into a `GravityVector`. Returns `null`
@@ -179,9 +179,9 @@ export function applyEasyLevelMounting(
  * firmware tier, plus calibration in bytes 8–19 on firmware tier ≥ 3
  * (byte7 ≥ 48), as decoded by the app's `Ly0/a;->i()` handler.
  */
-export const STATUS_PACKET_MIN_BYTES = 8;
+const STATUS_PACKET_MIN_BYTES = 8;
 /** Bytes 8–19 (`calibration`) additionally require this many. */
-export const STATUS_PACKET_WITH_CALIBRATION_MIN_BYTES = 20;
+const STATUS_PACKET_WITH_CALIBRATION_MIN_BYTES = 20;
 /** `firmwareTierFromByte`'s tier at and above which `faf52c22-...` carries
  * the bytes-8–19 calibration block. */
 const CALIBRATION_MIN_FIRMWARE_TIER = 3;

@@ -298,7 +298,7 @@ export type XparklePasswordMode =
 
 /** A box password is exactly four decimal digits (`PasswordViewModel`'s
  * input filter, and the fixed 4-byte slots in `Cmd.setPassword`). */
-export const XPARKLE_PASSWORD_LENGTH = 4;
+const XPARKLE_PASSWORD_LENGTH = 4;
 
 export function isValidXparklePassword(password: string): boolean {
   return new RegExp(`^\\d{${XPARKLE_PASSWORD_LENGTH}}$`).test(password);
@@ -366,7 +366,7 @@ export function orientationFromByte(byte: number): XparkleOrientation | null {
 }
 
 /** Bytes a parameter reply needs before every field above is readable. */
-export const PARAMETER_REPLY_MIN_BYTES = 12;
+const PARAMETER_REPLY_MIN_BYTES = 12;
 
 /**
  * Parse a completed reply frame to `queryParameters`

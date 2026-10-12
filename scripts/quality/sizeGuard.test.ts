@@ -1,24 +1,15 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { countLines, measureFunctions } from './functionSizes.ts';
 import { checkSizes, type SizeRules } from './sizeGuard.ts';
+import { readSources } from './sourceFiles.ts';
 import baseline from './size-baseline.json' with { type: 'json' };
 
 /** Limits for new code (#475). Existing exceptions live in size-baseline.json. */
 const LIMITS = { maxFunctionLines: 50, maxFileLines: 400 };
 
-/** Language dictionaries are data, not logic, and grow with every string. */
-const EXEMPT_DIRS = ['src/ui/messages'];
-
-function productionSources(dir: string): { path: string; source: string }[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) return EXEMPT_DIRS.includes(path) ? [] : productionSources(path);
-    if (!entry.name.endsWith('.ts') || entry.name.endsWith('.test.ts')) return [];
-    return [{ path, source: readFileSync(path, 'utf8') }];
-  });
-}
+/** Production code; language dictionaries are data, not logic, and grow with every string. */
+const isMeasured = (path: string, isDir: boolean) =>
+  isDir ? path !== 'src/ui/messages' : path.endsWith('.ts') && !path.endsWith('.test.ts');
 
 const fnLines = (n: number) => `function big() {\n${'  x();\n'.repeat(n - 2)}}\n`;
 
@@ -114,6 +105,6 @@ describe('checkSizes', () => {
 describe('the app source', () => {
   it('keeps every function and file within the size limits (#475)', () => {
     const rules: SizeRules = { ...LIMITS, ...baseline };
-    expect(checkSizes(productionSources('src'), rules)).toEqual([]);
+    expect(checkSizes(readSources('src', isMeasured), rules)).toEqual([]);
   });
 });
