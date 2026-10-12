@@ -12,7 +12,7 @@ export interface SettingsPage {
   element: HTMLElement;
   isOpen(): boolean;
   attach(button: HTMLButtonElement): void;
-  /** Open on whichever tab was last active — the "settings not saved" lamp's shortcut. */
+  /** Open on whichever tab was last active. */
   open(): void;
   /** Open directly on the Kalibrering tab — the "not calibrated" lamp's shortcut. */
   openCalibration(): void;
