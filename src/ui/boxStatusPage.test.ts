@@ -615,3 +615,190 @@ describe('the same page for every box (#375)', () => {
     expect(page.element.querySelector('input[type="number"]')).toBeNull();
   });
 });
+
+// Pins (#416) of every state the page draws and every callback it fires,
+// written before the builder is split up, so the split cannot change them.
+describe('pinned before the #416 split', () => {
+  function header(page: { element: HTMLElement }) {
+    const state = page.element.querySelector<HTMLElement>('.box-header__state')!;
+    const button = page.element.querySelector<HTMLButtonElement>('.box-header .menu__action')!;
+    return { state, button };
+  }
+
+  it('marks the header connected, lost or neither with its classes', () => {
+    const cases = [
+      { source: 'phone', state: 'granted', connected: false, lost: false },
+      { source: 'easylevel', state: 'granted', connected: true, lost: false },
+      { source: 'easylevel', state: 'disconnected', connected: false, lost: true },
+    ] as const;
+    for (const c of cases) {
+      const page = createBoxStatusPage(
+        makeOptions({ getSensorSource: () => c.source, getSensorState: () => c.state }),
+      );
+      expect(header(page).state.classList.contains('is-connected')).toBe(c.connected);
+      expect(header(page).state.classList.contains('is-lost')).toBe(c.lost);
+    }
+  });
+
+  it('marks a rejected password as lost, and Lost wins over the password', () => {
+    const rejected = createBoxStatusPage(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        password: { isRejected: () => true, tryPassword: () => Promise.resolve(true) },
+      }),
+    );
+    expect(header(rejected).state.classList.contains('is-lost')).toBe(true);
+    const lost = createBoxStatusPage(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getSensorState: () => 'disconnected',
+        password: { isRejected: () => true, tryPassword: () => Promise.resolve(true) },
+      }),
+    );
+    expect(header(lost).state.textContent).toBe(t('box.state.lost'));
+  });
+
+  it('says plain Connected while the battery is unknown', () => {
+    const page = createBoxStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+    expect(header(page).state.textContent).toBe(t('box.state.connected'));
+  });
+
+  it('rounds the battery in the header', () => {
+    const page = createBoxStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getHealth: () => ({ batteryPercent: 61.6, temperatureCelsius: null, firmwareLabel: null }),
+      }),
+    );
+    expect(header(page).state.textContent).toBe(
+      `${t('box.state.connected')} · ${t('box.state.battery', { value: '62 %' })}`,
+    );
+  });
+
+  it('offers no button at all without connectSensor', () => {
+    const page = createBoxStatusPage(makeOptions());
+    expect(header(page).button.hidden).toBe(true);
+  });
+
+  it('says Connecting and disables the button until the connect settles', async () => {
+    let finish: (state: 'granted') => void = () => {};
+    const page = createBoxStatusPage(
+      makeOptions({
+        connectSensor: () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      }),
+    );
+    const { button } = header(page);
+    button.click();
+    expect(button.disabled).toBe(true);
+    expect(button.textContent).toBe(t('sensorSource.status.connecting'));
+    finish('granted');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button.disabled).toBe(false);
+    expect(button.textContent).toBe(t('box.connect'));
+  });
+
+  it('shows only the position, with no dash, when there is a position but no tilt', () => {
+    const page = createBoxStatusPage(makeOptions({ getSensorSource: () => 'easylevel' }));
+    const position = document.createElement('span');
+    position.textContent = '! Lying down';
+    page.positionSlot.append(position);
+    page.refresh();
+    expect(page.element.querySelector('.box-live')?.textContent).toBe('! Lying down');
+  });
+
+  it('ignores a hidden position when joining the tilt line', () => {
+    const page = createBoxStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getCalibratedTilt: () => ({ rollDeg: 0.5, pitchDeg: 1 }),
+      }),
+    );
+    const position = document.createElement('span');
+    position.hidden = true;
+    page.positionSlot.append(position);
+    page.refresh();
+    expect(page.element.querySelector('.box-live')?.textContent).toBe(
+      `${t('tilt.sideSide')} 0.5° · ${t('tilt.frontBack')} 1.0°`,
+    );
+  });
+
+  it('lays the page out as header, password, live line, low battery, settings, footer, debug, advanced', () => {
+    const page = createBoxStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        password: { isRejected: () => false, tryPassword: () => Promise.resolve(true) },
+        offersSilentReconnectTip: () => true,
+      }),
+    );
+    const classes = [...page.settingsSlot.parentElement!.children].map((child) => child.className);
+    const order = [
+      'box-header',
+      'box-password',
+      'box-live',
+      'menu__text--warning',
+      '',
+      'box-footer',
+      'sensor-status__debug',
+      'sensor-status__advanced',
+    ];
+    expect(classes).toHaveLength(order.length);
+    order.forEach((name, i) => expect(classes[i]).toContain(name));
+  });
+
+  it('keeps the debug disclosure in place but hidden while the box is not in use', () => {
+    const page = createBoxStatusPage(makeOptions());
+    const debug = page.element.querySelector<HTMLElement>('.sensor-status__debug');
+    expect(debug).not.toBeNull();
+    expect(debug!.hidden).toBe(true);
+  });
+
+  it('shows the last-sample age and spaced raw values in the debug rows', () => {
+    const now = performance.now();
+    const page = createBoxStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getLastSampleAt: () => now - 1500,
+        getRawAccel: () => ({ x: 1, y: -2, z: 300 }),
+        getEasyLevelStatusBytes: () => new Uint8Array([0, 10, 255]),
+      }),
+    );
+    const debug = page.element.querySelector('.sensor-status__debug')!.textContent ?? '';
+    expect(debug).toMatch(/1\.\d s/);
+    expect(debug).toContain('1, -2, 300');
+    expect(debug).toContain('00 0a ff');
+  });
+
+  it('copies the debug summary line by line, with the connection state', async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    const page = createBoxStatusPage(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getSensorState: () => 'granted',
+        getDeviceId: () => 'dev-1',
+      }),
+    );
+    findCopy(page.element).click();
+    const text = (writeText.mock.calls[0] as unknown as [string])[0];
+    const lines = text.split('\n');
+    expect(lines[0]).toBe('Libell EasyLevel debug info');
+    expect(lines[1]).toBe('Connection state: granted');
+    expect(lines[2]).toBe('Device ID: dev-1');
+    expect(lines).toHaveLength(7);
+  });
+
+  function findCopy(root: HTMLElement): HTMLButtonElement {
+    return [...root.querySelectorAll<HTMLButtonElement>('.sensor-status__debug button')].find(
+      (button) => button.textContent === t('sensorStatus.debug.copy'),
+    )!;
+  }
+});

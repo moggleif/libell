@@ -793,3 +793,261 @@ describe('the learn-the-mounting guide on the device page (#293)', () => {
     expect(section.installElement.textContent).not.toContain('Learn it by raising the front');
   });
 });
+
+// Pins (#416) of every state the section draws and every callback it
+// fires, written before the builder is split up, so the split cannot
+// change them.
+describe('pinned before the #416 split', () => {
+  const learnedXparkle = (
+    learned: ReturnType<NonNullable<SensorSourceOptions['learnMounting']>['getLearnedMounting']>,
+  ) => ({
+    getRawReading: () => ({ pitchDeg: 0, rollDeg: 0 }),
+    getLearnedMounting: () => learned,
+    setLearnedMounting: () => {},
+  });
+
+  function card(root: HTMLElement) {
+    return {
+      element: root.querySelector<HTMLElement>('.sensor-card')!,
+      mark: root.querySelector<HTMLElement>('.sensor-card__mark')!,
+      state: root.querySelector<HTMLElement>('.sensor-card__state')!,
+    };
+  }
+
+  function steps(root: HTMLElement) {
+    return [...root.querySelectorAll<HTMLElement>('.box-step')].map((step) => ({
+      element: step,
+      header: step.querySelector<HTMLButtonElement>('.box-step__header')!,
+      mark: step.querySelector<HTMLElement>('.box-step__mark')!.textContent,
+      title: step.querySelector<HTMLElement>('.box-step__title')!.textContent,
+      open: !step.querySelector<HTMLElement>('.box-step__body')!.hidden,
+      done: step.classList.contains('is-done'),
+    }));
+  }
+
+  it('marks the card + while not in use, ✓ in use, ! when lost or rejected', () => {
+    const cases = [
+      { source: 'phone', state: 'idle', rejected: false, mark: '+', cls: '' },
+      { source: 'easylevel', state: 'granted', rejected: false, mark: '✓', cls: 'is-active' },
+      { source: 'easylevel', state: 'disconnected', rejected: false, mark: '!', cls: 'is-lost' },
+      { source: 'easylevel', state: 'granted', rejected: true, mark: '!', cls: 'is-lost' },
+    ] as const;
+    for (const c of cases) {
+      const section = createSensorSourceSection(
+        makeOptions({
+          getSensorSource: () => c.source,
+          getSensorState: () => c.state,
+          password: { isRejected: () => c.rejected, tryPassword: () => Promise.resolve(true) },
+        }),
+      );
+      const { element, mark, state } = card(section.element);
+      expect(mark.textContent).toBe(c.mark);
+      expect(element.classList.contains('is-active')).toBe(c.cls === 'is-active');
+      expect(element.classList.contains('is-lost')).toBe(c.cls === 'is-lost');
+      expect(state.hidden).toBe(c.source === 'phone');
+    }
+  });
+
+  it('says Connecting under the name while the connect is on its way', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ connectSensor: () => new Promise(() => {}) }),
+    );
+    const connect = findButton(section.element, 'Connect EasyLevel sensor');
+    connect.click();
+    expect(connect.hidden).toBe(true);
+    expect(card(section.element).state.hidden).toBe(false);
+    expect(card(section.element).state.textContent).toBe(t('sensorSource.status.connecting'));
+  });
+
+  it('tells the caller after a failed connect too', async () => {
+    const onSourceChanged = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({ connectSensor: () => Promise.resolve('denied') }),
+      undefined,
+      onSourceChanged,
+    );
+    findButton(section.element, 'Connect EasyLevel sensor').click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onSourceChanged).toHaveBeenCalledOnce();
+    expect(card(section.element).state.textContent).toBe(
+      t('sensorSource.err.failed', { name: 'EasyLevel' }),
+    );
+  });
+
+  it('disconnects, redraws and tells the caller', () => {
+    let source: 'easylevel' | 'phone' = 'easylevel';
+    const disconnectSensor = vi.fn(() => {
+      source = 'phone';
+    });
+    const onSourceChanged = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({ getSensorSource: () => source, disconnectSensor }),
+      undefined,
+      onSourceChanged,
+    );
+    findButton(section.element, 'Disconnect').click();
+    expect(disconnectSensor).toHaveBeenCalledOnce();
+    expect(onSourceChanged).toHaveBeenCalledOnce();
+    expect(section.installElement.hidden).toBe(true);
+    expect(section.moreElement.hidden).toBe(true);
+  });
+
+  it('numbers the steps 1 and 2 and ticks each one when done', () => {
+    const todo = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
+    expect(steps(todo.installElement).map((s) => [s.mark, s.done])).toEqual([
+      ['1', false],
+      ['2', false],
+    ]);
+    const done = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        isMountingPicked: () => true,
+        getInstallCalibration: () => ({ rollDeg: 0, pitchDeg: 0 }),
+      }),
+    );
+    expect(steps(done.installElement).map((s) => [s.mark, s.done])).toEqual([
+      ['✓', true],
+      ['✓', true],
+    ]);
+  });
+
+  it('opens the next undone step, and none once both are done', () => {
+    const open = (picked: boolean, zeroed: boolean) =>
+      steps(
+        createSensorSourceSection(
+          makeOptions({
+            getSensorSource: () => 'easylevel',
+            isMountingPicked: () => picked,
+            getInstallCalibration: () => (zeroed ? { rollDeg: 0, pitchDeg: 0 } : null),
+          }),
+        ).installElement,
+      ).map((s) => s.open);
+    expect(open(false, false)).toEqual([true, false]);
+    expect(open(true, false)).toEqual([false, true]);
+    expect(open(false, true)).toEqual([true, false]);
+    expect(open(true, true)).toEqual([false, false]);
+  });
+
+  it('opens a step by hand, and keeps one closed by hand closed on refresh', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
+    const [direction, zero] = steps(section.installElement);
+    zero!.header.click();
+    expect(steps(section.installElement).map((s) => s.open)).toEqual([false, true]);
+    expect(zero!.element.classList.contains('is-open')).toBe(true);
+    expect(direction!.element.classList.contains('is-open')).toBe(false);
+    zero!.header.click();
+    expect(steps(section.installElement).map((s) => s.open)).toEqual([false, false]);
+    section.refresh();
+    expect(steps(section.installElement).map((s) => s.open)).toEqual([false, false]);
+  });
+
+  it('keeps the zero step open after a zero, and names its age', () => {
+    let offset: { rollDeg: number; pitchDeg: number } | null = null;
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        isMountingPicked: () => true,
+        getInstallCalibration: () => offset,
+        getInstallCalibrationCapturedAt: () => null,
+        calibrateInstall: () => {
+          offset = { rollDeg: 0, pitchDeg: 0 };
+          return null;
+        },
+      }),
+    );
+    findButton(section.installElement, 'Zero now').click();
+    const [, zero] = steps(section.installElement);
+    expect(zero!.open).toBe(true);
+    expect(zero!.title).toBe(t('box.step.zero.done'));
+    expect(findButton(section.installElement, t('box.step.zero.again'))).toBeDefined();
+  });
+
+  it('forgets an EasyLevel placement by passing null', () => {
+    const setMounting = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        isMountingPicked: () => true,
+        setMounting,
+      }),
+    );
+    findButton(section.installElement, 'Forget the direction').click();
+    expect(setMounting).toHaveBeenCalledWith(null);
+  });
+
+  it('forgets a learned Xparkle direction by passing null', () => {
+    const setLearnedMounting = vi.fn();
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting: { ...learnedXparkle(IDENTITY_AXIS_MAPPING), setLearnedMounting },
+      }),
+    );
+    findButton(section.installElement, 'Forget the direction').click();
+    expect(setLearnedMounting).toHaveBeenCalledWith(null);
+  });
+
+  it('shows and hides the lift guide from its link', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        learnMounting: learnedXparkle(null),
+      }),
+    );
+    const link = findButton(section.installElement, t('box.step.direction.learn'));
+    const guide = link.nextElementSibling as HTMLElement;
+    expect(guide.hidden).toBe(true);
+    link.click();
+    expect(guide.hidden).toBe(false);
+    link.click();
+    expect(guide.hidden).toBe(true);
+  });
+
+  it('has no direction step for a box with neither a mounting nor a lift guide', () => {
+    const section = createSensorSourceSection(
+      makeOptions({ sensor: XPARKLE_DESCRIPTOR, getSensorSource: () => 'xparkle' }),
+    );
+    expect(steps(section.installElement).map((s) => s.mark)).toEqual(['2']);
+  });
+
+  it('says it is waiting for a reading before the first sample', () => {
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => 'xparkle',
+        getCalibratedTilt: () => null,
+      }),
+    );
+    expect(section.positionElement.hidden).toBe(false);
+    expect(section.positionElement.textContent).toBe(t('box.step.position.waiting'));
+    expect(section.positionElement.classList.contains('is-done')).toBe(false);
+    expect(section.positionElement.classList.contains('is-warning')).toBe(false);
+  });
+
+  it('redraws the whole card from refreshLive() once the password verdict changes', () => {
+    let rejected = false;
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getSensorState: () => 'granted',
+        password: { isRejected: () => rejected, tryPassword: () => Promise.resolve(true) },
+      }),
+    );
+    expect(card(section.element).mark.textContent).toBe('✓');
+    rejected = true;
+    section.refreshLive();
+    expect(card(section.element).mark.textContent).toBe('!');
+  });
+
+  it('stacks the card, the checklist and the footer in element', () => {
+    const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'easylevel' }));
+    expect([...section.element.children]).toEqual([
+      section.connectElement,
+      section.installElement,
+      section.moreElement,
+    ]);
+  });
+});
