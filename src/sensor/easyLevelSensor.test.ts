@@ -1,19 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createEasyLevelSensor, EASYLEVEL_DESCRIPTOR } from './easyLevelSensor';
 import {
-  createEasyLevelSensor,
-  createWebBluetoothTransport,
-  EASYLEVEL_DESCRIPTOR,
   EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS,
   EASYLEVEL_SILENCE_LIMIT_MS,
-  isEasyLevelAvailable,
   isEasyLevelInitialCalibrationWaitExpired,
+} from './easyLevelLink';
+import {
+  createWebBluetoothTransport,
+  isEasyLevelAvailable,
   isWebBluetoothSupported,
   EASYLEVEL_ADVERTISED_SERVICE_UUID,
   EASYLEVEL_DEVICE_NAME_PREFIX,
   EASYLEVEL_SERVICE_UUID,
   type EasyLevelConnection,
   type EasyLevelTransport,
-} from './easyLevelSensor';
+} from './easyLevelTransport';
 import { BLE_ADVERTISEMENT_WAIT_MS } from './bleAdvertisement';
 
 /** Little-endian int16 triplet, matching the real faf52c21 payload shape. */
@@ -1205,5 +1206,59 @@ describe('a silent EasyLevel stream counts as lost contact (#358)', () => {
 
   it('gives the box more time than the stale-data overlay, which covers the gap first (R35)', () => {
     expect(EASYLEVEL_SILENCE_LIMIT_MS).toBeGreaterThan(EASYLEVEL_DESCRIPTOR.staleTimeoutMs);
+  });
+});
+
+describe('what an EasyLevel link keeps and clears (#478)', () => {
+  async function connected() {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+    const fake = fakeTransport();
+    let now = 5000;
+    const sensor = createEasyLevelSensor(
+      fake.transport,
+      () => 'standard',
+      () => now,
+    );
+    await sensor.start();
+    fake.emitStatus(statusBytes(3000, 32));
+    now = 6000;
+    fake.emitAccel(accelBytes(0, 0, 1000));
+    return { sensor, fake };
+  }
+
+  it('a lost link clears every reading but keeps the device and the debug bytes', async () => {
+    const { sensor, fake } = await connected();
+    expect(sensor.getLastSampleAt()).toBe(6000);
+    fake.emitDisconnect();
+    expect(sensor.getState()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+    expect(sensor.getRawGravity()).toBeNull();
+    expect(sensor.getLastSampleAt()).toBeNull();
+    expect(sensor.getStatus()).toBeNull();
+    expect(sensor.getStatusBytes()?.[7]).toBe(32);
+    expect(sensor.getDeviceId()).toBe('fake-device-id');
+  });
+
+  it('a user disconnect goes idle and forgets the device', async () => {
+    const { sensor, fake } = await connected();
+    sensor.disconnect();
+    expect(sensor.getState()).toBe('idle');
+    expect(sensor.getGravity()).toBeNull();
+    expect(sensor.getStatus()).toBeNull();
+    expect(sensor.getDeviceId()).toBeNull();
+    expect(fake.connection.disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('starting again while connected keeps the link instead of opening the picker', async () => {
+    const { sensor, fake } = await connected();
+    const connectSpy = vi.spyOn(fake.transport, 'connect');
+    const reconnectSpy = vi.spyOn(fake.transport, 'reconnect');
+    expect(await sensor.start()).toBe('granted');
+    expect(await sensor.reconnect('fake-device-id')).toBe('granted');
+    expect(connectSpy).not.toHaveBeenCalled();
+    expect(reconnectSpy).not.toHaveBeenCalled();
   });
 });

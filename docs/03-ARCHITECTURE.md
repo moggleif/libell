@@ -147,8 +147,10 @@ the two Sensorbox adapters: `src/sensor/easyLevelSensor.ts` (#116, R32) and
 `src/sensor/xparkleSensor.ts` (#270, R49), opt-in from the top bar's sensor icon or the
 menu's "Sensor box" page, only offered when `navigator.bluetooth` exists. `main.ts` selects
 between implementations through the external-sensor controller's active sensor; `domain/` never learns which one is
-active. `easyLevelSensor.ts` keeps Web Bluetooth GATT transport separate from payload
-parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardware or
+active. `easyLevelSensor.ts` is the `OrientationSensor` face; one live link (status
+before accel, the calibration gate, the silence watch) runs in `easyLevelLink.ts`, the
+Web Bluetooth GATT transport sits in `easyLevelTransport.ts`, and payload parsing in
+`easyLevelProtocol.ts` (unit-tested with synthetic bytes — no hardware or
 `navigator.bluetooth` needed); `easyLevelSimulator.ts` (#220, R44) plugs a simulated
 box into that same transport seam behind the `?easylevel-sim` query flag, emitting
 real-wire-format payloads on timers so the whole EasyLevel flow runs hardware-free in

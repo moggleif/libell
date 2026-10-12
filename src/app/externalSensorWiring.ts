@@ -25,11 +25,8 @@ import {
   xparkleSettings,
   type EasyLevelMounting,
 } from '../domain/sensorDeviceSettings';
-import {
-  createEasyLevelSensor,
-  createWebBluetoothTransport,
-  type EasyLevelSensor,
-} from '../sensor/easyLevelSensor';
+import { createEasyLevelSensor, type EasyLevelSensor } from '../sensor/easyLevelSensor';
+import { createWebBluetoothTransport } from '../sensor/easyLevelTransport';
 import {
   createSimulatedEasyLevelTransport,
   easyLevelSimulationMode,

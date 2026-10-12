@@ -44,58 +44,58 @@ export function createSimulatedLink<Members>(box: SimulatedBox<Members>): Simula
   // Plain `Date.now()` rather than an injected clock: this never runs in
   // `domain/`, and tests drive it with fake timers, which fake `Date` too.
   let lastDropAt: number | null = null;
-
-  function isInOutage(): boolean {
-    return box.drop !== null && lastDropAt !== null && Date.now() - lastDropAt < box.drop.outageMs;
-  }
-
-  function open(onDisconnect: () => void): SimulatedConnection<Members> {
-    let live = true;
-    const timeoutIds: Array<ReturnType<typeof setTimeout>> = [];
-    const intervalIds: Array<ReturnType<typeof setInterval>> = [];
-    const stop = () => {
-      live = false;
-      for (const id of timeoutIds) clearTimeout(id);
-      for (const id of intervalIds) clearInterval(id);
-    };
-
-    if (box.drop) {
-      // A lost link stops first and reports second, the order a real GATT
-      // loss has; `stop()` alone is the deliberate disconnect.
-      timeoutIds.push(
-        setTimeout(() => {
-          lastDropAt = Date.now();
-          stop();
-          onDisconnect();
-        }, box.drop.dropAfterMs),
-      );
-    }
-
-    const session: SimulatedSession = {
-      isLive: () => live,
-      after(ms, action) {
-        timeoutIds.push(
-          setTimeout(() => {
-            if (live) action();
-          }, ms),
-        );
-      },
-      every(ms, action) {
-        intervalIds.push(
-          setInterval(() => {
-            if (live) action();
-          }, ms),
-        );
-      },
-    };
-    return { ...box.open(session), deviceId: box.deviceId, disconnect: stop };
-  }
+  const isInOutage = () =>
+    box.drop !== null && lastDropAt !== null && Date.now() - lastDropAt < box.drop.outageMs;
+  const open = (onDisconnect: () => void) =>
+    openConnection(box, onDisconnect, () => {
+      lastDropAt = Date.now();
+    });
 
   return {
     connect: (onDisconnect) => Promise.resolve(open(onDisconnect)),
     reconnect: (deviceId, onDisconnect) => {
       if (deviceId !== box.deviceId || isInOutage()) return Promise.resolve(null);
       return Promise.resolve(open(onDisconnect));
+    },
+  };
+}
+
+function openConnection<Members>(
+  box: SimulatedBox<Members>,
+  onDisconnect: () => void,
+  onDrop: () => void,
+): SimulatedConnection<Members> {
+  const { session, stop } = createSession();
+  if (box.drop) {
+    // A lost link stops first and reports second, the order a real GATT
+    // loss has; `stop()` alone is the deliberate disconnect.
+    session.after(box.drop.dropAfterMs, () => {
+      onDrop();
+      stop();
+      onDisconnect();
+    });
+  }
+  return { ...box.open(session), deviceId: box.deviceId, disconnect: stop };
+}
+
+/** One connection's timers, all cleared by `stop()`. */
+function createSession(): { session: SimulatedSession; stop: () => void } {
+  let live = true;
+  const timeoutIds: Array<ReturnType<typeof setTimeout>> = [];
+  const intervalIds: Array<ReturnType<typeof setInterval>> = [];
+  const whileLive = (action: () => void) => () => {
+    if (live) action();
+  };
+  return {
+    session: {
+      isLive: () => live,
+      after: (ms, action) => void timeoutIds.push(setTimeout(whileLive(action), ms)),
+      every: (ms, action) => void intervalIds.push(setInterval(whileLive(action), ms)),
+    },
+    stop() {
+      live = false;
+      for (const id of timeoutIds) clearTimeout(id);
+      for (const id of intervalIds) clearInterval(id);
     },
   };
 }

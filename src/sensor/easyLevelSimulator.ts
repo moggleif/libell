@@ -16,7 +16,7 @@
  * Bytes through the seam only: no `navigator.bluetooth`, no UI. Lives in
  * `sensor/`, not `domain/`, because it owns real timers (ADR 0002).
  */
-import type { EasyLevelConnection, EasyLevelTransport } from './easyLevelSensor';
+import type { EasyLevelConnection, EasyLevelTransport } from './easyLevelTransport';
 import { createSimulatedLink, type SimulatedSession } from './simulatedLink';
 
 export type EasyLevelSimulationMode = 'off' | 'steady' | 'drop';

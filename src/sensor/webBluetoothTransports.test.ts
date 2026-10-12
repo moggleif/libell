@@ -4,7 +4,7 @@ import {
   EASYLEVEL_ACCEL_CHARACTERISTIC_UUID,
   EASYLEVEL_SERVICE_UUID,
   EASYLEVEL_STATUS_CHARACTERISTIC_UUID,
-} from './easyLevelSensor';
+} from './easyLevelTransport';
 import { createXparkleWebBluetoothTransport } from './xparkleTransport';
 import {
   XPARKLE_DEVICE_NAME_FRAGMENTS,

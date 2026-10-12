@@ -961,7 +961,7 @@ URL and must keep working with no signal.
   characteristic at all (best-effort subscribe fails — nothing to wait for), or a short
   bounded grace window elapses with no status notification arriving. That window is
   Libell's own defensive choice, not derived from the official app (which has no
-  equivalent wait, only the subscribe ordering above) — see `easyLevelSensor.ts`'s
+  equivalent wait, only the subscribe ordering above) — see `easyLevelLink.ts`'s
   `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`. Firmware that genuinely has no status
   characteristic is never held up by this: it starts reporting as soon as the first
   accel sample arrives, exactly as before #217.
