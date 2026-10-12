@@ -174,44 +174,15 @@ function buildHelpPanel(
   }
 
   for (const topic of TOPICS) {
+    const body = buildTopicBody(topic, go, hasTarget);
+    const button = buildTopicToggle(topic, body);
+    button.addEventListener('click', () => show(body.hidden ? topic.id : null));
+    const heading = document.createElement('h3');
+    heading.className = 'help-topic__heading';
+    heading.append(button);
     const section = document.createElement('section');
     section.className = 'help-topic';
     section.dataset.topic = topic.id;
-
-    const heading = document.createElement('h3');
-    heading.className = 'help-topic__heading';
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'help-topic__toggle';
-    button.textContent = t(topic.h);
-    const body = document.createElement('div');
-    body.className = 'help-topic__body';
-    body.id = `help-topic-${topic.id}`;
-    button.setAttribute('aria-controls', body.id);
-    button.addEventListener('click', () => show(body.hidden ? topic.id : null));
-    heading.append(button);
-
-    if (topic.picture) body.append(topic.picture(t(topic.h)));
-    const p = document.createElement('p');
-    p.className = 'menu__text';
-    p.textContent = t(topic.text);
-    body.append(p);
-    if (topic.caravanLine) {
-      const line = document.createElement('p');
-      line.className = 'menu__text';
-      line.textContent = t(topic.caravanLine);
-      body.append(line);
-    }
-    if (topic.go && hasTarget(topic.go.target)) {
-      const target = topic.go.target;
-      const action = document.createElement('button');
-      action.type = 'button';
-      action.className = 'menu__action menu__action--secondary help-topic__go';
-      action.textContent = topic.go.label();
-      action.addEventListener('click', () => go(target));
-      body.append(action);
-    }
-
     section.append(heading, body);
     panel.append(section);
     toggles.set(topic.id, { button, body });
@@ -223,50 +194,58 @@ function buildHelpPanel(
   return { element: panel, reset };
 }
 
+function buildTopicToggle(topic: Topic, body: HTMLElement): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'help-topic__toggle';
+  button.textContent = t(topic.h);
+  button.setAttribute('aria-controls', body.id);
+  return button;
+}
+
+/** The picture, the text, the caravan line and the button to the setting,
+ * each only where the topic has one. */
+function buildTopicBody(
+  topic: Topic,
+  go: (target: HelpTarget | 'feedback') => void,
+  hasTarget: (target: HelpTarget | 'feedback') => boolean,
+): HTMLElement {
+  const body = document.createElement('div');
+  body.className = 'help-topic__body';
+  body.id = `help-topic-${topic.id}`;
+  if (topic.picture) body.append(topic.picture(t(topic.h)));
+  body.append(textLine(topic.text));
+  if (topic.caravanLine) body.append(textLine(topic.caravanLine));
+  if (topic.go && hasTarget(topic.go.target)) {
+    const target = topic.go.target;
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'menu__action menu__action--secondary help-topic__go';
+    action.textContent = topic.go.label();
+    action.addEventListener('click', () => go(target));
+    body.append(action);
+  }
+  return body;
+}
+
+function textLine(key: MessageKey): HTMLParagraphElement {
+  const line = document.createElement('p');
+  line.className = 'menu__text';
+  line.textContent = t(key);
+  return line;
+}
+
 export function createInfoPage(options: InfoPageOptions): InfoPage {
   // Assigned below; only called from a later reopen.
   let refreshIntroButton: () => void = () => {};
   let resetHelp: () => void = () => {};
   const page = createStandalonePage(t('menu.help'), () => {
-    selectTab('help');
+    tabs.select('help');
     resetHelp();
     // The wizard may have been completed since this page was last open.
     refreshIntroButton();
   });
-
-  const tabsBar = document.createElement('div');
-  tabsBar.className = 'settings__tabs';
-  tabsBar.setAttribute('role', 'tablist');
-
-  const TAB_LABELS: Record<InfoTab, string> = {
-    help: t('menu.help'),
-    about: t('menu.about.tab'),
-    feedback: t('menu.feedback'),
-  };
-  // The header spells out the full name ("About Libell", not "About").
-  const TAB_TITLES: Record<InfoTab, string> = {
-    help: t('menu.help'),
-    about: t('menu.about'),
-    feedback: t('menu.feedback'),
-  };
-
-  const tabButtons = new Map<InfoTab, HTMLButtonElement>();
-  const tabPanels = new Map<InfoTab, HTMLElement>();
-
-  function addTab(id: InfoTab, panel: HTMLElement): void {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'settings__tab';
-    btn.setAttribute('role', 'tab');
-    btn.dataset.tab = id;
-    btn.textContent = TAB_LABELS[id];
-    btn.addEventListener('click', () => selectTab(id));
-    tabsBar.append(btn);
-    tabButtons.set(id, btn);
-
-    panel.classList.add('settings__tabpanel');
-    tabPanels.set(id, panel);
-  }
+  const tabs = createInfoTabs(page);
 
   const introButton = buildIntroButton(page, options.openOnboarding, options.hasDoneOnboarding);
   refreshIntroButton = introButton.refresh;
@@ -274,7 +253,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     introButton.element,
     (target) => {
       // Other targets are pages, opened once this one's close has landed.
-      if (target === 'feedback') selectTab('feedback');
+      if (target === 'feedback') tabs.select('feedback');
       else page.close(() => options.openTarget?.(target));
     },
     (target) =>
@@ -282,23 +261,55 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
       (options.openTarget !== undefined && (target !== 'sensor' || options.hasSensorPage === true)),
   );
   resetHelp = helpPanel.reset;
-  addTab('help', helpPanel.element);
-  addTab('about', createAboutSection());
-  addTab('feedback', createFeedbackSection());
+  tabs.add('help', helpPanel.element);
+  tabs.add('about', createAboutSection());
+  tabs.add('feedback', createFeedbackSection());
+  tabs.select('help');
 
-  function selectTab(id: InfoTab): void {
-    for (const [tid, btn] of tabButtons) btn.setAttribute('aria-selected', String(tid === id));
-    for (const [tid, panel] of tabPanels) panel.hidden = tid !== id;
-    page.setTitle(TAB_TITLES[id]);
-  }
-  selectTab('help');
-
-  page.body.append(tabsBar);
-  for (const panel of tabPanels.values()) page.body.append(panel);
-
+  page.body.append(tabs.bar, ...tabs.panels.values());
   return {
     element: page.element,
     isOpen: page.isOpen,
     attach: page.attach,
   };
+}
+
+/** Help, About and Feedback as tabs; selecting one also retitles the page. */
+function createInfoTabs(page: StandalonePage) {
+  const bar = document.createElement('div');
+  bar.className = 'settings__tabs';
+  bar.setAttribute('role', 'tablist');
+  const labels: Record<InfoTab, string> = {
+    help: t('menu.help'),
+    about: t('menu.about.tab'),
+    feedback: t('menu.feedback'),
+  };
+  // The header spells out the full name ("About Libell", not "About").
+  const titles: Record<InfoTab, string> = {
+    help: t('menu.help'),
+    about: t('menu.about'),
+    feedback: t('menu.feedback'),
+  };
+  const buttons = new Map<InfoTab, HTMLButtonElement>();
+  const panels = new Map<InfoTab, HTMLElement>();
+
+  function select(id: InfoTab): void {
+    for (const [tid, btn] of buttons) btn.setAttribute('aria-selected', String(tid === id));
+    for (const [tid, panel] of panels) panel.hidden = tid !== id;
+    page.setTitle(titles[id]);
+  }
+  function add(id: InfoTab, panel: HTMLElement): void {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'settings__tab';
+    btn.setAttribute('role', 'tab');
+    btn.dataset.tab = id;
+    btn.textContent = labels[id];
+    btn.addEventListener('click', () => select(id));
+    bar.append(btn);
+    buttons.set(id, btn);
+    panel.classList.add('settings__tabpanel');
+    panels.set(id, panel);
+  }
+  return { bar, panels, add, select };
 }

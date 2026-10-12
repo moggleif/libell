@@ -16,28 +16,42 @@ export interface IncomingVehicleSetupOptions {
 }
 
 export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): void {
-  const { geometry, displayUnit, onApply, onDismiss } = options;
-  const unit = (mm: number) => formatLength(mm, displayUnit);
-  const isCaravan = geometry.vehicleType === 'caravan';
-
   const overlay = document.createElement('div');
   overlay.className = 'incoming-setup';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-labelledby', 'incoming-setup-heading');
 
-  const card = document.createElement('div');
-  card.className = 'incoming-setup__card';
-
   const heading = document.createElement('h2');
   heading.id = 'incoming-setup-heading';
   heading.className = 'incoming-setup__heading';
   heading.textContent = t('setup.incoming.h');
+  const intro = paragraph('incoming-setup__intro', t('setup.incoming.intro'));
+  const reminder = paragraph('incoming-setup__reminder', t('setup.incoming.reminder'));
+  const close = (): void => overlay.remove();
+  const actions = createActions(
+    () => {
+      close();
+      options.onDismiss();
+    },
+    () => {
+      close();
+      options.onApply();
+    },
+  );
 
-  const intro = document.createElement('p');
-  intro.className = 'incoming-setup__intro';
-  intro.textContent = t('setup.incoming.intro');
+  const card = document.createElement('div');
+  card.className = 'incoming-setup__card';
+  card.append(heading, intro, geometryList(options), reminder, actions);
+  overlay.append(card);
+  document.body.append(overlay);
+}
 
+/** What the link would set, in this phone's unit; a caravan's list leaves
+ * out what it does not have. */
+function geometryList({ geometry, displayUnit }: IncomingVehicleSetupOptions): HTMLElement {
+  const unit = (mm: number) => formatLength(mm, displayUnit);
+  const isCaravan = geometry.vehicleType === 'caravan';
   const list = document.createElement('dl');
   list.className = 'incoming-setup__list';
   const row = (labelKey: MessageKey, value: string): void => {
@@ -61,34 +75,29 @@ export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): 
   );
   if (!isCaravan) row('settings.rampCount', String(geometry.rampCount));
   row('settings.drain', t(`drain.${geometry.drainPosition}` as MessageKey));
+  return list;
+}
 
-  const reminder = document.createElement('p');
-  reminder.className = 'incoming-setup__reminder';
-  reminder.textContent = t('setup.incoming.reminder');
+function paragraph(className: string, text: string): HTMLParagraphElement {
+  const element = document.createElement('p');
+  element.className = className;
+  element.textContent = text;
+  return element;
+}
 
+function createActions(onDismiss: () => void, onApply: () => void): HTMLElement {
   const actions = document.createElement('div');
   actions.className = 'incoming-setup__actions';
   const dismissButton = document.createElement('button');
   dismissButton.type = 'button';
   dismissButton.className = 'menu__action menu__action--secondary';
   dismissButton.textContent = t('setup.incoming.dismiss');
+  dismissButton.addEventListener('click', onDismiss);
   const applyButton = document.createElement('button');
   applyButton.type = 'button';
   applyButton.className = 'menu__action';
   applyButton.textContent = t('setup.incoming.apply');
+  applyButton.addEventListener('click', onApply);
   actions.append(dismissButton, applyButton);
-
-  card.append(heading, intro, list, reminder, actions);
-  overlay.append(card);
-  document.body.append(overlay);
-
-  const close = (): void => overlay.remove();
-  dismissButton.addEventListener('click', () => {
-    close();
-    onDismiss();
-  });
-  applyButton.addEventListener('click', () => {
-    close();
-    onApply();
-  });
+  return actions;
 }
