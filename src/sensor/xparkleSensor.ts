@@ -51,7 +51,8 @@
  * level. `setParameters` is never sent.
  */
 import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
-import { BLE_ADVERTISEMENT_WAIT_MS, waitForAdvertisement } from './bleAdvertisement';
+import { BLE_ADVERTISEMENT_WAIT_MS } from './bleAdvertisement';
+import { createWebBluetoothLink } from './webBluetoothLink';
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
 import type { ExternalSensor } from './externalSensorController';
@@ -469,100 +470,37 @@ export function createXparkleSensor(
  * one actually fires.
  */
 export function createXparkleWebBluetoothTransport(): XparkleTransport {
-  /**
-   * The box the user picked in this page session. Chrome on Android keeps
-   * `getDevices()` behind a flag, so without this the silent reconnect had
-   * nothing to reconnect to and Retry never worked there (#288, found on
-   * hardware); the object `requestDevice()` returned stays connectable for
-   * as long as the page lives.
-   */
-  let picked: BluetoothDevice | null = null;
+  return createWebBluetoothLink({
+    name: 'Xparkle',
+    requestOptions: {
+      filters: [
+        ...XPARKLE_DEVICE_NAME_FRAGMENTS.map((namePrefix) => ({ namePrefix })),
+        { services: [XPARKLE_SERVICE_UUID] },
+      ],
+      optionalServices: [XPARKLE_SERVICE_UUID],
+    },
+    wire: wireXparkle,
+  });
+}
 
-  async function connectToDevice(
-    device: BluetoothDevice,
-    onDisconnect: () => void,
-  ): Promise<XparkleConnection> {
-    device.addEventListener('gattserverdisconnected', onDisconnect);
-    // One teardown for the explicit disconnect AND every failure past this
-    // point (#219's lesson, which applies to any BLE box): the listener
-    // goes first, so a deliberate disconnect is never mis-reported as a
-    // lost connection, and the GATT link is actively closed so a half-open
-    // one cannot make the box invisible to later scans.
-    const teardown = () => {
-      device.removeEventListener('gattserverdisconnected', onDisconnect);
-      device.gatt?.disconnect();
-    };
-    try {
-      const server = await device.gatt?.connect();
-      if (!server) throw new Error('Xparkle: GATT connect failed');
-      const service = await server.getPrimaryService(XPARKLE_SERVICE_UUID);
-      const live = await service.getCharacteristic(XPARKLE_LIVE_CHARACTERISTIC_UUID);
-      const write = await service.getCharacteristic(XPARKLE_WRITE_CHARACTERISTIC_UUID);
-
-      return {
-        deviceId: device.id,
-        async subscribeNotify(onData) {
-          const notify = await service.getCharacteristic(XPARKLE_NOTIFY_CHARACTERISTIC_UUID);
-          notify.addEventListener('characteristicvaluechanged', () => {
-            if (notify.value) onData(notify.value);
-          });
-          await notify.startNotifications();
-        },
-        readLive: () => live.readValue(),
-        write: (frame) => write.writeValue(frame),
-        disconnect: teardown,
-      };
-    } catch (error) {
-      teardown();
-      throw error;
-    }
-  }
-
-  /** The box picked this session, else the browser's own list of devices
-   * this origin may use — a second, narrower feature (`getDevices()`) that
-   * can be missing even where `navigator.bluetooth` is not. */
-  async function findDevice(deviceId: string): Promise<BluetoothDevice | null> {
-    if (picked?.id === deviceId) return picked;
-    const getDevices = navigator.bluetooth?.getDevices;
-    if (typeof getDevices !== 'function') return null;
-    const devices = await getDevices.call(navigator.bluetooth);
-    return devices.find((candidate) => candidate.id === deviceId) ?? null;
-  }
-
+/** The box's live and write characteristics open at once; the notify
+ * characteristic only when the sensor subscribes. */
+async function wireXparkle(
+  server: BluetoothRemoteGATTServer,
+): Promise<Omit<XparkleConnection, 'deviceId' | 'disconnect'>> {
+  const service = await server.getPrimaryService(XPARKLE_SERVICE_UUID);
+  const live = await service.getCharacteristic(XPARKLE_LIVE_CHARACTERISTIC_UUID);
+  const write = await service.getCharacteristic(XPARKLE_WRITE_CHARACTERISTIC_UUID);
   return {
-    async connect(onDisconnect) {
-      const device = await navigator.bluetooth!.requestDevice({
-        filters: [
-          ...XPARKLE_DEVICE_NAME_FRAGMENTS.map((namePrefix) => ({ namePrefix })),
-          { services: [XPARKLE_SERVICE_UUID] },
-        ],
-        optionalServices: [XPARKLE_SERVICE_UUID],
+    async subscribeNotify(onData) {
+      const notify = await service.getCharacteristic(XPARKLE_NOTIFY_CHARACTERISTIC_UUID);
+      notify.addEventListener('characteristicvaluechanged', () => {
+        if (notify.value) onData(notify.value);
       });
-      picked = device;
-      try {
-        return await connectToDevice(device, onDisconnect);
-      } catch {
-        // Picked, but the link would not come up (#322, found on hardware
-        // right after Disconnect): the box can take a moment before it
-        // advertises and accepts a connection again. Wait to hear it, the
-        // same way the silent reconnect does (#288), and try once more —
-        // a second failure is the caller's ordinary "could not connect".
-        await waitForAdvertisement(device);
-        return connectToDevice(device, onDisconnect);
-      }
+      await notify.startNotifications();
     },
-    async reconnect(deviceId, onDisconnect) {
-      try {
-        const device = await findDevice(deviceId);
-        if (!device) return null;
-        await waitForAdvertisement(device);
-        return await connectToDevice(device, onDisconnect);
-      } catch {
-        // Out of range, powered off, ... — silent by design; the caller
-        // decides what "no silent reconnect available" means for its UI.
-        return null;
-      }
-    },
+    readLive: () => live.readValue(),
+    write: (frame) => write.writeValue(frame),
   };
 }
 
