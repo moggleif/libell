@@ -26,11 +26,13 @@ import { saveSettings, markMeasurementsSaved, loadSettings } from '../data/setti
 import { showActionToast } from './toast';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createTargetsSection, type TargetsOptions } from './targetsSection';
+import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
 import {
   createSectionHeading,
   fromUnit,
   type DisplayUnit,
+  type NumberField,
   type RawSettings,
   type SettingsFormContext,
   type SettingsFormState,
@@ -38,9 +40,15 @@ import {
 import { createVehicleTab, type VehicleTab } from './settingsVehicleTab';
 import { createRampsTab, type RampsTab } from './settingsRampsTab';
 import { createLevelTab, type LevelTab } from './settingsLevelTab';
-import { createGeneralTab, type GeneralTab } from './settingsGeneralTab';
+import { createGeneralTab, type GeneralTab, type GeneralTabActions } from './settingsGeneralTab';
 
 type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
+
+/** The hosts behind the embedded calibration and targets sections. */
+interface Hosts {
+  calibration?: CalibrationOptions;
+  targets?: TargetsOptions;
+}
 
 interface Tabs {
   vehicle: VehicleTab;
@@ -219,199 +227,287 @@ export function createSettingsForm(
   targetsOptions?: TargetsOptions,
 ): SettingsFormElement {
   const compact = formOptions?.compact;
-  const form: SettingsFormElement = document.createElement('form');
-  form.className = 'settings__form';
+  const form: SettingsFormElement = createElement('form', 'settings__form');
 
-  const state: SettingsFormState = {
-    unit: initial.displayUnit,
-    vehicle: initial.vehicleType,
-    axle: initial.rearAxle,
-  };
+  const state = stateOf(initial);
+  // The tabs call back into the form, which in turn needs the tabs: both
+  // are bound below, before any tab can call.
+  let values!: FormValues;
+  let autoSave!: AutoSave;
   const context: SettingsFormContext = {
     state,
     compact: compact !== undefined,
-    changed: () => notifyChanged(),
-    relabelAll: () => relabelAll(),
-    currentSettings: () => currentSettings(),
+    changed: () => autoSave.changed(),
+    relabelAll: () => values.relabelAll(),
+    currentSettings: () => values.current(),
   };
+  const tabs = createTabs(initial, context, formOptions?.onShareVehicleSetup, {
+    unitChanged: (previous) => {
+      values.showInNewUnit(previous);
+      autoSave.changed();
+    },
+    resetAll: () => {
+      values.populate({ ...DEFAULT_SETTINGS, appearance: autoSave.saved().appearance });
+      autoSave.changed();
+    },
+  });
 
-  const tabs: Tabs = {
-    vehicle: createVehicleTab(initial, context, (settings) =>
-      formOptions?.onShareVehicleSetup?.(settings),
-    ),
+  // Decided once, at construction — see the file header comment.
+  const hosts = { calibration: calibrationOptions, targets: targetsOptions };
+  const relabelLayout = layOut(form, tabs, initial.appearance, formOptions, hosts);
+  values = createFormValues(tabs, state, relabelLayout);
+  values.showNumbers((field) => initial[field.key]);
+  autoSave = createAutoSave(values, initial, compact, onSave);
+  wireForm(form, tabs.general, autoSave);
+  return form;
+}
+
+function stateOf(settings: LevelSettings): SettingsFormState {
+  return { unit: settings.displayUnit, vehicle: settings.vehicleType, axle: settings.rearAxle };
+}
+
+function createTabs(
+  initial: LevelSettings,
+  context: SettingsFormContext,
+  onShareVehicleSetup: SettingsFormOptions['onShareVehicleSetup'],
+  generalActions: GeneralTabActions,
+): Tabs {
+  return {
+    vehicle: createVehicleTab(initial, context, (settings) => onShareVehicleSetup?.(settings)),
     ramps: createRampsTab(initial, context),
     level: createLevelTab(initial, context),
-    general: createGeneralTab(initial, context, {
-      unitChanged: (previous) => showInNewUnit(previous),
-      resetAll: () => {
-        populate({ ...DEFAULT_SETTINGS, appearance: saved.appearance });
-        notifyChanged();
-      },
-    }),
+    general: createGeneralTab(initial, context, generalActions),
   };
+}
+
+/** Reading the tabs' fields as settings, and showing settings in them. */
+interface FormValues {
+  numberFields: NumberField[];
+  /** Rewrites every caption, after the unit or the vehicle changed. */
+  relabelAll(): void;
+  /** Relabels, then shows each number field's value, skipping undefined. */
+  showNumbers(valueOf: (field: NumberField) => number | undefined): void;
+  /** Re-renders every length in the unit just chosen, so nothing is lost. */
+  showInNewUnit(previous: DisplayUnit): void;
+  current(): LevelSettings;
+  /** Fill every field from the given settings, with live theme preview. */
+  populate(settings: LevelSettings): void;
+  showRampSteps(stepsMm: number[]): void;
+}
+
+function createFormValues(
+  tabs: Tabs,
+  state: SettingsFormState,
+  relabelLayout: () => void,
+): FormValues {
   const numberFields = [
     ...tabs.vehicle.measurements,
     tabs.level.tolerance,
     ...tabs.general.fineTuning,
   ];
-
-  // Decided once, at construction — see the file header comment.
-  const relabelLayout = layOut(
-    form,
-    tabs,
-    compact,
-    formOptions?.splitPages,
-    { calibration: calibrationOptions, targets: targetsOptions },
-    initial.appearance,
-  );
+  const eachTab = [tabs.vehicle, tabs.ramps, tabs.level, tabs.general];
 
   function relabelAll(): void {
     for (const field of numberFields) field.relabel();
-    tabs.vehicle.relabel();
-    tabs.ramps.relabel();
-    tabs.level.relabel();
-    tabs.general.relabel();
+    for (const tab of eachTab) tab.relabel();
     relabelLayout();
   }
-  relabelAll();
-  for (const field of numberFields) field.show(initial[field.key]);
-  tabs.ramps.render();
-
-  /** Re-renders every length in the unit just chosen, so nothing is lost. */
-  function showInNewUnit(previous: DisplayUnit): void {
-    const lengths = numberFields
-      .filter((field) => field.inUnit)
-      .map((field) => [field, fromUnit(field.control.valueAsNumber, previous)] as const);
+  function showNumbers(valueOf: (field: NumberField) => number | undefined): void {
     relabelAll();
-    for (const [field, mm] of lengths) if (Number.isFinite(mm)) field.show(mm);
-    tabs.ramps.render();
-    notifyChanged();
-  }
-
-  // parseSettings guards against empty/invalid fields the same way it
-  // guards against corrupt storage. Fields this form does not edit (the
-  // sensor source and its device settings) come from what is stored now,
-  // not from `initial`: they change while the form is open, and a save
-  // from here must never put back an older sensor choice (#328 — with
-  // every edit now saved at once, that would happen on any tap).
-  function currentSettings(): LevelSettings {
-    const stored = loadSettings();
-    const raw: RawSettings = {
-      sensorSource: stored.sensorSource,
-      sensorDevices: stored.sensorDevices,
-    };
-    tabs.vehicle.read(raw);
-    tabs.ramps.read(raw);
-    tabs.level.read(raw);
-    tabs.general.read(raw);
-    for (const field of numberFields) raw[field.key] = field.read();
-    return parseSettings(raw);
-  }
-
-  /** Fill every field from the given settings, with live theme preview. */
-  function populate(settings: LevelSettings): void {
-    state.unit = settings.displayUnit;
-    state.vehicle = settings.vehicleType;
-    state.axle = settings.rearAxle;
-    tabs.vehicle.populate(settings);
-    tabs.ramps.populate(settings);
-    tabs.level.populate(settings);
-    tabs.general.populate(settings);
-    relabelAll();
-    for (const field of numberFields) field.show(settings[field.key]);
+    for (const field of numberFields) {
+      const value = valueOf(field);
+      if (value !== undefined) field.show(value);
+    }
     tabs.ramps.render();
   }
+  return {
+    numberFields,
+    relabelAll,
+    showNumbers,
+    showInNewUnit(previous) {
+      const lengths = new Map<NumberField, number>();
+      for (const field of numberFields.filter((f) => f.inUnit)) {
+        const mm = fromUnit(field.control.valueAsNumber, previous);
+        if (Number.isFinite(mm)) lengths.set(field, mm);
+      }
+      showNumbers((field) => lengths.get(field));
+    },
+    current: () => readSettings(eachTab, numberFields),
+    populate(settings) {
+      Object.assign(state, stateOf(settings));
+      for (const tab of eachTab) tab.populate(settings);
+      showNumbers((field) => settings[field.key]);
+    },
+    showRampSteps: (stepsMm) => tabs.ramps.showSteps(stepsMm),
+  };
+}
 
-  // --- A number the user typed that cannot be used (#328): empty, zero or
-  // negative. Never refused silently and never replaced by a factory
-  // default: the field goes back to the value in effect, and one line
-  // under it says what was wrong, until the next change.
-  const fieldErrors = new Map<HTMLElement, HTMLParagraphElement>();
-  function showFieldError(field: HTMLElement, message: string | null): void {
-    let error = fieldErrors.get(field);
+/**
+ * parseSettings guards against empty/invalid fields the same way it
+ * guards against corrupt storage. Fields this form does not edit (the
+ * sensor source and its device settings) come from what is stored now,
+ * not from `initial`: they change while the form is open, and a save
+ * from here must never put back an older sensor choice (#328 — with
+ * every edit now saved at once, that would happen on any tap).
+ */
+function readSettings(
+  eachTab: { read(raw: RawSettings): void }[],
+  numberFields: NumberField[],
+): LevelSettings {
+  const stored = loadSettings();
+  const raw: RawSettings = {
+    sensorSource: stored.sensorSource,
+    sensorDevices: stored.sensorDevices,
+  };
+  for (const tab of eachTab) tab.read(raw);
+  for (const field of numberFields) raw[field.key] = field.read();
+  return parseSettings(raw);
+}
+
+/**
+ * A number the user typed that cannot be used (#328): empty, zero or
+ * negative. Never refused silently and never replaced by a factory
+ * default: the field goes back to the value in effect, and one line
+ * under it says what was wrong, until the next change.
+ */
+function createInvalidNumberReport(numberFields: NumberField[]): {
+  restore(inEffect: LevelSettings): void;
+} {
+  const errors = new Map<HTMLElement, HTMLParagraphElement>();
+  function showError(field: HTMLElement, message: string | null): void {
+    let error = errors.get(field);
     if (!message) {
       if (error) error.hidden = true;
       return;
     }
     if (!error) {
-      error = document.createElement('p');
-      error.className = 'settings__hint settings__error';
+      error = createElement('p', 'settings__hint settings__error');
       error.setAttribute('role', 'alert');
-      fieldErrors.set(field, error);
+      errors.set(field, error);
     }
     error.textContent = message;
     error.hidden = false;
     field.after(error);
   }
-  /** Puts the value in effect back into every unusable number field. */
-  function restoreInvalidNumbers(): void {
-    for (const field of numberFields) {
-      const usable = field.isUsable();
-      const message = field.allowZero ? 'settings.err.notNegative' : 'settings.err.positive';
-      showFieldError(field.element, usable ? null : t(message));
-      if (!usable) field.show(saved[field.key]);
-    }
-  }
+  return {
+    /** Puts the value in effect back into every unusable number field. */
+    restore(inEffect) {
+      for (const field of numberFields) {
+        const usable = field.isUsable();
+        const message = field.allowZero ? 'settings.err.notNegative' : 'settings.err.positive';
+        showError(field.element, usable ? null : t(message));
+        if (!usable) field.show(inEffect[field.key]);
+      }
+    },
+  };
+}
 
-  let saved = initial;
+interface AutoSave {
+  saved(): LevelSettings;
+  /** Stores the form's values at once (#328); a no-op in a wizard step. */
+  changed(): void;
+  /** The wizard step's Next, or Enter in a number field on the full page. */
+  submit(): void;
+  /** A sound preference already stored elsewhere — not a change of its own. */
+  acceptSound(sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>): void;
+}
+
+/**
+ * Every change is stored at once (#328): there is no Save button and no
+ * "unsaved" state to lose by closing the page. A toast offers to undo
+ * it. The wizard's compact steps are the exception — they are saved by
+ * their own Next, which submits this form.
+ */
+function createAutoSave(
+  values: FormValues,
+  initial: LevelSettings,
+  compact: SettingsFormOptions['compact'],
+  onSave: (settings: LevelSettings) => void,
+): AutoSave {
+  const invalidNumbers = createInvalidNumberReport(values.numberFields);
+  const store = createSettingsStore(initial, compact, onSave);
+  const saved = store.saved;
+  const persist = store.persist;
   let undoToast: HTMLElement | null = null;
-  function persist(settings: LevelSettings): void {
-    // The ⚠ Setup lamp goes out with the measurements, not with any save
-    // (#364): a changed measurement, or the wizard's measurements step
-    // confirmed with Next even if the values shown were kept.
-    if (compact === 'measurements' || measurementsDiffer(saved, settings)) markMeasurementsSaved();
-    saveSettings(settings);
-    saved = settings;
-    onSave(settings);
-  }
-  /**
-   * Every change is stored at once (#328): there is no Save button and no
-   * "unsaved" state to lose by closing the page. A toast offers to undo
-   * it. The wizard's compact steps are the exception — they are saved by
-   * their own Next, which submits this form (see the submit handler).
-   */
-  function notifyChanged(): void {
-    if (compact) return;
-    restoreInvalidNumbers();
-    const next = currentSettings();
-    if (sameFormValues(next, saved)) return;
-    const previous = saved;
-    // What parseSettings settled on (e.g. a motion delay clamped to the
-    // rest delay) is what the fields show.
-    for (const field of numberFields) field.show(next[field.key]);
-    persist(next);
+
+  function offerUndo(previous: LevelSettings): void {
     undoToast?.remove();
     undoToast = showActionToast(t('settings.saved'), t('settings.undo'), () => {
-      populate(previous);
-      restoreInvalidNumbers();
-      persist(currentSettings());
+      values.populate(previous);
+      invalidNumbers.restore(saved());
+      persist(values.current());
     });
   }
+  function changed(): void {
+    if (compact) return;
+    invalidNumbers.restore(saved());
+    const next = values.current();
+    if (sameFormValues(next, saved())) return;
+    const previous = saved();
+    // What parseSettings settled on (e.g. a motion delay clamped to the
+    // rest delay) is what the fields show.
+    for (const field of values.numberFields) field.show(next[field.key]);
+    persist(next);
+    offerUndo(previous);
+  }
+  return {
+    saved,
+    changed,
+    submit() {
+      if (!compact) {
+        changed();
+        return;
+      }
+      const settings = values.current();
+      for (const field of values.numberFields) field.show(settings[field.key]);
+      values.showRampSteps(settings.rampStepHeightsMm);
+      persist(settings);
+    },
+    acceptSound: store.acceptSound,
+  };
+}
+
+/** What was last stored, and storing the next settings. */
+function createSettingsStore(
+  initial: LevelSettings,
+  compact: SettingsFormOptions['compact'],
+  onSave: (settings: LevelSettings) => void,
+): Pick<AutoSave, 'saved' | 'acceptSound'> & { persist(settings: LevelSettings): void } {
+  let saved = initial;
+  return {
+    saved: () => saved,
+    persist(settings) {
+      // The ⚠ Setup lamp goes out with the measurements, not with any save
+      // (#364): a changed measurement, or the wizard's measurements step
+      // confirmed with Next even if the values shown were kept.
+      if (compact === 'measurements' || measurementsDiffer(saved, settings)) {
+        markMeasurementsSaved();
+      }
+      saveSettings(settings);
+      saved = settings;
+      onSave(settings);
+    },
+    acceptSound(sound) {
+      saved = { ...saved, soundOnLevel: sound.soundOnLevel, soundGuidance: sound.soundGuidance };
+    },
+  };
+}
+
+function wireForm(form: SettingsFormElement, general: GeneralTab, autoSave: AutoSave): void {
   // Selects and switches report a change at once; a number field when the
   // user leaves it or presses Enter, so a half-typed value is never saved.
-  form.addEventListener('change', notifyChanged);
-
+  form.addEventListener('change', () => autoSave.changed());
   form.resyncSoundFields = (sound) => {
-    tabs.general.resyncSound(sound);
-    saved = { ...saved, soundOnLevel: sound.soundOnLevel, soundGuidance: sound.soundGuidance };
+    general.resyncSound(sound);
+    autoSave.acceptSound(sound);
   };
-
   // The wizard's compact steps: Next submits the form, which saves it.
   // Enter in a number field on the full page lands here too, and is just
   // another change.
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (!compact) {
-      notifyChanged();
-      return;
-    }
-    const settings = currentSettings();
-    for (const field of numberFields) field.show(settings[field.key]);
-    tabs.ramps.showSteps(settings.rampStepHeightsMm);
-    persist(settings);
+    autoSave.submit();
   });
-
-  return form;
 }
 
 /** Only what this form edits — see `currentSettings` above. */
@@ -431,17 +527,16 @@ function sameFormValues(a: LevelSettings, b: LevelSettings): boolean {
 function layOut(
   form: SettingsFormElement,
   tabs: Tabs,
-  compact: SettingsFormOptions['compact'],
-  splitPages: boolean | undefined,
-  hosts: { calibration?: CalibrationOptions; targets?: TargetsOptions },
   appearance: LevelSettings['appearance'],
+  formOptions: SettingsFormOptions | undefined,
+  hosts: Hosts,
 ): () => void {
-  if (compact) {
-    form.append(...compactStep(tabs, compact));
+  if (formOptions?.compact) {
+    form.append(...compactStep(tabs, formOptions.compact));
     return () => {};
   }
   if (appearance === 'modern') return layOutModernTabs(form, tabs, hosts);
-  if (splitPages) {
+  if (formOptions?.splitPages) {
     layOutClassicPages(form, tabs, hosts.targets);
     return () => {};
   }
@@ -483,63 +578,21 @@ function compactStep(
  * sets things up in (#329) — the vehicle, its ramps, calibration, what
  * counts as level — with the app-wide preferences last. Opens on Vehicle.
  */
-function layOutModernTabs(
-  form: SettingsFormElement,
-  tabs: Tabs,
-  hosts: { calibration?: CalibrationOptions; targets?: TargetsOptions },
-): () => void {
-  const tabsBar = document.createElement('div');
-  tabsBar.className = 'settings__tabs';
-  tabsBar.setAttribute('role', 'tablist');
-
-  const buttons = new Map<TabId, HTMLButtonElement>();
-  const panels = new Map<TabId, HTMLElement>();
-  const addTab = (id: TabId, panelClass = 'settings__tabpanel'): HTMLElement => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'settings__tab';
-    button.setAttribute('role', 'tab');
-    button.dataset.tab = id;
-    button.addEventListener('click', () => selectTab(id));
-    tabsBar.append(button);
-    buttons.set(id, button);
-    const panel = document.createElement('div');
-    panel.className = panelClass;
-    // Mirrors the tab buttons' dataset.tab — lets callers (and tests) find
-    // a panel by id instead of by DOM position.
-    panel.dataset.tab = id;
-    panels.set(id, panel);
-    return panel;
-  };
-
-  const vehiclePanel = addTab('vehicle');
-  vehiclePanel.append(...tabs.vehicle.elements());
-
-  // The same page Classic's ☰ → Ramps shows (#331).
-  const rampsPanel = addTab('ramps', 'settings__tabpanel settings__tabpanel--klossar');
-  tabs.ramps.buildPage(rampsPanel);
-
-  // The same calibration section the menu uses standalone (#109), as a
-  // two-step checklist (#330). Refreshed whenever the tab is shown, since
-  // the form is built once, not on every open.
+function layOutModernTabs(form: SettingsFormElement, tabs: Tabs, hosts: Hosts): () => void {
+  // The calibration and targets tabs are redrawn whenever they are shown,
+  // since the form is built once, not on every open.
   const calibration = createCalibrationSection(
     hosts.calibration ?? inertCalibrationOptions(),
     'checklist',
   );
-  addTab('calibration').append(calibration.element);
-
-  // The Level tab (#329). Its id stays 'targets' — the main screen's
-  // target badge opens it through `selectTargetsTab`.
   const targets = createTargetsSection(hosts.targets ?? inertTargetsOptions());
-  addTab('targets').append(...tabs.level.elements(targets.element));
-
-  addTab('general').append(...tabs.general.elements());
-
   let openTab: TabId = 'vehicle';
+  const bar = createTabBar(selectTab);
+  fillModernTabs(bar, tabs, calibration.element, targets.element);
+
   function selectTab(id: TabId): void {
     openTab = id;
-    for (const [tid, button] of buttons) button.setAttribute('aria-selected', String(tid === id));
-    for (const [tid, panel] of panels) panel.hidden = tid !== id;
+    bar.select(id);
     if (id === 'calibration') calibration.refresh();
     if (id === 'targets') targets.refresh();
   }
@@ -548,19 +601,82 @@ function layOutModernTabs(
   form.selectTab = selectTab;
   form.refreshOpenTab = () => selectTab(openTab);
 
-  form.append(tabsBar, ...panels.values());
+  form.append(bar.element, ...bar.panels.values());
   selectTab('vehicle');
+  return bar.relabel;
+}
 
-  const labels: Record<TabId, MessageKey> = {
-    vehicle: 'settings.tab.vehicle',
-    ramps: 'settings.tab.ramps',
-    calibration: 'menu.calibration',
-    targets: 'settings.tab.level',
-    general: 'settings.general',
+/** Each tab's caption. */
+const TAB_LABELS: Record<TabId, MessageKey> = {
+  vehicle: 'settings.tab.vehicle',
+  ramps: 'settings.tab.ramps',
+  calibration: 'menu.calibration',
+  targets: 'settings.tab.level',
+  general: 'settings.general',
+};
+
+interface TabBar {
+  element: HTMLElement;
+  panels: Map<TabId, HTMLElement>;
+  /** Adds a tab button and returns its (empty) panel. */
+  addTab(id: TabId, panelClass?: string): HTMLElement;
+  /** Marks one tab selected and shows only its panel. */
+  select(id: TabId): void;
+  relabel(): void;
+}
+
+function createTabBar(onClick: (id: TabId) => void): TabBar {
+  const element = createElement('div', 'settings__tabs');
+  element.setAttribute('role', 'tablist');
+  const buttons = new Map<TabId, HTMLButtonElement>();
+  const panels = new Map<TabId, HTMLElement>();
+  return {
+    element,
+    panels,
+    addTab(id, panelClass = 'settings__tabpanel') {
+      const button = createElement('button', 'settings__tab');
+      button.type = 'button';
+      button.setAttribute('role', 'tab');
+      button.dataset.tab = id;
+      button.addEventListener('click', () => onClick(id));
+      element.append(button);
+      buttons.set(id, button);
+      const panel = createElement('div', panelClass);
+      // Mirrors the tab buttons' dataset.tab — lets callers (and tests)
+      // find a panel by id instead of by DOM position.
+      panel.dataset.tab = id;
+      panels.set(id, panel);
+      return panel;
+    },
+    select(id) {
+      for (const [tid, button] of buttons) button.setAttribute('aria-selected', String(tid === id));
+      for (const [tid, panel] of panels) panel.hidden = tid !== id;
+    },
+    relabel() {
+      for (const [id, button] of buttons) button.textContent = t(TAB_LABELS[id]);
+    },
   };
-  return () => {
-    for (const [id, button] of buttons) button.textContent = t(labels[id]);
-  };
+}
+
+/**
+ * Modern's tabs, in the order a new owner sets things up in (#329). The
+ * calibration section is the same one the menu uses standalone (#109), as
+ * a two-step checklist (#330).
+ */
+function fillModernTabs(
+  bar: TabBar,
+  tabs: Tabs,
+  calibration: HTMLElement,
+  targets: HTMLElement,
+): void {
+  bar.addTab('vehicle').append(...tabs.vehicle.elements());
+  // The same page Classic's ☰ → Ramps shows (#331).
+  tabs.ramps.buildPage(bar.addTab('ramps', 'settings__tabpanel settings__tabpanel--klossar'));
+  bar.addTab('calibration').append(calibration);
+  // The Level tab (#329). Its id stays 'targets' — the main screen's
+  // target badge opens it through `selectTargetsTab`.
+  bar.addTab('targets').append(...tabs.level.elements(targets));
+  bar.addTab('general').append(...tabs.general.elements());
 }
 
 /**
@@ -582,8 +698,7 @@ function layOutClassicPages(
     return body;
   };
   // The same Ramps page as Modern's tab (#331), not the wizard's select.
-  const ramps = document.createElement('div');
-  ramps.className = 'settings__tabpanel--klossar';
+  const ramps = createElement('div', 'settings__tabpanel--klossar');
   tabs.ramps.buildPage(ramps);
 
   // One real `createTargetsSection` component, not a copy, below
