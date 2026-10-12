@@ -9,6 +9,7 @@ import type { MenuSection } from '../ui/menu';
 import { createSensorStatusIndicator } from '../ui/sensorStatusIndicator';
 import { createTargetBadge } from '../ui/targetBadge';
 import { indicatorState } from './indicatorState';
+import { isActiveSensorStale } from './sensorStaleness';
 
 export interface Refreshable {
   refresh(): void;
@@ -90,7 +91,8 @@ export function mountTargetBadge(
 
 /**
  * The top bar's sensor icon: visible whenever Web Bluetooth
- * exists, or iOS's guide applies (R39); a tap opens the sensor.
+ * exists, or iOS's guide applies (R39); a tap opens the sensor. Stale
+ * data gets the warning look too (R32), checked on every refresh.
  */
 export function mountSensorStatus(
   slot: Element | null,
@@ -99,10 +101,15 @@ export function mountSensorStatus(
     showIosGuide: boolean;
     sensor: () => OrientationSensor;
     open: () => void;
+    now?: () => number;
   },
 ): Refreshable {
   const status = createSensorStatusIndicator(deps.supported, deps.showIosGuide, deps.open);
-  const refresh = () => status.update(deps.sensor().getSource(), deps.sensor().getState());
+  const now = deps.now ?? (() => performance.now());
+  const refresh = () => {
+    const sensor = deps.sensor();
+    status.update(sensor.getSource(), sensor.getState(), isActiveSensorStale(sensor, now()));
+  };
   slot?.append(status.element);
   refresh();
   return { refresh };

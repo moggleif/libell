@@ -8,13 +8,13 @@ import { BOX_SMOOTHING_TIME_CONSTANT_MS, createGravityLowPass } from '../domain/
 import { tiltFromGravity, type GravityVector } from '../domain/leveling';
 import { createExternalPoseDetector, createPoseDetector, type ExternalPose } from '../domain/pose';
 import type { LevelSettings, SensorSource } from '../domain/settings';
-import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from '../domain/staleness';
 import { createStillnessDetector } from '../domain/stillness';
 import type { ExternalSensorController } from '../sensor/externalSensorController';
 import { externalSensorById } from '../sensor/externalSensors';
 import type { OrientationSensor } from '../sensor/orientation';
 import { isSensorUnavailable } from '../sensor/sensorFallback';
 import type { MessageKey } from '../ui/i18n';
+import { isActiveSensorStale } from './sensorStaleness';
 
 export interface EngineTick {
   isLevel: boolean;
@@ -106,7 +106,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
     view.showReading();
     // Stale before pose: a reading too old to trust is not safe
     // to judge the pose from either, and the overlays never both show.
-    if (isStale(nowMs)) {
+    if (isActiveSensorStale(deps.sensor(), nowMs)) {
       view.showStale(deps.hasSensorPage && deps.sensor().getSource() !== 'phone');
       view.hidePose();
       view.hideCelebration();
@@ -121,12 +121,6 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
     }
     view.hidePose();
     guide(gravity, nowMs);
-  }
-
-  function isStale(nowMs: number): boolean {
-    const sensor = deps.sensor();
-    const timeoutMs = externalSensorById(sensor.getSource())?.staleTimeoutMs;
-    return isSensorStale(sensor.getLastSampleAt(), nowMs, timeoutMs ?? STALE_TIMEOUT_PHONE_MS);
   }
 
   /** The phone's pose rules (R17) are the phone's; a mounted box is only

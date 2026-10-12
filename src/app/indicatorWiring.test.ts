@@ -112,13 +112,18 @@ describe('mountSensorStatus', () => {
     const slot = document.createElement('div');
     let source: SensorSource = 'phone';
     const state: SensorState = 'granted';
-    const sensor = { getSource: () => source, getState: () => state } as OrientationSensor;
+    const sensor = {
+      getSource: () => source,
+      getState: () => state,
+      getLastSampleAt: () => 0,
+    } as OrientationSensor;
     const open = vi.fn();
     const status = mountSensorStatus(slot, {
       supported: true,
       showIosGuide: false,
       sensor: () => sensor,
       open,
+      now: () => 0,
     });
     const element = slot.firstElementChild as HTMLElement;
     expect(element).not.toBeNull();
@@ -128,5 +133,31 @@ describe('mountSensorStatus', () => {
     expect(element.outerHTML).not.toBe(before);
     element.click();
     expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the warning look while the active box is stale, and recovers (#401)', () => {
+    const slot = document.createElement('div');
+    let lastSampleAt = 0;
+    let nowMs = 0;
+    const sensor = {
+      getSource: () => 'xparkle',
+      getState: () => 'granted',
+      getLastSampleAt: () => lastSampleAt,
+    } as OrientationSensor;
+    const status = mountSensorStatus(slot, {
+      supported: true,
+      showIosGuide: false,
+      sensor: () => sensor,
+      open: vi.fn(),
+      now: () => nowMs,
+    });
+    const element = slot.firstElementChild as HTMLElement;
+    expect(element.classList.contains('sensor-status--connected')).toBe(true);
+    nowMs = 60_000;
+    status.refresh();
+    expect(element.classList.contains('sensor-status--disconnected')).toBe(true);
+    lastSampleAt = 60_000;
+    status.refresh();
+    expect(element.classList.contains('sensor-status--connected')).toBe(true);
   });
 });
