@@ -195,3 +195,54 @@ describe('the caravan bubble starts in its dial, not at the SVG origin (#244)', 
     },
   );
 });
+
+// Regression pin for the #419 refactor: the full markup of every caravan
+// variant, freshly built and after a sequence of readings that covers
+// every axle and jockey state, both units and the bubble's travel. The
+// refactor must leave every byte of it as it is.
+describe('caravanDiagram output (#419)', () => {
+  const READINGS: [CaravanDisplayResult, 'mm' | 'cm'][] = [
+    [result({ isLevel: true }), 'mm'],
+    [
+      result({
+        rollDeg: 3,
+        pitchDeg: -6,
+        axle: {
+          left: { displayMm: 140, stepMm: 112, severity: 'large' },
+          right: { displayMm: 63, stepMm: 78, severity: 'small' },
+        },
+        jockey: { displayMm: 85, direction: 'up' },
+      }),
+      'mm',
+    ],
+    [
+      result({
+        rollDeg: -0.8,
+        pitchDeg: 1.1,
+        axle: {
+          left: { displayMm: 6, stepMm: 0, severity: 'unserved' },
+          right: { displayMm: 27, stepMm: 50, severity: 'small' },
+        },
+        jockey: { displayMm: 42, direction: 'down' },
+      }),
+      'cm',
+    ],
+  ];
+
+  for (const [axle, appearance] of [
+    ['single', 'classic'],
+    ['boggie', 'classic'],
+    ['single', 'modern'],
+    ['boggie', 'modern'],
+  ] as const) {
+    it(`${appearance}, ${axle} axle`, () => {
+      const diagram = createCaravanDiagram(axle, appearance);
+      const markup = [diagram.element.outerHTML];
+      for (const [reading, unit] of READINGS) {
+        diagram.update(reading, unit, STEPS);
+        markup.push(diagram.element.outerHTML);
+      }
+      expect(markup).toMatchSnapshot();
+    });
+  }
+});

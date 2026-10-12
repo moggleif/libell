@@ -303,3 +303,54 @@ describe('the bubble starts in its dial, not at the SVG origin (#244)', () => {
     });
   }
 });
+
+// Regression pin for the #419 refactor: the full markup of every
+// motorhome variant, freshly built and after a sequence of readings that
+// covers every wheel state, both units and the bubble's travel. The
+// refactor must leave every byte of it as it is.
+describe('rvDiagram output (#419)', () => {
+  const READINGS: [DisplayResult, 'mm' | 'cm'][] = [
+    [{ ...result({}), isLevel: true }, 'mm'],
+    [
+      {
+        ...result({
+          frontLeft: { displayMm: 3, stepMm: 0, severity: 'none' },
+          frontRight: { displayMm: 63, stepMm: 78, severity: 'small' },
+          rearLeft: { displayMm: 140, stepMm: 112, severity: 'large' },
+          rearRight: { displayMm: 6, stepMm: 0, severity: 'unserved' },
+        }),
+        rollDeg: 2.5,
+        pitchDeg: -7,
+      },
+      'mm',
+    ],
+    [
+      {
+        ...result({
+          frontLeft: { displayMm: 50, stepMm: 60, severity: 'small' },
+          rearRight: { displayMm: 27, stepMm: 44, severity: 'small' },
+        }),
+        rollDeg: -1.2,
+        pitchDeg: 0.4,
+      },
+      'cm',
+    ],
+  ];
+
+  for (const [axle, appearance] of [
+    ['single', 'classic'],
+    ['boggie', 'classic'],
+    ['single', 'modern'],
+    ['boggie', 'modern'],
+  ] as const) {
+    it(`${appearance}, ${axle} rear axle`, () => {
+      const diagram = createRvDiagram(axle, appearance);
+      const markup = [diagram.element.outerHTML];
+      for (const [reading, unit] of READINGS) {
+        diagram.update(reading, unit, STEPS);
+        markup.push(diagram.element.outerHTML);
+      }
+      expect(markup).toMatchSnapshot();
+    });
+  }
+});
