@@ -3,6 +3,11 @@ import { DEFAULT_SETTINGS } from '../domain/settings';
 import {
   clearCalibration,
   hasDoneOnboarding,
+  hasSeenOnboarding,
+  markOnboardingSeen,
+  loadLanguage,
+  saveLanguage,
+  clearLanguage,
   hasStoredMeasurements,
   hasStoredSettings,
   isBoxPending,
@@ -438,5 +443,49 @@ describe('migrating #131’s installation offset to its per-source key (#263)', 
     storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 200, pitchDeg: 0 }));
     migrateLegacyInstallCalibration(storage);
     expect(loadInstallCalibration('easylevel', storage)).toBeNull();
+  });
+});
+
+describe('language and first-run storage (#480)', () => {
+  const throwingStorage: KeyValueStorage = {
+    getItem: () => {
+      throw new Error('blocked');
+    },
+    setItem: () => {
+      throw new Error('blocked');
+    },
+    removeItem: () => {
+      throw new Error('blocked');
+    },
+  };
+
+  it('stores, reads back and clears the chosen language under its own key', () => {
+    const storage = memoryStorage();
+    expect(loadLanguage(storage)).toBeNull();
+    saveLanguage('de', storage);
+    expect(storage.getItem('libell.language')).toBe('de');
+    expect(loadLanguage(storage)).toBe('de');
+    clearLanguage(storage);
+    expect(loadLanguage(storage)).toBeNull();
+  });
+
+  it('reads no language when storage is missing or throws', () => {
+    expect(loadLanguage(null)).toBeUndefined();
+    expect(loadLanguage(throwingStorage)).toBeNull();
+    expect(() => saveLanguage('sv', throwingStorage)).not.toThrow();
+    expect(() => clearLanguage(throwingStorage)).not.toThrow();
+  });
+
+  it('has seen the introduction only once marked', () => {
+    const storage = memoryStorage();
+    expect(hasSeenOnboarding(storage)).toBe(false);
+    markOnboardingSeen(storage);
+    expect(storage.getItem('libell.onboarded')).toBe('1');
+    expect(hasSeenOnboarding(storage)).toBe(true);
+  });
+
+  it('counts the introduction as seen when storage throws, so it never loops', () => {
+    expect(hasSeenOnboarding(throwingStorage)).toBe(true);
+    expect(() => markOnboardingSeen(throwingStorage)).not.toThrow();
   });
 });

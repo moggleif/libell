@@ -60,6 +60,35 @@ describe('parseSettings', () => {
     expect(parseSettings({ blockHeightsCm: [2, 4, 6] }).rampStepHeightsMm).toEqual([20, 40, 60]);
   });
 
+  it('prefers mm values over legacy cm, and per-axle cm over the shared track (#480)', () => {
+    const result = parseSettings({
+      wheelbaseMm: 4100,
+      wheelbaseCm: 350,
+      trackWidthFrontCm: 190,
+      trackWidthCm: 200,
+      trackWidthRearMm: 1700,
+      trackWidthRearCm: 165,
+    });
+    expect(result.wheelbaseMm).toBe(4100);
+    expect(result.trackWidthFrontMm).toBe(1900);
+    expect(result.trackWidthRearMm).toBe(1700);
+  });
+
+  it('takes step heights from the newest stored format that has any (#480)', () => {
+    const all = { rampStepHeightsMm: [30], blockHeightsCm: [2], blockHeightCm: 5 };
+    expect(parseSettings(all).rampStepHeightsMm).toEqual([30]);
+    const noMm = { rampStepHeightsMm: [], blockHeightsCm: [2, 'x', 4], blockHeightCm: 5 };
+    expect(parseSettings(noMm).rampStepHeightsMm).toEqual([20, 40]);
+    expect(parseSettings({ blockHeightsCm: [], blockHeightCm: 5 }).rampStepHeightsMm).toEqual([50]);
+    expect(parseSettings({ rampStepHeightsMm: [-1, 0] }).rampStepHeightsMm).toEqual(
+      DEFAULT_SETTINGS.rampStepHeightsMm,
+    );
+  });
+
+  it('keeps the stored field order, so a saved blob reads the same as before (#480)', () => {
+    expect(Object.keys(parseSettings({}))).toEqual(Object.keys(DEFAULT_SETTINGS));
+  });
+
   it('sorts, dedupes and cleans the step height list', () => {
     const result = parseSettings({ rampStepHeightsMm: [60, 20, 20, -1, NaN, 40] });
     expect(result.rampStepHeightsMm).toEqual([20, 40, 60]);
