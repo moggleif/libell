@@ -259,6 +259,12 @@ async function easyLevelFlow(browser) {
     async () => (await storedSettings(page)).sensorSource === 'phone',
     'disconnect should pick the phone',
   );
+  // The steps stay, greyed out, still showing what is set (#400).
+  await button(box, 'Zero the vehicle').waitFor();
+  assert(
+    await button(box, 'Zero now').isDisabled(),
+    'after Disconnect the zero step should be greyed out',
+  );
 
   assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
   await context.close();
