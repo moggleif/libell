@@ -73,10 +73,11 @@ describe('the debug values', () => {
     expect(rawAccelText(null)).toBeNull();
   });
 
-  it('summarises everything on seven lines for the clipboard', () => {
+  it('summarises everything the disclosure shows, temperature included (#402)', () => {
     const text = debugSummaryText({
       name: 'EasyLevel',
       state: 'granted',
+      temperatureCelsius: 19.54,
       deviceId: null,
       lastSampleAge: '—',
       rawAccel: { x: 1, y: 2, z: 3 },
@@ -86,11 +87,26 @@ describe('the debug values', () => {
     expect(text.split('\n')).toEqual([
       'Libell EasyLevel debug info',
       'Connection state: granted',
+      'Temperature: 19.5°C',
       'Device ID: Not available yet',
       'Last sample: —',
       'Raw accelerometer (x/y/z): 1, 2, 3',
       'Firmware: 3',
       'Raw status bytes: ff',
     ]);
+  });
+
+  it('says the temperature is not available before the box has sent one (#402)', () => {
+    const text = debugSummaryText({
+      name: 'EasyLevel',
+      state: 'granted',
+      temperatureCelsius: null,
+      deviceId: null,
+      lastSampleAge: '—',
+      rawAccel: null,
+      firmwareLabel: null,
+      statusBytes: null,
+    });
+    expect(text.split('\n')).toContain('Temperature: Not available yet');
   });
 });

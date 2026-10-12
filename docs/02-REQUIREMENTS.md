@@ -1283,8 +1283,6 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 
 ## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
 
-> **Open bug:** "Copy debug info" leaves out the temperature (#402).
-
 The Sensor box page (R32) lists every sensor box Libell supports that can work in this
 browser — one card each, EasyLevel and Xparkle RVS01 today (#268, R49); tapping the
 card of the box in use opens a deeper, focused page for that sensor alone, refreshed
@@ -1354,8 +1352,8 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   accelerometer int16 triplet (`easyLevelProtocol.ts`'s unscaled x/y/z — never run
   through the leveling math), the firmware tier decoded from the status
   characteristic (#123), and the status characteristic's raw bytes as hex — plus a
-  "Copy debug info" button producing a plain-text block of all of the above, ready
-  to paste into a bug report.
+  "Copy debug info" button producing a plain-text block of all of the above, the
+  temperature included (#402), ready to paste into a bug report.
 - **Given** the box is not the active source (the phone is)
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
   show — as is the box's setup checklist, while the state and reading lines above

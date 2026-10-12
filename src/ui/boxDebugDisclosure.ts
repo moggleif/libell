@@ -87,13 +87,15 @@ function createCopyButton(options: BoxStatusOptions): HTMLButtonElement {
   button.type = 'button';
   button.textContent = t('sensorStatus.debug.copy');
   button.addEventListener('click', () => {
+    const health = options.getHealth();
     const text = debugSummaryText({
       name: options.sensor.displayName,
       state: options.getSensorState(),
+      temperatureCelsius: health?.temperatureCelsius,
       deviceId: options.getDeviceId(),
       lastSampleAge: ageText(options.getLastSampleAt(), performance.now()),
       rawAccel: options.getRawAccel(),
-      firmwareLabel: options.getHealth()?.firmwareLabel ?? null,
+      firmwareLabel: health?.firmwareLabel ?? null,
       statusBytes: options.getEasyLevelStatusBytes(),
     });
     void navigator.clipboard.writeText(text).then(
