@@ -1,9 +1,7 @@
 /**
- * Flip calibration (#50) for the calibration section
- * (`calibrationSection.ts`): two captures with a 180° turn in between —
- * works on any reasonably flat spot, no known-level surface needed. Two
- * captures that disagree (#425) are never refused: the step says what
- * looks wrong and offers "Calibrate anyway".
+ * Flip calibration: two captures with a 180° turn in between, so no
+ * known-level surface is needed. Captures that disagree are never refused:
+ * the step warns and offers "Calibrate anyway".
  */
 import type { Calibration } from '../domain/settings';
 import { flipCalibration, type FlipResult } from '../domain/calibration';
@@ -16,14 +14,12 @@ export interface CalibrationFlip {
   button: HTMLButtonElement;
   status: HTMLElement;
   anyway: HTMLButtonElement;
-  /** Back to the start, dropping a first capture or a pending result. */
   reset(): void;
 }
 
 export interface FlipHooks {
   /** Any tap on the flip: the phone step stays open. */
   onUsed(): void;
-  /** A calibration was stored. */
   onApplied(): void;
 }
 
@@ -31,8 +27,7 @@ function createParts(modern: boolean) {
   const intro = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
   intro.textContent = t('calibration.flip.intro');
   const status = createElement('p', 'menu__text menu__text--status');
-  // Primary, like the other calibrate actions: a user only ever does one
-  // of them at a time, so none is "the real one".
+  // Primary like the other calibrate actions: a user only ever does one.
   const button = createElement('button', 'menu__action');
   button.type = 'button';
   const anyway = createElement('button', 'menu__action menu__action--secondary');
@@ -47,8 +42,7 @@ interface FlipState {
   options: CalibrationOptions;
   hooks: FlipHooks;
   first: Calibration | null;
-  /** The bias two disagreeing captures gave, kept while the warning
-   * offers "Calibrate anyway". */
+  /** Kept while the warning offers "Calibrate anyway". */
   pending: FlipResult | null;
 }
 

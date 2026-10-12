@@ -1,9 +1,7 @@
 import { createElement } from '../dom';
 
-/** Modern step indicator (#110): one 24×4px bar per step, the current
- * step's bar in `--level`, the rest in `--surface-sunken` — plus a visible
- * "n / total" text (#189), since the bars' only text equivalent used to be
- * an `aria-label`, unreadable to a sighted low-vision user at that size. */
+/** The visible "n / total" text is for sighted low-vision users: the bars
+ * alone are unreadable at that size. */
 export function buildModernProgress(current: number, total: number): HTMLElement {
   const wrap = createElement('div', 'onboarding__progress-wrap');
 

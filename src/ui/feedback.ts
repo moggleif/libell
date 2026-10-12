@@ -1,10 +1,7 @@
 /**
- * Feedback form (menu section), modeled on sbsommar's feedback feature
- * (02-§73) but adapted to a static site with no backend: instead of an
- * API holding a GitHub token, the form opens GitHub's new-issue page
- * pre-filled with the category, title, description and app metadata —
- * the visitor posts it under their own GitHub account, so no secret
- * ever ships in the client.
+ * Feedback form. A static site has no backend to hold a GitHub token, so the
+ * form opens GitHub's new-issue page pre-filled and the visitor posts it
+ * under their own account: no secret ever ships in the client.
  */
 
 import { t, type MessageKey } from './i18n';
@@ -30,7 +27,6 @@ export function createFeedbackSection(): HTMLElement {
   const form = document.createElement('form');
   form.className = 'settings__form';
 
-  // Category.
   const categoryRow = document.createElement('fieldset');
   categoryRow.className = 'feedback__categories';
   const legend = document.createElement('legend');
@@ -53,7 +49,6 @@ export function createFeedbackSection(): HTMLElement {
     categoryRow.append(label);
   }
 
-  // Title + description.
   const titleField = document.createElement('label');
   titleField.className = 'settings__field settings__field--wide';
   const titleCaption = document.createElement('span');
@@ -78,8 +73,7 @@ export function createFeedbackSection(): HTMLElement {
   submit.className = 'menu__action';
   submit.textContent = t('feedback.submit');
 
-  // Never blocks (#411, "Varning är rätt. Aldrig stopp."): the button stays
-  // enabled, and a warning names what is still empty — sending works anyway.
+  // Warn, never block: the button stays enabled while fields are empty.
   const warning = document.createElement('p');
   warning.className = 'menu__text menu__text--warning feedback__warning';
   warning.setAttribute('role', 'status');

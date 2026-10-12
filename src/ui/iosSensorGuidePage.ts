@@ -1,18 +1,11 @@
 /**
- * External sensor page shown on iOS when Web Bluetooth is unsupported
- * (regular Safari) — R39. Apple has no plans to add Web Bluetooth to
- * WebKit, so unlike other unsupported browsers this page is never hidden
- * outright there: it explains the Bluefy workaround instead, since Bluefy
- * (a third-party Web Bluetooth browser) makes the ordinary
- * `sensorSourceSection.ts` connect flow work completely unchanged once
- * Libell is opened inside it. See docs/ios-easylevel-bluefy-guide.md for
- * the long-form version of this same guide.
+ * External sensor page on iOS without Web Bluetooth (R39). WebKit has no
+ * Web Bluetooth, so this explains the Bluefy workaround: inside Bluefy the
+ * ordinary connect flow works unchanged. Long form:
+ * docs/ios-easylevel-bluefy-guide.md.
  *
- * Deliberately its own page rather than a branch inside
- * `sensorSourceSection.ts`: none of that page's connect/health/install
- * logic can ever run here (there is no `navigator.bluetooth` to drive it),
- * so mixing the two would mean carrying dead code paths for a state this
- * page never reaches.
+ * Its own page rather than a branch in `sensorSourceSection.ts`: none of
+ * that logic can run without `navigator.bluetooth`.
  */
 import { createStandalonePage, type StandalonePage } from './standalonePage';
 import type { SensorPage } from './sensorPage';

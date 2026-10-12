@@ -4,24 +4,18 @@ import { buildChoiceGroup } from './choiceGroup';
 import type { SensorChoice, Step } from './types';
 import { paragraph, textClass, type WizardState } from './wizardState';
 
-// 'menu.sensorSource' ("External sensor") is reused verbatim for the
-// external radio's label (screen-cleanup follow-up) — no separate
-// "Libell Sensor" product name, which was never real and never will be.
 const SOURCE_OPTIONS: [SensorChoice, MessageKey][] = [
   ['phone', 'onboard.source.phone'],
   ['external', 'menu.sensorSource'],
 ];
 
-// Reuses 'vehicle.motorhome'/'vehicle.caravan' — the exact labels
-// Settings already shows for this same choice (#184).
 const VEHICLE_OPTIONS: [VehicleType, MessageKey][] = [
   ['motorhome', 'vehicle.motorhome'],
   ['caravan', 'vehicle.caravan'],
 ];
 
-// "How do you want to measure?" (#135, ADR 0014). Picking a source redraws
-// at once, not only on Next (#189 follow-up): the "n / total" readout must
-// match the path chosen while choosing it.
+// ADR 0014. Picking a source redraws at once, not only on Next: the
+// "n / total" readout must match the path while choosing it.
 export function sourceStep(state: WizardState): Step {
   return {
     title: t('onboard.source.h'),
@@ -36,16 +30,14 @@ export function sourceStep(state: WizardState): Step {
   };
 }
 
-// With a box already active (#287), say up front what the phone path
-// leaves out and where to switch — never switch from here (ADR 0014).
+// Never switches the source from here (ADR 0014).
 function externalActiveNote(state: WizardState): Element[] {
   if (!state.externalActive) return [];
   const text = t('onboard.source.externalActive', { disconnect: t('sensorSource.disconnect') });
   return [paragraph(textClass(state), text)];
 }
 
-// "What are you leveling?" (#184) — always asked once. Every later step
-// reads `vehicleChoice` to match.
+// Always asked once; every later step reads `vehicleChoice`.
 export function vehicleStep(state: WizardState): Step {
   return {
     title: t('onboard.vehicle.h'),

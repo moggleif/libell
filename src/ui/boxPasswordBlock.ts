@@ -1,24 +1,16 @@
 /**
- * The way out of a rejected box password (#367), built in Libell rather
- * than sending the user to the vendor app: what happened, a field for the
- * box's four-digit code, and one button to try it. Hidden the rest of the
- * time, which is nearly always — only a box whose code was changed
- * elsewhere ever rejects the factory one Libell offers.
- *
- * Used twice from the same options: on the box's card (the list page and
- * the first-run wizard) and on the box's own page, so wherever the user
- * sees that the box said no, the fix is right there.
+ * The way out of a rejected box password, in Libell rather than the vendor
+ * app. Hidden nearly always: only a box whose code was changed elsewhere
+ * rejects the factory one Libell offers.
  */
 import { t } from './i18n';
 
 export interface BoxPasswordOptions {
-  /** True while the box has rejected the code it was last offered. */
   isRejected(): boolean;
   /**
-   * Store `code` as the box's password and offer it on the live link.
-   * Resolves with the box's verdict: true accepted, false rejected, null
-   * when it could not be asked (no box connected, or no answer in time) —
-   * the code is kept either way and offered on the next connect.
+   * Stores `code` and offers it on the live link. Resolves true accepted,
+   * false rejected, null when the box could not be asked; the code is kept
+   * either way and offered on the next connect.
    */
   tryPassword(code: string): Promise<boolean | null>;
 }
@@ -79,7 +71,6 @@ export function createBoxPasswordBlock(
 
   button.addEventListener('click', () => {
     const code = input.value.trim();
-    // Said, never refused silently: the user sees what a code looks like.
     if (!/^\d{4}$/.test(code)) {
       say(t('box.password.invalid'));
       refresh();

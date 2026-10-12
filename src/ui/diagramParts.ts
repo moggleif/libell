@@ -1,8 +1,6 @@
 /**
- * The parts the motorhome and caravan diagrams are both built from (#419):
- * the frame that sizes a drawing, the plain shapes it is drawn with, the
- * bubble level, the Classic wheel with its on-SVG labels and the Modern
- * floating wheel card. Each diagram only says where its parts go.
+ * The parts the motorhome and caravan diagrams are both built from. Each
+ * diagram only says where its parts go.
  */
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 import { formatLength } from '../domain/settings';
@@ -23,9 +21,7 @@ export interface ViewBox {
 type Unit = 'mm' | 'cm';
 type Severity = DisplayWheel['severity'];
 
-/** Shape per state so color is never the only signal (WCAG 1.4.1).
- * Onboarding's Modern legend (#110) reuses it instead of duplicating the
- * glyph set. */
+/** Shape per state so color is never the only signal (WCAG 1.4.1). */
 export const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
 
 /** Degrees of tilt that push the bubble to the edge of its travel. */
@@ -36,12 +32,10 @@ const BUBBLE_FULL_SCALE_DEG = 5;
 // ============================================================
 
 /**
- * The diagram's outer element. Its `--diagram-aspect` (read by the layout
- * in styles.css) and the `<svg viewBox>` come from the same `ViewBox`, the
- * one place a drawing's proportions are written down, so the box the
- * diagram is fitted into never drifts out of proportion with the drawing —
- * which is what keeps the floating wheel cards, positioned as a percentage
- * of that box, pinned to the wheels they point at (#241).
+ * `--diagram-aspect` (read by styles.css) and the `<svg viewBox>` come from
+ * the same `ViewBox`, so the box the diagram is fitted into never drifts out
+ * of proportion with the drawing. That keeps the floating wheel cards,
+ * positioned as a percentage of that box, pinned to their wheels.
  */
 export function diagramContainer(viewBox: ViewBox, className: string): HTMLDivElement {
   const container = createElement('div', className);
@@ -57,9 +51,8 @@ export function diagramSvg(viewBox: ViewBox, ariaLabel: string): SVGSVGElement {
   });
 }
 
-/** A Modern diagram: the drawing and, over it, the layer its wheel cards
- * float in. The stage is wider than the drawing so the cards have margins
- * to sit in. */
+/** The stage is wider than the drawing so the wheel cards have margins to
+ * sit in. */
 export function modernFrame(
   viewBox: ViewBox,
   ariaLabel: string,
@@ -99,9 +92,6 @@ export function path(d: string, className: string): SVGPathElement {
   return svgEl('path', { d, class: className });
 }
 
-/** A dashed crosshair line through the Modern bubble — a measuring-
- * instrument touch (from the Claude Design handoff) that reads as
- * "level", not as an attempt at a photo. */
 export function crosshair(x1: number, y1: number, x2: number, y2: number): SVGLineElement {
   return svgEl('line', {
     x1: String(x1),
@@ -112,8 +102,6 @@ export function crosshair(x1: number, y1: number, x2: number, y2: number): SVGLi
   });
 }
 
-/** The Modern front arrow, the same on both vehicles. The shape alone says
- * "front", with no text label (#161 follow-up). */
 export function modernFrontArrow(): SVGPathElement {
   return path('M130 6 L118 28 L126 28 L126 44 L134 44 L134 28 L142 28 Z', 'rv-diagram__arrow');
 }
@@ -122,8 +110,7 @@ export function modernFrontArrow(): SVGPathElement {
 // Bubble level
 // ============================================================
 
-/** Shared bubble-level physics: lerp toward the high side, snap under
- * reduced motion, flip to the "level" fill when settled there. */
+/** Lerps toward the high side; snaps under reduced motion. */
 export function updateBubble(
   bubble: SVGCircleElement,
   result: Pick<DisplayResult, 'rollDeg' | 'pitchDeg' | 'isLevel'>,
@@ -148,7 +135,7 @@ export function updateBubble(
 }
 
 export interface BubbleLevel {
-  /** Dial, ring and bubble, in drawing order. */
+  /** In drawing order. */
   elements: SVGCircleElement[];
   update(result: Pick<DisplayResult, 'rollDeg' | 'pitchDeg' | 'isLevel'>): void;
 }
@@ -174,11 +161,8 @@ export function createBubbleLevel(center: Point, size: BubbleSize): BubbleLevel 
     });
   const dial = circle(size.dial, 'rv-diagram__bubble-dial');
   const ring = circle(size.ring, 'rv-diagram__bubble-ring');
-  // Starts in its dial, not at the SVG origin (#244): an SVG circle with
-  // no cx/cy defaults to 0,0, so until the first sensor reading arrived
-  // the bubble sat in the drawing's top-left corner, half of it clipped
-  // by the edge — a stray half-disc on screen every time a reading was
-  // slow (an EasyLevel box connecting, a sensor waking up).
+  // An SVG circle without cx/cy sits at 0,0: a stray, half-clipped disc in
+  // the corner until the first (possibly slow) sensor reading arrives.
   const bubble = svgEl('circle', {
     r: String(size.bubble),
     cx: String(center.x),
@@ -207,14 +191,10 @@ export function createBubbleLevel(center: Point, size: BubbleSize): BubbleLevel 
 // Wheel text
 // ============================================================
 
-/** Step and height text for one wheel — shared by the classic on-SVG
- * labels, the modern wheel cards and both caravan drawings, so every
- * view reads the same plan the same way (#368): the step to drive up onto
- * by name, and one height, the wheel's missing lift. The step's own height
- * is not repeated next to its name; two millimetre figures side by side
- * read as two answers. A gray wheel gets no figure at all: it asks for no
- * action, and a height on a wheel to leave alone only begs the question
- * of what to do with it (the status row says how far the ramps fall short). */
+/** Shared by every diagram so all read the plan the same way. The step's own
+ * height is not repeated next to its name: two millimetre figures side by
+ * side read as two answers. A gray wheel gets no figure: a height on a wheel
+ * to leave alone only begs the question of what to do with it. */
 export function stepAndLiftText(
   severity: Severity,
   stepMm: number,
@@ -223,8 +203,7 @@ export function stepAndLiftText(
   stepHeightsMm: number[],
 ): { step: string; lift: string } {
   if (severity === 'none') return { step: '', lift: formatLength(displayMm, unit) };
-  // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel — say
-  // so instead of leaving the step line blank (screen-cleanup follow-up).
+  // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel.
   if (stepMm <= 0) return { step: t('diagram.noRamp'), lift: '' };
   const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
   return {
@@ -262,9 +241,6 @@ export interface ClassicWheel {
   update(wheel: DisplayWheel, unit: Unit, stepHeightsMm: number[]): void;
 }
 
-/** A Classic wheel: its marker(s) colored by severity with the severity
- * glyph on top, which ramp step to drive up onto above it, and below it
- * the lift, the wheel's one height figure (#368). */
 export function createClassicWheel(at: Point, pair: boolean): ClassicWheel {
   const markers = wheelMarkers(at, pair);
   const glyph = svgEl('text', {
@@ -302,10 +278,8 @@ export interface WheelCard {
   mm: HTMLDivElement;
 }
 
-/** One floating wheel card, empty until the diagram fills it. No visible
- * position text (#161 follow-up): the card's position over the silhouette
- * already says which wheel it is. The name still reaches anyone not
- * reading the layout visually, via `label`, its aria-label. */
+/** No visible position text: the card's place over the silhouette says
+ * which wheel it is; `label` becomes its aria-label. */
 export function buildWheelCard(label: string, side: CardSide): WheelCard {
   const card = createElement('div', `wheel-card wheel-card--${side}`);
   card.setAttribute('aria-label', label);
@@ -320,11 +294,9 @@ export function buildWheelCard(label: string, side: CardSide): WheelCard {
   return { card, markerGlyph, step, mm };
 }
 
-/** Floats a card level with its wheel. Measured from the centre of the
- * *drawn* vehicle, not of the stage around it (#241): the drawing
- * letterboxes within the wider stage, so a plain percentage of the stage
- * would not land on the wheel. `--drawn-height` is the drawing's
- * on-screen height, set by the card layer in styles.css. */
+/** Measured from the centre of the *drawn* vehicle, not of the stage: the
+ * drawing letterboxes within the wider stage, so a plain percentage of the
+ * stage would miss the wheel. `--drawn-height` is set in styles.css. */
 export function placeWheelCard(
   cardLayer: HTMLDivElement,
   card: HTMLDivElement,
@@ -333,16 +305,12 @@ export function placeWheelCard(
 ): void {
   const offsetFromCentre = wheelY / viewBox.height - 0.5;
   card.style.top = `calc(50% + (${offsetFromCentre.toFixed(6)} * var(--drawn-height)))`;
-  // The wheel this card belongs to, in the drawing's own coordinates —
-  // read back by the fit test (scripts/fit-test.mjs), which maps it
-  // through the SVG's transform to check the card really did land on its
-  // wheel at whatever size the diagram was squeezed to (#241).
+  // Read back by scripts/fit-test.mjs to check the card lands on its wheel
+  // at any diagram size.
   card.dataset.wheelY = String(wheelY);
   cardLayer.append(card);
 }
 
-/** Shows one card's state: the glyph and color of its severity, and its
- * step and height text — "Done" in place of a step once it needs none. */
 export function fillWheelCard(
   refs: WheelCard,
   side: CardSide,
