@@ -1,5 +1,5 @@
 /**
- * The Web Bluetooth link every BLE box adapter shares (#418): pick the box,
+ * The Web Bluetooth link every BLE box adapter shares: pick the box,
  * connect its GATT server, tear the link down cleanly, retry once, and
  * reconnect silently. Each box supplies only its scan filter and how to
  * open its own service and characteristics.
@@ -42,7 +42,7 @@ export function createWebBluetoothLink<Wiring>(
   /**
    * The box picked in this page session. Chrome on Android keeps
    * `getDevices()` behind a flag, and the picked device object stays
-   * connectable for as long as the page lives (#288).
+   * connectable for as long as the page lives.
    */
   let picked: BluetoothDevice | null = null;
 
@@ -54,7 +54,7 @@ export function createWebBluetoothLink<Wiring>(
     // The listener goes first, because `gatt.disconnect()` fires the event
     // too and a deliberate disconnect is not a lost link. The link is
     // actively closed on failure, because a box stops advertising while a
-    // half-open link holds it (#219).
+    // half-open link holds it.
     const teardown = () => {
       device.removeEventListener('gattserverdisconnected', onDisconnect);
       device.gatt?.disconnect();
@@ -71,7 +71,7 @@ export function createWebBluetoothLink<Wiring>(
   }
 
   /** Right after Disconnect a box can take a moment before it advertises
-   * and accepts a connection again (#322, #357): hear it, then try once
+   * and accepts a connection again: hear it, then try once
    * more. A second failure is the caller's ordinary "could not connect". */
   async function connectWithOneRetry(
     device: BluetoothDevice,
@@ -87,7 +87,7 @@ export function createWebBluetoothLink<Wiring>(
 
   /** The box picked this session, else the browser's list of devices this
    * origin may use. `getDevices()` can be missing even where
-   * `navigator.bluetooth` is not (#130). */
+   * `navigator.bluetooth` is not. */
   async function findDevice(deviceId: string): Promise<BluetoothDevice | null> {
     if (picked?.id === deviceId) return picked;
     const getDevices = navigator.bluetooth?.getDevices;
@@ -107,7 +107,7 @@ export function createWebBluetoothLink<Wiring>(
         const device = await findDevice(deviceId);
         if (!device) return null;
         // A connect to a box no scan has seen since the drop often fails
-        // even with the box in range (#288, #356).
+        // even with the box in range.
         await waitForAdvertisement(device);
         return await connectToDevice(device, onDisconnect);
       } catch {

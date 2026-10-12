@@ -1,54 +1,37 @@
 /**
  * Xparkle RVS01 (SkyRC) — Web Bluetooth transport and `OrientationSensor`
- * implementation (#270), built on `xparkleProtocol.ts`'s codec (#269).
+ * built on `xparkleProtocol.ts`'s codec. Same shape as `easyLevelSensor.ts`
+ * (injectable transport seam, readings turned into a `GravityVector`,
+ * ADR 0014), with two real differences:
  *
- * Same shape as `easyLevelSensor.ts`: a thin injectable transport seam so
- * the whole connect state machine is unit-testable with a fake, plus the
- * adapter that turns readings into the `GravityVector` the seam requires
- * (ADR 0014). Two things differ, and neither is cosmetic:
+ * **1. The live reading is polled, not notified.** `fff2` must be read (the
+ * official app does so every 500–1000 ms); `fff4`'s notifications carry only
+ * command replies. Polling stops the moment the link goes — a GATT read
+ * every half second is not free on the box's AA batteries.
  *
- * **1. The live reading is polled, not notified.** The official app reads
- * `fff2` every 500–1000 ms; `fff4`'s notifications carry only command
- * replies. So this adapter owns a poll loop, which `easyLevelSensor.ts`
- * has no equivalent of, and stops it the moment the connection goes — a
- * GATT read every half second is not free on the box's AA batteries.
+ * **2. It expects to be written to.** The app's connect sequence: enable
+ * notifications on `fff4`, read the serial number, send the password
+ * (command `4`, default `"0000"`), query the stored parameters (command
+ * `2`), then poll.
  *
- * **2. It expects to be written to.** The app's own connect sequence is:
- * enable notifications on `fff4`, read the serial number, send the
- * password (command `4`, default `"0000"`), query the stored parameters
- * (command `2`), and only then start polling. `easyLevelSensor.ts` never
- * writes anything at all.
+ * **Mounting orientation: the box's own, never Libell's.** Unlike EasyLevel's
+ * raw axes, the box applies its stored installation orientation
+ * (front/rear/left/right) before reporting angles. Libell's rotation on top
+ * would double-correct and name the wrong wheel while looking plausible, so
+ * the descriptor declares `mounting: false` and `getOrientation()` is
+ * display-only. Which way the box faces is learned in Libell instead; the
+ * box must stand upright whichever way it faces (`domain/uprightMount.ts`).
  *
- * ## The two decisions #270 asked to be made here
+ * **The password does not gate readings.** A physical box serves `fff2`
+ * without the password. The adapter sends it and polls regardless: if a box
+ * did gate reads, they would fail into the ordinary `'disconnected'` path.
+ * `isPasswordRejected()` lets the UI say "wrong password" rather than
+ * "the box is broken".
  *
- * **Mounting orientation: the box's own, never Libell's.** The box stores
- * an installation orientation (front/rear/left/right) and — unlike
- * EasyLevel, which streams raw accelerometer axes — it applies that
- * orientation itself before reporting finished angles. Applying Libell's
- * own rotation on top would double-correct: a box configured "left" would
- * be rotated twice and name the wrong wheel while looking plausible. So
- * the descriptor declares `mounting: false`, no picker is offered, and
- * `getOrientation()` below exposes what the box reports for display only.
- * Which way the box faces in the vehicle is learned in Libell instead
- * (#293), so no step ever needs the vendor app. The box itself must stand
- * upright whichever way it faces (#304, `domain/uprightMount.ts`).
- *
- * **The password does not gate readings here.** Whether the box refuses to
- * serve `fff2` before command `4` was unknowable from the app, which always
- * logs in first; a physical box (#273) answers it: it does not refuse. This
- * adapter sends the password and
- * then polls regardless of what the reply says: if the box does not gate
- * reads, everything works; if it does, the reads fail and the ordinary
- * `'disconnected'` path takes over. `isPasswordRejected()` records the
- * rejection separately so the UI can say "wrong password" rather than
- * "the box is broken" (#272 renders it).
- *
- * **No box command that changes stored state is ever issued
- * automatically.** The box remembers its own configuration, and silently
- * rewriting a user's setup is worse than not supporting it at all. The one
- * exception is `resetZero`, and only behind an explicit tap (`zeroBox()`,
- * #290): the box's own zero takes out the few degrees a mounting is off
- * level. `setParameters` is never sent.
+ * **No command that changes the box's stored state is sent automatically** —
+ * silently rewriting a user's setup is worse than not supporting it. The one
+ * exception is `resetZero`, only behind an explicit tap (`zeroBox()`).
+ * `setParameters` is never sent.
  */
 import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import { BLE_ADVERTISEMENT_WAIT_MS } from './bleAdvertisement';
@@ -81,42 +64,28 @@ import {
 } from './xparkleProtocol';
 
 /**
- * How often the live characteristic is read while connected.
- *
- * The official app uses 500 ms on its own leveling screen and 1000 ms on
- * its device list; 500 ms is the one worth matching, since that is the
- * screen a user is actually watching while they drive onto ramps, and it
- * is evidence the box tolerates that rate. Libell polls at one rate rather
- * than two because it has one screen that consumes readings.
- *
- * Not a guess about battery life: what a box tolerates comfortably over a
- * long session is exactly the kind of thing #273's bench session should
- * confirm.
+ * Live-read poll interval. Matches the official app's leveling screen
+ * (500 ms; its device list uses 1000 ms) — evidence the box tolerates the
+ * rate.
  */
 export const XPARKLE_POLL_INTERVAL_MS = 500;
 
 /**
- * A read that neither resolves nor rejects would stall the poll loop
- * forever behind its own in-flight guard, so one is given this long before
- * the connection is treated as lost. Comfortably longer than a BLE round
- * trip at any connection interval, comfortably shorter than the
- * descriptor's staleness timeout, so a genuinely wedged link surfaces as
- * 'disconnected' rather than as silently frozen guidance.
+ * A read that never settles would stall the poll loop behind its in-flight
+ * guard. Longer than any BLE round trip, shorter than the descriptor's
+ * staleness timeout, so a wedged link surfaces as 'disconnected' rather than
+ * as silently frozen guidance.
  */
 export const XPARKLE_READ_TIMEOUT_MS = 2000;
 
-/** How long "try again" waits for the box's password verdict (#367)
- * before saying nothing came back — the same bound as a live read. */
+/** How long "try again" waits for the box's password verdict. */
 export const XPARKLE_PASSWORD_REPLY_TIMEOUT_MS = XPARKLE_READ_TIMEOUT_MS;
 
-/** The shared advertisement wait (#288), under the name this adapter's
- * tests and callers have always used. */
 export const XPARKLE_ADVERTISEMENT_WAIT_MS = BLE_ADVERTISEMENT_WAIT_MS;
 
-/** One connected box. */
 export interface XparkleConnection {
-  /** Web Bluetooth's own device id (#130) — remembered for a later silent
-   * reconnect through `getDevices()`. */
+  /** Web Bluetooth's device id, remembered for a silent reconnect through
+   * `getDevices()`. */
   readonly deviceId: string;
   /** Subscribe to `fff4` (command replies — never live readings). */
   subscribeNotify(onData: (view: DataView) => void): Promise<void>;
@@ -127,12 +96,8 @@ export interface XparkleConnection {
   disconnect(): void;
 }
 
-/**
- * Thin seam over Web Bluetooth, so everything below can be unit-tested
- * with a fake implementing this same shape — the same split
- * `easyLevelSensor.ts` uses, and for the same reason: there is no physical
- * box, and `navigator.bluetooth` does not exist in Vitest.
- */
+/** Seam over Web Bluetooth, so the connect state machine is testable with a
+ * fake (`navigator.bluetooth` does not exist in Vitest). */
 export interface XparkleTransport {
   /** Shows the OS device picker and connects. Needs a live user gesture. */
   connect(onDisconnect: () => void): Promise<XparkleConnection>;
@@ -143,38 +108,28 @@ export interface XparkleTransport {
 }
 
 export interface XparkleSensor extends ExternalSensor {
-  /** The most recent parsed reading, or null — battery included, for the
-   * device page's health row. Raw, as the box reports it: before any
-   * learned mounting (#293), which is what learning a new one needs. */
+  /** The latest reading (battery included), raw as the box reports it —
+   * before any learned mounting, which is what learning a new one needs. */
   getReading(): XparkleReading | null;
-  /** The mounting orientation the box itself reports (display only — see
-   * the module doc comment for why Libell never applies its own). */
+  /** The mounting orientation the box reports; display only. */
   getOrientation(): XparkleOrientation | null;
-  /**
-   * True once the box has answered the password command with a rejection.
-   * Distinct from a plain failure so the UI can say "wrong password"
-   * rather than blaming the hardware.
-   */
+  /** True once the box rejected the password — distinct from a failure so
+   * the UI can say "wrong password" rather than blaming the hardware. */
   isPasswordRejected(): boolean;
   /**
-   * Offer the password again on the live link (#367) — the code the user
-   * just typed in Libell, read through `getPassword` — and resolve with the
-   * box's verdict: true accepted, false rejected, null when no box is
-   * connected, the code is not four digits, or no answer came in time.
-   * Never reconnects: readings keep flowing while the code is tried.
+   * Offer `getPassword()` again on the live link and resolve with the box's
+   * verdict: true accepted, false rejected, null when no box is connected,
+   * the code is not four digits, or no answer came in time. Never
+   * reconnects, so readings keep flowing.
    */
   verifyPassword(): Promise<boolean | null>;
   /**
-   * Zero the box where it sits, with its own `resetZero` command (#290):
-   * from then on it reports angles relative to this position. The box must
-   * stand upright: lying down, turning it about its own axis changes both
-   * angles, so no zero holds (found on hardware, #273); the box's page
-   * guides the user to stand it up (#304). Resolves true once the command
-   * was written, false when
-   * no box is connected or the write failed; nothing is retried.
-   *
-   * The one command that changes the box's stored state this adapter
-   * ever sends, and only ever from an explicit user action.
+   * Zero the box where it sits with its own `resetZero`; it then reports
+   * angles relative to this position. The box must stand upright: lying
+   * down, turning it about its own axis changes both angles, so no zero
+   * holds (found on hardware). Resolves true once written, false when no box
+   * is connected or the write failed; never retried. The only command that
+   * changes the box's stored state, and only from an explicit user action.
    */
   zeroBox(): Promise<boolean>;
 }
@@ -189,9 +144,8 @@ export interface XparkleSensorOptions {
   /** The box's four-digit password. Defaults to the factory `"0000"`. */
   getPassword?: () => string;
   /**
-   * How the box sits in the vehicle, as learned on its page (#293), or
-   * null for its own axes. Read on every reading, so a newly learned
-   * mounting takes effect at once, with no reconnect.
+   * How the box sits in the vehicle as learned on its page, or null for its
+   * own axes. Read on every reading, so a new mounting applies at once.
    */
   getAxisMapping?: () => AxisMapping | null;
   /** Injectable for tests; real timers in the browser. */
@@ -205,15 +159,12 @@ interface Timers {
   clearTimer: (id: number) => void;
 }
 
-/** A reading turned into the vehicle's gravity, through the learned
- * mounting (#293) when there is one. */
 function vehicleGravity(reading: XparkleReading, mapping: AxisMapping | null): GravityVector {
   if (!mapping) return gravityFromReading(reading);
   const mapped = applyAxisMapping(reading, mapping);
   return gravityFromAngles(mapped.rollDeg, mapped.pitchDeg);
 }
 
-/** `promise`, or a rejection once `ms` has passed without an answer. */
 function withTimeout<T>(promise: Promise<T>, ms: number, timers: Timers): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = timers.setTimer(() => reject(new Error('read timed out')), ms);
@@ -235,12 +186,8 @@ function isPasswordReply(frame: Uint8Array): boolean {
   return frame.length > 2 && frame[2] === 0x04;
 }
 
-/**
- * Calls `poll` now and again `intervalMs` after each attempt ends, for as
- * long as `isConnected()` holds. Rescheduled after each attempt rather
- * than on a fixed interval, so a slow read delays the next one instead of
- * stacking behind it.
- */
+/** Rescheduled after each attempt ends rather than on a fixed interval, so a
+ * slow read delays the next one instead of stacking behind it. */
 function createPollLoop(
   poll: () => Promise<void>,
   isConnected: () => boolean,
@@ -267,11 +214,9 @@ function createPollLoop(
 }
 
 /**
- * The official app's own post-connect sequence, minus the serial-number
- * read it uses only for its update check: subscribe, send the password,
- * ask for the stored parameters. Every step is best-effort — a box that
- * refuses any of them must not stop leveling from working, since only
- * the `fff2` read is actually required for that.
+ * The official app's post-connect sequence, minus its serial-number read
+ * (used only for its update check). Every step is best-effort: only the
+ * `fff2` read is required for leveling.
  */
 async function sendHandshake(
   live: XparkleConnection,
@@ -281,8 +226,7 @@ async function sendHandshake(
   try {
     await live.subscribeNotify(onReply);
   } catch {
-    // No replies, so no orientation and no password verdict — the live
-    // read below is unaffected.
+    // No replies, so no orientation and no password verdict.
   }
   const frame = buildPasswordFrame(
     XPARKLE_PASSWORD_MODE.verify,
@@ -293,8 +237,8 @@ async function sendHandshake(
     try {
       await live.write(frame);
     } catch {
-      // Treated as "unknown", not "rejected": a failed write says
-      // nothing about whether the password itself is right.
+      // "Unknown", not "rejected": a failed write says nothing about the
+      // password itself.
     }
   }
   try {
@@ -322,7 +266,6 @@ export function createXparkleSensor(
   let reading: XparkleReading | null = null;
   let orientation: XparkleOrientation | null = null;
   let passwordRejected = false;
-  // Waiting for the next password verdict (#367), if anyone is.
   let onPasswordVerdict: ((accepted: boolean | null) => void) | null = null;
   let deviceId: string | null = null;
   let lastSampleAt: number | null = null;
@@ -335,8 +278,8 @@ export function createXparkleSensor(
     timers,
   );
 
-  /** Everything a lost link must reset — including the last reading, so a
-   * stale value can never be mistaken for a live one. */
+  /** Clears the last reading too, so a stale value is never taken for a
+   * live one. */
   function markDisconnected(): void {
     polling.stop();
     replies.reset();
@@ -371,14 +314,12 @@ export function createXparkleSensor(
     try {
       const view = await withTimeout(live.readLive(), XPARKLE_READ_TIMEOUT_MS, timers);
       const parsed = view ? parseLivePayload(view) : null;
-      // A payload that parses to null is a bad packet, not a lost link:
-      // the next poll is 500 ms away, and `staleTimeoutMs` is what
-      // eventually hides the guidance if they keep coming.
+      // An unparseable payload is a bad packet, not a lost link;
+      // `staleTimeoutMs` hides the guidance if they keep coming.
       if (parsed) acceptReading(parsed);
     } catch {
-      // A read that fails or times out is the link going, not a bad
-      // packet — but only for the link this read was made on: a newer one
-      // adopted meanwhile is not the one that failed.
+      // A failed or timed-out read is the link going — but only this read's
+      // link: a newer one adopted meanwhile has not failed.
       if (connection === live) dropFailedLink(live);
     } finally {
       pollInFlight = false;
@@ -386,12 +327,11 @@ export function createXparkleSensor(
   }
 
   /**
-   * The ordinary 'disconnected' path (retry, fallback prompt), and the
-   * link actively closed (#288): a BLE peripheral does not advertise while
-   * it still holds a GATT connection, so a half-open link left behind made
-   * every later Retry miss a box sitting right there (#219). The
-   * transport's teardown removes its disconnect listener first, so this is
-   * never reported as a second lost connection.
+   * The link is actively closed: a BLE peripheral does not advertise while
+   * it still holds a GATT connection, so a half-open link left behind makes
+   * every later Retry miss a box sitting right there. The transport's
+   * teardown removes its disconnect listener first, so this is not reported
+   * as a second lost connection.
    */
   function dropFailedLink(live: XparkleConnection): void {
     markDisconnected();
@@ -428,8 +368,7 @@ export function createXparkleSensor(
         return await adopt(await transport.connect(markDisconnected));
       } catch {
         // A cancelled picker and a failed connect are the same to the
-        // caller: nothing is connected, and a tap can try again. A box that
-        // was already lost stays lost (#307), so Retry's cancelled picker
+        // caller. A box already lost stays lost, so Retry's cancelled picker
         // keeps the unavailable prompt and its background retry.
         if (state !== 'disconnected') state = 'denied';
         return state;
@@ -497,17 +436,12 @@ export function createXparkleSensor(
 /**
  * The real Web Bluetooth transport.
  *
- * **The scan filter is the one thing here that is genuinely uncertain.**
- * The official app scans with no service filter at all and matches on the
- * advertised name (`RVLevel` / `RVbalance`), so nothing in the APK says
- * whether the box advertises `XPARKLE_SERVICE_UUID` — and #215 had to undo
- * exactly this mistake for EasyLevel, where filtering `requestDevice()` on
- * a service real boxes never advertise meant the OS picker listed nothing.
- * So the filter list carries both: the name prefixes the app is known to
- * match, and the service UUID in case the box does advertise it.
- * `requestDevice()` matches a device against ANY filter, so an extra
- * filter can only widen the picker, never narrow it. #273 settles which
- * one actually fires.
+ * The official app scans unfiltered and matches the advertised name
+ * (`RVLevel` / `RVbalance`), so whether the box advertises
+ * `XPARKLE_SERVICE_UUID` is unknown — and filtering EasyLevel on a service
+ * real boxes never advertise left the OS picker empty. So both kinds of
+ * filter are listed: `requestDevice()` matches ANY filter, so an extra one
+ * can only widen the picker, never narrow it.
  */
 export function createXparkleWebBluetoothTransport(): XparkleTransport {
   return createWebBluetoothLink({
@@ -523,8 +457,7 @@ export function createXparkleWebBluetoothTransport(): XparkleTransport {
   });
 }
 
-/** The box's live and write characteristics open at once; the notify
- * characteristic only when the sensor subscribes. */
+/** The notify characteristic opens only when the sensor subscribes. */
 async function wireXparkle(
   server: BluetoothRemoteGATTServer,
 ): Promise<Omit<XparkleConnection, 'deviceId' | 'disconnect'>> {
@@ -544,28 +477,21 @@ async function wireXparkle(
   };
 }
 
-/** Real Web Bluetooth — Chrome/Android only, never Safari/iOS, exactly as
- * for EasyLevel, where iOS is pointed at Bluefy instead (R39). */
+/** Real Web Bluetooth: Chrome/Android only, never Safari/iOS, where users
+ * are pointed at Bluefy instead (R39). */
 export function isXparkleWebBluetoothSupported(): boolean {
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 }
 
-/**
- * This box can work in this browser: real Web Bluetooth, or the simulated
- * box (#271) standing in for it. The ONE gate every "does this source
- * exist here at all" decision goes through, mirroring
- * `isEasyLevelAvailable()`.
- */
+/** Real Web Bluetooth or the simulated box: the one gate for "does this
+ * source exist here at all". */
 export function isXparkleAvailable(): boolean {
   return isXparkleWebBluetoothSupported() || xparkleSimulationMode() !== 'off';
 }
 
-/**
- * The transport this environment should use (#271): the simulated box
- * whenever its flag is on, the real Web Bluetooth one otherwise. One seam,
- * chosen in one place, so everything above it is the code a real box runs
- * through.
- */
+/** The simulated box whenever its flag is on, real Web Bluetooth otherwise —
+ * chosen at this one seam, so everything above it is the code a real box
+ * runs through. */
 export function createXparkleTransport(): XparkleTransport {
   const simulation = xparkleSimulationMode();
   return simulation !== 'off'
@@ -574,14 +500,10 @@ export function createXparkleTransport(): XparkleTransport {
 }
 
 /**
- * This box as the registry (#262, ADR 0016) sees it.
- *
- * `mounting: false` is the decision documented at the top of this file:
- * the box applies its own stored orientation before reporting angles, so
- * offering Libell's rotation picker as well would double-correct.
- * `temperature` and `debugBytes` are false because this protocol carries
- * neither — #268's capability rendering means those rows are simply not
- * drawn, rather than shown reading "not available yet" (#228).
+ * This box as the registry sees it (ADR 0016). `mounting: false`: the box
+ * applies its own stored orientation, so Libell's picker would
+ * double-correct (see the top of this file). The protocol carries no
+ * temperature or debug bytes, so those rows are not drawn.
  */
 export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
   id: 'xparkle',
@@ -599,9 +521,8 @@ export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
     upright: true,
     zeroesItself: true,
   },
-  // Polled every 500 ms, so a silence of several polls is a real fault
-  // rather than jitter — but kept at EasyLevel's own 4s rather than
-  // tightened, since a BLE read can legitimately be delayed by a busy
-  // connection interval and R35's overlay hiding guidance is disruptive.
+  // Not tightened below EasyLevel's 4 s despite 500 ms polling: a busy
+  // connection interval can delay a BLE read, and R35's overlay hiding
+  // guidance is disruptive.
   staleTimeoutMs: 4000,
 };
