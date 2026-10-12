@@ -25,15 +25,22 @@ src/
 │                  # (the level screen), sound.ts (chime, guidance pulse, mute),
 │                  # topBar.ts, frameGuard.ts, startupMigrations.ts, incomingSetup.ts,
 │                  # sensorStartup.ts (start-up)
-├── domain/        # PURE TypeScript (no browser APIs) — unit-testable
+├── domain/        # PURE TypeScript (no browser APIs) — unit-testable, among them:
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
+│   ├── caravan.ts    # the caravan's axle + jockey-wheel math (ADR 0008)
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
+│   ├── calibration.ts, targetPresets.ts  # the three calibration terms (ADR 0010/0013/0014)
+│   ├── pose.ts, stillness.ts, staleness.ts  # when a reading can be trusted
 │   └── settings.ts   # LevelSettings + Calibration (validation, legacy migrations)
-├── data/          # settingsStore.ts (settings + calibration), easyLevelDeviceStore.ts
-│                  # (remembered EasyLevel device id, #130) — localStorage read/write
-├── sensor/        # orientation.ts (phone), easyLevelSensor.ts (BLE box, #116) — gravity vector as a subscription
-└── ui/            # render functions, SVG components, styles.css
+├── data/          # settingsStore.ts (settings + calibration), sensorDeviceStore.ts
+│                  # (each box's remembered device id, #130) — localStorage read/write
+├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
+│                  # externalSensors.ts (the registry), externalSensorController.ts
+│                  # (connect, reconnect, fallback), easyLevel*.ts and xparkle*.ts (each
+│                  # box's adapter, protocol and simulator), sensorFallback.ts,
+│                  # silentReconnect.ts
+└── ui/            # render functions, SVG components, styles.css, i18n + messages/
 ```
 
 Rule: `domain/` never touches `window`, `document`, `navigator` or `localStorage`. All
@@ -96,9 +103,9 @@ Caravan mode (`vehicleType: 'caravan'`, ADR 0008) uses `src/domain/caravan.ts`
 instead: the single axle (track = `trackWidthRearMm`) is the reference plane, roll
 drives the ramp recommendation for the low axle wheel, and pitch drives a signed
 jockey-wheel correction over the `wheelbaseMm` axle-to-jockey distance — positive =
-crank up. The shared `stabilizeLift` core provides the same hysteresis; `main.ts`
-selects the compute → stabilize → render pipeline per vehicle type and rebuilds the
-level screen when it changes. A boggie (`rearAxle: 'boggie'`, ADR 0009) is one
+crank up. The shared `stabilizeLift` core provides the same hysteresis;
+`src/app/levelEngine.ts` selects the compute → stabilize pipeline per vehicle type and
+`src/app/levelScreen.ts` rebuilds the level screen when it changes. A boggie (`rearAxle: 'boggie'`, ADR 0009) is one
 leveling axle at its midpoint: the math is untouched and the diagrams draw wheel
 pairs sharing one recommendation.
 
@@ -125,8 +132,9 @@ The sensor module exposes an explicit state (`unsupported`, `needs-permission`, 
 getGravity()/getSource()/getLastSampleAt()` is the whole contract every gravity source
 implements — the
 phone sensor above, the fixed-tilt `?demo` stand-in in `src/app/demoSensor.ts`, and
-`src/sensor/easyLevelSensor.ts` (#116, R32: the EasyLevel BLE box, opt-in via the menu's
-"External sensor" page, only shown when `navigator.bluetooth` exists). `main.ts` selects
+the two Sensorbox adapters: `src/sensor/easyLevelSensor.ts` (#116, R32) and
+`src/sensor/xparkleSensor.ts` (#270, R49), opt-in from the top bar's sensor icon or the
+menu's "Sensor box" page, only offered when `navigator.bluetooth` exists. `main.ts` selects
 between implementations through the external-sensor controller's active sensor; `domain/` never learns which one is
 active. `easyLevelSensor.ts` keeps Web Bluetooth GATT transport separate from payload
 parsing (`easyLevelProtocol.ts`, unit-tested with synthetic bytes — no hardware or
@@ -198,7 +206,7 @@ descriptor with its `id` (the `SensorSource` member, and the key its storage and
 settings are filed under), its `displayName` (the product name — never translated), its
 `isAvailable()` and its `capabilities` (which rows its own page has something to put
 in). `hasAvailableExternalSensor()` is the single gate for "should the external-sensor
-UI exist here at all", used by `main.ts` and the onboarding wizard. The descriptor is
+UI exist here at all", used by `src/app/sensorPages.ts` and the onboarding wizard. The descriptor is
 data only: connecting and reconnecting belong elsewhere, and `domain/` never sees any of
 it — it keeps just the `SensorSource` union (ADR 0002).
 
@@ -214,19 +222,19 @@ guides the user to Bluefy — a third-party Web Bluetooth browser — which make
 only when Web Bluetooth is absent _and_ the phone is iOS, so other unsupported browsers
 still get R32's plain hidden case.
 
-Remember-and-auto-reconnect (#130, R33): `EasyLevelSensor` gains a `reconnect(deviceId)`
+Remember-and-auto-reconnect (#130, R33): each box adapter has a `reconnect(deviceId)`
 alongside `start()` — it tries Web Bluetooth's persistent-permissions API
 (`navigator.bluetooth.getDevices()` + `device.gatt.connect()`), which needs no device
 picker and no user gesture, and resolves `'granted'`/`'disconnected'`/`'unsupported'`
 without ever falling back to `start()`'s gesture-triggered `requestDevice()` picker
 itself (that fallback would be pointless with no gesture to spend, and wrong if one were
-available — see the module doc comment). `main.ts` calls `reconnect()` once at startup
-when `libell.settings`' `sensorSource` was last `'easylevel'` and a device id is
-remembered (`easyLevelDeviceStore.ts`); on any failure it still adopts
-`easyLevelSensor` as the active sensor so the existing `'disconnected'` UI (this
-section's paragraph above) is what the user sees, rather than a second, parallel
-"couldn't auto-reconnect" message. `sensorSource` flips between `'phone'`/`'easylevel'`
-on every explicit connect/disconnect; the remembered device id is written on a
+available — see the module doc comment). At start-up `src/app/sensorStartup.ts` asks
+the controller to call `reconnect()` once when `libell.settings`' `sensorSource` was
+last a box and a device id is remembered for it (`sensorDeviceStore.ts`); on any
+failure it still adopts that box as the active sensor so the existing
+`'disconnected'` UI (this section's paragraph above) is what the user sees, rather than
+a second, parallel "couldn't auto-reconnect" message. `sensorSource` flips between
+`'phone'` and the box's id on every explicit connect/disconnect; the remembered device id is written on a
 successful connect and deliberately left alone on disconnect ("not right now", not
 "forget this box") — the next connect can only ever overwrite it with the same or a
 newer id, never leave it stale in a way that matters.
@@ -234,6 +242,10 @@ This is the PWA/Web-Bluetooth half of #130's ask; iOS reaches this same code thr
 Bluefy (R39) rather than a native codebase, so its auto-reconnect depends on whether
 Bluefy itself implements `getDevices()` — degrading honestly to one manual reconnect
 tap there when it doesn't, the same `'disconnected'` UI already described above.
+Chrome on Android also keeps `getDevices()` behind a `chrome://flags` switch, so
+`src/sensor/silentReconnect.ts` (#310) decides when the box's page offers an
+"Advanced" tip for turning it on: a Chromium browser with Web Bluetooth but no
+`getDevices()`, never iOS.
 Calibration is correspondingly split three ways —
 sensor bias (R11, source-specific), installation/placement offset (R24's vehicle zero,
 ADR 0010, generalizable per source), and the desired vehicle target (ADR 0013,
@@ -252,22 +264,24 @@ remembered device id the same way (`libell.sensorDevice.<source>`). Both carry a
 one-shot migration from the device-named keys #130/#131 used, which copies rather than
 moves, so a rolled-back build still finds the user's pairing and offset. `main.ts`'s `zeroCalibration()` picks which
 pair to sum from the ACTIVE `sensor.getSource()`: the phone's sensor calibration +
-vehicle zero while the phone is active, or just the EasyLevel installation offset
-while it is — there is no separate EasyLevel hardware-bias layer yet, so
-`vehicleZeroFromReading(reading, null)` (unmodified from R24) is reused directly for
-the capture. The UI is built by `sensorSourceSection.ts` (not inside `calibrationSection.ts`) and,
+vehicle zero (`src/app/phoneCalibration.ts`) while the phone is active, or just the
+active box's installation offset (`src/app/installOffsets.ts`) while a box is — there
+is no separate hardware-bias layer for a box, so `src/app/boxZero.ts` reuses
+`vehicleZeroFromReading(reading, null)` (unmodified from R24) directly for the
+capture. The UI is built by `sensorSourceSection.ts` (not inside `calibrationSection.ts`) and,
 since #226, placed by `sensorPage.ts` on the sensor's own page
 (`boxStatusPage.ts`'s `settingsSlot`) rather than on the External sensor list
 page — that section returns its `connectElement`/`installElement` halves separately
 precisely so each caller can place them where they belong (the onboarding wizard puts
-them on separate steps). Visible whenever EasyLevel is the active source,
+them on separate steps). Visible whenever a box is the active source,
 reusing `calibrationAge.ts`'s shared `ageText()` (factored out of
 `calibrationSection.ts` by this change) and the `calibration.check.*`/`calibration.age.*`
 i18n keys for the Check/age copy rather than re-deriving that wording.
 
 Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
 `getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone
-sensor's `accept()`, the EasyLevel sensor's accel-notification handler — never on
+sensor's `accept()`, the EasyLevel sensor's accel-notification handler, the Xparkle
+sensor's poll — never on
 "listener attached" or "GATT still open", so a stalled stream (a backgrounded tab's
 throttled `devicemotion`, a BLE box whose notifications silently stopped while its
 connection stayed open) is visible even though `getGravity()` still returns its last
@@ -275,8 +289,8 @@ non-null value. `domain/staleness.ts`'s `isSensorStale(lastSampleAtMs, nowMs,
 timeoutMs)` is the one pure predicate both sources share — time is always a parameter,
 matching R25's stillness detector and the display stabilizer's dwell timers, so it is
 unit-tested without real timers. The frame loop (`src/app/levelFrame.ts`) checks it every frame with a
-per-source timeout (2s phone, continuously sampling; 4s EasyLevel, whose event-driven
-BLE notifications can have larger natural gaps) and, while stale, shows a dedicated
+per-source timeout (2s phone, continuously sampling; for a box its descriptor's
+`staleTimeoutMs`, since BLE readings can have larger natural gaps) and, while stale, shows a dedicated
 overlay instead of the pose overlay or the diagram — a third state, never conflated
 with R17's wrong-pose guard (checked after staleness: a reading too old to trust isn't
 safe to judge the pose from either) or R25's "Measuring…" (which needs new, noisy
@@ -347,7 +361,7 @@ The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–
 the bubble level embedded at its center; per-wheel readouts sit directly at the wheels
 (the step name and one height, the lift in whole mm — R6), drawn on the SVG in Classic and on floating wheel cards in Modern, for the motorhome and the caravan alike (`stepAndLiftText` in `src/ui/rvDiagram.ts`). Everything is inline SVG, sized in viewport units so the
 diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
-in the full-width hamburger menu; amber warning lamps in the top bar point to unsaved
+in the full-width menu, opened from the bottom action bar; amber warning lamps in the top bar point to unsaved
 settings or a missing calibration. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language (sv/en/fr/es/de) in `src/ui/messages/`.
 
 Top bar / bottom action bar split (#161): the top bar holds only identity (logo, title,
@@ -369,12 +383,13 @@ The repository is text-only: PWA icons are rendered from `public/icons/icon.svg`
 `scripts/generate-icons.mjs` during `npm run build` and are gitignored. The `?demo`
 flag replaces the sensor with a fixed tilt **and presents the app as configured** (no
 warning lamps, in memory only), so screenshots and demos show the product rather than
-the first-run state. The `?easylevel-sim` flag (R44) is its EasyLevel sibling: a
-simulated BLE box behind the transport seam, for exercising the external-sensor flow
+the first-run state. The `?easylevel-sim` (R44) and `?xparkle-sim` (R48) flags are its
+Sensorbox siblings: a simulated BLE box behind the transport seam, for exercising the external-sensor flow
 on machines (and CI screenshots) with no hardware. CI runs
 `format:check`, `typecheck`, `test` and `build` on every branch, then three Playwright
 checks against the built app: `smoke` (it renders at all), `flows` (the simulated
-boxes connect, report, zero and reconnect through the real wiring — #374) and `fit` (every view fits a
+boxes, the wizard, the level screen, sound, navigation, settings saves and start-up
+through the real wiring — #374, #392) and `fit` (every view fits a
 phone screen — R4/#241, R18/#239 and R40/#243; the unit tests run in happy-dom, which
 has no layout engine and measures every height as zero, so this is the only place a
 too-tall or too-wide view can fail). `fit` also checks the stylesheet directly for the

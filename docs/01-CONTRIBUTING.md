@@ -21,12 +21,18 @@ npm run test          # Vitest unit tests
 npm run build         # icons + typecheck + production build into dist/
 npm run preview       # serve the production build locally
 npm run smoke         # Playwright: the built app renders (needs `build` first)
-npm run flows         # Playwright: the simulated boxes' flows (needs `build` first)
+npm run flows         # Playwright: the app's flows through main.ts's real wiring (needs `build` first)
 npm run fit           # Playwright: it all fits a phone screen (needs `build` first)
 ```
 
+The base path defaults to `/libell/` for GitHub Pages project hosting; override it with
+`BASE_PATH=/ npm run build` for a custom domain or root-level hosting.
+
 The Playwright scripts need a build to serve, so they are not part of the
-pre-commit set — CI runs them after `build`. `fit` (#239, #241, #243) opens **every**
+pre-commit set — CI runs them after `build`. `flows` (#374, #392) drives the simulated
+boxes (`?easylevel-sim`, `?xparkle-sim`), the first-run guide, the level screen, sound,
+navigation, settings saves and start-up through the real wiring in `src/main.ts`;
+extend it before you change how `main.ts` connects the `src/app/` modules. `fit` (#239, #241, #243) opens **every**
 view — level, first-run guide, settings, help, external sensor, the iOS sensor guide,
 the incoming shared-setup dialog — against small-phone viewports in both appearances,
 and fails on anything below the fold, a page that scrolls sideways, content wider than
@@ -63,6 +69,16 @@ reached by pressing the app's own "share vehicle setup" button and opening the l
 produces — `.settings__share-vehicle` is a stable hook for exactly that, so the test
 does not have to carry a copy of the i18n table.
 
+## Deployment
+
+Every merge to `main` builds and publishes `dist/` to GitHub Pages via
+`.github/workflows/deploy.yml`, which needs **Settings → Pages → Source: GitHub Actions**
+enabled once for the repository. Versions, candidate builds and release texts
+(`docs/releases/`) are specified in ADR 0007
+([`docs/adr/0007-pages-as-qa-and-versioning.md`](adr/0007-pages-as-qa-and-versioning.md)).
+Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a branch
+can be previewed before it is merged.
+
 ## Testing on a real phone
 
 Sensor APIs require a **secure context**, so `http://<your-lan-ip>:5173` will not deliver
@@ -75,6 +91,10 @@ motion events. Either:
 
 On iOS the app cannot read motion until you tap the in-app "Start" button — that is a
 Safari requirement, not a bug.
+
+A Sensorbox needs Web Bluetooth: Chrome on Android works, iPhone needs the Bluefy browser
+([`docs/ios-easylevel-bluefy-guide.md`](ios-easylevel-bluefy-guide.md)). Without a box,
+`?easylevel-sim` and `?xparkle-sim` simulate one in any browser.
 
 ## Binary assets
 
