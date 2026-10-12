@@ -1,5 +1,5 @@
 /**
- * Tilt sensing (issue #2 / R2).
+ * Tilt sensing.
  *
  * Prefers `DeviceMotionEvent.accelerationIncludingGravity` — the direct web
  * equivalent of Android's TYPE_GRAVITY — and falls back to
@@ -11,23 +11,17 @@
  * user gesture; `start()` must therefore be called from a tap handler
  * where that API exists (`needsPermissionGesture()` tells the UI).
  *
- * `OrientationSensor` is the multi-source seam formalized by #128 (ADR
- * 0014): `main.ts` selects between implementations at exactly one
- * injection point (today: this phone sensor, the fixed-tilt `?demo`
- * stand-in, or #116's `easyLevelSensor.ts`), and nothing downstream —
- * including all of `domain/` (ADR 0002) — needs to know which one is
- * active. A future external sensor (#119's iOS native bridge) is simply
- * another implementation of this same interface, isolated to `sensor/`.
+ * `OrientationSensor` is the multi-source seam (ADR 0014): `main.ts`
+ * picks an implementation at one injection point, and nothing downstream —
+ * including all of `domain/` — needs to know which one is active.
  */
 import type { GravityVector } from '../domain/leveling';
 import type { SensorSource } from '../domain/settings';
 
 /**
- * `'disconnected'` (#116) belongs here rather than a source-specific
- * parallel state machine: it means "was granted, then the connection was
- * lost" — meaningful for any external `OrientationSensor` (the EasyLevel
- * BLE box today, a future one tomorrow), not something the phone sensor
- * itself can reach (its APIs have no equivalent lost-connection event).
+ * `'disconnected'` means "was granted, then the connection was lost" —
+ * reachable by any external `OrientationSensor`, never by the phone sensor,
+ * whose APIs have no lost-connection event.
  */
 export type SensorState =
   'idle' | 'unsupported' | 'needs-permission' | 'granted' | 'denied' | 'disconnected';
@@ -49,17 +43,14 @@ export interface OrientationSensor {
   /** Latest smoothed gravity vector, or null before the first reading. */
   getGravity(): GravityVector | null;
   /**
-   * Which source this adapter reads from (#128, ADR 0014) — a fixed value
-   * per implementation, e.g. so a lost/disconnected external source can be
-   * reported by name instead of silently falling back to another one.
+   * Fixed per implementation, so a lost external source can be reported by
+   * name instead of silently falling back to another one (ADR 0014).
    */
   getSource(): SensorSource;
   /**
    * `performance.now()` at the last real sample this adapter accepted, or
    * null before the first one — never a value that merely reflects "still
-   * connected". Feeds `domain/staleness.ts` (#132): the caller compares
-   * this against the current time to decide whether a technically-present
-   * `getGravity()` value is actually fresh enough to show as live.
+   * connected". Feeds `domain/staleness.ts`.
    */
   getLastSampleAt(): number | null;
 }
@@ -105,8 +96,8 @@ export function createOrientationSensor(): OrientationSensor {
   let state: SensorState = 'idle';
   let smoothed: GravityVector | null = null;
   let usingMotion = false;
-  // #132: stamped on every accepted reading, not merely "listener attached"
-  // — the only honest signal that the stream is still actually alive.
+  // Stamped on every accepted reading, not on "listener attached" — the
+  // only honest signal that the stream is still alive.
   let lastSampleAt: number | null = null;
 
   function accept(reading: GravityVector): void {
