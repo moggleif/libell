@@ -1594,6 +1594,11 @@ the incoming shared-setup dialog, the Classic settings drawer.
   same list Settings offers rather than a copy, and fails if any view overflows in any
   of them. Glossy shares Classic's layout but adds its own gradients, bevels and
   shadows, so passing in Classic says nothing about Glossy.
+- **Given** CI (#494)
+- **Then** it runs the fit check as one parallel job per appearance
+  (`FIT_APPEARANCE=<appearance> npm run fit`), over exactly the appearances Settings
+  offers: a unit test fails if the workflow's list and the app's drift apart, and a
+  name that is not an appearance fails the run rather than checking nothing.
 
 ## R46 — The bubble starts in its dial (#244)
 

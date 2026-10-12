@@ -404,7 +404,7 @@ including the quality guards in `scripts/quality/`, see `docs/01-CONTRIBUTING.md
 `build` on every pull request and every push
 to `main` (once per PR push, not also on the branch push — #471), plus three Playwright
 checks against the built app, `flows` and `fit` each in a parallel job of its own
-(#473): `smoke` (it renders at all), `flows` (the simulated
+(#473), `fit` further split into one job per appearance (#494): `smoke` (it renders at all), `flows` (the simulated
 boxes, the wizard, the level screen, sound, navigation, settings saves and start-up
 through the real wiring — #374, #392) and `fit` (every view fits a
 phone screen — R4/#241, R18/#239 and R40/#243; the unit tests run in happy-dom, which

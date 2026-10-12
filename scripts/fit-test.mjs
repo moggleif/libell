@@ -29,6 +29,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 import { APPEARANCES } from '../src/domain/appearance.ts';
+import { selectAppearances } from './fitAppearances.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4175;
@@ -80,6 +81,12 @@ const TIGHTEST = VIEWPORTS[1];
 // copied (#403). Classic and Modern build different DOM for the same
 // content (Classic's settings is a drawer, Modern's a page), and Glossy
 // is Classic's DOM under its own gradients, bevels and shadows.
+//
+// FIT_APPEARANCE narrows a run to one of them: CI runs one job per
+// appearance side by side, since the sweep is mostly settle pauses and
+// three of them in parallel take well under half the time of one after
+// the other (#494).
+const WALKED_APPEARANCES = selectAppearances(APPEARANCES, process.env.FIT_APPEARANCE);
 
 // The real keys settingsStore.ts reads — settings as one JSON object,
 // language and the onboarding flag on their own. Writing anything else
@@ -400,7 +407,7 @@ try {
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
     });
-    for (const appearance of APPEARANCES) {
+    for (const appearance of WALKED_APPEARANCES) {
       for (const language of viewport.languages) {
         const at = (view) => `${viewport.name} / ${appearance} / ${language} / ${view}`;
 
@@ -562,25 +569,28 @@ try {
   }
 
   // --- iOS-only view: the Bluefy workaround guide (R39), which exists
-  // only on an iOS browser without Web Bluetooth.
-  const iosContext = await browser.newContext({
-    viewport: { width: TIGHTEST.width, height: TIGHTEST.height },
-    userAgent: IOS_UA,
-  });
-  for (const language of LONGEST) {
-    const label = `iOS / modern / ${language} / sensor guide`;
-    const page = await open(iosContext, 'modern', language, { query: '?demo=1' });
-    await page.waitForSelector('.rv-diagram svg');
-    const guideButton = page.locator('#sensor-slot button');
-    if ((await guideButton.count()) > 0) {
-      await guideButton.click();
-      await auditView(page, label);
-    } else {
-      fail(label, 'the iOS sensor guide could not be opened');
+  // only on an iOS browser without Web Bluetooth. Walked in Modern only,
+  // so it runs in whichever run includes Modern.
+  if (WALKED_APPEARANCES.includes('modern')) {
+    const iosContext = await browser.newContext({
+      viewport: { width: TIGHTEST.width, height: TIGHTEST.height },
+      userAgent: IOS_UA,
+    });
+    for (const language of LONGEST) {
+      const label = `iOS / modern / ${language} / sensor guide`;
+      const page = await open(iosContext, 'modern', language, { query: '?demo=1' });
+      await page.waitForSelector('.rv-diagram svg');
+      const guideButton = page.locator('#sensor-slot button');
+      if ((await guideButton.count()) > 0) {
+        await guideButton.click();
+        await auditView(page, label);
+      } else {
+        fail(label, 'the iOS sensor guide could not be opened');
+      }
+      await page.close();
     }
-    await page.close();
+    await iosContext.close();
   }
-  await iosContext.close();
 
   // --- The external-sensor path through the guide adds a step and swaps
   // the calibration pair for connect + installation offset. Its extra
@@ -589,7 +599,7 @@ try {
   const tightest = await browser.newContext({
     viewport: { width: TIGHTEST.width, height: TIGHTEST.height },
   });
-  for (const appearance of APPEARANCES) {
+  for (const appearance of WALKED_APPEARANCES) {
     for (const language of LANGUAGES) {
       const page = await open(tightest, appearance, language, {
         query: '?easylevel-sim',
@@ -654,8 +664,12 @@ for (const container of VIEW_CONTAINERS) {
 }
 
 if (failures.length > 0) {
-  console.error(`fit test failed — ${failures.length} problem(s) across ${checked} checks:`);
+  console.error(
+    `fit test failed (${WALKED_APPEARANCES.join(', ')}) — ${failures.length} problem(s) across ${checked} checks:`,
+  );
   for (const failure of failures) console.error(`  ${failure}`);
   process.exit(1);
 }
-console.log(`fit test passed — ${checked} checks, every view fits a phone screen`);
+console.log(
+  `fit test passed (${WALKED_APPEARANCES.join(', ')}) — ${checked} checks, every view fits a phone screen`,
+);

@@ -35,7 +35,7 @@ boxes (`?easylevel-sim`, `?xparkle-sim`), the first-run guide, the level screen,
 navigation, settings saves and start-up through the real wiring in `src/main.ts`;
 extend it before you change how `main.ts` connects the `src/app/` modules. `fit` (#239, #241, #243) opens **every**
 view — level, first-run guide, settings, help, external sensor, the iOS sensor guide,
-the incoming shared-setup dialog — against small-phone viewports in both appearances,
+the incoming shared-setup dialog — against small-phone viewports in every appearance,
 and fails on anything below the fold, a page that scrolls sideways, content wider than
 its container, a view whose end cannot be scrolled to, a diagram taller than the space
 it was given, or a wheel card that has drifted off its wheel.
@@ -46,7 +46,9 @@ the space is tightest on the iPhone SE, so all five are walked there. The 320px 
 about width, where German is the worst case and English the baseline; the roomiest
 screen is a structural sanity check where one language suffices. That is 8 language-runs
 per appearance instead of 15 — the sweep went from 3m40s to under 2 minutes without
-giving up a combination that has ever failed. If you widen the matrix, watch that number. It exists because the unit tests cannot catch any of that: Vitest runs in
+giving up a combination that has ever failed. If you widen the matrix, watch that number. `FIT_APPEARANCE=modern npm run fit` walks a single appearance; CI runs one job per
+appearance side by side (#494), and the list in `.github/workflows/ci.yml` must name
+every appearance (a unit test checks it). It exists because the unit tests cannot catch any of that: Vitest runs in
 happy-dom, which has no layout engine, so every height and width it measures is zero.
 Whenever you add a view, add a step, or change a layout, this is the check that tells
 you it still fits.
