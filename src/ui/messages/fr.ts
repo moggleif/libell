@@ -319,8 +319,8 @@ export const fr: Messages = {
     'Faites maintenant tourner le téléphone d’un demi-tour (180°) au même endroit, puis touchez Capturer.',
   'calibration.flip.capture': 'Capturer',
   'calibration.flip.done': 'Terminé ! Votre surface penche de {surface}° — compensé.',
-  'calibration.flip.err.moved':
-    'Les deux captures ne concordent pas — le téléphone a-t-il bougé ? Recommencez depuis le début.',
+  'calibration.flip.warn.moved':
+    'Les deux captures diffèrent de plus de 15° — le téléphone a-t-il bougé ? Recommencez, ou étalonnez quand même.',
   'calibration.pill.notDone': 'NON FAIT',
   'calibration.pill.done': 'FAIT',
   'calibration.pill.none': 'AUCUN',
@@ -330,7 +330,9 @@ export const fr: Messages = {
   'targets.defaultName': 'Cible {n}',
   'targets.add': 'Enregistrer l’inclinaison actuelle comme nouvelle cible',
   'targets.delete': 'Supprimer {name}',
-  'targets.err.tooSteep': 'Cela ressemble à plus qu’une cible volontaire (>15°) — réessayez.',
+  'targets.warn.tooSteep':
+    'Cela semble plus raide qu’une cible volontaire (plus de 15°). Réessayez, ou enregistrez quand même.',
+  'targets.anyway': 'Enregistrer quand même',
   'targets.badge': 'Cible : {name}',
 
   'feedback.intro':

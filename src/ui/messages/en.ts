@@ -425,8 +425,8 @@ export const en = {
     'Now rotate the phone half a turn (180°) on the same spot, then tap Capture.',
   'calibration.flip.capture': 'Capture',
   'calibration.flip.done': 'Done! Your surface leans {surface}° — cancelled out.',
-  'calibration.flip.err.moved':
-    'The two captures do not match — did the phone move? Try again from the start.',
+  'calibration.flip.warn.moved':
+    'The two captures differ by more than 15° — did the phone move? Start over, or calibrate anyway.',
   // Short status-pill labels for the Modern calibration cards (#109).
   'calibration.pill.notDone': 'NOT DONE',
   'calibration.pill.done': 'DONE',
@@ -440,7 +440,9 @@ export const en = {
   'targets.defaultName': 'Target {n}',
   'targets.add': 'Save current tilt as new target',
   'targets.delete': 'Delete {name}',
-  'targets.err.tooSteep': 'That looks like more than an intentional target (>15°) — try again.',
+  'targets.warn.tooSteep':
+    'That looks steeper than an intentional target (over 15°). Try again, or save anyway.',
+  'targets.anyway': 'Save anyway',
   'targets.badge': 'Target: {name}',
   // Offset summary (#160): read-only, inside the menu only — never the
   // main screen (see targetBadge.ts/R31's own guard against that).

@@ -69,7 +69,8 @@ export function targetOptions(targets: Targets) {
     getTargetPresets: () => targets.presets(),
     getActiveTargetId: () => targets.activeId(),
     selectTarget: (id: string | null) => targets.select(id),
-    addTargetPreset: (name: string) => targets.add(name),
+    addTargetPreset: (name: string, anyway?: boolean) =>
+      anyway ? targets.add(name, true) : targets.add(name),
     deleteTargetPreset: (id: string) => targets.remove(id),
   };
 }

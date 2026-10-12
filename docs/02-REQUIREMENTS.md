@@ -258,7 +258,9 @@ URL and must keep working with no signal.
   expanded, every step opens on a tap, and a step showing a message (an error, a check
   result) stays open.
   - Step 1 says to lay the phone on something flat, with **Calibrate now**, and a quiet
-    link "No flat surface? Flip the phone" that reveals the flip calibration.
+    link "No flat surface? Flip the phone" that reveals the flip calibration. When the
+    flip's two captures differ by more than 15° (the phone moved), nothing is stored
+    yet: a warning says so, with "Calibrate anyway" to store that result (#425).
   - Step 2 says to level the vehicle with a spirit level and put the phone in its usual
     spot, with **Zero now**.
   - Check and Clear sit under a collapsed **More** in each step. There is no "Two
@@ -845,8 +847,10 @@ URL and must keep working with no signal.
   zero (R11, R24), or a box's own zero while one is the source (R34), already define
   as level — is captured and stored as a new preset
   under that name — or, with no name typed, as "Target N", the lowest number not already
-  taken (#329; nothing is disabled); a capture reading more than 15° from that zero is rejected, the
-  same implausible-capture guard R24 already uses.
+  taken (#329; nothing is disabled). A capture reading more than 15° from that zero is
+  not saved yet: a warning says it looks steeper than an intentional target, with a
+  "Save anyway" button that saves it under the same name (#425); it survives a reload
+  like any other preset.
 - **Given** a saved preset
 - **When** I tap it in that list
 - **Then** it becomes the active target: every reading on the main screen is now

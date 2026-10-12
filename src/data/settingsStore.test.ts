@@ -332,7 +332,7 @@ describe('target preset store (#122, ADR 0013)', () => {
     const storage = memoryStorage();
     storage.setItem(
       'libell.targetPresets',
-      JSON.stringify([preset, { id: 'bad', name: 'x', offset: { rollDeg: 99, pitchDeg: 0 } }]),
+      JSON.stringify([preset, { id: 'bad', name: 'x', offset: { rollDeg: 200, pitchDeg: 0 } }]),
     );
     expect(loadTargetPresets(storage)).toEqual([preset]);
   });

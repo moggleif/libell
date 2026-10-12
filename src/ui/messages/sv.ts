@@ -312,8 +312,8 @@ export const sv: Messages = {
     'Vrid nu telefonen ett halvt varv (180°) på samma ställe och tryck sedan på Fånga.',
   'calibration.flip.capture': 'Fånga',
   'calibration.flip.done': 'Klart! Din yta lutar {surface}° — borträknat.',
-  'calibration.flip.err.moved':
-    'De två mätningarna stämmer inte överens — flyttades telefonen? Börja om.',
+  'calibration.flip.warn.moved':
+    'De två mätningarna skiljer sig mer än 15° — flyttades telefonen? Börja om, eller kalibrera ändå.',
   // Korta statusetiketter för Modern-kalibreringens kort (#109).
   'calibration.pill.notDone': 'EJ GJORD',
   'calibration.pill.done': 'GJORD',
@@ -327,7 +327,9 @@ export const sv: Messages = {
   'targets.defaultName': 'Mål {n}',
   'targets.add': 'Spara aktuell lutning som nytt mål',
   'targets.delete': 'Ta bort {name}',
-  'targets.err.tooSteep': 'Det ser ut som mer än ett avsiktligt mål (>15°) — försök igen.',
+  'targets.warn.tooSteep':
+    'Det här ser brantare ut än ett avsiktligt mål (över 15°). Försök igen, eller spara ändå.',
+  'targets.anyway': 'Spara ändå',
   'targets.badge': 'Mål: {name}',
 
   'feedback.intro':

@@ -310,8 +310,8 @@ export const es: Messages = {
     'Ahora gira el móvil media vuelta (180°) en el mismo sitio y toca Capturar.',
   'calibration.flip.capture': 'Capturar',
   'calibration.flip.done': '¡Listo! Tu superficie se inclina {surface}°: compensado.',
-  'calibration.flip.err.moved':
-    'Las dos capturas no coinciden: ¿se ha movido el móvil? Empieza otra vez desde el principio.',
+  'calibration.flip.warn.moved':
+    'Las dos capturas difieren más de 15°: ¿se ha movido el móvil? Empieza de nuevo, o calibra de todos modos.',
   'calibration.pill.notDone': 'SIN HACER',
   'calibration.pill.done': 'HECHO',
   'calibration.pill.none': 'NINGUNO',
@@ -321,8 +321,9 @@ export const es: Messages = {
   'targets.defaultName': 'Objetivo {n}',
   'targets.add': 'Guardar la inclinación actual como nuevo objetivo',
   'targets.delete': 'Eliminar {name}',
-  'targets.err.tooSteep':
-    'Esto parece más que un objetivo intencionado (>15°): inténtalo de nuevo.',
+  'targets.warn.tooSteep':
+    'Esto parece más inclinado que un objetivo intencionado (más de 15°). Inténtalo de nuevo, o guárdalo de todos modos.',
+  'targets.anyway': 'Guardar de todos modos',
   'targets.badge': 'Objetivo: {name}',
 
   'feedback.intro':

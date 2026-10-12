@@ -12,7 +12,7 @@
  * `null` active id, never a preset of its own, so it can never be lost
  * or accidentally overwritten.
  */
-import type { Calibration } from './settings';
+import { MAX_TILT_DEG, type Calibration } from './settings';
 
 export interface TargetPreset {
   id: string;
@@ -24,9 +24,8 @@ export interface TargetPreset {
   offset: Calibration;
 }
 
-/** An offset beyond this is a mis-capture, not an intentional target —
- * the same cap `calibration.ts` uses for the phone bias and vehicle
- * zero. */
+/** An offset beyond this looks like a mis-capture, not an intentional
+ * target — the same 15° the phone bias and vehicle zero warn at. */
 const MAX_OFFSET_DEG = 15;
 
 /** Long enough for "Grey-water drainage" and then some; short enough to
@@ -45,8 +44,10 @@ function isValidOffset(value: unknown): value is Calibration {
     typeof raw.pitchDeg === 'number' &&
     Number.isFinite(raw.rollDeg) &&
     Number.isFinite(raw.pitchDeg) &&
-    Math.abs(raw.rollDeg) <= MAX_OFFSET_DEG &&
-    Math.abs(raw.pitchDeg) <= MAX_OFFSET_DEG
+    // Up to any tilt a sensor can read: a target may be saved anyway above
+    // `MAX_OFFSET_DEG` (#425), and must survive a reload.
+    Math.abs(raw.rollDeg) <= MAX_TILT_DEG &&
+    Math.abs(raw.pitchDeg) <= MAX_TILT_DEG
   );
 }
 
@@ -121,8 +122,8 @@ export function presetOffsetFromReading(
   };
 }
 
-/** True when a captured reading is too steep to be an intentional
- * target rather than a mis-capture — same cap as storage validation. */
+/** True when a captured reading looks too steep to be an intentional
+ * target rather than a mis-capture — then the user is warned first (#425). */
 export function offsetTooSteep(offset: Calibration): boolean {
   return Math.abs(offset.rollDeg) > MAX_OFFSET_DEG || Math.abs(offset.pitchDeg) > MAX_OFFSET_DEG;
 }

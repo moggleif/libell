@@ -28,7 +28,7 @@
  * run has nothing to check or clear yet, and Settings keeps them under More.
  */
 import type { AppearanceSetting, Calibration } from '../domain/settings';
-import { flipCalibration, type CaptureResult } from '../domain/calibration';
+import { flipCalibration, type CaptureResult, type FlipResult } from '../domain/calibration';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
 
@@ -301,6 +301,7 @@ export function createCalibrationSection(
         calibrateButton,
         calibrateAnywayButton,
         flipButton,
+        flipAnywayButton,
         vehicleButton,
         vehicleAnywayButton,
       ]) {
@@ -311,6 +312,7 @@ export function createCalibrationSection(
     for (const button of [
       calibrateButton,
       calibrateAnywayButton,
+      flipAnywayButton,
       vehicleAnywayButton,
       clearButton,
       checkButton,
@@ -453,11 +455,30 @@ export function createCalibrationSection(
   // comment.
   flipButton.className = 'menu__action';
   let flipFirst: Calibration | null = null;
+  // Two captures that disagree (#425): the bias they gave, kept while the
+  // warning offers "Calibrate anyway".
+  let flipPending: FlipResult | null = null;
+  const flipAnywayButton = document.createElement('button');
+  flipAnywayButton.type = 'button';
+  flipAnywayButton.className = 'menu__action menu__action--secondary';
+  flipAnywayButton.textContent = t('calibration.anyway');
+  flipAnywayButton.hidden = true;
 
   function resetFlip(): void {
     flipFirst = null;
+    flipPending = null;
+    flipAnywayButton.hidden = true;
+    flipStatus.classList.remove('menu__text--warning');
     flipButton.textContent = t('calibration.flip.start');
     flipStatus.textContent = '';
+  }
+
+  function applyFlip(bias: Calibration, surface: Calibration): void {
+    options.applyCalibration(bias);
+    resetFlip();
+    const surfaceMax = Math.max(Math.abs(surface.rollDeg), Math.abs(surface.pitchDeg));
+    flipStatus.textContent = t('calibration.flip.done', { surface: surfaceMax.toFixed(1) });
+    refreshCalibration();
   }
   flipButton.addEventListener('click', () => {
     openStep = 'phone';
@@ -467,6 +488,7 @@ export function createCalibrationSection(
       return;
     }
     if (!flipFirst) {
+      resetFlip();
       flipFirst = reading;
       flipButton.textContent = t('calibration.flip.capture');
       flipStatus.textContent = t('calibration.flip.rotate');
@@ -474,18 +496,19 @@ export function createCalibrationSection(
     }
     const result = flipCalibration(flipFirst, reading);
     if (!result.consistent) {
+      // Never a refusal (#425): say what looks wrong, offer to go ahead.
       resetFlip();
-      flipStatus.textContent = t('calibration.flip.err.moved');
+      flipPending = result;
+      flipStatus.textContent = t('calibration.flip.warn.moved');
+      flipStatus.classList.add('menu__text--warning');
+      flipAnywayButton.hidden = false;
       return;
     }
-    options.applyCalibration(result.bias);
-    resetFlip();
-    const surfaceMax = Math.max(
-      Math.abs(result.surface.rollDeg),
-      Math.abs(result.surface.pitchDeg),
-    );
-    flipStatus.textContent = t('calibration.flip.done', { surface: surfaceMax.toFixed(1) });
-    refreshCalibration();
+    applyFlip(result.bias, result.surface);
+  });
+  flipAnywayButton.addEventListener('click', () => {
+    openStep = 'phone';
+    if (flipPending) applyFlip(flipPending.bias, flipPending.surface);
   });
   resetFlip();
   refreshCalibration();
@@ -544,7 +567,7 @@ export function createCalibrationSection(
     flipLink.textContent = t('calibration.step.flipLink');
     const flipBlock = document.createElement('div');
     flipBlock.hidden = true;
-    flipBlock.append(flipIntro, flipButton, flipStatus);
+    flipBlock.append(flipIntro, flipButton, flipStatus, flipAnywayButton);
     flipLink.addEventListener('click', () => {
       flipBlock.hidden = !flipBlock.hidden;
       if (flipBlock.hidden) resetFlip();
@@ -634,6 +657,7 @@ export function createCalibrationSection(
       flipIntro,
       flipButton,
       flipStatus,
+      flipAnywayButton,
       ...(maintenance ? [checkClearRow] : []),
       calibrationStatus,
       calibrateAnywayButton,
@@ -677,6 +701,7 @@ export function createCalibrationSection(
       flipIntro,
       flipButton,
       flipStatus,
+      flipAnywayButton,
       ...(maintenance ? [checkButton, clearButton] : []),
     );
     const vehicleSection = document.createElement('div');
