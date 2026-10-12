@@ -1815,8 +1815,6 @@ present this source as more proven than it is.
 
 ## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
-> **Open bug:** after Disconnect the setup steps are hidden instead of greyed out (#400).
-
 The #309 UX review found the box page three stacked sections of paragraphs and buttons,
 jargon ("installation offset", "raw reading"), no order, and — when the connection was
 lost — a line telling the user to tap a Reconnect button that only existed on another
@@ -1850,7 +1848,7 @@ its descriptor's capabilities (ADR 0016).
   Connect/Reconnect button or anywhere else (#343)
 - **Then** the page redraws at once: Disconnect and the live actions appear, or grey
   out, without leaving and reopening it.
-- **Given** the box is the active source
+- **Given** the box is the active source (or not, then greyed out as above, #400)
 - **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded (in a neutral frame: green means done, never "open", #343); every step can be opened and run at any time — guidance,
   never a gate:
