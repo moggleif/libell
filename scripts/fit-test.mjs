@@ -1,5 +1,5 @@
 // Fit test (#239, #241, #243): Libell has to fit a phone screen. Every
-// view is opened against small-phone viewports, in both appearances and
+// view is opened against small-phone viewports, in every appearance and
 // all five languages, and checked for the ways a layout stops fitting —
 // content below the fold, a page that scrolls sideways, something that
 // cannot be reached at all.
@@ -28,6 +28,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
+import { APPEARANCES } from '../src/domain/appearance.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4175;
@@ -75,9 +76,10 @@ const VIEWPORTS = [
 ];
 const TIGHTEST = VIEWPORTS[1];
 
-// Classic and Modern build different DOM for the same content, and
-// Classic's settings is a drawer where Modern's is a page.
-const APPEARANCES = ['classic', 'modern'];
+// Every appearance the app offers, read from the domain rather than
+// copied (#403). Classic and Modern build different DOM for the same
+// content (Classic's settings is a drawer, Modern's a page), and Glossy
+// is Classic's DOM under its own gradients, bevels and shadows.
 
 // The real keys settingsStore.ts reads — settings as one JSON object,
 // language and the onboarding flag on their own. Writing anything else

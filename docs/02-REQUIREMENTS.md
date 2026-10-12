@@ -1563,7 +1563,7 @@ everything above that seam is exactly the code a real box runs through.
 - **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
   the real transport is not even constructed.
 
-## R45 — Every view fits a phone screen (#239, #241, #243)
+## R45 — Every view fits a phone screen (#239, #241, #243, #403)
 
 R4 and R18 state this for the level view and the first-run guide. It holds for every
 other view too — settings, help, the sensor box pages, the iOS sensor guide (R39),
@@ -1589,6 +1589,11 @@ the incoming shared-setup dialog, the Classic settings drawer.
   a share link the app itself produces — and the last requirement above is checked
   against the stylesheet rather than at runtime, because no browser available in CI
   reproduces the iOS viewport behaviour it guards against.
+- **Given** `npm run fit`
+- **Then** it walks every appearance the app offers, Glossy included, taken from the
+  same list Settings offers rather than a copy, and fails if any view overflows in any
+  of them. Glossy shares Classic's layout but adds its own gradients, bevels and
+  shadows, so passing in Classic says nothing about Glossy.
 
 ## R46 — The bubble starts in its dial (#244)
 
