@@ -76,6 +76,25 @@ export function createSound(createContext: () => AudioContext | null = browserAu
   };
 }
 
+/** Events every browser counts as user activation, so audio may start. */
+const ACTIVATION_EVENTS = ['click', 'touchend', 'keydown'] as const;
+
+/**
+ * Unlocks audio on the user's first tap or key press anywhere, so the
+ * chime and guidance work after a plain launch (#396) — not only after a
+ * setting change or unmuting.
+ */
+export function unlockOnFirstGesture(page: EventTarget, unlock: () => void): void {
+  const listening = new AbortController();
+  function onGesture() {
+    listening.abort();
+    unlock();
+  }
+  for (const type of ACTIVATION_EVENTS) {
+    page.addEventListener(type, onGesture, { capture: true, signal: listening.signal });
+  }
+}
+
 export interface MuteToggle {
   /** Flips mute, stores the result, and returns whether it is now muted. */
   toggle(): boolean;

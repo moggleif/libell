@@ -346,13 +346,12 @@ URL and must keep working with no signal.
 
 ## R16 — Reaching level is celebrated exactly once
 
-> **Open bug:** after a reload the chime stays silent until a setting changes or mute is toggled (#396).
-
 - **Given** the vehicle becomes level while I watch the screen
 - **Then** a brief full-screen ✓ overlay is shown and the phone vibrates; a chime also
   sounds unless the "Chime when level" setting has been explicitly turned off (default:
   `DEFAULT_SETTINGS` in `src/domain/settings.ts`, #153 — audio is unlocked by a user
-  gesture, satisfying autoplay policies). An install or settings blob that predates
+  gesture, satisfying autoplay policies: the first tap or key press anywhere after
+  launch, so the chime works after a reload without touching Settings or mute, #396). An install or settings blob that predates
   this default is treated the same as a fresh install: the chime is on unless the user
   has explicitly chosen off.
 - **Given** the vehicle then jitters around the tolerance boundary
@@ -834,8 +833,8 @@ URL and must keep working with no signal.
   the next departure from level starts direction tracking fresh.
 - **Given** iOS's autoplay restrictions
 - **Then** guidance audio reuses the same `unlockAudio()` gesture-unlock as the
-  R16 chime — the same gesture (a change in Settings, or unmuting from the bottom
-  bar, R38) unlocks both.
+  R16 chime — the same gesture (the first tap or key press after launch, a change in
+  Settings, or unmuting from the bottom bar, R38) unlocks both.
 
 ## R31 — Saved level targets: switch between more than one intentional tilt
 
