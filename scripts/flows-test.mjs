@@ -15,7 +15,7 @@
 // modules: the unit tests reach each module, but only a whole running app
 // shows that the modules are still wired to each other the same way.
 //
-// Run after `npm run build`; CI runs it on every branch. Exits non-zero
+// Run after `npm run build`; CI runs it on every pull request. Exits non-zero
 // on any failed assertion.
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
