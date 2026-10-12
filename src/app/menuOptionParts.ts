@@ -43,20 +43,23 @@ export function calibrationOptions(deps: MenuOptionDeps) {
   return {
     getCalibration: () => phone.bias(),
     getCalibrationCapturedAt: () => phone.biasCapturedAt(),
-    calibrate: () => phone.calibrate(),
+    calibrate: (anyway?: boolean) => phone.calibrate(anyway),
     applyCalibration: (next: Calibration) => phone.applyBias(next),
     clearCalibration: () => phone.clearBias(),
     checkCalibration: () => phone.checkBias(),
     getVehicleCalibration: () => phone.vehicleZero(),
     getVehicleCalibrationCapturedAt: () => phone.vehicleZeroCapturedAt(),
-    calibrateVehicle: () => phone.zeroVehicle(),
+    calibrateVehicle: (anyway?: boolean) => phone.zeroVehicle(anyway),
     clearVehicleCalibration: () => phone.clearVehicleZero(),
     checkVehicleCalibration: () => phone.checkZero(),
     readTilt: deps.readTilt,
     isPhoneActive: () => activeSensor().getSource() === 'phone',
     getExternalSensor: () =>
       externalCalibrationStateFor(activeSensor().getSource(), deps.installOffsets),
-    calibrateExternalSensor: () => deps.boxZero.zero(activeSensor().getSource()),
+    calibrateExternalSensor: (anyway?: boolean) =>
+      anyway
+        ? deps.boxZero.zero(activeSensor().getSource(), true)
+        : deps.boxZero.zero(activeSensor().getSource()),
   };
 }
 
@@ -66,7 +69,8 @@ export function targetOptions(targets: Targets) {
     getTargetPresets: () => targets.presets(),
     getActiveTargetId: () => targets.activeId(),
     selectTarget: (id: string | null) => targets.select(id),
-    addTargetPreset: (name: string) => targets.add(name),
+    addTargetPreset: (name: string, anyway?: boolean) =>
+      anyway ? targets.add(name, true) : targets.add(name),
     deleteTargetPreset: (id: string) => targets.remove(id),
   };
 }
@@ -89,7 +93,8 @@ export function boxConnectionOptions(descriptor: ExternalSensorDescriptor, deps:
     disconnectSensor: () => deps.externalSensors.disconnect(),
     getInstallCalibration: () => deps.installOffsets.valueOf(id),
     getInstallCalibrationCapturedAt: () => deps.installOffsets.capturedAtOf(id),
-    calibrateInstall: () => deps.boxZero.zero(id),
+    calibrateInstall: (anyway?: boolean) =>
+      anyway ? deps.boxZero.zero(id, true) : deps.boxZero.zero(id),
     clearInstallCalibration: () => deps.boxZero.clear(id),
   };
 }

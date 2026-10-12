@@ -282,8 +282,9 @@ export const es: Messages = {
   'calibration.clear': 'Borrar la calibración',
   'calibration.err.notRunning':
     'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
-  'calibration.err.notFlat':
-    'El móvil no parece estar plano: ponlo sobre una superficie nivelada e inténtalo de nuevo.',
+  'calibration.warn.notFlat':
+    'Esto no parece plano (más de 15°), así que la calibración será incorrecta. Pon el móvil sobre una superficie plana, o calibra de todos modos.',
+  'calibration.anyway': 'Calibrar de todos modos',
   'calibration.sensor.h': 'Calibrar el móvil',
   'calibration.vehicle.h': 'Poner el vehículo a cero',
   'calibration.vehicle.intro':
@@ -292,8 +293,9 @@ export const es: Messages = {
   'calibration.vehicle.clear': 'Olvidar el cero',
   'calibration.vehicle.status': 'Cero del vehículo: lado/lado {roll}°, delante/detrás {pitch}°.',
   'calibration.vehicle.status.none': 'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
-  'calibration.vehicle.err.notFlat':
-    'Esto parece más que la inclinación del sitio (>15°): ¿está el vehículo realmente nivelado?',
+  'calibration.vehicle.warn.notFlat':
+    'Esto no parece nivelado (más de 15°). ¿Está el vehículo realmente nivelado? Pon a cero de todos modos si estás seguro.',
+  'calibration.vehicle.anyway': 'Poner a cero de todos modos',
   'calibration.age.today': '(hoy)',
   'calibration.age.days': '(hace {n} días)',
   'calibration.check': 'Comprobar',
@@ -308,8 +310,8 @@ export const es: Messages = {
     'Ahora gira el móvil media vuelta (180°) en el mismo sitio y toca Capturar.',
   'calibration.flip.capture': 'Capturar',
   'calibration.flip.done': '¡Listo! Tu superficie se inclina {surface}°: compensado.',
-  'calibration.flip.err.moved':
-    'Las dos capturas no coinciden: ¿se ha movido el móvil? Empieza otra vez desde el principio.',
+  'calibration.flip.warn.moved':
+    'Las dos capturas difieren más de 15°: ¿se ha movido el móvil? Empieza de nuevo, o calibra de todos modos.',
   'calibration.pill.notDone': 'SIN HACER',
   'calibration.pill.done': 'HECHO',
   'calibration.pill.none': 'NINGUNO',
@@ -319,8 +321,9 @@ export const es: Messages = {
   'targets.defaultName': 'Objetivo {n}',
   'targets.add': 'Guardar la inclinación actual como nuevo objetivo',
   'targets.delete': 'Eliminar {name}',
-  'targets.err.tooSteep':
-    'Esto parece más que un objetivo intencionado (>15°): inténtalo de nuevo.',
+  'targets.warn.tooSteep':
+    'Esto parece más inclinado que un objetivo intencionado (más de 15°). Inténtalo de nuevo, o guárdalo de todos modos.',
+  'targets.anyway': 'Guardar de todos modos',
   'targets.badge': 'Objetivo: {name}',
 
   'feedback.intro':

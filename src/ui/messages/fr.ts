@@ -290,8 +290,9 @@ export const fr: Messages = {
   'calibration.err.notRunning':
     'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
     'l’écran principal.',
-  'calibration.err.notFlat':
-    'Le téléphone ne semble pas à plat — posez-le sur une surface de niveau et réessayez.',
+  'calibration.warn.notFlat':
+    'Cela ne semble pas plat (plus de 15°), l’étalonnage sera donc faux. Posez le téléphone sur une surface plane, ou étalonnez quand même.',
+  'calibration.anyway': 'Étalonner quand même',
   'calibration.sensor.h': 'Étalonner le téléphone',
   'calibration.vehicle.h': 'Mettre le véhicule à zéro',
   'calibration.vehicle.intro':
@@ -301,8 +302,9 @@ export const fr: Messages = {
   'calibration.vehicle.status': 'Zéro du véhicule : latéral {roll}°, longitudinal {pitch}°.',
   'calibration.vehicle.status.none':
     'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
-  'calibration.vehicle.err.notFlat':
-    'Cela ressemble à plus qu’une inclinaison de pose (>15°) — le véhicule est-il vraiment de niveau ?',
+  'calibration.vehicle.warn.notFlat':
+    'Cela ne semble pas de niveau (plus de 15°). Le véhicule est-il vraiment de niveau ? Mettez à zéro quand même si vous en êtes sûr.',
+  'calibration.vehicle.anyway': 'Mettre à zéro quand même',
   'calibration.age.today': '(aujourd’hui)',
   'calibration.age.days': '(il y a {n} jours)',
   'calibration.check': 'Vérifier',
@@ -317,8 +319,8 @@ export const fr: Messages = {
     'Faites maintenant tourner le téléphone d’un demi-tour (180°) au même endroit, puis touchez Capturer.',
   'calibration.flip.capture': 'Capturer',
   'calibration.flip.done': 'Terminé ! Votre surface penche de {surface}° — compensé.',
-  'calibration.flip.err.moved':
-    'Les deux captures ne concordent pas — le téléphone a-t-il bougé ? Recommencez depuis le début.',
+  'calibration.flip.warn.moved':
+    'Les deux captures diffèrent de plus de 15° — le téléphone a-t-il bougé ? Recommencez, ou étalonnez quand même.',
   'calibration.pill.notDone': 'NON FAIT',
   'calibration.pill.done': 'FAIT',
   'calibration.pill.none': 'AUCUN',
@@ -328,7 +330,9 @@ export const fr: Messages = {
   'targets.defaultName': 'Cible {n}',
   'targets.add': 'Enregistrer l’inclinaison actuelle comme nouvelle cible',
   'targets.delete': 'Supprimer {name}',
-  'targets.err.tooSteep': 'Cela ressemble à plus qu’une cible volontaire (>15°) — réessayez.',
+  'targets.warn.tooSteep':
+    'Cela semble plus raide qu’une cible volontaire (plus de 15°). Réessayez, ou enregistrez quand même.',
+  'targets.anyway': 'Enregistrer quand même',
   'targets.badge': 'Cible : {name}',
 
   'feedback.intro':

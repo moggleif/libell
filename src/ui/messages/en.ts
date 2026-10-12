@@ -391,8 +391,9 @@ export const en = {
   'calibration.clear': 'Clear calibration',
   'calibration.err.notRunning':
     'The tilt sensor is not running yet — tap Start on the main screen first.',
-  'calibration.err.notFlat':
-    'The phone does not look flat — place it on a level surface and try again.',
+  'calibration.warn.notFlat':
+    'This does not look flat (over 15°), so the calibration will be wrong. Lay the phone on a flat surface, or calibrate anyway.',
+  'calibration.anyway': 'Calibrate anyway',
   // Design review: both card headings now lead with the verb "Calibrate"
   // — they used to name what each card was about ("Phone sensor",
   // "Vehicle zero position") without naming the shared action.
@@ -407,8 +408,9 @@ export const en = {
   'calibration.vehicle.clear': 'Forget the zero',
   'calibration.vehicle.status': 'Vehicle zero: side/side {roll}°, front/back {pitch}°.',
   'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
-  'calibration.vehicle.err.notFlat':
-    'That looks like more than placement tilt (>15°) — is the vehicle really level?',
+  'calibration.vehicle.warn.notFlat':
+    'This does not look level (over 15°). Is the vehicle really level? Zero anyway if you are sure.',
+  'calibration.vehicle.anyway': 'Zero anyway',
   'calibration.age.today': '(today)',
   'calibration.age.days': '({n} days ago)',
   'calibration.check': 'Check',
@@ -423,8 +425,8 @@ export const en = {
     'Now rotate the phone half a turn (180°) on the same spot, then tap Capture.',
   'calibration.flip.capture': 'Capture',
   'calibration.flip.done': 'Done! Your surface leans {surface}° — cancelled out.',
-  'calibration.flip.err.moved':
-    'The two captures do not match — did the phone move? Try again from the start.',
+  'calibration.flip.warn.moved':
+    'The two captures differ by more than 15° — did the phone move? Start over, or calibrate anyway.',
   // Short status-pill labels for the Modern calibration cards (#109).
   'calibration.pill.notDone': 'NOT DONE',
   'calibration.pill.done': 'DONE',
@@ -438,7 +440,9 @@ export const en = {
   'targets.defaultName': 'Target {n}',
   'targets.add': 'Save current tilt as new target',
   'targets.delete': 'Delete {name}',
-  'targets.err.tooSteep': 'That looks like more than an intentional target (>15°) — try again.',
+  'targets.warn.tooSteep':
+    'That looks steeper than an intentional target (over 15°). Try again, or save anyway.',
+  'targets.anyway': 'Save anyway',
   'targets.badge': 'Target: {name}',
   // Offset summary (#160): read-only, inside the menu only — never the
   // main screen (see targetBadge.ts/R31's own guard against that).

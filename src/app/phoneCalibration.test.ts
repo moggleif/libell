@@ -67,11 +67,24 @@ describe('createPhoneCalibration', () => {
       expect(onCaptured).toHaveBeenCalledTimes(1);
     });
 
-    it('refuses a phone that is not lying flat', () => {
+    // #411: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
+    it('warns, without storing, when the phone does not look flat', () => {
       const { phone, onCaptured } = setup({ rollDeg: 16, pitchDeg: 0 });
-      expect(phone.calibrate()).toBe(t('calibration.err.notFlat'));
+      expect(phone.calibrate()).toEqual({ warning: t('calibration.warn.notFlat') });
       expect(phone.bias()).toBeNull();
       expect(onCaptured).not.toHaveBeenCalled();
+    });
+
+    it('calibrates anyway when the user goes ahead (#411)', () => {
+      const { phone, storage, onCaptured } = setup({ rollDeg: 16, pitchDeg: 0 });
+      expect(phone.calibrate(true)).toBeNull();
+      expect(phone.bias()).toEqual({ rollDeg: 16, pitchDeg: 0 });
+      expect(loadCalibrationInfo(storage)?.value).toEqual({ rollDeg: 16, pitchDeg: 0 });
+      expect(onCaptured).toHaveBeenCalledTimes(1);
+    });
+
+    it('still passes on a reading error when told to go ahead', () => {
+      expect(setup('no sensor').phone.calibrate(true)).toBe('no sensor');
     });
 
     it('passes on a reading error', () => {
@@ -115,10 +128,18 @@ describe('createPhoneCalibration', () => {
       expect(onCaptured).toHaveBeenCalledTimes(2);
     });
 
-    it('refuses a vehicle too steep to be level', () => {
-      const { phone } = setup({ rollDeg: 0, pitchDeg: -20 });
-      expect(phone.zeroVehicle()).toBe(t('calibration.vehicle.err.notFlat'));
+    it('warns, without storing, when the vehicle looks too steep to be level (#411)', () => {
+      const { phone, onCaptured } = setup({ rollDeg: 0, pitchDeg: -20 });
+      expect(phone.zeroVehicle()).toEqual({ warning: t('calibration.vehicle.warn.notFlat') });
       expect(phone.vehicleZero()).toBeNull();
+      expect(onCaptured).not.toHaveBeenCalled();
+    });
+
+    it('zeroes anyway when the user goes ahead (#411)', () => {
+      const { phone, storage } = setup({ rollDeg: 0, pitchDeg: -20 });
+      expect(phone.zeroVehicle(true)).toBeNull();
+      expect(phone.vehicleZero()).toEqual({ rollDeg: 0, pitchDeg: -20 });
+      expect(loadVehicleCalibrationInfo(storage)?.value).toEqual({ rollDeg: 0, pitchDeg: -20 });
     });
 
     it('passes on a reading error', () => {

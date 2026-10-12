@@ -5,6 +5,7 @@
  * startup.
  */
 import {
+  MAX_TILT_DEG,
   parseCalibration,
   parseSettings,
   type Calibration,
@@ -166,12 +167,16 @@ export interface StoredCalibration {
   capturedAt: number | null;
 }
 
-function readCalibration(key: string, storage: KeyValueStorage | null): StoredCalibration | null {
+function readCalibration(
+  key: string,
+  storage: KeyValueStorage | null,
+  maxDeg?: number,
+): StoredCalibration | null {
   try {
     const raw = storage?.getItem(key);
     if (raw === null || raw === undefined) return null;
     const parsed: unknown = JSON.parse(raw);
-    const value = parseCalibration(parsed);
+    const value = parseCalibration(parsed, maxDeg);
     if (!value) return null;
     const at = (parsed as Record<string, unknown>).capturedAt;
     const capturedAt = typeof at === 'number' && Number.isFinite(at) && at > 0 ? at : null;
@@ -197,13 +202,13 @@ function writeCalibration(
 export function loadCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
-  return readCalibration(CALIBRATION_KEY, storage)?.value ?? null;
+  return readCalibration(CALIBRATION_KEY, storage, MAX_TILT_DEG)?.value ?? null;
 }
 
 export function loadCalibrationInfo(
   storage: KeyValueStorage | null = defaultStorage(),
 ): StoredCalibration | null {
-  return readCalibration(CALIBRATION_KEY, storage);
+  return readCalibration(CALIBRATION_KEY, storage, MAX_TILT_DEG);
 }
 
 export function saveCalibration(
@@ -215,17 +220,18 @@ export function saveCalibration(
 }
 
 /** The vehicle zero (#83): the phone's normal spot, validated like the
- * sensor calibration — corrupt or implausible values read as null. */
+ * sensor calibration — corrupt values read as null; beyond 15° stays,
+ * since the user may zero anyway (#411). */
 export function loadVehicleCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
-  return readCalibration(VEHICLE_CALIBRATION_KEY, storage)?.value ?? null;
+  return readCalibration(VEHICLE_CALIBRATION_KEY, storage, MAX_TILT_DEG)?.value ?? null;
 }
 
 export function loadVehicleCalibrationInfo(
   storage: KeyValueStorage | null = defaultStorage(),
 ): StoredCalibration | null {
-  return readCalibration(VEHICLE_CALIBRATION_KEY, storage);
+  return readCalibration(VEHICLE_CALIBRATION_KEY, storage, MAX_TILT_DEG);
 }
 
 export function saveVehicleCalibration(
@@ -247,8 +253,8 @@ export function clearVehicleCalibration(storage: KeyValueStorage | null = defaul
 /**
  * An external source's installation offset (#131/R34, ADR 0014, keyed per
  * source by #263): the mechanism is identical to the phone's vehicle zero
- * above (capture with the vehicle verified level, validated by the same
- * >15° implausible-capture guard in `parseCalibration`), but each source
+ * above (capture with the vehicle verified level, read back up to
+ * `MAX_TILT_DEG` since a zero may be taken anyway above 15°, #425), but each source
  * gets its own key, so clearing or redoing one never touches — and is
  * never touched by — another source's, or the phone's own
  * `libell.vehicleCalibration`.
@@ -262,14 +268,14 @@ export function loadInstallCalibration(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
-  return readCalibration(installCalibrationKey(source), storage)?.value ?? null;
+  return readCalibration(installCalibrationKey(source), storage, MAX_TILT_DEG)?.value ?? null;
 }
 
 export function loadInstallCalibrationInfo(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): StoredCalibration | null {
-  return readCalibration(installCalibrationKey(source), storage);
+  return readCalibration(installCalibrationKey(source), storage, MAX_TILT_DEG);
 }
 
 export function saveInstallCalibration(

@@ -225,8 +225,12 @@ URL and must keep working with no signal.
 - **When** I place the phone on a surface I know is level and tap "Calibrate now" in
   Settings › Calibration (step 1 below)
 - **Then** the current tilt is stored (`localStorage`) as the zero point and subtracted
-  from every reading; "Clear calibration" returns to the raw sensor. A reading that does
-  not look flat (>15°) is rejected with an explanation.
+  from every reading; "Clear calibration" returns to the raw sensor.
+- **Given** the reading does not look flat (>15° on either axis)
+- **When** I tap "Calibrate now"
+- **Then** nothing is stored yet: a warning says the surface does not look flat and the
+  calibration would be wrong, with a "Calibrate anyway" button beside it; tapping that
+  stores the reading, and it is still there after a reload (#411, never block — warn).
 - **Given** the vehicle measurements have never been saved, or a calibration step is
   missing
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
@@ -254,7 +258,9 @@ URL and must keep working with no signal.
   expanded, every step opens on a tap, and a step showing a message (an error, a check
   result) stays open.
   - Step 1 says to lay the phone on something flat, with **Calibrate now**, and a quiet
-    link "No flat surface? Flip the phone" that reveals the flip calibration.
+    link "No flat surface? Flip the phone" that reveals the flip calibration. When the
+    flip's two captures differ by more than 15° (the phone moved), nothing is stored
+    yet: a warning says so, with "Calibrate anyway" to store that result (#425).
   - Step 2 says to level the vehicle with a spirit level and put the phone in its usual
     spot, with **Zero now**.
   - Check and Clear sit under a collapsed **More** in each step. There is no "Two
@@ -657,7 +663,9 @@ URL and must keep working with no signal.
   **sum** of the sensor offset and the vehicle zero — back in its spot, the phone
   shows level even on a tilting table.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** it is rejected with an explanation, like the sensor calibration.
+- **Then** nothing is stored yet: a warning asks whether the vehicle really is level,
+  with a "Zero anyway" button beside it; tapping that stores the zero, like the sensor
+  calibration (R11, #411).
 - **Given** a later sensor recalibration or clear
 - **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
   placement tilt (ADR 0010).
@@ -842,8 +850,10 @@ URL and must keep working with no signal.
   zero (R11, R24), or a box's own zero while one is the source (R34), already define
   as level — is captured and stored as a new preset
   under that name — or, with no name typed, as "Target N", the lowest number not already
-  taken (#329; nothing is disabled); a capture reading more than 15° from that zero is rejected, the
-  same implausible-capture guard R24 already uses.
+  taken (#329; nothing is disabled). A capture reading more than 15° from that zero is
+  not saved yet: a warning says it looks steeper than an intentional target, with a
+  "Save anyway" button that saves it under the same name (#425); it survives a reload
+  like any other preset.
 - **Given** a saved preset
 - **When** I tap it in that list
 - **Then** it becomes the active target: every reading on the main screen is now
@@ -1054,7 +1064,9 @@ cross-platform goal — they are not this app's code and are not covered here.
   (`EASYLEVEL_ZERO_SAMPLE_MS`), showing "Zeroing…" meanwhile; if the box drops while
   sampling, nothing is stored and the page says the box is not connected.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** it is rejected with an explanation, the same guard R11/R24 already use.
+- **Then** nothing is stored yet: a warning asks whether the vehicle really is level,
+  with a "Zero anyway" button that zeroes it regardless — the same warning R24 gives the
+  phone (#425); the zero is kept after a reload.
 - **Given** a stored installation offset
 - **Then** the step reads "Zeroed" with its age, reusing R26's "(14 days ago)" age
   display, and offers "Zero again" and "Forget the zero" (R51; no separate Check,

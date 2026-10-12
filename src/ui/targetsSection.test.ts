@@ -23,6 +23,10 @@ const SHOWER: TargetPreset = {
   offset: { rollDeg: 2, pitchDeg: 0 },
 };
 
+function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
+  return [...root.querySelectorAll('button')].find((b) => b.textContent === text)!;
+}
+
 describe('targets section (#122, ADR 0013)', () => {
   it('always lists Normal first, marked active when no preset is selected', () => {
     const section = createTargetsSection(makeOptions({ getTargetPresets: () => [SHOWER] }));
@@ -106,23 +110,34 @@ describe('targets section (#122, ADR 0013)', () => {
     expect(addTargetPreset).toHaveBeenCalledWith('Target 2');
   });
 
-  it('surfaces a rejection from a too-steep capture without clearing the name field', () => {
-    const section = createTargetsSection(
-      makeOptions({ addTargetPreset: () => t('targets.err.tooSteep') }),
-    );
+  it('surfaces a reading error without clearing the name field', () => {
+    const section = createTargetsSection(makeOptions({ addTargetPreset: () => 'no sensor' }));
     const input = section.element.querySelector<HTMLInputElement>('.targets__name-input')!;
-    const addButton = [...section.element.querySelectorAll('button')].find(
-      (b) => b.textContent === t('targets.add'),
-    ) as HTMLButtonElement;
+    input.value = 'Drain';
+    buttonByText(section.element, t('targets.add')).click();
+    expect(section.element.textContent).toContain('no sensor');
+    expect(buttonByText(section.element, t('targets.anyway')).hidden).toBe(true);
+    expect(input.value).toBe('Drain');
+  });
+
+  // #425: "Varning är rätt. Aldrig stopp."
+  it('warns about a too-steep capture and saves it anyway, under the same name', () => {
+    const addTargetPreset = vi.fn((_name: string, anyway?: boolean) =>
+      anyway ? null : { warning: 'Steeper than a target' },
+    );
+    const section = createTargetsSection(makeOptions({ addTargetPreset }));
+    const input = section.element.querySelector<HTMLInputElement>('.targets__name-input')!;
     input.value = 'Too steep';
-    input.dispatchEvent(new Event('input'));
-    addButton.click();
-    expect(
-      [...section.element.querySelectorAll('.menu__text--status')].some(
-        (s) => s.textContent === t('targets.err.tooSteep'),
-      ),
-    ).toBe(true);
+    buttonByText(section.element, t('targets.add')).click();
+    expect(section.element.textContent).toContain('Steeper than a target');
     expect(input.value).toBe('Too steep');
+    const anyway = buttonByText(section.element, t('targets.anyway'));
+    expect(anyway.hidden).toBe(false);
+    anyway.click();
+    expect(addTargetPreset).toHaveBeenLastCalledWith('Too steep', true);
+    expect(anyway.hidden).toBe(true);
+    expect(input.value).toBe('');
+    expect(section.element.textContent).not.toContain('Steeper than a target');
   });
 });
 
