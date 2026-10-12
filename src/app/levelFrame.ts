@@ -70,95 +70,111 @@ const REARM_SUSTAIN_MS = 3000;
 const CELEBRATE_COOLDOWN_MS = 20000;
 
 /** One frame at `nowMs`; the caller schedules the next. */
+/** The frame's detectors and players; the functions below work on one. */
+interface Frame {
+  readonly deps: LevelFrameDeps;
+  readonly detectPose: ReturnType<typeof createPoseDetector>;
+  readonly detectExternalPose: ReturnType<typeof createExternalPoseDetector>;
+  /** Rocking vehicle: "Measuring…" until the reading has been calm. */
+  readonly isStill: ReturnType<typeof createStillnessDetector>;
+  readonly celebration: ReturnType<typeof createCelebration>;
+  readonly guidance: ReturnType<typeof createGuidancePulses>;
+  readonly smoothBox: ReturnType<typeof createBoxSmoothing>;
+}
+
 export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void {
+  const frame: Frame = {
+    deps,
+    detectPose: createPoseDetector(),
+    detectExternalPose: createExternalPoseDetector(),
+    isStill: createStillnessDetector(),
+    celebration: createCelebration(deps),
+    guidance: createGuidancePulses(deps),
+    smoothBox: createBoxSmoothing(),
+  };
+  return (nowMs) => drawFrame(frame, nowMs);
+}
+
+function drawFrame(frame: Frame, nowMs: number): void {
+  const { deps } = frame;
+  // Refreshed every frame, a page open or not: a lost box is only ever
+  // seen by polling its state.
+  deps.refreshStatus();
+  // The user is reading, phone in hand: no nagging, no celebration.
+  if (deps.isPaused()) {
+    deps.view.pause();
+    return;
+  }
+  const sensor = deps.sensor();
+  const gravity = frame.smoothBox(sensor.getSource(), sensor.getGravity(), nowMs);
+  if (gravity) showReading(frame, gravity, nowMs);
+  else showNoData(deps, nowMs);
+}
+
+/** No reading yet, or no longer: never a frozen last frame. */
+function showNoData(deps: LevelFrameDeps, nowMs: number): void {
+  const unavailable = isSensorUnavailable(deps.sensor().getState());
+  deps.view.showNoData(unavailable, deps.externalSensors.canRetrySilently());
+  // Both overlays judge a reading; without one they would only hide
+  // R37's card (#398).
+  deps.view.hideStale();
+  deps.view.hidePose();
+  if (unavailable) deps.externalSensors.maybeAutoRetry(nowMs);
+}
+
+function showReading(frame: Frame, gravity: GravityVector, nowMs: number): void {
+  const { deps } = frame;
   const { view } = deps;
-  const detectPose = createPoseDetector();
-  const detectExternalPose = createExternalPoseDetector();
-  // Rocking vehicle: "Measuring…" until the reading has been calm.
-  const isStill = createStillnessDetector();
-  const celebration = createCelebration(deps);
-  const guidance = createGuidancePulses(deps);
-  const smoothBox = createBoxSmoothing();
-
-  function frame(nowMs: number): void {
-    // Refreshed every frame, a page open or not: a lost box is only ever
-    // seen by polling its state.
-    deps.refreshStatus();
-    // The user is reading, phone in hand: no nagging, no celebration.
-    if (deps.isPaused()) {
-      view.pause();
-      return;
-    }
-    const sensor = deps.sensor();
-    const gravity = smoothBox(sensor.getSource(), sensor.getGravity(), nowMs);
-    if (gravity) showReading(gravity, nowMs);
-    else showNoData(nowMs);
-  }
-
-  /** No reading yet, or no longer: never a frozen last frame. */
-  function showNoData(nowMs: number): void {
-    const unavailable = isSensorUnavailable(deps.sensor().getState());
-    view.showNoData(unavailable, deps.externalSensors.canRetrySilently());
-    // Both overlays judge a reading; without one they would only hide
-    // R37's card (#398).
-    view.hideStale();
+  view.showReading();
+  // Stale before pose: a reading too old to trust is not safe
+  // to judge the pose from either, and the overlays never both show.
+  if (isActiveSensorStale(deps.sensor(), nowMs)) {
+    view.showStale(deps.hasSensorPage && deps.sensor().getSource() !== 'phone');
     view.hidePose();
-    if (unavailable) deps.externalSensors.maybeAutoRetry(nowMs);
+    view.hideCelebration();
+    return;
   }
-
-  function showReading(gravity: GravityVector, nowMs: number): void {
-    view.showReading();
-    // Stale before pose: a reading too old to trust is not safe
-    // to judge the pose from either, and the overlays never both show.
-    if (isActiveSensorStale(deps.sensor(), nowMs)) {
-      view.showStale(deps.hasSensorPage && deps.sensor().getSource() !== 'phone');
-      view.hidePose();
-      view.hideCelebration();
-      return;
-    }
-    view.hideStale();
-    const problem = poseProblem(gravity);
-    if (problem) {
-      view.showPose(problem);
-      view.hideCelebration();
-      return;
-    }
-    view.hidePose();
-    guide(gravity, nowMs);
+  view.hideStale();
+  const problem = poseProblem(frame, gravity);
+  if (problem) {
+    view.showPose(problem);
+    view.hideCelebration();
+    return;
   }
+  view.hidePose();
+  guide(frame, gravity, nowMs);
+}
 
-  /** The phone's pose rules (R17) are the phone's; a mounted box is only
-   * checked for positions too extreme to be a real mount (R43). */
-  function poseProblem(gravity: GravityVector): PoseProblem | null {
-    const source = deps.sensor().getSource();
-    if (source === 'phone') {
-      if (detectPose(gravity) === 'not-flat') return phoneProblem('pose.layFlat');
-      return deps.isLandscape() ? phoneProblem('pose.portrait') : null;
-    }
-    const pose = detectExternalPose(gravity);
-    if (pose === 'ok') return null;
-    // A box built to stand is told to stand, never to lie flat.
-    const upright = externalSensorById(source)?.capabilities.upright ?? false;
-    return {
-      message: upright ? 'pose.sensorNotUpright' : boxPoseMessage(pose),
-      hint: upright ? 'pose.sensorHintUpright' : 'pose.sensorHint',
-      offerSensorPage: true,
-    };
+/** The phone's pose rules (R17) are the phone's; a mounted box is only
+ * checked for positions too extreme to be a real mount (R43). */
+function poseProblem(frame: Frame, gravity: GravityVector): PoseProblem | null {
+  const source = frame.deps.sensor().getSource();
+  if (source === 'phone') {
+    if (frame.detectPose(gravity) === 'not-flat') return phoneProblem('pose.layFlat');
+    return frame.deps.isLandscape() ? phoneProblem('pose.portrait') : null;
   }
+  const pose = frame.detectExternalPose(gravity);
+  if (pose === 'ok') return null;
+  // A box built to stand is told to stand, never to lie flat.
+  const upright = externalSensorById(source)?.capabilities.upright ?? false;
+  return {
+    message: upright ? 'pose.sensorNotUpright' : boxPoseMessage(pose),
+    hint: upright ? 'pose.sensorHintUpright' : 'pose.sensorHint',
+    offerSensorPage: true,
+  };
+}
 
-  function guide(gravity: GravityVector, nowMs: number): void {
-    const tilt = tiltFromGravity(gravity, null);
-    const still = isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, nowMs);
-    const engine = view.tick(gravity, nowMs);
-    // Momentary readings mean nothing while the vehicle rocks.
-    if (!still) view.showMeasuring();
-    celebration.onReading(engine, still, nowMs);
-    if (!engine.isLevel) view.hideCelebration();
-    guidance.onReading(engine, still, nowMs);
-    celebration.rearm(engine, nowMs);
-  }
-
-  return frame;
+function guide(frame: Frame, gravity: GravityVector, nowMs: number): void {
+  const { view } = frame.deps;
+  const tilt = tiltFromGravity(gravity, null);
+  const still = frame.isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, nowMs);
+  const engine = view.tick(gravity, nowMs);
+  // Momentary readings mean nothing while the vehicle rocks.
+  if (!still) view.showMeasuring();
+  frame.celebration.onReading(engine, still, nowMs);
+  if (!engine.isLevel) view.hideCelebration();
+  frame.guidance.onReading(engine, still, nowMs);
+  frame.celebration.rearm(engine, nowMs);
 }
 
 /**

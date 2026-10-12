@@ -1,14 +1,4 @@
 {
-  "functionBaseline": {
-    "src/app/boxZero.ts > createBoxZeroing": 88,
-    "src/app/levelFrame.ts > createLevelFrame": 90,
-    "src/app/levelScreenView.ts > mountLevelScreenView": 74,
-    "src/app/navigation.ts > createNavigation": 53,
-    "src/app/phoneCalibration.ts > createPhoneCalibration": 69,
-    "src/main.ts > createCore": 68,
-    "src/main.ts > mountPages": 59
-  },
-  "fileBaseline": {
-    "src/main.ts": 414
-  }
+  "functionBaseline": {},
+  "fileBaseline": {}
 }
