@@ -458,6 +458,9 @@ export const en = {
   'feedback.title': 'Short title',
   'feedback.desc': 'What happened, or what do you wish for?',
   'feedback.submit': 'Open the report on GitHub',
+  'feedback.warn.title': 'The title is empty — you can send the report anyway.',
+  'feedback.warn.desc': 'The description is empty — you can send the report anyway.',
+  'feedback.warn.both': 'The title and description are empty — you can send the report anyway.',
 
   // Help tab (#326): fold-out topics, one fact per line (R28). The
   // screens themselves explain how; these say what and where.

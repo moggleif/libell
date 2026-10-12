@@ -340,6 +340,9 @@ export const de: Messages = {
   'feedback.title': 'Kurzer Titel',
   'feedback.desc': 'Was ist passiert, oder was wünschst du dir?',
   'feedback.submit': 'Den Bericht auf GitHub öffnen',
+  'feedback.warn.title': 'Der Titel ist leer — du kannst den Bericht trotzdem senden.',
+  'feedback.warn.desc': 'Die Beschreibung ist leer — du kannst den Bericht trotzdem senden.',
+  'feedback.warn.both': 'Titel und Beschreibung sind leer — du kannst den Bericht trotzdem senden.',
 
   'help.screen.h': 'Den Bildschirm lesen',
   'help.screen.t':
