@@ -1,10 +1,7 @@
 /**
- * "(14 days ago)" from a calibration's capture timestamp (#87, R26) — empty
- * when the timestamp is unknown (calibrations saved before timestamps
- * existed stay valid and simply show no age). Shared by every calibration
- * layer's status line: the phone sensor calibration and vehicle zero in
- * `calibrationSection.ts`, and the EasyLevel installation offset in
- * `sensorSourceSection.ts` (#131) — one wording, never redecided per layer.
+ * Calibration age (R26), shared by every calibration layer's status line.
+ * Empty when the timestamp is unknown: calibrations saved before timestamps
+ * existed stay valid and show no age.
  */
 import { t } from './i18n';
 

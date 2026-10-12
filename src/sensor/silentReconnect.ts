@@ -1,13 +1,10 @@
 /**
- * Whether to offer the tip for turning on silent reconnect (#310): a
- * Chromium browser that has Web Bluetooth but cannot reconnect to a box
- * silently after a restart. Silent reconnect needs
- * `navigator.bluetooth.getDevices()`, which Chrome on Android keeps behind
- * `chrome://flags` ("Use the new permissions backend for Web Bluetooth");
- * with the flag on, Libell reconnects on its own — found on hardware.
- * Never on iPhone or iPad: every browser there (Bluefy too, R39) is WebKit
- * and has no `chrome://flags`, so the tip could only mislead. A browser
- * with no Web Bluetooth at all gets false too: the tip could not help.
+ * Whether to offer the tip for turning on silent reconnect: a Chromium
+ * browser that has Web Bluetooth but no `navigator.bluetooth.getDevices()`,
+ * which Chrome on Android keeps behind `chrome://flags` ("Use the new
+ * permissions backend for Web Bluetooth"). Never on iPhone or iPad: every
+ * browser there (Bluefy too) is WebKit and has no `chrome://flags`. A
+ * browser with no Web Bluetooth at all gets false: the tip could not help.
  */
 export function offersSilentReconnectTip(
   nav:

@@ -7,16 +7,12 @@
 import { t } from './i18n';
 import { showToast } from './toast';
 
-/** Exported for `vehicleShare.ts` (#207), which builds a link from this
- * same base address plus an encoded fragment. */
 export function appUrl(): string {
   return new URL(import.meta.env.BASE_URL, location.origin).href;
 }
 
 /** Native share sheet, falling back to a clipboard copy (then a plain
- * toast if there is no clipboard either) — the exact behavior the app
- * link button below already had, generalized so `vehicleShare.ts` can
- * share a different URL through the same path rather than duplicating it. */
+ * toast if there is no clipboard either). */
 export async function shareOrCopyLink(url: string, text: string): Promise<void> {
   if (navigator.share) {
     try {

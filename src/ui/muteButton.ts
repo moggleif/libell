@@ -1,5 +1,5 @@
 /**
- * The bottom bar's mute button (#161): draws muted or not, and hands each
+ * The bottom bar's mute button: draws muted or not, and hands each
  * tap to `toggle`, which reports the new state.
  */
 import { t } from './i18n';

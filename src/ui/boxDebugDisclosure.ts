@@ -1,10 +1,6 @@
 /**
- * The box page's "Debug info" disclosure (`boxStatusPage.ts`): raw values
- * straight off a box with the `debugBytes` capability (today the EasyLevel)
- * — device id, last-sample age, the raw accel triplet, firmware tier, the
- * raw status bytes as hex — plus the #212 connect-delay workaround. Closed
- * by default, same native-<details> discipline as the settings page's
- * Advanced disclosure (#157), and hidden while the box is not in use:
+ * The box page's "Debug info" disclosure: raw values straight off the box,
+ * plus the connect-delay workaround. Hidden while the box is not in use:
  * there is no raw box data to show.
  */
 import { MAX_EASYLEVEL_CONNECT_DELAY_MS } from '../domain/settings';
@@ -23,10 +19,9 @@ import { showToast } from './toast';
 
 export interface BoxDebugDisclosure {
   element: HTMLElement;
-  /** Re-reads the live rows; cheap enough every frame. */
+  /** Cheap enough to call every frame. */
   refresh(isActive: boolean, health: ExternalSensorHealth | null): void;
-  /** Re-reads the stored connect delay into its controls — once per page
-   * open, never per frame, see `createConnectDelayControls`. */
+  /** Once per page open, never per frame; see `createConnectDelayControls`. */
   syncConnectDelay(): void;
 }
 
@@ -46,15 +41,11 @@ function labelledField(caption: string, input: HTMLInputElement): HTMLLabelEleme
 }
 
 /**
- * Connect-delay workaround (#212): an experimental hardware-compatibility
- * knob, not a normal setting, so it lives here rather than the settings
- * panel, styled as the settings form's own toggles.
+ * Connect delay: an experimental hardware-compatibility knob, not a normal
+ * setting, so it lives here rather than in the settings panel.
  *
- * `sync` is called once per page open, deliberately NOT from `refresh()`:
- * `refresh()` runs every animation frame while the page is open, and
- * re-asserting `.value`/`.checked` on every frame would fight the user
- * mid-edit (a keystroke into the ms field getting reset before the next one
- * lands).
+ * `sync` is deliberately NOT called from `refresh()`, which runs every frame:
+ * re-asserting `.value`/`.checked` would reset the ms field mid-edit.
  */
 function createConnectDelayControls(options: BoxStatusOptions): {
   elements: HTMLElement[];
@@ -113,7 +104,6 @@ function createCopyButton(options: BoxStatusOptions): HTMLButtonElement {
   return button;
 }
 
-/** The raw rows; only read while the box is in use. */
 function refreshDebugRows(
   options: BoxStatusOptions,
   rows: DebugRows,
@@ -155,7 +145,7 @@ export function createBoxDebugDisclosure(options: BoxStatusOptions): BoxDebugDis
   const connectDelay = createConnectDelayControls(options);
 
   element.append(summary, intro);
-  // Only the rows this device can actually fill (#268, ADR 0016).
+  // Only the rows this device can actually fill (ADR 0016).
   if (capabilities.temperature) element.append(rows.temperature);
   element.append(rows.deviceId, rows.lastSample, rows.rawAccel);
   if (capabilities.firmwareVersion) element.append(rows.firmwareTier);

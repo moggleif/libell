@@ -1,23 +1,21 @@
 /**
- * Learned mounting (#293) — pure math, no browser APIs.
+ * Learned mounting.
  *
- * A box that reports two finished angles (the Xparkle RVS01, R49) stands
- * upright in the vehicle but can face any way: turned a quarter, back to
- * front. (It must stand: lying down, turning it about its own axis moves
- * both angles — found on hardware, #273.) Rather than ask the user to
- * describe the mounting — or trust the box's own front/rear/left/right
- * setting — Libell watches
- * what happens when the user lifts the vehicle's front, then its right
- * side, and records which reported axis moved and which way:
+ * A box that reports two finished angles (the Xparkle RVS01, R49) stands upright in
+ * the vehicle but can face any way. (It must stand: lying down, turning it
+ * about its own axis moves both angles — found on hardware.) Rather than ask
+ * the user — or trust the box's own front/rear/left/right setting — Libell
+ * watches what happens when the user lifts the vehicle's front, then its
+ * right side, and records which reported axis moved and which way:
  *
  *   front raised  → whichever axis moved is pitch; its sign makes it positive
  *   right raised  → the other axis is roll; its sign makes that positive
  *                   (right up is left low, positive roll in Libell)
  *
  * Any mounting is some swap of the two axes plus a sign on each, so this
- * covers all four directions it can face, and mirrored readings too. Because it is measured, it
- * composes correctly with whatever the box itself already applies — there
- * is nothing to double-correct.
+ * covers all four directions it can face, and mirrored readings too. Because
+ * it is measured, it composes with whatever the box itself already applies —
+ * there is nothing to double-correct.
  */
 import type { Calibration } from './settings';
 
@@ -96,7 +94,6 @@ export function learnAxisMapping(
   };
 }
 
-/** A stored mapping, validated field by field; null for anything else. */
 export function parseAxisMapping(raw: unknown): AxisMapping | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const value = raw as Record<string, unknown>;

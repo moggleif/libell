@@ -1,5 +1,5 @@
 /**
- * Target presets (#122, ADR 0013): an intentional NON-level target, a
+ * Target presets (ADR 0013): an intentional NON-level target, a
  * third additive term on top of the zero, never conflated with it and
  * never stored in the same field. "Normal" (no active target) leaves the
  * effective calibration identical to the zero.
@@ -26,25 +26,21 @@ export interface TargetsDeps {
   readTilt(): Calibration | string;
   /** What "level" means now, which a new target is measured from. */
   zeroCalibration(): Calibration | null;
-  /** The active target changed or may have: refresh the badge. */
+  /** The active target changed or may have. */
   onActiveChanged(): void;
-  /** Defaults to localStorage. */
   storage?: KeyValueStorage | null;
-  /** Defaults to a random UUID. */
   newId?: () => string;
 }
 
 export interface Targets {
   presets(): TargetPreset[];
-  /** The active target's id, or null for Normal. */
+  /** Null for Normal, here and below. */
   activeId(): string | null;
-  /** The active target's own name, or null for Normal. */
   activeName(): string | null;
-  /** The active target's offset, or null for Normal. */
   activeOffset(): Calibration | null;
   select(id: string | null): void;
   /** Save the current tilt as a new target: null when saved, an error
-   * message, or a warning above 15° unless `anyway` (#425). */
+   * message, or a warning above 15° unless `anyway`. */
   add(name: string, anyway?: boolean): CaptureResult;
   remove(id: string): void;
 }

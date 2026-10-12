@@ -1,25 +1,10 @@
 /**
- * Info page (screen-cleanup follow-up): the bottom bar's "?" button opens
- * exactly one page — Help / About / Feedback as tabs, the same tab pattern
- * the Settings page already uses for Vehicle/Ramps/Kalibrering/Targets
- * (`.settings__tabs`) — instead of the old ☰ Settings menu's drawer-then-
- * page navigation, which the introduction relaunch used to live behind.
+ * Info page behind the "?" button: Help / About / Feedback as tabs.
  *
- * Diagnostics (#133, R36) used to be a fourth tab here — removed (design
- * review): its generic phone-or-EasyLevel framing didn't earn its keep.
- * Whatever EasyLevel-specific troubleshooting value it had now lives in
- * `boxStatusPage.ts`'s own "Debug info" disclosure instead, reading
- * raw values straight off the box rather than a generic sensor snapshot.
- *
- * This page owns no shared navigation state (`standalonePage.ts`): a
- * previous version reused the ☰ menu's own history depth so this page
- * could be opened directly, but that meant its back button popped through
- * the SAME depth counter the ☰ menu itself used — from this page, back
- * could land one level up, silently revealing the Settings drawer
- * underneath, a menu the user never opened. Tabs have no navigation depth
- * at all: switching tabs is local UI state, not a history entry, so there
- * is nothing to leak into — and this page's own single history entry
- * (`createStandalonePage`) can only ever close itself.
+ * It owns no shared navigation state: sharing the menu's history depth let
+ * back land one level up, revealing a Settings drawer the user never opened.
+ * Switching tabs is local UI state, not a history entry, and the page's own
+ * single history entry can only ever close itself.
  */
 import { createAboutSection } from './about';
 import { createFeedbackSection } from './feedback';
@@ -32,26 +17,19 @@ import {
 } from './helpIllustrations';
 import type { VehicleType } from '../domain/settings';
 
-/** Where a Help topic's button leads (#326) — `main.ts` maps each to the
- * right Settings tab (Classic: ☰ section) or the sensor page. */
+/** `main.ts` maps each to the right Settings tab or the sensor page. */
 export type HelpTarget = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'sensor';
 
 export interface InfoPageOptions {
-  /** Relaunch the first-run wizard — the button at the bottom of the Help tab. */
   openOnboarding(): void;
   /**
-   * True once the wizard has actually been stepped through to the end —
-   * distinct from merely having been opened and dismissed early (design
-   * review, follow-up). Decides whether "Show introduction" still reads
-   * as an unfinished first-run task (green, `false`) or a plain
-   * re-launch (secondary, `true`) — see `buildIntroButton` below.
+   * True once the wizard was stepped through to the end, not merely opened
+   * and dismissed early.
    */
   hasDoneOnboarding(): boolean;
-  /** Open the place a Help topic talks about (#326). Called after this
-   * page has closed. Without it, topics show no buttons. */
+  /** Called after this page has closed. Without it, topics show no buttons. */
   openTarget?(target: HelpTarget): void;
-  /** False where the app has no sensor page at all (no Web Bluetooth and
-   * not iOS) — the Sensor box topic then explains without a button. */
+  /** False where the app has no sensor page (no Web Bluetooth and not iOS). */
   hasSensorPage?: boolean;
 }
 
@@ -63,12 +41,8 @@ export interface InfoPage {
 
 type InfoTab = 'help' | 'about' | 'feedback';
 
-/** The Help tab's topics (#326, R28): fold-out, one open at a time, each a
- * few lines (one fact per line) ending in a button to the place it talks
- * about. Help says what and where; the screens themselves say how. What
- * the About tab says (the pitch, offline) and what Feedback already sends
- * (the version) is not repeated here. "Reading the screen" opens first:
- * it is what people come back for. */
+/** The Help tab's topics (R28). "Reading the screen" opens first: it is what
+ * people come back for. */
 type TopicId =
   'screen' | 'place' | 'measures' | 'ramps' | 'calibration' | 'sensor' | 'targets' | 'trouble';
 
@@ -76,7 +50,7 @@ interface Topic {
   id: TopicId;
   h: MessageKey;
   text: MessageKey;
-  /** A last line of its own, for what only applies to a caravan (#368). */
+  /** A last line for what only applies to a caravan. */
   caravanLine?: MessageKey;
   picture?: (label: string) => Element;
   go?: { label: () => string; target: HelpTarget | 'feedback' };
@@ -133,18 +107,9 @@ const TOPICS: Topic[] = [
 ];
 const FIRST_OPEN: TopicId = 'screen';
 
-/** The introduction relaunch, at the bottom of the Help tab (screen-cleanup
- * follow-up; moved from the top in #326) — the same action the old ☰ menu's "Show introduction" row
- * performed, closing this page first so the wizard isn't shown behind it.
- *
- * Styled green (the "still an open first-run task" look, same as the
- * "not calibrated"/"settings not saved" lamps) until the wizard has
- * actually been completed once — not merely opened and dismissed early,
- * see `hasDoneOnboarding` (design review, follow-up: it used to be
- * permanently secondary-styled, as if re-launching it were never more
- * than an optional extra). `refresh()` re-checks the stored flag — call
- * it whenever it might have changed underneath this button (the page
- * reopening; the wizard just finished). */
+/** Closes this page first so the wizard isn't shown behind it. Styled
+ * primary until the wizard has been completed once; `refresh()` re-checks
+ * the stored flag. */
 function buildIntroButton(
   page: StandalonePage,
   openOnboarding: () => void,
@@ -166,9 +131,8 @@ function buildIntroButton(
   return { element: button, refresh };
 }
 
-/** Motorhome + caravan illustrations side by side, each with its own
- * small caption: this static tab isn't tied to the user's vehicle, and
- * the measurements are the one topic whose picture differs by type. */
+/** Both vehicles side by side: this static tab isn't tied to the user's
+ * vehicle. */
 function buildVehiclePair(heading: string): HTMLElement {
   const row = document.createElement('div');
   row.className = 'illu-pair';
@@ -190,7 +154,7 @@ function buildVehiclePair(heading: string): HTMLElement {
 
 interface HelpPanel {
   element: HTMLElement;
-  /** Fold every topic but the first one — each time the page reopens. */
+  /** Fold every topic but the first one. */
   reset(): void;
 }
 
@@ -260,17 +224,13 @@ function buildHelpPanel(
 }
 
 export function createInfoPage(options: InfoPageOptions): InfoPage {
-  // Assigned below, once `buildIntroButton` runs — referenced here only
-  // inside a callback that fires on a later reopen, well after that.
+  // Assigned below; only called from a later reopen.
   let refreshIntroButton: () => void = () => {};
   let resetHelp: () => void = () => {};
   const page = createStandalonePage(t('menu.help'), () => {
     selectTab('help');
     resetHelp();
-    // The wizard may have been completed (or not) since this page was
-    // last open (design review, follow-up) — resync "Show introduction"'s
-    // green/secondary look every reopen, same pattern as the mute
-    // toggle resyncing Settings' own sound checkboxes.
+    // The wizard may have been completed since this page was last open.
     refreshIntroButton();
   });
 
@@ -283,8 +243,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
     about: t('menu.about.tab'),
     feedback: t('menu.feedback'),
   };
-  // The header title spells out the full section name (About Libell, not
-  // just the tab's short "About") — reused verbatim, not a new string.
+  // The header spells out the full name ("About Libell", not "About").
   const TAB_TITLES: Record<InfoTab, string> = {
     help: t('menu.help'),
     about: t('menu.about'),
@@ -314,8 +273,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   const helpPanel = buildHelpPanel(
     introButton.element,
     (target) => {
-      // Feedback is a tab right here; everything else is another page,
-      // opened once this one's close has landed (`StandalonePage.close`).
+      // Other targets are pages, opened once this one's close has landed.
       if (target === 'feedback') selectTab('feedback');
       else page.close(() => options.openTarget?.(target));
     },

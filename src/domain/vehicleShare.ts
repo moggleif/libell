@@ -1,5 +1,5 @@
 /**
- * "Share vehicle setup" (R41, #207): encode/decode the minimal subset of
+ * "Share vehicle setup" (R41): encode/decode the minimal subset of
  * `LevelSettings` that describes the physical vehicle, for a link a family
  * member can open to get the same wheel-raise guidance without re-typing
  * every dimension by hand.
@@ -13,11 +13,10 @@
  *   sound, theme, appearance, sensor source) — per-person choices, not
  *   "this is my RV".
  *
- * None of the included fields are sensitive or personal, so this is about
- * correctness (fail closed on a bad link) rather than confidentiality —
- * see the issue for the fuller reasoning. Pure module (ADR 0002): the only
- * non-arithmetic APIs used are the base64/UTF-8 encoders every JS runtime
- * (browser or Node) provides as globals, not browser-specific ones.
+ * None of the included fields are sensitive, so this is about correctness
+ * (fail closed on a bad link) rather than confidentiality. `btoa`/`atob` and
+ * `TextEncoder` are globals in every JS runtime, so this stays pure
+ * (ADR 0002).
  */
 import {
   DEFAULT_SETTINGS,
@@ -48,8 +47,6 @@ export type VehicleGeometry = Pick<
  * returns null) rather than guessed at. */
 const SCHEMA_VERSION = 1;
 
-/** The share payload: exactly the fields above, nothing else — reused by
- * the settings form (what to encode) and the receiving side's preview. */
 export function pickVehicleGeometry(settings: LevelSettings): VehicleGeometry {
   return {
     vehicleType: settings.vehicleType,
@@ -63,9 +60,6 @@ export function pickVehicleGeometry(settings: LevelSettings): VehicleGeometry {
   };
 }
 
-/** Merge a received geometry into the recipient's own settings — every
- * other field (both calibration layers, EasyLevel pairing, every UI/
- * behavior preference) is left exactly as it already was. */
 export function applyVehicleGeometry(
   settings: LevelSettings,
   geometry: VehicleGeometry,
@@ -106,12 +100,9 @@ export function encodeVehicleGeometry(geometry: VehicleGeometry): string {
 }
 
 /**
- * Decodes and validates a link's payload. Fails closed (`null`) on
- * anything malformed, truncated, or from an unrecognized schema version —
- * never a partial result from a corrupt envelope. Once the envelope
- * itself checks out, individual fields fall back the same independent way
- * `parseSettings` already does for stored settings, so one corrupt field
- * inside an otherwise-valid link never rejects the whole thing.
+ * Fails closed (`null`) on a malformed, truncated or unknown-version
+ * envelope. Inside a valid envelope, fields fall back independently like
+ * `parseSettings`, so one corrupt field never rejects the whole link.
  */
 export function decodeVehicleGeometry(text: string): VehicleGeometry | null {
   const bytes = fromBase64Url(text);

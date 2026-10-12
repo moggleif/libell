@@ -1,5 +1,5 @@
 /**
- * Clickjacking guard (#67): GitHub Pages cannot send response headers and
+ * Clickjacking guard: GitHub Pages cannot send response headers and
  * browsers ignore `frame-ancestors` in a <meta>-delivered CSP (ADR 0005),
  * so the app refuses to run framed — blank the page, then walk the top
  * window to the real address (allowed cross-origin for navigation).

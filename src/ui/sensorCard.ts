@@ -1,9 +1,8 @@
 /**
- * One box's card on the list (#324, flow D of the #309 UX review): a mark
- * (✓ in use, ! lost, + not in use), the box's name, and one line under it —
- * its state, or a quiet Connect link. The card of the box in use opens that
- * box's own page, where Reconnect, its setup and Disconnect live; the list
- * never offers them itself. The connect half of `sensorSourceSection.ts`.
+ * One box's card on the list: a mark (✓ in use, ! lost, + not in use), the
+ * box's name, and one line under it — its state, or a quiet Connect link.
+ * The card of the box in use opens that box's own page, where Reconnect,
+ * its setup and Disconnect live; the list never offers them itself.
  */
 import { boxConnection, type BoxConnection } from './boxConnection';
 import { createBoxPasswordBlock } from './boxPasswordBlock';
@@ -19,7 +18,7 @@ export interface SensorCard {
 
 /** The box's name as a button, so its page stays reachable by keyboard;
  * inert (aria-disabled, no chevron) while the box is not in use, since the
- * page behind it is that box's own (#244). */
+ * page behind it is that box's own. */
 function createNameButton(
   options: SensorSourceOptions,
   onOpenStatus: (() => void) | undefined,
@@ -93,8 +92,8 @@ export function createSensorCard(
   const nameButton = createNameButton(options, onOpenStatus);
   const stateLine = createElement('p', 'sensor-card__state');
   const connectLink = createConnectLink(options);
-  // A rejected password (#272, #367), with the way out right on the card —
-  // hidden the rest of the time, which is nearly always.
+  // A rejected password, with the way out right on the card — hidden the
+  // rest of the time.
   const passwordBlock = options.password
     ? createBoxPasswordBlock(options.password, options.sensor.displayName)
     : null;

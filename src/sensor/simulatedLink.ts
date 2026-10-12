@@ -1,5 +1,5 @@
 /**
- * The link every simulated box shares (#418): one fixed device id, and in
+ * The link every simulated box shares: one fixed device id, and in
  * drop mode a lost connection after a while followed by an outage during
  * which the box cannot be reached. Each simulator supplies only what its
  * own box sends and answers.
@@ -32,7 +32,7 @@ export type SimulatedConnection<Members> = Members & {
 
 export interface SimulatedLink<Members> {
   connect(onDisconnect: () => void): Promise<SimulatedConnection<Members>>;
-  /** Like the real transport (#130): resolves null, never rejects, for any
+  /** Like the real transport: resolves null, never rejects, for any
    * other id or while the box is still out of reach after a drop. */
   reconnect(
     deviceId: string,
@@ -61,7 +61,7 @@ export function createSimulatedLink<Members>(box: SimulatedBox<Members>): Simula
 
     if (box.drop) {
       // A lost link stops first and reports second, the order a real GATT
-      // loss has; `stop()` alone is the deliberate disconnect (#219).
+      // loss has; `stop()` alone is the deliberate disconnect.
       timeoutIds.push(
         setTimeout(() => {
           lastDropAt = Date.now();

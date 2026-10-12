@@ -1,5 +1,5 @@
 /**
- * Stillness detection (#86) — pure TypeScript, no browser APIs.
+ * Stillness detection.
  *
  * When people move around inside, the vehicle rocks and momentary
  * readings are meaningless. The sensor is already EMA-smoothed and the
@@ -24,9 +24,8 @@ interface Sample {
 }
 
 /**
- * Creates a stateful detector: feed it every (already smoothed) reading
- * with a monotonic timestamp; it returns true while the reading is
- * trustworthy. State is per-instance, like the display stabilizer.
+ * Feed it every (already smoothed) reading with a monotonic timestamp; it
+ * returns true while the reading is trustworthy.
  */
 export function createStillnessDetector(): (
   rollDeg: number,

@@ -1,9 +1,6 @@
 /**
- * About page (issue #95): what Libell is, that it works offline, the
- * privacy promise, where the source lives, and — small and last, like
- * the footer on the main screen — the running version. Static
- * translated text; the single link opens GitHub in a new tab with
- * `noopener` — the page itself loads nothing remote (ADR 0005).
+ * About page. The single link opens GitHub in a new tab with `noopener`;
+ * the page itself loads nothing remote (ADR 0005).
  */
 
 import { t } from './i18n';
@@ -11,9 +8,8 @@ import { t } from './i18n';
 const REPO_URL = 'https://github.com/moggleif/libell';
 
 /**
- * @param version the build's version string, or null when it has none —
- *   a CI build without `BUILD_VERSION` shows no version at all. Injected
- *   so both cases are testable wherever the tests run.
+ * @param version null for a CI build without `BUILD_VERSION`; injected so
+ *   both cases are testable.
  */
 export function createAboutSection(version: string | null = __APP_VERSION__): HTMLElement {
   const body = document.createElement('div');
@@ -43,8 +39,7 @@ export function createAboutSection(version: string | null = __APP_VERSION__): HT
 
   body.append(offline, privacy, source);
 
-  // Last and small — reference material, not something to read first. A CI
-  // build without a version shows none: better none than a wrong one.
+  // A build without a version shows none: better none than a wrong one.
   if (version) {
     const line = document.createElement('p');
     line.className = 'menu__text about__version';

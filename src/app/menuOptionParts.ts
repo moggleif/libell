@@ -1,7 +1,7 @@
 /**
  * The option groups the menu, the Settings page, the wizard and the box
- * pages share (#374). Each group is built here once and spread into every
- * bag that needs it, so the same field can never be wired two ways.
+ * pages share. Each group is built here once and spread into every bag
+ * that needs it, so the same field can never be wired two ways.
  */
 import type { Calibration, EasyLevelMounting } from '../domain/settings';
 import { easyLevelSettings } from '../domain/settings';
@@ -23,7 +23,7 @@ import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
 
 export interface MenuOptionDeps {
-  /** The source feeding readings right now, read fresh on every use. */
+  /** Read fresh on every use: the active source changes. */
   activeSensor: () => OrientationSensor;
   readTilt: () => Calibration | string;
   phoneCalibration: PhoneCalibration;
@@ -63,7 +63,6 @@ export function calibrationOptions(deps: MenuOptionDeps) {
   };
 }
 
-/** The target presets (#122). */
 export function targetOptions(targets: Targets) {
   return {
     getTargetPresets: () => targets.presets(),
@@ -75,7 +74,6 @@ export function targetOptions(targets: Targets) {
   };
 }
 
-/** Which source feeds readings, and how it is doing (#135). */
 export function sensorSourceOptions(deps: MenuOptionDeps) {
   return {
     getSensorSource: () => deps.activeSensor().getSource(),
@@ -83,8 +81,8 @@ export function sensorSourceOptions(deps: MenuOptionDeps) {
   };
 }
 
-/** One box's connection and its own installation zero (#263): where one
- * box is bolted in says nothing about where another is. */
+/** One box's connection and its own installation zero: where one box is
+ * bolted in says nothing about where another is. */
 export function boxConnectionOptions(descriptor: ExternalSensorDescriptor, deps: MenuOptionDeps) {
   const { id } = descriptor;
   return {
@@ -118,7 +116,6 @@ export function boxStatusOptions(descriptor: ExternalSensorDescriptor, deps: Men
   };
 }
 
-/** The EasyLevel mounting (#217). */
 export function easyLevelMountingOptions(boxWiring: BoxWiring) {
   return {
     getMounting: () => easyLevelSettings(boxWiring.settings.get()).mounting,

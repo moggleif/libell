@@ -1,23 +1,15 @@
 /**
- * Full-screen ✓ confirmation shown briefly when the vehicle reaches level
- * (R16). `celebrate()` fades/scales it in, holds it, then fades it back
- * out — via `setVisible` (motion.ts) it does so instantly, with no
- * animated transition, under `prefers-reduced-motion` (#124).
+ * Full-screen ✓ shown briefly when the vehicle reaches level (R16).
  *
- * `hideNow()` is a separate, always-instant abort: used whenever the
- * underlying state stops being level (or the menu/wizard opens) while the
- * overlay is showing. That is a correctness matter, not a motion
- * preference — leaving the ✓ up (even mid-fade) while the vehicle is no
- * longer level would misinform, so the abort path never animates.
+ * `hideNow()` never animates: leaving the ✓ up, even mid-fade, once the
+ * vehicle is no longer level would misinform.
  */
 import { t } from './i18n';
 import { setVisible } from './motion';
 
 export interface LevelOverlay {
   element: HTMLElement;
-  /** Shows the ✓, then hides it again after a brief pause. */
   celebrate(): void;
-  /** Hides the ✓ immediately, with no transition, whatever its state. */
   hideNow(): void;
 }
 

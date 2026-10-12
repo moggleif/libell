@@ -1,7 +1,7 @@
 /**
- * Starting the readings at launch (#392, step 5): the remembered box's
- * silent reconnect first (#130), otherwise the phone's own sensor, with
- * iOS's tap for motion access and an honest message when there is none.
+ * Starting the readings at launch: the remembered box's silent reconnect
+ * first, otherwise the phone's own sensor, with iOS's tap for motion
+ * access and an honest message when there is none.
  */
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import { t } from '../ui/i18n';
@@ -26,7 +26,6 @@ export function startSensors(deps: SensorStartupDeps): Promise<void> {
   });
 }
 
-/** The phone-sensor start-up the app has always had. */
 export function startPhoneSensor(deps: SensorStartupDeps): void {
   const handleState = (state: SensorState) => showSensorState(state, deps);
   if (!deps.isSensorSupported()) {

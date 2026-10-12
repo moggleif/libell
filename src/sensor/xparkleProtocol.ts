@@ -1,27 +1,19 @@
 /**
- * Xparkle RVS01 "Smart RV Leveling Navigator" (SkyRC) — pure byte codec
- * (#269).
+ * Xparkle RVS01 "Smart RV Leveling Navigator" (SkyRC) — pure byte codec,
+ * kept apart from the Web Bluetooth transport so it is testable with plain
+ * byte arrays.
  *
- * Reverse-engineered by decompiling the official Android app, the same way
- * `easyLevelProtocol.ts` was, with one large difference in kind: the
- * Xparkle app (`com.skyrc.pbox`, version 1.4.6, versionCode 20260414) is
- * **not obfuscated**. Real class, method and field names survive, so every
- * claim below is read off named code — `com.skyrc.balance.config.Cmd`,
- * `com.skyrc.balance.config.Constants`, `com.skyrc.balance.data.
- * ConnectListener` and `com.skyrc.balance.model.b_main.
- * RvBalanceMainViewModel` — rather than reconstructed from obfuscated
- * bytecode. See `docs/competitor-notes.md` for the full writeup and for
- * which rows are Verified vs. Unknown.
+ * Reverse-engineered by decompiling the official Android app
+ * (`com.skyrc.pbox` 1.4.6, versionCode 20260414), which is **not
+ * obfuscated**: every claim below is read off named code —
+ * `com.skyrc.balance.config.Cmd`, `com.skyrc.balance.config.Constants`,
+ * `com.skyrc.balance.data.ConnectListener` and
+ * `com.skyrc.balance.model.b_main.RvBalanceMainViewModel`. See
+ * `docs/competitor-notes.md` for which rows are Verified vs. Unknown.
  *
- * Kept separate from `xparkleSensor.ts`'s Web Bluetooth transport (#270)
- * so the bytes are fully unit-testable from plain synthetic arrays, with
- * no `navigator.bluetooth` mocking — the same split, for the same reason,
- * that `easyLevelProtocol.ts` / `easyLevelSensor.ts` already use.
- *
- * **No physical box has been tested.** Two things the app's own source
- * structurally cannot answer are tracked in #273: whether the live read is
- * refused before the password command, and what the box actually puts in
- * its BLE advertisement. Neither affects the byte layouts below.
+ * The app's source cannot answer whether the live read is refused before
+ * the password command, or what the box puts in its BLE advertisement.
+ * Neither affects the byte layouts below.
  *
  * ## What makes this device different from EasyLevel
  *
@@ -62,9 +54,7 @@
  * in `parseLivePayload` below.
  *
  * The remaining assumption — that the top view's top edge is the front —
- * is the one thing a physical box would settle for good (#273), and it is
- * the same class of open question `easyLevelProtocol.ts` still carries for
- * its own absolute polarity.
+ * is the one thing a physical box would settle for good.
  *
  * ## What is deliberately NOT reproduced here
  *
@@ -111,11 +101,10 @@ export const XPARKLE_NOTIFY_CHARACTERISTIC_UUID = '0000fff4-0000-1000-8000-00805
 /**
  * Advertised-name fragments the official app matches on
  * (`BaseConstants.BALANCE`, via `AppUtil.getDeviceMode()`); it scans with
- * no service filter at all and accepts any device whose name contains one
- * of these. Whether the box also advertises `XPARKLE_SERVICE_UUID` is
- * unknown (#273) — which is exactly the trap #215 had to undo for
- * EasyLevel, where Libell had been filtering `requestDevice()` on a
- * service real boxes never advertise, so the OS picker listed nothing.
+ * no service filter and accepts any device whose name contains one. Do not
+ * filter on `XPARKLE_SERVICE_UUID` instead: whether the box advertises it
+ * is unknown, and filtering on a service a box never advertises leaves the
+ * OS picker empty (as happened with EasyLevel).
  */
 export const XPARKLE_DEVICE_NAME_FRAGMENTS = ['RVLevel', 'RVbalance'] as const;
 
@@ -170,11 +159,10 @@ function angleDeg(view: DataView, offset: number): number {
 }
 
 /**
- * Parse the value read from `XPARKLE_LIVE_CHARACTERISTIC_UUID` (#269).
- * Returns `null` for a payload too short to hold the seven bytes the app
- * itself requires, or one whose angles are outside
- * `MAX_PLAUSIBLE_ANGLE_DEG` — never throws, the same discipline #116 set
- * for EasyLevel, since no payload length has been verified against
+ * Parse the value read from `XPARKLE_LIVE_CHARACTERISTIC_UUID`. Returns
+ * `null` for a payload too short to hold the seven bytes the app itself
+ * requires, or one whose angles are outside `MAX_PLAUSIBLE_ANGLE_DEG` —
+ * never throws, since no payload length has been verified against
  * hardware.
  *
  * Byte layout (`ConnectListener.getRealtimeData`'s read callback):
@@ -211,10 +199,8 @@ export function parseLivePayload(data: PacketBytes): XparkleReading | null {
  *
  * `domain/leveling.ts` recovers tilt as `atan2(x, z)` / `atan2(y, z)`, so
  * `z = 1`, `x = tan(roll)`, `y = tan(pitch)` inverts it exactly for any
- * angle inside a quarter turn — proven by a round-trip test rather than
- * asserted here. The vector is unitless on purpose: only the ratios
- * between its axes are ever used (the same contract the phone sensor and
- * the EasyLevel adapter already fulfill), so there is nothing to scale.
+ * angle inside a quarter turn. The vector is unitless on purpose: only the
+ * ratios between its axes are ever used, so there is nothing to scale.
  */
 export function gravityFromAngles(rollDeg: number, pitchDeg: number): GravityVector {
   const toRad = Math.PI / 180;
@@ -225,8 +211,6 @@ export function gravityFromAngles(rollDeg: number, pitchDeg: number): GravityVec
   };
 }
 
-/** `gravityFromAngles` applied to a parsed reading — the shape
- * `xparkleSensor.ts` actually needs. */
 export function gravityFromReading(reading: XparkleReading): GravityVector {
   return gravityFromAngles(reading.rollDeg, reading.pitchDeg);
 }
@@ -277,17 +261,15 @@ export function buildCommandFrame(command: number, payload: ArrayLike<number>): 
  */
 const EMPTY_PAYLOAD = [0];
 
-/** Ask the box for its stored parameters (`Cmd.queryParameters`). */
+/** `Cmd.queryParameters`. */
 export function buildQueryParameters(): Uint8Array {
   return buildCommandFrame(XPARKLE_COMMAND.queryParameters, EMPTY_PAYLOAD);
 }
 
 /**
  * Zero the box where it currently sits (`Cmd.resetZero`) — the device's
- * own equivalent of R34's installation offset, stored in the box's own
- * firmware. Building it is harmless; issuing it is not, so
- * `xparkleSensor.ts` must only ever send it behind an explicit user
- * action (#270).
+ * own equivalent of R34's installation offset, stored in its firmware.
+ * Must only ever be sent behind an explicit user action.
  */
 export function buildResetZero(): Uint8Array {
   return buildCommandFrame(XPARKLE_COMMAND.resetZero, EMPTY_PAYLOAD);
@@ -372,10 +354,8 @@ export interface XparkleParameters {
 /**
  * The four mounting orientations the box stores and the vendor app offers
  * (`setup_3_activity.xml`: "Installation Orientation", front / rear / left
- * / right). Unlike EasyLevel's `sensor_Placing` — a fact only the user
- * knows, because that box never transmits it — this one is readable back
- * over the wire, which is what makes it a candidate for Libell reading
- * rather than re-asking (#270 settles which).
+ * / right). Unlike EasyLevel's `sensor_Placing`, this one is readable back
+ * over the wire.
  */
 export const XPARKLE_ORIENTATIONS = ['front', 'rear', 'left', 'right'] as const;
 
@@ -414,12 +394,9 @@ export function parseParameterReply(frame: PacketBytes): XparkleParameters | nul
  * length byte. Declared length is `bytes[1] + 4`, matching a frame's total
  * of payload + 7 (the length byte itself is payload + 3).
  *
- * Stateful by necessity, so it is a small factory rather than a pure
- * function — but it holds nothing but a buffer, takes no time source and
- * touches no browser API, so it stays as testable as the rest of this
- * module. A piece that would overflow the declared length, or a
- * continuation with no start seen, is dropped rather than appended: a
- * corrupt reply must not poison the next one.
+ * A piece that would overflow the declared length, or a continuation with
+ * no start seen, is dropped rather than appended: a corrupt reply must not
+ * poison the next one.
  */
 export interface XparkleFrameReassembler {
   /** Feed one notification; returns a completed frame, or null. */
@@ -465,7 +442,6 @@ export function createXparkleFrameReassembler(): XparkleFrameReassembler {
         buffer.set(bytes, filled);
         filled += bytes.length;
       } else {
-        // A continuation with no start frame seen — nothing to append to.
         return null;
       }
 

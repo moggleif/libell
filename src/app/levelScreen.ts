@@ -1,7 +1,6 @@
 /**
- * The level screen as a whole (#392, step 2): building it from the
- * engine, the view and the frame, running its frame loop, and rebuilding
- * it when a saved change alters what it is built from.
+ * The level screen as a whole: built from the engine, the view and the
+ * frame, and rebuilt when a saved change alters what it is built from.
  */
 import type { Calibration, LevelSettings } from '../domain/settings';
 import { createLevelEngine } from './levelEngine';
@@ -25,7 +24,7 @@ export function levelScreenKey(s: LevelSettings): string {
     s.drainPosition,
     s.toleranceMm,
     // Modern's silhouette/wheel-card markup differs structurally from
-    // Classic's on-diagram text (#106).
+    // Classic's on-diagram text.
     s.appearance,
   ]);
 }
@@ -39,7 +38,6 @@ export interface LevelScreenHostDeps {
 }
 
 export interface LevelScreenHost {
-  /** Builds the screen afresh and starts its frame loop. */
   show(): void;
   /** Rebuilds a shown screen if the settings it is built from changed. */
   rebuildIfChanged(): void;
@@ -76,7 +74,6 @@ export function createLevelScreenHost({
 }
 
 export interface LevelScreenDeps extends Omit<LevelFrameDeps, 'view' | 'playGuidancePulse'> {
-  /** Calibration, zero and target, combined, for the active source. */
   calibration: () => Calibration | null;
   openActiveSensorPage(): void;
   retry(): Promise<void> | void;
@@ -86,7 +83,6 @@ export interface LevelScreenDeps extends Omit<LevelFrameDeps, 'view' | 'playGuid
   vibrate(pattern: number[]): void;
 }
 
-/** Builds the level screen into `root`; returns its per-frame step. */
 export function buildLevelScreen(
   root: HTMLElement,
   deps: LevelScreenDeps,

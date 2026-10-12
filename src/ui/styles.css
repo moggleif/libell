@@ -1,11 +1,8 @@
 :root {
   --surface: #101418;
   --surface-raised: #1a2027;
-  /* No sunken UI in Classic (#104 adds tabs/cards that need it in
-   * Modern) — recesses to the base surface, a safe neutral default. */
+  /* Classic has no sunken or inset UI; these fall back to neutral surfaces. */
   --surface-sunken: #101418;
-  /* No inset UI in Classic either (#106's roof-panel detail is
-   * Modern-only) — same safe fallback as --surface-sunken above. */
   --surface-inset: var(--surface-raised);
   --outline: #2d333b;
   --on-surface: #e6edf3;
@@ -17,10 +14,9 @@
   --warning: #d29922;
 }
 
-/* Light theme for sunlight readability. Components consume only tokens,
- * so swapping the palette is the whole switch. Contrast (WCAG AA):
- * on-surface 15.7:1, on-surface-muted 5.9:1 on --surface; wheel glyphs
- * use --surface on the wheel fills (>= 3:1 in both themes). */
+/* Light theme for sunlight readability. Contrast (WCAG AA): on-surface
+ * 15.7:1, on-surface-muted 5.9:1 on --surface; wheel glyphs use --surface
+ * on the wheel fills (>= 3:1 in both themes). */
 @media (prefers-color-scheme: light) {
   :root {
     --surface: #f6f8fa;
@@ -38,9 +34,8 @@
   }
 }
 
-/* Explicit theme choice from Settings: the data-theme attribute (higher
- * specificity than the bare :root rules) overrides the system scheme in
- * both directions. No attribute = follow the phone. */
+/* Explicit theme from Settings overrides the system scheme by specificity.
+ * No attribute = follow the phone. */
 :root[data-theme='dark'] {
   --surface: #101418;
   --surface-raised: #1a2027;
@@ -71,21 +66,15 @@
   --warning: #9a6700;
 }
 
-/* ---- Modern appearance preset (#104) ----
- * A second, independent axis from light/dark: the data-appearance
- * attribute on the root element, combined with the same theme
- * resolution above (system via prefers-color-scheme, or an explicit
- * data-theme). The status colors are unchanged in both presets, only
- * the surface family differs. Screens opt into these tokens per
- * #106 through #110; this rule set alone does not change how anything
- * looks yet. */
+/* ---- Modern appearance preset ----
+ * An axis independent of light/dark; only the surface family differs,
+ * status colors are shared. */
 :root[data-appearance='modern'] {
   --surface: #0c1310;
   --surface-raised: #16211b;
   --surface-sunken: #1d2c24;
-  /* A fifth, distinct tone (#106): the RV diagram's inset roof panel
-   * needs to read as lighter than the body against it, which sunken
-   * alone can't give in dark mode (sunken IS the body's own color). */
+  /* The RV roof panel must read lighter than the body, and in dark mode
+   * sunken IS the body's color. */
   --surface-inset: #22342a;
   --outline: #2c4437;
   --on-surface: #e9f1ec;
@@ -124,9 +113,7 @@
   --on-surface-muted: #55665c;
 }
 
-/* Motion tokens (#105): shared by every transition below, independent
- * of theme/appearance. Respected only when the OS allows motion — see
- * the `prefers-reduced-motion` handling in motion.ts and share.ts. */
+/* Motion tokens. Reduced-motion is handled in motion.ts and share.ts. */
 :root {
   --motion-fast: 140ms;
   --motion-base: 220ms;
@@ -137,12 +124,9 @@
   box-sizing: border-box;
 }
 
-/* The app is one screen: top bar, diagram, action bar and footer, with
- * nothing below the fold. `100svh` is the *small* viewport — the height
- * with the browser's toolbars showing — so on iOS the bottom action bar
- * lands above Safari's bottom bar instead of behind it, the way plain
- * `100%` (which resolves against the toolbar-free large viewport) left it
- * (#241). `100%` stays as the fallback for browsers without the unit. */
+/* One screen, nothing below the fold. `100svh` (the viewport with toolbars
+ * showing) keeps the action bar above iOS Safari's bottom bar; plain `100%`
+ * puts it behind. `100%` is the fallback for browsers without the unit. */
 html,
 body {
   margin: 0;
@@ -169,10 +153,6 @@ body {
 
 .topbar {
   display: flex;
-  /* When the right-side actions don't fit beside the identity group they
-   * wrap onto their own right-aligned row (.topbar__actions below) — the
-   * absolutely-pinned sensor-status slot never takes part in wrapping,
-   * so it keeps the top-right corner on every width. */
   flex-wrap: wrap;
   position: relative;
   align-items: center;
@@ -180,10 +160,8 @@ body {
   padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
 }
 
-/* Set from main.ts while anything is in the pinned corner: reserves the
- * corner's own measured width (`--topbar-corner`) so no in-flow item can
- * slide under it. Measured rather than assumed because the corner now
- * holds the Install button too, whose label differs per language. */
+/* Set from main.ts while the pinned corner is occupied. `--topbar-corner` is
+ * measured because the Install label's width differs per language. */
 .topbar--has-corner {
   padding-right: calc(28px + var(--topbar-corner, 44px));
 }
@@ -209,8 +187,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Sits beside the icon and title; its auto margin splits the top bar
-   into the left (identity + share) and right (actions) groups. */
+/* Its auto margin splits the top bar into left and right groups. */
 .topbar__share {
   display: inline-flex;
   align-items: center;
@@ -225,7 +202,7 @@ body {
   cursor: pointer;
 }
 
-/* Transient confirmation ("link copied") — fades and rises in, per #105. */
+/* Transient confirmation ("link copied"). */
 .toast {
   position: fixed;
   left: 50%;
@@ -265,7 +242,7 @@ body {
     inset 0 1px 0 rgb(255 255 255 / 15%);
 }
 
-/* "Saved · Undo" (#328): the text and its one action on a row. */
+/* "Saved · Undo": the text and its one action on a row. */
 .toast--action {
   display: flex;
   align-items: center;
@@ -290,11 +267,8 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Classic's "unstyled HTML" restyle (chat-directed, no ADR): flat color
- * plus the browser's own outset/inset border chrome, the way an
- * uncustomized <button>/<input> looked before design systems — square
- * corners, no gradients or shadows. Modern (below) resets each of these
- * back to its current flat/rounded look so the restyle never leaks. */
+/* Classic is "unstyled HTML": flat color, outset/inset borders, square
+ * corners. Modern and Glossy override each of these per component. */
 .topbar__install {
   font: inherit;
   font-size: 0.9rem;
@@ -327,10 +301,8 @@ body {
     inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
-/* ---- Bottom action bar: settings (left) / sound (center) / help (right)
-   (screen-cleanup follow-up to #161) — spread across the bar rather than
-   clustered in the middle, so the primary mute control keeps the visual
-   center while settings/help sit at the thumb-reachable edges. ---- */
+/* ---- Bottom action bar: settings / sound / help ----
+   Spread out so settings and help sit at the thumb-reachable edges. */
 
 .bottombar {
   display: flex;
@@ -358,8 +330,6 @@ body {
   cursor: pointer;
 }
 
-/* The primary, most-reached-for control (mute) — visually larger than
-   settings/help on either side of it. */
 .bottombar__button--primary {
   min-width: 56px;
   min-height: 56px;
@@ -391,10 +361,8 @@ body {
   border-color: var(--warning);
 }
 
-/* The UA stylesheet's [hidden] { display: none } rule doesn't reliably
-   apply to SVG shape children in every browser — spell it out so
-   toggling the `hidden` attribute on the waves/mute-slash paths above
-   (main.ts's updateSoundButton) always actually hides them. */
+/* The UA [hidden] rule doesn't reliably apply to SVG children in every
+   browser. */
 .bottombar__icon path[hidden] {
   display: none;
 }
@@ -413,11 +381,8 @@ body {
 
 /* ---- Warning lamps (like a car dashboard) ---- */
 
-/* Everything on the top bar's right side EXCEPT the sensor-status icon:
- * warning lamps, target badge and the Install button. When the bar gets
- * too narrow this whole group wraps onto its own right-aligned row (and
- * wraps further internally if needed), so these are the ones that move;
- * the pinned sensor icon never gives up the top-right corner. */
+/* The top bar's right side minus the pinned corner; on narrow bars this
+ * group wraps onto its own row while the corner stays put. */
 .topbar__actions {
   display: flex;
   flex-wrap: wrap;
@@ -428,9 +393,7 @@ body {
   margin-left: auto;
 }
 
-/* The #indicators wrapper (index.html) holds the lamps cluster and the
- * target badge — a flex row like the bar itself, so they line up beside
- * each other instead of stacking as blocks. */
+/* Lamps cluster and target badge. */
 .topbar__indicators {
   display: flex;
   flex-wrap: wrap;
@@ -440,13 +403,8 @@ body {
   min-width: 0;
 }
 
-/* The pinned corner: Install, then the sensor-status icon (#244). Pinned
- * as one group rather than in flow, so the pair always owns the top-right
- * corner whatever else the bar holds — the warning lamps wrap onto their
- * own row to the left of it, exactly as they did when the icon was pinned
- * alone. `--topbar-corner` is the group's measured width, set by main.ts,
- * and the bar reserves that much padding so no in-flow item can slide
- * underneath it in any language. */
+/* Install + sensor-status icon, pinned out of flow so they always own the
+ * top-right corner. .topbar--has-corner reserves its width. */
 .topbar__corner {
   display: flex;
   align-items: center;
@@ -463,8 +421,6 @@ body {
 
 .indicators {
   display: flex;
-  /* Wraps with its parent cluster (.topbar__indicators) on narrow
-   * screens — the lamps give way, never the sensor icon's corner. */
   flex-wrap: wrap;
   justify-content: flex-end;
   min-width: 0;
@@ -484,7 +440,7 @@ body {
   padding: 4px 10px;
   cursor: pointer;
   white-space: nowrap;
-  /* Goes out like a dashboard lamp, not a flicker (#105). */
+  /* Goes out like a dashboard lamp, not a flicker. */
   opacity: 0;
   transform: scale(0.85);
   transition:
@@ -497,9 +453,7 @@ body {
   transform: scale(1);
 }
 
-/* Modern (#106): filled pills instead of an outline chip — color-mix()
- * derives the fill/border tint from --warning so it stays correct for
- * whichever theme is active without a second set of literal colors. */
+/* color-mix() derives the tint from --warning, so it follows the theme. */
 :root[data-appearance='modern'] .indicators__lamp {
   font-size: 10px;
   letter-spacing: 0.04em;
@@ -513,16 +467,7 @@ body {
   border-radius: 8px;
 }
 
-/* Target badge (#122, ADR 0013): a small, unobtrusive, purely
- * informational indicator — hidden entirely while Normal (true level) is
- * active. Deliberately neutral (on-surface / outline), not the amber
- * warning lamp treatment above: an active target is a deliberate choice,
- * never something wrong. */
-/* External-sensor status indicator (#129): a small electronics-chip icon,
- * shown only while an external source (EasyLevel) is active — deliberately
- * no text/numbers on the main screen (detail lives in the menu page). The
- * icon itself carries the state: muted/neutral while connected, the same
- * --warning tone the dashboard lamps use once the connection is lost. */
+/* External-sensor status: icon only, no text; detail lives in the menu. */
 .sensor-status {
   display: inline-flex;
   align-items: center;
@@ -544,10 +489,7 @@ body {
   stroke-linecap: round;
 }
 
-/* Idle (screen-cleanup follow-up: visible whenever Web Bluetooth exists,
- * not just once connected) stays the plain neutral icon above — connected
- * gets its own distinct color so the two are never mistaken for each
- * other now that both can show at once. */
+/* Idle shows too, so connected needs a color of its own. */
 .sensor-status--connected .sensor-status__icon {
   stroke: var(--level);
 }
@@ -556,6 +498,8 @@ body {
   stroke: var(--warning);
 }
 
+/* Neutral, not amber: an active target (ADR 0013) is a choice, never a
+ * fault. */
 .target-badge {
   font: inherit;
   font-size: 0.75rem;
@@ -584,14 +528,10 @@ body {
 
 .app {
   flex: 1 1 auto;
-  /* Without this the level view cannot shrink below the diagram's own
-     height, and the diagram's own `flex`/`min-height` never gets a chance
-     to apply — a flex item's default `min-height: auto` is the whole
-     reason the action bar and footer used to end up below the fold
-     (#241). */
+  /* Overrides the flex default `min-height: auto`, which keeps the level
+     view from shrinking and pushes the action bar below the fold. */
   min-height: 0;
-  /* Anchor for the pose/level overlays: they cover the app area only,
-     so the top bar (menu) and the version footer stay reachable. */
+  /* Overlays cover the app area only, so top bar and footer stay reachable. */
   position: relative;
   padding: 8px 16px max(16px, env(safe-area-inset-bottom));
   display: flex;
@@ -644,29 +584,12 @@ body {
 
 /* ---- RV diagram (hero) ---- */
 
-/* Read outdoors at arm's length: use the screen — but only the screen.
- * The diagram is the one elastic thing on the level view: it takes the
- * height the top bar, readouts, action bar and footer leave and no more
- * (`flex` + `min-height: 0`, which is what actually lets a flex item
- * shrink below its content).
- *
- * It used to be sized purely by width, `min(92vw, 58vh, 560px)`, with its
- * height following from the drawing's proportions — so the `58vh` term,
- * meant to keep the status line and tilt readout on screen (#68), yielded
- * a diagram about 93vh TALL and pushed the readouts, the action bar and
- * the footer below the fold on every phone size (#241).
- *
- * `aspect-ratio` comes from `--diagram-aspect`, set on the container from
- * the drawing's own viewBox (rvDiagram.ts / caravanDiagram.ts). Sizing the
- * box in the drawing's exact proportions is what keeps the floating wheel
- * cards — positioned as a percentage of that box — pinned to the wheels
- * they point at, whichever way the box is being squeezed. */
+/* The one elastic element on the level view: it takes the height the rest
+ * leaves and no more. Sizing by width alone made it ~93vh tall and pushed
+ * the readouts and action bar below the fold. */
 .rv-diagram {
-  /* Keeps the full width even when the drawing inside is narrower than
-   * that: on Modern the floating wheel cards live in the margins either
-   * side of the vehicle, and they have a fixed readable width. Shrinking
-   * this box to the drawing would leave the two cards overlapping each
-   * other across the middle of the screen. */
+  /* Full width even when the drawing is narrower: on Modern the wheel cards
+   * sit in the side margins and would overlap if this shrank. */
   flex: 1 1 auto;
   min-height: 0;
   width: min(92vw, 560px);
@@ -678,11 +601,8 @@ body {
   height: 100%;
 }
 
-/* Filling the box in both directions is what caps the drawing by height:
- * the viewBox plus the default `preserveAspectRatio` then scales it to
- * fit and centres it, so it never distorts and never overflows. On a box
- * wider than the drawing needs it simply sits centred, which is exactly
- * the room the wheel cards occupy. */
+/* Filling both directions lets the default `preserveAspectRatio` fit and
+ * centre the drawing, so it never distorts or overflows. */
 .rv-diagram svg {
   width: 100%;
   height: 100%;
@@ -699,10 +619,7 @@ body {
   stroke-width: 2;
 }
 
-/* Glossy (chat-directed third preset, ADR-less): reuses Classic's SVG
- * structure but with a rounder, softer outline plus a drop shadow —
- * CSS `rx`/`ry` and `filter` override the plain-HTML shape and flat
- * edges above without touching the shared diagram code. */
+/* Glossy reuses Classic's SVG; CSS `rx` and `filter` round and shade it. */
 [data-appearance='glossy'] .rv-diagram__body {
   rx: 26px;
   filter: drop-shadow(0 2px 2px rgb(0 0 0 / 35%));
@@ -789,10 +706,8 @@ body {
   fill: var(--level);
 }
 
-/* ---- Modern diagram silhouette (#106) — cab/roof, trim, hatches,
- * crosshair. Only rv-diagram--modern builds these SVG parts, so no
- * data-appearance guard is needed here; the color tokens already
- * resolve to the right palette. */
+/* ---- Modern diagram silhouette ----
+ * Only rv-diagram--modern builds these parts, so no data-appearance guard. */
 
 .rv-diagram__roof {
   fill: var(--surface-inset);
@@ -820,22 +735,13 @@ body {
   stroke-width: 2;
 }
 
-/* ---- Modern wheel cards (#106) — the step/lift text lives here
- * instead of on the SVG; the SVG wheel keeps only its glyph. */
+/* ---- Modern wheel cards ---- */
 
-/* A card is placed against two different things at once, which is the
- * whole subtlety here (#241): horizontally it hugs the outer edge of the
- * full-width stage, because that margin beside the vehicle is the only
- * room a 126px-wide card has — pull it in to the drawing and the left and
- * right cards overlap across the middle of the screen. Vertically it has
- * to sit on its wheel, which is in the *drawn* area, and the drawing
- * letterboxes inside a stage that is wider than it.
- *
- * So the layer stays the full stage (horizontal reference) and publishes
- * the drawn area's height as `--drawn-height` for the cards' own `top` to
- * work from (see `placeWheelCard` in diagramParts.ts). That expression is the same fit the SVG
- * performs internally, written out: whichever binds first, the stage's
- * height or the height a full-width drawing would need. */
+/* Horizontally a card hugs the full-width stage's edge (the only room a
+ * 126px card has); vertically it must sit on its wheel in the letterboxed
+ * drawing. `--drawn-height` repeats the SVG's own fit (stage height or
+ * full-width drawing height, whichever binds) for `placeWheelCard` in
+ * diagramParts.ts. */
 .wheel-card-layer {
   position: absolute;
   inset: 0;
@@ -864,10 +770,8 @@ body {
   right: 4px;
 }
 
-/* The caravan's jockey wheel (#368) sits in the middle, on the drawbar,
- * not in a side margin. It may grow wider than a side card, since nothing
- * sits beside it and "Crank down" is long in some languages, but it stays
- * shorter so it clears the front arrow above and the body below. */
+/* Caravan jockey wheel, on the drawbar. Wider allowed ("Crank down" is long
+ * in some languages), shorter to clear the front arrow and the body. */
 .wheel-card--center {
   left: 50%;
   transform: translate(-50%, -50%);
@@ -879,9 +783,8 @@ body {
 
 .wheel-card__marker {
   flex-shrink: 0;
-  /* 32px, not the glyph's own 22px plus a generous margin: every pixel here
-   * comes straight off the text column next to it, which the longest
-   * language has to fit "Step 1" into on one line (#178). */
+  /* Every pixel here comes off the text column, which must fit "Step 1" on
+   * one line in the longest language. */
   width: 32px;
   display: flex;
   align-items: center;
@@ -923,11 +826,9 @@ body {
   font-weight: 700;
   color: var(--on-surface-muted);
   min-height: 1.2em;
-  /* "No ramp" (screen-cleanup follow-up) doesn't fit the card's ~78px text
-   * column on one line at this size — let it wrap to two instead of
-   * clipping. The step label ("Step 1", "Stufe 1", "Palier 1") must fit on
-   * one line in every language though: it is the number you glance at while
-   * driving up the ramp, so the dictionaries keep that word short (#178). */
+  /* "No ramp" wraps to two lines here. The step label must stay on one line
+   * in every language (glanced at while driving up the ramp), so the
+   * dictionaries keep that word short. */
   line-height: 1.15;
 }
 
@@ -973,19 +874,15 @@ body {
   font-weight: 700;
 }
 
-/* Modern (#106): the status row is always the bold, 22px "headline"
- * weight — classic reserves that emphasis for the level state alone. */
+/* Modern always uses headline weight; Classic only when level. */
 :root[data-appearance='modern'] .status-line {
   font-size: clamp(1.3rem, 4.6vw, 1.45rem);
   font-weight: 700;
   color: var(--on-surface);
 }
 
-/* Brief confirmation when the vehicle reaches level. Covers the app
- * area only — the top bar and the footer stay visible. Fades/scales in
- * via `.is-visible` (levelOverlay.ts uses `setVisible`, motion.ts), which
- * skips this transition entirely under `prefers-reduced-motion`: the ✓
- * still appears, just without the animated step (#124). */
+/* Brief confirmation on reaching level. motion.ts skips the transition
+ * under `prefers-reduced-motion`. */
 .level-overlay {
   position: absolute;
   inset: 0;
@@ -1032,12 +929,7 @@ body {
   white-space: pre;
 }
 
-/* ---- Version, under the name it qualifies (#251) ----
- * It had a footer to itself at the bottom of every screen — a whole row,
- * plus its own safe-area padding, spent on a line nobody reads until
- * something is wrong. Under the logo it costs nothing: the identity
- * block is already as tall as the icon beside it, so the line sits in
- * space the bar had anyway. */
+/* ---- Identity block: icon, title and version ---- */
 
 .topbar__identity {
   display: flex;
@@ -1066,8 +958,7 @@ body {
 
 .topbar__version {
   margin: 0;
-  /* Smaller than the footer's 0.75rem it replaces: this is a fingerprint
-     for a bug report, not something to read. */
+  /* A fingerprint for bug reports, not something to read. */
   font-size: 0.625rem;
   line-height: 1.2;
   color: var(--on-surface-muted);
@@ -1078,11 +969,9 @@ body {
 
 /* ---- Hamburger menu ---- */
 
-/* Sized to the *small* viewport, like every other full-screen container
- * here (#239, #241, #243): `inset: 0` alone resolves against iOS's
- * toolbar-free large viewport, which puts the bottom of the drawer behind
- * Safari's bottom bar with no way to scroll to it. `100vh` is the
- * fallback for browsers without the unit. */
+/* `inset: 0` alone resolves against iOS's large viewport, hiding the
+ * drawer's bottom behind Safari's bar; `100svh` fixes it, `100vh` is the
+ * fallback. */
 .menu {
   position: fixed;
   inset: 0;
@@ -1093,8 +982,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  /* The backdrop fades; the drawer itself also drops in slightly below
-   * (its own transition, #105) for a sense of depth, not just a flip. */
   opacity: 0;
   transition: opacity var(--motion-base) var(--motion-ease);
 }
@@ -1103,13 +990,11 @@ body {
   opacity: 1;
 }
 
-/* `display: flex` above would otherwise override the browser's default
- * [hidden] handling and leave the drawer permanently open. */
+/* `display: flex` above would otherwise beat the UA [hidden] rule. */
 .menu[hidden] {
   display: none;
 }
 
-/* Full screen width; the content sits in a centered column. */
 .menu__drawer {
   width: 100%;
   max-height: 100%;
@@ -1188,9 +1073,7 @@ body {
   border-color: var(--level);
 }
 
-/* ---- Modern menu: fullscreen card list (#107) ----
- * The drawer/backdrop elements are shared with Classic (same open/close
- * state machine); Modern only changes how they look and what's inside. */
+/* ---- Modern menu: fullscreen card list ---- */
 
 [data-appearance='modern'] .menu {
   align-items: stretch;
@@ -1216,8 +1099,7 @@ body {
   font-weight: 700;
 }
 
-/* Help tab (#326): fold-out topics, one open at a time. The heading row
- * is the whole tap target; the chevron turns when the topic is open. */
+/* Help tab: fold-out topics; the whole heading row is the tap target. */
 .help-topic {
   border-top: 1px solid var(--outline);
 }
@@ -1267,8 +1149,7 @@ body {
   padding: 0 4px 14px;
 }
 
-/* Sensor-source detail block (#129): battery/RSSI/temperature, separated
- * from the connect/disconnect buttons above it. */
+/* Sensor detail block (battery/RSSI/temperature). */
 .menu__detail {
   margin-top: 18px;
 }
@@ -1278,7 +1159,7 @@ body {
   color: var(--on-surface-muted);
   font-size: 0.9rem;
   line-height: 1.45;
-  /* i18n texts break list-like facts with \n — one fact per line (#95). */
+  /* i18n texts break list-like facts with \n. */
   white-space: pre-line;
 }
 
@@ -1287,8 +1168,6 @@ body {
   text-decoration: underline;
 }
 
-/* The About page's version line — same quiet treatment as the footer
- * version on the main screen (#95). */
 .about__version {
   margin-top: 20px;
   font-size: 0.75rem;
@@ -1300,8 +1179,6 @@ body {
   color: var(--on-surface);
 }
 
-/* Low-battery warning row (#123) — the same --warning tone the dashboard
- * lamps and the disconnected sensor-status icon already use. */
 .menu__text--warning {
   color: var(--warning);
   font-weight: 600;
@@ -1367,9 +1244,8 @@ body {
   cursor: default;
 }
 
-/* The sensor row's status text doubles as a button opening the deeper
- * status page — reset button chrome so it still reads as plain status
- * text, plus a chevron affordance so it's clear it's tappable. */
+/* Status text that opens the status page: reads as text, chevron shows it
+ * is tappable. */
 .sensor-row__status-button {
   display: flex;
   align-items: center;
@@ -1382,9 +1258,7 @@ body {
   cursor: pointer;
 }
 
-/* The status row while the phone's own sensor is active: it says so and
- * that is all — no chevron, no tap target, nothing that reads as a way
- * into the EasyLevel box's status page (#244). */
+/* Phone's own sensor active: no status page to open. */
 .sensor-row__status-button--plain {
   cursor: default;
   text-align: left;
@@ -1395,9 +1269,7 @@ body {
   font-size: 1.1rem;
 }
 
-/* Debug disclosure on the sensor status page — same native <details>
- * pattern as the settings Advanced disclosure (#157): closed by default,
- * no JS needed to track open/closed state. */
+/* Debug disclosure on the sensor status page (native <details>). */
 .sensor-status__debug-summary {
   cursor: pointer;
   display: inline-flex;
@@ -1427,31 +1299,23 @@ body {
   transform: rotate(90deg);
 }
 
-/* Opened from within the (still-open) External sensor page — one z-index
- * above the base .menu-page so it reliably paints on top, regardless of
- * DOM append order. */
+/* Opens over the still-open External sensor page, whatever the DOM order. */
 .sensor-status-page {
   z-index: 13;
 }
 
-/* `display: block` above would otherwise win over the UA [hidden] rule
-   for any action hidden by toggling `hidden` (#315: the list's Connect
-   while its box is in use). */
+/* `display: block` above would otherwise win over the UA [hidden] rule. */
 .menu__action[hidden] {
   display: none;
 }
 
-/* The learn-the-mounting guide (#293) shows one step's button at a time
-   by toggling `hidden`, which .menu__action's display: block would
-   otherwise override. */
+/* The mounting guide toggles `hidden`; .menu__action's display: block would
+   otherwise override it. */
 .learn-mounting [hidden] {
   display: none;
 }
 
-/* ---- Modern calibration cards (#109) ----
- * Two-card restyle of the same calibration flow: sensor calibration and
- * vehicle zero (#83) each get their own surfaced card with a status pill.
- * Classic mode never mounts these classes — see calibrationSection.ts. */
+/* ---- Calibration cards: sensor calibration and vehicle zero ---- */
 
 .calibration-cards {
   display: flex;
@@ -1551,11 +1415,8 @@ body {
   margin-top: 0;
 }
 
-/* ---- Target presets (#122, ADR 0013) ----
- * A menu list, not calibration cards: presets are a *target*, not a
- * calibration — see targetsSection.ts. Neutral, informational styling
- * (not the amber warning treatment) since selecting a preset is a
- * deliberate choice, never something left undone. */
+/* ---- Target presets (ADR 0013) ----
+ * Neutral, not amber: a preset is a choice, never something left undone. */
 
 .targets__list {
   display: flex;
@@ -1663,12 +1524,9 @@ body {
 
 /* ---- Settings form ---- */
 
-/* `minmax(0, 1fr)`, not the implicit `auto` track: an auto track is sized
- * to its widest item's max-content and then overflows a narrower grid
- * container rather than capping the item. The tab strip's five labels came
- * to 344px, so on a 320px phone the whole settings page scrolled sideways
- * — and `min-width: 0` on the item alone does not help, because it is the
- * track that has to be told it may not exceed the container (#243). */
+/* `minmax(0, 1fr)`: an implicit `auto` track sizes to its widest item and
+ * overflows the grid, scrolling the page sideways on a 320px phone.
+ * `min-width: 0` on the item alone does not help; the track must be capped. */
 .settings__form {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1680,7 +1538,6 @@ body {
   display: none;
 }
 
-/* Section headings break the long settings form into readable groups. */
 .settings__section {
   margin: 14px 0 0;
   font-size: 0.72rem;
@@ -1690,11 +1547,8 @@ body {
   color: var(--on-surface-muted);
 }
 
-/* Label on the left, control on the right — until the two together no
- * longer fit, at which point the control drops to its own line rather
- * than pushing the page sideways (#243: a German label plus its select
- * came to 22px more than a 320px phone has). `min-width: 0` lets the
- * label shrink and wrap instead of setting an unbreakable floor. */
+/* When label and control don't fit (German on a 320px phone), the control
+ * wraps to its own line instead of pushing the page sideways. */
 .settings__field {
   display: flex;
   flex-wrap: wrap;
@@ -1733,14 +1587,10 @@ body {
   color: var(--on-surface-muted);
 }
 
-/* A typed number that could not be used (#328): says why, under the
- * field, in the same tone as the dashboard's warning lamps. */
 .settings__error {
   color: var(--warning);
 }
 
-/* "Reset all settings" under General › More (#328): a quiet, full-width
- * secondary action, out of the way of everyday edits. */
 .settings__reset-all {
   width: 100%;
 }
@@ -1755,8 +1605,7 @@ body {
   width: 100%;
 }
 
-/* Advanced disclosure (#157): closed by default, always — a native
-   <details>/<summary> needs no extra JS to track open/closed state. */
+/* Advanced disclosure (native <details>). */
 .settings__advanced {
   margin-top: 14px;
 }
@@ -1767,10 +1616,8 @@ body {
 
 .settings__advanced-summary {
   cursor: pointer;
-  /* WCAG 2.5.8 / Apple HIG: at least 44px tall, same rule the bottom bar
-   * and warning lamps already follow — a bare <summary> has no padding
-   * of its own, so its tap target was just the text's own line height
-   * (screen-cleanup follow-up: reported as feeling too small to tap). */
+  /* WCAG 2.5.8 / Apple HIG: at least 44px tall; a bare <summary> is only
+   * one line of text. */
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -1867,12 +1714,8 @@ body {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%);
 }
 
-/* Reused unchanged by two Modern surfaces that never take the full form's
- * Modern branch (settingsPanel.ts): the onboarding wizard's compact
- * `compact === 'ramps'` step, and the Klossar tab's own "Custom set"
- * editor (`.klossar__custom-editor`). Both build this same Classic-style
- * chip regardless of appearance, so this restyle must not reach it here —
- * restore the original shared look. */
+/* Also built on Modern by the onboarding ramps step and the Klossar
+ * "Custom set" editor. */
 :root[data-appearance='modern'] .steps__chip {
   border: 1px solid var(--outline);
   border-radius: 999px;
@@ -1944,8 +1787,7 @@ body {
 
 .settings__select {
   font: inherit;
-  /* Never wider than the row it sits in — a long ramp-model name would
-   * otherwise set the width for the whole settings page (#243). */
+  /* A long ramp-model name would otherwise widen the whole settings page. */
   max-width: 100%;
   min-width: 0;
   padding: 6px 8px;
@@ -1972,21 +1814,16 @@ body {
   accent-color: var(--level);
 }
 
-/* ---- Modern settings tabs (#108): Fordon / Klossar / Kalibrering ---- */
+/* ---- Modern settings tabs ---- */
 
-/* A flex item's default `min-width: auto` is its content, so five
- * uppercase tab labels set a floor the strip could not go below — on a
- * 320px phone that floor was 344px, and the whole settings page scrolled
- * sideways with it (#243). The strip now scrolls within itself instead,
- * the standard tab-strip behaviour, so no label is shrunk or truncated
- * and the page never moves horizontally. */
+/* The labels need ~344px; the strip scrolls within itself so the page
+ * never scrolls sideways and no label is truncated. */
 .settings__tabs {
   display: flex;
   gap: 4px;
   min-width: 0;
   overflow-x: auto;
-  /* The strip is short and self-evidently swipeable; a scrollbar across
-   * the tabs would cost more than it explains. */
+  /* Self-evidently swipeable; a scrollbar would cost more than it explains. */
   scrollbar-width: none;
 }
 
@@ -1995,8 +1832,6 @@ body {
 }
 
 .settings__tab {
-  /* Grow to share the width when they all fit, never shrink below the
-   * label when they do not. */
   flex: 1 0 auto;
   min-width: 0;
   white-space: nowrap;
@@ -2026,24 +1861,13 @@ body {
   gap: 10px;
 }
 
-/* Same guard as .menu[hidden] above: display: flex on the panel below
-   would otherwise win over the UA [hidden] rule and leave it showing. */
+/* `display: grid`/`flex` would otherwise win over the UA [hidden] rule. */
 .settings__tabpanel[hidden] {
   display: none;
 }
 
-/* The Klossar tab is a column with a scrolling catalog and a footer
-   that stays put — the list scrolls, the step-height summary and
-   Save/Undo do not. */
-/* One scroll, not two (#246). This panel used to be a fixed-height column
- * with the catalogue scrolling inside it, on a settings page that scrolls
- * too — a scroll region inside a scroll region, where four of twelve
- * models showed with nothing to say the rest existed. Worse, the height
- * was a guess (`calc(100dvh - 230px)`) and the list was the only item that
- * could shrink, so on a 745px phone it absorbed the whole shortfall and
- * collapsed to nothing: the ramp picker, on the ramp tab, zero pixels
- * tall. The panel is now an ordinary block and the page does the
- * scrolling, exactly like every other settings tab. */
+/* One scroll, not two: the page scrolls, never a region inside this panel
+ * (a nested scroll hid most models and could collapse the list to 0px). */
 .settings__tabpanel--klossar {
   display: flex;
   flex-direction: column;
@@ -2152,19 +1976,14 @@ body {
   border-bottom: 1px solid var(--outline);
 }
 
-/* The one place that answers "which ramp am I using" (#246), so it reads
- * as a statement rather than as two labels at opposite ends of a row:
- * a quiet "Selected", the model's name in full size under it, then the
- * step heights it stands for. */
+/* Stacked so it reads as one statement: "Selected", model name, steps. */
 .klossar__footer-head {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-/* The app sets 18px body text because it is read at arm's length in poor
- * light; these labels were 10px uppercase in muted grey, which contradicted
- * that for the readers who need it most (#246). */
+/* Read at arm's length in poor light: keep labels legible, not tiny. */
 .klossar__footer-label {
   font-size: 0.8125rem;
   font-weight: 700;
@@ -2212,8 +2031,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Wrong-pose overlay: shown while the phone is not flat / rotated.
-   Covers the app area only — the menu and the version stay reachable. */
+/* Wrong-pose overlay: shown while the phone is not flat / rotated. */
 .pose-overlay {
   position: absolute;
   inset: 0;
@@ -2258,12 +2076,8 @@ body {
   margin-top: 4px;
 }
 
-/* Stale-data overlay (#132): sensor data has stopped refreshing — a
-   safety-critical, third state distinct from the wrong-pose overlay above
-   (never confuse "no trustworthy data at all" with "flat but rotated").
-   Same full-overlay layout, but the --warning tint (the same tone the
-   dashboard lamps and the disconnected sensor-status icon already use for
-   "something needs attention") keeps the two from reading the same. */
+/* Stale-data overlay: sensor data stopped refreshing. Safety-critical; the
+   --warning tint keeps it from being mistaken for the wrong-pose overlay. */
 .stale-overlay {
   position: absolute;
   inset: 0;
@@ -2301,12 +2115,8 @@ body {
   font-weight: 600;
 }
 
-/* Incoming "share vehicle setup" link (R41, #207): a one-shot confirmation
-   shown at most once per received link, above everything else including
-   the toast (z-index 40) since a malformed-link toast can fire right
-   alongside it. Buttons reuse `.menu__action`/`.menu__action--secondary`
-   rather than a one-off style, same reasoning as the sensor-fallback
-   prompt below. */
+/* Incoming "share vehicle setup" link confirmation. Above the toast
+   (z-index 40): a malformed-link toast can fire alongside it. */
 .incoming-setup {
   position: fixed;
   inset: 0;
@@ -2371,14 +2181,8 @@ body {
   font-size: 0.9rem;
 }
 
-/* Sensor unavailable fallback prompt (#134): the actionable Retry/"Use
-   phone sensor" form of the plain "waiting" hint, shown only for an
-   EasyLevel connection that cannot be reached. In-flow (not a full
-   overlay) like the hint it replaces — the two are mutually exclusive
-   (`main.ts`'s frame loop), and it never appears while the pose/stale
-   overlays above are showing (both need a gravity reading this state
-   never has). Buttons reuse `.menu__action`/`.menu__action--secondary`
-   rather than a one-off style. */
+/* Unreachable external sensor: Retry / "Use phone sensor". In-flow, in
+   place of the "waiting" hint; never shown with the pose/stale overlays. */
 .sensor-fallback {
   display: flex;
   flex-direction: column;
@@ -2432,8 +2236,7 @@ body {
   align-items: center;
   overflow-y: auto;
   padding: calc(6px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
-  /* Pushes in from the side like the phone-app pattern it follows
-   * (#105) — a fade alone would not read as "a page opened". */
+  /* Pushes in from the side; a fade alone would not read as "a page opened". */
   opacity: 0;
   transform: translateX(24px);
   transition:
@@ -2490,9 +2293,7 @@ body {
   margin: 4px auto 8px;
 }
 
-/* Motorhome + caravan side by side (design review, follow-up: "The
- * measurements" — #184's static Help tab default). Narrower than the
- * single-illustration `.illu` above since two now share the row. */
+/* Motorhome + caravan side by side. */
 .illu-pair {
   display: flex;
   gap: 12px;
@@ -2525,9 +2326,6 @@ body {
   stroke-width: 2;
 }
 
-/* Same token as the real screen's .rv-diagram__windshield (#189) — this
- * illustration's body used to be a plain box, unlike the real diagram's
- * vehicle-from-above silhouette. */
 .illu__windshield {
   fill: var(--outline);
 }
@@ -2597,12 +2395,9 @@ body {
 
 /* ---- Onboarding wizard ---- */
 
-/* One screen, never a scrolling page (#239). The overlay is exactly as
- * tall as the *small* viewport — `100svh`, the height with the browser's
- * toolbars showing — so its bottom edge is never left under Safari's
- * bottom bar the way `inset: 0` alone left it on iOS, and the padding
- * clears the home indicator too. `100vh` stays as the fallback for
- * browsers without the viewport units (`svh` is Safari 15.4+). */
+/* One screen, never a scrolling page. `100svh` keeps the bottom out from
+ * under Safari's bar (`inset: 0` alone does not on iOS); `100vh` is the
+ * fallback (`svh` is Safari 15.4+). */
 .onboarding {
   position: fixed;
   inset: 0;
@@ -2658,13 +2453,9 @@ body {
   outline: none;
 }
 
-/* The only thing that may ever scroll (#239): header, title and nav are
- * pinned, so Back/Skip/Next are on screen on every step whatever the step
- * contains. `min-height: 0` is what actually lets a flex child shrink
- * below its content height and scroll instead of pushing the nav off the
- * bottom. Every step is trimmed to fit without scrolling on the smallest
- * current iPhone; this is the guard for the cases trimming can't reach —
- * a huge text size, landscape, a future longer step. */
+/* The only part that may scroll, so the nav is always on screen. Steps are
+ * trimmed to fit the smallest iPhone; this guards huge text, landscape and
+ * longer steps. `min-height: 0` lets the flex child shrink and scroll. */
 .onboarding__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -2679,10 +2470,8 @@ body {
   gap: 4px;
 }
 
-/* Back and Skip side by side above the full-width Next (#239) — see the
- * nav comment in onboarding.ts for why. Either can be absent: Back on the
- * first step, Skip on the unskippable ones, and a lone button then simply
- * takes the whole row. */
+/* Back and Skip side by side above the full-width Next (see onboarding.ts);
+ * a lone button takes the whole row. */
 .onboarding__nav-row {
   display: flex;
   gap: 8px;
@@ -2691,14 +2480,10 @@ body {
 .onboarding__nav-row .menu__action {
   flex: 1;
   min-width: 0;
-  /* The row is the spacing; a per-button top margin would only make it
-     taller than the single button it sits next to. */
   margin-top: 0;
 }
 
-/* The warning-lamp note, as a caption for the Skip button below it
- * (#239): the same words as before, at hint size rather than as three
- * body-text lines at the end of the step. */
+/* The warning-lamp note, captioning the Skip button below it. */
 .onboarding__skip-hint {
   margin: 0;
   font-size: 0.8125rem;
@@ -2706,11 +2491,9 @@ body {
   color: var(--on-surface-muted);
 }
 
-/* ---- Modern onboarding (#110) ----
- * Structure is picked once, at construction, from the appearance the
- * wizard was opened with (see onboarding.ts) — these rules only style
- * whichever DOM that produced, they never react live to a later
- * appearance change inside the same open wizard. */
+/* ---- Modern onboarding ----
+ * The DOM is chosen once when the wizard opens (onboarding.ts); a later
+ * appearance change does not restyle an open wizard. */
 
 .onboarding__progress-wrap {
   display: flex;
@@ -2720,10 +2503,8 @@ body {
   flex: 1 1 auto;
 }
 
-/* The bars share out whatever width is left, they don't claim a fixed
- * 24px each (#239): eleven steps at 24px plus gaps overflowed a 375px
- * header, which squeezed the "n / total" text next to them down to one
- * character wide and wrapped it into a three-line stack. */
+/* Bars share the leftover width: a fixed 24px each overflowed a 375px
+ * header and squeezed the "n / total" text. */
 .onboarding__bars {
   display: flex;
   gap: 4px;
@@ -2744,9 +2525,7 @@ body {
   background: var(--level);
 }
 
-/* Visible "n / total" alongside the bars (#189) — the bars alone only
- * carried that information in an aria-label, unreadable to a sighted
- * low-vision user at 24×4px. */
+/* Visible "n / total": the 24x4px bars are unreadable to low-vision users. */
 .onboarding__bars-text {
   flex: 0 0 auto;
   white-space: nowrap;
@@ -2811,12 +2590,8 @@ body {
   color: var(--on-surface);
 }
 
-/* Same buttons, same handlers and same top-to-bottom order as Classic
- * (Back, Skip, Next) — so the pill "Next" lands at the true bottom edge,
- * closest to the thumb, in both appearances. Only restyled: bigger/bolder
- * here, plain-text there. (Reviewed away from an earlier column-reverse
- * that put Next visually first but Skip/Back closest to the thumb —
- * the opposite of Classic's order and of standard mobile ergonomics.) */
+/* Same order as Classic (Back, Skip, Next): Next stays at the bottom edge,
+ * closest to the thumb. */
 .onboarding__next--modern {
   min-height: 50px;
 }
@@ -2826,14 +2601,12 @@ body {
   background: none;
 }
 
-/* Back (#189): same subordinate, link-like treatment as Skip. */
 .onboarding__back--modern {
   border: 0;
   background: none;
 }
 
-/* Sensor source choice (#135): the wizard's first step when an external
- * sensor option exists. */
+/* Sensor source choice, shown when an external sensor option exists. */
 .onboarding__source {
   display: flex;
   flex-direction: column;
@@ -2851,41 +2624,30 @@ body {
   cursor: pointer;
 }
 
-/* Chosen option gets the same visual language as the rest of the app's
- * status-driven UI (calibration badges, severity colors) — until now the
- * only feedback was the radio dot itself (#189 follow-up). */
 .onboarding__source-option:has(.onboarding__source-radio:checked) {
   border-color: var(--level);
   background: color-mix(in srgb, var(--level) 10%, transparent);
 }
 
-/* Same size and accent as .settings__checkbox — a plain radio otherwise
- * falls back to the browser's own (off-brand) accent color, and a mismatched
- * size would just trade one small inconsistency for another. */
+/* Matches .settings__checkbox. */
 .onboarding__source-radio {
   width: 22px;
   height: 22px;
   accent-color: var(--level);
 }
 
-/* ---- Fitting a step on one screen (#239) ----
- * Everything below trims the wizard's own copy of shared components; none
- * of it touches how those components look on their real pages. Measured
- * against a 375x553 iPhone SE viewport in Safari, where five of the ten
- * steps used to be taller than the screen. */
+/* ---- Fitting a step on one screen ----
+ * Trims only the wizard's copies of shared components. Measured against a
+ * 375x553 iPhone SE viewport in Safari. */
 
-/* An illustration takes at most a quarter of the screen, instead of the
- * 225-240 px it took at its natural size. `height: auto` plus `max-height`
- * on a replaced element scales the width down with it, so the drawing
- * shrinks whole rather than being cropped or letterboxed. */
+/* `height: auto` plus `max-height` on a replaced element scales the width
+ * too, so the drawing shrinks whole rather than being cropped. */
 .onboarding .illu {
   max-height: 20svh;
   margin: 0 auto 4px;
 }
 
-/* Classic's placement step carries two of them — the drawing and the
- * status legend — so each gets half the room rather than the pair
- * getting twice it. */
+/* Classic's placement step has two illustrations; they share the room. */
 .onboarding__body .illu ~ .illu {
   max-height: 14svh;
 }
@@ -2894,11 +2656,8 @@ body {
   max-height: 14svh;
 }
 
-/* Everything below is keyed on the wizard, not on Modern's class names:
- * Classic embeds the very same calibration UI without the
- * `.calibration-card` wrapper, so a rule that named that wrapper left
- * Classic on the full-size type — and Classic in German was the worst
- * overflow of the lot (#239 follow-up). */
+/* Keyed on the wizard, not on `.calibration-card`: Classic embeds the same
+ * calibration UI without that wrapper. */
 .onboarding .settings__hint,
 .onboarding .menu__text {
   font-size: 0.8125rem;
@@ -2910,19 +2669,13 @@ body {
   line-height: 1.35;
 }
 
-/* The wizard's embedded controls, at wizard scale rather than the 18px
- * body text the app is read at from arm's length — a step here is read
- * with the phone in hand. The step's own Next keeps the full size. */
+/* Smaller than body text: a wizard step is read with the phone in hand. */
 .onboarding__body .menu__action {
   font-size: 1rem;
 }
 
-/* The wizard step already *is* the card: its own h2 carries the exact same
- * heading text as the embedded card's h3, and its own screen carries the
- * frame. So inside the wizard the card sheds its border, background and
- * padding; the duplicate heading and its row are folded into the step
- * heading in onboarding.ts, which keeps the status pill. Nothing is
- * dropped that isn't said twice, and Settings' own cards are untouched. */
+/* The wizard step already is the card, so the embedded card sheds its
+ * frame; onboarding.ts folds its heading into the step heading. */
 .onboarding .calibration-card,
 :root[data-appearance='modern'] .onboarding .calibration-card,
 :root[data-appearance='glossy'] .onboarding .calibration-card {
@@ -2934,8 +2687,7 @@ body {
   gap: 8px;
 }
 
-/* The status pill, moved onto the step heading (see onboarding.ts): the
- * heading takes the width it needs, the badge sits at the end of the row. */
+/* Step heading carrying the calibration status pill. */
 .onboarding__title:has(> span) {
   display: flex;
   align-items: center;
@@ -2948,11 +2700,8 @@ body {
   line-height: 1.45;
 }
 
-/* Full-width action buttons stack tightly here — the step's own nav is
- * what needs the breathing room, not each embedded control. The
- * calibration card spaces its own children with `gap`, so a margin there
- * would only double it (this rule has the same specificity as the
- * `.calibration-card > .menu__action` one further up, and comes later). */
+/* Tight stacking. This beats `.calibration-card > .menu__action` (same
+ * specificity, later), so the card, which spaces with `gap`, resets it. */
 .onboarding .menu__action {
   margin-top: 6px;
 }
@@ -2969,23 +2718,17 @@ body {
   gap: 8px;
 }
 
-/* The check/clear pair reads as maintenance next to the two primary
-   calibrate actions — inline size is enough, and at full button height it
-   wrapped to two lines on a narrow screen. */
+/* Secondary check/clear pair; at full size it wrapped on narrow screens. */
 .onboarding .calibration-card__row .menu__action {
   padding: 7px 8px;
   font-size: 0.875rem;
 }
 
-/* ---- Phone-height screens (#239) ----
- * Every phone the fit test covers, from an iPhone SE in Safari (553 px)
- * to an iPhone 15 in Safari (745 px), gets the compact treatment: the
- * limit is not the shortest screen but the longest language, and a
- * German or French calibration step needs the tighter spacing on all of
- * them. (A 620 px cut-off was tried first and was worse than useless —
- * it left a 667 px screen on the roomy styles, overflowing where a
- * 553 px one fitted.) Nothing is hidden or removed here; only sizes and
- * spacing change. */
+/* ---- Phone-height screens ----
+ * Every phone from iPhone SE (553px) to iPhone 15 (745px) in Safari: the
+ * limit is the longest language (German/French calibration steps), not the
+ * shortest screen; a 620px cut-off left 667px screens overflowing. Only
+ * sizes and spacing change. */
 @media (max-height: 800px) {
   .onboarding {
     padding: calc(8px + env(safe-area-inset-top)) 14px calc(12px + env(safe-area-inset-bottom));
@@ -3039,9 +2782,7 @@ body {
     padding: 7px 0;
   }
 
-  /* Secondary pairs ("Check" / "Clear calibration") wrap to two lines in
-   * German and French at full size, which costs more than the smaller
-   * type does. */
+  /* "Check" / "Clear calibration" wrap in German and French at full size. */
   .onboarding__body .menu__action--secondary {
     font-size: 0.8125rem;
   }
@@ -3065,11 +2806,8 @@ body {
   }
 }
 
-/* The tightest screen we support — an iPhone SE in Safari, 553 px — with
- * the longest languages in it. German and French calibration copy runs
- * half again as long as the English, so this last tier exists for that
- * combination specifically; everything in it is a size or a spacing, and
- * every word, control and illustration is still there. */
+/* iPhone SE in Safari (553px) with German or French, whose calibration copy
+ * runs half again as long as English. Sizes and spacing only. */
 @media (max-height: 600px) {
   .onboarding .illu {
     max-height: 15svh;
@@ -3116,8 +2854,7 @@ body {
   }
 }
 
-/* No reading at all (#312): the diagram is dimmed and the readout hidden,
-   so the last frame's steps never stay on screen looking live. */
+/* No reading at all: the last frame's steps must not look live. */
 .is-no-data.rv-diagram {
   opacity: 0.2;
   filter: grayscale(1);
@@ -3130,8 +2867,7 @@ body {
   visibility: hidden;
 }
 
-/* A quiet, text-only action (#313): the escape hatch under a card's one
-   primary button, so it never competes with it. */
+/* Quiet text-only action that never competes with the primary button. */
 .link-button {
   font: inherit;
   font-size: 0.95rem;
@@ -3144,9 +2880,7 @@ body {
   cursor: pointer;
 }
 
-/* Mounting picker (#314): the user's vehicle from above with one button
-   at each side; each shows the box turned so its reference side points
-   out that way. */
+/* Mounting picker: the vehicle from above, one button per side. */
 .mounting-picker__grid {
   display: grid;
   grid-template-columns: 56px minmax(0, 140px) 56px;
@@ -3246,8 +2980,7 @@ body {
   fill: var(--warning);
 }
 
-/* EasyLevel placement picker (#359): the manual's two placements side by
-   side, each a picture of the vehicle with the box in it, named under it. */
+/* EasyLevel placement picker: the manual's two placements side by side. */
 .placement-picker__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3292,15 +3025,14 @@ body {
   font-weight: 700;
 }
 
-/* Box page (#314): header with the connection state and its one fix. */
+/* Box page header: connection state and its one fix. */
 .box-header {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-/* A rejected box password (#367): the message, the code and Try again,
-   stacked under the state they explain. */
+/* Rejected box password: message, code input and Try again. */
 .box-password {
   display: flex;
   flex-direction: column;
@@ -3343,7 +3075,7 @@ body {
   display: none;
 }
 
-/* The setup checklist (#314): three steps, the next undone one open. */
+/* Box setup checklist. */
 .box-setup {
   display: flex;
   flex-direction: column;
@@ -3351,8 +3083,7 @@ body {
   margin-top: 12px;
 }
 
-/* Calibration's phone checklist reuses this class and is hidden while a
-   box is active (R11); display: flex above would otherwise win. */
+/* display: flex above would otherwise win over the UA [hidden] rule. */
 .box-setup[hidden] {
   display: none;
 }
@@ -3363,7 +3094,7 @@ body {
   background: var(--surface-raised);
 }
 
-/* Open is not done: a neutral border, so only a ✓ is green (#343). */
+/* Open is not done: a neutral border, so only a ✓ is green. */
 .box-step.is-open {
   border-color: var(--on-surface-muted);
 }
@@ -3423,7 +3154,7 @@ button.box-step__header {
   margin-top: 0;
 }
 
-/* Greyed out while the box is not connected (#343). */
+/* Greyed out while the box is not connected. */
 .box-step button:disabled:not(.menu__action) {
   opacity: 0.4;
   cursor: default;
@@ -3434,8 +3165,7 @@ button.box-step__header {
   margin: 4px auto 0;
 }
 
-/* The box's position, as a status on the live line (#332): not a card,
- * since there is nothing to tap. */
+/* Box position: a status line, not a card, since there is nothing to tap. */
 .box-position.is-done .box-position__mark {
   color: var(--level);
 }
@@ -3444,7 +3174,7 @@ button.box-step__header {
   color: var(--warning);
 }
 
-/* A done step's follow-up actions, as quiet links in a row (#332). */
+/* A done step's follow-up actions, as quiet links in a row. */
 .box-step__links {
   display: flex;
   flex-wrap: wrap;
@@ -3465,8 +3195,7 @@ button.box-step__header {
   display: none;
 }
 
-/* Disconnect at the foot of the box page (#332), in the warning colour. */
-/* At least a button's height above Disconnect, apart from the steps (#343). */
+/* Disconnect sits at least a button's height away from the steps. */
 .box-footer {
   margin-top: 56px;
 }
@@ -3481,8 +3210,7 @@ button.box-step__header {
   border-color: var(--warning);
 }
 
-/* The sensor list (#324, flow D of the #309 UX review): one card per box,
- * a mark, the box's name, and one line under it. */
+/* Sensor list: one card per box. */
 .sensor-card {
   display: flex;
   align-items: flex-start;

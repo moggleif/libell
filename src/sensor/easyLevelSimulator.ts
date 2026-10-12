@@ -1,38 +1,20 @@
 /**
- * Simulated EasyLevel box (#220) — an `EasyLevelTransport` stand-in for
- * `createWebBluetoothTransport()`, selected by the `?easylevel-sim` query
- * flag, so the entire EasyLevel experience can be exercised with no
- * physical box and no Web Bluetooth at all: connect from the External
- * sensor page, the #217 status-before-accel ordering and initial-
- * calibration gate, the #215 tier-3 bias subtraction, the mounting
- * transform, the installation offset, the status/debug page (R40), the
- * remembered-device auto-reconnect on open (#130/R33) and — in `'drop'`
- * mode — the lost-connection prompt (R37) plus the background auto-retry
- * (#211), recovering over and over.
- *
- * Same philosophy as the `?demo` flag (a synthetic stand-in behind a query
- * flag, driving the real code path), applied one seam lower: the payloads
- * here are byte-for-byte the real box's wire format (`easyLevelProtocol
- * .ts`'s documented layouts), fed through the untouched
- * `createEasyLevelSensor()` machinery, so everything above the transport
- * seam is exactly the code a real box will run through. When the box
- * finally exists, its behavior can be compared screen-for-screen against
- * this simulation.
+ * Simulated EasyLevel box — an `EasyLevelTransport` selected by
+ * `?easylevel-sim`, plugged in at the same seam as the real one so everything
+ * above it (status-before-accel ordering, calibration gate, bias subtraction,
+ * mounting, R40 debug page, R33 remembered-device reconnect, and in `'drop'`
+ * mode the R37 prompt and background auto-retry) is the code a real box runs
+ * through. Payloads are the real wire format (`easyLevelProtocol.ts`).
  *
  * The simulated firmware is tier 3 (`faf52c22-...` byte 7 = 48) with a
- * deliberately non-zero bytes-8–19 calibration block: the raw accel counts
- * carry that bias ADDED, so the leveling result is only correct if the
- * #215 subtraction actually runs — an accidentally-uncalibrated pipeline
- * shows a visibly wrong tilt rather than silently passing. The corrected
- * triplet resolves to a small fixed tilt (mirroring `?demo`'s), plus a
- * ±4-count deterministic wobble (a pure function of the sample index — no
- * clock, no randomness) so live UI visibly updates while staying far
- * inside the stillness detector's tolerance.
+ * non-zero bytes-8–19 calibration block ADDED to the raw accel counts, so
+ * a pipeline that skips the bias subtraction shows a visibly wrong tilt
+ * rather than silently passing. The corrected triplet resolves to `?demo`'s
+ * tilt plus a deterministic ±4-count wobble, so the live UI visibly updates
+ * while staying far inside the stillness detector's tolerance.
  *
- * Deliberately NOT here: any hook into `navigator.bluetooth`, and any
- * i18n/UI — the simulator only speaks bytes through the existing seam.
- * Lives in `sensor/`, not `domain/`: it owns real timers (ADR 0002 keeps
- * those out of the domain layer), which tests drive with fake timers.
+ * Bytes through the seam only: no `navigator.bluetooth`, no UI. Lives in
+ * `sensor/`, not `domain/`, because it owns real timers (ADR 0002).
  */
 import type { EasyLevelConnection, EasyLevelTransport } from './easyLevelSensor';
 import { createSimulatedLink, type SimulatedSession } from './simulatedLink';
@@ -42,8 +24,8 @@ export type EasyLevelSimulationMode = 'off' | 'steady' | 'drop';
 /**
  * The `?easylevel-sim` query flag: absent → `'off'`; `?easylevel-sim=drop`
  * → `'drop'` (periodic simulated connection loss); any other presence →
- * `'steady'`. Composes with `?demo` but neither implies the other — demo
- * replaces the phone sensor, this replaces the EasyLevel transport.
+ * `'steady'`. Composes with `?demo`, which replaces the phone sensor
+ * instead.
  */
 export function easyLevelSimulationMode(
   search: string = typeof location === 'undefined' ? '' : location.search,
@@ -53,26 +35,16 @@ export function easyLevelSimulationMode(
   return params.get('easylevel-sim') === 'drop' ? 'drop' : 'steady';
 }
 
-/** Stable fake device id, so the remembered-device store (#130) and the
- * silent `reconnect()` path work across reloads exactly as with a real
- * box's browser-assigned id. */
+/** Stable, so the remembered-device store and silent `reconnect()` work
+ * across reloads as with a real box's browser-assigned id. */
 export const SIMULATED_EASYLEVEL_DEVICE_ID = 'easylevel-simulated-box';
 
 /**
- * Whether a remembered device id (#130) could possibly be reached in the
- * current simulation mode (#223). A simulated id is only ever findable by
- * the simulated transport, and a real one only by the real transport
- * hunting through `getDevices()` — so attempting the mismatched pairing
- * cannot succeed, and failing to check strands the app: `main.ts` adopts
- * the EasyLevel sensor on a failed startup reconnect (by design, so the
- * honest 'disconnected' UI shows), and the #211 background auto-retry
- * then loops forever on a lookup guaranteed to fail. Left as "not
- * reachable right now" rather than clearing the stored id, so returning
- * to the matching mode reconnects normally.
- *
- * Pure, with the mode passed in — the same time-and-state-as-parameter
- * discipline `sensorFallback.ts`'s `isEasyLevelAutoRetryDue` and
- * `domain/staleness.ts`'s `isSensorStale` already follow.
+ * A simulated id is only findable by the simulated transport and a real one
+ * only through `getDevices()`; trying the mismatch adopts a 'disconnected'
+ * sensor whose background auto-retry then loops forever on a lookup bound
+ * to fail. The stored id is kept, so returning to the matching mode
+ * reconnects normally.
  */
 export function isRememberedEasyLevelDeviceUsable(
   deviceId: string,
@@ -81,37 +53,31 @@ export function isRememberedEasyLevelDeviceUsable(
   return (deviceId === SIMULATED_EASYLEVEL_DEVICE_ID) === (mode !== 'off');
 }
 
-/** Accel notification cadence — the same order of magnitude as a real BLE
- * notify stream, and comfortably inside the EasyLevel descriptor's own
- * `staleTimeoutMs` (#266). */
+/** Same order as a real BLE notify stream, well inside the descriptor's
+ * `staleTimeoutMs`. */
 export const SIMULATED_ACCEL_INTERVAL_MS = 100;
-/** First status notification lands shortly after subscribing — like a box
- * that proactively notifies on subscribe (#217's best case), and well
+/** Like a box that notifies status on subscribe (the best case), well
  * inside `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`. */
 export const SIMULATED_STATUS_DELAY_MS = 150;
 export const SIMULATED_STATUS_INTERVAL_MS = 5000;
-/** `'drop'` mode: how long after connecting the simulated link is lost —
- * long enough to watch live readings first, short enough to exercise the
- * R37 prompt and the #211 auto-retry within a demo session. */
+/** `'drop'` mode: the link is lost this long after connecting — time to
+ * watch live readings, short enough to exercise the R37 prompt and
+ * auto-retry in a demo session. */
 export const SIMULATED_DROP_AFTER_MS = 12000;
-/** `'drop'` mode: how long after a drop `reconnect()` keeps failing — like
- * a box still out of range. Without this the #211 auto-retry (due
- * immediately on the first unavailable frame) would recover within one
- * animation frame, so the R37 prompt would never be visible long enough
- * to actually watch. Longer than one 5s auto-retry interval, so at least
- * one failed background retry is observable too. */
+/** `'drop'` mode: `reconnect()` keeps failing this long, like a box out of
+ * range. Otherwise the immediate auto-retry would recover within a frame
+ * and the R37 prompt could not be watched. Longer than one 5 s auto-retry
+ * interval, so a failed background retry is observable too. */
 export const SIMULATED_OUTAGE_MS = 8000;
 
-/** ±2g int16 → 16384 LSB/g, the scale `easyLevelProtocol.ts` documents.
- * Only the axis ratios matter downstream, but simulating the real scale
- * keeps the debug page's raw-triplet numbers plausible too. */
+/** ±2g int16 → 16384 LSB/g. Only axis ratios matter downstream; the real
+ * scale keeps the debug page's raw numbers plausible. */
 const COUNTS_PER_G = 16384;
-/** The simulated vehicle's tilt — mirrors `?demo`'s fixed synthetic tilt. */
+/** Mirrors `?demo`'s fixed tilt. */
 const SIM_ROLL_DEG = -1.2;
 const SIM_PITCH_DEG = -0.35;
-/** The advertised bytes-8–19 zero-bias block (#215) — added onto the raw
- * accel counts below, so only a pipeline that subtracts it lands on the
- * tilt above. */
+/** The bytes-8–19 zero-bias block, added onto the raw accel counts so only
+ * a pipeline that subtracts it lands on the tilt above. */
 const SIM_BIAS = { accelX: 120, accelY: -80, accelZ: 64 };
 /** Battery: `trunc(2620 × 0.1 − 200)` = 62% — healthy, no low warning. */
 const SIM_BATTERY_RAW_MV = 2620;
@@ -164,8 +130,6 @@ export function createSimulatedEasyLevelTransport(
   });
 }
 
-/** One connection to the simulated box: accel and status packets on
- * timers, the way a real box notifies. */
 function openSimulatedEasyLevel(
   session: SimulatedSession,
 ): Omit<EasyLevelConnection, 'deviceId' | 'disconnect'> {

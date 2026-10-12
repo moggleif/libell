@@ -74,8 +74,8 @@ import { readTilt } from './app/tiltReading';
 import { setupTopBar, type TopBar } from './app/topBar';
 
 /**
- * The entry point: it only creates the app's modules and connects them.
- * Every piece of behaviour lives in `src/app/` and `src/ui/`.
+ * Only creates the app's modules and connects them; behaviour lives in
+ * `src/app/` and `src/ui/`.
  */
 
 guardAgainstFraming();
@@ -92,7 +92,7 @@ interface Core {
   sound: Sound;
   boxPending: BoxPending;
   externalSensors: ExternalSensorController<LibellExternalSensor>;
-  /** The source feeding readings right now (#128, ADR 0014), read fresh. */
+  /** The source feeding readings right now (ADR 0014); call it each time, it changes. */
   sensor: () => OrientationSensor;
   /** Calibration, zero and target, combined, for the active source. */
   effectiveCalibration: () => ReturnType<typeof combineCalibrations>;
@@ -154,13 +154,13 @@ function createCore(screen: Screen): Core {
     onMountingChanged: () => screen.lamps.refresh(),
   };
 
-  // Each box's installation offset (#131, ADR 0014): a box's whole idea of
-  // level, never combined with the phone's.
+  // Each box's installation offset (ADR 0014): a box's whole idea of level,
+  // never combined with the phone's.
   const installOffsets = createInstallOffsets();
   const activeInstallOffset = () => installOffsets.valueOf(sensor().getSource());
-  // The phone's sensor bias and vehicle zero (#83, ADR 0010). Taking
-  // either means the phone is in use after all, so a box chosen in the
-  // wizard is no longer awaited (#365).
+  // The phone's sensor bias and vehicle zero (ADR 0010). Taking either means
+  // the phone is in use after all, so a box chosen in the wizard is no longer
+  // awaited.
   const phoneCalibration = createPhoneCalibration({
     readTilt: readTiltNow,
     onCaptured() {
@@ -176,8 +176,8 @@ function createCore(screen: Screen): Core {
     readTilt: readTiltNow,
     onChanged: () => screen.lamps.refresh(),
   });
-  // What "level" means for the active source (#122, ADR 0013/0014), and
-  // the active target as a third term on top of it.
+  // What "level" means for the active source (ADR 0013/0014), and the active
+  // target as a third term on top of it.
   const zeroCalibration = () =>
     sensor().getSource() === 'phone' ? phoneCalibration.zero() : activeInstallOffset();
   const targets = createTargets({
@@ -209,10 +209,8 @@ function createCore(screen: Screen): Core {
 }
 
 /**
- * The external-sensor lifecycle (#265): connect, disconnect, the silent
- * reconnect at open (#130), the background retry (#211) and the way back
- * to the phone (#134). The phone sensor lives for the whole session, so
- * switching back needs no new permission.
+ * The phone sensor lives for the whole session, so switching back to it
+ * needs no new permission.
  */
 function createSensorController(
   settings: AppSettings,
@@ -231,7 +229,7 @@ function createSensorController(
     // The level screen may never have been built (a desktop without
     // motion sensors): build it now a real source feeds readings.
     onLevelScreenNeeded: () => screen.levelScreen.show(),
-    // The calibration lamp follows the active source (#131).
+    // The calibration lamp follows the active source.
     onIndicatorsChanged() {
       screen.lamps.refresh();
       screen.settingsSurface.followSource(controller.getActiveSensor().getSource());
@@ -286,8 +284,6 @@ function mountPages(core: Core, screen: Screen): Pages {
     activeSource: () => core.sensor().getSource(),
     isBoxPending: () => core.boxPending.isPending(),
   });
-  // "?": Help, About and Feedback; each Help topic ends in a button to the
-  // place it talks about (#326).
   const infoPage = createInfoPage({
     openOnboarding: onboarding.open,
     hasDoneOnboarding,
@@ -333,7 +329,7 @@ function mountMainScreen(
     activeName: () => core.optionDeps.targets.activeName(),
     open: navigation.openTargets,
   });
-  // Into the pinned top-bar corner, beside Install (#244).
+  // Into the pinned top-bar corner, beside Install.
   screen.sensorStatus = mountSensorStatus(document.querySelector('#sensor-slot'), {
     supported: pages.sensorPages.supported,
     showIosGuide: pages.sensorPages.showIosGuide,

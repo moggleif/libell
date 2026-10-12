@@ -1,12 +1,12 @@
 /**
  * Settings › Ramps: which ramp the user owns — a ready-made model or a
- * custom set of step heights — and how many of them (#93).
+ * custom set of step heights — and how many of them.
  *
- * Two renderings share one state. The Ramps page (#246; Modern's tab and
- * Classic's ☰ page since #331) shows the chosen ramp first and the
- * catalogue behind one disclosure. The wizard's ramps step and the flat
- * Classic page keep the compact form: a ready-made-ramp `<select>` with a
- * chip editor (no separator syntax to learn).
+ * Two renderings share one state. The Ramps page (Modern's tab and
+ * Classic's ☰ page) shows the chosen ramp first and the catalogue behind
+ * one disclosure. The wizard's ramps step and the flat Classic page keep
+ * the compact form: a ready-made-ramp `<select>` with a chip editor (no
+ * separator syntax to learn).
  */
 import {
   formatLength,
@@ -46,7 +46,7 @@ export interface RampsTab {
  * The ramp choice both renderings share: the step heights, and whether
  * "Custom set" was chosen explicitly. That choice must hold even while the
  * steps still match a catalog model — without it the sync snapped the
- * choice straight back and "nothing happened" (#91). Auto-matching
+ * choice straight back and "nothing happened". Auto-matching
  * resumes once a model is picked again.
  */
 interface RampChoice {
@@ -72,7 +72,7 @@ export function createRampsTab(initial: LevelSettings, context: SettingsFormCont
   stepsField.append(editor.caption, rampPicker.row, editor.chips, editor.addRow);
 
   const rampCount = createRampCountField(initial.rampCount, context);
-  // What the number actually means (#246): how many you own, and that the
+  // What the number actually means: how many you own, and that the
   // app puts them where they help most — one sentence, under the field.
   const rampCountHint = createHint();
   const rampHint = createHint();
@@ -152,7 +152,7 @@ interface RampsPageParts {
 }
 
 /**
- * The Ramps page (#246), built into `panel`: the chosen ramp and its
+ * The Ramps page, built into `panel`: the chosen ramp and its
  * step heights, Number of ramps, then "Change ramp" holding the brand
  * filter and the catalogue. Called at most once per form: it takes the
  * step editor's elements for its custom-set editor. Returns what redraws
@@ -161,14 +161,14 @@ interface RampsPageParts {
 function buildRampsPage(panel: HTMLElement, parts: RampsPageParts): () => void {
   const { choice, state, editor } = parts;
   const catalogue = createCatalogue(choice, state, parts.onPick);
-  // The existing chip editor (add/remove step heights), relocated
-  // under the custom row — shown only while a custom set is chosen.
+  // The chip editor, under the custom row — shown only while a custom set
+  // is chosen.
   const customEditor = document.createElement('div');
   customEditor.className = 'klossar__custom-editor';
   customEditor.append(editor.caption, editor.chips, editor.addRow);
   const selection = createSelectionSummary(choice, state);
 
-  // Answer first, means of changing it below (#246): what you have set
+  // Answer first, means of changing it below: what you have set
   // — the model and its step heights — then the settings that follow
   // from it, then the one disclosure that changes the choice, filter and
   // catalogue together. The custom step-height editor stays directly
@@ -184,7 +184,7 @@ function buildRampsPage(panel: HTMLElement, parts: RampsPageParts): () => void {
 }
 
 /**
- * How many ramps the user actually owns (#93). Sold in pairs, so 2 is the
+ * How many ramps the user actually owns. Sold in pairs, so 2 is the
  * default; a few carry 3 or 4. The plan never asks for more wheels than
  * this. A caravan ramps one wheel — the tab hides the field.
  */
@@ -295,8 +295,8 @@ function createStepChip(label: string, onRemove: () => void): HTMLElement {
  * this `<select>` is not shown — the page picks models from its
  * catalogue instead — but it is kept alive (its `.value` and
  * `customChosen` still tracked) as the single source of truth for "which
- * model matches the current steps", including the #91 tie-break
- * behavior, shared by both UIs.
+ * model matches the current steps", including the explicit-custom
+ * tie-break, shared by both UIs.
  */
 function createRampSelect(choice: RampChoice, onPick: (model: RampModel | null) => void) {
   const row = document.createElement('div');
@@ -336,7 +336,7 @@ function createRampSelect(choice: RampChoice, onPick: (model: RampModel | null) 
 }
 
 /**
- * "Change ramp" (#246): the brand filter and the catalogue it narrows,
+ * "Change ramp": the brand filter and the catalogue it narrows,
  * behind one disclosure. Collapsed, because the tab's common errand is
  * checking what is set, not re-choosing.
  */
@@ -357,7 +357,7 @@ function createCatalogue(
 
   const list = document.createElement('div');
   list.className = 'klossar__list';
-  // "Custom set" leads the list (#246): choosing your own step heights
+  // "Custom set" leads the list: choosing your own step heights
   // is one of the options, and the one relevant whatever brand you own.
   // Never hidden by the brand filter.
   const custom = catalogueRow(t('settings.ramp.custom'));
@@ -453,7 +453,7 @@ function catalogueRow(name: string, mmLine?: HTMLElement) {
 }
 
 /**
- * What is chosen, read top-down as one statement (#246): "Selected:
+ * What is chosen, read top-down as one statement: "Selected:
  * Thule Levelers, whose step heights are these".
  */
 function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {

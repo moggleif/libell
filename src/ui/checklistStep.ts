@@ -1,8 +1,6 @@
 /**
- * One step of a setup checklist (#314): a header button with its number
- * (✓ once done) and title, over a body only the expanded step shows. Shared
- * by the box's setup (`boxSetupChecklist.ts`) and the phone's calibration
- * in Settings (`calibrationSection.ts`, #330), so both look the same.
+ * One step of a setup checklist, shared by the box's setup and the
+ * calibration checklist in Settings so both look the same.
  */
 import { createElement } from './dom';
 
@@ -35,7 +33,6 @@ export function setStepDone(step: ChecklistStep<string>, done: boolean): void {
   step.mark.textContent = done ? '✓' : String(step.number);
 }
 
-/** Expands `expanded` and collapses every other step. */
 export function expandStep<Id extends string>(
   steps: readonly ChecklistStep<Id>[],
   expanded: Id | null,

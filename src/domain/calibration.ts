@@ -1,5 +1,5 @@
 /**
- * Flip calibration (issue #50) — pure math, no browser APIs.
+ * Flip calibration.
  *
  * Take reading A with the phone on any reasonably flat spot, rotate the
  * phone half a turn (180°) in place, take reading B. The rotation flips
@@ -17,10 +17,10 @@ import type { Calibration } from './settings';
 const MAX_BIAS_DEG = 15;
 
 /**
- * What capturing a calibration or zero answered (#411): null when it was
- * stored, an error text when nothing could be read, or a warning when the
- * reading looks too tilted to be level — then nothing is stored until the
- * user chooses to go ahead anyway ("Varning är rätt. Aldrig stopp.").
+ * What capturing a calibration or zero answered: null when it was stored, an
+ * error text when nothing could be read, or a warning when the reading looks
+ * too tilted to be level — then nothing is stored until the user chooses to
+ * go ahead anyway (warn, never block).
  */
 export type CaptureResult = null | string | { warning: string };
 
@@ -34,7 +34,7 @@ export interface FlipResult {
 }
 
 /**
- * Two-layer calibration (#83, ADR 0010): the sensor offset (the phone's
+ * Two-layer calibration (ADR 0010): the sensor offset (the phone's
  * own bias) and the vehicle zero (the tilt of the phone's normal spot,
  * captured with the vehicle verified level) are stored separately and
  * summed into the single offset the leveling math subtracts.
@@ -78,9 +78,8 @@ export function flipCalibration(a: Calibration, b: Calibration): FlipResult {
 }
 
 /**
- * The mean of several readings, axis by axis, or null for none. A box
- * that streams raw, unsmoothed samples (EasyLevel) is zeroed from a short
- * run of them rather than one: its own app says to press OK a few times
+ * A box that streams raw, unsmoothed samples (EasyLevel) is zeroed from a
+ * short run of them rather than one: its own app says to press OK a few times
  * until the value settles.
  */
 export function averageReadings(readings: readonly Calibration[]): Calibration | null {

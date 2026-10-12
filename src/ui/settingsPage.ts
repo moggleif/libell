@@ -1,10 +1,7 @@
 /**
- * Settings page (screen-cleanup follow-up, Modern only): the gear icon
- * opens straight to the same tabbed form (Vehicle/Ramps/Calibration/
- * Level/General, `settingsPanel.ts`) that used to sit behind a drawer/card list
- * — now its own standalone page (`standalonePage.ts`), with a ✕ to close
- * instead of a ‹ back that used to reveal that drawer. Classic has no
- * tabs to land on, so it keeps the old drawer-based `menu.ts` unchanged.
+ * Settings page (Modern only): the gear icon opens the tabbed form
+ * (`settingsPanel.ts`) as a standalone page with a ✕ to close. Classic uses
+ * the drawer-based `menu.ts` instead.
  */
 import type { MenuOptions, MenuSection } from './menu';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
@@ -21,20 +18,20 @@ export interface SettingsPage {
   openCalibration(): void;
   /** Open directly on the Targets tab — the main-screen badge's shortcut. */
   openTargets(): void;
-  /** Open directly on any tab — Help's topic buttons (#326). */
+  /** Open directly on any tab — Help's topic buttons. */
   openTab(id: MenuSection): void;
   /**
    * Redraw the open tab if the page is open — the active sensor changed
    * underneath it, e.g. the box disconnected from its own page, which
-   * opens on top of this one (#353).
+   * opens on top of this one.
    */
   refreshOpenTab(): void;
 }
 
 export function createSettingsPage(options: MenuOptions): SettingsPage {
   const page = createStandalonePage(t('menu.settings'), () => {
-    // The bottom bar's mute toggle (#161) can change soundOnLevel/
-    // soundGuidance while this page is closed — resync every reopen.
+    // The bottom bar's mute toggle can change the sound prefs while this
+    // page is closed — resync every reopen.
     settingsForm.resyncSoundFields?.(options.getSoundPrefs());
     // And the open tab: a box connected or disconnected elsewhere changes
     // what Kalibrering shows.
@@ -43,8 +40,7 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
 
   const settingsForm: SettingsFormElement = createSettingsForm(
     options.initialSettings,
-    // Every change is stored as it is made (#328); only the ✕ closes the
-    // page.
+    // Every change is stored as it is made; only the ✕ closes the page.
     (settings) => {
       options.onSettingsSaved(settings);
     },

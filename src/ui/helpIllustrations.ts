@@ -1,15 +1,7 @@
 /**
- * Help illustrations (issue #54): small inline SVGs that carry the
- * meaning so the captions can stay short. Token-based colors only —
- * legible in both themes, and the repo stays text-only.
- *
- * `placementIllustration` and `measuresIllustration` take an optional
- * `VehicleType` (#184): a caravan gets a drawbar + jockey wheel + single
- * axle instead of the four-wheel motorhome box, mirroring the shape
- * `caravanDiagram.ts` already draws for the real top-down view. Defaults
- * to `'motorhome'` so the static Help tab (`infoMenu.ts`, not tied to any
- * particular user's vehicle) is unaffected — only the onboarding wizard,
- * which knows the vehicle the user just picked, passes the other value.
+ * Small inline SVGs that carry the meaning so the captions can stay short.
+ * `vehicleType` defaults to motorhome for the Help tab, which is not tied
+ * to the user's vehicle.
  */
 import type { VehicleType } from '../domain/settings';
 import { svgEl } from './svg';
@@ -31,11 +23,8 @@ function outline(x: number, y: number, w: number, h: number): SVGRectElement {
   });
 }
 
-/** Windshield notch, same proportions/curve as `rv-diagram.ts`'s real
- * top-down body (`M74 92 Q120 76 166 92 L160 110 Q120 100 80 110 Z` on its
- * own 124-wide/196-tall body) — scaled to whatever body rect is passed in,
- * so a motorhome reads as a vehicle from above here too, not just on the
- * real screen (#189: these two used to look nothing alike). */
+/** Same proportions as the real diagram's windshield, scaled to the body
+ * rect passed in. */
 function windshield(x: number, y: number, w: number, h: number): SVGPathElement {
   const inset = w * 0.13;
   const left = x + inset;
@@ -58,7 +47,6 @@ function frontArrow(): SVGPathElement {
   });
 }
 
-/** Phone lying flat in the vehicle, top edge toward the front. */
 export function placementIllustration(
   label: string,
   vehicleType: VehicleType = 'motorhome',
@@ -83,7 +71,6 @@ export function placementIllustration(
   return root;
 }
 
-/** The four wheel states with their glyphs. */
 export function legendIllustration(label: string): SVGSVGElement {
   const root = svg('0 0 260 70', label);
   const states: [string, string][] = [
@@ -120,13 +107,9 @@ function wheelRect(x: number, y: number): SVGRectElement {
   });
 }
 
-/** Wheelbase and track width shown on the vehicle as measure lines only —
- * no "L"/"W" letters (the step's own field labels next to the numbers
- * already say what each one is; the letters just repeated that). A
- * caravan has one axle, one track-width line; a motorhome has two
- * (trackWidthFrontMm and trackWidthRearMm are separate fields, so the
- * illustration shows one dashed line at each axle, not a single one
- * in between). */
+/** Measure lines only, no letters: the field labels say what each is. A
+ * motorhome has separate front and rear track widths, so one dashed line
+ * at each axle. */
 export function measuresIllustration(
   label: string,
   vehicleType: VehicleType = 'motorhome',
@@ -138,10 +121,7 @@ export function measuresIllustration(
       svgEl('circle', { cx: '100', cy: '30', r: '7', class: 'illu__wheel' }),
       outline(55, 60, 90, 88),
       wheelRect(45, 120),
-      // Mirrors the left wheel (45) about the 100 centre line, matching
-      // where the dashed track-width line below actually ends (155) —
-      // was 145, sitting asymmetrically inside the body outline (#184
-      // follow-up: "högerdäcken ligger fel").
+      // Mirrors the left wheel (45) about the 100 centre line.
       wheelRect(155, 120),
       svgEl('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
       svgEl('line', {
@@ -158,7 +138,6 @@ export function measuresIllustration(
     outline(55, 12, 90, 136),
     windshield(55, 12, 90, 136),
     wheelRect(45, 30),
-    // Same right-wheel fix as the caravan branch above.
     wheelRect(155, 30),
     wheelRect(45, 116),
     wheelRect(155, 116),

@@ -1,5 +1,5 @@
 /**
- * Display hysteresis — pure TypeScript, no browser APIs.
+ * Display hysteresis.
  *
  * The smoothed sensor still jitters a little, and when a wheel's lift sits
  * exactly on a boundary (a cm rounding edge, the midpoint between two ramp
@@ -15,7 +15,7 @@
  *   keeps resetting the dwell clock and the display stays frozen.
  *
  * A wheel's live mm figure additionally gets an *adaptive* dwell
- * (`stabilizeNumber`, #183): once a change has just been adopted, a
+ * (`stabilizeNumber`): once a change has just been adopted, a
  * further change in the *same direction* — the shape of a continuous,
  * deliberate motion like driving up a ramp — only needs the much shorter
  * `dwellMotionMs`, instead of the full `dwellRestMs` on every intermediate
@@ -54,13 +54,11 @@ export interface DisplayResult {
   wheels: Record<WheelId, DisplayWheel>;
   /** How un-level the *shown* plan leaves the vehicle (mm, ≥ 0) — the same
    * stabilized plan the wheel steps/severities come from, so the status
-   * line's magnitude wording (#125) can never disagree with the diagram. */
+   * line's magnitude wording can never disagree with the diagram. */
   maxDeficitMm: number;
 }
 
-/** Dead-band + dwell bookkeeping for one adaptively-dwelled numeric figure
- * (a wheel's mm lift, or the caravan jockey's signed mm) — see the module
- * doc comment. */
+/** Bookkeeping for one adaptively-dwelled figure — see the module doc. */
 export interface AdaptiveDwellPending {
   /** When the current pending change first crossed the dead band. */
   since: number | null;
@@ -74,11 +72,8 @@ export function newAdaptiveDwellPending(): AdaptiveDwellPending {
   return { since: null, lastDirection: 0, lastAdoptedAtMs: null };
 }
 
-/**
- * Dead-band + adaptive-dwell adoption of one whole-mm figure — the shared
- * core behind a wheel's `displayMm` on both screens, and the caravan
- * jockey's signed mm. See the module doc comment for the adaptive rule.
- */
+/** Dead-band + adaptive-dwell adoption of one whole-mm figure; see the module
+ * doc for the adaptive rule. */
 export function stabilizeNumber(
   prevShown: number,
   pending: AdaptiveDwellPending,
@@ -117,15 +112,12 @@ export function newLiftPending(): LiftPending {
 }
 
 /**
- * Stabilize one wheel's displayed lift/step against the previous shown
- * state — the dead-band + dwell core used by the caravan, whose single
- * ramped wheel needs no plan (the step is simply the closest one).
+ * Stabilize one wheel's displayed lift/step — the core used by the caravan,
+ * whose single ramped wheel needs no plan (the step is simply the closest).
  *
- * Severity is deliberately NOT a third independently-clocked layer here
- * either (see the `createDisplayStabilizer` doc comment for the field
- * report this fixed on the motorhome screen): it is derived below from
- * the mm figure and step *this call is about to return*, so the color
- * can never name a state those two numbers don't.
+ * Severity is derived from the mm figure and step this call returns, never
+ * clocked on its own, so the color can never name a state those two numbers
+ * don't (see `createDisplayStabilizer`).
  */
 export function stabilizeLift(
   prev: DisplayWheel,
@@ -161,10 +153,8 @@ export function stabilizeLift(
     }
   }
 
-  // Severity: the same green/orange/red call `liftSeverity` makes, but
-  // against the shown step instead of recomputing its own — so it always
-  // describes exactly the mm figure and step above, never a fresher or
-  // staler reading of either.
+  // The same call `liftSeverity` makes, but against the shown step, so it
+  // describes exactly the mm figure and step above.
   const severity: LiftSeverity =
     displayMm <= settings.toleranceMm
       ? 'none'
@@ -176,10 +166,8 @@ export function stabilizeLift(
 }
 
 /**
- * Creates a stateful stabilizer for the motorhome screen: feed it every
- * LevelingResult with a monotonic timestamp (`performance.now()` in the
- * app, hand-stepped in tests) and render what it returns. State is
- * per-instance, so tests and the app each own their history.
+ * Stabilizer for the motorhome screen: feed it every LevelingResult with a
+ * monotonic timestamp and render what it returns.
  *
  * Two stabilized layers, each with its own dead band + dwell against the
  * raw reading:
@@ -190,17 +178,11 @@ export function stabilizeLift(
  *   clearly better for the drain — sustained for the value dwell.
  *
  * A wheel's severity (color/glyph) is deliberately NOT a third stabilized
- * layer with its own clock: earlier this module derived it straight from
- * the live lift and a *not-yet-adopted* candidate plan, on a longer dwell
- * than the mm figure and the shown plan used. That let the three ship on
- * different schedules, so a screen could — correctly per each layer's own
- * rule — show a wheel's mm figure and plan already caught up to a big
- * tilt while its color/text still reflected the old one (e.g. "0 mm" next
- * to a red "no ramp reaches this wheel"), self-contradictory even though
- * no single layer was wrong in isolation (field report, screenshot v1.0.0
- * CR180). Severity is instead recomputed every tick as a pure function of
- * *this tick's* shown plan and displayed mm — the same two numbers the
- * diagram renders — so it can never name a state the numbers don't.
+ * layer with its own clock. Given its own schedule, a wheel could show its mm
+ * figure and plan caught up to a big tilt while its color still reflected
+ * the old one (field bug: "0 mm" next to a red "no ramp reaches this
+ * wheel"). Severity is recomputed every tick from this tick's shown plan and
+ * displayed mm, so it can never name a state the numbers don't.
  */
 export function createDisplayStabilizer(): (
   result: LevelingResult,
@@ -268,9 +250,7 @@ export function createDisplayStabilizer(): (
       }
     }
 
-    // Severity, one wheel-card's worth of mm + step + color, computed
-    // together from the two layers just settled above — see the doc
-    // comment: this is what keeps them from ever contradicting.
+    // Severity from the two layers just settled — see the doc comment.
     const shown = evaluateSteps(shownSteps, displayMm, settings);
     const wheels = {} as Record<WheelId, DisplayWheel>;
     for (const id of WHEEL_IDS) {
@@ -287,8 +267,6 @@ export function createDisplayStabilizer(): (
       pitchDeg: result.pitchDeg,
       isLevel,
       wheels,
-      // Same shown plan + displayed mm the wheel cards above come from, so
-      // the status line's magnitude wording (#125) can never disagree.
       maxDeficitMm: shown.maxDeficitMm,
     };
   };

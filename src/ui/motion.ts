@@ -1,25 +1,20 @@
 /**
  * Show/hide an element with a CSS transition instead of an instant
- * `hidden` flip (issue #105). The element keeps using `hidden` for real
- * removal (accessibility, layout, click-through) — this only delays
- * setting it until the closing transition has actually finished, and
- * removes it immediately (no animation) under `prefers-reduced-motion`.
+ * `hidden` flip. The element keeps using `hidden` for real removal
+ * (accessibility, layout, click-through) — this only delays setting it
+ * until the closing transition has finished, and skips the animation
+ * under `prefers-reduced-motion`.
  *
  * The element's own CSS drives what "visible" looks like via the
- * `is-visible` class (opacity/transform, see styles.css); this module
- * knows nothing about *how* something animates, only *when*.
+ * `is-visible` class; this module knows only *when*, not *how*.
  */
 /**
- * A hide call in flight arms a `transitionend` listener plus a fallback
- * timer (below) that forcibly sets `hidden` once. Tracked per element so
- * a later call on the same element — a hide while already hidden, or a
- * show that interrupts an in-flight hide — can cancel it first;
- * otherwise that stale timer fires on its own schedule and can force the
- * element hidden again after it was legitimately re-shown (field bug:
- * opening a menu page straight from closed calls render() at the
- * intermediate depth, hiding the still-hidden page and arming a no-op
- * hide's timer, which then force-closes the page ~400ms after it
- * actually opened).
+ * A hide in flight arms a `transitionend` listener plus a fallback timer
+ * that forcibly sets `hidden`. Tracked per element so a later call — a
+ * redundant hide, or a show interrupting the hide — cancels it first;
+ * otherwise the stale timer can force the element hidden again after it
+ * was legitimately re-shown (field bug: a menu page closed itself ~400ms
+ * after opening).
  */
 const pendingHide = new WeakMap<
   HTMLElement,
@@ -70,8 +65,7 @@ export function setVisible(el: HTMLElement, visible: boolean, visibleClass = 'is
     if (event.target === el) finish();
   };
   el.addEventListener('transitionend', onEnd);
-  // Fallback in case no transition actually runs (e.g. the element has
-  // no matching transition-property) — never leave it un-hidden.
+  // Fallback in case no transition runs (no matching transition-property).
   // Global timers, not window.*: a timer still pending when a test file
   // tears down its DOM must not crash on a missing `window`.
   const timeoutId = setTimeout(finish, 400);

@@ -1,5 +1,5 @@
 /**
- * The phone's two calibration layers (#83, ADR 0010): the sensor's own
+ * The phone's two calibration layers (ADR 0010): the sensor's own
  * bias, taken on a flat surface, and the vehicle zero, the phone spot's
  * tilt on a level vehicle, stored sensor-corrected so it survives a later
  * recalibration. Their sum is what "level" means while the phone is the
@@ -23,7 +23,7 @@ import {
 import { t } from '../ui/i18n';
 import { exceedsCalibrationLimit } from './tiltReading';
 
-/** A check reading within this of zero counts as "still good" (#87). */
+/** A check reading within this of zero counts as "still good". */
 const CHECK_GOOD_DEG = 0.3;
 
 export interface PhoneCalibrationDeps {
@@ -31,11 +31,8 @@ export interface PhoneCalibrationDeps {
   readTilt(): Calibration | string;
   /** A bias or zero was just taken: the user is calibrating the phone. */
   onCaptured(): void;
-  /** A bias or zero was forgotten. */
   onCleared(): void;
-  /** Defaults to localStorage. */
   storage?: KeyValueStorage | null;
-  /** Defaults to `Date.now`. */
   now?: () => number;
 }
 
@@ -47,7 +44,7 @@ export interface PhoneCalibration {
   /** Bias plus vehicle zero: what the leveling math subtracts. */
   zero(): Calibration | null;
   /** Take the bias from the phone lying flat. Above 15° it warns instead,
-   * unless `anyway` says the user has chosen to go ahead (#411). */
+   * unless `anyway` says the user has chosen to go ahead. */
   calibrate(anyway?: boolean): CaptureResult;
   /** Store a bias computed elsewhere (the flip method). */
   applyBias(bias: Calibration): void;
@@ -55,9 +52,9 @@ export interface PhoneCalibration {
   /** Take the vehicle zero — warns above 15° like `calibrate`. */
   zeroVehicle(anyway?: boolean): CaptureResult;
   clearVehicleZero(): void;
-  /** How far the reading is from the bias's promise of zero (#87). */
+  /** How far the reading is from the bias's promise of zero. */
   checkBias(): string;
-  /** How far the reading is from bias plus vehicle zero (#87). */
+  /** How far the reading is from bias plus vehicle zero. */
   checkZero(): string;
 }
 

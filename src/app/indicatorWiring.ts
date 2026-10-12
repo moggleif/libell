@@ -1,7 +1,6 @@
 /**
- * The main screen's indicators, wired to the app's state (#392, step 3):
- * the dashboard lamps, the target badge and the sensor-status icon. Each
- * mounts into its slot and redraws on `refresh()`.
+ * The main screen's indicators: each mounts into its slot and redraws on
+ * `refresh()`.
  */
 import type { Calibration, SensorSource } from '../domain/settings';
 import type { OrientationSensor } from '../sensor/orientation';
@@ -22,7 +21,7 @@ export interface BoxPending {
 }
 
 /**
- * The wizard's box path finished with no box connected (#365): until a
+ * The wizard's box path finished with no box connected: until a
  * box connects, or the phone is calibrated after all, the lamp asks for
  * the box rather than for a phone the user chose not to use.
  */
@@ -75,7 +74,7 @@ export function mountLamps(slot: Element | null, deps: LampDeps): Refreshable {
 }
 
 /**
- * The only main-screen trace of a target preset (#122, ADR 0013): hidden
+ * The only main-screen trace of a target preset (ADR 0013): hidden
  * while Normal is active; a tap opens the targets.
  */
 export function mountTargetBadge(
@@ -90,7 +89,7 @@ export function mountTargetBadge(
 }
 
 /**
- * The top bar's sensor icon (#129): visible whenever Web Bluetooth
+ * The top bar's sensor icon: visible whenever Web Bluetooth
  * exists, or iOS's guide applies (R39); a tap opens the sensor.
  */
 export function mountSensorStatus(
