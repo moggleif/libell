@@ -128,140 +128,185 @@ export interface ExternalSensorController<T extends ExternalSensor> {
   attemptAutoReconnect(): Promise<boolean>;
 }
 
+/** The controller's mutable state; the functions below work on one. */
+interface Controller<T extends ExternalSensor> {
+  readonly options: ExternalSensorControllerOptions<T>;
+  readonly sensors: Map<SensorSource, T>;
+  active: OrientationSensor;
+  /** Which external source is active, or null while the phone is. */
+  activeSource: SensorSource | null;
+  lastAutoRetryAt: number | null;
+  autoRetryInFlight: boolean;
+  /** Sources picked in the device picker during this page session. */
+  readonly pickedThisSession: Set<SensorSource>;
+}
+
 export function createExternalSensorController<T extends ExternalSensor>(
   options: ExternalSensorControllerOptions<T>,
 ): ExternalSensorController<T> {
-  const sensors = new Map<SensorSource, T>();
-  let active: OrientationSensor = options.phoneSensor;
-  /** Which external source is active, or null while the phone is. */
-  let activeSource: SensorSource | null = null;
-  let lastAutoRetryAt: number | null = null;
-  let autoRetryInFlight = false;
-  /** Sources picked in the device picker during this page session. */
-  const pickedThisSession = new Set<SensorSource>();
-
-  function sensorFor(source: SensorSource): T | null {
-    const existing = sensors.get(source);
-    if (existing) return existing;
-    const created = options.createSensor(source);
-    if (created) sensors.set(source, created);
-    return created;
-  }
-
-  /**
-   * Adopt a source as the one feeding readings — the single place that
-   * switch happens (ADR 0014: never silently switch source).
-   */
-  function adopt(source: SensorSource, sensor: T): void {
-    if (activeSource !== null && activeSource !== source) {
-      // Never two connected at once: the previous one keeps delivering
-      // samples (and its own auto-retry loop would keep firing) otherwise.
-      sensors.get(activeSource)?.disconnect();
-    }
-    active = sensor;
-    activeSource = source;
-  }
-
-  function fallBackToPhone(): void {
-    if (activeSource !== null) sensors.get(activeSource)?.disconnect();
-    active = options.phoneSensor;
-    activeSource = null;
-    options.rememberSource('phone');
-    options.onIndicatorsChanged();
-  }
-
-  async function connect(source: SensorSource): Promise<SensorState> {
-    const sensor = sensorFor(source);
-    if (!sensor) return 'unsupported';
-    const state = await sensor.start();
-    if (state === 'granted') {
-      pickedThisSession.add(source);
-      adopt(source, sensor);
-      options.rememberSource(source);
-      // Remember this specific device, so a later app open can try a silent
-      // reconnect instead of showing the picker again.
-      const deviceId = sensor.getDeviceId();
-      if (deviceId) options.saveDeviceId(source, deviceId);
-      options.onLevelScreenNeeded();
-      options.onIndicatorsChanged();
-    }
-    return state;
-  }
-
-  async function retry(): Promise<void> {
-    const source = activeSource;
-    if (source === null) return;
-    await connect(source);
-    options.onStatusChanged();
-  }
-
-  /** The background loop has no gesture to open a picker with, so a
-   * silent reconnect is all it can do. */
-  async function reconnectSilently(): Promise<void> {
-    const source = activeSource;
-    const sensor = source === null ? null : (sensors.get(source) ?? null);
-    if (source === null || !sensor) return;
-    const deviceId = sensor.getDeviceId() ?? options.loadDeviceId(source);
-    if (!deviceId) return;
-    const state = await sensor.reconnect(deviceId);
-    if (state === 'granted') {
-      adopt(source, sensor);
-      options.onIndicatorsChanged();
-    }
-    options.onStatusChanged();
-  }
-
-  function maybeAutoRetry(nowMs: number): void {
-    // `frame()` calls this every animation frame, so the in-flight guard is
-    // what keeps one slow reconnect from stacking up behind itself.
-    if (autoRetryInFlight) return;
-    if (!isExternalSensorAutoRetryDue(lastAutoRetryAt, nowMs)) return;
-    lastAutoRetryAt = nowMs;
-    autoRetryInFlight = true;
-    void reconnectSilently().finally(() => {
-      autoRetryInFlight = false;
-    });
-  }
-
-  async function attemptAutoReconnect(): Promise<boolean> {
-    const source = options.getPreferredSource();
-    if (source === 'phone') return false;
-    const deviceId = options.loadDeviceId(source);
-    if (!deviceId) return false;
-    if (!options.isRememberedDeviceUsable(source, deviceId)) return false;
-    const sensor = sensorFor(source);
-    if (!sensor) return false;
-    const state = await sensor.reconnect(deviceId);
-    // Behave exactly as if this source had never been selected, so the
-    // ordinary phone-sensor startup runs instead.
-    if (state === 'unsupported') return false;
-    adopt(source, sensor);
-    options.onLevelScreenNeeded();
-    options.onStatusChanged();
-    options.onIndicatorsChanged();
-    return true;
-  }
-
-  return {
-    getActiveSensor: () => active,
-    getSensor: (source) => sensors.get(source) ?? null,
-    connect,
-    // Both start the phone: an external source can take over the whole
-    // startup flow, so the phone may never have been started. The tap is
-    // the gesture iOS needs; a no-op once granted.
-    disconnect() {
-      fallBackToPhone();
-      void options.phoneSensor.start();
-    },
-    usePhoneSensor() {
-      fallBackToPhone();
-      void options.phoneSensor.start();
-    },
-    retry,
-    maybeAutoRetry,
-    canRetrySilently: () =>
-      activeSource !== null &&
-      (pickedThisSession.has(activeSource) || (options.hasPersistentDeviceAccess?.() ?? true)),
-    attemptAutoReconnect,
+  const controller: Controller<T> = {
+    options,
+    sensors: new Map(),
+    active: options.phoneSensor,
+    activeSource: null,
+    lastAutoRetryAt: null,
+    autoRetryInFlight: false,
+    pickedThisSession: new Set(),
   };
+  return {
+    getActiveSensor: () => controller.active,
+    getSensor: (source) => controller.sensors.get(source) ?? null,
+    connect: (source) => connect(controller, source),
+    disconnect: () => switchToPhone(controller),
+    usePhoneSensor: () => switchToPhone(controller),
+    retry: () => retry(controller),
+    maybeAutoRetry: (nowMs) => maybeAutoRetry(controller, nowMs),
+    canRetrySilently: () => canRetrySilently(controller),
+    attemptAutoReconnect: () => attemptAutoReconnect(controller),
+  };
+}
+
+function sensorFor<T extends ExternalSensor>(
+  controller: Controller<T>,
+  source: SensorSource,
+): T | null {
+  const existing = controller.sensors.get(source);
+  if (existing) return existing;
+  const created = controller.options.createSensor(source);
+  if (created) controller.sensors.set(source, created);
+  return created;
+}
+
+/**
+ * Adopt a source as the one feeding readings — the single place that
+ * switch happens (ADR 0014: never silently switch source).
+ */
+function adopt<T extends ExternalSensor>(
+  controller: Controller<T>,
+  source: SensorSource,
+  sensor: T,
+): void {
+  if (controller.activeSource !== null && controller.activeSource !== source) {
+    // Never two connected at once: the previous one keeps delivering
+    // samples (and its own auto-retry loop would keep firing) otherwise.
+    controller.sensors.get(controller.activeSource)?.disconnect();
+  }
+  controller.active = sensor;
+  controller.activeSource = source;
+}
+
+/** Both `disconnect()` and `usePhoneSensor()` start the phone: an external
+ * source can take over the whole startup flow, so the phone may never have
+ * been started. The tap is the gesture iOS needs; a no-op once granted. */
+function switchToPhone<T extends ExternalSensor>(controller: Controller<T>): void {
+  if (controller.activeSource !== null) {
+    controller.sensors.get(controller.activeSource)?.disconnect();
+  }
+  controller.active = controller.options.phoneSensor;
+  controller.activeSource = null;
+  controller.options.rememberSource('phone');
+  controller.options.onIndicatorsChanged();
+  void controller.options.phoneSensor.start();
+}
+
+async function connect<T extends ExternalSensor>(
+  controller: Controller<T>,
+  source: SensorSource,
+): Promise<SensorState> {
+  const sensor = sensorFor(controller, source);
+  if (!sensor) return 'unsupported';
+  const state = await sensor.start();
+  if (state === 'granted') takeOverAfterPicker(controller, source, sensor);
+  return state;
+}
+
+function takeOverAfterPicker<T extends ExternalSensor>(
+  controller: Controller<T>,
+  source: SensorSource,
+  sensor: T,
+): void {
+  controller.pickedThisSession.add(source);
+  adopt(controller, source, sensor);
+  controller.options.rememberSource(source);
+  // Remember this specific device, so a later app open can try a silent
+  // reconnect instead of showing the picker again.
+  const deviceId = sensor.getDeviceId();
+  if (deviceId) controller.options.saveDeviceId(source, deviceId);
+  controller.options.onLevelScreenNeeded();
+  controller.options.onIndicatorsChanged();
+}
+
+async function retry<T extends ExternalSensor>(controller: Controller<T>): Promise<void> {
+  const source = controller.activeSource;
+  if (source === null) return;
+  await connect(controller, source);
+  controller.options.onStatusChanged();
+}
+
+function maybeAutoRetry<T extends ExternalSensor>(controller: Controller<T>, nowMs: number): void {
+  // `frame()` calls this every animation frame, so the in-flight guard is
+  // what keeps one slow reconnect from stacking up behind itself.
+  if (controller.autoRetryInFlight) return;
+  if (!isExternalSensorAutoRetryDue(controller.lastAutoRetryAt, nowMs)) return;
+  controller.lastAutoRetryAt = nowMs;
+  controller.autoRetryInFlight = true;
+  void reconnectSilently(controller).finally(() => {
+    controller.autoRetryInFlight = false;
+  });
+}
+
+/** The background loop has no gesture to open a picker with, so a silent
+ * reconnect is all it can do. */
+async function reconnectSilently<T extends ExternalSensor>(
+  controller: Controller<T>,
+): Promise<void> {
+  const source = controller.activeSource;
+  const sensor = source === null ? null : (controller.sensors.get(source) ?? null);
+  if (source === null || !sensor) return;
+  const deviceId = sensor.getDeviceId() ?? controller.options.loadDeviceId(source);
+  if (!deviceId) return;
+  const state = await sensor.reconnect(deviceId);
+  if (state === 'granted') {
+    adopt(controller, source, sensor);
+    controller.options.onIndicatorsChanged();
+  }
+  controller.options.onStatusChanged();
+}
+
+function canRetrySilently<T extends ExternalSensor>(controller: Controller<T>): boolean {
+  return (
+    controller.activeSource !== null &&
+    (controller.pickedThisSession.has(controller.activeSource) ||
+      (controller.options.hasPersistentDeviceAccess?.() ?? true))
+  );
+}
+
+async function attemptAutoReconnect<T extends ExternalSensor>(
+  controller: Controller<T>,
+): Promise<boolean> {
+  const remembered = rememberedDevice(controller);
+  if (!remembered) return false;
+  const { source, deviceId, sensor } = remembered;
+  const state = await sensor.reconnect(deviceId);
+  // Behave exactly as if this source had never been selected, so the
+  // ordinary phone-sensor startup runs instead.
+  if (state === 'unsupported') return false;
+  adopt(controller, source, sensor);
+  controller.options.onLevelScreenNeeded();
+  controller.options.onStatusChanged();
+  controller.options.onIndicatorsChanged();
+  return true;
+}
+
+/** The box the last session left active, when there is one worth trying. */
+function rememberedDevice<T extends ExternalSensor>(
+  controller: Controller<T>,
+): { source: SensorSource; deviceId: string; sensor: T } | null {
+  const source = controller.options.getPreferredSource();
+  if (source === 'phone') return null;
+  const deviceId = controller.options.loadDeviceId(source);
+  if (!deviceId) return null;
+  if (!controller.options.isRememberedDeviceUsable(source, deviceId)) return null;
+  const sensor = sensorFor(controller, source);
+  return sensor ? { source, deviceId, sensor } : null;
 }
