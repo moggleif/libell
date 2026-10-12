@@ -63,54 +63,76 @@ export function createAudioGuidance(): (
   settings: LevelSettings,
   nowMs: number,
 ) => GuidanceState {
-  // The best distance since the last committed direction: the reference a
-  // reversal is judged against, so a long improving streak doesn't leave a
-  // stale, far-away anchor behind.
-  let extremeMm: number | null = null;
-  let direction: GuidanceDirection = 'steady';
-  let pendingDirection: GuidanceDirection | null = null;
-  let pendingSince: number | null = null;
-
+  const trend = newTrend();
   return (distanceMm, isLevel, settings, nowMs) => {
     if (isLevel) {
       // The next departure tracks direction fresh, like a cold start.
-      extremeMm = distanceMm;
-      direction = 'steady';
-      pendingDirection = null;
-      pendingSince = null;
-      return { pulseIntervalMs: null, pitchHz: null, direction };
+      Object.assign(trend, newTrend(), { extremeMm: distanceMm });
+      return { pulseIntervalMs: null, pitchHz: null, direction: trend.direction };
     }
+    trackDirection(trend, distanceMm, settings.stabilityMm, nowMs);
+    return { ...pulseFor(distanceMm, settings.toleranceMm), direction: trend.direction };
+  };
+}
 
-    const deadbandMm = settings.stabilityMm;
-    extremeMm ??= distanceMm;
-    if (direction === 'improving' && distanceMm < extremeMm) extremeMm = distanceMm;
-    if (direction === 'worsening' && distanceMm > extremeMm) extremeMm = distanceMm;
+/** Direction hysteresis state; see the module doc. */
+interface Trend {
+  /** The best distance since the last committed direction: the reference a
+   * reversal is judged against, so a long improving streak doesn't leave a
+   * stale, far-away anchor behind. */
+  extremeMm: number | null;
+  direction: GuidanceDirection;
+  pendingDirection: GuidanceDirection | null;
+  pendingSince: number | null;
+}
 
-    const delta = distanceMm - extremeMm;
-    let candidate = direction;
-    if (delta > deadbandMm) candidate = 'worsening';
-    else if (delta < -deadbandMm) candidate = 'improving';
+function newTrend(): Trend {
+  return { extremeMm: null, direction: 'steady', pendingDirection: null, pendingSince: null };
+}
 
-    if (candidate === direction) {
-      pendingDirection = null;
-      pendingSince = null;
-    } else if (candidate !== pendingDirection) {
-      pendingDirection = candidate;
-      pendingSince = nowMs;
-    } else if (pendingSince !== null && nowMs - pendingSince >= DIRECTION_DWELL_MS) {
-      direction = candidate;
-      extremeMm = distanceMm;
-      pendingDirection = null;
-      pendingSince = null;
-    }
+function trackDirection(trend: Trend, distanceMm: number, deadbandMm: number, nowMs: number): void {
+  const extremeMm = followExtreme(trend, distanceMm);
+  const candidate = candidateDirection(trend.direction, distanceMm - extremeMm, deadbandMm);
+  if (candidate === trend.direction) {
+    trend.pendingDirection = null;
+    trend.pendingSince = null;
+  } else if (candidate !== trend.pendingDirection) {
+    trend.pendingDirection = candidate;
+    trend.pendingSince = nowMs;
+  } else if (trend.pendingSince !== null && nowMs - trend.pendingSince >= DIRECTION_DWELL_MS) {
+    Object.assign(trend, newTrend(), { direction: candidate, extremeMm: distanceMm });
+  }
+}
 
-    const progress = progressOf(distanceMm, settings.toleranceMm);
-    return {
-      pulseIntervalMs: Math.round(
-        MAX_PULSE_INTERVAL_MS - progress * (MAX_PULSE_INTERVAL_MS - MIN_PULSE_INTERVAL_MS),
-      ),
-      pitchHz: Math.round(MIN_PITCH_HZ + progress * (MAX_PITCH_HZ - MIN_PITCH_HZ)),
-      direction,
-    };
+/** Moves the reference point along with the committed direction, and returns it. */
+function followExtreme(trend: Trend, distanceMm: number): number {
+  const extremeMm = trend.extremeMm ?? distanceMm;
+  const improvedFurther = trend.direction === 'improving' && distanceMm < extremeMm;
+  const worsenedFurther = trend.direction === 'worsening' && distanceMm > extremeMm;
+  trend.extremeMm = improvedFurther || worsenedFurther ? distanceMm : extremeMm;
+  return trend.extremeMm;
+}
+
+function candidateDirection(
+  current: GuidanceDirection,
+  deltaMm: number,
+  deadbandMm: number,
+): GuidanceDirection {
+  if (deltaMm > deadbandMm) return 'worsening';
+  if (deltaMm < -deadbandMm) return 'improving';
+  return current;
+}
+
+/** Pulse rate and pitch depend on the current distance only, so they never lag. */
+function pulseFor(
+  distanceMm: number,
+  toleranceMm: number,
+): Pick<GuidanceState, 'pulseIntervalMs' | 'pitchHz'> {
+  const progress = progressOf(distanceMm, toleranceMm);
+  return {
+    pulseIntervalMs: Math.round(
+      MAX_PULSE_INTERVAL_MS - progress * (MAX_PULSE_INTERVAL_MS - MIN_PULSE_INTERVAL_MS),
+    ),
+    pitchHz: Math.round(MIN_PITCH_HZ + progress * (MAX_PITCH_HZ - MIN_PITCH_HZ)),
   };
 }
