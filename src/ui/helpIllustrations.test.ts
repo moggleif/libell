@@ -1,6 +1,10 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { measuresIllustration } from './helpIllustrations';
+import {
+  legendIllustration,
+  measuresIllustration,
+  placementIllustration,
+} from './helpIllustrations';
 
 // Regression test (#184 follow-up): the right-side wheels used to sit at
 // x=145 while the dashed track-width line ran to x=155 and the left
@@ -32,5 +36,22 @@ describe('measuresIllustration wheel symmetry', () => {
     for (const x of xs) {
       expect(Math.abs(x - 100)).toBeCloseTo(55);
     }
+  });
+});
+
+// Regression pin for the #419 refactor (shared SVG helper): the full
+// markup of every illustration must stay exactly as it is.
+describe('help illustration output (#419)', () => {
+  for (const vehicle of ['motorhome', 'caravan'] as const) {
+    it(`placement and measures, ${vehicle}`, () => {
+      expect([
+        placementIllustration('label', vehicle).outerHTML,
+        measuresIllustration('label', vehicle).outerHTML,
+      ]).toMatchSnapshot();
+    });
+  }
+
+  it('legend', () => {
+    expect(legendIllustration('label').outerHTML).toMatchSnapshot();
   });
 });

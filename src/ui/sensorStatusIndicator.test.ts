@@ -79,3 +79,13 @@ describe('createSensorStatusIndicator (#129, screen-cleanup follow-up)', () => {
     });
   });
 });
+
+// Regression pin for the #419 refactor (shared SVG helper): the chip
+// icon's markup must stay exactly as it is.
+describe('createSensorStatusIndicator output (#419)', () => {
+  it('draws the same chip icon', () => {
+    const indicator = createSensorStatusIndicator(true, false, vi.fn());
+    indicator.update('easylevel', 'granted');
+    expect(indicator.element.outerHTML).toMatchSnapshot();
+  });
+});
