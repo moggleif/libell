@@ -42,6 +42,7 @@
  * purely so callers/tests that don't need that page (the onboarding
  * wizard) can construct this section without threading a callback through.
  */
+import type { CaptureResult } from '../domain/calibration';
 import type { Calibration, EasyLevelMounting, SensorSource, VehicleType } from '../domain/settings';
 import {
   axisMappingForFacing,
@@ -105,9 +106,10 @@ export interface SensorSourceOptions {
    * "Set vehicle level": capture the current reading as this box's
    * installation offset — or, for a box that zeroes itself (#290), have the
    * box do it. Returns an error text, or null on success; a box that must
-   * be written to answers asynchronously.
+   * be written to answers asynchronously. Above 15° it answers with a
+   * warning instead, offering "Zero anyway" (`anyway`, #425).
    */
-  calibrateInstall(): string | null | Promise<string | null>;
+  calibrateInstall(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   /** When the installation offset was captured (R26) — null when unknown. */
   getInstallCalibrationCapturedAt(): number | null;
   clearInstallCalibration(): void;
@@ -383,6 +385,13 @@ export function createSensorSourceSection(
   const installStatus = document.createElement('p');
   installStatus.className = 'menu__text menu__text--status';
   installStatus.hidden = true;
+  // "Zero anyway" (#425, "Varning är rätt. Aldrig stopp."): shown only
+  // while the last zero came back with a tilt warning.
+  const installAnywayButton = document.createElement('button');
+  installAnywayButton.type = 'button';
+  installAnywayButton.className = 'menu__action menu__action--secondary';
+  installAnywayButton.textContent = t('calibration.vehicle.anyway');
+  installAnywayButton.hidden = true;
   // Once zeroed (#332): check it, or clear it, right here — quiet links,
   // not the first-time instruction again.
   const zeroLinks = document.createElement('div');
@@ -392,7 +401,7 @@ export function createSensorSourceSection(
   installClearButton.className = 'link-button';
   installClearButton.textContent = t('sensorSource.install.clear');
   zeroLinks.append(installClearButton);
-  zeroStep?.body.append(zeroHint, installButton, zeroLinks, installStatus);
+  zeroStep?.body.append(zeroHint, installButton, zeroLinks, installStatus, installAnywayButton);
 
   if (directionStep) installSection.append(directionStep.element);
   if (zeroStep) installSection.append(zeroStep.element);
@@ -424,6 +433,8 @@ export function createSensorSourceSection(
   }
 
   let zeroMessage: string | null = null;
+  /** Whether `zeroMessage` is a tilt warning, which offers "Zero anyway". */
+  let zeroWarned = false;
 
   function refreshPosition(): void {
     // Only this box's own reading says how it stands: while it is not the
@@ -494,6 +505,8 @@ export function createSensorSourceSection(
       installButton.textContent = t(offset ? 'box.step.zero.again' : 'sensorSource.install.now');
       installStatus.hidden = zeroMessage === null;
       installStatus.textContent = zeroMessage ?? '';
+      installStatus.classList.toggle('menu__text--warning', zeroWarned);
+      installAnywayButton.hidden = !zeroWarned;
     }
     installClearButton.disabled = !offset;
     forgetDirectionButton.hidden = usesEasyLevelMounting
@@ -522,27 +535,34 @@ export function createSensorSourceSection(
     }
   }
 
-  installButton.addEventListener('click', () => {
+  function showZeroResult(result: CaptureResult): void {
+    zeroWarned = typeof result === 'object' && result !== null;
+    zeroMessage = typeof result === 'object' && result ? result.warning : result;
+    refreshSteps();
+  }
+  function zeroBox(anyway: boolean): void {
     openedByHand = zeroStep?.element ?? null;
-    const result = options.calibrateInstall();
+    const result = options.calibrateInstall(anyway);
     if (!(result instanceof Promise)) {
-      zeroMessage = result;
-      refreshSteps();
+      showZeroResult(result);
       return;
     }
     // A box that zeroes itself (#290) answers later; no second tap while
     // the first is still on its way.
     installButton.disabled = true;
+    zeroWarned = false;
     zeroMessage = t('calibration.external.working');
     refreshSteps();
-    void result.then((error) => {
+    void result.then((answer) => {
       installButton.disabled = false;
-      zeroMessage = error;
-      refreshSteps();
+      showZeroResult(answer);
     });
-  });
+  }
+  installButton.addEventListener('click', () => zeroBox(false));
+  installAnywayButton.addEventListener('click', () => zeroBox(true));
   installClearButton.addEventListener('click', () => {
     options.clearInstallCalibration();
+    zeroWarned = false;
     zeroMessage = null;
     openedByHand = null;
     refreshSteps();

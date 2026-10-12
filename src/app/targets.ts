@@ -4,6 +4,7 @@
  * never stored in the same field. "Normal" (no active target) leaves the
  * effective calibration identical to the zero.
  */
+import type { CaptureResult } from '../domain/calibration';
 import type { Calibration } from '../domain/settings';
 import {
   offsetTooSteep,
@@ -42,8 +43,9 @@ export interface Targets {
   /** The active target's offset, or null for Normal. */
   activeOffset(): Calibration | null;
   select(id: string | null): void;
-  /** Save the current tilt as a new target; an error message, or null. */
-  add(name: string): string | null;
+  /** Save the current tilt as a new target: null when saved, an error
+   * message, or a warning above 15° unless `anyway` (#425). */
+  add(name: string, anyway?: boolean): CaptureResult;
   remove(id: string): void;
 }
 
@@ -76,12 +78,12 @@ export function createTargets(deps: TargetsDeps): Targets {
     activeName: () => presets.find((preset) => preset.id === activeId)?.name ?? null,
     activeOffset: () => targetOffsetFor(presets, activeId),
     select,
-    add(name) {
+    add(name, anyway = false) {
       const reading = deps.readTilt();
       if (typeof reading === 'string') return reading;
       // Relative to the zero, never to any currently active target.
       const offset = presetOffsetFromReading(reading, deps.zeroCalibration());
-      if (offsetTooSteep(offset)) return t('targets.err.tooSteep');
+      if (!anyway && offsetTooSteep(offset)) return { warning: t('targets.warn.tooSteep') };
       savePresets([...presets, { id: newId(), name, offset }]);
       return null;
     },

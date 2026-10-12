@@ -255,11 +255,10 @@ Installation calibration for a mounted external sensor (#131, R34) fills in the
 concrete storage shape ADR 0014 deferred, keyed per source by #263 (ADR 0016):
 `settingsStore.ts`'s `loadInstallCalibration`/`saveInstallCalibration`/
 `clearInstallCalibration` all take a `SensorSource` and file it under
-`libell.installCalibration.<source>` — the same shape as `libell.vehicleCalibration`
-with a `>15°` implausible-capture guard on read, just never the same key, so no two
-sources (and never a source and the phone) can be conflated. The phone's own
-`libell.calibration` and `libell.vehicleCalibration` read back up to `MAX_TILT_DEG`
-instead, since the user may calibrate or zero anyway above 15° (#411). `sensorDeviceStore.ts` keys the
+`libell.installCalibration.<source>` — the same shape as `libell.vehicleCalibration`,
+just never the same key, so no two sources (and never a source and the phone) can be
+conflated. All three read back up to `MAX_TILT_DEG` rather than the 15° capture limit,
+since the user may calibrate or zero anyway above 15° (#411, #425). `sensorDeviceStore.ts` keys the
 remembered device id the same way (`libell.sensorDevice.<source>`). Both carry a
 one-shot migration from the device-named keys #130/#131 used, which copies rather than
 moves, so a rolled-back build still finds the user's pairing and offset. `main.ts`'s `zeroCalibration()` picks which

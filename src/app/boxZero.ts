@@ -2,7 +2,7 @@
  * Zeroing an external box (#131, #290, ADR 0014): "set vehicle level" for
  * the box in use, stored as that box's installation offset.
  */
-import { averageReadings, vehicleZeroFromReading } from '../domain/calibration';
+import { averageReadings, vehicleZeroFromReading, type CaptureResult } from '../domain/calibration';
 import type { Calibration, SensorSource } from '../domain/settings';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { OrientationSensor } from '../sensor/orientation';
@@ -35,8 +35,10 @@ export interface BoxZeroDeps {
 }
 
 export interface BoxZeroing {
-  /** Zero a box; an error message, or null. Async for the boxes that need it. */
-  zero(source: SensorSource): string | null | Promise<string | null>;
+  /** Zero a box: null when stored, an error message, or a tilt warning
+   * above 15° unless `anyway` says the user chose to go ahead (#425).
+   * Async for the boxes that need it. */
+  zero(source: SensorSource, anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   clear(source: SensorSource): void;
 }
 
@@ -51,11 +53,18 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
     deps.onChanged();
   }
 
-  /** Store a box's zero from a reading, refusing only an implausible one.
-   * There is no box hardware-bias layer to subtract (unlike the phone's),
-   * so `null` here means "none". */
-  function storeReading(source: SensorSource, reading: Calibration): string | null {
-    if (exceedsCalibrationLimit(reading)) return t('calibration.vehicle.err.notFlat');
+  /** Store a box's zero from a reading; above 15° only once the user has
+   * seen the warning and chosen to go ahead (#425). There is no box
+   * hardware-bias layer to subtract (unlike the phone's), so `null` here
+   * means "none". */
+  function storeReading(
+    source: SensorSource,
+    reading: Calibration,
+    anyway: boolean,
+  ): CaptureResult {
+    if (!anyway && exceedsCalibrationLimit(reading)) {
+      return { warning: t('calibration.vehicle.warn.notFlat') };
+    }
     store(source, vehicleZeroFromReading(reading, null));
     return null;
   }
@@ -67,7 +76,7 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
    * this does that settling in one tap. If the box drops while sampling,
    * nothing is stored and the user is told why.
    */
-  async function zeroEasyLevel(): Promise<string | null> {
+  async function zeroEasyLevel(anyway: boolean): Promise<CaptureResult> {
     const first = deps.readTilt();
     if (typeof first === 'string') return first;
     const readings = [first];
@@ -87,7 +96,7 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
       const reading = deps.readTilt();
       if (typeof reading !== 'string') readings.push(reading);
     }
-    return storeReading('easylevel', averageReadings(readings) ?? first);
+    return storeReading('easylevel', averageReadings(readings) ?? first, anyway);
   }
 
   /**
@@ -110,12 +119,12 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
   }
 
   return {
-    zero(source) {
+    zero(source, anyway = false) {
       if (source === 'xparkle') return zeroXparkle();
-      if (source === 'easylevel') return zeroEasyLevel();
+      if (source === 'easylevel') return zeroEasyLevel(anyway);
       const reading = deps.readTilt();
       if (typeof reading === 'string') return reading;
-      return storeReading(source, reading);
+      return storeReading(source, reading, anyway);
     },
     clear(source) {
       deps.offsets.clear(source);

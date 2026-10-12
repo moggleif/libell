@@ -76,7 +76,7 @@ export interface MenuOptions {
   getTargetPresets(): TargetPreset[];
   getActiveTargetId(): string | null;
   selectTarget(id: string | null): void;
-  addTargetPreset(name: string): string | null;
+  addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
   /**
    * An external sensor source (#116, ADR 0014) — an opt-in alternative to
@@ -95,7 +95,7 @@ export interface MenuOptions {
    * shared with `sensorPage.ts`.
    */
   getInstallCalibration(): Calibration | null;
-  calibrateInstall(): string | null | Promise<string | null>;
+  calibrateInstall(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   getInstallCalibrationCapturedAt(): number | null;
   clearInstallCalibration(): void;
   /**
