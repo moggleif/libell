@@ -7,20 +7,13 @@
     "src/app/phoneCalibration.ts > createPhoneCalibration": 69,
     "src/main.ts > createCore": 68,
     "src/main.ts > mountPages": 59,
-    "src/ui/boxPasswordBlock.ts > createBoxPasswordBlock": 74,
     "src/ui/feedback.ts > createFeedbackSection": 98,
     "src/ui/helpIllustrations.ts > measuresIllustration": 51,
     "src/ui/incomingVehicleSetup.ts > showIncomingVehicleSetup": 77,
     "src/ui/indicators.ts > createIndicators": 52,
     "src/ui/infoMenu.ts > buildHelpPanel": 64,
     "src/ui/infoMenu.ts > createInfoPage": 79,
-    "src/ui/learnMountingSection.ts > createLearnMountingSection": 101,
-    "src/ui/mountingPicker.ts > vehicleDrawing": 80,
-    "src/ui/mountingPicker.ts > createMountingPicker": 52,
-    "src/ui/sensorFallbackPrompt.ts > createSensorFallbackPrompt": 69,
-    "src/ui/sensorPage.ts > createSensorPage": 72,
-    "src/ui/standalonePage.ts > createStandalonePage": 78,
-    "src/ui/targetsSection.ts > createTargetsSection": 123
+    "src/ui/standalonePage.ts > createStandalonePage": 78
   },
   "fileBaseline": {
     "src/main.ts": 414

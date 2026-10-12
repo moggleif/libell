@@ -20,18 +20,44 @@ export interface BoxPasswordBlock {
   refresh(): void;
 }
 
+/** The block's elements and whether a try is out; the functions below work
+ * on one. */
+interface PasswordBlock {
+  readonly options: BoxPasswordOptions;
+  readonly view: ReturnType<typeof createView>;
+  trying: boolean;
+}
+
 export function createBoxPasswordBlock(
   options: BoxPasswordOptions,
   name: string,
 ): BoxPasswordBlock {
+  const block: PasswordBlock = { options, view: createView(name), trying: false };
+  block.view.button.addEventListener('click', () => tryCode(block));
+  refresh(block);
+  return { element: block.view.element, refresh: () => refresh(block) };
+}
+
+function createView(name: string) {
   const element = document.createElement('div');
   element.className = 'box-password';
   element.hidden = true;
-
   const message = document.createElement('p');
   message.className = 'menu__text menu__text--warning';
   message.textContent = t('sensorSource.err.password', { name });
+  const { field, input } = createCodeField();
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'menu__action';
+  button.textContent = t('box.password.retry');
+  const status = document.createElement('p');
+  status.className = 'menu__text box-password__status';
+  status.hidden = true;
+  element.append(message, field, button, status);
+  return { element, input, button, status };
+}
 
+function createCodeField() {
   const field = document.createElement('label');
   field.className = 'settings__field box-password__field';
   const caption = document.createElement('span');
@@ -43,54 +69,42 @@ export function createBoxPasswordBlock(
   input.maxLength = 4;
   input.className = 'box-password__input';
   field.append(caption, input);
+  return { field, input };
+}
 
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'menu__action';
-  button.textContent = t('box.password.retry');
+function say(block: PasswordBlock, text: string | null): void {
+  const { status } = block.view;
+  status.hidden = text === null;
+  status.textContent = text ?? '';
+}
 
-  const status = document.createElement('p');
-  status.className = 'menu__text box-password__status';
-  status.hidden = true;
+function refresh(block: PasswordBlock): void {
+  const { element, button, status } = block.view;
+  // Kept open while a verdict is on its way or still being shown, so the
+  // answer to a tap never vanishes before it is read.
+  element.hidden = !block.options.isRejected() && !block.trying && status.hidden;
+  button.disabled = block.trying;
+}
 
-  element.append(message, field, button, status);
-
-  let trying = false;
-
-  function say(text: string | null): void {
-    status.hidden = text === null;
-    status.textContent = text ?? '';
+function tryCode(block: PasswordBlock): void {
+  const { input } = block.view;
+  const code = input.value.trim();
+  if (!/^\d{4}$/.test(code)) {
+    say(block, t('box.password.invalid'));
+    refresh(block);
+    return;
   }
-
-  function refresh(): void {
-    // Kept open while a verdict is on its way or still being shown, so the
-    // answer to a tap never vanishes before it is read.
-    element.hidden = !options.isRejected() && !trying && status.hidden;
-    button.disabled = trying;
-  }
-
-  button.addEventListener('click', () => {
-    const code = input.value.trim();
-    if (!/^\d{4}$/.test(code)) {
-      say(t('box.password.invalid'));
-      refresh();
-      return;
+  block.trying = true;
+  say(block, t('box.password.checking'));
+  refresh(block);
+  void block.options.tryPassword(code).then((verdict) => {
+    block.trying = false;
+    if (verdict === true) {
+      input.value = '';
+      say(block, null);
+    } else {
+      say(block, t(verdict === false ? 'box.password.wrong' : 'box.password.noAnswer'));
     }
-    trying = true;
-    say(t('box.password.checking'));
-    refresh();
-    void options.tryPassword(code).then((verdict) => {
-      trying = false;
-      if (verdict === true) {
-        input.value = '';
-        say(null);
-      } else {
-        say(t(verdict === false ? 'box.password.wrong' : 'box.password.noAnswer'));
-      }
-      refresh();
-    });
+    refresh(block);
   });
-
-  refresh();
-  return { element, refresh };
 }
