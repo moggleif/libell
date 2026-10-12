@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import type { SettingsAccess } from './externalSensorWiring';
-import { createMuteToggle, createSound } from './sound';
+import { createMuteToggle, createSound, unlockOnFirstGesture } from './sound';
 
 /** Rounds away floating-point noise in scheduled times and values. */
 const r = (n: number) => Number(n.toFixed(6));
@@ -178,5 +178,41 @@ describe('createMuteToggle', () => {
     mute.toggle();
     mute.toggle();
     expect(unlocks).toBe(0);
+  });
+});
+
+// #396: nothing else unlocks audio on a plain launch, so the chime and
+// guidance stayed silent after every reload until a setting changed.
+describe('unlockOnFirstGesture', () => {
+  function counted() {
+    const page = new EventTarget();
+    let unlocks = 0;
+    unlockOnFirstGesture(page, () => (unlocks += 1));
+    return { page, unlocks: () => unlocks };
+  }
+
+  it('does not unlock before the user has done anything', () => {
+    expect(counted().unlocks()).toBe(0);
+  });
+
+  it.each(['click', 'touchend', 'keydown'])('unlocks on the first %s', (gesture) => {
+    const { page, unlocks } = counted();
+    page.dispatchEvent(new Event(gesture));
+    expect(unlocks()).toBe(1);
+  });
+
+  it('unlocks only once, whatever gestures follow', () => {
+    const { page, unlocks } = counted();
+    page.dispatchEvent(new Event('touchend'));
+    page.dispatchEvent(new Event('click'));
+    page.dispatchEvent(new Event('keydown'));
+    expect(unlocks()).toBe(1);
+  });
+
+  it('ignores events that are not user gestures', () => {
+    const { page, unlocks } = counted();
+    page.dispatchEvent(new Event('scroll'));
+    page.dispatchEvent(new Event('pointermove'));
+    expect(unlocks()).toBe(0);
   });
 });
