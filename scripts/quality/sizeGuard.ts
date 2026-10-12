@@ -1,4 +1,5 @@
 import { countLines, measureFunctions } from './functionSizes.ts';
+import type { SourceFile } from './sourceFiles.ts';
 
 /** The size limits, and the existing exceptions that may shrink but never grow. */
 export interface SizeRules {
@@ -8,11 +9,6 @@ export interface SizeRules {
   functionBaseline: Record<string, number>;
   /** File path → the most lines that file may have today. */
   fileBaseline: Record<string, number>;
-}
-
-export interface SourceFile {
-  path: string;
-  source: string;
 }
 
 /**

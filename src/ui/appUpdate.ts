@@ -39,7 +39,7 @@ export async function checkForUpdate(deps: UpdateCheckDeps): Promise<UpdateCheck
   return registration.installing || registration.waiting ? 'updating' : 'latest';
 }
 
-export function updateMessage(result: UpdateCheckResult): string {
+function updateMessage(result: UpdateCheckResult): string {
   switch (result) {
     case 'updating':
       return t('update.updating');

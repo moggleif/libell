@@ -231,7 +231,7 @@ export interface XparkleSettings {
   password: string;
 }
 
-export const DEFAULT_XPARKLE_SETTINGS: XparkleSettings = {
+const DEFAULT_XPARKLE_SETTINGS: XparkleSettings = {
   // Nothing learned: the box's own axes.
   axisMapping: null,
   // The factory code every box ships with (`XPARKLE_DEFAULT_PASSWORD`).

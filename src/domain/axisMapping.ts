@@ -29,14 +29,14 @@ export interface AxisMapping {
 export const IDENTITY_AXIS_MAPPING: AxisMapping = { swap: false, pitchSign: 1, rollSign: 1 };
 
 /** A lift smaller than this is too close to sensor noise to learn from. */
-export const MIN_LEARN_DELTA_DEG = 1;
+const MIN_LEARN_DELTA_DEG = 1;
 
 /**
  * The other axis may move a little too (nobody lifts perfectly straight),
  * but no more than this fraction of the main one — beyond it, which axis
  * was meant is a guess, and a wrong guess names the wrong wheel.
  */
-export const MAX_CROSS_TALK_RATIO = 0.5;
+const MAX_CROSS_TALK_RATIO = 0.5;
 
 export function applyAxisMapping(reading: Calibration, mapping: AxisMapping): Calibration {
   const pitch = mapping.swap ? reading.rollDeg : reading.pitchDeg;

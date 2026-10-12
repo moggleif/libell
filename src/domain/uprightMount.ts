@@ -11,7 +11,7 @@ import type { Calibration } from './settings';
 
 /** Past this on either axis the box is not standing upright — the same
  * 45° the external pose overlay enters "extreme" at (`pose.ts`). */
-export const UPRIGHT_LIMIT_DEG = 45;
+const UPRIGHT_LIMIT_DEG = 45;
 
 /** True when the box's reading says it stands upright, a few degrees of
  * mounting or parking tilt included. */

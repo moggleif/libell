@@ -59,7 +59,7 @@ export const SIMULATED_ACCEL_INTERVAL_MS = 100;
 /** Like a box that notifies status on subscribe (the best case), well
  * inside `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`. */
 export const SIMULATED_STATUS_DELAY_MS = 150;
-export const SIMULATED_STATUS_INTERVAL_MS = 5000;
+const SIMULATED_STATUS_INTERVAL_MS = 5000;
 /** `'drop'` mode: the link is lost this long after connecting — time to
  * watch live readings, short enough to exercise the R37 prompt and
  * auto-retry in a demo session. */

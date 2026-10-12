@@ -26,7 +26,7 @@ export function startSensors(deps: SensorStartupDeps): Promise<void> {
   });
 }
 
-export function startPhoneSensor(deps: SensorStartupDeps): void {
+function startPhoneSensor(deps: SensorStartupDeps): void {
   const handleState = (state: SensorState) => showSensorState(state, deps);
   if (!deps.isSensorSupported()) {
     handleState('unsupported');
@@ -37,7 +37,7 @@ export function startPhoneSensor(deps: SensorStartupDeps): void {
   else start();
 }
 
-export function showSensorState(state: SensorState, deps: SensorStartupDeps): void {
+function showSensorState(state: SensorState, deps: SensorStartupDeps): void {
   if (state === 'granted') deps.showLevelScreen();
   else if (state === 'denied') showMessage(deps.root, t('main.denied'));
   else showMessage(deps.root, deps.isSecureContext() ? t('main.noSensors') : t('main.https'));
