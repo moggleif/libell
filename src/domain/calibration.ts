@@ -16,6 +16,14 @@ import type { Calibration } from './settings';
 /** A bias beyond this is a moved phone or a mis-capture, not case tilt. */
 const MAX_BIAS_DEG = 15;
 
+/**
+ * What capturing a calibration or zero answered (#411): null when it was
+ * stored, an error text when nothing could be read, or a warning when the
+ * reading looks too tilted to be level — then nothing is stored until the
+ * user chooses to go ahead anyway ("Varning är rätt. Aldrig stopp.").
+ */
+export type CaptureResult = null | string | { warning: string };
+
 export interface FlipResult {
   /** The phone's own bias — what gets stored as the calibration. */
   bias: Calibration;

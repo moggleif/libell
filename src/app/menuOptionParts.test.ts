@@ -113,6 +113,10 @@ describe('calibrationOptions', () => {
     expect(options.getVehicleCalibrationCapturedAt()).toBe(20);
     expect(options.calibrate()).toBeNull();
     expect(options.calibrateVehicle()).toBe('too steep');
+    options.calibrate(true);
+    expect(phoneCalibration.calibrate).toHaveBeenLastCalledWith(true);
+    options.calibrateVehicle(true);
+    expect(phoneCalibration.zeroVehicle).toHaveBeenLastCalledWith(true);
     expect(options.checkCalibration()).toBe('bias ok');
     expect(options.checkVehicleCalibration()).toBe('zero ok');
     expect(options.readTilt()).toEqual({ rollDeg: 3, pitchDeg: 4 });
