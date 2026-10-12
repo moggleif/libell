@@ -225,8 +225,12 @@ URL and must keep working with no signal.
 - **When** I place the phone on a surface I know is level and tap "Calibrate now" in
   Settings › Calibration (step 1 below)
 - **Then** the current tilt is stored (`localStorage`) as the zero point and subtracted
-  from every reading; "Clear calibration" returns to the raw sensor. A reading that does
-  not look flat (>15°) is rejected with an explanation.
+  from every reading; "Clear calibration" returns to the raw sensor.
+- **Given** the reading does not look flat (>15° on either axis)
+- **When** I tap "Calibrate now"
+- **Then** nothing is stored yet: a warning says the surface does not look flat and the
+  calibration would be wrong, with a "Calibrate anyway" button beside it; tapping that
+  stores the reading, and it is still there after a reload (#411, never block — warn).
 - **Given** the vehicle measurements have never been saved, or a calibration step is
   missing
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
@@ -657,7 +661,9 @@ URL and must keep working with no signal.
   **sum** of the sensor offset and the vehicle zero — back in its spot, the phone
   shows level even on a tilting table.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** it is rejected with an explanation, like the sensor calibration.
+- **Then** nothing is stored yet: a warning asks whether the vehicle really is level,
+  with a "Zero anyway" button beside it; tapping that stores the zero, like the sensor
+  calibration (R11, #411).
 - **Given** a later sensor recalibration or clear
 - **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
   placement tilt (ADR 0010).
@@ -1054,7 +1060,7 @@ cross-platform goal — they are not this app's code and are not covered here.
   (`EASYLEVEL_ZERO_SAMPLE_MS`), showing "Zeroing…" meanwhile; if the box drops while
   sampling, nothing is stored and the page says the box is not connected.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** it is rejected with an explanation, the same guard R11/R24 already use.
+- **Then** it is rejected with an explanation (the phone's own R11/R24 warn instead, #411).
 - **Given** a stored installation offset
 - **Then** the step reads "Zeroed" with its age, reusing R26's "(14 days ago)" age
   display, and offers "Zero again" and "Forget the zero" (R51; no separate Check,
