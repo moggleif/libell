@@ -108,7 +108,7 @@ describe('createLevelFrame', () => {
   describe('without a reading', () => {
     it('shows no data and waits, while the sensor is still coming', () => {
       const { run, externalSensors } = setup({ gravity: null, state: 'idle' });
-      expect(run(0)).toEqual(['noData:false:true']);
+      expect(run(0)).toEqual(['noData:false:true', 'hideStale', 'hidePose']);
       expect(externalSensors.maybeAutoRetry).not.toHaveBeenCalled();
     });
 
@@ -119,8 +119,18 @@ describe('createLevelFrame', () => {
         state: 'disconnected',
       });
       externalSensors.canRetrySilently.mockReturnValue(false);
-      expect(run(500)).toEqual(['noData:true:false']);
+      expect(run(500)).toEqual(['noData:true:false', 'hideStale', 'hidePose']);
       expect(externalSensors.maybeAutoRetry).toHaveBeenCalledWith(500);
+    });
+
+    it('hides the stale and pose overlays when a stale box is then lost (#398)', () => {
+      const { run, world } = setup({ source: 'xparkle', lastSampleAt: 0 });
+      expect(run(5_000)).toContain('stale:true');
+      world.gravity = null;
+      world.state = 'disconnected';
+      const calls = run(10_000);
+      expect(calls).toContain('hideStale');
+      expect(calls).toContain('hidePose');
     });
   });
 
