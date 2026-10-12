@@ -1,8 +1,8 @@
 /**
- * The sensor's pages (#392, step 5), reached from the top bar's sensor
- * icon: one list section and one own page per available box (#268), or,
- * on iOS without Web Bluetooth, a guide to the Bluefy workaround (R39).
- * Without either, none: never a silently broken option (#116).
+ * The sensor's pages, reached from the top bar's sensor icon: one list
+ * section and one own page per available box, or, on iOS without Web
+ * Bluetooth, a guide to the Bluefy workaround (R39). Without either, none:
+ * never a silently broken option.
  */
 import { availableExternalSensors, hasAvailableExternalSensor } from '../sensor/externalSensors';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';

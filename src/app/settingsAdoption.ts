@@ -1,6 +1,6 @@
 /**
  * What the rest of the app does with settings the Settings page or the
- * wizard has just saved (#392, step 4): take them, restyle, and redraw
+ * wizard has just saved: take them, restyle, and redraw
  * what depends on them.
  */
 import type { LevelSettings } from '../domain/settings';
@@ -8,7 +8,6 @@ import type { LevelSettings } from '../domain/settings';
 export interface SettingsAdoptionDeps {
   /** Make `next` the app's settings (the form has stored them already). */
   adopt(next: LevelSettings): void;
-  /** Theme and appearance. */
   applyLook(settings: LevelSettings): void;
   unlockAudio(): void;
   /** The lamps and the level screen. */

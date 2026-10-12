@@ -1,7 +1,7 @@
 /**
  * The options bags handed to the Settings page, the ☰ menu, the box pages
- * and the wizard's box step (#392, step 4), assembled from the shared
- * groups in `menuOptionParts.ts`.
+ * and the wizard's box step, assembled from the shared groups in
+ * `menuOptionParts.ts`.
  */
 import { easyLevelSettings, type Calibration, type LevelSettings } from '../domain/settings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
@@ -28,8 +28,8 @@ import { calibratedTilt } from './tiltReading';
 export function sharedOptions(parts: MenuOptionDeps) {
   return {
     ...calibrationOptions(parts),
-    // Sensor source choice (#135, ADR 0014): the wizard's box step embeds
-    // the same section the menu's page does.
+    // The wizard's box step embeds the same sensor-source section the menu's
+    // page does (ADR 0014).
     ...sensorSourceOptions(parts),
     ...boxConnectionOptions(EASYLEVEL_DESCRIPTOR, parts),
     ...easyLevelMountingOptions(parts.boxWiring),
@@ -39,14 +39,12 @@ export function sharedOptions(parts: MenuOptionDeps) {
 export interface MenuOptionsDeps {
   parts: MenuOptionDeps;
   settings: () => LevelSettings;
-  /** Demo mode presents as a configured app (#70). */
+  /** Demo mode presents as a configured app. */
   demo: boolean;
   hasStoredMeasurements: () => boolean;
   onSettingsSaved(next: LevelSettings): void;
   openOnboarding(): void;
-  /** The active box's own page (#316). */
   openExternalSensor(): void;
-  /** Calibration, zero and target, combined, for the active source. */
   effectiveCalibration(): Calibration | null;
   shareVehicleSetup(current: LevelSettings): void;
 }
@@ -69,7 +67,7 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
     getVehicleType: () => settings().vehicleType,
     getActiveTargetName: () => parts.targets.activeName(),
     getHealth: () => healthOf('easylevel', parts.externalSensors.getSensor('easylevel')),
-    // Raw status bytes are EasyLevel's own debug surface (#268).
+    // Raw status bytes are EasyLevel's own debug surface.
     getEasyLevelStatusBytes: () => {
       const sensor = parts.externalSensors.getSensor('easylevel');
       return sensor && sensor.getSource() === 'easylevel'
@@ -80,8 +78,8 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
       enabled: easyLevelSettings(settings()).connectDelayEnabled,
       ms: easyLevelSettings(settings()).connectDelayMs,
     }),
-    // Debug-only (#212); the transport reads the settings live, so it
-    // applies on the next connect.
+    // Debug-only; the transport reads the settings live, so it applies on
+    // the next connect.
     setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
       settingsAccess.set(withEasyLevelConnectDelay(settings(), enabled, ms)),
     getSoundPrefs: () => ({
@@ -94,7 +92,7 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
 
 export type MenuOptionsBag = ReturnType<typeof buildMenuOptions>;
 
-/** One box's own page: its connection, live status and setup (#268). */
+/** One box's own page: its connection, live status and setup. */
 export function boxPageOptions(
   menu: MenuOptionsBag,
   descriptor: ExternalSensorDescriptor,
@@ -108,7 +106,7 @@ export function boxPageOptions(
   };
 }
 
-/** One box in the wizard's box step (#272): connection and setup. */
+/** One box in the wizard's box step: connection and setup, no live status. */
 export function wizardBoxOptions(
   menu: MenuOptionsBag,
   descriptor: ExternalSensorDescriptor,

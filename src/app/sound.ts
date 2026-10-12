@@ -1,8 +1,6 @@
 /**
- * The app's sounds (#392, step 1): the level chime, the guidance pulse
- * (#121) and the mute toggle (#161). WebAudio needs no asset, and the
- * context is created lazily on a user gesture (`unlock`), which also
- * satisfies autoplay policies.
+ * WebAudio needs no asset, and the context is created lazily on a user
+ * gesture (`unlock`), which also satisfies autoplay policies.
  */
 import type { GuidanceDirection } from '../domain/audioGuidance';
 import { toggleMute, type SoundPrefs } from '../domain/settings';
@@ -11,7 +9,6 @@ import type { SettingsAccess } from './externalSensorWiring';
 export interface Sound {
   /** Creates the context on first use and resumes it; call from a gesture. */
   unlock(): void;
-  /** Short two-tone chime when level is reached. */
   playChime(): void;
   /** One guidance pulse at `pitchHz`, gliding with `direction`. */
   playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void;
@@ -86,7 +83,7 @@ export interface MuteToggle {
 }
 
 /**
- * One switch for both sounds (#161). Muting remembers the exact earlier
+ * One switch for both sounds. Muting remembers the exact earlier
  * values so unmuting restores them (`toggleMute`); unmuting is itself a
  * user gesture, so it unlocks audio when sound ends up on.
  */

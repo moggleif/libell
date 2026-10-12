@@ -1,8 +1,7 @@
 /**
- * One frame of the level screen (#374): what the screen shows for the
- * reading at hand, and when the level celebration and the audio guidance
- * fire. The screen's elements live in `levelScreenView.ts` behind `LevelFrameView`;
- * this module only decides.
+ * One frame of the level screen: what it shows for the reading at hand, and
+ * when the celebration and the audio guidance fire. The elements live in
+ * `levelScreenView.ts` behind `LevelFrameView`; this module only decides.
  */
 import { createAudioGuidance, type GuidanceDirection } from '../domain/audioGuidance';
 import { tiltFromGravity, type GravityVector } from '../domain/leveling';
@@ -16,7 +15,6 @@ import type { OrientationSensor } from '../sensor/orientation';
 import { isSensorUnavailable } from '../sensor/sensorFallback';
 import type { MessageKey } from '../ui/i18n';
 
-/** What the vehicle engine reports back for one reading. */
 export interface EngineTick {
   isLevel: boolean;
   maxCorrectionMm: number;
@@ -26,11 +24,10 @@ export interface EngineTick {
 export interface PoseProblem {
   message: MessageKey;
   hint: MessageKey;
-  /** A box's own page can help (#285); the phone has none. */
+  /** A box's own page can help; the phone has none. */
   offerSensorPage: boolean;
 }
 
-/** The level screen's elements, as the frame drives them. */
 export interface LevelFrameView {
   /** A page is open over the screen: hide every overlay and prompt. */
   pause(): void;
@@ -42,7 +39,6 @@ export interface LevelFrameView {
   hideStale(): void;
   showPose(problem: PoseProblem): void;
   hidePose(): void;
-  /** Compute and draw the guidance for this reading. */
   tick(gravity: GravityVector, nowMs: number): EngineTick;
   showMeasuring(): void;
   celebrate(): void;
@@ -50,7 +46,7 @@ export interface LevelFrameView {
 }
 
 export interface LevelFrameDeps {
-  /** The source feeding readings right now, read fresh on every use. */
+  /** Read fresh on every use: the active source changes. */
   sensor: () => OrientationSensor;
   /** Settings, help, a box page or the wizard is open. */
   isPaused: () => boolean;
@@ -65,9 +61,9 @@ export interface LevelFrameDeps {
   view: LevelFrameView;
 }
 
-// Celebration arming (field feedback, twice): the trigger re-arms only
-// after the vehicle has been CLEARLY un-level, well past the tolerance and
-// sustained, so jitter at the boundary can never celebrate again.
+// The celebration re-arms only after the vehicle has been CLEARLY un-level,
+// well past the tolerance and sustained, so jitter at the boundary can never
+// celebrate again.
 const REARM_MARGIN_MM = 15;
 const REARM_SUSTAIN_MS = 3000;
 const CELEBRATE_COOLDOWN_MS = 20000;
@@ -77,14 +73,14 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
   const { view } = deps;
   const detectPose = createPoseDetector();
   const detectExternalPose = createExternalPoseDetector();
-  // Rocking vehicle: "Measuring…" until the reading has been calm (#86).
+  // Rocking vehicle: "Measuring…" until the reading has been calm.
   const isStill = createStillnessDetector();
   const celebration = createCelebration(deps);
   const guidance = createGuidancePulses(deps);
 
   function frame(nowMs: number): void {
     // Refreshed every frame, a page open or not: a lost box is only ever
-    // seen by polling its state (#129).
+    // seen by polling its state.
     deps.refreshStatus();
     // The user is reading, phone in hand: no nagging, no celebration.
     if (deps.isPaused()) {
@@ -96,8 +92,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
     else showNoData(nowMs);
   }
 
-  /** No reading yet, or no longer (#116): never a frozen last frame. A
-   * lost box gets the Retry prompt (#134) and a background retry (#211). */
+  /** No reading yet, or no longer: never a frozen last frame. */
   function showNoData(nowMs: number): void {
     const unavailable = isSensorUnavailable(deps.sensor().getState());
     view.showNoData(unavailable, deps.externalSensors.canRetrySilently());
@@ -106,7 +101,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
 
   function showReading(gravity: GravityVector, nowMs: number): void {
     view.showReading();
-    // Stale before pose (#132): a reading too old to trust is not safe
+    // Stale before pose: a reading too old to trust is not safe
     // to judge the pose from either, and the overlays never both show.
     if (isStale(nowMs)) {
       view.showStale(deps.hasSensorPage && deps.sensor().getSource() !== 'phone');
@@ -125,7 +120,6 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
     guide(gravity, nowMs);
   }
 
-  /** Each box declares its own timeout (#266); the phone keeps its own. */
   function isStale(nowMs: number): boolean {
     const sensor = deps.sensor();
     const timeoutMs = externalSensorById(sensor.getSource())?.staleTimeoutMs;
@@ -133,7 +127,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
   }
 
   /** The phone's pose rules (R17) are the phone's; a mounted box is only
-   * checked for positions too extreme to be a real mount (#285, R43). */
+   * checked for positions too extreme to be a real mount (R43). */
   function poseProblem(gravity: GravityVector): PoseProblem | null {
     const source = deps.sensor().getSource();
     if (source === 'phone') {
@@ -142,7 +136,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
     }
     const pose = detectExternalPose(gravity);
     if (pose === 'ok') return null;
-    // A box built to stand (#304) is told to stand, never to lie flat.
+    // A box built to stand is told to stand, never to lie flat.
     const upright = externalSensorById(source)?.capabilities.upright ?? false;
     return {
       message: upright ? 'pose.sensorNotUpright' : boxPoseMessage(pose),
@@ -174,7 +168,7 @@ function boxPoseMessage(pose: Exclude<ExternalPose, 'ok'>): MessageKey {
   return pose === 'upside-down' ? 'pose.sensorUpsideDown' : 'pose.sensorExtreme';
 }
 
-/** The vibration and overlay fire once per actual leveling (#124). */
+/** The vibration and overlay fire once per actual leveling. */
 function createCelebration(deps: LevelFrameDeps) {
   let wasLevel = false;
   let armed = false;
@@ -205,8 +199,8 @@ function createCelebration(deps: LevelFrameDeps) {
   };
 }
 
-/** Continuous audio guidance (#121, opt-in): fed every frame so its
- * direction hysteresis keeps up, but a pulse plays only while still. */
+/** Fed every frame so the direction hysteresis keeps up, but a pulse plays
+ * only while still. */
 function createGuidancePulses(deps: LevelFrameDeps) {
   const guideAudio = createAudioGuidance();
   let lastPulseAt = -Infinity;

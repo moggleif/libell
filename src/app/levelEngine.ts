@@ -1,8 +1,7 @@
 /**
- * The level screen's vehicle engine (#72, #392 step 2): compute → stabilize
- * → draw for the chosen vehicle type, reporting back what the frame's
- * celebration and guidance need. Settings are read afresh on every tick;
- * only what the diagram is built from is fixed at creation.
+ * The level screen's vehicle engine: compute → stabilize → draw for the
+ * chosen vehicle type. Settings are read afresh on every tick; only what
+ * the diagram is built from is fixed at creation.
  */
 import { computeCaravanLeveling, createCaravanStabilizer } from '../domain/caravan';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from '../domain/leveling';
@@ -26,7 +25,7 @@ export interface LevelEngine {
 }
 
 /**
- * The motorhome's status row (#252): only what no wheel card can show —
+ * The motorhome's status row: only what no wheel card can show —
  * how little is left, and whether the ramps reach at all. Level, and
  * which wheels to raise, are the wheel cards' own colour, glyph and step.
  */
@@ -38,8 +37,7 @@ export function motorhomeStatusText(result: DisplayResult, settings: LevelSettin
       left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
     });
   }
-  // Wheels the plan actually asks to drive up (#93) — a red wheel
-  // without a step is one the owned ramps cannot serve.
+  // A red wheel without a step is one the owned ramps cannot serve.
   const toRaise = WHEEL_IDS.filter(
     (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
   ).length;
@@ -86,7 +84,7 @@ function createMotorhomeEngine(
 /**
  * The caravan diagram draws the jockey wheel's direction, action and
  * amount, and the axle wheels their severity, so its status row has
- * nothing to add (#252).
+ * nothing to add.
  */
 function createCaravanEngine(
   settings: () => LevelSettings,

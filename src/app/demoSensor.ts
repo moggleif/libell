@@ -19,10 +19,10 @@ export function createDemoSensor(): OrientationSensor {
     start: () => Promise.resolve('granted' as const),
     getState: () => 'granted' as const,
     getGravity: () => gravity,
-    // It speaks for the phone sensor it replaces (#128).
+    // It speaks for the phone sensor it replaces.
     getSource: () => 'phone' as const,
-    // Always "just sampled" (#132): demo mode and the screenshots never
-    // show the stale-data overlay.
+    // Always "just sampled": demo mode and the screenshots never show the
+    // stale-data overlay.
     getLastSampleAt: () => performance.now(),
   };
 }

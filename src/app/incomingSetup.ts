@@ -1,5 +1,5 @@
 /**
- * An incoming "share vehicle setup" link (R41, #207), shown instead of the
+ * An incoming "share vehicle setup" link (R41), shown instead of the
  * first-run wizard on this launch. Malformed, truncated or future-version
  * links fail closed: a toast, and nothing applied (`decodeVehicleGeometry`).
  */

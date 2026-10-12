@@ -1,7 +1,6 @@
 /**
- * Opening the first-run wizard (#43, #392 step 4) and what its close
- * means for the rest of the app. Skippable: the lamps stay lit for
- * whatever was skipped.
+ * Opening the first-run wizard and what its close means for the rest of
+ * the app. Skippable: the lamps stay lit for whatever was skipped.
  */
 import type { LevelSettings, SensorSource } from '../domain/settings';
 import type { OnboardingOptions } from '../ui/onboarding';
@@ -14,7 +13,6 @@ export interface OnboardingLauncherDeps {
   settings: () => LevelSettings;
   onSettingsSaved(next: LevelSettings): void;
   parts: MenuOptionDeps;
-  /** Each available box's options, for the box step (#272). */
   sensorOptionsFor: OnboardingOptions['sensorOptionsFor'];
   progress: { markSeen(): void; markDone(): void };
   boxPending: BoxPending;
@@ -44,7 +42,7 @@ export function createOnboardingLauncher(deps: OnboardingLauncherDeps): Onboardi
           open = false;
           deps.progress.markSeen();
           if (done) deps.progress.markDone();
-          // A box chosen but not connected (#365): see `createBoxPending`.
+          // A box chosen but not connected: see `createBoxPending`.
           if (done) deps.boxPending.settle(path === 'external' && deps.activeSource() === 'phone');
           deps.refreshLamps();
         },

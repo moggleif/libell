@@ -1,5 +1,5 @@
 /**
- * Where Settings live (#392, step 5): Modern's tabbed Settings page behind
+ * Where Settings live: Modern's tabbed Settings page behind
  * the gear, or Classic's ☰ drawer. Decided once at start-up, like every
  * other appearance-branching component; a later appearance change reloads.
  */
@@ -16,7 +16,7 @@ export interface SettingsSurface {
   /**
    * The active source may have flipped under an open Settings (a box
    * connected or disconnected from its own page): redraw its calibration
-   * view so closing the box page shows the right one (#353). Only on a
+   * view so closing the box page shows the right one. Only on a
    * real change, so a silent reconnect never redraws mid-read.
    */
   followSource(source: SensorSource): void;
@@ -28,7 +28,7 @@ export function mountSettingsSurface(options: MenuOptions): SettingsSurface {
     options.initialSettings.appearance === 'modern'
       ? mountSettingsPage(options, button)
       : mountMenu(options, button);
-  // Just reloaded for a new appearance or language from Settings (#345):
+  // Just reloaded for a new appearance or language from Settings:
   // back on General, where the choice was made.
   if (takeReopenSettings()) surface.openGeneral();
   let lastSource: SensorSource = 'phone';
