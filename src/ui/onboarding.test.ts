@@ -1140,3 +1140,202 @@ describe('onboarding wizard — the embedded heading never repeats the step head
     expect(body.textContent).toContain(t('calibration.flip.start'));
   });
 });
+
+// Pins the wizard's whole interface before it is split into one module per
+// step (#415): the same assertions must pass, unchanged, before and after.
+describe('onboarding wizard — regression pins for the module split (#415)', () => {
+  function title(): string | null | undefined {
+    return card()?.querySelector('.onboarding__title')?.firstChild?.textContent;
+  }
+
+  function pickSource(value: 'phone' | 'external'): void {
+    const radio = card().querySelector<HTMLInputElement>(
+      `input[name="onboarding-source"][value="${value}"]`,
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change'));
+  }
+
+  const LEADING = [
+    'onboard.welcome.h',
+    'settings.language',
+    'settings.appearance',
+    'onboard.sound.h',
+  ] as const;
+  const PHONE_TAIL = ['onboard.step1.h', 'help.settings.h', 'settings.tab.ramps'] as const;
+  const EXTERNAL_TAIL = [
+    'menu.sensorSource',
+    'onboard.boxPosition.h',
+    'help.screen.h',
+    'help.settings.h',
+    'settings.tab.ramps',
+  ] as const;
+
+  type Path = {
+    name: string;
+    bluetooth: boolean;
+    source: 'phone' | 'easylevel';
+    choice?: 'phone' | 'external';
+    titles: string[];
+  };
+
+  const PATHS: Path[] = [
+    {
+      name: 'no Web Bluetooth',
+      bluetooth: false,
+      source: 'phone',
+      titles: [...LEADING, 'onboard.vehicle.h', ...PHONE_TAIL, 'calibration.sensor.h'],
+    },
+    {
+      name: 'Web Bluetooth, phone chosen',
+      bluetooth: true,
+      source: 'phone',
+      choice: 'phone',
+      titles: [
+        ...LEADING,
+        'onboard.source.h',
+        'onboard.vehicle.h',
+        ...PHONE_TAIL,
+        'calibration.sensor.h',
+      ],
+    },
+    {
+      name: 'Web Bluetooth, external chosen',
+      bluetooth: true,
+      source: 'phone',
+      choice: 'external',
+      titles: [...LEADING, 'onboard.source.h', 'onboard.vehicle.h', ...EXTERNAL_TAIL],
+    },
+    {
+      name: 'box active, phone chosen',
+      bluetooth: true,
+      source: 'easylevel',
+      choice: 'phone',
+      titles: [...LEADING, 'onboard.source.h', 'onboard.vehicle.h', ...PHONE_TAIL],
+    },
+    {
+      name: 'box active, external chosen',
+      bluetooth: true,
+      source: 'easylevel',
+      choice: 'external',
+      titles: [...LEADING, 'onboard.source.h', 'onboard.vehicle.h', ...EXTERNAL_TAIL],
+    },
+  ];
+
+  function start(path: Path, overrides: Partial<OnboardingOptions> = {}): void {
+    if (path.bluetooth) withBluetooth();
+    else withoutBluetooth();
+    showOnboarding(
+      makeOptions({
+        initialSettings: classicSettings(),
+        getSensorSource: () => path.source,
+        ...overrides,
+      }),
+    );
+  }
+
+  /** Steps forward to `stepIndex`, picking the path's source on the way. */
+  function walkTo(path: Path, stepIndex: number): void {
+    for (let i = 0; i < stepIndex; i += 1) {
+      if (title() === t('onboard.source.h') && path.choice) pickSource(path.choice);
+      next();
+    }
+  }
+
+  for (const path of PATHS) {
+    for (const appearance of ['classic', 'modern'] as const) {
+      it(`${path.name} (${appearance}): shows exactly these steps, in order, then finishes`, () => {
+        let finished: [boolean, string] | undefined;
+        start(path, {
+          initialSettings: { ...DEFAULT_SETTINGS, appearance },
+          onFinished: (done, p) => (finished = [done, p]),
+        });
+        const seen: (string | null | undefined)[] = [];
+        for (let i = 0; i < path.titles.length; i += 1) {
+          seen.push(title());
+          walkTo(path, 1);
+        }
+        expect(seen).toEqual(path.titles.map((key) => t(key as Parameters<typeof t>[0])));
+        expect(finished).toEqual([true, path.choice ?? 'phone']);
+        expect(document.querySelector('.onboarding')).toBeNull();
+      });
+    }
+
+    it(`${path.name}: ✕ on any step closes with onFinished(false) and the path chosen so far`, () => {
+      for (let step = 0; step < path.titles.length; step += 1) {
+        const calls: [boolean, string][] = [];
+        start(path, { onFinished: (done, p) => calls.push([done, p]) });
+        walkTo(path, step);
+        card().querySelector<HTMLButtonElement>('.onboarding__close')!.click();
+        const chosen = step > path.titles.indexOf('onboard.source.h') ? path.choice : undefined;
+        expect(calls).toEqual([[false, path.bluetooth ? (chosen ?? 'phone') : 'phone']]);
+        expect(document.querySelector('.onboarding')).toBeNull();
+        document.body.replaceChildren();
+      }
+    });
+
+    it(`${path.name}: Next saves only on the steps that embed a settings form`, () => {
+      const savedOn: string[] = [];
+      start(path, {
+        onSettingsSaved: () => savedOn.push(title() ?? ''),
+      });
+      walkTo(path, path.titles.length);
+      expect(savedOn).toEqual(
+        [
+          'settings.language',
+          'settings.appearance',
+          'onboard.sound.h',
+          'help.settings.h',
+          'settings.tab.ramps',
+        ].map((key) => t(key as Parameters<typeof t>[0])),
+      );
+    });
+
+    it(`${path.name}: every step moves focus to its heading, and Back returns step by step`, () => {
+      start(path);
+      walkTo(path, path.titles.length - 1);
+      for (let i = path.titles.length - 1; i >= 0; i -= 1) {
+        expect(title()).toBe(t(path.titles[i] as Parameters<typeof t>[0]));
+        expect(document.activeElement).toBe(card().querySelector('.onboarding__title'));
+        expect(card().querySelector('.onboarding__progress')?.textContent).toBe(
+          `${i + 1} / ${path.titles.length}`,
+        );
+        if (i > 0) back();
+      }
+    });
+  }
+
+  it('Back from the external path keeps the external radio picked and its step total', () => {
+    withBluetooth();
+    open({ initialSettings: classicSettings() });
+    pickSource('external');
+    next(); // -> vehicle
+    back(); // -> source
+    expect(
+      card().querySelector<HTMLInputElement>('input[name="onboarding-source"][value="external"]')!
+        .checked,
+    ).toBe(true);
+    expect(card().querySelector('.onboarding__progress')?.textContent).toBe('5 / 11');
+  });
+
+  it('the box-position step redraws with the live position once a connection lands', async () => {
+    withBluetooth();
+    let source: 'phone' | 'easylevel' = 'phone';
+    open({
+      initialSettings: classicSettings(),
+      getSensorSource: () => source,
+      getCalibratedTilt: () => ({ pitchDeg: 1, rollDeg: 0 }),
+    });
+    pickSource('external');
+    next(); // -> vehicle
+    next(); // -> connect
+    next(); // -> the box's position, nothing connected yet
+    const notConnected = t('onboard.boxPosition.notConnected', { next: t('onboard.next') });
+    expect(card().textContent).toContain(notConnected);
+    source = 'easylevel';
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(title()).toBe(t('onboard.boxPosition.h'));
+    expect(card().textContent).not.toContain(notConnected);
+    expect(card().textContent).toContain(t('box.step.position.flat.ok'));
+  });
+});
