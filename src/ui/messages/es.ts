@@ -38,6 +38,7 @@ export const es: Messages = {
 
   'sensorStatus.connected': 'Caja sensora conectada',
   'sensorStatus.disconnected': 'Caja sensora: se perdió el contacto, toca para ver los detalles',
+  'sensorStatus.stale': 'Caja sensora: no llegan datos nuevos, toca para ver los detalles',
   'sensorStatus.idle': 'Caja sensora: toca para conectar',
   'sensorStatus.idle.guide': 'Caja sensora: toca para ver la guía de iPhone',
 

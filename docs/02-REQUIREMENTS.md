@@ -876,8 +876,6 @@ URL and must keep working with no signal.
 
 ## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
 
-> **Open bug:** the sensor icon does not yet switch to its warning look while data is stale (#401).
-
 - **Given** a phone with Chrome/Android and Web Bluetooth support
 - **When** the user opens the Sensor box page and taps "Connect" on the EasyLevel
   card (read out as "Connect EasyLevel sensor")
