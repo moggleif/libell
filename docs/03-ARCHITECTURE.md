@@ -189,8 +189,10 @@ code — it is **polled** (a read of `fff2` twice a second, where EasyLevel is n
 and it is **written to** (a password and a parameter query on connect, where EasyLevel
 never writes at all). It reports finished angles rather than accelerometer axes, so the
 adapter synthesizes the `GravityVector` the seam takes; it applies its own stored mounting
-orientation, so Libell applies none. `xparkleSimulator.ts` (#271, R48) plugs a simulated
-box into that same transport seam behind `?xparkle-sim`.
+orientation, so Libell applies none. The adapter is the `OrientationSensor` face only:
+`xparkleLink.ts` runs one live link (handshake, poll loop, command replies) and
+`xparkleTransport.ts` is the transport seam with its Web Bluetooth link, where
+`xparkleSimulator.ts` (#271, R48) plugs in a simulated box behind `?xparkle-sim`.
 
 **The Web Bluetooth link** (`src/sensor/webBluetoothLink.ts`, #418) is the connect,
 teardown, retry and silent-reconnect code a real BLE box needs, written once. An adapter

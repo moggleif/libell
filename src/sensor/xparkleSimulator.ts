@@ -26,7 +26,7 @@ import {
   XPARKLE_DEFAULT_PASSWORD,
   XPARKLE_FRAME_HEADER,
 } from './xparkleProtocol';
-import type { XparkleConnection, XparkleTransport } from './xparkleSensor';
+import type { XparkleConnection, XparkleTransport } from './xparkleTransport';
 import { createSimulatedLink, type SimulatedSession } from './simulatedLink';
 
 export type XparkleSimulationMode = 'off' | 'steady' | 'drop' | 'badpassword';

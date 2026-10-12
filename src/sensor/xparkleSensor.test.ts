@@ -1,14 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createXparkleSensor, XPARKLE_DESCRIPTOR } from './xparkleSensor';
+import { XPARKLE_POLL_INTERVAL_MS, XPARKLE_READ_TIMEOUT_MS } from './xparkleLink';
 import {
-  createXparkleSensor,
   createXparkleWebBluetoothTransport,
   XPARKLE_ADVERTISEMENT_WAIT_MS,
-  XPARKLE_DESCRIPTOR,
-  XPARKLE_POLL_INTERVAL_MS,
-  XPARKLE_READ_TIMEOUT_MS,
   type XparkleConnection,
   type XparkleTransport,
-} from './xparkleSensor';
+} from './xparkleTransport';
 import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleProtocol';
 
 /** A live payload: flags, two big-endian 1/100° magnitudes, battery. */
