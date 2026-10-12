@@ -112,6 +112,17 @@ before push):
 git config core.hookspath .githooks
 ```
 
+## Quality guards
+
+`npm run test` also runs the guards in `scripts/quality/` over the app source (#475), so
+they block a merge like any failing test. Each failure names the file and what to do.
+
+- **Size:** a function may span at most 50 lines (inner functions included) and a file
+  at most 400 (`src/ui/messages/` is exempt). Functions and files that were longer when
+  the guard arrived are listed in `scripts/quality/size-baseline.json`; they may shrink
+  but never grow, and the guard asks you to lower or remove an entry once they shrink.
+  Never raise a baseline or a limit to get green: split the code instead.
+
 ## Workflow
 
 - **Behavior- and issue-driven.** Every feature has a GitHub issue with Given/When/Then
