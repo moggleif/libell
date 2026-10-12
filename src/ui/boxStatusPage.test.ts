@@ -774,7 +774,7 @@ describe('pinned before the #416 split', () => {
     expect(debug).toContain('00 0a ff');
   });
 
-  it('copies the debug summary line by line, with the connection state', async () => {
+  it('copies the debug summary line by line, with the connection state and temperature (#402)', async () => {
     const writeText = vi.fn(() => Promise.resolve());
     Object.defineProperty(globalThis.navigator, 'clipboard', {
       value: { writeText },
@@ -785,6 +785,7 @@ describe('pinned before the #416 split', () => {
         getSensorSource: () => 'easylevel',
         getSensorState: () => 'granted',
         getDeviceId: () => 'dev-1',
+        getHealth: () => ({ batteryPercent: 72, temperatureCelsius: 19.5, firmwareLabel: '3' }),
       }),
     );
     findCopy(page.element).click();
@@ -792,8 +793,9 @@ describe('pinned before the #416 split', () => {
     const lines = text.split('\n');
     expect(lines[0]).toBe('Libell EasyLevel debug info');
     expect(lines[1]).toBe('Connection state: granted');
-    expect(lines[2]).toBe('Device ID: dev-1');
-    expect(lines).toHaveLength(7);
+    expect(lines[2]).toBe('Temperature: 19.5°C');
+    expect(lines[3]).toBe('Device ID: dev-1');
+    expect(lines).toHaveLength(8);
   });
 
   function findCopy(root: HTMLElement): HTMLButtonElement {
