@@ -282,8 +282,9 @@ export const es: Messages = {
   'calibration.clear': 'Borrar la calibración',
   'calibration.err.notRunning':
     'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
-  'calibration.err.notFlat':
-    'El móvil no parece estar plano: ponlo sobre una superficie nivelada e inténtalo de nuevo.',
+  'calibration.warn.notFlat':
+    'Esto no parece plano (más de 15°), así que la calibración será incorrecta. Pon el móvil sobre una superficie plana, o calibra de todos modos.',
+  'calibration.anyway': 'Calibrar de todos modos',
   'calibration.sensor.h': 'Calibrar el móvil',
   'calibration.vehicle.h': 'Poner el vehículo a cero',
   'calibration.vehicle.intro':
@@ -294,6 +295,9 @@ export const es: Messages = {
   'calibration.vehicle.status.none': 'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
   'calibration.vehicle.err.notFlat':
     'Esto parece más que la inclinación del sitio (>15°): ¿está el vehículo realmente nivelado?',
+  'calibration.vehicle.warn.notFlat':
+    'Esto no parece nivelado (más de 15°). ¿Está el vehículo realmente nivelado? Pon a cero de todos modos si estás seguro.',
+  'calibration.vehicle.anyway': 'Poner a cero de todos modos',
   'calibration.age.today': '(hoy)',
   'calibration.age.days': '(hace {n} días)',
   'calibration.check': 'Comprobar',

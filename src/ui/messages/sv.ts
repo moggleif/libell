@@ -284,8 +284,9 @@ export const sv: Messages = {
   'calibration.clear': 'Rensa kalibrering',
   'calibration.err.notRunning':
     'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
-  'calibration.err.notFlat':
-    'Telefonen verkar inte ligga plant — lägg den på en plan yta och försök igen.',
+  'calibration.warn.notFlat':
+    'Det här ser inte plant ut (över 15°), så kalibreringen blir fel. Lägg telefonen på en plan yta, eller kalibrera ändå.',
+  'calibration.anyway': 'Kalibrera ändå',
   'calibration.sensor.h': 'Kalibrera telefonen',
   'calibration.vehicle.h': 'Nollställ fordonet',
   'calibration.vehicle.intro':
@@ -296,6 +297,9 @@ export const sv: Messages = {
   'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
   'calibration.vehicle.err.notFlat':
     'Det ser ut som mer än platslutning (>15°) — står fordonet verkligen plant?',
+  'calibration.vehicle.warn.notFlat':
+    'Det här ser inte plant ut (över 15°). Står fordonet verkligen plant? Nollställ ändå om du är säker.',
+  'calibration.vehicle.anyway': 'Nollställ ändå',
   'calibration.age.today': '(idag)',
   'calibration.age.days': '(för {n} dagar sedan)',
   'calibration.check': 'Kontrollera',

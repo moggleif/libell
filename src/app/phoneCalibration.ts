@@ -5,7 +5,11 @@
  * recalibration. Their sum is what "level" means while the phone is the
  * source.
  */
-import { combineCalibrations, vehicleZeroFromReading } from '../domain/calibration';
+import {
+  combineCalibrations,
+  vehicleZeroFromReading,
+  type CaptureResult,
+} from '../domain/calibration';
 import type { Calibration } from '../domain/settings';
 import {
   clearCalibration,
@@ -42,13 +46,14 @@ export interface PhoneCalibration {
   vehicleZeroCapturedAt(): number | null;
   /** Bias plus vehicle zero: what the leveling math subtracts. */
   zero(): Calibration | null;
-  /** Take the bias from the phone lying flat; an error message, or null. */
-  calibrate(): string | null;
+  /** Take the bias from the phone lying flat. Above 15° it warns instead,
+   * unless `anyway` says the user has chosen to go ahead (#411). */
+  calibrate(anyway?: boolean): CaptureResult;
   /** Store a bias computed elsewhere (the flip method). */
   applyBias(bias: Calibration): void;
   clearBias(): void;
-  /** Take the vehicle zero; an error message, or null. */
-  zeroVehicle(): string | null;
+  /** Take the vehicle zero — warns above 15° like `calibrate`. */
+  zeroVehicle(anyway?: boolean): CaptureResult;
   clearVehicleZero(): void;
   /** How far the reading is from the bias's promise of zero (#87). */
   checkBias(): string;
@@ -88,10 +93,12 @@ export function createPhoneCalibration(deps: PhoneCalibrationDeps): PhoneCalibra
     vehicleZero: () => vehicleZero?.value ?? null,
     vehicleZeroCapturedAt: () => vehicleZero?.capturedAt ?? null,
     zero,
-    calibrate() {
+    calibrate(anyway = false) {
       const reading = deps.readTilt();
       if (typeof reading === 'string') return reading;
-      if (exceedsCalibrationLimit(reading)) return t('calibration.err.notFlat');
+      if (!anyway && exceedsCalibrationLimit(reading)) {
+        return { warning: t('calibration.warn.notFlat') };
+      }
       storeBias(reading);
       return null;
     },
@@ -101,10 +108,12 @@ export function createPhoneCalibration(deps: PhoneCalibrationDeps): PhoneCalibra
       clearCalibration(storage);
       deps.onCleared();
     },
-    zeroVehicle() {
+    zeroVehicle(anyway = false) {
       const reading = deps.readTilt();
       if (typeof reading === 'string') return reading;
-      if (exceedsCalibrationLimit(reading)) return t('calibration.vehicle.err.notFlat');
+      if (!anyway && exceedsCalibrationLimit(reading)) {
+        return { warning: t('calibration.vehicle.warn.notFlat') };
+      }
       const value = vehicleZeroFromReading(reading, bias?.value ?? null);
       const capturedAt = now();
       vehicleZero = { value, capturedAt };
