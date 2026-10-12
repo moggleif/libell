@@ -189,85 +189,119 @@ export function createDisplayStabilizer(): (
   settings: LevelSettings,
   nowMs: number,
 ) => DisplayResult {
-  let initialized = false;
+  let shown: ShownDisplay | null = null;
+  return (result, settings, nowMs) => {
+    const lifts = liftsOf(result);
+    if (shown === null) shown = initialDisplay(lifts, settings);
+    else settleDisplay(shown, lifts, settings, nowMs);
+    return displayResult(result, shown, settings);
+  };
+}
+
+/** What the motorhome screen currently shows, plus the dwell bookkeeping. */
+interface ShownDisplay {
+  displayMm: Record<WheelId, number>;
+  mmPending: Record<WheelId, AdaptiveDwellPending>;
+  steps: Record<WheelId, number>;
+  planSince: number | null;
+}
+
+function liftsOf(result: LevelingResult): Record<WheelId, number> {
+  const lifts = {} as Record<WheelId, number>;
+  for (const id of WHEEL_IDS) lifts[id] = result.wheels[id].liftMm;
+  return lifts;
+}
+
+/** The first reading is shown as is: there is nothing to be stable against yet. */
+function initialDisplay(lifts: Record<WheelId, number>, settings: LevelSettings): ShownDisplay {
   const displayMm = {} as Record<WheelId, number>;
   const mmPending = {} as Record<WheelId, AdaptiveDwellPending>;
-  for (const id of WHEEL_IDS) mmPending[id] = newAdaptiveDwellPending();
-  let shownSteps = {} as Record<WheelId, number>;
-  let planSince: number | null = null;
+  for (const id of WHEEL_IDS) {
+    displayMm[id] = Math.round(lifts[id]);
+    mmPending[id] = newAdaptiveDwellPending();
+  }
+  return { displayMm, mmPending, steps: { ...planRamps(lifts, settings).steps }, planSince: null };
+}
 
-  return (result, settings, nowMs) => {
-    const deadbandMm = settings.stabilityMm;
-    const lifts = {} as Record<WheelId, number>;
-    for (const id of WHEEL_IDS) lifts[id] = result.wheels[id].liftMm;
+function settleDisplay(
+  shown: ShownDisplay,
+  lifts: Record<WheelId, number>,
+  settings: LevelSettings,
+  nowMs: number,
+): void {
+  settlePlan(shown, lifts, settings, nowMs);
+  for (const id of WHEEL_IDS) {
+    shown.displayMm[id] = stabilizeNumber(
+      shown.displayMm[id],
+      shown.mmPending[id],
+      lifts[id],
+      settings.stabilityMm,
+      settings.dwellRestMs,
+      settings.dwellMotionMs,
+      nowMs,
+    );
+  }
+}
 
-    // The best plan for the current (live) reading — used only to decide
-    // *whether* to adopt a new shown plan, never to render directly.
-    const fresh = planRamps(lifts, settings);
+/**
+ * Plan adoption: the best plan for the live reading is used only to decide
+ * *whether* to replace the shown plan, never rendered directly. Fixed rest
+ * dwell, not adaptive — see the module doc comment.
+ */
+function settlePlan(
+  shown: ShownDisplay,
+  lifts: Record<WheelId, number>,
+  settings: LevelSettings,
+  nowMs: number,
+): void {
+  const fresh = planRamps(lifts, settings);
+  const current = evaluateSteps(shown.steps, lifts, settings);
+  if (!isClearlyBetterPlan(fresh, current, settings)) {
+    shown.planSince = null;
+    return;
+  }
+  shown.planSince ??= nowMs;
+  if (nowMs - shown.planSince >= settings.dwellRestMs) {
+    shown.steps = { ...fresh.steps };
+    shown.planSince = null;
+  }
+}
 
-    if (!initialized) {
-      initialized = true;
-      shownSteps = { ...fresh.steps };
-      for (const id of WHEEL_IDS) displayMm[id] = Math.round(lifts[id]);
-    } else {
-      // Plan adoption: compare the fresh optimum against what the shown
-      // plan would achieve under the *current* lifts. Fixed rest dwell,
-      // not adaptive — see the module doc comment.
-      if (WHEEL_IDS.every((id) => fresh.steps[id] === shownSteps[id])) {
-        planSince = null;
-      } else {
-        const current = evaluateSteps(shownSteps, lifts, settings);
-        const clearlyLevel = (plan: RampPlan) =>
-          plan.maxDeficitMm <= settings.toleranceMm - deadbandMm;
-        const wantsPlan =
-          fresh.maxDeficitMm + deadbandMm < current.maxDeficitMm ||
-          (clearlyLevel(fresh) && fresh.rampsUsed < current.rampsUsed) ||
-          (clearlyLevel(fresh) &&
-            clearlyLevel(current) &&
-            fresh.rampsUsed === current.rampsUsed &&
-            fresh.drainScoreMm > current.drainScoreMm + deadbandMm);
-        if (!wantsPlan) {
-          planSince = null;
-        } else {
-          planSince ??= nowMs;
-          if (nowMs - planSince >= settings.dwellRestMs) {
-            shownSteps = { ...fresh.steps };
-            planSince = null;
-          }
-        }
-      }
+/** Clearly more level, level with fewer ramps, or (all else equal) clearly better for the drain. */
+function isClearlyBetterPlan(fresh: RampPlan, current: RampPlan, settings: LevelSettings): boolean {
+  if (WHEEL_IDS.every((id) => fresh.steps[id] === current.steps[id])) return false;
+  const deadbandMm = settings.stabilityMm;
+  const clearlyLevel = (plan: RampPlan) => plan.maxDeficitMm <= settings.toleranceMm - deadbandMm;
+  if (fresh.maxDeficitMm + deadbandMm < current.maxDeficitMm) return true;
+  if (!clearlyLevel(fresh)) return false;
+  if (fresh.rampsUsed < current.rampsUsed) return true;
+  return (
+    clearlyLevel(current) &&
+    fresh.rampsUsed === current.rampsUsed &&
+    fresh.drainScoreMm > current.drainScoreMm + deadbandMm
+  );
+}
 
-      for (const id of WHEEL_IDS) {
-        displayMm[id] = stabilizeNumber(
-          displayMm[id],
-          mmPending[id],
-          lifts[id],
-          deadbandMm,
-          settings.dwellRestMs,
-          settings.dwellMotionMs,
-          nowMs,
-        );
-      }
-    }
-
-    // Severity from the two layers just settled — see the doc comment.
-    const shown = evaluateSteps(shownSteps, displayMm, settings);
-    const wheels = {} as Record<WheelId, DisplayWheel>;
-    for (const id of WHEEL_IDS) {
-      wheels[id] = {
-        displayMm: displayMm[id],
-        stepMm: shownSteps[id],
-        severity: plannedSeverity(shownSteps[id], shown.deficits[id], displayMm[id], settings),
-      };
-    }
+/** Severity from the two layers just settled — see `createDisplayStabilizer`. */
+function displayResult(
+  result: LevelingResult,
+  shown: ShownDisplay,
+  settings: LevelSettings,
+): DisplayResult {
+  const plan = evaluateSteps(shown.steps, shown.displayMm, settings);
+  const wheels = {} as Record<WheelId, DisplayWheel>;
+  for (const id of WHEEL_IDS) {
+    const displayMm = shown.displayMm[id];
+    const stepMm = shown.steps[id];
+    const severity = plannedSeverity(stepMm, plan.deficits[id], displayMm, settings);
+    wheels[id] = { displayMm, stepMm, severity };
+  }
+  return {
+    rollDeg: result.rollDeg,
+    pitchDeg: result.pitchDeg,
     // Level exactly when every wheel shows green — one source of truth.
-    const isLevel = WHEEL_IDS.every((id) => wheels[id].severity === 'none');
-    return {
-      rollDeg: result.rollDeg,
-      pitchDeg: result.pitchDeg,
-      isLevel,
-      wheels,
-      maxDeficitMm: shown.maxDeficitMm,
-    };
+    isLevel: WHEEL_IDS.every((id) => wheels[id].severity === 'none'),
+    wheels,
+    maxDeficitMm: plan.maxDeficitMm,
   };
 }

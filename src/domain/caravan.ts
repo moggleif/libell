@@ -95,70 +95,100 @@ export function createCaravanStabilizer(): (
   settings: LevelSettings,
   nowMs: number,
 ) => CaravanDisplayResult {
-  let initialized = false;
-  const axle = {} as { left: DisplayWheel; right: DisplayWheel };
-  const pending: { left: LiftPending; right: LiftPending } = {
-    left: newLiftPending(),
-    right: newLiftPending(),
-  };
-  // The one stabilized quantity for the jockey is its signed mm figure; the
-  // displayed magnitude and direction are both derived from it rather than
-  // tracked on their own clocks, so the arrow can never point a way the
-  // number no longer agrees with (see `createDisplayStabilizer`).
-  let jockeyShownSignedMm = 0;
-  const jockeyPending: AdaptiveDwellPending = newAdaptiveDwellPending();
-
+  let shown: ShownCaravan | null = null;
   return (result, settings, nowMs) => {
-    const deadbandMm = settings.stabilityMm;
-    const dirOf = (mm: number): JockeyDirection =>
-      Math.abs(mm) <= settings.toleranceMm ? 'ok' : mm > 0 ? 'up' : 'down';
+    if (shown === null) shown = initialCaravan(result, settings);
+    else settleCaravan(shown, result, settings, nowMs);
+    return caravanDisplay(result, shown, settings);
+  };
+}
 
-    if (!initialized) {
-      initialized = true;
-      for (const side of ['left', 'right'] as const) {
-        const liftMm = result.axle[side].liftMm;
-        const severity: LiftSeverity =
-          liftMm <= settings.toleranceMm
-            ? 'none'
-            : Math.abs(liftMm - result.axle[side].stepMm) <= settings.toleranceMm
-              ? 'small'
-              : 'large';
-        axle[side] = { displayMm: Math.round(liftMm), stepMm: result.axle[side].stepMm, severity };
-      }
-      jockeyShownSignedMm = result.jockeyMm;
-    } else {
-      axle.left = stabilizeLift(axle.left, pending.left, result.axle.left.liftMm, settings, nowMs);
-      axle.right = stabilizeLift(
-        axle.right,
-        pending.right,
-        result.axle.right.liftMm,
-        settings,
-        nowMs,
-      );
+/**
+ * What the caravan screen currently shows. The one stabilized quantity for
+ * the jockey is its signed mm figure; the displayed magnitude and direction
+ * are both derived from it rather than tracked on their own clocks, so the
+ * arrow can never point a way the number no longer agrees with (see
+ * `createDisplayStabilizer`).
+ */
+interface ShownCaravan {
+  axle: { left: DisplayWheel; right: DisplayWheel };
+  pending: { left: LiftPending; right: LiftPending };
+  jockeySignedMm: number;
+  jockeyPending: AdaptiveDwellPending;
+}
 
-      // Signed jockey figure: same adaptive dead-band + dwell as a wheel's
-      // mm figure — a sustained crank in one direction shouldn't lag any
-      // more than driving up a ramp does.
-      jockeyShownSignedMm = stabilizeNumber(
-        jockeyShownSignedMm,
-        jockeyPending,
-        result.jockeyMm,
-        deadbandMm,
-        settings.dwellRestMs,
-        settings.dwellMotionMs,
-        nowMs,
-      );
-    }
+const AXLE_SIDES = ['left', 'right'] as const;
 
-    const jockeyDirection = dirOf(jockeyShownSignedMm);
-    return {
-      rollDeg: result.rollDeg,
-      pitchDeg: result.pitchDeg,
-      // One source of truth: level exactly when everything shows green/ok.
-      isLevel:
-        axle.left.severity === 'none' && axle.right.severity === 'none' && jockeyDirection === 'ok',
-      axle: { left: axle.left, right: axle.right },
-      jockey: { displayMm: Math.round(Math.abs(jockeyShownSignedMm)), direction: jockeyDirection },
-    };
+function initialCaravan(result: CaravanLevelingResult, settings: LevelSettings): ShownCaravan {
+  return {
+    axle: {
+      left: firstAxleWheel(result.axle.left, settings),
+      right: firstAxleWheel(result.axle.right, settings),
+    },
+    pending: { left: newLiftPending(), right: newLiftPending() },
+    jockeySignedMm: result.jockeyMm,
+    jockeyPending: newAdaptiveDwellPending(),
+  };
+}
+
+function firstAxleWheel(wheel: WheelLift, settings: LevelSettings): DisplayWheel {
+  const severity: LiftSeverity =
+    wheel.liftMm <= settings.toleranceMm
+      ? 'none'
+      : Math.abs(wheel.liftMm - wheel.stepMm) <= settings.toleranceMm
+        ? 'small'
+        : 'large';
+  return { displayMm: Math.round(wheel.liftMm), stepMm: wheel.stepMm, severity };
+}
+
+function settleCaravan(
+  shown: ShownCaravan,
+  result: CaravanLevelingResult,
+  settings: LevelSettings,
+  nowMs: number,
+): void {
+  for (const side of AXLE_SIDES) {
+    const liftMm = result.axle[side].liftMm;
+    shown.axle[side] = stabilizeLift(
+      shown.axle[side],
+      shown.pending[side],
+      liftMm,
+      settings,
+      nowMs,
+    );
+  }
+  // Signed jockey figure: same adaptive dead-band + dwell as a wheel's mm
+  // figure — a sustained crank in one direction shouldn't lag any more than
+  // driving up a ramp does.
+  shown.jockeySignedMm = stabilizeNumber(
+    shown.jockeySignedMm,
+    shown.jockeyPending,
+    result.jockeyMm,
+    settings.stabilityMm,
+    settings.dwellRestMs,
+    settings.dwellMotionMs,
+    nowMs,
+  );
+}
+
+function jockeyDirectionOf(signedMm: number, settings: LevelSettings): JockeyDirection {
+  if (Math.abs(signedMm) <= settings.toleranceMm) return 'ok';
+  return signedMm > 0 ? 'up' : 'down';
+}
+
+function caravanDisplay(
+  result: CaravanLevelingResult,
+  shown: ShownCaravan,
+  settings: LevelSettings,
+): CaravanDisplayResult {
+  const { left, right } = shown.axle;
+  const direction = jockeyDirectionOf(shown.jockeySignedMm, settings);
+  return {
+    rollDeg: result.rollDeg,
+    pitchDeg: result.pitchDeg,
+    // One source of truth: level exactly when everything shows green/ok.
+    isLevel: left.severity === 'none' && right.severity === 'none' && direction === 'ok',
+    axle: { left, right },
+    jockey: { displayMm: Math.round(Math.abs(shown.jockeySignedMm)), direction },
   };
 }
