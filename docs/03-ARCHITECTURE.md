@@ -399,8 +399,9 @@ warning lamps, in memory only), so screenshots and demos show the product rather
 the first-run state. The `?easylevel-sim` (R44) and `?xparkle-sim` (R48) flags are its
 Sensorbox siblings: a simulated BLE box behind the transport seam, for exercising the external-sensor flow
 on machines (and CI screenshots) with no hardware. CI runs
-`format:check`, `typecheck`, `test` (which includes the quality guards in
-`scripts/quality/`, see `docs/01-CONTRIBUTING.md`) and `build` on every pull request and every push
+`format:check`, `typecheck`, `test:coverage` (the unit tests with a coverage floor,
+including the quality guards in `scripts/quality/`, see `docs/01-CONTRIBUTING.md`) and
+`build` on every pull request and every push
 to `main` (once per PR push, not also on the branch push — #471), plus three Playwright
 checks against the built app, `flows` and `fit` each in a parallel job of its own
 (#473): `smoke` (it renders at all), `flows` (the simulated
