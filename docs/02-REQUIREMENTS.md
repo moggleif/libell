@@ -1722,6 +1722,10 @@ present this source as more proven than it is.
 - **Then** Libell synthesizes the gravity vector its own leveling math takes, so the
   guidance, the ramp plan, the stillness detection and the staleness overlay are the
   same code every other source runs through — never a second leveling path.
+- **Given** the box lying still while the level screen shows it (#457)
+- **Then** the wheel heights and the bubble are steady: the box's few readings are
+  smoothed so the screen glides between two of them instead of jumping at each one
+  (how: `docs/03-ARCHITECTURE.md` § Sensor). The same applies to every Sensorbox.
 - **Given** the box applies its own stored mounting orientation before reporting angles
 - **Then** **Superseded** by #314 and #332 — Libell never changes the box's own setting;
   the direction picked on its page is a quarter-turn axis mapping applied on top of the
