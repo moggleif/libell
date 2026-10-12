@@ -297,7 +297,10 @@ URL and must keep working with no signal.
 - **Then** GitHub's new-issue page opens in a new tab, pre-filled with
   `[Feedback] {category}: {title}`, my description and app metadata (version, screen
   size, timestamp, user agent), and I post it under my own GitHub account.
-- The submit button is disabled until both title and description are filled.
+- **Given** the title, the description or both are empty
+- **Then** the submit button is still enabled, a warning above it names the empty
+  field(s) and says the report can be sent anyway, and tapping the button sends it
+  (#411, never block — warn).
 - Modeled on sbsommar's feedback feature (its 02-§73), adapted to a static site: no
   server, so no GitHub token ever ships in the client (ADR 0006).
 
