@@ -28,8 +28,20 @@
  * run has nothing to check or clear yet, and Settings keeps them under More.
  */
 import type { AppearanceSetting, Calibration } from '../domain/settings';
-import { flipCalibration, type CaptureResult, type FlipResult } from '../domain/calibration';
-import { ageText } from './calibrationAge';
+import type { CaptureResult } from '../domain/calibration';
+import { createCalibrationFlip, type CalibrationFlip } from './calibrationFlip';
+import {
+  calibrationStatusText,
+  captureMessage,
+  expandedStep,
+  pillFor,
+  stepTitle,
+  type CalibrationKind,
+  type OpenStep,
+} from './calibrationText';
+import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
+import { createElement } from './dom';
+import { createExternalCalibration, type ExternalCalibration } from './externalCalibration';
 import { t } from './i18n';
 
 export interface CalibrationOptions {
@@ -103,632 +115,477 @@ export interface CalibrationSection {
   refresh(error?: string): void;
 }
 
+type Layout = 'cards' | 'checklist' | 'wizard';
+
+/** One calibration's controls (the phone's, or the vehicle zero's),
+ * shared by every layout — only the container differs. */
+interface CalibrationControls {
+  heading: HTMLElement;
+  intro: HTMLElement;
+  status: HTMLElement;
+  capture: HTMLButtonElement;
+  /** "… anyway" (#411): shown only while a capture's tilt warning is up. */
+  anyway: HTMLButtonElement;
+  /** Check (#87): compares the current reading against the stored zero. */
+  check: HTMLButtonElement;
+  clear: HTMLButtonElement;
+  /** Modern only (#109): the numbers live in the status sentence alone. */
+  pill: HTMLElement;
+}
+
+const CONTROL_KEYS = {
+  phone: {
+    heading: 'calibration.sensor.h',
+    intro: 'calibration.intro',
+    capture: 'calibration.now',
+    anyway: 'calibration.anyway',
+    clear: 'calibration.clear',
+  },
+  vehicle: {
+    heading: 'calibration.vehicle.h',
+    intro: 'calibration.vehicle.intro',
+    capture: 'calibration.vehicle.now',
+    anyway: 'calibration.vehicle.anyway',
+    clear: 'calibration.vehicle.clear',
+  },
+} as const;
+
+function button(className: string, text: string): HTMLButtonElement {
+  const element = createElement('button', className);
+  element.type = 'button';
+  element.textContent = text;
+  return element;
+}
+
+function createControls(kind: CalibrationKind, modern: boolean): CalibrationControls {
+  const keys = CONTROL_KEYS[kind];
+  const heading = createElement('h3', modern ? 'calibration-card__title' : 'menu__heading');
+  heading.textContent = t(keys.heading);
+  const intro = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
+  intro.textContent = t(keys.intro);
+  const secondary = 'menu__action menu__action--secondary';
+  const anyway = button(secondary, t(keys.anyway));
+  anyway.hidden = true;
+  const pill = document.createElement('span');
+  if (modern) pill.className = 'calibration-card__pill';
+  return {
+    heading,
+    intro,
+    status: createElement('p', 'menu__text menu__text--status'),
+    // Every calibrate action is primary: a user only ever does one of them
+    // at a time, so none is "the real one" (follow-up to #109).
+    capture: button('menu__action', t(keys.capture)),
+    anyway,
+    check: button(secondary, t('calibration.check')),
+    clear: button(secondary, t(keys.clear)),
+    pill,
+  };
+}
+
+/** Redraws one calibration's controls from what is stored. */
+function drawControls(
+  kind: CalibrationKind,
+  controls: CalibrationControls,
+  stored: { calibration: Calibration | null; capturedAt: number | null },
+  look: { modern: boolean; checklist: boolean },
+  message?: string,
+): void {
+  const { calibration, capturedAt } = stored;
+  controls.anyway.hidden = true;
+  controls.status.classList.remove('menu__text--warning');
+  controls.status.textContent = calibrationStatusText(
+    kind,
+    calibration,
+    capturedAt,
+    look.checklist,
+    message,
+  );
+  // Grayed out when there is nothing to clear or check.
+  controls.clear.disabled = !calibration;
+  controls.check.disabled = !calibration;
+  if (!look.modern) return;
+  const pill = pillFor(kind, calibration !== null);
+  controls.pill.textContent = pill.text;
+  controls.pill.className = pill.className;
+}
+
+/** Shows a capture's answer; a tilt warning brings its "anyway" button. */
+function showWarning(controls: CalibrationControls, warned: boolean): void {
+  if (!warned) return;
+  controls.status.classList.add('menu__text--warning');
+  controls.anyway.hidden = false;
+}
+
+interface Parts {
+  phone: CalibrationControls;
+  vehicle: CalibrationControls;
+  flip: CalibrationFlip;
+  external: ExternalCalibration;
+}
+
+/** What a layout built: the two halves, everything that calibrates the
+ * phone (hidden while a box is active), and, for the checklist, how to
+ * redraw its steps. */
+interface LayoutResult {
+  sensorElement: HTMLElement;
+  vehicleElement: HTMLElement;
+  phoneElements: HTMLElement[];
+  renderSteps: (() => void) | null;
+}
+
+/** The More disclosure holding a step's Check and Clear (#330). */
+function createMore(...buttons: HTMLButtonElement[]): HTMLDetailsElement {
+  const more = createElement('details', 'menu__detail');
+  const summary = createElement('summary', 'sensor-status__debug-summary');
+  summary.textContent = t('settings.more');
+  more.append(summary, ...buttons);
+  return more;
+}
+
+function hint(key: 'calibration.step.phone.hint' | 'calibration.step.vehicle.hint'): HTMLElement {
+  const paragraph = createElement('p', 'menu__text');
+  paragraph.textContent = t(key);
+  return paragraph;
+}
+
+/** 1. The phone: lay it on something flat, or flip it where nothing is. */
+function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
+  const step = createChecklistStep<CalibrationKind>('phone', 1);
+  const flipLink = button('link-button', t('calibration.step.flipLink'));
+  const flipBlock = document.createElement('div');
+  flipBlock.hidden = true;
+  const { flip, phone } = parts;
+  flipBlock.append(flip.intro, flip.button, flip.status, flip.anyway);
+  flipLink.addEventListener('click', () => {
+    flipBlock.hidden = !flipBlock.hidden;
+    if (flipBlock.hidden) flip.reset();
+  });
+  step.body.append(
+    hint('calibration.step.phone.hint'),
+    phone.capture,
+    phone.status,
+    phone.anyway,
+    flipLink,
+    flipBlock,
+    createMore(phone.check, phone.clear),
+  );
+  return step;
+}
+
+/** 2. The vehicle zero: the vehicle levelled, the phone in its spot. */
+function createVehicleStep(vehicle: CalibrationControls): ChecklistStep<CalibrationKind> {
+  const step = createChecklistStep<CalibrationKind>('vehicle', 2);
+  vehicle.capture.textContent = t('calibration.step.vehicle.now');
+  step.body.append(
+    hint('calibration.step.vehicle.hint'),
+    vehicle.capture,
+    vehicle.status,
+    vehicle.anyway,
+    createMore(vehicle.check, vehicle.clear),
+  );
+  return step;
+}
+
+/** Settings (#330): the two calibrations as two steps of the same
+ * checklist the box's own setup uses (#314). */
+function layoutChecklist(
+  options: CalibrationOptions,
+  parts: Parts,
+  body: HTMLElement,
+  focus: { get(): OpenStep; set(step: OpenStep): void },
+): LayoutResult {
+  const steps = [createPhoneStep(parts), createVehicleStep(parts.vehicle)];
+  const [phoneStep, vehicleStep] = steps as [
+    ChecklistStep<CalibrationKind>,
+    ChecklistStep<CalibrationKind>,
+  ];
+  const container = createElement('div', 'box-setup');
+  container.append(phoneStep.element, vehicleStep.element);
+
+  function renderSteps(): void {
+    const phoneDone = options.getCalibration() !== null;
+    const vehicleDone = options.getVehicleCalibration() !== null;
+    phoneStep.title.textContent = stepTitle('phone', phoneDone, options.getCalibrationCapturedAt());
+    vehicleStep.title.textContent = stepTitle(
+      'vehicle',
+      vehicleDone,
+      options.getVehicleCalibrationCapturedAt(),
+    );
+    setStepDone(phoneStep, phoneDone);
+    setStepDone(vehicleStep, vehicleDone);
+    const open = expandedStep(focus.get(), phoneDone, vehicleDone);
+    expandStep(steps, open === 'none' ? null : open);
+    parts.phone.status.hidden = parts.phone.status.textContent === '';
+    parts.vehicle.status.hidden = parts.vehicle.status.textContent === '';
+  }
+  for (const step of steps) {
+    step.header.addEventListener('click', () => {
+      focus.set(step.body.hidden ? step.id : 'none');
+      renderSteps();
+    });
+  }
+
+  // Keeps the box's card hidden in Modern (see `.calibration-cards`).
+  if (options.appearance === 'modern') body.className = 'calibration-cards';
+  if (offersExternal(options)) body.append(parts.external.element);
+  body.append(container);
+  return {
+    sensorElement: phoneStep.element,
+    vehicleElement: vehicleStep.element,
+    phoneElements: [container],
+    renderSteps,
+  };
+}
+
+function createCard(header: HTMLElement[], ...content: HTMLElement[]): HTMLElement {
+  const headerRow = createElement('div', 'calibration-card__header');
+  headerRow.append(...header);
+  const card = createElement('div', 'calibration-card');
+  card.append(headerRow, ...content);
+  return card;
+}
+
+/** Check + Clear side by side (design review, follow-up). */
+function createRow(controls: CalibrationControls): HTMLElement {
+  const row = createElement('div', 'calibration-card__row');
+  row.append(controls.check, controls.clear);
+  return row;
+}
+
+/** Modern (#109): two cards, sensor calibration then vehicle zero, each
+ * with a status pill. The wizard's cards have no Check/Clear (#365). */
+function layoutModernCards(
+  options: CalibrationOptions,
+  { phone, vehicle, flip, external }: Parts,
+  body: HTMLElement,
+  maintenance: boolean,
+): LayoutResult {
+  const sensorCard = createCard(
+    [phone.heading, phone.pill],
+    phone.intro,
+    phone.capture,
+    flip.intro,
+    flip.button,
+    flip.status,
+    flip.anyway,
+    ...(maintenance ? [createRow(phone)] : []),
+    phone.status,
+    phone.anyway,
+  );
+  const vehicleCard = createCard(
+    [vehicle.heading, vehicle.pill],
+    vehicle.intro,
+    vehicle.capture,
+    ...(maintenance ? [createRow(vehicle)] : []),
+    vehicle.status,
+    vehicle.anyway,
+  );
+  body.className = 'calibration-cards';
+  if (offersExternal(options)) body.append(external.element);
+  body.append(sensorCard, vehicleCard);
+  return {
+    sensorElement: sensorCard,
+    vehicleElement: vehicleCard,
+    phoneElements: [sensorCard, vehicleCard],
+    renderSteps: null,
+  };
+}
+
+/** Classic: two plain wrapper divs, so a caller can split the halves onto
+ * separate steps (the onboarding wizard) while `element` shows both. */
+function layoutClassic(
+  options: CalibrationOptions,
+  { phone, vehicle, flip, external }: Parts,
+  body: HTMLElement,
+  maintenance: boolean,
+): LayoutResult {
+  const sensorSection = document.createElement('div');
+  sensorSection.append(
+    phone.heading,
+    phone.intro,
+    phone.status,
+    phone.anyway,
+    phone.capture,
+    flip.intro,
+    flip.button,
+    flip.status,
+    flip.anyway,
+    ...(maintenance ? [phone.check, phone.clear] : []),
+  );
+  const vehicleSection = document.createElement('div');
+  vehicleSection.append(
+    vehicle.heading,
+    vehicle.intro,
+    vehicle.status,
+    vehicle.anyway,
+    vehicle.capture,
+    ...(maintenance ? [vehicle.check, vehicle.clear] : []),
+  );
+  if (offersExternal(options)) body.append(external.element);
+  body.append(sensorSection, vehicleSection);
+  return {
+    sensorElement: sensorSection,
+    vehicleElement: vehicleSection,
+    phoneElements: [sensorSection, vehicleSection],
+    renderSteps: null,
+  };
+}
+
+/** The box's own zero is built only for a host that offers an external
+ * sensor (not the onboarding wizard's phone steps). */
+function offersExternal(options: CalibrationOptions): boolean {
+  return !!options.getExternalSensor && !!options.calibrateExternalSensor;
+}
+
+function buildLayout(
+  layout: Layout,
+  options: CalibrationOptions,
+  parts: Parts,
+  body: HTMLElement,
+  focus: { get(): OpenStep; set(step: OpenStep): void },
+): LayoutResult {
+  // Check/Clear are offered everywhere but the wizard (#365).
+  const maintenance = layout !== 'wizard';
+  if (layout === 'checklist') return layoutChecklist(options, parts, body, focus);
+  if (options.appearance === 'modern') return layoutModernCards(options, parts, body, maintenance);
+  return layoutClassic(options, parts, body, maintenance);
+}
+
+/**
+ * While an external sensor is the active source (#285) every phone action
+ * is greyed out and hidden (Morgan, after #290: a page of greyed-out phone
+ * cards buried the one thing that applies, the box's own calibration). Run
+ * last in every refresh so it wins over their own "nothing to clear/check".
+ */
+function applyPhoneGate(options: CalibrationOptions, parts: Parts, phoneElements: HTMLElement[]) {
+  const phoneActive = options.isPhoneActive?.() ?? true;
+  for (const element of phoneElements) element.hidden = !phoneActive;
+  if (!parts.external.isWaiting()) parts.external.refresh();
+  const { phone, vehicle, flip } = parts;
+  const captures = [
+    phone.capture,
+    phone.anyway,
+    flip.button,
+    flip.anyway,
+    vehicle.capture,
+    vehicle.anyway,
+  ];
+  // Clear/Check are re-derived by the refreshes; the capture actions are
+  // only ever disabled by this gate, so lift it here.
+  for (const action of captures) action.disabled = !phoneActive;
+  if (phoneActive) return;
+  for (const action of [phone.clear, phone.check, vehicle.clear, vehicle.check]) {
+    action.disabled = true;
+  }
+}
+
 export function createCalibrationSection(
   options: CalibrationOptions,
-  layout: 'cards' | 'checklist' | 'wizard' = 'cards',
+  layout: Layout = 'cards',
 ): CalibrationSection {
   // Decided once, here — see the module doc comment (#109).
-  const modern = options.appearance === 'modern';
-  const checklist = layout === 'checklist';
-  /** Check/Clear are offered everywhere but the wizard (#365). */
-  const maintenance = layout !== 'wizard';
-  /** Checklist only: the step kept open by the user or by a message
-   * shown in it; null follows "the next undone step". */
-  let openStep: 'phone' | 'vehicle' | 'none' | null = null;
-  /** Checklist only: redraws the steps, set once the layout exists. */
-  let renderSteps: (() => void) | null = null;
-
-  const calibrationBody = document.createElement('div');
-  /** Everything that calibrates the phone, hidden while a box is active. */
-  const phoneElements: HTMLElement[] = [];
-
-  // Calibrating the active external sensor (#290), in the place a user
-  // looks for calibration: shown only while one is active, above the
-  // phone's own (then disabled) controls. Not built at all for a host that
-  // offers no external sensor (the onboarding wizard's phone steps).
-  const offersExternal = !!options.getExternalSensor && !!options.calibrateExternalSensor;
-  const externalSection = document.createElement('div');
-  externalSection.className = modern ? 'calibration-card' : '';
-  externalSection.hidden = true;
-  const externalHeading = document.createElement('h3');
-  externalHeading.className = modern ? 'calibration-card__title' : 'menu__heading';
-  const externalIntro = document.createElement('p');
-  externalIntro.className = modern ? 'calibration-card__body' : 'menu__text';
-  externalIntro.textContent = t('calibration.external.intro');
-  const externalButton = document.createElement('button');
-  externalButton.type = 'button';
-  externalButton.className = 'menu__action';
-  externalButton.textContent = t('sensorSource.install.now');
-  const externalStatus = document.createElement('p');
-  externalStatus.className = 'menu__text menu__text--status';
-  // "Zero anyway" for a box's tilt warning (#425), like the phone's below.
-  const externalAnywayButton = document.createElement('button');
-  externalAnywayButton.type = 'button';
-  externalAnywayButton.className = 'menu__action menu__action--secondary';
-  externalAnywayButton.textContent = t('calibration.vehicle.anyway');
-  externalAnywayButton.hidden = true;
-  externalSection.append(
-    externalHeading,
-    externalIntro,
-    externalButton,
-    externalStatus,
-    externalAnywayButton,
-  );
-  // The way to the rest of the box's setup (#316): its position and
-  // direction live on its own page, one quiet link away.
-  if (options.openExternalSensor) {
-    const openBox = document.createElement('button');
-    openBox.type = 'button';
-    openBox.className = 'link-button';
-    openBox.textContent = t('pose.openSensorPage');
-    openBox.addEventListener('click', () => options.openExternalSensor?.());
-    externalSection.append(openBox);
-  }
-
-  function refreshExternal(message?: string): void {
-    const external = options.getExternalSensor?.() ?? null;
-    externalSection.hidden = external === null;
-    externalAnywayButton.hidden = true;
-    externalStatus.classList.remove('menu__text--warning');
-    if (!external) return;
-    externalHeading.textContent = t('calibration.external.h');
-    if (message !== undefined) {
-      externalStatus.textContent = message;
-    } else if (external.offset) {
-      externalStatus.textContent =
-        t('sensorSource.install.status', {
-          roll: external.offset.rollDeg.toFixed(1),
-          pitch: external.offset.pitchDeg.toFixed(1),
-        }) + ageText(external.capturedAt);
-    } else {
-      externalStatus.textContent = t('sensorSource.install.status.none');
-    }
-  }
-
-  function zeroExternal(anyway: boolean): void {
-    const name = options.getExternalSensor?.()?.name ?? '';
-    const done = (result: CaptureResult) => {
-      if (typeof result !== 'object' || result === null) {
-        refreshExternal(result ?? t('calibration.external.done', { name }));
-        return;
-      }
-      refreshExternal(result.warning);
-      externalStatus.classList.add('menu__text--warning');
-      externalAnywayButton.hidden = false;
-    };
-    const result = options.calibrateExternalSensor?.(anyway) ?? null;
-    if (!(result instanceof Promise)) {
-      done(result);
-      return;
-    }
-    externalButton.disabled = true;
-    refreshExternal(t('calibration.external.working'));
-    void result.then((answer) => {
-      externalButton.disabled = false;
-      done(answer);
-    });
-  }
-  externalButton.addEventListener('click', () => zeroExternal(false));
-  externalAnywayButton.addEventListener('click', () => zeroExternal(true));
-  const sensorHeading = document.createElement('h3');
-  sensorHeading.className = modern ? 'calibration-card__title' : 'menu__heading';
-  sensorHeading.textContent = t('calibration.sensor.h');
-  const calibrationIntro = document.createElement('p');
-  calibrationIntro.className = modern ? 'calibration-card__body' : 'menu__text';
-  calibrationIntro.textContent = t('calibration.intro');
-  const calibrationStatus = document.createElement('p');
-  calibrationStatus.className = 'menu__text menu__text--status';
-  const calibrateButton = document.createElement('button');
-  calibrateButton.type = 'button';
-  calibrateButton.className = 'menu__action';
-  calibrateButton.textContent = t('calibration.now');
-  const clearButton = document.createElement('button');
-  clearButton.type = 'button';
-  clearButton.className = 'menu__action menu__action--secondary';
-  clearButton.textContent = t('calibration.clear');
-
-  // Modern-only status pill (#109) — the roll/pitch numbers themselves
-  // live only in `calibrationStatus`'s sentence below, the same "good
-  // layout" the vehicle-zero card always used (design review, follow-up:
-  // a separate numeric readout box here was tried and rejected — the
-  // status sentence already says the numbers, a second copy was noise).
-  const sensorPill = document.createElement('span');
-  if (modern) sensorPill.className = 'calibration-card__pill';
-
-  // --- Vehicle zero (#83): the phone spot's own tilt — set with the
-  // vehicle verified level and the phone in its normal place.
-  const vehicleHeading = document.createElement('h3');
-  vehicleHeading.className = modern ? 'calibration-card__title' : 'menu__heading';
-  vehicleHeading.textContent = t('calibration.vehicle.h');
-  const vehicleIntro = document.createElement('p');
-  vehicleIntro.className = modern ? 'calibration-card__body' : 'menu__text';
-  vehicleIntro.textContent = t('calibration.vehicle.intro');
-  const vehicleStatus = document.createElement('p');
-  vehicleStatus.className = 'menu__text menu__text--status';
-  const vehicleButton = document.createElement('button');
-  vehicleButton.type = 'button';
-  // All three calibrate actions (sensor, vehicle zero, flip) are equally
-  // primary — a user only ever does one of them at a time, so there is no
-  // "the real one" to single out as filled while the others fade to
-  // outline (follow-up to #109's original secondary styling).
-  vehicleButton.className = 'menu__action';
-  vehicleButton.textContent = t('calibration.vehicle.now');
-  const vehicleClearButton = document.createElement('button');
-  vehicleClearButton.type = 'button';
-  vehicleClearButton.className = 'menu__action menu__action--secondary';
-  vehicleClearButton.textContent = t('calibration.vehicle.clear');
-  const vehiclePill = document.createElement('span');
-  if (modern) vehiclePill.className = 'calibration-card__pill';
-
-  // "… anyway" (#411, "Varning är rätt. Aldrig stopp."): shown only while a
-  // capture's tilt warning is up — the warning says what looks wrong, the
-  // button leaves the call to the user.
-  const makeAnyway = (key: 'calibration.anyway' | 'calibration.vehicle.anyway') => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'menu__action menu__action--secondary';
-    button.textContent = t(key);
-    button.hidden = true;
-    return button;
+  const look = { modern: options.appearance === 'modern', checklist: layout === 'checklist' };
+  let openStep: OpenStep = null;
+  const focus = { get: () => openStep, set: (step: OpenStep) => void (openStep = step) };
+  const parts: Parts = {
+    phone: createControls('phone', look.modern),
+    vehicle: createControls('vehicle', look.modern),
+    flip: createCalibrationFlip(options, look.modern, {
+      onUsed: () => (openStep = 'phone'),
+      onApplied: () => refresh.phone(),
+    }),
+    external: createExternalCalibration(options, look.modern),
   };
-  const calibrateAnywayButton = makeAnyway('calibration.anyway');
-  const vehicleAnywayButton = makeAnyway('calibration.vehicle.anyway');
+  const body = document.createElement('div');
+  const built = buildLayout(layout, options, parts, body, focus);
 
-  // Check buttons (#87): compare the current reading against the stored
-  // zero and answer plainly — grayed out while nothing is stored.
-  const checkButton = document.createElement('button');
-  checkButton.type = 'button';
-  checkButton.className = 'menu__action menu__action--secondary';
-  checkButton.textContent = t('calibration.check');
-  const vehicleCheckButton = document.createElement('button');
-  vehicleCheckButton.type = 'button';
-  vehicleCheckButton.className = 'menu__action menu__action--secondary';
-  vehicleCheckButton.textContent = t('calibration.check');
-
-  // Greys out every phone-calibration action while an external sensor is
-  // the active source (#285) — run last in both refreshes so it wins over
-  // their own "nothing to clear/check" logic.
-  function applyPhoneGate(): void {
-    const phoneActive = options.isPhoneActive?.() ?? true;
-    // And hides them (Morgan, after #290): a page of greyed-out phone
-    // cards buried the one thing that applies, the box's own calibration.
-    for (const element of phoneElements) element.hidden = !phoneActive;
-    if (externalButton.disabled === false) refreshExternal();
-    if (phoneActive) {
-      // Clear/Check are re-derived by the refreshes; the capture actions
-      // are only ever disabled by this gate, so lift it here.
-      for (const button of [
-        calibrateButton,
-        calibrateAnywayButton,
-        flipButton,
-        flipAnywayButton,
-        vehicleButton,
-        vehicleAnywayButton,
-      ]) {
-        button.disabled = false;
-      }
-      return;
-    }
-    for (const button of [
-      calibrateButton,
-      calibrateAnywayButton,
-      flipAnywayButton,
-      vehicleAnywayButton,
-      clearButton,
-      checkButton,
-      flipButton,
-      vehicleButton,
-      vehicleClearButton,
-      vehicleCheckButton,
-    ]) {
-      button.disabled = true;
-    }
-  }
-
-  function refreshCalibration(error?: string): void {
-    const calibration = options.getCalibration();
-    calibrateAnywayButton.hidden = true;
-    calibrationStatus.classList.remove('menu__text--warning');
-    if (error) {
-      calibrationStatus.textContent = error;
-    } else if (checklist) {
-      // The step's title carries ✓ and the age; the line is for messages.
-      calibrationStatus.textContent = '';
-    } else if (calibration) {
-      calibrationStatus.textContent =
-        t('calibration.status', {
-          roll: calibration.rollDeg.toFixed(1),
-          pitch: calibration.pitchDeg.toFixed(1),
-        }) + ageText(options.getCalibrationCapturedAt());
-    } else {
-      calibrationStatus.textContent = t('calibration.status.none');
-    }
-    // Grayed out when there is nothing to clear or check.
-    clearButton.disabled = !calibration;
-    checkButton.disabled = !calibration;
-    if (modern) {
-      sensorPill.textContent = calibration
-        ? t('calibration.pill.done')
-        : t('calibration.pill.notDone');
-      sensorPill.className = calibration
-        ? 'calibration-card__pill calibration-card__pill--done'
-        : 'calibration-card__pill calibration-card__pill--pending';
-    }
-    refreshVehicle();
-    applyPhoneGate();
-  }
-
-  function refreshVehicle(error?: string): void {
-    const vehicle = options.getVehicleCalibration();
-    vehicleAnywayButton.hidden = true;
-    vehicleStatus.classList.remove('menu__text--warning');
-    if (error) {
-      vehicleStatus.textContent = error;
-    } else if (checklist) {
-      vehicleStatus.textContent = '';
-    } else if (vehicle) {
-      vehicleStatus.textContent =
-        t('calibration.vehicle.status', {
-          roll: vehicle.rollDeg.toFixed(1),
-          pitch: vehicle.pitchDeg.toFixed(1),
-        }) + ageText(options.getVehicleCalibrationCapturedAt());
-    } else {
-      vehicleStatus.textContent = t('calibration.vehicle.status.none');
-    }
-    vehicleClearButton.disabled = !vehicle;
-    vehicleCheckButton.disabled = !vehicle;
-    if (modern) {
-      vehiclePill.textContent = vehicle ? t('calibration.pill.done') : t('calibration.pill.none');
-      vehiclePill.className = vehicle
-        ? 'calibration-card__pill calibration-card__pill--done'
-        : 'calibration-card__pill';
-    }
-    renderSteps?.();
-    applyPhoneGate();
-  }
-  // `openStep` (checklist only): a step showing a message stays open; a
-  // success or a clear hands over to the next undone step.
-  /** Shows a capture's answer; a tilt warning brings its "anyway" button. */
-  function showCapture(
-    result: CaptureResult,
-    step: 'phone' | 'vehicle',
-    refresh: (message?: string) => void,
-    status: HTMLElement,
-    anywayButton: HTMLButtonElement,
-  ): void {
-    const message = typeof result === 'object' && result ? result.warning : result;
-    openStep = message ? step : null;
-    refresh(message ?? undefined);
-    if (typeof result !== 'object' || !result) return;
-    status.classList.add('menu__text--warning');
-    anywayButton.hidden = false;
-  }
-  const captureVehicle = (anyway: boolean) =>
-    showCapture(
-      options.calibrateVehicle(anyway),
-      'vehicle',
-      refreshVehicle,
-      vehicleStatus,
-      vehicleAnywayButton,
-    );
-  vehicleButton.addEventListener('click', () => captureVehicle(false));
-  vehicleAnywayButton.addEventListener('click', () => captureVehicle(true));
-  vehicleClearButton.addEventListener('click', () => {
-    options.clearVehicleCalibration();
-    openStep = null;
-    refreshVehicle();
-  });
-  checkButton.addEventListener('click', () => {
-    openStep = 'phone';
-    refreshCalibration(options.checkCalibration());
-  });
-  vehicleCheckButton.addEventListener('click', () => {
-    openStep = 'vehicle';
-    refreshVehicle(options.checkVehicleCalibration());
-  });
-  const capturePhone = (anyway: boolean) =>
-    showCapture(
-      options.calibrate(anyway),
-      'phone',
-      refreshCalibration,
-      calibrationStatus,
-      calibrateAnywayButton,
-    );
-  calibrateButton.addEventListener('click', () => capturePhone(false));
-  calibrateAnywayButton.addEventListener('click', () => capturePhone(true));
-  clearButton.addEventListener('click', () => {
-    options.clearCalibration();
-    openStep = null;
-    refreshCalibration();
-  });
-
-  // Flip calibration: two captures with a 180° turn in between — works
-  // on any reasonably flat spot, no known-level surface needed (#50).
-  const flipIntro = document.createElement('p');
-  flipIntro.className = modern ? 'calibration-card__body' : 'menu__text';
-  flipIntro.textContent = t('calibration.flip.intro');
-  const flipStatus = document.createElement('p');
-  flipStatus.className = 'menu__text menu__text--status';
-  const flipButton = document.createElement('button');
-  flipButton.type = 'button';
-  // Primary-styled like the other two calibrate actions above — see that
-  // comment.
-  flipButton.className = 'menu__action';
-  let flipFirst: Calibration | null = null;
-  // Two captures that disagree (#425): the bias they gave, kept while the
-  // warning offers "Calibrate anyway".
-  let flipPending: FlipResult | null = null;
-  const flipAnywayButton = document.createElement('button');
-  flipAnywayButton.type = 'button';
-  flipAnywayButton.className = 'menu__action menu__action--secondary';
-  flipAnywayButton.textContent = t('calibration.anyway');
-  flipAnywayButton.hidden = true;
-
-  function resetFlip(): void {
-    flipFirst = null;
-    flipPending = null;
-    flipAnywayButton.hidden = true;
-    flipStatus.classList.remove('menu__text--warning');
-    flipButton.textContent = t('calibration.flip.start');
-    flipStatus.textContent = '';
-  }
-
-  function applyFlip(bias: Calibration, surface: Calibration): void {
-    options.applyCalibration(bias);
-    resetFlip();
-    const surfaceMax = Math.max(Math.abs(surface.rollDeg), Math.abs(surface.pitchDeg));
-    flipStatus.textContent = t('calibration.flip.done', { surface: surfaceMax.toFixed(1) });
-    refreshCalibration();
-  }
-  flipButton.addEventListener('click', () => {
-    openStep = 'phone';
-    const reading = options.readTilt();
-    if (typeof reading === 'string') {
-      flipStatus.textContent = reading;
-      return;
-    }
-    if (!flipFirst) {
-      resetFlip();
-      flipFirst = reading;
-      flipButton.textContent = t('calibration.flip.capture');
-      flipStatus.textContent = t('calibration.flip.rotate');
-      return;
-    }
-    const result = flipCalibration(flipFirst, reading);
-    if (!result.consistent) {
-      // Never a refusal (#425): say what looks wrong, offer to go ahead.
-      resetFlip();
-      flipPending = result;
-      flipStatus.textContent = t('calibration.flip.warn.moved');
-      flipStatus.classList.add('menu__text--warning');
-      flipAnywayButton.hidden = false;
-      return;
-    }
-    applyFlip(result.bias, result.surface);
-  });
-  flipAnywayButton.addEventListener('click', () => {
-    openStep = 'phone';
-    if (flipPending) applyFlip(flipPending.bias, flipPending.surface);
-  });
-  resetFlip();
-  refreshCalibration();
-
-  let sensorElement: HTMLElement;
-  let vehicleElement: HTMLElement;
-
-  if (checklist) {
-    // Same step DOM and classes as the box's checklist (#314).
-    const makeStep = (
-      id: 'phone' | 'vehicle',
-      number: number,
-    ): { element: HTMLElement; mark: HTMLElement; title: HTMLElement; body: HTMLElement } => {
-      const element = document.createElement('div');
-      element.className = 'box-step';
-      const header = document.createElement('button');
-      header.type = 'button';
-      header.className = 'box-step__header';
-      const mark = document.createElement('span');
-      mark.className = 'box-step__mark';
-      mark.textContent = String(number);
-      const title = document.createElement('span');
-      title.className = 'box-step__title';
-      header.append(mark, title);
-      const body = document.createElement('div');
-      body.className = 'box-step__body';
-      body.hidden = true;
-      element.append(header, body);
-      header.addEventListener('click', () => {
-        openStep = body.hidden ? id : 'none';
-        renderSteps?.();
-      });
-      return { element, mark, title, body };
-    };
-    const makeMore = (...buttons: HTMLButtonElement[]): HTMLDetailsElement => {
-      const more = document.createElement('details');
-      more.className = 'menu__detail';
-      const summary = document.createElement('summary');
-      summary.className = 'sensor-status__debug-summary';
-      summary.textContent = t('settings.more');
-      more.append(summary, ...buttons);
-      return more;
-    };
-    const hint = (key: 'calibration.step.phone.hint' | 'calibration.step.vehicle.hint') => {
-      const p = document.createElement('p');
-      p.className = 'menu__text';
-      p.textContent = t(key);
-      return p;
-    };
-
-    // 1. The phone: lay it on something flat, or flip it where nothing is.
-    const phoneStep = makeStep('phone', 1);
-    const flipLink = document.createElement('button');
-    flipLink.type = 'button';
-    flipLink.className = 'link-button';
-    flipLink.textContent = t('calibration.step.flipLink');
-    const flipBlock = document.createElement('div');
-    flipBlock.hidden = true;
-    flipBlock.append(flipIntro, flipButton, flipStatus, flipAnywayButton);
-    flipLink.addEventListener('click', () => {
-      flipBlock.hidden = !flipBlock.hidden;
-      if (flipBlock.hidden) resetFlip();
-    });
-    phoneStep.body.append(
-      hint('calibration.step.phone.hint'),
-      calibrateButton,
-      calibrationStatus,
-      calibrateAnywayButton,
-      flipLink,
-      flipBlock,
-      makeMore(checkButton, clearButton),
-    );
-
-    // 2. The vehicle zero: the vehicle levelled, the phone in its spot.
-    const vehicleStep = makeStep('vehicle', 2);
-    vehicleButton.textContent = t('calibration.step.vehicle.now');
-    vehicleStep.body.append(
-      hint('calibration.step.vehicle.hint'),
-      vehicleButton,
-      vehicleStatus,
-      vehicleAnywayButton,
-      makeMore(vehicleCheckButton, vehicleClearButton),
-    );
-
-    const steps = document.createElement('div');
-    steps.className = 'box-setup';
-    steps.append(phoneStep.element, vehicleStep.element);
-
-    renderSteps = (): void => {
-      const phoneDone = options.getCalibration() !== null;
-      const vehicleDone = options.getVehicleCalibration() !== null;
-      phoneStep.title.textContent = phoneDone
-        ? t('calibration.step.phone.done') + ageText(options.getCalibrationCapturedAt())
-        : t('calibration.sensor.h');
-      vehicleStep.title.textContent = vehicleDone
-        ? t('calibration.step.vehicle.done') + ageText(options.getVehicleCalibrationCapturedAt())
-        : t('calibration.vehicle.h');
-      for (const [step, done, n] of [
-        [phoneStep, phoneDone, 1],
-        [vehicleStep, vehicleDone, 2],
-      ] as const) {
-        step.element.classList.toggle('is-done', done);
-        step.mark.textContent = done ? '✓' : String(n);
-      }
-      // Guidance, never a gate: the next undone step is open, but any
-      // step opens on a tap and stays open while it shows a message.
-      const open = openStep ?? (!phoneDone ? 'phone' : !vehicleDone ? 'vehicle' : 'none');
-      for (const [step, id] of [
-        [phoneStep, 'phone'],
-        [vehicleStep, 'vehicle'],
-      ] as const) {
-        step.body.hidden = open !== id;
-        step.element.classList.toggle('is-open', open === id);
-      }
-      calibrationStatus.hidden = calibrationStatus.textContent === '';
-      vehicleStatus.hidden = vehicleStatus.textContent === '';
-    };
-
-    // Keeps the box's card hidden in Modern (see `.calibration-cards`).
-    if (modern) calibrationBody.className = 'calibration-cards';
-    if (offersExternal) calibrationBody.append(externalSection);
-    calibrationBody.append(steps);
-    phoneElements.push(steps);
-    sensorElement = phoneStep.element;
-    vehicleElement = vehicleStep.element;
-    renderSteps();
-  } else if (modern) {
-    // Two cards (#109): sensor calibration, then vehicle zero. Each
-    // reuses the exact same elements/handlers built above — only the
-    // container shape changes.
-    const sensorHeader = document.createElement('div');
-    sensorHeader.className = 'calibration-card__header';
-    sensorHeader.append(sensorHeading, sensorPill);
-    // Check + Clear side by side (design review, follow-up) — same
-    // pairing as the vehicle-zero card's own row below, not paired with
-    // the unrelated flip button.
-    const checkClearRow = document.createElement('div');
-    checkClearRow.className = 'calibration-card__row';
-    checkClearRow.append(checkButton, clearButton);
-    const sensorCard = document.createElement('div');
-    sensorCard.className = 'calibration-card';
-    sensorCard.append(
-      sensorHeader,
-      calibrationIntro,
-      calibrateButton,
-      flipIntro,
-      flipButton,
-      flipStatus,
-      flipAnywayButton,
-      ...(maintenance ? [checkClearRow] : []),
-      calibrationStatus,
-      calibrateAnywayButton,
-    );
-
-    const vehicleHeader = document.createElement('div');
-    vehicleHeader.className = 'calibration-card__header';
-    vehicleHeader.append(vehicleHeading, vehiclePill);
-    const vehicleRow = document.createElement('div');
-    vehicleRow.className = 'calibration-card__row';
-    vehicleRow.append(vehicleCheckButton, vehicleClearButton);
-    const vehicleCard = document.createElement('div');
-    vehicleCard.className = 'calibration-card';
-    vehicleCard.append(
-      vehicleHeader,
-      vehicleIntro,
-      vehicleButton,
-      ...(maintenance ? [vehicleRow] : []),
-      vehicleStatus,
-      vehicleAnywayButton,
-    );
-
-    calibrationBody.className = 'calibration-cards';
-    if (offersExternal) calibrationBody.append(externalSection);
-    calibrationBody.append(sensorCard, vehicleCard);
-    phoneElements.push(sensorCard, vehicleCard);
-    sensorElement = sensorCard;
-    vehicleElement = vehicleCard;
-  } else {
-    // Two plain wrapper divs, not flat siblings (design-review follow-up):
-    // lets a caller split the two halves onto separate steps (the
-    // onboarding wizard) while `element` below still shows both together,
-    // identically to before — an unstyled div changes nothing visually.
-    const sensorSection = document.createElement('div');
-    sensorSection.append(
-      sensorHeading,
-      calibrationIntro,
-      calibrationStatus,
-      calibrateAnywayButton,
-      calibrateButton,
-      flipIntro,
-      flipButton,
-      flipStatus,
-      flipAnywayButton,
-      ...(maintenance ? [checkButton, clearButton] : []),
-    );
-    const vehicleSection = document.createElement('div');
-    vehicleSection.append(
-      vehicleHeading,
-      vehicleIntro,
-      vehicleStatus,
-      vehicleAnywayButton,
-      vehicleButton,
-      ...(maintenance ? [vehicleCheckButton, vehicleClearButton] : []),
-    );
-    if (offersExternal) calibrationBody.append(externalSection);
-    calibrationBody.append(sensorSection, vehicleSection);
-    phoneElements.push(sensorSection, vehicleSection);
-    sensorElement = sensorSection;
-    vehicleElement = vehicleSection;
-  }
-  // The first refresh ran before the layout existed; hide what it could not.
-  applyPhoneGate();
+  const refresh = createRefreshers(options, parts, built, look);
+  wireActions(options, parts, focus, refresh);
+  refresh.phone();
   return {
-    element: calibrationBody,
-    sensorElement,
-    vehicleElement,
+    element: body,
+    sensorElement: built.sensorElement,
+    vehicleElement: built.vehicleElement,
     // Reopening the page follows "the next undone step" again (#330).
     refresh: (error?: string) => {
       openStep = null;
-      refreshCalibration(error);
+      refresh.phone(error);
     },
   };
+}
+
+/**
+ * Redraws each calibration. The phone's also redraws the vehicle zero
+ * (clearing a message shown there); both redraw the checklist's steps and
+ * end with the phone gate.
+ */
+function createRefreshers(
+  options: CalibrationOptions,
+  parts: Parts,
+  built: LayoutResult,
+  look: { modern: boolean; checklist: boolean },
+): Record<CalibrationKind, (message?: string) => void> {
+  function vehicle(message?: string): void {
+    const stored = {
+      calibration: options.getVehicleCalibration(),
+      capturedAt: options.getVehicleCalibrationCapturedAt(),
+    };
+    drawControls('vehicle', parts.vehicle, stored, look, message);
+    built.renderSteps?.();
+    applyPhoneGate(options, parts, built.phoneElements);
+  }
+  function phone(message?: string): void {
+    const stored = {
+      calibration: options.getCalibration(),
+      capturedAt: options.getCalibrationCapturedAt(),
+    };
+    drawControls('phone', parts.phone, stored, look, message);
+    vehicle();
+    applyPhoneGate(options, parts, built.phoneElements);
+  }
+  return { phone, vehicle };
+}
+
+/**
+ * Every button's action. A step showing a message stays open in the
+ * checklist; a success or a clear hands over to the next undone step.
+ */
+function wireActions(
+  options: CalibrationOptions,
+  parts: Parts,
+  focus: { set(step: OpenStep): void },
+  refresh: Record<CalibrationKind, (message?: string) => void>,
+): void {
+  const captures = {
+    phone: (anyway: boolean) => options.calibrate(anyway),
+    vehicle: (anyway: boolean) => options.calibrateVehicle(anyway),
+  };
+  const checks = {
+    phone: () => options.checkCalibration(),
+    vehicle: () => options.checkVehicleCalibration(),
+  };
+  const clears = {
+    phone: () => options.clearCalibration(),
+    vehicle: () => options.clearVehicleCalibration(),
+  };
+  for (const kind of ['phone', 'vehicle'] as const) {
+    const controls = parts[kind];
+    const capture = (anyway: boolean) => {
+      const { text, warned } = captureMessage(captures[kind](anyway));
+      focus.set(text ? kind : null);
+      refresh[kind](text ?? undefined);
+      showWarning(controls, warned);
+    };
+    controls.capture.addEventListener('click', () => capture(false));
+    controls.anyway.addEventListener('click', () => capture(true));
+    controls.check.addEventListener('click', () => {
+      focus.set(kind);
+      refresh[kind](checks[kind]());
+    });
+    controls.clear.addEventListener('click', () => {
+      clears[kind]();
+      focus.set(null);
+      refresh[kind]();
+    });
+  }
 }
