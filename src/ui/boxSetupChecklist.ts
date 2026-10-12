@@ -34,6 +34,7 @@ import {
   type StepFocus,
   type ZeroMessage,
 } from './boxSetupState';
+import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
 import { createElement } from './dom';
 import { t } from './i18n';
 import { createLearnMountingSection } from './learnMountingSection';
@@ -56,15 +57,7 @@ export interface BoxSetupChecklist {
 /** Tells the checklist which step to expand next and redraws it. */
 type Refocus = (focus: StepFocus) => void;
 
-interface Step {
-  id: SetupStep;
-  number: number;
-  element: HTMLElement;
-  header: HTMLButtonElement;
-  mark: HTMLElement;
-  title: HTMLElement;
-  body: HTMLElement;
-}
+type Step = ChecklistStep<SetupStep>;
 
 interface StepPart {
   step: Step;
@@ -84,25 +77,6 @@ function linkButton(text: string): HTMLButtonElement {
   button.type = 'button';
   button.textContent = text;
   return button;
-}
-
-function createStep(id: SetupStep, number: number): Step {
-  const element = createElement('div', 'box-step');
-  const header = createElement('button', 'box-step__header');
-  header.type = 'button';
-  const mark = createElement('span', 'box-step__mark');
-  mark.textContent = String(number);
-  const title = createElement('span', 'box-step__title');
-  header.append(mark, title);
-  const body = createElement('div', 'box-step__body');
-  body.hidden = true;
-  element.append(header, body);
-  return { id, number, element, header, mark, title, body };
-}
-
-function setDone(step: Step, done: boolean): void {
-  step.element.classList.toggle('is-done', done);
-  step.mark.textContent = done ? '✓' : String(step.number);
 }
 
 /** Whether this box is the source in use and in contact — what every setup
@@ -227,7 +201,7 @@ function createDirectionStep(
 ): StepPart | null {
   const usesEasyLevelMounting = options.sensor.capabilities.mounting;
   if (!usesEasyLevelMounting && !options.learnMounting) return null;
-  const step = createStep('direction', 1);
+  const step = createChecklistStep<SetupStep>('direction', 1);
   // Stays open on the pick, so the choice is seen; closed by hand (#347).
   const keepOpen = () => refocus({ kind: 'opened', step: 'direction' });
   const picker = usesEasyLevelMounting
@@ -246,7 +220,7 @@ function createDirectionStep(
   function refresh(): boolean {
     const picked = picker.pickedLabel();
     step.title.textContent = directionTitle(picked);
-    setDone(step, picked !== null);
+    setStepDone(step, picked !== null);
     picker.refresh();
     liftGuide?.refresh();
     forget.hidden = usesEasyLevelMounting
@@ -258,7 +232,7 @@ function createDirectionStep(
 }
 
 function createZeroStepParts() {
-  const step = createStep('zero', 2);
+  const step = createChecklistStep<SetupStep>('zero', 2);
   const hint = createElement('p', 'menu__text');
   hint.textContent = t('box.step.zero.hint');
   const zeroButton = createElement('button', 'menu__action');
@@ -288,7 +262,7 @@ function drawZeroStep(
 ): boolean {
   const zeroed = options.getInstallCalibration() !== null;
   parts.step.title.textContent = zeroTitle(zeroed, options.getInstallCalibrationCapturedAt());
-  setDone(parts.step, zeroed);
+  setStepDone(parts.step, zeroed);
   parts.hint.hidden = zeroed;
   // A box that zeroes itself keeps that zero, so there is no Libell zero to
   // forget (#343).
@@ -395,10 +369,10 @@ export function createBoxSetupChecklist(options: SensorSourceOptions): BoxSetupC
     const states = parts.map((part) => ({ step: part.step.id, done: part.refresh() }));
     greyOutActions(element, !delivering(options));
     const expanded = expandedStep(focus, states);
-    for (const { step } of parts) {
-      step.body.hidden = step.id !== expanded;
-      step.element.classList.toggle('is-open', step.id === expanded);
-    }
+    expandStep(
+      parts.map((part) => part.step),
+      expanded,
+    );
   }
   return { element, positionElement: position.element, refresh, refreshPosition: position.refresh };
 }
