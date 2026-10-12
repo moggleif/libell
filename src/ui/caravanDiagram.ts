@@ -1,17 +1,4 @@
-/**
- * Top-down caravan diagram (#72, ADR 0008): drawbar and jockey wheel at
- * the front, one axle pair, the bubble level in the middle. Follows the
- * appearance like the motorhome diagram does (#368):
- *
- * Classic (and Glossy): shares the `.rv-diagram` styles and the
- * wheel/label conventions with the motorhome's Classic drawing — step
- * name above an axle wheel, its lift below. The jockey wheel shows its
- * crank direction as a glyph, with the action and the amount beside it.
- *
- * Modern: a caravan silhouette in the motorhome's Modern style, with the
- * same floating wheel cards — one per axle side in the margins, and one
- * for the jockey wheel centred on the drawbar where the wheel is.
- */
+/** Top-down caravan diagram (ADR 0008). */
 import type { CaravanDisplayResult, JockeyDirection } from '../domain/caravan';
 import { formatLength, type AppearanceSetting, type AxleConfig } from '../domain/settings';
 import { t } from './i18n';
@@ -54,7 +41,6 @@ type Side = (typeof SIDES)[number];
 
 const JOCKEY_GLYPH = { ok: '✓', up: '↑', down: '↓' } as const;
 
-/** What to do with the jockey wheel's crank, or nothing once it is right. */
 function crankText(direction: JockeyDirection): string {
   if (direction === 'ok') return '';
   return t(direction === 'up' ? 'caravan.crankUp' : 'caravan.crankDown');
@@ -69,8 +55,8 @@ function jockeySeverity(direction: JockeyDirection): 'none' | 'small' {
 // Classic (and Glossy)
 // ============================================================
 
-/** Same proportions as the motorhome's Classic drawing, and declared here
- * for the same reason — see `diagramContainer` (#241). */
+/** Same proportions as the motorhome's Classic drawing; see
+ * `diagramContainer` for why the viewBox is declared. */
 const CLASSIC_VIEWBOX = { width: 240, height: 310 };
 const CLASSIC_AXLE = { y: 214, leftX: 46, rightX: 194 };
 const CLASSIC_JOCKEY = { x: 120, y: 84 };
@@ -97,8 +83,6 @@ function createClassicCaravan(axleConfig: AxleConfig): CaravanDiagram {
   };
 }
 
-/** A body with a drawbar converging on the coupling, under a front arrow
- * whose shape alone says "front" (#161 follow-up). */
 function classicBody(): SVGElement[] {
   return [
     path('M120 6 L110 24 L117 24 L117 36 L123 36 L123 24 L130 24 Z', 'rv-diagram__arrow'),
@@ -107,8 +91,7 @@ function classicBody(): SVGElement[] {
   ];
 }
 
-/** The axle wheels, with the motorhome's label conventions; a tandem axle
- * draws each side as a pair (ADR 0009). */
+/** A tandem axle draws each side as a pair (ADR 0009). */
 function classicAxle(axleConfig: AxleConfig): Record<Side, ClassicWheel> {
   const pair = axleConfig === 'boggie';
   return {
@@ -117,9 +100,8 @@ function classicAxle(axleConfig: AxleConfig): Record<Side, ClassicWheel> {
   };
 }
 
-/** The jockey wheel on the drawbar, its crank direction as the glyph.
- * The action and amount sit to its right: the area beside the drawbar is
- * empty, and above it collides with the front arrow. */
+/** The action and amount sit to the jockey's right: above it they would
+ * collide with the front arrow. */
 function createClassicJockey(): {
   elements: SVGElement[];
   update(jockey: CaravanDisplayResult['jockey'], unit: 'mm' | 'cm'): void;
@@ -152,15 +134,13 @@ function createClassicJockey(): {
 }
 
 // ============================================================
-// Modern (#368) — caravan silhouette, wheel cards.
+// Modern
 // ============================================================
 
 const MODERN_VIEWBOX = { width: 260, height: 440 };
 const MODERN_BUBBLE_CENTER = { x: 130, y: 300 };
-/** Card anchor heights, in the drawing's own coordinates: the jockey card
- * sits on the drawbar where the jockey wheel is, clear of the front arrow
- * above it and the body below; the axle cards sit level with the axle,
- * a little behind the middle of the body as on a real caravan. */
+/** Card anchor heights in viewBox units. The axle sits a little behind the
+ * middle of the body, as on a real caravan. */
 const MODERN_JOCKEY_Y = 118;
 const MODERN_AXLE_Y = 318;
 
@@ -195,9 +175,6 @@ function createModernCaravan(): CaravanDiagram {
   };
 }
 
-/** A caravan in the motorhome's Modern style: an A-frame drawbar with the
- * jockey card covering where the jockey wheel sits on it, and a two-tone
- * body with no cab — the drawbar is the caravan's front. */
 function modernSilhouette(): SVGElement[] {
   return [
     modernFrontArrow(),

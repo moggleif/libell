@@ -1,8 +1,6 @@
 import { createElement } from '../dom';
 import { t, type MessageKey } from '../i18n';
 
-// A labeled radio group for a single wizard choice — shared by the
-// sensor-source and vehicle-type steps (#184).
 export function buildChoiceGroup<T extends string>(
   name: string,
   choices: [T, MessageKey][],
@@ -26,8 +24,7 @@ function buildChoiceRadio<T extends string>(
 ): HTMLInputElement {
   const radio = document.createElement('input');
   radio.type = 'radio';
-  // Themed like every other control in the app, never the browser's own
-  // accent color (#189 follow-up).
+  // Themed, never the browser's own accent color.
   radio.className = 'onboarding__source-radio';
   radio.name = name;
   radio.value = value;

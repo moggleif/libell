@@ -1,11 +1,6 @@
 /**
- * Minimal i18n layer (issue #42, extended to five languages in #178): one
- * flat dictionary per language, keyed by message id, each in its own module
- * under `./messages/` (#377). Language comes from a stored override when
- * present, otherwise from `navigator.language` (the locale's language subtag
- * picks the dictionary; anything we don't ship → English). The dictionaries
- * are plain data so a unit test can assert every language covers the same
- * keys.
+ * One flat dictionary per language under `./messages/`. The dictionaries are
+ * plain data so a unit test can assert every language covers the same keys.
  */
 
 import { de } from './messages/de';
@@ -19,10 +14,8 @@ export const MESSAGES = { en, sv, fr, es, de } as const;
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
 
-/** Each language named in itself — a picker always names a language in its
- * own language, never translated through `t()`, so a Swedish reader can
- * still find "Deutsch" and vice versa. Typed against `Language`, so a new
- * dictionary cannot ship without a name here. */
+/** Each language named in itself, never through `t()`, so a Swedish reader
+ * can still find "Deutsch". */
 export const LANGUAGE_NAMES: Record<Language, string> = {
   sv: 'Svenska',
   en: 'English',
@@ -31,12 +24,8 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   de: 'Deutsch',
 };
 
-/** Every language Libell ships, in the order the Language picker lists them:
- * alphabetical by the name each is shown under. Derived rather than written
- * out, so a new dictionary lands in the right place on its own; sorted in a
- * fixed locale rather than the viewer's, so the list reads the same on every
- * phone and the order is testable. "Automatic" is deliberately not in here —
- * `settingsPanel.ts` pins it above this list, never sorted into it. */
+/** Alphabetical by native name, sorted in a fixed locale so the order is the
+ * same on every phone and testable. */
 export const LANGUAGES: readonly Language[] = (Object.keys(LANGUAGE_NAMES) as Language[]).sort(
   (a, b) => LANGUAGE_NAMES[a].localeCompare(LANGUAGE_NAMES[b], 'en'),
 );
@@ -45,16 +34,15 @@ export function isLanguage(value: unknown): value is Language {
   return typeof value === 'string' && (LANGUAGES as readonly string[]).includes(value);
 }
 
-/** The locale's language subtag decides — 'de-AT', 'de' and 'DE' all pick
- * German; a region we ship no dictionary for falls back to English. */
+/** The locale's language subtag decides; anything unshipped → English. */
 function detectLanguage(): Language {
   const locale = typeof navigator !== 'undefined' ? navigator.language?.toLowerCase() : undefined;
   const subtag = locale?.split('-')[0];
   return isLanguage(subtag) ? subtag : 'en';
 }
 
-/** Stored override, validated against the shipped languages; anything else
- * (missing, corrupt, a language we dropped) → auto-detect. */
+/** Anything not a shipped language (missing, corrupt, dropped) →
+ * auto-detect. */
 export function resolveLanguage(stored: unknown): Language {
   return isLanguage(stored) ? stored : detectLanguage();
 }
@@ -69,7 +57,7 @@ export function setLanguage(lang: Language): void {
   current = lang;
 }
 
-/** Look up a message, substituting `{name}` placeholders from `vars`. */
+/** Substitutes `{name}` placeholders from `vars`. */
 export function t(key: MessageKey, vars?: Record<string, string | number>): string {
   let text: string = MESSAGES[current][key] ?? MESSAGES.en[key];
   if (vars) {

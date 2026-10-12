@@ -7,9 +7,9 @@ import type { Step } from './types';
 import { welcomeStep } from './welcomeStep';
 import type { WizardState } from './wizardState';
 
-// With a box already active (#287) the phone path leaves the calibration
-// step out: #285 disables every phone-calibration action while a box is
-// active, and the wizard never switches the source itself (ADR 0014).
+// With a box already active the calibration step is left out: phone
+// calibration is disabled while a box is active, and the wizard never
+// switches the source itself (ADR 0014).
 function phoneSteps(state: WizardState): Step[] {
   const steps = [placementStep(state), measurementsStep(state), rampsStep(state)];
   return state.externalActive ? steps : [...steps, sensorCalibrationStep(state)];
@@ -25,9 +25,8 @@ function externalSteps(state: WizardState): Step[] {
   ];
 }
 
-/** The step list for the path chosen so far: welcome and the three
- * preference steps always lead; the source step only exists when an
- * external sensor is available, and decides the rest. */
+/** The source step only exists when an external sensor is available, and
+ * decides the rest. */
 export function resolveSteps(state: WizardState): Step[] {
   const leading = [
     welcomeStep(state),

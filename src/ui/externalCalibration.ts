@@ -1,9 +1,7 @@
 /**
- * Calibrating the active external sensor (#290) from the calibration
- * section (`calibrationSection.ts`), in the place a user looks for
- * calibration: shown only while one is active, above the phone's own (then
- * hidden) controls. The same action as on the box's own page (R34), which
- * for a box that zeroes itself is asynchronous.
+ * Zeroing the active external sensor from the calibration section, where a
+ * user looks for calibration. The same action as on the box's own page
+ * (R34), asynchronous for a box that zeroes itself.
  */
 import type { CaptureResult } from '../domain/calibration';
 import { captureMessage, externalStatusText } from './calibrationText';
@@ -13,9 +11,7 @@ import { t } from './i18n';
 
 export interface ExternalCalibration {
   element: HTMLElement;
-  /** Redraws from the box's state, or shows `message` in its place. */
   refresh(message?: string): void;
-  /** True while a box that zeroes itself has not answered yet. */
   isWaiting(): boolean;
 }
 
@@ -29,14 +25,11 @@ function createParts(options: CalibrationOptions, modern: boolean) {
   zeroButton.type = 'button';
   zeroButton.textContent = t('sensorSource.install.now');
   const status = createElement('p', 'menu__text menu__text--status');
-  // "Zero anyway" for a box's tilt warning (#425), like the phone's.
   const anyway = createElement('button', 'menu__action menu__action--secondary');
   anyway.type = 'button';
   anyway.textContent = t('calibration.vehicle.anyway');
   anyway.hidden = true;
   element.append(heading, intro, zeroButton, status, anyway);
-  // The way to the rest of the box's setup (#316): its position and
-  // direction live on its own page, one quiet link away.
   if (options.openExternalSensor) {
     const openBox = createElement('button', 'link-button');
     openBox.type = 'button';

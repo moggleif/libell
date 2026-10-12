@@ -1,36 +1,25 @@
 /**
- * "Learn the mounting" guide (#293, R49): for a box that reports finished
- * angles and stands upright facing any of four ways. Instead of asking the
- * user how the box is mounted, or sending them to the vendor's app, Libell
- * watches the box while the user lifts the vehicle's front and then its
- * right side, and learns which way is which (`domain/axisMapping.ts`).
- *
- * Three steps, one button each, so the user only ever has one thing to do:
- *   idle  → "Learn the mounting" takes the starting reading
- *   front → "The front is raised" takes the second
- *   right → "The right side is raised" takes the third, then learns
+ * "Learn the mounting" guide (R49), for a box that stands upright facing any
+ * of four ways: Libell watches the box while the user lifts the vehicle's
+ * front and then its right side, and learns which way is which.
  * Any failure returns to idle with the reason, and stores nothing.
- * Forgetting is not offered here: the direction step that hosts this guide
- * has the one "Forget the direction" link (#343).
+ * Forgetting lives in the hosting direction step, not here.
  */
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { Calibration } from '../domain/settings';
 import { t, type MessageKey } from './i18n';
 
 export interface LearnMountingOptions {
-  /** The device's display name, for the not-connected message. */
   name: string;
-  /** The box's reading as it reports it, before any learned mapping; null
-   * when there is no live reading. */
+  /** Before any learned mapping; null when there is no live reading. */
   getRawReading(): Calibration | null;
   getLearnedMounting(): AxisMapping | null;
-  /** Store (or with null, forget) the mapping; takes effect on the next reading. */
+  /** Takes effect on the next reading. */
   setLearnedMounting(mapping: AxisMapping | null): void;
   /**
-   * Why a learned mapping cannot be used for this box, or null (#360): the
-   * EasyLevel box allows only its manual's two placements, so a lift that
-   * shows its arrow pointing backward is explained rather than stored.
-   * Optional: a box that takes any mapping has nothing to say.
+   * Why a learned mapping cannot be used for this box, or null. The
+   * EasyLevel allows only its manual's two placements, so a backward arrow
+   * is explained rather than stored.
    */
   check?(mapping: AxisMapping): MessageKey | null;
 }
@@ -100,7 +89,6 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
       (learned ? t('sensorSource.learn.status.learned') : t('sensorSource.learn.status.none'));
   }
 
-  /** The live reading, or null after saying why there is none. */
   function capture(): Calibration | null {
     const reading = options.getRawReading();
     if (!reading) {
@@ -138,7 +126,7 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
   show('idle');
   return {
     element,
-    // Re-reads the stored state, but never interrupts a guide in progress.
+    // Never interrupts a guide in progress.
     refresh: () => {
       if (step === 'idle') show('idle');
     },

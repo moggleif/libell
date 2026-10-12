@@ -1,10 +1,7 @@
 /**
- * Confirmation prompt for an incoming "share vehicle setup" link (R41,
- * #207): shown once per received link, and only ever applies the geometry
- * it was given after an explicit tap — never automatically, and never
- * touching calibration, EasyLevel pairing, or any UI/behavior preference
- * (`domain/vehicleShare.ts` decides exactly which fields those are; this
- * component only previews and confirms them).
+ * Confirmation for an incoming shared vehicle setup link (R41): applies the
+ * geometry only after an explicit tap. `domain/vehicleShare.ts` decides
+ * which fields; this only previews and confirms them.
  */
 import { formatLength, type LevelSettings } from '../domain/settings';
 import type { VehicleGeometry } from '../domain/vehicleShare';
@@ -17,8 +14,6 @@ export interface IncomingVehicleSetupOptions {
   onDismiss: () => void;
 }
 
-/** Builds and appends the one-shot overlay to `document.body`, removing
- * itself the moment either button is pressed. */
 export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): void {
   const { geometry, displayUnit, onApply, onDismiss } = options;
   const unit = (mm: number) => formatLength(mm, displayUnit);

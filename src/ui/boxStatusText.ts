@@ -1,7 +1,6 @@
 /**
- * What the box's own page (`boxStatusPage.ts`) says for each state, as pure
- * functions of the values it reads — no DOM, so every decision is tested on
- * its own (#416).
+ * What the box's own page says, as pure functions: no DOM, so every decision
+ * is tested on its own.
  */
 import type { Calibration } from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
@@ -9,15 +8,12 @@ import type { SensorState } from '../sensor/orientation';
 import type { BoxConnection } from './boxConnection';
 import { t } from './i18n';
 
-/** The header line: the state, with the battery once it is known (#332). */
 export function headerText(connection: BoxConnection, batteryPercent: number | null): string {
   const state = t(`box.state.${connection}`);
   if (connection !== 'connected' || batteryPercent === null) return state;
   return `${state} · ${t('box.state.battery', { value: `${Math.round(batteryPercent)} %` })}`;
 }
 
-/** Whether the header offers its one button: whenever the box is not
- * delivering, and only when the page can connect at all (#314). */
 export function showsConnectButton(canConnect: boolean, connection: BoxConnection): boolean {
   return canConnect && (connection === 'notConnected' || connection === 'lost');
 }
@@ -27,11 +23,7 @@ export function connectButtonText(connecting: boolean, isActive: boolean): strin
   return isActive ? t('sensorFallback.retry') : t('box.connect');
 }
 
-/**
- * The tilt half of the live line (#332): after the box's position when
- * there is one ("✓ Stands upright · Side…"), else on its own. Without a
- * tilt it is empty beside a position, and a dash without one (#343).
- */
+/** Without a tilt: empty beside a position, a dash without one. */
 export function tiltLineText(tilt: Calibration | null, hasPosition: boolean): string {
   if (tilt) {
     const separator = hasPosition ? ' · ' : '';
@@ -49,9 +41,8 @@ export function temperatureText(temperatureCelsius: number | null | undefined): 
   });
 }
 
-/** "0.4 s ago" from a `performance.now()`-based sample timestamp — never a
- * wall-clock date, since `getLastSampleAt()` is monotonic and
- * page-relative, not a `Date.now()` epoch value. */
+/** `lastSampleAt` is `performance.now()`-based (monotonic, page-relative),
+ * never a wall-clock date. */
 export function ageText(lastSampleAt: number | null, nowMs: number): string {
   if (lastSampleAt === null) return '—';
   const seconds = Math.max(0, (nowMs - lastSampleAt) / 1000);
@@ -77,7 +68,6 @@ export interface DebugSnapshot {
   statusBytes: Uint8Array | null;
 }
 
-/** The plain-text summary the debug disclosure copies. */
 export function debugSummaryText(snapshot: DebugSnapshot): string {
   const notAvailable = t('sensorSource.detail.notAvailable');
   return [

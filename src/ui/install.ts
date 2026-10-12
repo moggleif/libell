@@ -1,11 +1,7 @@
 /**
- * "Install" affordance in the top bar.
- *
- * Chromium fires `beforeinstallprompt`, which is deferred here and replayed
- * when the button is tapped. iOS Safari has no install API at all, so there
- * the button toggles a hint describing the manual Share → "Add to Home
- * Screen" path. When the app already runs standalone (i.e. is installed),
- * the button never appears.
+ * "Install" button in the top bar. Chromium's `beforeinstallprompt` is
+ * deferred and replayed on tap; iOS Safari has no install API, so there the
+ * button toggles a manual "Add to Home Screen" hint.
  */
 
 import { isIos } from './platform';
@@ -40,7 +36,6 @@ export function setupInstallButton(button: HTMLButtonElement, hint: HTMLElement)
     hint.hidden = true;
   });
 
-  // No install API on iOS — the button shows the how-to instead.
   if (isIos()) {
     button.hidden = false;
   }

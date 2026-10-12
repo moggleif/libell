@@ -1,31 +1,14 @@
 /**
- * Calibration UI (one-shot + 180° flip), shared by the menu page and the
- * onboarding wizard. The host supplies sensor access through
- * `CalibrationOptions`; this module owns the DOM and the flow, and is the
- * single source of truth for both halves' copy and behavior — Settings
- * and the wizard show the exact same sensor-calibration and vehicle-zero
- * UI, never a wizard-only reduced rebuild of either (#184). The wizard
- * places the two halves on separate steps (design-review follow-up: one
- * concept per step, matching the rest of the wizard) via `sensorElement`/
- * `vehicleElement`; Settings shows both together via `element`.
+ * Calibration UI (one-shot + 180° flip), the single source of truth for both
+ * Settings and the onboarding wizard: never a wizard-only reduced rebuild.
+ * The wizard places the two halves on separate steps via `sensorElement`/
+ * `vehicleElement`.
  *
- * Modern appearance (#109) restyles this into two cards — sensor
- * calibration and vehicle zero (#83) — with a status pill each. Which
- * structure gets built is decided once, from `options.appearance` at
- * construction time (the same pattern `rvDiagram.ts` uses for
- * `rearAxle`): there is deliberately no live mid-session restructuring
- * if appearance changes elsewhere while this component is on screen.
- * All calibration logic (capture, flip flow, vehicle zero, check/age) is
- * unchanged and shared by both branches — only the container DOM and
- * classes differ.
- *
- * Settings (#330) asks for a third shape, `layout: 'checklist'`: the two
- * calibrations as two steps of the same checklist the box's own setup uses
- * (#314) — ✓ and age when done, the one action when not, only the next
- * undone step expanded and Check/Clear under a collapsed More in each.
- * The wizard keeps the cards: it already shows one calibration per step.
- * Its `layout: 'wizard'` is those cards without Check/Clear (#365): a first
- * run has nothing to check or clear yet, and Settings keeps them under More.
+ * The structure is decided once, at construction, from `options.appearance`
+ * and `layout`: there is deliberately no live restructuring if appearance
+ * changes while this is on screen. Only the container DOM differs between
+ * layouts; the calibration logic is shared. `layout: 'wizard'` drops
+ * Check/Clear: a first run has nothing to check or clear yet.
  */
 import type { AppearanceSetting, Calibration } from '../domain/settings';
 import type { CaptureResult } from '../domain/calibration';
@@ -45,52 +28,39 @@ import { createExternalCalibration, type ExternalCalibration } from './externalC
 import { t } from './i18n';
 
 export interface CalibrationOptions {
-  /**
-   * Visual preset (#104), read once at construction — see the module doc
-   * comment below for why there is no live restructuring.
-   */
+  /** Read once at construction; see the module doc comment. */
   appearance: AppearanceSetting;
   getCalibration(): Calibration | null;
-  /** Capture the current tilt as the phone's zero point: null on success,
-   * an error text, or a warning that offers "Calibrate anyway" (#411) —
-   * `anyway` is set when the user chose it. */
+  /** Null on success, an error text, or a warning that offers "Calibrate
+   * anyway"; `anyway` is set when the user chose it. */
   calibrate(anyway?: boolean): CaptureResult;
   /** Raw (uncalibrated) tilt reading for the flip flow, or an error text. */
   readTilt(): Calibration | string;
   applyCalibration(calibration: Calibration): void;
   clearCalibration(): void;
-  /** The vehicle zero (#83): the phone spot's own tilt, captured with the vehicle verified level. */
+  /** The phone spot's own tilt, captured with the vehicle verified level. */
   getVehicleCalibration(): Calibration | null;
-  /** Capture the current position as level — answers like `calibrate`,
-   * with "Zero anyway" for its warning (#411). */
+  /** Answers like `calibrate`, with "Zero anyway" for its warning. */
   calibrateVehicle(anyway?: boolean): CaptureResult;
-  /** When each calibration was captured (#87) — null when unknown. */
+  /** Null when unknown. */
   getCalibrationCapturedAt(): number | null;
   getVehicleCalibrationCapturedAt(): number | null;
-  /** Compare the current reading against a calibration's promise of zero — returns a verdict text. */
+  /** Compares the current reading against the stored zero; returns a verdict text. */
   checkCalibration(): string;
   checkVehicleCalibration(): string;
   clearVehicleCalibration(): void;
   /**
-   * Whether the phone itself is the active sensor (#285). Every action here
-   * calibrates the phone, which an external sensor never reads, so while one
-   * is active they are hidden and the box's own zero is shown in their
-   * place (#316). Omitted = phone.
+   * Every action here calibrates the phone, which an external sensor never
+   * reads, so while one is active they are hidden and the box's own zero is
+   * shown instead. Omitted = phone.
    */
   isPhoneActive?(): boolean;
-  /**
-   * The active external sensor, or null while the phone is active (#290):
-   * its name and its installation-offset state. With one, this tab offers
-   * to calibrate the sensor itself rather than only saying why the phone's
-   * calibration is switched off. Omitted = never offered.
-   */
+  /** Null while the phone is active. Omitted = never offered. */
   getExternalSensor?(): ExternalSensorCalibrationState | null;
-  /** "Set vehicle level" for that sensor — the same action as on its own
-   * page (R34), which for a box that zeroes itself is asynchronous. Returns
-   * an error text, or null on success. */
+  /** The same action as on the box's own page (R34); asynchronous for a box
+   * that zeroes itself. */
   calibrateExternalSensor?(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
-  /** Opens the active box's own page (#316), for its position and
-   * direction; no link is shown when omitted. */
+  /** No link is shown when omitted. */
   openExternalSensor?(): void;
 }
 
@@ -101,35 +71,28 @@ export interface ExternalSensorCalibrationState {
 }
 
 export interface CalibrationSection {
-  /** Both halves together, as Settings → Calibration shows them. */
+  /** Both halves together. */
   element: HTMLElement;
-  /** Phone-sensor half alone (design-review follow-up): lets a caller —
-   * the onboarding wizard — place the two halves on separate steps
-   * instead of stacking both under one heading. Live in `element` too;
-   * moving either into a different parent (e.g. a wizard step's body)
-   * re-parents it away from `element`, which is fine — nothing here reads
-   * from `element`'s children after construction. */
+  /** Also inside `element`; re-parenting it elsewhere is safe, since nothing
+   * reads `element`'s children after construction. */
   sensorElement: HTMLElement;
-  /** Vehicle-zero half alone — see `sensorElement`. */
+  /** See `sensorElement`. */
   vehicleElement: HTMLElement;
   refresh(error?: string): void;
 }
 
 type Layout = 'cards' | 'checklist' | 'wizard';
 
-/** One calibration's controls (the phone's, or the vehicle zero's),
- * shared by every layout — only the container differs. */
 interface CalibrationControls {
   heading: HTMLElement;
   intro: HTMLElement;
   status: HTMLElement;
   capture: HTMLButtonElement;
-  /** "… anyway" (#411): shown only while a capture's tilt warning is up. */
+  /** Shown only while a capture's tilt warning is up. */
   anyway: HTMLButtonElement;
-  /** Check (#87): compares the current reading against the stored zero. */
   check: HTMLButtonElement;
   clear: HTMLButtonElement;
-  /** Modern only (#109): the numbers live in the status sentence alone. */
+  /** Modern only: the numbers live in the status sentence alone. */
   pill: HTMLElement;
 }
 
@@ -172,8 +135,7 @@ function createControls(kind: CalibrationKind, modern: boolean): CalibrationCont
     heading,
     intro,
     status: createElement('p', 'menu__text menu__text--status'),
-    // Every calibrate action is primary: a user only ever does one of them
-    // at a time, so none is "the real one" (follow-up to #109).
+    // Every calibrate action is primary: a user only ever does one of them.
     capture: button('menu__action', t(keys.capture)),
     anyway,
     check: button(secondary, t('calibration.check')),
@@ -182,7 +144,6 @@ function createControls(kind: CalibrationKind, modern: boolean): CalibrationCont
   };
 }
 
-/** Redraws one calibration's controls from what is stored. */
 function drawControls(
   kind: CalibrationKind,
   controls: CalibrationControls,
@@ -200,7 +161,6 @@ function drawControls(
     look.checklist,
     message,
   );
-  // Grayed out when there is nothing to clear or check.
   controls.clear.disabled = !calibration;
   controls.check.disabled = !calibration;
   if (!look.modern) return;
@@ -209,7 +169,6 @@ function drawControls(
   controls.pill.className = pill.className;
 }
 
-/** Shows a capture's answer; a tilt warning brings its "anyway" button. */
 function showWarning(controls: CalibrationControls, warned: boolean): void {
   if (!warned) return;
   controls.status.classList.add('menu__text--warning');
@@ -223,9 +182,7 @@ interface Parts {
   external: ExternalCalibration;
 }
 
-/** What a layout built: the two halves, everything that calibrates the
- * phone (hidden while a box is active), and, for the checklist, how to
- * redraw its steps. */
+/** `phoneElements` are hidden while a box is active. */
 interface LayoutResult {
   sensorElement: HTMLElement;
   vehicleElement: HTMLElement;
@@ -233,7 +190,6 @@ interface LayoutResult {
   renderSteps: (() => void) | null;
 }
 
-/** The More disclosure holding a step's Check and Clear (#330). */
 function createMore(...buttons: HTMLButtonElement[]): HTMLDetailsElement {
   const more = createElement('details', 'menu__detail');
   const summary = createElement('summary', 'sensor-status__debug-summary');
@@ -248,7 +204,6 @@ function hint(key: 'calibration.step.phone.hint' | 'calibration.step.vehicle.hin
   return paragraph;
 }
 
-/** 1. The phone: lay it on something flat, or flip it where nothing is. */
 function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
   const step = createChecklistStep<CalibrationKind>('phone', 1);
   const flipLink = button('link-button', t('calibration.step.flipLink'));
@@ -272,7 +227,6 @@ function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
   return step;
 }
 
-/** 2. The vehicle zero: the vehicle levelled, the phone in its spot. */
 function createVehicleStep(vehicle: CalibrationControls): ChecklistStep<CalibrationKind> {
   const step = createChecklistStep<CalibrationKind>('vehicle', 2);
   vehicle.capture.textContent = t('calibration.step.vehicle.now');
@@ -286,8 +240,6 @@ function createVehicleStep(vehicle: CalibrationControls): ChecklistStep<Calibrat
   return step;
 }
 
-/** Settings (#330): the two calibrations as two steps of the same
- * checklist the box's own setup uses (#314). */
 function layoutChecklist(
   options: CalibrationOptions,
   parts: Parts,
@@ -345,15 +297,12 @@ function createCard(header: HTMLElement[], ...content: HTMLElement[]): HTMLEleme
   return card;
 }
 
-/** Check + Clear side by side (design review, follow-up). */
 function createRow(controls: CalibrationControls): HTMLElement {
   const row = createElement('div', 'calibration-card__row');
   row.append(controls.check, controls.clear);
   return row;
 }
 
-/** Modern (#109): two cards, sensor calibration then vehicle zero, each
- * with a status pill. The wizard's cards have no Check/Clear (#365). */
 function layoutModernCards(
   options: CalibrationOptions,
   { phone, vehicle, flip, external }: Parts,
@@ -391,8 +340,8 @@ function layoutModernCards(
   };
 }
 
-/** Classic: two plain wrapper divs, so a caller can split the halves onto
- * separate steps (the onboarding wizard) while `element` shows both. */
+/** Two plain wrapper divs, so the wizard can split the halves onto
+ * separate steps while `element` shows both. */
 function layoutClassic(
   options: CalibrationOptions,
   { phone, vehicle, flip, external }: Parts,
@@ -431,8 +380,6 @@ function layoutClassic(
   };
 }
 
-/** The box's own zero is built only for a host that offers an external
- * sensor (not the onboarding wizard's phone steps). */
 function offersExternal(options: CalibrationOptions): boolean {
   return !!options.getExternalSensor && !!options.calibrateExternalSensor;
 }
@@ -444,7 +391,6 @@ function buildLayout(
   body: HTMLElement,
   focus: { get(): OpenStep; set(step: OpenStep): void },
 ): LayoutResult {
-  // Check/Clear are offered everywhere but the wizard (#365).
   const maintenance = layout !== 'wizard';
   if (layout === 'checklist') return layoutChecklist(options, parts, body, focus);
   if (options.appearance === 'modern') return layoutModernCards(options, parts, body, maintenance);
@@ -452,10 +398,10 @@ function buildLayout(
 }
 
 /**
- * While an external sensor is the active source (#285) every phone action
- * is greyed out and hidden (Morgan, after #290: a page of greyed-out phone
- * cards buried the one thing that applies, the box's own calibration). Run
- * last in every refresh so it wins over their own "nothing to clear/check".
+ * While an external sensor is active every phone action is disabled and
+ * hidden: greyed-out phone cards buried the one thing that applies, the
+ * box's own calibration. Runs last in every refresh so it wins over their
+ * own "nothing to clear/check".
  */
 function applyPhoneGate(options: CalibrationOptions, parts: Parts, phoneElements: HTMLElement[]) {
   const phoneActive = options.isPhoneActive?.() ?? true;
@@ -483,7 +429,7 @@ export function createCalibrationSection(
   options: CalibrationOptions,
   layout: Layout = 'cards',
 ): CalibrationSection {
-  // Decided once, here — see the module doc comment (#109).
+  // Decided once, here; see the module doc comment.
   const look = { modern: options.appearance === 'modern', checklist: layout === 'checklist' };
   let openStep: OpenStep = null;
   const focus = { get: () => openStep, set: (step: OpenStep) => void (openStep = step) };
@@ -506,7 +452,7 @@ export function createCalibrationSection(
     element: body,
     sensorElement: built.sensorElement,
     vehicleElement: built.vehicleElement,
-    // Reopening the page follows "the next undone step" again (#330).
+    // Reopening the page follows "the next undone step" again.
     refresh: (error?: string) => {
       openStep = null;
       refresh.phone(error);
@@ -515,9 +461,8 @@ export function createCalibrationSection(
 }
 
 /**
- * Redraws each calibration. The phone's also redraws the vehicle zero
- * (clearing a message shown there); both redraw the checklist's steps and
- * end with the phone gate.
+ * The phone's refresh also redraws the vehicle zero (clearing a message
+ * shown there); both end with the phone gate.
  */
 function createRefreshers(
   options: CalibrationOptions,
@@ -547,8 +492,8 @@ function createRefreshers(
 }
 
 /**
- * Every button's action. A step showing a message stays open in the
- * checklist; a success or a clear hands over to the next undone step.
+ * A step showing a message stays open in the checklist; a success or a
+ * clear hands over to the next undone step.
  */
 function wireActions(
   options: CalibrationOptions,

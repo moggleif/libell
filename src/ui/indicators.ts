@@ -1,20 +1,16 @@
 /**
- * Dashboard-style warning lamps in the top bar: one lights up while the
- * vehicle measurements have never been saved, another while a calibration
- * step is missing (⚠ Calibrate or ⚠ Zero). Tapping a lamp opens the matching menu section; both
- * disappear once handled — like a car that has nothing to warn about.
+ * Dashboard-style warning lamps in the top bar: each disappears once
+ * handled, like a car that has nothing to warn about.
  */
 import type { MenuSection } from './menu';
 import { t } from './i18n';
 import { setVisible } from './motion';
 
-/** Which step the amber calibration lamp asks for, or null when none. */
 export type CalibrationLamp = 'calibrate' | 'zero' | null;
 
 /**
- * The phone's lamp (#364): the phone first, then the vehicle zero — the
- * same order as the Calibration checklist (R11), so the lamp always
- * names the step that checklist opens on.
+ * Same order as the Calibration checklist (R11), so the lamp always names
+ * the step that checklist opens on.
  */
 export function phoneCalibrationLamp(calibrated: boolean, zeroed: boolean): CalibrationLamp {
   if (!calibrated) return 'calibrate';
@@ -25,11 +21,9 @@ export function phoneCalibrationLamp(calibrated: boolean, zeroed: boolean): Cali
 export interface Indicators {
   element: HTMLElement;
   update(state: {
-    /** The vehicle measurements have been saved (#364). */
     settingsSaved: boolean;
     calibrationLamp: CalibrationLamp;
-    /** An external sensor is the active source, so it is what the
-     * calibration lamp is about — never "the phone". */
+    /** The calibration lamp is then about the sensor, never "the phone". */
     externalSensor?: boolean;
   }): void;
 }
@@ -50,24 +44,18 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
     return button;
   }
 
-  // Routes to the Vehicle page (screen-cleanup follow-up, #108 follow-up)
-  // — this lamp's own title ("Vehicle settings have never been saved")
-  // already named the destination; 'settings' stopped being a valid
-  // MenuSection once ☰ Settings split into General/Vehicle/Ramps pages.
   const settingsLamp = lamp(t('lamp.setup'), 'vehicle', t('lamp.setup.title'));
   const calibrationLamp = lamp(t('lamp.calibrate'), 'calibration', t('lamp.calibrate.title'));
 
-  // The very first update() call reflects state that was already true
-  // before the app ever painted (e.g. demo mode's pre-configured
-  // settings) — it must apply instantly, not animate a "change" that
-  // never visually happened. Only later, user-triggered changes fade.
+  // The first update() reflects state already true before the app painted:
+  // apply it instantly, not animate a "change" that never visually happened.
   let first = true;
 
   return {
     element: container,
     update({ settingsSaved, calibrationLamp: missing, externalSensor = false }) {
       const calibrated = missing === null;
-      // A box only ever lacks its zero (#349).
+      // A box only ever lacks its zero.
       const step = externalSensor ? 'zero' : (missing ?? 'calibrate');
       const calibrationTitle = t(
         externalSensor

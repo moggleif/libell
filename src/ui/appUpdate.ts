@@ -1,14 +1,8 @@
 /**
- * Getting a new deployment onto the phone (#301). The service worker is
- * registered with `registerType: 'autoUpdate'`, so a new worker activates
- * on its own — but the open page keeps running the old assets until it is
- * reloaded, and an installed app brought back from the background never
- * asks for one. Users had to close and reopen the app, sometimes twice.
- *
- * So: when a new worker takes control of an already-controlled page, the
- * page reloads once into it; the app checks again whenever it returns to
- * the foreground; and tapping the name / version in the top bar checks on
- * demand, with a toast saying what happened.
+ * Getting a new deployment onto the phone. With `registerType: 'autoUpdate'`
+ * a new worker activates on its own, but the open page keeps running the old
+ * assets until it is reloaded, and an installed app brought back from the
+ * background never asks for one.
  */
 
 import { t } from './i18n';
@@ -29,9 +23,8 @@ export interface UpdateCheckDeps {
 }
 
 /**
- * Asks the server for a newer service worker. 'updating' means one is on
- * its way; the controller-change reload (see `installUpdateReload`) then
- * brings the page onto it.
+ * 'updating' means a newer worker is on its way; the controller-change
+ * reload (`installUpdateReload`) then brings the page onto it.
  */
 export async function checkForUpdate(deps: UpdateCheckDeps): Promise<UpdateCheckResult> {
   if (!deps.isOnline()) return 'offline';
@@ -46,7 +39,6 @@ export async function checkForUpdate(deps: UpdateCheckDeps): Promise<UpdateCheck
   return registration.installing || registration.waiting ? 'updating' : 'latest';
 }
 
-/** The toast text for each outcome. */
 export function updateMessage(result: UpdateCheckResult): string {
   switch (result) {
     case 'updating':
