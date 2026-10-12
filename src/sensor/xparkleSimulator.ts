@@ -38,6 +38,7 @@ import {
   XPARKLE_FRAME_HEADER,
 } from './xparkleProtocol';
 import type { XparkleConnection, XparkleTransport } from './xparkleSensor';
+import { createSimulatedLink, type SimulatedSession } from './simulatedLink';
 
 export type XparkleSimulationMode = 'off' | 'steady' | 'drop' | 'badpassword';
 
@@ -139,100 +140,69 @@ function livePayload(sampleIndex: number, zero: { rollDeg: number; pitchDeg: num
 export function createSimulatedXparkleTransport(
   mode: Exclude<XparkleSimulationMode, 'off'> = 'steady',
 ): XparkleTransport {
-  // `'drop'` mode's outage window — plain `Date.now()` rather than an
-  // injected clock: this never runs in `domain/`, and tests drive it with
-  // fake timers, which fake `Date` too.
-  let lastDropAt: number | null = null;
   // The box's own zero (#290): stored in the box, so it outlives a
   // connection, exactly as on real hardware.
   const zero = { rollDeg: 0, pitchDeg: 0 };
+  return createSimulatedLink({
+    deviceId: SIMULATED_XPARKLE_DEVICE_ID,
+    drop:
+      mode === 'drop'
+        ? { dropAfterMs: SIMULATED_XPARKLE_DROP_AFTER_MS, outageMs: SIMULATED_XPARKLE_OUTAGE_MS }
+        : null,
+    open: (session) => openSimulatedXparkle(session, mode, zero),
+  });
+}
 
-  function makeConnection(onDisconnect: () => void): XparkleConnection {
-    let live = true;
-    let sampleIndex = 0;
-    let notify: ((view: DataView) => void) | null = null;
-    const timeoutIds: Array<ReturnType<typeof setTimeout>> = [];
-    const stop = () => {
-      live = false;
-      for (const id of timeoutIds) clearTimeout(id);
-    };
+/** One connection to the simulated box: reads on demand, and command
+ * replies on the notify characteristic. */
+function openSimulatedXparkle(
+  session: SimulatedSession,
+  mode: Exclude<XparkleSimulationMode, 'off'>,
+  zero: { rollDeg: number; pitchDeg: number },
+): Omit<XparkleConnection, 'deviceId' | 'disconnect'> {
+  let sampleIndex = 0;
+  let notify: ((view: DataView) => void) | null = null;
 
-    if (mode === 'drop') {
-      // A lost connection, not an explicit disconnect: stop first and
-      // report second, the same order a real GATT loss has. `stop()` alone
-      // (the explicit-disconnect path) never calls `onDisconnect`.
-      timeoutIds.push(
-        setTimeout(() => {
-          lastDropAt = Date.now();
-          stop();
-          onDisconnect();
-        }, SIMULATED_XPARKLE_DROP_AFTER_MS),
-      );
-    }
-
-    /** Answer a command the way the box does — on the notify
-     * characteristic, one frame per command, asynchronously. */
-    function answer(frame: Uint8Array): void {
-      timeoutIds.push(
-        setTimeout(() => {
-          if (live) notify?.(new DataView(frame.buffer.slice(0)));
-        }, 10),
-      );
-    }
-
-    return {
-      deviceId: SIMULATED_XPARKLE_DEVICE_ID,
-      subscribeNotify: (onData) => {
-        notify = onData;
-        return Promise.resolve();
-      },
-      readLive: () => {
-        if (!live) return Promise.reject(new Error('simulated box: link lost'));
-        return Promise.resolve(livePayload(sampleIndex++, zero));
-      },
-      write: (frame) => {
-        if (!live) return Promise.reject(new Error('simulated box: link lost'));
-        if (frame.length < 3 || frame[0] !== XPARKLE_FRAME_HEADER) {
-          return Promise.reject(new Error('simulated box: not a command frame'));
-        }
-        if (frame[2] === XPARKLE_COMMAND.password) {
-          // Byte 4 of the reply is the verdict: 0 accepted, anything else
-          // rejected, per the app's own `setPwd(bArr[4] == 0)`. The code
-          // offered is the frame's "new" field, bytes 5–8 (#367).
-          const offered = [...frame.subarray(5, 9)].join('');
-          const accepted = offered === simulatedXparklePassword(mode);
-          answer(buildCommandFrame(XPARKLE_COMMAND.password, [accepted ? 0 : 1]));
-        } else if (frame[2] === XPARKLE_COMMAND.queryParameters) {
-          answer(buildCommandFrame(XPARKLE_COMMAND.queryParameters, SIM_PARAMETERS));
-        } else if (frame[2] === XPARKLE_COMMAND.resetZero) {
-          // Where the box sits now becomes its zero (#290). No reply is
-          // modelled: whether a real box answers this command is unknown,
-          // and Libell does not wait for one.
-          zero.rollDeg = SIM_ROLL_DEG;
-          zero.pitchDeg = SIM_PITCH_DEG;
-        }
-        // Every other command is accepted silently — nothing in Libell
-        // sends one, and a simulator that invented replies for commands no
-        // caller issues would be testing itself.
-        return Promise.resolve();
-      },
-      disconnect: stop,
-    };
+  /** Answer a command the way the box does — on the notify
+   * characteristic, one frame per command, asynchronously. */
+  function answer(frame: Uint8Array): void {
+    session.after(10, () => notify?.(new DataView(frame.buffer.slice(0))));
   }
 
   return {
-    connect: (onDisconnect) => Promise.resolve(makeConnection(onDisconnect)),
-    // The same "found among authorized devices?" contract as the real
-    // transport (#130): only the simulated box's own id reconnects — and
-    // in `'drop'` mode, not while the post-drop outage is still running (a
-    // box still out of range resolves null, never rejects, exactly like
-    // the real transport's own catch).
-    reconnect: (deviceId, onDisconnect) => {
-      if (deviceId !== SIMULATED_XPARKLE_DEVICE_ID) return Promise.resolve(null);
-      if (lastDropAt !== null && Date.now() - lastDropAt < SIMULATED_XPARKLE_OUTAGE_MS) {
-        return Promise.resolve(null);
+    subscribeNotify: (onData) => {
+      notify = onData;
+      return Promise.resolve();
+    },
+    readLive: () => {
+      if (!session.isLive()) return Promise.reject(new Error('simulated box: link lost'));
+      return Promise.resolve(livePayload(sampleIndex++, zero));
+    },
+    write: (frame) => {
+      if (!session.isLive()) return Promise.reject(new Error('simulated box: link lost'));
+      if (frame.length < 3 || frame[0] !== XPARKLE_FRAME_HEADER) {
+        return Promise.reject(new Error('simulated box: not a command frame'));
       }
-      return Promise.resolve(makeConnection(onDisconnect));
+      if (frame[2] === XPARKLE_COMMAND.password) {
+        // Byte 4 of the reply is the verdict: 0 accepted, anything else
+        // rejected, per the app's own `setPwd(bArr[4] == 0)`. The code
+        // offered is the frame's "new" field, bytes 5–8 (#367).
+        const offered = [...frame.subarray(5, 9)].join('');
+        const accepted = offered === simulatedXparklePassword(mode);
+        answer(buildCommandFrame(XPARKLE_COMMAND.password, [accepted ? 0 : 1]));
+      } else if (frame[2] === XPARKLE_COMMAND.queryParameters) {
+        answer(buildCommandFrame(XPARKLE_COMMAND.queryParameters, SIM_PARAMETERS));
+      } else if (frame[2] === XPARKLE_COMMAND.resetZero) {
+        // Where the box sits now becomes its zero (#290). No reply is
+        // modelled: whether a real box answers this command is unknown,
+        // and Libell does not wait for one.
+        zero.rollDeg = SIM_ROLL_DEG;
+        zero.pitchDeg = SIM_PITCH_DEG;
+      }
+      // Every other command is accepted silently — nothing in Libell
+      // sends one, and a simulator that invented replies for commands no
+      // caller issues would be testing itself.
+      return Promise.resolve();
     },
   };
 }
