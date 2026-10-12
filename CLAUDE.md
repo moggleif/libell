@@ -11,16 +11,17 @@ and this guide has a bug — fix the guide in the same change. Clarity over clev
 
 ## Canonical sources — who owns which truth
 
-| Truth                                       | Owner                                            |
-| ------------------------------------------- | ------------------------------------------------ |
-| What the app does (behaviors, G/W/T)        | `docs/02-REQUIREMENTS.md`                        |
-| How it is built (layers, math, sensors, CI) | `docs/03-ARCHITECTURE.md`                        |
-| Why it is built that way (decisions)        | `docs/adr/`                                      |
-| How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                        |
-| Security model and reporting                | `SECURITY.md`                                    |
-| Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts`   |
-| User-facing strings                         | `src/ui/messages/<lang>.ts` (sv, en, fr, es, de) |
-| Colors                                      | CSS custom properties in `src/ui/styles.css`     |
+| Truth                                       | Owner                                             |
+| ------------------------------------------- | ------------------------------------------------- |
+| What the app does (behaviors, G/W/T)        | `docs/02-REQUIREMENTS.md`                         |
+| How it is built (layers, math, sensors, CI) | `docs/03-ARCHITECTURE.md`                         |
+| Why it is built that way (decisions)        | `docs/adr/`                                       |
+| How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                         |
+| How to review a change before merge         | `.claude/skills/` (steward and the review skills) |
+| Security model and reporting                | `SECURITY.md`                                     |
+| Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts`    |
+| User-facing strings                         | `src/ui/messages/<lang>.ts` (sv, en, fr, es, de)  |
+| Colors                                      | CSS custom properties in `src/ui/styles.css`      |
 
 Never restate another document's facts — link to them. A fact written twice is a bug
 waiting to drift.
@@ -77,6 +78,10 @@ src/
 6. **Branch, don't push to `main`.** Work on a feature branch; every merge to `main`
    deploys (ADR 0007), so `main` must always be releasable. Do not open a pull request
    unless asked.
+7. **Review before merge.** A thread driving a pull request follows the `steward` skill
+   in `.claude/skills/`, which runs `clean-code-review`, `test-quality` and `docs-sync`
+   on the diff before asking to merge. The machine guards behind them are listed under
+   "Quality guards" in `docs/01-CONTRIBUTING.md`.
 
 ## Conventions worth knowing (so you don't rediscover them)
 
