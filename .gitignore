@@ -5,6 +5,9 @@ dev-dist/
 # Generated PWA icons (rendered from public/icons/icon.svg at build time)
 public/icons/icon-*.png
 
+# Test coverage output
+coverage/
+
 # Dependencies
 node_modules/
 

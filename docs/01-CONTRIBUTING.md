@@ -18,6 +18,7 @@ npm run dev      # dev server on http://localhost:5173/libell/
 npm run format:check  # Prettier
 npm run typecheck     # tsc --noEmit, app + tooling configs
 npm run test          # Vitest unit tests
+npm run test:coverage # the same, failing if coverage drops below its floor (CI runs this)
 npm run build         # icons + typecheck + production build into dist/
 npm run preview       # serve the production build locally
 npm run smoke         # Playwright: the built app renders (needs `build` first)
@@ -130,6 +131,10 @@ they block a merge like any failing test. Each failure names the file and what t
   `CLAUDE.md`, `SECURITY.md` and the numbered documents in `docs/` must exist. When you
   rename or move a file, update the documents that name it in the same change. ADRs are
   dated records and are not checked.
+- **Coverage:** CI runs the unit tests with `npm run test:coverage`, which fails when
+  statement, branch, function or line coverage of `src/` drops below the floors in
+  `vite.config.ts`. The floors were set from `main` when the guard arrived. Raise them
+  when coverage grows; never lower them to get green, add the missing tests instead.
 
 ## Workflow
 

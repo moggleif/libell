@@ -113,5 +113,15 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+    // `npm run test:coverage` (CI) fails when coverage of the app source drops
+    // below these floors, set from main when the guard arrived (#475). Raise
+    // them as coverage grows; never lower them to get green.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.test.ts'],
+      reporter: ['text-summary'],
+      thresholds: { statements: 92.9, branches: 89.2, functions: 90.6, lines: 93.4 },
+    },
   },
 });
