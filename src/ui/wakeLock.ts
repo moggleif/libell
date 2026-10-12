@@ -1,5 +1,5 @@
 /**
- * Screen Wake Lock (issue #1): keep the display on while leveling. The
+ * Screen Wake Lock: keep the display on while leveling. The
  * lock is dropped by the platform when the page is hidden, so it is
  * re-acquired on visibilitychange. Degrades silently where the API is
  * missing (it is Chrome-on-Android and Safari 16.4+).

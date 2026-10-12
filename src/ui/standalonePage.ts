@@ -1,25 +1,13 @@
 /**
- * A standalone full-screen page (screen-cleanup follow-up): its own single
- * history entry (so Android back/gesture closes it) and a ✕ to close
- * explicitly — never a "‹ back" that could reveal some other, unrelated
- * screen underneath. That was a real bug in an earlier version of the "?"
- * page, which shared the old ☰ Settings menu's own history depth: its back
- * button could pop through and reveal the Settings drawer by mistake.
+ * A standalone full-screen page: its own single history entry (so Android
+ * back/gesture closes it) and a ✕ to close — never a "‹ back" that could
+ * reveal some other, unrelated screen underneath (a field bug when the "?"
+ * page shared the ☰ menu's history depth and popped through to its drawer).
  *
- * Used by the Settings page, the "?" info page, and the External sensor
- * page — each owns exactly one of these, fully independent of the other
- * two: none of their CONTENT or open/close state is ever shared, and none
- * of their back/close actions can ever reveal one of the others.
- *
- * The one thing genuinely shared is routing a single `popstate` event to
- * the right page: `history.back()`'s popstate is a *global* window event —
- * every open page's own listener would otherwise see it and close too,
- * even one a user never actually asked to close (in real use each page
- * covers the full screen, so at most one is ever reachable to open at
- * once — but nothing should rely on that to stay correct). A tiny
- * module-level stack of open pages fixes this: only the most recently
- * opened page reacts to the next back-navigation, same as a real
- * navigation stack, and it still only ever closes itself.
+ * Each page is fully independent; the one thing shared is routing
+ * `popstate`, a *global* window event that every open page's listener
+ * would otherwise see. A module-level stack of open pages makes only the
+ * most recently opened page react, and it only ever closes itself.
  */
 import { setVisible } from './motion';
 import { t } from './i18n';
@@ -35,7 +23,7 @@ export interface StandalonePage {
   open(): void;
   /** Close programmatically (e.g. after a successful Save). `after` runs
    * once this close's own back-navigation has landed, so it can safely
-   * open another page (#326, Help's topic buttons). */
+   * open another page. */
   close(after?: () => void): void;
   /** Wires a button to toggle this page open/closed. */
   attach(button: HTMLButtonElement): void;
@@ -43,15 +31,13 @@ export interface StandalonePage {
 }
 
 // Most-recently-opened last — only the top entry reacts to the next
-// `popstate`. Each entry closes exactly the page that pushed it, nothing
-// else, so this coordinates *which* page reacts without ever letting one
-// page's back action affect another's content or visibility.
+// `popstate`, and closes exactly the page that pushed it.
 const openStack: (() => void)[] = [];
 // Set right before this module's own `history.back()` call (from close()),
 // so the one popstate it produces doesn't also pop the stack a second
 // time — that call's own effect has already been applied directly.
 let suppressNextPopstate = false;
-// What to run once that suppressed popstate has landed (#326). Deferred one
+// What to run once that suppressed popstate has landed. Deferred one
 // more task, so every other popstate listener (the Classic ☰ menu's own
 // depth counter) has seen this event before `after` opens anything.
 let afterSuppressedPopstate: (() => void) | null = null;
@@ -76,9 +62,8 @@ export function createStandalonePage(initialTitle: string, onOpen?: () => void):
   header.className = 'menu-page__header';
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
-  // Reuses the ‹ back button's styling (big, tappable) — ✕ here means
-  // "close this page", the same meaning the ☰ menu's own drawer-level ✕
-  // always had, never a step back into something else.
+  // Reuses the ‹ back button's styling (big, tappable); ✕ means "close this
+  // page", never a step back into something else.
   closeButton.className = 'menu-page__back';
   closeButton.setAttribute('aria-label', t('menu.close'));
   closeButton.textContent = '✕';

@@ -1,15 +1,9 @@
 /**
- * "How is the box mounted?" by tapping a side of the vehicle (#314, the
- * #309 UX review). A top-down picture of the user's own vehicle — a
- * motorhome or a caravan — with one button at each of its four sides.
- * Each button shows the box turned so its reference side (the Xparkle
- * box's back, the EasyLevel box's arrow) points out to that side; the
- * user taps where it points. The box drawn inside the vehicle follows the
- * choice, so it shows at once what was picked.
- *
- * Replaces the EasyLevel box's four-option dropdown (R43) and, as the
- * main way, the lift-the-vehicle guide (#293), which stays as a quiet
- * link for anyone unsure.
+ * "How is the box mounted?" by tapping a side of the vehicle: a top-down
+ * picture of the user's own vehicle with one button at each of its four
+ * sides. Each button shows the box turned so its reference side (the
+ * Xparkle box's back, the EasyLevel box's arrow) points out to that side.
+ * The box drawn inside the vehicle follows the choice.
  */
 import {
   EASYLEVEL_PLACEMENTS,
@@ -70,8 +64,8 @@ function boxGlyph(shape: BoxShape, facing: Facing): SVGGElement {
 }
 
 /**
- * The EasyLevel box from above in one of its manual's two placements
- * (#359), drawn like the real lid: a near-square lid on a base whose
+ * The EasyLevel box from above in one of its manual's two placements,
+ * drawn like the real lid: a near-square lid on a base whose
  * mounting tabs stick out at the long sides' ends, and the lid's two
  * arrows — one up, one to the left, as printed on it. Long side forward
  * is the box as printed (the up arrow forward); short side forward is the
@@ -203,8 +197,8 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 
   const prompt = document.createElement('p');
   prompt.className = 'menu__text';
-  // A box lying flat with an arrow has its own two-choice picker below
-  // (#359); this one only ever asks the upright box.
+  // A box lying flat with an arrow has its own two-choice picker below;
+  // this one only ever asks the upright box.
   prompt.textContent = t('mounting.prompt.upright');
   prompt.hidden = options.shape !== 'upright';
 
@@ -258,11 +252,10 @@ export interface PlacementPickerOptions {
 }
 
 /**
- * The EasyLevel box's placement (#359), as its manual has it: an arrow on
- * the lid points forward, and the user taps the picture whose box faces
- * the front the way theirs does, wide side or short side. Two pictures of
- * the vehicle with the box in it, each named under it — no rotations to
- * think about, and none the manual does not allow.
+ * The EasyLevel box's placement, as its manual has it: the user taps the
+ * picture whose box faces the front the way theirs does, wide side or
+ * short side — no rotations to think about, and none the manual does not
+ * allow.
  */
 export function createPlacementPicker(options: PlacementPickerOptions): MountingPicker {
   const element = document.createElement('div');

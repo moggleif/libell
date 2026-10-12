@@ -1,20 +1,19 @@
 /**
- * The Settings form (#325): Vehicle, Ramps, Calibration, Level and General
- * (#329), each built by its own tab module, sharing one state. Values are
- * entered and shown in the chosen unit; storage and math stay mm. Every
- * change is stored as it is made, with a "Saved · Undo" toast (#328); the
- * wizard's compact steps save on Next instead.
+ * The Settings form: Vehicle, Ramps, Calibration, Level and General, each
+ * built by its own tab module, sharing one state. Values are entered and
+ * shown in the chosen unit; storage and math stay mm. Every change is
+ * stored as it is made, with a "Saved · Undo" toast; the wizard's compact
+ * steps save on Next instead.
  *
  * This file owns what the tabs share: the form state, how a change is
  * stored and undone, how an unusable number is reported, and which layout
- * the tabs are placed in. Modern (#108) shows them as tabs, Classic's ☰
+ * the tabs are placed in. Modern shows them as tabs, Classic's ☰
  * menu as separate pages (`splitPages`), the wizard as single-topic
  * steps (`compact`), and anything else as one flat page.
  *
  * Which structure to build is decided once, from `initial.appearance`, at
- * construction time — same pattern as `rearAxle` deciding wheel-pair
- * markers in `rvDiagram.ts`. Changing Appearance reloads the app rather
- * than restructuring the open form (see `settingsGeneralTab.ts`).
+ * construction time. Changing Appearance reloads the app rather than
+ * restructuring the open form (see `settingsGeneralTab.ts`).
  */
 import {
   DEFAULT_SETTINGS,
@@ -58,16 +57,13 @@ interface Tabs {
 }
 
 /**
- * Calibration is normally supplied by the host (the menu, which already
- * implements `CalibrationOptions`) so the embedded Kalibrering tab talks
- * to the real sensor. When no host is wired — a standalone harness, or a
- * unit test building a Modern-mode form directly — the tab still renders
- * with an inert stand-in rather than throwing.
+ * When no calibration host is wired — a standalone harness, or a unit test
+ * building a Modern-mode form directly — the tab still renders with an
+ * inert stand-in rather than throwing.
  */
 function inertCalibrationOptions(): CalibrationOptions {
   return {
-    // Only ever used from the Modern Kalibrering tab (below) — the
-    // embedded calibration section it feeds is Modern-only structure.
+    // Only ever used from the Modern calibration tab.
     appearance: 'modern',
     getCalibration: () => null,
     calibrate: () => t('calibration.err.notRunning'),
@@ -84,12 +80,7 @@ function inertCalibrationOptions(): CalibrationOptions {
   };
 }
 
-/**
- * Same fallback role as `inertCalibrationOptions` above, for the embedded
- * Targets tab (screen-cleanup follow-up): a standalone harness or a unit
- * test building a Modern-mode form directly still renders without a real
- * host — just an always-empty, non-functional preset list.
- */
+/** Same fallback role as `inertCalibrationOptions`, for the targets. */
 function inertTargetsOptions(): TargetsOptions {
   return {
     getTargetPresets: () => [],
@@ -101,37 +92,27 @@ function inertTargetsOptions(): TargetsOptions {
 }
 
 /**
- * The Modern tab bar exposes `selectCalibrationTab` (undefined in Classic,
- * which has no tabs) so the menu's Calibration entry can jump straight to
- * the Kalibrering tab of this same live instance instead of mounting a
- * second, independent `createCalibrationSection` (#155).
+ * The `select*Tab` shortcuts are Modern only (Classic has no tabs): they
+ * jump to a tab of this same live instance instead of mounting a second,
+ * independent section.
  */
 export type SettingsFormElement = HTMLFormElement & {
   selectCalibrationTab?: () => void;
-  /**
-   * Same shortcut as `selectCalibrationTab` above, for the Level tab that
-   * holds the saved targets (#329; Modern only — Classic has no tabs to
-   * select; its Level page is `classicPages.targets` below instead).
-   */
+  /** The Level tab, which holds the saved targets. */
   selectTargetsTab?: () => void;
-  /** Any tab by id (#326, Help's topic buttons) — Modern only, like the two above. */
+  /** Any tab by id — Help's topic buttons. */
   selectTab?: (id: TabId) => void;
   /**
-   * Resync the Chime/Continuous-audio-guidance checkboxes (and the
-   * stored baseline for just those two fields) from a value that changed
-   * outside this form — the bottom bar's mute toggle (#161). Called by
-   * the menu host every time it reopens. Not a change of its own: the
-   * value is already stored, so nothing is saved and no toast shows.
+   * Resync the sound checkboxes (and the stored baseline for just those two
+   * fields) from a value changed outside this form — the bottom bar's mute
+   * toggle. Not a change of its own: the value is already stored, so
+   * nothing is saved and no toast shows.
    */
   resyncSoundFields?: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>) => void;
   /**
-   * Classic split pages (screen-cleanup follow-up, `splitPages` below):
-   * the same four bodies the menu's ☰ drawer navigates between —
-   * vehicle/ramps/targets (the Level page, #329)/general — sharing this
-   * one form's state. The
-   * menu swaps whichever body is this form's current child right before
-   * showing it; undefined unless `splitPages` was requested. Calibration
-   * stays its own standalone page outside this form.
+   * The four bodies the Classic ☰ drawer navigates between, sharing this
+   * one form's state; the menu mounts one as this form's child right before
+   * showing it. Undefined unless `splitPages` was requested.
    */
   classicPages?: {
     general: HTMLElement;
@@ -140,12 +121,9 @@ export type SettingsFormElement = HTMLFormElement & {
     targets: HTMLElement;
   };
   /**
-   * Refreshes the embedded targets section built for `classicPages.targets`
-   * above — the preset list can change from outside
-   * this form (a preset added/deleted, the active target switched), so the
-   * menu host calls this every time it (re)opens the Targets page, same
-   * reasoning as `resyncSoundFields` above. Undefined unless `splitPages`
-   * was requested.
+   * Refreshes the targets section in `classicPages.targets` — the preset
+   * list can change from outside this form, so the menu calls this every
+   * time it (re)opens. Undefined unless `splitPages` was requested.
    */
   refreshTargetsPage?: () => void;
   /**
@@ -161,60 +139,32 @@ interface SettingsFormOptions {
   /**
    * Reduced onboarding-only renderings, each just its own subset of the
    * same field elements the full form builds — never a wizard-only
-   * duplicate. Omitted everywhere else (the menu's Settings page, the
-   * embedded Modern tabs), which get the full form instead.
+   * duplicate. Everything not in a step stays reachable from Settings
+   * afterward.
    *
-   * 'measurements' (onboarding step, #156): only Wheelbase and Track
-   * width front/rear — the three numbers most first-run users have on
-   * hand from the registration document (see `measureHint` below).
+   * 'measurements': only Wheelbase and Track width front/rear — the numbers
+   * first-run users have on hand from the registration document.
    *
-   * 'language' / 'appearance' / 'sound' (onboarding steps; #189 introduced
-   * these as one combined 'general' step, later split by a design review
-   * into one step per actual decision): Language stands alone — it has to
-   * resolve before the rest of the guide is legible, which none of the
-   * others need. Theme and Appearance are one "how it looks" decision, so
-   * they share a step. Chime and Continuous audio guidance are one "what
-   * it sounds like" decision, so they share a step. Splitting by what the
-   * fields are *for*, not just moving the same five fields onto more
-   * screens — grouping unrelated settings just because they used to share
-   * a Settings section header is what made them feel bundled together in
-   * the first place.
+   * 'language' / 'appearance' / 'sound': one step per decision. Language
+   * stands alone because it must resolve before the rest of the guide is
+   * legible; Theme + Appearance are "how it looks", Chime + audio guidance
+   * "what it sounds like".
    *
-   * 'ramps' (onboarding step, design review): the ready-made ramp
-   * model/custom step-height picker and ramp count — what the ramp
-   * catalog and per-wheel step guidance actually run on, the thing that
-   * most sets this app's leveling apart from a plain bubble-level or
-   * sensor-only competitor. Reuses the same classic-style single
-   * `<select>` + chip editor the flat Classic page uses, not the Ramps
-   * page's brand-filtered catalogue — proportionate to a reduced first-run
-   * step either way. Drain position stays on the Level tab, reachable from
-   * Settings afterward, same as Tolerance/Stability.
-   *
-   * Any way, everything not listed above (Vehicle type, Rear axle,
-   * Tolerance, Stability, Show lengths in, Drain position — including
-   * General › More, not just collapsed but absent) stays
-   * reachable from ☰ → Settings afterward.
+   * 'ramps': the step-height picker and ramp count, as the flat Classic
+   * page's single `<select>` + chip editor, not the Ramps page's
+   * brand-filtered catalogue.
    */
   compact?: 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps';
   /**
-   * Classic split pages (screen-cleanup follow-up): render Classic's
-   * fields as four navigable bodies — General / Vehicle / Ramps / Level,
-   * exposed as `classicPages` on the returned form — instead of one long
-   * flat page, mirroring Modern's tab split (#108, #329) now
-   * that the menu's ☰ drawer has somewhere to put them. Ignored when
-   * `appearance === 'modern'` (already split by tabs) or when `compact`
-   * is set (the wizard's reduced single-topic steps). Only the ☰ menu
-   * opts in; every other classic caller (tests, any future standalone
-   * use) keeps the original flat page below.
+   * Render Classic's fields as four navigable bodies, exposed as
+   * `classicPages`, instead of one flat page. Ignored for Modern (already
+   * split by tabs) or when `compact` is set. Only the ☰ menu opts in.
    */
   splitPages?: boolean;
   /**
-   * "Share vehicle setup" (R41, #207): called with the form's current
-   * (committed on submit, live otherwise) settings when the button next to
-   * the vehicle fields is pressed — the host picks out the shareable
-   * geometry (`domain/vehicleShare.ts`) and hands off to the native share
-   * sheet. Omitted for the onboarding `compact` steps, where there is
-   * nothing meaningful yet to share.
+   * "Share vehicle setup": called with the form's current settings — the
+   * host picks out the shareable geometry (`domain/vehicleShare.ts`).
+   * Omitted for the onboarding `compact` steps, with nothing yet to share.
    */
   onShareVehicleSetup?: (settings: LevelSettings) => void;
 }
@@ -347,8 +297,8 @@ function createFormValues(
  * guards against corrupt storage. Fields this form does not edit (the
  * sensor source and its device settings) come from what is stored now,
  * not from `initial`: they change while the form is open, and a save
- * from here must never put back an older sensor choice (#328 — with
- * every edit now saved at once, that would happen on any tap).
+ * from here must never put back an older sensor choice — with every edit
+ * saved at once, that would happen on any tap.
  */
 function readSettings(
   eachTab: { read(raw: RawSettings): void }[],
@@ -365,7 +315,7 @@ function readSettings(
 }
 
 /**
- * A number the user typed that cannot be used (#328): empty, zero or
+ * A number the user typed that cannot be used: empty, zero or
  * negative. Never refused silently and never replaced by a factory
  * default: the field goes back to the value in effect, and one line
  * under it says what was wrong, until the next change.
@@ -404,7 +354,7 @@ function createInvalidNumberReport(numberFields: NumberField[]): {
 
 interface AutoSave {
   saved(): LevelSettings;
-  /** Stores the form's values at once (#328); a no-op in a wizard step. */
+  /** Stores the form's values at once; a no-op in a wizard step. */
   changed(): void;
   /** The wizard step's Next, or Enter in a number field on the full page. */
   submit(): void;
@@ -413,7 +363,7 @@ interface AutoSave {
 }
 
 /**
- * Every change is stored at once (#328): there is no Save button and no
+ * Every change is stored at once: there is no Save button and no
  * "unsaved" state to lose by closing the page. A toast offers to undo
  * it. The wizard's compact steps are the exception — they are saved by
  * their own Next, which submits this form.
@@ -477,8 +427,8 @@ function createSettingsStore(
   return {
     saved: () => saved,
     persist(settings) {
-      // The ⚠ Setup lamp goes out with the measurements, not with any save
-      // (#364): a changed measurement, or the wizard's measurements step
+      // The ⚠ Setup lamp goes out with the measurements, not with any save:
+      // a changed measurement, or the wizard's measurements step
       // confirmed with Next even if the values shown were kept.
       if (compact === 'measurements' || measurementsDiffer(saved, settings)) {
         markMeasurementsSaved();
@@ -547,15 +497,14 @@ function layOut(
  * The wizard's reduced, single-topic steps — each just its own subset of
  * the same field elements the full form builds, never a duplicate. A
  * step already has its own Next/Skip/Back, and Next submits this form
- * directly: it is the step's only save (#328 left the wizard that way).
+ * directly: it is the step's only save.
  */
 function compactStep(
   tabs: Tabs,
   compact: NonNullable<SettingsFormOptions['compact']>,
 ): HTMLElement[] {
   switch (compact) {
-    // #156: no tabs, no vehicle type or axle. A short note pointing to ☰
-    // is added by onboarding.ts itself, next to this form.
+    // No tabs, no vehicle type or axle.
     case 'measurements':
       return [tabs.vehicle.measureHint, ...tabs.vehicle.measurements.map((m) => m.element)];
     // Still reloads immediately on change, same as Settings.
@@ -574,9 +523,9 @@ function compactStep(
 }
 
 /**
- * Modern (#108): tabs instead of one long page, in the order a new owner
- * sets things up in (#329) — the vehicle, its ramps, calibration, what
- * counts as level — with the app-wide preferences last. Opens on Vehicle.
+ * Modern: tabs in the order a new owner sets things up in — the vehicle,
+ * its ramps, calibration, what counts as level — with the app-wide
+ * preferences last. Opens on Vehicle.
  */
 function layOutModernTabs(form: SettingsFormElement, tabs: Tabs, hosts: Hosts): () => void {
   // The calibration and targets tabs are redrawn whenever they are shown,
@@ -658,11 +607,7 @@ function createTabBar(onClick: (id: TabId) => void): TabBar {
   };
 }
 
-/**
- * Modern's tabs, in the order a new owner sets things up in (#329). The
- * calibration section is the same one the menu uses standalone (#109), as
- * a two-step checklist (#330).
- */
+/** The calibration section is the same one the menu uses standalone. */
 function fillModernTabs(
   bar: TabBar,
   tabs: Tabs,
@@ -670,22 +615,19 @@ function fillModernTabs(
   targets: HTMLElement,
 ): void {
   bar.addTab('vehicle').append(...tabs.vehicle.elements());
-  // The same page Classic's ☰ → Ramps shows (#331).
+  // The same page Classic's ☰ → Ramps shows.
   tabs.ramps.buildPage(bar.addTab('ramps', 'settings__tabpanel settings__tabpanel--klossar'));
   bar.addTab('calibration').append(calibration);
-  // The Level tab (#329). Its id stays 'targets' — the main screen's
-  // target badge opens it through `selectTargetsTab`.
+  // The Level tab. Its id stays 'targets' — the main screen's target badge
+  // opens it through `selectTargetsTab`.
   bar.addTab('targets').append(...tabs.level.elements(targets));
   bar.addTab('general').append(...tabs.general.elements());
 }
 
 /**
- * Classic's ☰ pages (screen-cleanup follow-up): the same groups as
- * Modern's tabs (#329), as drawer pages — Classic has no tab bar. One
- * shared `<form>`/state underneath: the menu swaps whichever body is this
- * form's mounted child, and every change is stored as it is made (#328),
- * whichever page it is on. Calibration stays its own page outside this
- * form.
+ * Classic's ☰ pages: Modern's tab groups as drawer pages over one shared
+ * `<form>`/state; the menu mounts whichever body it shows. Calibration
+ * stays its own page outside this form.
  */
 function layOutClassicPages(
   form: SettingsFormElement,
@@ -697,7 +639,7 @@ function layOutClassicPages(
     body.append(...children);
     return body;
   };
-  // The same Ramps page as Modern's tab (#331), not the wizard's select.
+  // The same Ramps page as Modern's tab, not the wizard's select.
   const ramps = createElement('div', 'settings__tabpanel--klossar');
   tabs.ramps.buildPage(ramps);
 
@@ -716,10 +658,9 @@ function layOutClassicPages(
 }
 
 /**
- * Classic as one flat page, in the same groups as the tabs (#329). No
- * screen in the app shows it any more — the ☰ menu always uses the split
- * pages — so it keeps the compact ramp select rather than the Ramps page
- * (#331), and leaves out the saved targets, which need a host.
+ * Classic as one flat page, in the same groups as the tabs. No screen in
+ * the app shows it — the ☰ menu uses the split pages — so it keeps the
+ * compact ramp select and leaves out the saved targets, which need a host.
  */
 function layOutFlatPage(form: SettingsFormElement, tabs: Tabs): () => void {
   const vehicleHeading = createSectionHeading();

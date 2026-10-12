@@ -7,16 +7,10 @@
  * the SVG. Wheels are green when they need no lift; wheels that need
  * raising are orange (a step reaches) or red (beyond the tallest step).
  *
- * Modern (#106, appearance preset from #104; reshaped in a follow-up
- * discussion after #161): a redrawn two-tone silhouette — a narrower cab
- * up front widening into the box body, roof inset, mirrors, side window
- * strips, roof hatch, rear hatch, awning, a dashed crosshair through the
- * bubble — with per-wheel status shown only in the floating "wheel cards"
- * (HTML, not SVG) positioned over the diagram, see `buildWheelCard` in
- * `diagramParts.ts`; the SVG itself carries no per-wheel marker at all, so
- * the silhouette stays clean. A card's position on screen already says which wheel it is, so
- * the card carries no visible position text either — only an aria-label,
- * for anyone not reading the layout visually (screen-cleanup follow-up).
+ * Modern: a two-tone silhouette with per-wheel status shown only in the
+ * floating HTML "wheel cards" positioned over the diagram (`buildWheelCard`
+ * in `diagramParts.ts`). A card's position already says which wheel it is,
+ * so it carries no visible position text — only an aria-label.
  * Both variants share one severity→color/glyph vocabulary and the same
  * bubble-level physics; only the geometry and where the text lives differ.
  */
@@ -60,7 +54,7 @@ export function createRvDiagram(
 }
 
 // ============================================================
-// Classic — unchanged from before #106.
+// Classic
 // ============================================================
 
 const CLASSIC_VIEWBOX = { width: 240, height: 310 };
@@ -93,10 +87,8 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
   };
 }
 
-/** A plain rectangular outline under a front arrow — Classic's
- * "unstyled HTML" square-cornered counterpart to Modern's heavily rounded
- * silhouette. The arrow's shape alone says "front", with no text label
- * (#161 follow-up). */
+/** A plain rectangular outline under a front arrow; the arrow's shape alone
+ * says "front", with no text label. */
 function classicBody(): SVGElement[] {
   return [
     path('M120 8 L110 26 L117 26 L117 40 L123 40 L123 26 L130 26 Z', 'rv-diagram__arrow'),
@@ -117,7 +109,7 @@ function classicWheels(rearAxle: AxleConfig): Record<WheelId, ClassicWheel> {
 }
 
 // ============================================================
-// Modern (#106) — redrawn silhouette, wheel cards.
+// Modern — silhouette and wheel cards.
 // ============================================================
 
 const MODERN_VIEWBOX = { width: 260, height: 420 };
@@ -166,24 +158,22 @@ function sideOf(id: WheelId): 'left' | 'right' {
  * The two-tone Modern motorhome: a narrower cab up front widening into
  * the box body, roof inset, mirrors, side window strips, roof hatch, rear
  * hatch, awning and a dashed crosshair through the bubble. The SVG carries
- * no per-wheel marker at all: per-wheel status lives entirely in the
- * floating wheel cards, since wheel-shaped rects behind the cards read as
- * leftover wheels and fought the silhouette (follow-up after #161).
+ * no per-wheel marker: wheel-shaped rects behind the cards read as leftover
+ * wheels and fought the silhouette.
  */
 function modernSilhouette(): SVGElement[] {
   return [
     modernFrontArrow(),
     // Cab: a narrower rounded nose overlapping the box seamlessly, so the
     // two read as one silhouette. This narrow-cab/wide-box shape is the
-    // strongest "motorhome" cue there is (widened from 80 to read less
-    // stubby, small-adjustments follow-up).
+    // strongest "motorhome" cue there is.
     rect(80, 74, 100, 60, 28, 'rv-diagram__body'),
     // Mirrors at the front corners, level with the windshield, overlapping
     // the cab edge so they read as mounted onto it.
     rect(72, 85, 10, 13, 4, 'rv-diagram__trim'),
     rect(178, 85, 10, 13, 4, 'rv-diagram__trim'),
     // Box body, then an inset roof panel. Longer than the cab by design: a
-    // motorhome reads as a long box behind a short cab (#161 follow-up).
+    // motorhome reads as a long box behind a short cab.
     rect(62, 106, 136, 288, 28, 'rv-diagram__body'),
     rect(74, 141, 112, 232, 20, 'rv-diagram__roof'),
     path('M88 92 Q130 78 172 92 L166 122 Q130 110 94 122 Z', 'rv-diagram__windshield'),

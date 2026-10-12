@@ -1,8 +1,8 @@
 /**
- * "Share vehicle setup" (R41, #207): builds a link carrying only the
- * vehicle-geometry fields (`domain/vehicleShare.ts` — never calibration,
- * never UI/behavior preferences) and hands it to the same native share
- * sheet / clipboard fallback the plain app-link share button already uses.
+ * "Share vehicle setup": a link carrying only the vehicle-geometry fields
+ * (`domain/vehicleShare.ts` — never calibration, never UI/behavior
+ * preferences), through the same share sheet / clipboard fallback as the
+ * app-link share button.
  */
 import { encodeVehicleGeometry, type VehicleGeometry } from '../domain/vehicleShare';
 import { appUrl, shareOrCopyLink } from './share';
@@ -22,9 +22,7 @@ export async function shareVehicleSetup(geometry: VehicleGeometry): Promise<void
 
 /**
  * Reads a pending setup link's payload from the current URL, if any, and
- * removes it from the address bar so a later refresh never re-prompts
- * (the fragment never reached any server either way — no backend exists,
- * SECURITY.md — this is purely about not asking twice).
+ * removes it from the address bar so a later refresh never re-prompts.
  */
 export function takePendingVehicleSetupCode(): string | null {
   if (!location.hash.startsWith(SETUP_HASH_PREFIX)) return null;

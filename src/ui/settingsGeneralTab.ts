@@ -1,7 +1,6 @@
 /**
- * Settings › General (#329): how the app looks and sounds — language,
- * theme, appearance, unit, the level chime and audio guidance (#121) —
- * and More: the rarely tuned Fine-tuning fields and "Reset all settings".
+ * Settings › General: how the app looks and sounds, and More: the rarely
+ * tuned Fine-tuning fields and "Reset all settings".
  */
 import { type AppearanceSetting, type LevelSettings, type ThemeSetting } from '../domain/settings';
 import { clearLanguage, loadLanguage, saveLanguage, saveSettings } from '../data/settingsStore';
@@ -35,7 +34,7 @@ export interface GeneralTab {
   relabel(): void;
   read(raw: RawSettings): void;
   populate(settings: LevelSettings): void;
-  /** Takes a sound choice made outside the form (#161) as the new state. */
+  /** Takes a sound choice made outside the form as the new state. */
   resyncSound(sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>): void;
 }
 
@@ -133,7 +132,7 @@ function createThemeField(initial: ThemeSetting, context: SettingsFormContext) {
     ],
     initial,
   );
-  // Live preview, and stored at once like every other change (#328).
+  // Live preview, and stored at once like every other change.
   theme.control.addEventListener('change', () => {
     applyTheme(theme.value());
     context.changed();
@@ -141,7 +140,7 @@ function createThemeField(initial: ThemeSetting, context: SettingsFormContext) {
   return theme;
 }
 
-/** A preset independent of light/dark (#104). */
+/** A preset independent of light/dark. */
 function createAppearanceField(initial: AppearanceSetting, context: SettingsFormContext) {
   const appearance = createSelectField<AppearanceSetting>(
     [
@@ -163,14 +162,14 @@ function createAppearanceField(initial: AppearanceSetting, context: SettingsForm
       return;
     }
     saveSettings(context.currentSettings());
-    markReopenSettings(); // #345, see the Language select
+    markReopenSettings();
     location.reload();
   });
   return appearance;
 }
 
 /**
- * The level chime and, a separate opt-in (#121), audio guidance that
+ * The level chime and, a separate opt-in, audio guidance that
  * pulses rate/pitch while approaching level — under a Sound heading.
  */
 function createSoundFields(initial: LevelSettings) {
@@ -191,8 +190,7 @@ function createSoundFields(initial: LevelSettings) {
       chime.caption.textContent = t('settings.sound');
       guidance.caption.textContent = t('settings.soundGuidance');
       guidanceHint.textContent = t('settings.soundGuidance.help');
-      // Reuses the wizard's own step title (#189 follow-up) — same name
-      // for the same grouping, not new copy for the same idea.
+      // Reuses the wizard's own step title: same name for the same grouping.
       heading.textContent = t('onboard.sound.h');
     },
   };
@@ -202,7 +200,7 @@ function createSoundFields(initial: LevelSettings) {
  * A stored override, separate from `LevelSettings` (see `settingsStore`'s
  * loadLanguage/saveLanguage), so it applies — and reloads, since `t()`
  * isn't reactive — immediately on change. Every shipped language is
- * offered (#178), each named in itself via `LANGUAGE_NAMES`, so a Swedish
+ * offered, each named in itself via `LANGUAGE_NAMES`, so a Swedish
  * reader can still find "Deutsch". Automatic stays pinned at the top.
  */
 function createLanguageField(compact: boolean) {
@@ -218,8 +216,8 @@ function createLanguageField(compact: boolean) {
     const value = field.value();
     if (isLanguage(value)) saveLanguage(value);
     else clearLanguage();
-    // Back on Settings › General after the reload (#345); the wizard's
-    // language step keeps its own place instead.
+    // Back on Settings › General after the reload; the wizard's language
+    // step keeps its own place instead.
     if (!compact) markReopenSettings();
     location.reload();
   });
@@ -233,9 +231,9 @@ function createLanguageField(compact: boolean) {
 }
 
 /**
- * General › More (#329): Fine-tuning — Stability and both response
- * delays, tuned rarely if ever — and "Reset all settings". Always
- * collapsed on open, never auto-expanded for a customized value (#157).
+ * General › More: Fine-tuning, tuned rarely if ever, and "Reset all
+ * settings". Always collapsed on open, never auto-expanded for a
+ * customized value.
  * Tolerance is not here: it is a real choice about how level is level,
  * and has its place on the Level tab.
  */
@@ -254,7 +252,7 @@ function createMore(context: SettingsFormContext, actions: GeneralTabActions) {
   );
   const stabilityHint = createHint();
 
-  // Response delay (ms, #183): how long a reading must hold before the
+  // Response delay (ms): how long a reading must hold before the
   // shown figure/plan changes, and the shorter delay used only right after
   // a change while actively adjusting — see `src/domain/stability.ts`.
   // Always milliseconds, never unit-converted.
@@ -270,7 +268,7 @@ function createMore(context: SettingsFormContext, actions: GeneralTabActions) {
   );
   const dwellHint = createHint();
 
-  // The one whole-form action (#328). It keeps the appearance: that
+  // The one whole-form action. It keeps the appearance: that
   // decides the page's whole structure, and changing it reloads the app,
   // which would take the Undo toast with it.
   const resetAll = document.createElement('button');

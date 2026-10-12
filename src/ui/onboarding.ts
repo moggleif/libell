@@ -1,8 +1,5 @@
 /**
- * First-run onboarding wizard (#43, reworked #184, #189 and #365): what
- * Libell does, language, appearance and sound, which vehicle, how to place
- * the phone or connect the box, the measurements, the ramps and the phone's
- * calibration.
+ * First-run onboarding wizard.
  *
  * Nothing blocks: Next always advances, and whatever is left undone stays
  * flagged by the warning lamps. Skip appears only where Next would save a
@@ -12,13 +9,12 @@
  *
  * Every step reuses the real settings form, calibration card and
  * sensor-source section for its fields and logic, never a wizard-only copy
- * that can drift (#184). It leaves out their Save/Undo/Reset chrome, since a
+ * that can drift. It leaves out their Save/Undo/Reset chrome, since a
  * linear wizard and a persistent settings page are different interaction
  * models: Next alone submits the embedded form.
  *
- * The steps live in `onboarding/`, sharing one `WizardState` (#415), and
- * `onboarding/stepList.ts` decides which of them the chosen path walks. This
- * file draws the current step around them: progress, heading, body, nav.
+ * `onboarding/stepList.ts` decides which steps the chosen path walks; this
+ * file draws the current one: progress, heading, body, nav.
  */
 import { createElement } from './dom';
 import { t } from './i18n';
@@ -79,8 +75,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   renderStep();
 }
 
-// Always escapable: ✕ closes the wizard from any step. It can be reopened
-// from the "Show introduction" button on the "?" page's Help tab.
+// Always escapable; reopened from "Show introduction" on the "?" page.
 function buildCloseButton(onClose: () => void): HTMLButtonElement {
   const close = document.createElement('button');
   close.type = 'button';
