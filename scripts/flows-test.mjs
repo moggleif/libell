@@ -507,16 +507,14 @@ async function wizardPasswordFlow(browser) {
   await wizard(page).getByText('Sensor box', { exact: true }).click();
   await nextUntil(page, 'Sensor box');
   await button(wizard(page), 'Connect').click();
-  await wizard(page).getByText('Connected', { exact: true }).waitFor();
-  // The connect step is drawn once, so the verdict that arrives after the
-  // connect shows when the step is drawn again.
-  await button(wizard(page), 'Next').click();
-  await button(wizard(page), 'Back').click();
+  // The verdict arrives after the connect; the step redraws live (#390).
+  await wizard(page).getByText('Wrong password', { exact: true }).waitFor();
   const password = wizard(page).locator('.box-password');
   await password.waitFor();
   await password.locator('input').fill('1234');
   await button(password, '').click();
   await password.waitFor({ state: 'hidden' });
+  await wizard(page).getByText('Connected', { exact: true }).waitFor();
   assert(
     (await storedSettings(page)).sensorDevices.xparkle.password === '1234',
     'a password typed in the wizard should be kept for later connects',

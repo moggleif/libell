@@ -12,22 +12,6 @@ function sourceBags(options: OnboardingOptions): SensorSourceOptions[] {
   return availableExternalSensors().map((sensor) => perSource(sensor));
 }
 
-// The external path's calibration equivalent (ADR 0014). Connecting is
-// asynchronous, so Next may be tapped before it resolves; the position step
-// then says so and never blocks.
-export function connectStep(state: WizardState): Step {
-  return {
-    title: t('menu.sensorSource'),
-    note: () => t('onboard.note.connect', { next: t('onboard.next') }),
-    build: () =>
-      sourceBags(state.options).map((bag) => createSensorSourceSection(bag).connectElement),
-  };
-}
-
-function isActiveSource(bag: SensorSourceOptions): boolean {
-  return bag.getSensorSource() === bag.sensor.id;
-}
-
 function whileShown(anchor: Element, frame: () => void): void {
   const tick = () => {
     if (!anchor.isConnected) return;
@@ -35,6 +19,28 @@ function whileShown(anchor: Element, frame: () => void): void {
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
+}
+
+// The external path's calibration equivalent (ADR 0014). Connecting is
+// asynchronous, so Next may be tapped before it resolves; the position step
+// then says so and never blocks. A box's password verdict arrives after the
+// connect, so the cards redraw live, as on the box page (#390).
+export function connectStep(state: WizardState): Step {
+  return {
+    title: t('menu.sensorSource'),
+    note: () => t('onboard.note.connect', { next: t('onboard.next') }),
+    build: () => {
+      const sections = sourceBags(state.options).map((bag) => createSensorSourceSection(bag));
+      const cards = sections.map((section) => section.connectElement);
+      const [anchor] = cards;
+      if (anchor) whileShown(anchor, () => sections.forEach((section) => section.refreshLive()));
+      return cards;
+    },
+  };
+}
+
+function isActiveSource(bag: SensorSourceOptions): boolean {
+  return bag.getSensorSource() === bag.sensor.id;
 }
 
 // Should a connection started on the previous step land while this is

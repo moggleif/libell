@@ -1775,6 +1775,12 @@ present this source as more proven than it is.
   not answered; a code that is not four digits is explained, not sent. The code is kept
   in Libell's settings and offered on every later connect. Readings keep flowing
   throughout: nothing is blocked while the code is wrong.
+- **Given** the guide's Sensor box step is shown (#390)
+- **When** I connect a box that rejects its password
+- **Then** the card shows "Wrong password" and the password field without leaving the
+  step, because the verdict arrives after the connect and the card redraws live, as on
+  the box's own page. When I type the right code, the field hides, the card shows
+  "Connected" and the code is kept.
 - **Given** the Xparkle box is connected and the user taps "Zero now" ("Nollställ nu")
   or "Zero again" — on its own page (R51) or in the Calibration tab (R11)
 - **Then** Libell has the box zero itself with its own command (#290), so its readings
