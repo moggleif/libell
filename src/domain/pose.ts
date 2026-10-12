@@ -1,5 +1,5 @@
 /**
- * Phone pose detection (issue #51) — pure, no browser APIs.
+ * Phone pose detection.
  *
  * The leveling math assumes the phone lies flat. When the user picks the
  * phone up (total tilt beyond ~25°) the readings are meaningless, so the
@@ -35,10 +35,9 @@ export function createPoseDetector(): (gravity: GravityVector) => Pose {
 }
 
 /**
- * A permanently-mounted external sensor (#285) is never "picked up", so the
- * phone's 25° pose rule does not apply to it. The one mount that still
- * produces confident wrong guidance is fully upside-down (R43): its face
- * points down, so gravity's z component is negative.
+ * A permanently-mounted external sensor is never "picked up", so the phone's
+ * 25° pose rule does not apply to it. The one mount that still produces
+ * confident wrong guidance is fully upside-down (R43): gravity's z is negative.
  */
 export function isUpsideDown(gravity: GravityVector): boolean {
   return gravity.z < 0;
@@ -50,7 +49,7 @@ const EXIT_EXTREME_DEG = 40;
 export type ExternalPose = 'ok' | 'extreme' | 'upside-down';
 
 /**
- * Pose check for a permanently-mounted external sensor (#285). Far looser
+ * Pose check for a permanently-mounted external sensor. Far looser
  * than the phone's 25° rule — a vehicle on ramps tilts a mounted box by
  * several degrees — but a box lying on its side, hanging from a wall or
  * face-down reads far beyond that and would give confident wrong guidance.

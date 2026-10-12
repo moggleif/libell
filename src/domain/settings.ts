@@ -1,8 +1,4 @@
-/**
- * Vehicle parameters used by the leveling math. Pure module — no browser
- * APIs — so it is shared between the domain tests and the localStorage
- * store in `src/data/settingsStore.ts`.
- */
+/** Vehicle parameters used by the leveling math, and their validation. */
 import { parseAxisMapping, type AxisMapping } from './axisMapping';
 
 export interface LevelSettings {
@@ -20,31 +16,25 @@ export interface LevelSettings {
    * measurements are taken to the boggie's centre.
    */
   rearAxle: AxleConfig;
-  /** Distance between front and rear axle, in mm. */
   wheelbaseMm: number;
-  /** Distance between the front wheels, in mm. */
   trackWidthFrontMm: number;
-  /** Distance between the rear wheels, in mm — may differ from the front. */
+  /** May differ from the front. */
   trackWidthRearMm: number;
   /**
-   * The step heights of the leveling ramp, in mm, sorted ascending. A ramp
-   * is a staircase — the wheel rests on one of these heights, so the app
-   * recommends the step closest to the required lift.
+   * Sorted ascending. A ramp is a staircase — the wheel rests on one of these
+   * heights, so the app recommends the step closest to the required lift.
    */
   rampStepHeightsMm: number[];
   /**
-   * How many ramps the user actually owns (1–MAX_RAMP_COUNT). The ramp
-   * plan (ADR 0011) never asks for more wheels to drive up than this; a
-   * boggie pair consumes two ramps. Ramps are sold in pairs, so 2 is
-   * the default.
+   * How many ramps the user owns (1–MAX_RAMP_COUNT). The ramp plan (ADR 0011)
+   * never asks for more than this; a boggie pair consumes two ramps. Ramps
+   * are sold in pairs, so 2 is the default.
    */
   rampCount: number;
   /**
    * Where the waste-water drain sits, seen from the driver's seat. When
-   * several ramp placements level the vehicle within the tolerance, the
-   * plan prefers the one leaving this side lowest so the drains keep
-   * working — sink and shower water must run toward the outlet;
-   * 'none' disables the preference.
+   * several ramp placements level the vehicle, the plan prefers the one
+   * leaving this side lowest so sink and shower water runs toward the outlet.
    */
   drainPosition: DrainPosition;
   /**
@@ -65,115 +55,80 @@ export interface LevelSettings {
    */
   dwellRestMs: number;
   /**
-   * A shorter dwell (ms), used only for a wheel's mm figure once it has
-   * *just* been confirmed moving consistently in one direction — the
-   * shape of a deliberate, continuous motion like driving up a ramp —
-   * so the live figure doesn't lag by the full `dwellRestMs` on every
-   * intermediate step while the wheel is genuinely climbing (#183).
-   * Never exceeds `dwellRestMs` (clamped where used).
+   * A shorter dwell (ms), used only for a wheel's mm figure once it has been
+   * confirmed moving consistently in one direction — like driving up a ramp —
+   * so the live figure doesn't lag by the full `dwellRestMs` on every step
+   * while the wheel climbs. Never exceeds `dwellRestMs` (clamped where used).
    */
   dwellMotionMs: number;
   /** Unit used for displayed lengths; storage and math stay mm. */
   displayUnit: 'mm' | 'cm';
-  /** Play a chime when the vehicle reaches level (opt-in). */
+  /** Play a chime when the vehicle reaches level. */
   soundOnLevel: boolean;
   /**
-   * Continuous audio guidance while approaching level (#121, opt-in,
-   * default off): pulse rate/pitch tracks the STABILIZED distance from
-   * level, plus a non-alarming improving/worsening signal — see
-   * `src/domain/audioGuidance.ts`. Independent of `soundOnLevel`, which
-   * only covers the "reached" chime.
+   * Continuous audio guidance while approaching level (`audioGuidance.ts`).
+   * Independent of `soundOnLevel`, which only covers the "reached" chime.
    */
   soundGuidance: boolean;
-  /** Color theme: follow the phone, or force light/dark. */
   theme: ThemeSetting;
   /**
-   * Visual preset, independent of light/dark (#104): 'classic' is today's
-   * look; 'modern' is the redesigned surfaces, main view, menu, settings
-   * tabs, calibration and onboarding (#106–#110); 'glossy' reuses classic's
-   * structure with a mid-2000s "Web 2.0" skin — gradients, bevels, soft
-   * shadows — layered on purely via CSS (chat-directed restyle). Named
-   * `appearance`, not `theme` — that name is already the light/dark axis.
+   * Visual preset, independent of light/dark (`theme`). 'glossy' reuses
+   * classic's structure with a "Web 2.0" skin layered on purely via CSS.
    */
   appearance: AppearanceSetting;
   /**
-   * Which physical sensor the gravity reading comes from (#128, ADR 0014).
-   * `'phone'` is the built-in DeviceMotion/DeviceOrientation sensor
-   * (`?demo` also stands in for it) and stays the default — an external
-   * source is always opt-in, never a silent replacement (#116). Future
-   * adapters (#119's iOS bridge, ...) extend this union one literal at a
-   * time as they land, rather than this field being invented per-adapter.
+   * Which physical sensor the gravity reading comes from (ADR 0014). An
+   * external source is always opt-in, never a silent replacement for the
+   * phone.
    */
   sensorSource: SensorSource;
   /**
-   * Settings that belong to one external sensor rather than to the app or
-   * the vehicle, keyed by source id (#264, ADR 0016).
+   * Settings that belong to one external sensor, keyed by source id
+   * (ADR 0016).
    *
-   * Flat `easyLevel*` fields used to sit here instead, which meant a
-   * device's worth of new fields — and of `parseSettings` branches — every
-   * time a source was added, on an object that is otherwise the vehicle's
-   * geometry and the UI's preferences.
-   *
-   * Held as an untyped bag on purpose: entries for sources this build does
-   * not know are carried through a load/save round trip untouched, so
-   * moving between builds cannot destroy the other build's device
-   * settings. Read it through the typed accessors below
-   * (`easyLevelSettings`), never directly — they are what validates a
-   * field and falls back to its default, the same discipline every other
-   * setting gets from `parseSettings`.
+   * An untyped bag on purpose: entries for sources this build does not know
+   * survive a load/save round trip, so moving between builds cannot destroy
+   * the other build's device settings. Read it only through the typed
+   * accessors (`easyLevelSettings`), which validate each field.
    */
   sensorDevices: SensorDeviceSettings;
 }
 
 /**
- * The raw per-source settings bag (#264). Values are validated when read
- * by a typed accessor rather than at parse time, which is what lets an
- * unknown source's entry survive this build without being understood by
- * it.
+ * Values are validated when read by a typed accessor rather than at parse
+ * time, which lets an unknown source's entry survive this build.
  */
 export type SensorDeviceSettings = Record<string, unknown>;
 
-/** Settings belonging to the EasyLevel box specifically (#212, #217). */
 export interface EasyLevelSettings {
   /**
-   * Which of the four physical orientations the box is mounted in (#217,
-   * #222) — mirrors the official app's own `"sensor_Placing"` setting (see
-   * `sensor/easyLevelProtocol.ts`'s `applyEasyLevelMounting`). An ordinary
-   * physical-installation fact any user whose box is not mounted the
-   * default way needs. `'standard'` never changes any reading, and no
-   * other `OrientationSensor` reads this at all.
+   * Which of the four physical orientations the box is mounted in — mirrors
+   * the official app's `"sensor_Placing"` (see `applyEasyLevelMounting`).
+   * `'standard'` never changes any reading.
    */
   mounting: EasyLevelMounting;
   /**
-   * Whether the user has picked the placement (#359), so the box's page
-   * asks until they have, as it does for the Xparkle box. Readings use
-   * `mounting` either way; this only decides what the direction step says.
-   * An entry saved before #359 counts as picked when its rotation is not
-   * the default, which only a choice could have stored.
+   * Whether the user has picked the placement, so the box's page asks until
+   * they have. Readings use `mounting` either way. An entry without this
+   * field counts as picked when its rotation is not the default, which only
+   * a choice could have stored.
    */
   mountingPicked: boolean;
   /**
-   * Debug-only hardware-compatibility workaround (#212), reached from the
-   * EasyLevel status page's "Debug info" disclosure, never the normal
-   * settings panel. Off by default — zero behavior change for anyone who
-   * never opens that disclosure. When on, `easyLevelSensor.ts`'s transport
-   * waits `connectDelayMs` after a GATT connect succeeds and before
-   * discovering services, mirroring (loosely) a settle delay the official
-   * app's own decompiled connection handling applies. No physical box has
-   * confirmed needing it; it exists so a box owner without a dev setup can
-   * experiment through the app's own UI.
+   * Debug-only hardware-compatibility workaround, reached from the EasyLevel
+   * status page's "Debug info". When on, the transport waits
+   * `connectDelayMs` after a GATT connect and before discovering services,
+   * loosely mirroring a settle delay in the official app's decompiled
+   * connection handling. No physical box has confirmed needing it; it lets a
+   * box owner without a dev setup experiment.
    */
   connectDelayEnabled: boolean;
   /**
-   * The delay itself (ms), only applied while `connectDelayEnabled` is
-   * true, clamped to `MAX_EASYLEVEL_CONNECT_DELAY_MS` so a mistyped huge
-   * value cannot effectively hang every connect attempt. One flat delay,
-   * not the official app's two-tier scheme: its decompiled
-   * `onConnectionStateChange` waits 1600ms if the device is bonded and
-   * 300ms otherwise, and Web Bluetooth exposes no bonding-state read to a
-   * web page — but 300ms is the branch that matters, since EasyLevel's own
-   * protocol needs no encryption and has no WRITE characteristic, so
-   * Android has no reason to bond with this hardware at all.
+   * Clamped to `MAX_EASYLEVEL_CONNECT_DELAY_MS`. One flat delay, not the
+   * official app's two-tier scheme (1600ms if bonded, 300ms otherwise): Web
+   * Bluetooth exposes no bonding state, and 300ms is the branch that matters,
+   * since EasyLevel's protocol needs no encryption and has no WRITE
+   * characteristic, so Android has no reason to bond with it.
    */
   connectDelayMs: number;
 }
@@ -183,35 +138,25 @@ export type ThemeSetting = 'system' | 'light' | 'dark';
 export type AppearanceSetting = 'classic' | 'modern' | 'glossy';
 
 /**
- * The multi-source seam (#128, ADR 0014): identifies which
- * `OrientationSensor` implementation produced a reading. Every
- * implementation returns a fixed member of this union from `getSource()`.
- * `'phone'` covers the built-in sensor and its `?demo` stand-in;
- * `'easylevel'` is the EasyLevel BLE box (#116, `src/sensor/easyLevelSensor.ts`);
- * `'xparkle'` the Xparkle RVS01 (#270, `src/sensor/xparkleSensor.ts`).
+ * The multi-source seam (ADR 0014): which `OrientationSensor` produced a
+ * reading. `'phone'` covers the built-in sensor and its `?demo` stand-in.
  */
 export type SensorSource = 'phone' | 'easylevel' | 'xparkle';
 
 export const SENSOR_SOURCES: readonly SensorSource[] = ['phone', 'easylevel', 'xparkle'];
 
 /**
- * The two physical mounting orientations the official EasyLevel app
- * supports (`"sensor_Placing"` 1/2, #217) — the same physical box rotated
- * 90°. Defined here, not in `sensor/easyLevelProtocol.ts` (which applies
- * the transform this selects), so `domain/` stays the one place every
- * settings-shaped type lives and `sensor/` depends on `domain/`, never the
- * reverse (ADR 0002). `'standard'` is the official app's own default.
+ * How the EasyLevel box is rotated in place. Defined here, not in
+ * `sensor/easyLevelProtocol.ts` (which applies the transform), so `sensor/`
+ * depends on `domain/`, never the reverse (ADR 0002).
  */
 export type EasyLevelMounting = 'standard' | 'rotated90' | 'rotated180' | 'rotated270';
 
-/** All four ways a box lying flat can be bolted in (#222) — the official
- * app only models the first two (`sensor_Placing` 1/2), but a real
- * installation can just as easily end up a half or three-quarter turn
- * round, and those two cases are precisely the ones the installation
- * offset (R34) cannot rescue: they invert a sign rather than add one, so
- * level still reads level and the wrong wheel gets flagged with full
- * confidence. Order is the rotation order, and doubles as the picker's
- * option order. */
+/** All four ways a box lying flat can be bolted in. The official app only
+ * models the first two (`sensor_Placing` 1/2), but the other two are exactly
+ * the ones the installation offset (R34) cannot rescue: they invert a sign rather
+ * than add one, so level still reads level and the wrong wheel gets flagged
+ * with full confidence. In rotation order. */
 export const EASYLEVEL_MOUNTINGS: readonly EasyLevelMounting[] = [
   'standard',
   'rotated90',
@@ -224,11 +169,8 @@ export type VehicleType = 'motorhome' | 'caravan';
 export type AxleConfig = 'single' | 'boggie';
 
 /**
- * `left`/`right`/`front`/`rear` target the middle of that edge (the mean
- * of its two wheels) — a coarser preference than a single corner.
- * `frontLeft`/`frontRight`/`rearLeft`/`rearRight` (design review) target
- * one specific wheel, matching how a waste-water outlet actually sits at
- * one corner of the vehicle, not spread across a whole side or axle.
+ * `left`/`right`/`front`/`rear` target the middle of that edge (the mean of
+ * its two wheels); the corner values target one specific wheel.
  */
 export type DrainPosition =
   | 'none'
@@ -256,30 +198,23 @@ export const DRAIN_POSITIONS: readonly DrainPosition[] = [
 /** More ramps than this cannot help a four-wheel vehicle. */
 export const MAX_RAMP_COUNT = 4;
 
-/** Ceiling for `easyLevelConnectDelayMs` (#212) — long enough for any
- * plausible settle-time experiment, short enough that a mistyped value
- * can't turn every connect attempt into an effectively indefinite hang. */
+/** Long enough for any plausible settle-time experiment, short enough that a
+ * mistyped value can't effectively hang every connect attempt. */
 export const MAX_EASYLEVEL_CONNECT_DELAY_MS = 5000;
 
-/**
- * The EasyLevel box's own defaults (#264). Lives beside `DEFAULT_SETTINGS`
- * rather than inside the adapter so `CLAUDE.md`'s "default setting values
- * live in `DEFAULT_SETTINGS`" rule still has one place to point at — the
- * record below embeds this.
- */
+/** Lives here rather than in the adapter so all defaults stay beside
+ * `DEFAULT_SETTINGS`, which embeds this. */
 export const DEFAULT_EASYLEVEL_SETTINGS: EasyLevelSettings = {
-  // Matches the official app's own default `sensor_Placing` (#217) — most
-  // boxes are never touched by this setting at all.
+  // Matches the official app's default `sensor_Placing` — most boxes are
+  // never touched by this setting at all.
   mounting: 'standard',
   mountingPicked: false,
   connectDelayEnabled: false,
-  // The official app's own "not bonded" delay (see `connectDelayMs`'s doc
-  // comment), not its bonded 1600ms — an EasyLevel box has no reason to
-  // ever be bonded. Not used at all while `connectDelayEnabled` is false.
+  // The official app's "not bonded" delay (see `connectDelayMs`), not its
+  // bonded 1600ms — an EasyLevel box has no reason to ever be bonded.
   connectDelayMs: 300,
 };
 
-/** Settings belonging to the Xparkle box specifically (#293). */
 export interface XparkleSettings {
   /**
    * How the box sits in the vehicle, learned by lifting the front and the
@@ -288,21 +223,20 @@ export interface XparkleSettings {
    */
   axisMapping: AxisMapping | null;
   /**
-   * The box's four-digit password (#367), offered on every connect. The
-   * factory code unless the user typed another on the box's page after the
-   * box rejected it — so a code changed in the vendor app is fixed here.
+   * Offered on every connect. The factory code unless the user typed another
+   * after the box rejected it — so a code changed in the vendor app is fixed
+   * here.
    */
   password: string;
 }
 
 export const DEFAULT_XPARKLE_SETTINGS: XparkleSettings = {
-  // Nothing learned: the box's own axes, exactly as before #293.
+  // Nothing learned: the box's own axes.
   axisMapping: null,
   // The factory code every box ships with (`XPARKLE_DEFAULT_PASSWORD`).
   password: '0000',
 };
 
-/** A box password is exactly four decimal digits (#367). */
 function isXparklePassword(value: unknown): value is string {
   return typeof value === 'string' && /^\d{4}$/.test(value);
 }
@@ -322,14 +256,14 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   dwellRestMs: 600,
   dwellMotionMs: 150,
   displayUnit: 'mm',
-  // On by default (#153): a single short chime carries most of its value
-  // only if users don't have to discover and enable it themselves. Never
-  // overrides an explicit prior choice — see parseSettings' presence check.
+  // On by default: a short chime carries most of its value only if users
+  // don't have to discover and enable it. Never overrides an explicit prior
+  // choice — see parseSettings' presence check.
   soundOnLevel: true,
   soundGuidance: false,
   theme: 'system',
-  // Modern is the default preset (#136); Classic remains a full,
-  // permanently-supported choice for anyone who picks it.
+  // Modern is the default preset; Classic remains a full, permanently
+  // supported choice.
   appearance: 'modern',
   sensorSource: 'phone',
   sensorDevices: { easylevel: DEFAULT_EASYLEVEL_SETTINGS },
@@ -349,10 +283,9 @@ export interface Calibration {
 const MAX_CALIBRATION_DEG = 15;
 
 /**
- * The widest a tilt can read (`atan2`'s range). Since #411 ("Varning är
- * rätt. Aldrig stopp.") the phone's calibration and vehicle zero may be
- * stored beyond 15° when the user goes ahead despite the warning, so
- * reading them back only rejects what no sensor could have produced.
+ * The widest a tilt can read (`atan2`'s range). The phone's calibration and
+ * vehicle zero may be stored beyond 15° when the user goes ahead despite the
+ * warning, so reading them back only rejects what no sensor could produce.
  */
 export const MAX_TILT_DEG = 180;
 
@@ -379,10 +312,6 @@ export function parseCalibration(
   return { rollDeg, pitchDeg };
 }
 
-/** Exported for `domain/vehicleShare.ts` (#207), which validates the same
- * shape of untrusted input (a received link) the same independent-fallback
- * way this module already validates stored settings — reused, not
- * reimplemented. */
 export function positiveNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
 }
@@ -391,7 +320,6 @@ function nonNegativeNumber(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
-/** Exported for `domain/vehicleShare.ts` (#207) — see `positiveNumber` above. */
 export function normalizeHeights(values: number[]): number[] {
   const cleaned = values.filter((v) => Number.isFinite(v) && v > 0);
   return [...new Set(cleaned)].sort((a, b) => a - b);
@@ -487,10 +415,9 @@ export function parseSettings(value: unknown): LevelSettings {
       dwellRestMs,
     ),
     displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
-    // Presence check, not a truthiness check (#153): "never saved" (key
-    // absent — fresh install or a pre-#153 settings blob) must fall back to
-    // the new default, while an explicit prior choice, true or false, is
-    // never overridden. Same pattern #136 used for the appearance default.
+    // Presence check, not truthiness: "never saved" falls back to the
+    // default, while an explicit prior choice, true or false, is never
+    // overridden.
     soundOnLevel:
       typeof raw.soundOnLevel === 'boolean' ? raw.soundOnLevel : DEFAULT_SETTINGS.soundOnLevel,
     soundGuidance: raw.soundGuidance === true,
@@ -499,9 +426,8 @@ export function parseSettings(value: unknown): LevelSettings {
       raw.appearance === 'classic' || raw.appearance === 'modern' || raw.appearance === 'glossy'
         ? raw.appearance
         : DEFAULT_SETTINGS.appearance,
-    // Validated the same way every other enum-like field is (#128), so a
-    // corrupt or future-version value never breaks startup — it falls
-    // back to the phone, which every install always has.
+    // A corrupt or future-version value falls back to the phone, which
+    // every install has.
     sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)
       ? (raw.sensorSource as SensorSource)
       : DEFAULT_SETTINGS.sensorSource,
@@ -510,23 +436,16 @@ export function parseSettings(value: unknown): LevelSettings {
 }
 
 /**
- * The per-source settings bag (#264).
+ * Unlike every other field, entries are **not** validated here: a source this
+ * build has never heard of has no schema, and dropping it would destroy
+ * another build's device settings on the first save. Typed accessors
+ * (`easyLevelSettings`) validate at the point of use.
  *
- * Unlike every other field, entries are **not** validated here: a source
- * this build has never heard of has no schema to validate against, and
- * dropping it would destroy another build's device settings on the first
- * save. Each entry is kept as-is if it is an object, and read through a
- * typed accessor (`easyLevelSettings`) that validates field by field at
- * the point of use.
- *
- * Also migrates #212/#217's flat `easyLevel*` fields into the bag, once:
- * the next save writes the new shape, and a blob that already has an
- * `easylevel` entry is left alone.
+ * Also migrates the legacy flat `easyLevel*` fields into the bag, unless the
+ * blob already has an `easylevel` entry.
  */
 function parseSensorDevices(raw: Record<string, unknown>): SensorDeviceSettings {
   const stored = isRecord(raw.sensorDevices) ? raw.sensorDevices : {};
-  // Starts from the defaults, so a missing entry behaves like every other
-  // missing setting rather than being absent entirely.
   const devices: SensorDeviceSettings = { ...DEFAULT_SETTINGS.sensorDevices };
   for (const [source, value] of Object.entries(stored)) {
     if (isRecord(value)) devices[source] = value;
@@ -540,7 +459,6 @@ function parseSensorDevices(raw: Record<string, unknown>): SensorDeviceSettings 
   return devices;
 }
 
-/** #212/#217's flat fields, if this blob predates #264 and carries any. */
 function legacyEasyLevelSettings(raw: Record<string, unknown>): Record<string, unknown> | null {
   const hasAny =
     raw.easyLevelMounting !== undefined ||
@@ -559,10 +477,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Read the EasyLevel box's settings out of the bag (#264), validating each
- * field the way `parseSettings` validates its own: an enum checked against
- * its list, a presence-checked boolean, a clamped non-negative number. A
- * missing, corrupt or partly-corrupt entry yields defaults per field
+ * A missing, corrupt or partly-corrupt entry yields defaults per field
  * rather than failing — the rest of the settings must still load.
  */
 export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
@@ -577,9 +492,7 @@ export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
       typeof raw.mountingPicked === 'boolean'
         ? raw.mountingPicked
         : mounting !== DEFAULT_EASYLEVEL_SETTINGS.mounting,
-    // Presence check (#212), same discipline as soundOnLevel: absent
-    // (never saved) falls back to the off default; an explicit prior
-    // choice, true or false, is never overridden.
+    // Presence check, as for soundOnLevel.
     connectDelayEnabled:
       typeof raw.connectDelayEnabled === 'boolean'
         ? raw.connectDelayEnabled
@@ -591,12 +504,6 @@ export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
   };
 }
 
-/**
- * Settings with the EasyLevel entry patched (#264) — every other source's
- * entry, known or not, is carried through untouched.
- */
-/** Read the Xparkle box's settings out of the bag (#293), validated the
- * same way `easyLevelSettings` validates its own. */
 export function xparkleSettings(settings: LevelSettings): XparkleSettings {
   const stored = settings.sensorDevices.xparkle;
   const raw = isRecord(stored) ? stored : {};
@@ -606,7 +513,6 @@ export function xparkleSettings(settings: LevelSettings): XparkleSettings {
   };
 }
 
-/** Settings with the Xparkle entry patched (#293). */
 export function withXparkleSettings(
   settings: LevelSettings,
   patch: Partial<XparkleSettings>,
@@ -620,6 +526,7 @@ export function withXparkleSettings(
   };
 }
 
+/** Every other source's entry, known or not, is carried through untouched. */
 export function withEasyLevelSettings(
   settings: LevelSettings,
   patch: Partial<EasyLevelSettings>,
@@ -633,11 +540,8 @@ export function withEasyLevelSettings(
   };
 }
 
-/**
- * Whether the vehicle measurements (wheelbase, track widths) differ
- * between two settings (#364): saving such a change is what puts the
- * ⚠ Setup lamp out; saving a theme or a sound does not.
- */
+/** Saving a measurement change is what puts the ⚠ Setup lamp out; saving a
+ * theme or a sound does not. */
 export function measurementsDiffer(a: LevelSettings, b: LevelSettings): boolean {
   return (
     a.wheelbaseMm !== b.wheelbaseMm ||
@@ -646,11 +550,8 @@ export function measurementsDiffer(a: LevelSettings, b: LevelSettings): boolean 
   );
 }
 
-/**
- * The number only, no unit suffix ("63" / "6.3") — for callers that show
- * several lengths under one shared unit label (R14) rather than repeating
- * "mm"/"cm" on every value.
- */
+/** The number only, no unit suffix ("63" / "6.3"), for several lengths under
+ * one shared unit label (R14). */
 export function formatLengthValue(mm: number, unit: 'mm' | 'cm'): string {
   if (unit === 'cm') {
     const cm = mm / 10;
@@ -659,23 +560,17 @@ export function formatLengthValue(mm: number, unit: 'mm' | 'cm'): string {
   return String(Math.round(mm));
 }
 
-/** Format a length in the chosen display unit ("63 mm" / "6.3 cm"). */
+/** "63 mm" / "6.3 cm". */
 export function formatLength(mm: number, unit: 'mm' | 'cm'): string {
   return `${formatLengthValue(mm, unit)} ${unit}`;
 }
 
-/** The two sound preferences the bottom bar's mute toggle (#161) acts on
- * together — a plain object rather than reusing LevelSettings so this
- * stays obviously unrelated to every other field. */
 export type SoundPrefs = Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>;
 
 /**
- * Mute/unmute (#161): a single toggle for `soundOnLevel` + `soundGuidance`
- * together. Muting remembers their exact prior values; unmuting restores
- * exactly those values — never forcing either back to `true` if the user
- * had it off already before muting. `preMute` is that memory: `null` when
- * not currently muted, otherwise what to restore. Pure, so the toggle and
- * restore logic is unit-testable without any DOM/storage involved.
+ * One toggle for both sound preferences. Muting remembers their exact prior
+ * values in `preMute` (`null` when not muted); unmuting restores exactly
+ * those, never forcing either back on.
  */
 export function toggleMute(
   settings: SoundPrefs,

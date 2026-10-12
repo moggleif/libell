@@ -1,5 +1,5 @@
 /**
- * Caravan leveling math — pure TypeScript, no browser APIs (ADR 0008).
+ * Caravan leveling math (ADR 0008).
  *
  * A caravan has one axle plus a jockey wheel on the drawbar, and levels
  * in two independent moves: side/side with a ramp under the low axle
@@ -101,12 +101,10 @@ export function createCaravanStabilizer(): (
     left: newLiftPending(),
     right: newLiftPending(),
   };
-  // The one stabilized quantity for the jockey is its signed mm figure;
-  // the displayed magnitude and direction are both derived from it below
-  // rather than tracked on their own clocks, so — as with the axle wheels
-  // and the motorhome screen — the arrow can never point a way the number
-  // has already stopped agreeing with (see `createDisplayStabilizer`'s
-  // doc comment for the field report this pattern fixed).
+  // The one stabilized quantity for the jockey is its signed mm figure; the
+  // displayed magnitude and direction are both derived from it rather than
+  // tracked on their own clocks, so the arrow can never point a way the
+  // number no longer agrees with (see `createDisplayStabilizer`).
   let jockeyShownSignedMm = 0;
   const jockeyPending: AdaptiveDwellPending = newAdaptiveDwellPending();
 
