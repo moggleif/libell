@@ -339,6 +339,9 @@ export const sv: Messages = {
   'feedback.title': 'Kort rubrik',
   'feedback.desc': 'Vad hände, eller vad önskar du dig?',
   'feedback.submit': 'Öppna rapporten på GitHub',
+  'feedback.warn.title': 'Rubriken är tom — du kan skicka rapporten ändå.',
+  'feedback.warn.desc': 'Beskrivningen är tom — du kan skicka rapporten ändå.',
+  'feedback.warn.both': 'Rubrik och beskrivning är tomma — du kan skicka rapporten ändå.',
 
   'help.screen.h': 'Så läser du skärmen',
   'help.screen.t':

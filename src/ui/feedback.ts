@@ -77,13 +77,28 @@ export function createFeedbackSection(): HTMLElement {
   submit.type = 'submit';
   submit.className = 'menu__action';
   submit.textContent = t('feedback.submit');
-  submit.disabled = true;
 
-  // Active only when pressing it does something (title + description filled).
-  const updateDisabled = () => {
-    submit.disabled = titleInput.value.trim() === '' || descInput.value.trim() === '';
+  // Never blocks (#411, "Varning är rätt. Aldrig stopp."): the button stays
+  // enabled, and a warning names what is still empty — sending works anyway.
+  const warning = document.createElement('p');
+  warning.className = 'menu__text menu__text--warning feedback__warning';
+  warning.setAttribute('role', 'status');
+  const updateWarning = () => {
+    const noTitle = titleInput.value.trim() === '';
+    const noDesc = descInput.value.trim() === '';
+    const key: MessageKey | null =
+      noTitle && noDesc
+        ? 'feedback.warn.both'
+        : noTitle
+          ? 'feedback.warn.title'
+          : noDesc
+            ? 'feedback.warn.desc'
+            : null;
+    warning.textContent = key ? t(key) : '';
+    warning.hidden = key === null;
   };
-  form.addEventListener('input', updateDisabled);
+  form.addEventListener('input', updateWarning);
+  updateWarning();
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -102,7 +117,7 @@ export function createFeedbackSection(): HTMLElement {
     window.open(url, '_blank', 'noopener');
   });
 
-  form.append(categoryRow, titleField, descField, submit);
+  form.append(categoryRow, titleField, descField, warning, submit);
   body.append(intro, form);
   return body;
 }
