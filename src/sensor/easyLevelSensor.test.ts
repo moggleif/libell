@@ -1,19 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createEasyLevelSensor, EASYLEVEL_DESCRIPTOR } from './easyLevelSensor';
 import {
-  createEasyLevelSensor,
-  createWebBluetoothTransport,
-  EASYLEVEL_DESCRIPTOR,
   EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS,
   EASYLEVEL_SILENCE_LIMIT_MS,
-  isEasyLevelAvailable,
   isEasyLevelInitialCalibrationWaitExpired,
+} from './easyLevelLink';
+import {
+  createWebBluetoothTransport,
+  isEasyLevelAvailable,
   isWebBluetoothSupported,
   EASYLEVEL_ADVERTISED_SERVICE_UUID,
   EASYLEVEL_DEVICE_NAME_PREFIX,
   EASYLEVEL_SERVICE_UUID,
   type EasyLevelConnection,
   type EasyLevelTransport,
-} from './easyLevelSensor';
+} from './easyLevelTransport';
 import { BLE_ADVERTISEMENT_WAIT_MS } from './bleAdvertisement';
 
 /** Little-endian int16 triplet, matching the real faf52c21 payload shape. */

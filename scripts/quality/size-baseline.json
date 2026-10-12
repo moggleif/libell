@@ -7,11 +7,8 @@
     "src/app/phoneCalibration.ts > createPhoneCalibration": 69,
     "src/main.ts > createCore": 68,
     "src/main.ts > mountPages": 59,
-    "src/sensor/easyLevelSensor.ts > createEasyLevelSensor": 155,
     "src/sensor/externalSensorController.ts > createExternalSensorController": 137,
     "src/sensor/orientation.ts > createOrientationSensor": 84,
-    "src/sensor/simulatedLink.ts > createSimulatedLink": 59,
-    "src/sensor/webBluetoothLink.ts > createWebBluetoothLink": 80,
     "src/ui/boxPasswordBlock.ts > createBoxPasswordBlock": 74,
     "src/ui/feedback.ts > createFeedbackSection": 98,
     "src/ui/helpIllustrations.ts > measuresIllustration": 51,
@@ -33,7 +30,6 @@
   },
   "fileBaseline": {
     "src/main.ts": 414,
-    "src/sensor/easyLevelSensor.ts": 431,
     "src/ui/calibrationSection.ts": 536,
     "src/ui/settingsPanel.ts": 684,
     "src/ui/settingsRampsTab.ts": 498
