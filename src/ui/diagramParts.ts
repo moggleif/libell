@@ -204,7 +204,7 @@ export function stepAndLiftText(
 ): { step: string; lift: string } {
   if (severity === 'none') return { step: '', lift: formatLength(displayMm, unit) };
   // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel.
-  if (stepMm <= 0) return { step: t('diagram.noRamp'), lift: '' };
+  if (stepMm <= 0) return { step: t('diagram.noRamp'), lift: formatLength(displayMm, unit) };
   const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
   return {
     step: stepNumber > 0 ? t('diagram.step', { n: stepNumber }) : `↑ ${formatLength(stepMm, unit)}`,

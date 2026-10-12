@@ -93,7 +93,7 @@ describe('rvDiagram wheel labels', () => {
     expect(l.wheelClass(2)).toContain('rv-diagram__wheel--large');
   });
 
-  it('says "No ramp" and shows no height for a gray/unserved wheel (screen-cleanup follow-up, #368)', () => {
+  it('says "No ramp" and still shows the lift for a gray/unserved wheel (#459)', () => {
     const diagram = createRvDiagram();
     diagram.update(
       result({ rearLeft: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
@@ -102,7 +102,8 @@ describe('rvDiagram wheel labels', () => {
     );
     const l = labelsOf(diagram.element);
     expect(l.stepName(2)).toBe('No ramp');
-    expect(l.lift(2)).toBe('');
+    // The user may still put a board under it, so the figure stays (#459).
+    expect(l.lift(2)).toBe('6 mm');
   });
 
   it('falls back to the plain height when the step is not in the configured list', () => {
@@ -223,7 +224,7 @@ describe('rvDiagram — modern appearance (#106)', () => {
     expect(c.severityClass(0)).toContain('wheel-card--small');
   });
 
-  it('shows no height for an unserved wheel, same as classic (#368)', () => {
+  it('shows the lift on an unserved wheel, same as classic (#459)', () => {
     const diagram = createRvDiagram('single', 'modern');
     diagram.update(
       result({ rearRight: { displayMm: 6, stepMm: 0, severity: 'unserved' } }),
@@ -231,7 +232,7 @@ describe('rvDiagram — modern appearance (#106)', () => {
       STEPS,
     );
     const c = cardsOf(diagram.element);
-    expect(c.mm(3)).toBe('');
+    expect(c.mm(3)).toBe('6 mm');
   });
 
   it('says "No ramp" for an unserved wheel instead of a blank step line (screen-cleanup follow-up)', () => {
@@ -363,8 +364,11 @@ describe('stepAndLiftText (#419)', () => {
     expect(stepAndLiftText('none', 0, 3, 'mm', STEPS)).toEqual({ step: '', lift: '3 mm' });
   });
 
-  it('says "No ramp" and gives no lift when no step reaches the wheel', () => {
-    expect(stepAndLiftText('unserved', 0, 6, 'mm', STEPS)).toEqual({ step: 'No ramp', lift: '' });
+  it('says "No ramp" and still gives the lift when no step reaches the wheel (#459)', () => {
+    expect(stepAndLiftText('unserved', 0, 6, 'mm', STEPS)).toEqual({
+      step: 'No ramp',
+      lift: '6 mm',
+    });
   });
 
   it('names a configured step by its number', () => {

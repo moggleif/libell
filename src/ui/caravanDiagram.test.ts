@@ -29,7 +29,7 @@ describe('caravanDiagram', () => {
     expect(diagram.element.textContent).not.toContain(t('diagram.front'));
   });
 
-  it('says "No ramp" and shows no height for a gray/unserved axle wheel (screen-cleanup follow-up, #368)', () => {
+  it('says "No ramp" and still shows the lift for a gray/unserved axle wheel (#459)', () => {
     const diagram = createCaravanDiagram();
     diagram.update(
       result({ axle: { left: GREEN, right: { displayMm: 6, stepMm: 0, severity: 'unserved' } } }),
@@ -39,7 +39,7 @@ describe('caravanDiagram', () => {
     const stepLabels = [...diagram.element.querySelectorAll('.rv-diagram__step-label')];
     expect(stepLabels[2]?.textContent).toBe('No ramp');
     const lifts = [...diagram.element.querySelectorAll('.rv-diagram__lift-label')];
-    expect(lifts[2]?.textContent).toBe('');
+    expect(lifts[2]?.textContent).toBe('6 mm');
     // Same glyph as the motorhome's gray wheel, not the red ✕.
     const glyphs = [...diagram.element.querySelectorAll('.rv-diagram__wheel-glyph')];
     expect(glyphs[2]?.textContent).toBe('–');
@@ -139,7 +139,7 @@ describe('caravanDiagram — modern appearance (#368)', () => {
     expect(diagram.element.textContent).not.toContain('78 mm');
   });
 
-  it('shows "No ramp" and no height on a gray axle wheel', () => {
+  it('shows "No ramp" and the lift on a gray axle wheel (#459)', () => {
     const diagram = createCaravanDiagram('single', 'modern');
     diagram.update(
       result({ axle: { left: { displayMm: 6, stepMm: 0, severity: 'unserved' }, right: GREEN } }),
@@ -148,7 +148,7 @@ describe('caravanDiagram — modern appearance (#368)', () => {
     );
     const left = cards(diagram.element)[1]!;
     expect(left.step).toBe('No ramp');
-    expect(left.mm).toBe('');
+    expect(left.mm).toBe('6 mm');
     expect(left.glyph).toBe('–');
   });
 
