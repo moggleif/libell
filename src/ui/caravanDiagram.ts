@@ -22,8 +22,7 @@ import {
   wheelMarkers,
 } from './rvDiagram';
 import { t } from './i18n';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
+import { svgEl } from './svg';
 
 const AXLE = { y: 214, leftX: 46, rightX: 194 };
 const JOCKEY = { x: 120, y: 84 };
@@ -32,15 +31,6 @@ const BUBBLE_TRAVEL = 22;
 const BUBBLE_FULL_SCALE_DEG = 5;
 
 const JOCKEY_GLYPH = { ok: '✓', up: '↑', down: '↓' } as const;
-
-function svgEl<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-): SVGElementTagNameMap[K] {
-  const el = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
-  return el;
-}
 
 export interface CaravanDiagram {
   element: HTMLElement;

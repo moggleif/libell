@@ -24,8 +24,7 @@ import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
 import { formatLength, type AppearanceSetting, type AxleConfig } from '../domain/settings';
 import { t, type MessageKey } from './i18n';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
+import { svgEl } from './svg';
 
 /** Shape per state so color is never the only signal (WCAG 1.4.1).
  * Exported: onboarding's Modern legend (#110) reuses it instead of
@@ -38,15 +37,6 @@ const WHEEL_LABEL: Record<WheelId, MessageKey> = {
   rearLeft: 'diagram.wheel.rearLeft',
   rearRight: 'diagram.wheel.rearRight',
 };
-
-function svgEl<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-): SVGElementTagNameMap[K] {
-  const el = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
-  return el;
-}
 
 /** Step and height text for one wheel — shared by the classic on-SVG
  * labels, the modern wheel cards and both caravan drawings, so every
