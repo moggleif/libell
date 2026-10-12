@@ -196,11 +196,18 @@ describe('calibration store', () => {
     expect(loadCalibration(storage)).toBeNull();
   });
 
-  it('rejects corrupt or implausible stored calibrations', () => {
+  it('rejects corrupt or impossible stored calibrations', () => {
     const storage = memoryStorage({ 'libell.calibration': '{not json' });
     expect(loadCalibration(storage)).toBeNull();
-    saveCalibration({ rollDeg: 60, pitchDeg: 0 }, storage);
+    saveCalibration({ rollDeg: 200, pitchDeg: 0 }, storage);
     expect(loadCalibration(storage)).toBeNull();
+  });
+
+  // #411: a calibration taken anyway above 15° must survive a reload.
+  it('keeps a calibration the user took anyway above 15°', () => {
+    const storage = memoryStorage();
+    saveCalibration({ rollDeg: 60, pitchDeg: 0 }, storage);
+    expect(loadCalibration(storage)).toEqual({ rollDeg: 60, pitchDeg: 0 });
   });
 });
 
@@ -213,12 +220,19 @@ describe('vehicle calibration store (#83)', () => {
     expect(loadVehicleCalibration(storage)).toBeNull();
   });
 
-  it('rejects corrupt or implausible stored vehicle zeros', () => {
+  it('rejects corrupt or impossible stored vehicle zeros', () => {
     const storage = memoryStorage();
     storage.setItem('libell.vehicleCalibration', 'not json');
     expect(loadVehicleCalibration(storage)).toBeNull();
-    storage.setItem('libell.vehicleCalibration', JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
+    storage.setItem('libell.vehicleCalibration', JSON.stringify({ rollDeg: 200, pitchDeg: 0 }));
     expect(loadVehicleCalibration(storage)).toBeNull();
+  });
+
+  // #411: a zero taken anyway above 15° must survive a reload.
+  it('keeps a vehicle zero the user took anyway above 15°', () => {
+    const storage = memoryStorage();
+    storage.setItem('libell.vehicleCalibration', JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
+    expect(loadVehicleCalibration(storage)).toEqual({ rollDeg: 40, pitchDeg: 0 });
   });
 });
 

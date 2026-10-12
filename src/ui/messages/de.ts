@@ -284,9 +284,9 @@ export const de: Messages = {
   'calibration.clear': 'Kalibrierung löschen',
   'calibration.err.notRunning':
     'Der Neigungssensor läuft noch nicht — tippe zuerst auf dem Hauptbildschirm auf Start.',
-  'calibration.err.notFlat':
-    'Das Handy scheint nicht flach zu liegen — lege es auf eine waagerechte Fläche und ' +
-    'versuche es erneut.',
+  'calibration.warn.notFlat':
+    'Das sieht nicht flach aus (über 15°), die Kalibrierung wird also falsch. Lege das Handy auf eine flache Fläche oder kalibriere trotzdem.',
+  'calibration.anyway': 'Trotzdem kalibrieren',
   'calibration.sensor.h': 'Handy kalibrieren',
   'calibration.vehicle.h': 'Fahrzeug nullen',
   'calibration.vehicle.intro':
@@ -298,6 +298,9 @@ export const de: Messages = {
     'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
   'calibration.vehicle.err.notFlat':
     'Das sieht nach mehr als nur Auflageneigung aus (>15°) — steht das Fahrzeug wirklich waagerecht?',
+  'calibration.vehicle.warn.notFlat':
+    'Das sieht nicht waagerecht aus (über 15°). Steht das Fahrzeug wirklich waagerecht? Nulle trotzdem, wenn du sicher bist.',
+  'calibration.vehicle.anyway': 'Trotzdem nullen',
   'calibration.age.today': '(heute)',
   'calibration.age.days': '(vor {n} Tagen)',
   'calibration.check': 'Prüfen',

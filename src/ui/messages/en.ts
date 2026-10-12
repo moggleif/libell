@@ -391,8 +391,9 @@ export const en = {
   'calibration.clear': 'Clear calibration',
   'calibration.err.notRunning':
     'The tilt sensor is not running yet — tap Start on the main screen first.',
-  'calibration.err.notFlat':
-    'The phone does not look flat — place it on a level surface and try again.',
+  'calibration.warn.notFlat':
+    'This does not look flat (over 15°), so the calibration will be wrong. Lay the phone on a flat surface, or calibrate anyway.',
+  'calibration.anyway': 'Calibrate anyway',
   // Design review: both card headings now lead with the verb "Calibrate"
   // — they used to name what each card was about ("Phone sensor",
   // "Vehicle zero position") without naming the shared action.
@@ -409,6 +410,9 @@ export const en = {
   'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
   'calibration.vehicle.err.notFlat':
     'That looks like more than placement tilt (>15°) — is the vehicle really level?',
+  'calibration.vehicle.warn.notFlat':
+    'This does not look level (over 15°). Is the vehicle really level? Zero anyway if you are sure.',
+  'calibration.vehicle.anyway': 'Zero anyway',
   'calibration.age.today': '(today)',
   'calibration.age.days': '({n} days ago)',
   'calibration.check': 'Check',
