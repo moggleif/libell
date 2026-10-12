@@ -35,6 +35,7 @@
  * those out of the domain layer), which tests drive with fake timers.
  */
 import type { EasyLevelConnection, EasyLevelTransport } from './easyLevelSensor';
+import { createSimulatedLink, type SimulatedSession } from './simulatedLink';
 
 export type EasyLevelSimulationMode = 'off' | 'steady' | 'drop';
 
@@ -153,69 +154,29 @@ function statusPacket(): DataView {
 export function createSimulatedEasyLevelTransport(
   mode: Exclude<EasyLevelSimulationMode, 'off'> = 'steady',
 ): EasyLevelTransport {
-  // `'drop'` mode's outage window (see `SIMULATED_OUTAGE_MS`) — plain
-  // `Date.now()` rather than an injected clock: this module never runs in
-  // `domain/`, and tests drive it with fake timers, which fake `Date` too.
-  let lastDropAt: number | null = null;
-  function makeConnection(onDisconnect: () => void): EasyLevelConnection {
-    let live = true;
-    let sampleIndex = 0;
-    const timeoutIds: Array<ReturnType<typeof setTimeout>> = [];
-    const intervalIds: Array<ReturnType<typeof setInterval>> = [];
-    const stop = () => {
-      live = false;
-      for (const id of timeoutIds) clearTimeout(id);
-      for (const id of intervalIds) clearInterval(id);
-    };
-    if (mode === 'drop') {
-      // A lost connection, not an explicit disconnect: stop the stream
-      // and THEN report the drop, the same order a real GATT loss has —
-      // `stop()` alone (the explicit-disconnect path below) never calls
-      // `onDisconnect`, mirroring #219's real-transport rule that a
-      // deliberate disconnect is not a lost connection.
-      timeoutIds.push(
-        setTimeout(() => {
-          lastDropAt = Date.now();
-          stop();
-          onDisconnect();
-        }, SIMULATED_DROP_AFTER_MS),
-      );
-    }
-    return {
-      deviceId: SIMULATED_EASYLEVEL_DEVICE_ID,
-      subscribeStatus: async (onData) => {
-        timeoutIds.push(
-          setTimeout(() => {
-            if (live) onData(statusPacket());
-          }, SIMULATED_STATUS_DELAY_MS),
-        );
-        intervalIds.push(
-          setInterval(() => {
-            if (live) onData(statusPacket());
-          }, SIMULATED_STATUS_INTERVAL_MS),
-        );
-      },
-      subscribeAccel: async (onData) => {
-        intervalIds.push(
-          setInterval(() => {
-            if (live) onData(accelPacket(sampleIndex++));
-          }, SIMULATED_ACCEL_INTERVAL_MS),
-        );
-      },
-      disconnect: stop,
-    };
-  }
+  return createSimulatedLink({
+    deviceId: SIMULATED_EASYLEVEL_DEVICE_ID,
+    drop:
+      mode === 'drop'
+        ? { dropAfterMs: SIMULATED_DROP_AFTER_MS, outageMs: SIMULATED_OUTAGE_MS }
+        : null,
+    open: openSimulatedEasyLevel,
+  });
+}
+
+/** One connection to the simulated box: accel and status packets on
+ * timers, the way a real box notifies. */
+function openSimulatedEasyLevel(
+  session: SimulatedSession,
+): Omit<EasyLevelConnection, 'deviceId' | 'disconnect'> {
+  let sampleIndex = 0;
   return {
-    connect: async (onDisconnect) => makeConnection(onDisconnect),
-    // The same "found among authorized devices?" contract as the real
-    // transport (#130): only the simulated box's own id reconnects — and
-    // in `'drop'` mode, not while the post-drop outage window is still
-    // running (a box still out of range resolves null, never rejects,
-    // exactly like the real transport's own catch).
-    reconnect: async (deviceId, onDisconnect) => {
-      if (deviceId !== SIMULATED_EASYLEVEL_DEVICE_ID) return null;
-      if (lastDropAt !== null && Date.now() - lastDropAt < SIMULATED_OUTAGE_MS) return null;
-      return makeConnection(onDisconnect);
+    subscribeStatus: async (onData) => {
+      session.after(SIMULATED_STATUS_DELAY_MS, () => onData(statusPacket()));
+      session.every(SIMULATED_STATUS_INTERVAL_MS, () => onData(statusPacket()));
+    },
+    subscribeAccel: async (onData) => {
+      session.every(SIMULATED_ACCEL_INTERVAL_MS, () => onData(accelPacket(sampleIndex++)));
     },
   };
 }
