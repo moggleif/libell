@@ -346,6 +346,10 @@ export const fr: Messages = {
   'feedback.title': 'Titre court',
   'feedback.desc': 'Que s’est-il passé, ou que souhaitez-vous ?',
   'feedback.submit': 'Ouvrir le rapport sur GitHub',
+  'feedback.warn.title': 'Le titre est vide — vous pouvez tout de même envoyer le rapport.',
+  'feedback.warn.desc': 'La description est vide — vous pouvez tout de même envoyer le rapport.',
+  'feedback.warn.both':
+    'Le titre et la description sont vides — vous pouvez tout de même envoyer le rapport.',
 
   'help.screen.h': 'Lire l’écran',
   'help.screen.t':
