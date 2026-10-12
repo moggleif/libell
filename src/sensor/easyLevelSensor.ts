@@ -75,7 +75,7 @@ import {
 } from './easyLevelProtocol';
 import { easyLevelSimulationMode } from './easyLevelSimulator';
 import type { ExternalSensorDescriptor } from './externalSensors';
-import { waitForAdvertisement } from './bleAdvertisement';
+import { createWebBluetoothLink } from './webBluetoothLink';
 
 export const EASYLEVEL_SERVICE_UUID = 'faf52c20-5078-11e9-b475-0800200c9a66';
 export const EASYLEVEL_ACCEL_CHARACTERISTIC_UUID = 'faf52c21-5078-11e9-b475-0800200c9a66';
@@ -282,106 +282,39 @@ function delay(ms: number): Promise<void> {
 export function createWebBluetoothTransport(
   getConnectDelayMs: () => number = () => 0,
 ): EasyLevelTransport {
-  /** The box picked in this page session, reconnectable without
-   * `getDevices()` for as long as the page lives (#288). */
-  let picked: BluetoothDevice | null = null;
+  return createWebBluetoothLink({
+    name: 'EasyLevel',
+    requestOptions: {
+      filters: [
+        { services: [EASYLEVEL_ADVERTISED_SERVICE_UUID] },
+        { namePrefix: EASYLEVEL_DEVICE_NAME_PREFIX },
+      ],
+      optionalServices: [EASYLEVEL_SERVICE_UUID],
+    },
+    wire: (server) => wireEasyLevel(server, getConnectDelayMs()),
+  });
+}
 
-  async function connectToDevice(
-    device: BluetoothDevice,
-    onDisconnect: () => void,
-  ): Promise<EasyLevelConnection> {
-    device.addEventListener('gattserverdisconnected', onDisconnect);
-    // One teardown for the explicit disconnect() AND every failure past
-    // this point (#219). The listener is removed FIRST: `gatt.disconnect()`
-    // fires `gattserverdisconnected` too, and a deliberate disconnect — or
-    // a failed-setup cleanup — must never be mis-reported as a *lost*
-    // connection (the 'disconnected' state, R32/R37, is reserved for
-    // unexpected drops). Actively disconnecting on failure matters with a
-    // real box: a BLE peripheral stops advertising while it holds a
-    // connection, so a half-open GATT link left dangling would make the
-    // box invisible to the picker and to every silent reconnect until the
-    // page is reloaded.
-    const teardown = () => {
-      device.removeEventListener('gattserverdisconnected', onDisconnect);
-      device.gatt?.disconnect();
-    };
-    try {
-      const server = await device.gatt?.connect();
-      if (!server) throw new Error('EasyLevel: GATT connect failed');
-      const connectDelayMs = getConnectDelayMs();
-      if (connectDelayMs > 0) await delay(connectDelayMs);
-      const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
+/** Opens the box's service after the optional settle pause (#212); each
+ * characteristic opens only when the sensor subscribes to it. */
+async function wireEasyLevel(
+  server: BluetoothRemoteGATTServer,
+  connectDelayMs: number,
+): Promise<Omit<EasyLevelConnection, 'deviceId' | 'disconnect'>> {
+  if (connectDelayMs > 0) await delay(connectDelayMs);
+  const service = await server.getPrimaryService(EASYLEVEL_SERVICE_UUID);
 
-      async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {
-        const characteristic = await service.getCharacteristic(uuid);
-        characteristic.addEventListener('characteristicvaluechanged', () => {
-          if (characteristic.value) onData(characteristic.value);
-        });
-        await characteristic.startNotifications();
-      }
-
-      return {
-        deviceId: device.id,
-        subscribeAccel: (onData) => subscribe(EASYLEVEL_ACCEL_CHARACTERISTIC_UUID, onData),
-        subscribeStatus: (onData) => subscribe(EASYLEVEL_STATUS_CHARACTERISTIC_UUID, onData),
-        disconnect: teardown,
-      };
-    } catch (error) {
-      teardown();
-      throw error;
-    }
+  async function subscribe(uuid: string, onData: (view: DataView) => void): Promise<void> {
+    const characteristic = await service.getCharacteristic(uuid);
+    characteristic.addEventListener('characteristicvaluechanged', () => {
+      if (characteristic.value) onData(characteristic.value);
+    });
+    await characteristic.startNotifications();
   }
 
   return {
-    async connect(onDisconnect): Promise<EasyLevelConnection> {
-      // Only ever called after `isWebBluetoothSupported()` has confirmed
-      // `navigator.bluetooth` exists (`start()` below) — the assertion
-      // reflects that contract rather than re-checking it here.
-      const device = await navigator.bluetooth!.requestDevice({
-        filters: [
-          { services: [EASYLEVEL_ADVERTISED_SERVICE_UUID] },
-          { namePrefix: EASYLEVEL_DEVICE_NAME_PREFIX },
-        ],
-        optionalServices: [EASYLEVEL_SERVICE_UUID],
-      });
-      picked = device;
-      try {
-        return await connectToDevice(device, onDisconnect);
-      } catch {
-        // Picked, but the link would not come up (#357): a box can take a
-        // moment before it advertises and accepts a connection again, for
-        // example right after Disconnect. Wait to hear it, the same way the
-        // silent reconnect does (#356), and try once more. A second failure
-        // is the caller's ordinary "could not connect".
-        await waitForAdvertisement(device);
-        return connectToDevice(device, onDisconnect);
-      }
-    },
-    async reconnect(deviceId, onDisconnect): Promise<EasyLevelConnection | null> {
-      try {
-        // The box picked this page session first (#288 — Chrome on Android
-        // keeps getDevices() behind a flag), then getDevices() itself, a
-        // second, narrower feature (#130) that can be missing even where
-        // `bluetooth` exists.
-        let device: BluetoothDevice | null = picked?.id === deviceId ? picked : null;
-        const getDevices = navigator.bluetooth?.getDevices;
-        if (!device && typeof getDevices === 'function') {
-          const devices = await getDevices.call(navigator.bluetooth);
-          device = devices.find((candidate) => candidate.id === deviceId) ?? null;
-        }
-        if (!device) return null;
-        // Hear the box first (#356, found on an Xparkle box in #288): a
-        // connect to a box no scan has seen since the drop often fails
-        // even with the box in range.
-        await waitForAdvertisement(device);
-        return await connectToDevice(device, onDisconnect);
-      } catch {
-        // A GATT connect failure (box out of range, powered off, ...) —
-        // fails silently here by design; the caller decides what "no
-        // silent reconnect available" means for its own UI.
-        return null;
-      }
-    },
+    subscribeAccel: (onData) => subscribe(EASYLEVEL_ACCEL_CHARACTERISTIC_UUID, onData),
+    subscribeStatus: (onData) => subscribe(EASYLEVEL_STATUS_CHARACTERISTIC_UUID, onData),
   };
 }
 
