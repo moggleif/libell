@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { findMissingPaths, pathMentions } from './docPaths.ts';
 import { readSources } from './sourceFiles.ts';
 
-/** The living documents; ADRs are dated records and keep the paths of their day. */
+/**
+ * The living documents, plus every repo skill in .claude/skills; ADRs are dated
+ * records and keep the paths of their day.
+ */
 const DOCS = [
   'README.md',
   'CLAUDE.md',
@@ -68,7 +71,10 @@ describe('findMissingPaths', () => {
 describe('the documentation', () => {
   it('mentions only files that exist (#475)', () => {
     const repoFiles = readSources('.', (path) => !NOT_IN_REPO.has(path)).map((file) => file.path);
-    const docs = DOCS.map((path) => ({ path, source: readFileSync(path, 'utf8') }));
+    const docs = [
+      ...DOCS.map((path) => ({ path, source: readFileSync(path, 'utf8') })),
+      ...readSources('.claude/skills', (path, isDir) => isDir || path.endsWith('/SKILL.md')),
+    ];
     expect(findMissingPaths(docs, repoFiles)).toEqual([]);
   });
 });
