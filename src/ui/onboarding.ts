@@ -250,26 +250,374 @@ type Step = {
   note?: () => string;
 };
 
+/**
+ * Everything the steps share while the wizard is open (#415): the caller's
+ * options, the decisions fixed when it opened, and the choices the user
+ * makes along the way. Passed to every step instead of closure state.
+ */
+interface WizardState {
+  readonly options: OnboardingOptions;
+  /** Decided once, from `initialSettings`, never while the wizard is open. */
+  readonly isModern: boolean;
+  /** Same gate `main.ts` uses before offering the "External sensor" page. */
+  readonly sourceChoiceAvailable: boolean;
+  /** A box is the active source already (#287). */
+  readonly externalActive: boolean;
+  /** Starts at what is stored; every later step is built for it (#184). */
+  vehicleChoice: VehicleType;
+  /** 'phone' until the user picks otherwise. */
+  sensorChoice: SensorChoice;
+  /** The wizard's own latest save, so a Back visit shows it (#189). */
+  currentSettings: LevelSettings;
+  /** Redraws the current step, re-resolving the step list first. */
+  render(): void;
+}
+
+function createWizardState(options: OnboardingOptions, render: () => void): WizardState {
+  return {
+    options,
+    isModern: options.initialSettings.appearance === 'modern',
+    sourceChoiceAvailable: hasAvailableExternalSensor(),
+    externalActive: options.getSensorSource() !== 'phone',
+    vehicleChoice: options.initialSettings.vehicleType,
+    sensorChoice: 'phone',
+    currentSettings: options.initialSettings,
+    render,
+  };
+}
+
+/** The paragraph style for step text in the current appearance. */
+function textClass(state: WizardState): string {
+  return state.isModern ? 'onboarding__text--modern' : 'menu__text';
+}
+
+function paragraph(className: string, text: string): HTMLParagraphElement {
+  const p = document.createElement('p');
+  p.className = className;
+  p.textContent = text;
+  return p;
+}
+
+/** Saves from an embedded settings form, keeping `currentSettings` in step. */
+function saveSettings(state: WizardState, settings: LevelSettings): void {
+  state.currentSettings = settings;
+  state.options.onSettingsSaved(settings);
+}
+
+// What Libell is for, before any question or form (design-review
+// follow-up). Reuses 'about.text' rather than separate welcome-only copy.
+function welcomeStep(state: WizardState): Step {
+  return {
+    title: t('onboard.welcome.h'),
+    build: () => {
+      const what = paragraph(textClass(state), t('about.text'));
+      const guide = paragraph(textClass(state), t('onboard.welcome.t'));
+      if (!state.sourceChoiceAvailable) return [what, guide];
+      // The box is not in Settings (#365): say where it lives.
+      return [what, guide, paragraph(textClass(state), t('onboard.welcome.sensor'))];
+    },
+  };
+}
+
+// How to read the answer (#71): the same legend and caption as the Help
+// section in Classic; color swatch + glyph + short text rows in Modern (#110).
+function readScreenElements(state: WizardState): Element[] {
+  if (state.isModern) return [buildModernLegend()];
+  return [legendIllustration(t('help.screen.h')), paragraph('menu__text', t('help.screen.t'))];
+}
+
+function placementStep(state: WizardState): Step {
+  return {
+    title: t('onboard.step1.h'),
+    build: () => [
+      placementIllustration(t('onboard.step1.h'), state.vehicleChoice),
+      paragraph(textClass(state), t('help.what.t')),
+      ...readScreenElements(state),
+    ],
+  };
+}
+
+// External-sensor path (#285): the phone-placement step is skipped (the
+// box, not the phone, is what must sit right), but its "how to read the
+// answer" half is still needed — shown on its own here.
+function readScreenStep(state: WizardState): Step {
+  return {
+    title: t('help.screen.h'),
+    build: () => readScreenElements(state),
+  };
+}
+
+/** One of `createSettingsForm`'s compact modes, saved through the wizard. */
+function settingsForm(
+  state: WizardState,
+  compact: 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps',
+  settings: LevelSettings = state.currentSettings,
+): HTMLElement {
+  return createSettingsForm(settings, (saved) => saveSettings(state, saved), undefined, {
+    compact,
+  });
+}
+
+// 'help.settings.h' ("The measurements"), not 'menu.settings': this step
+// only ever shows wheelbase/track widths (#189 follow-up). Built from
+// `currentSettings` so a Back visit after Next saved shows what was just
+// entered, with `vehicleType` overridden to the vehicle step's choice so
+// the field labels already match it (#184).
+function measurementsStep(state: WizardState): Step {
+  return {
+    title: t('help.settings.h'),
+    skippable: true,
+    note: () => t('onboard.note.measurements', { lamp: t('lamp.setup') }),
+    build: () => [
+      measuresIllustration(t('help.settings.h'), state.vehicleChoice),
+      settingsForm(state, 'measurements', {
+        ...state.currentSettings,
+        vehicleType: state.vehicleChoice,
+      }),
+    ],
+  };
+}
+
+// Preference steps: the shipped defaults are already a complete choice,
+// so there is nothing to skip and no note (#365). One step per decision
+// (design review): Language alone, since the rest of the guide must be
+// legible first; Theme + Appearance as "how it looks"; Chime + Continuous
+// audio guidance as "what it sounds like".
+function preferenceStep(
+  state: WizardState,
+  title: MessageKey,
+  compact: 'language' | 'appearance' | 'sound',
+): Step {
+  return {
+    title: t(title),
+    build: () => [settingsForm(state, compact)],
+  };
+}
+
+// Ramp model/count (design review): what the ramp catalog and per-wheel
+// step guidance run on. Skippable like the measurements step; the note says
+// the shipped default ramps stay in place (#365).
+function rampsStep(state: WizardState): Step {
+  return {
+    title: t('settings.tab.ramps'),
+    skippable: true,
+    note: () => t('onboard.note.ramps'),
+    build: () => [settingsForm(state, 'ramps')],
+  };
+}
+
+// The phone's own calibration only (#365): the vehicle zero needs the
+// vehicle parked level, which a first run at home rarely is, so it waits
+// for the first parking on both paths — said here, reminded by the lamp.
+// `calibrationSection.ts`'s real card, without Check/Clear.
+function sensorCalibrationStep(state: WizardState): Step {
+  return {
+    title: t('calibration.sensor.h'),
+    note: () => t('onboard.note.calibrate', { next: t('onboard.next'), lamp: t('lamp.calibrate') }),
+    build: () => {
+      const section = createCalibrationSection(state.options, 'wizard').sensorElement;
+      // Inside the card, in its own text style: part of the same advice.
+      const laterClass = state.isModern ? 'calibration-card__body' : 'menu__text';
+      section.append(paragraph(laterClass, t('onboard.zeroLater', { lamp: t('lamp.zero') })));
+      return [section];
+    },
+  };
+}
+
+/** One option bag per available source (#272). Falls back to the
+ * caller's bag alone when it supplies no per-source factory. */
+function sourceBags(options: OnboardingOptions): SensorSourceOptions[] {
+  const perSource = options.sensorOptionsFor;
+  if (!perSource) return [options];
+  return availableExternalSensors().map((sensor) => perSource(sensor));
+}
+
+// External path's calibration equivalent (#135, ADR 0014): connect the box,
+// then check its position live (#317) — the same components the box's
+// pages show. Connecting is asynchronous, so Next may be tapped before it
+// resolves; the position step then says so and never blocks (#189, #365).
+function connectStep(state: WizardState): Step {
+  return {
+    title: t('menu.sensorSource'),
+    note: () => t('onboard.note.connect', { next: t('onboard.next') }),
+    build: () =>
+      sourceBags(state.options).map((bag) => createSensorSourceSection(bag).connectElement),
+  };
+}
+
+function isActiveSource(bag: SensorSourceOptions): boolean {
+  return bag.getSensorSource() === bag.sensor.id;
+}
+
+/** Calls `frame` every animation frame while `anchor` is in the document. */
+function whileShown(anchor: Element, frame: () => void): void {
+  const tick = () => {
+    if (!anchor.isConnected) return;
+    frame();
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// No box connected (#365): say so, and that Next goes on. Should a
+// connection started on the previous step land while this is shown, the
+// step redraws with the live position.
+function notConnectedNote(state: WizardState, bags: SensorSourceOptions[]): Element {
+  const notConnected = paragraph(
+    textClass(state),
+    t('onboard.boxPosition.notConnected', { next: t('onboard.next') }),
+  );
+  whileShown(notConnected, () => {
+    if (bags.some(isActiveSource)) state.render();
+  });
+  return notConnected;
+}
+
+// Only the box's position, live (#317, the #309 UX review): direction and
+// zero wait for the first parking, where the box's own page guides them
+// and the amber lamp reminds until they are done.
+function boxPositionStep(state: WizardState): Step {
+  return {
+    title: t('onboard.boxPosition.h'),
+    build: () => {
+      const bags = sourceBags(state.options);
+      const sections = bags.filter(isActiveSource).map((bag) => createSensorSourceSection(bag));
+      const later = paragraph(textClass(state), t('onboard.boxPosition.later'));
+      if (sections.length === 0) return [notConnectedNote(state, bags), later];
+      whileShown(later, () => sections.forEach((section) => section.refreshLive()));
+      return [...sections.map((section) => section.positionElement), later];
+    },
+  };
+}
+
+// A labeled radio group for a single wizard choice — shared by the
+// sensor-source and vehicle-type steps (#184).
+function buildChoiceGroup<T extends string>(
+  name: string,
+  choices: [T, MessageKey][],
+  current: T,
+  onChange: (value: T) => void,
+): HTMLDivElement {
+  const group = document.createElement('div');
+  group.className = 'onboarding__source';
+  for (const [value, labelKey] of choices) {
+    const label = document.createElement('label');
+    label.className = 'onboarding__source-option';
+    label.append(buildChoiceRadio(name, value, current, onChange), choiceText(labelKey));
+    group.append(label);
+  }
+  return group;
+}
+
+function buildChoiceRadio<T extends string>(
+  name: string,
+  value: T,
+  current: T,
+  onChange: (value: T) => void,
+): HTMLInputElement {
+  const radio = document.createElement('input');
+  radio.type = 'radio';
+  // Themed like every other control in the app, never the browser's own
+  // accent color (#189 follow-up).
+  radio.className = 'onboarding__source-radio';
+  radio.name = name;
+  radio.value = value;
+  radio.checked = current === value;
+  radio.addEventListener('change', () => {
+    if (radio.checked) onChange(value);
+  });
+  return radio;
+}
+
+function choiceText(labelKey: MessageKey): HTMLSpanElement {
+  const text = document.createElement('span');
+  text.textContent = t(labelKey);
+  return text;
+}
+
+// "How do you want to measure?" (#135, ADR 0014). Picking a source redraws
+// at once, not only on Next (#189 follow-up): the "n / total" readout must
+// match the path chosen while choosing it.
+function sourceStep(state: WizardState): Step {
+  return {
+    title: t('onboard.source.h'),
+    build: () => [
+      paragraph(textClass(state), t('onboard.source.intro')),
+      ...externalActiveNote(state),
+      buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, state.sensorChoice, (value) => {
+        state.sensorChoice = value;
+        state.render();
+      }),
+    ],
+  };
+}
+
+// With a box already active (#287), say up front what the phone path
+// leaves out and where to switch — never switch from here (ADR 0014).
+function externalActiveNote(state: WizardState): Element[] {
+  if (!state.externalActive) return [];
+  const text = t('onboard.source.externalActive', { disconnect: t('sensorSource.disconnect') });
+  return [paragraph(textClass(state), text)];
+}
+
+// "What are you leveling?" (#184) — always asked once. Every later step
+// reads `vehicleChoice` to match.
+function vehicleStep(state: WizardState): Step {
+  return {
+    title: t('onboard.vehicle.h'),
+    build: () => [
+      paragraph(textClass(state), t('onboard.vehicle.intro')),
+      buildChoiceGroup('onboarding-vehicle', VEHICLE_OPTIONS, state.vehicleChoice, (value) => {
+        state.vehicleChoice = value;
+      }),
+    ],
+  };
+}
+
+// With a box already active (#287) the phone path leaves the calibration
+// step out: #285 disables every phone-calibration action while a box is
+// active, and the wizard never switches the source itself (ADR 0014).
+function phoneSteps(state: WizardState): Step[] {
+  const steps = [placementStep(state), measurementsStep(state), rampsStep(state)];
+  return state.externalActive ? steps : [...steps, sensorCalibrationStep(state)];
+}
+
+function externalSteps(state: WizardState): Step[] {
+  return [
+    connectStep(state),
+    boxPositionStep(state),
+    readScreenStep(state),
+    measurementsStep(state),
+    rampsStep(state),
+  ];
+}
+
+/** The step list for the path chosen so far: welcome and the three
+ * preference steps always lead; the source step only exists when an
+ * external sensor is available, and decides the rest. */
+function resolveSteps(state: WizardState): Step[] {
+  const leading = [
+    welcomeStep(state),
+    preferenceStep(state, 'settings.language', 'language'),
+    preferenceStep(state, 'settings.appearance', 'appearance'),
+    preferenceStep(state, 'onboard.sound.h', 'sound'),
+  ];
+  if (!state.sourceChoiceAvailable) return [...leading, vehicleStep(state), ...phoneSteps(state)];
+  const path = state.sensorChoice === 'external' ? externalSteps(state) : phoneSteps(state);
+  return [...leading, sourceStep(state), vehicleStep(state), ...path];
+}
+
+// What leaving a step undone means (#189, made step-specific by #365).
+// Lives in the nav next to the buttons it explains, not at the end of
+// the step's body (#239): it reads as their caption, it stays visible
+// when a tall step's body scrolls, and it costs no body height.
+function stepNote(text: string): HTMLParagraphElement {
+  return paragraph('onboarding__skip-hint', text);
+}
+
 export function showOnboarding(options: OnboardingOptions): void {
-  const isModern = options.initialSettings.appearance === 'modern';
-  // Same gate `main.ts` uses before ever offering the "External sensor"
-  // page (#116, widened by #220 to include the simulated box, and by #262
-  // to ask the registry rather than one device) — never a dead radio
-  // button on Safari/iOS or desktop.
-  const sourceChoiceAvailable = hasAvailableExternalSensor();
-
-  // Which vehicle every later step's imagery/labels are built for (#184)
-  // — starts at whatever is already stored (not hardcoded to motorhome).
-  // Every step after the vehicle step reads this live when it builds, so
-  // closing the wizard before or during the vehicle step just leaves the
-  // stored choice untouched — never an ambiguous state.
-  let vehicleChoice: VehicleType = options.initialSettings.vehicleType;
-
-  // The settings step's own source of truth for its form's starting values
-  // (#189): updated every time that form saves, so a Back visit after
-  // Next auto-saved (see settingsStep below) shows what was just entered,
-  // not the stale snapshot the wizard opened with.
-  let currentSettings: LevelSettings = options.initialSettings;
+  const state = createWizardState(options, () => renderStep());
+  const { isModern } = state;
 
   const overlay = document.createElement('div');
   overlay.className = 'onboarding';
@@ -288,397 +636,15 @@ export function showOnboarding(options: OnboardingOptions): void {
   close.textContent = '✕';
   close.addEventListener('click', () => finish(false));
 
-  // What Libell is for, before any question or form (design-review
-  // follow-up): the first-ever screen a new user sees used to be a
-  // language/theme form, with no "why" ahead of the "how". Reuses
-  // 'about.text' rather than separate welcome-only copy. Not skippable in
-  // the warning-lamp sense — there's nothing to configure here, just Next.
-  const welcomeStep: Step = {
-    title: t('onboard.welcome.h'),
-    build: () => {
-      const what = document.createElement('p');
-      what.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-      what.textContent = t('about.text');
-      const guide = document.createElement('p');
-      guide.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-      guide.textContent = t('onboard.welcome.t');
-      if (!sourceChoiceAvailable) return [what, guide];
-      // The box is not in Settings (#365): say where it lives.
-      const sensor = document.createElement('p');
-      sensor.className = guide.className;
-      sensor.textContent = t('onboard.welcome.sensor');
-      return [what, guide, sensor];
-    },
-  };
-
-  const placementStep: Step = {
-    title: t('onboard.step1.h'),
-    build: () => {
-      const text = document.createElement('p');
-      text.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-      text.textContent = t('help.what.t');
-      if (isModern) {
-        // How to read the answer (#71, restyled #110): color swatch
-        // + glyph + short text per status, instead of the SVG legend.
-        return [
-          placementIllustration(t('onboard.step1.h'), vehicleChoice),
-          text,
-          buildModernLegend(),
-        ];
-      }
-      // How to read the answer (#71): the same legend and caption as
-      // the Help section — colors, glyphs and the bubble.
-      const legendText = document.createElement('p');
-      legendText.className = 'menu__text';
-      legendText.textContent = t('help.screen.t');
-      return [
-        placementIllustration(t('onboard.step1.h'), vehicleChoice),
-        text,
-        legendIllustration(t('help.screen.h')),
-        legendText,
-      ];
-    },
-  };
-
-  // What leaving a step undone means (#189, made step-specific by #365).
-  // Lives in the nav next to the buttons it explains, not at the end of
-  // the step's body (#239): it reads as their caption, it stays visible
-  // when a tall step's body scrolls, and it costs no body height.
-  function stepNote(text: string): HTMLParagraphElement {
-    const hint = document.createElement('p');
-    hint.className = 'onboarding__skip-hint';
-    hint.textContent = text;
-    return hint;
-  }
-
-  const settingsStep: Step = {
-    // 'help.settings.h' ("The measurements"), not 'menu.settings'
-    // ("Settings") — #189 follow-up. This step only ever shows wheelbase/
-    // track widths.
-    title: t('help.settings.h'),
-    skippable: true,
-    note: () => t('onboard.note.measurements', { lamp: t('lamp.setup') }),
-    build: () => [
-      // vehicleType is overridden to the vehicle step's choice (#184) so
-      // this reduced form's field labels/visibility already match —
-      // settingsPanel.ts's own vehicle-aware relabeling does the rest.
-      measuresIllustration(t('help.settings.h'), vehicleChoice),
-      createSettingsForm(
-        // Built from currentSettings, not the static options.initialSettings
-        // (#189): once Next has auto-saved this step (see the nav handler
-        // below), a Back visit must show what was just entered, not the
-        // wizard's original snapshot.
-        { ...currentSettings, vehicleType: vehicleChoice },
-        (settings) => {
-          currentSettings = settings;
-          options.onSettingsSaved(settings);
-        },
-        undefined,
-        { compact: 'measurements' },
-      ),
-    ],
-  };
-
-  // A preference step — the shipped defaults are already a complete,
-  // valid choice, so there is nothing to skip and no note (#365) — reused
-  // by the three steps below (#189,
-  // split by a design review into one step per actual decision: was one
-  // combined 'general' step covering all five fields just because they
-  // used to share a Settings section header, not because they're one
-  // decision). `onSave` always tracks `currentSettings`, same as the
-  // measurements step, so a language change's immediate reload (unrelated
-  // to Next; see settingsPanel.ts's own languageSelect handler) never
-  // fights with a value saved seconds earlier here.
-  function buildCosmeticStep(compact: 'language' | 'appearance' | 'sound'): Element[] {
-    return [
-      createSettingsForm(
-        currentSettings,
-        (settings) => {
-          currentSettings = settings;
-          options.onSettingsSaved(settings);
-        },
-        undefined,
-        { compact },
-      ),
-    ];
-  }
-
-  // Language alone (design review): the one field of the five that has to
-  // resolve before the rest of the guide is even legible — none of the
-  // other four share that reason to lead.
-  const languageStep: Step = {
-    title: t('settings.language'),
-    build: () => buildCosmeticStep('language'),
-  };
-
-  // Theme + Appearance together (design review): one "how it looks"
-  // decision, not two — Theme is a sub-choice of Appearance, not an
-  // unrelated setting that happened to share a header with it.
-  const appearanceStep: Step = {
-    title: t('settings.appearance'),
-    build: () => buildCosmeticStep('appearance'),
-  };
-
-  // Chime + Continuous audio guidance together (design review): one "what
-  // it sounds like" decision.
-  const soundStep: Step = {
-    title: t('onboard.sound.h'),
-    build: () => buildCosmeticStep('sound'),
-  };
-
-  // Ramp model/count (design review): what the ramp catalog and per-wheel
-  // step guidance actually run on — arguably the thing that most sets
-  // this app apart from a plain bubble-level or sensor-only competitor,
-  // yet it never had a wizard step of its own before. Same "vehicle
-  // setup" bucket as the measurements step: skippable, but skipping it
-  // does leave the shipped default ramp model in place, which may not
-  // match what the user actually owns — the note says so (#365).
-  const rampsStep: Step = {
-    title: t('settings.tab.ramps'),
-    skippable: true,
-    note: () => t('onboard.note.ramps'),
-    build: () => [
-      createSettingsForm(
-        currentSettings,
-        (settings) => {
-          currentSettings = settings;
-          options.onSettingsSaved(settings);
-        },
-        undefined,
-        { compact: 'ramps' },
-      ),
-    ],
-  };
-
-  // The phone's own calibration only (#365): the vehicle zero needs the
-  // vehicle parked level, which a first run at home rarely is, so it waits
-  // for the first parking on both paths — said here, reminded by the lamp.
-  // `calibrationSection.ts`'s real card, without Check/Clear: nothing to
-  // check or clear on a first run, and Settings keeps them under More.
-  const sensorCalibrationStep: Step = {
-    title: t('calibration.sensor.h'),
-    note: () => t('onboard.note.calibrate', { next: t('onboard.next'), lamp: t('lamp.calibrate') }),
-    build: () => {
-      const section = createCalibrationSection(options, 'wizard').sensorElement;
-      // Inside the card, in its own text style: part of the same advice.
-      const later = document.createElement('p');
-      later.className = isModern ? 'calibration-card__body' : 'menu__text';
-      later.textContent = t('onboard.zeroLater', { lamp: t('lamp.zero') });
-      section.append(later);
-      return [section];
-    },
-  };
-
-  // External path's calibration equivalent (#135, ADR 0014): connect the
-  // box, then check its position live (#317) — both the exact same
-  // components the box's pages show, never a wizard-only rebuild, and both
-  // skippable on the same terms as the phone's calibration steps, which
-  // this pair stands in for.
-  //
-  // Connecting is asynchronous (a live Web Bluetooth device picker, then a
-  // GATT connect), so it's possible to tap Next before it resolves. The
-  // position step then says no box is connected yet and that Next goes on
-  // (#365), and redraws itself if the connection lands while it is shown —
-  // no guard, matching the wizard's "never block" rule (#189).
-  /** One option bag per available source (#272). Falls back to this bag
-   * alone when the caller supplies no per-source factory. */
-  function sourceBags(): SensorSourceOptions[] {
-    const perSource = options.sensorOptionsFor;
-    if (!perSource) return [options];
-    return availableExternalSensors().map((sensor) => perSource(sensor));
-  }
-
-  const connectStep: Step = {
-    title: t('menu.sensorSource'),
-    note: () => t('onboard.note.connect', { next: t('onboard.next') }),
-    build: () => sourceBags().map((bag) => createSensorSourceSection(bag).connectElement),
-  };
-
-  // Only the box's position, live (#317, the #309 UX review): direction
-  // and zero wait for the first parking — the zero needs level ground,
-  // which a first run at home rarely has — where the box's own page guides
-  // them and the amber lamp reminds until they are done.
-  const boxPositionStep: Step = {
-    title: t('onboard.boxPosition.h'),
-    build: () => {
-      const textClass = isModern ? 'onboarding__text--modern' : 'menu__text';
-      const bags = sourceBags();
-      const isActive = (bag: SensorSourceOptions) => bag.getSensorSource() === bag.sensor.id;
-      const sections = bags.filter(isActive).map((bag) => createSensorSourceSection(bag));
-      const later = document.createElement('p');
-      later.className = textClass;
-      later.textContent = t('onboard.boxPosition.later');
-      if (sections.length === 0) {
-        // No box connected (#365): say so, and that Next goes on. Should a
-        // connection started on the previous step land while this is
-        // shown, the step redraws with the live position.
-        const notConnected = document.createElement('p');
-        notConnected.className = textClass;
-        notConnected.textContent = t('onboard.boxPosition.notConnected', {
-          next: t('onboard.next'),
-        });
-        const wait = () => {
-          if (!notConnected.isConnected) return;
-          if (bags.some(isActive)) renderStep();
-          else requestAnimationFrame(wait);
-        };
-        requestAnimationFrame(wait);
-        return [notConnected, later];
-      }
-      // Live while the step is shown; stops once it is left.
-      const tick = () => {
-        if (!later.isConnected) return;
-        for (const section of sections) section.refreshLive();
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-      return [...sections.map((section) => section.positionElement), later];
-    },
-  };
-
-  // A labeled radio group for a single wizard choice — shared by the
-  // sensor-source and vehicle-type steps below, each just its own value
-  // type, options and change handler (#184).
-  function buildChoiceGroup<T extends string>(
-    name: string,
-    choices: [T, MessageKey][],
-    current: T,
-    onChange: (value: T) => void,
-  ): HTMLDivElement {
-    const group = document.createElement('div');
-    group.className = 'onboarding__source';
-    for (const [value, labelKey] of choices) {
-      const label = document.createElement('label');
-      label.className = 'onboarding__source-option';
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      // Themed like every other control in the app (.settings__checkbox
-      // does the same) — plain radios default to the browser's own accent
-      // color, off-brand and the one hex-free rule CLAUDE.md is strict
-      // about (#189 follow-up).
-      radio.className = 'onboarding__source-radio';
-      radio.name = name;
-      radio.value = value;
-      radio.checked = current === value;
-      radio.addEventListener('change', () => {
-        if (radio.checked) onChange(value);
-      });
-      const text = document.createElement('span');
-      text.textContent = t(labelKey);
-      label.append(radio, text);
-      group.append(label);
-    }
-    return group;
-  }
-
-  let sensorChoice: SensorChoice = 'phone';
-
-  const sourceStep: Step = {
-    title: t('onboard.source.h'),
-    build: () => {
-      const intro = document.createElement('p');
-      intro.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-      intro.textContent = t('onboard.source.intro');
-      // With a box already active (#287), say up front what the phone path
-      // leaves out and where to switch — never switch from here (ADR 0014).
-      const externalNote: HTMLElement[] = [];
-      if (externalActive) {
-        const note = document.createElement('p');
-        note.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-        note.textContent = t('onboard.source.externalActive', {
-          disconnect: t('sensorSource.disconnect'),
-        });
-        externalNote.push(note);
-      }
-      return [
-        intro,
-        ...externalNote,
-        buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, sensorChoice, (value) => {
-          sensorChoice = value;
-          // Re-resolve immediately, not just when Next is pressed (#189
-          // follow-up): the "n / total" progress readout already commits to
-          // a total on this very step (6 for the phone path, the default),
-          // so picking "external" here must update it right away — a total
-          // that only turns out to have been wrong once you've moved on is
-          // worse than one that updates as you choose.
-          steps = resolveSteps();
-          renderStep();
-        }),
-      ];
-    },
-  };
-
-  // "What are you leveling?" (#184) — always asked once, right after the
-  // sensor-source step when it exists, otherwise first. Every later
-  // step reads `vehicleChoice` (see its declaration above) to match.
-  const vehicleStep: Step = {
-    title: t('onboard.vehicle.h'),
-    build: () => {
-      const intro = document.createElement('p');
-      intro.className = isModern ? 'onboarding__text--modern' : 'menu__text';
-      intro.textContent = t('onboard.vehicle.intro');
-      return [
-        intro,
-        buildChoiceGroup('onboarding-vehicle', VEHICLE_OPTIONS, vehicleChoice, (value) => {
-          vehicleChoice = value;
-        }),
-      ];
-    },
-  };
-
-  // External-sensor path (#285): the phone-placement step above is skipped
-  // (the box, not the phone, is what must sit right), but its "how to read
-  // the answer" half is still needed — shown on its own here.
-  const readScreenStep: Step = {
-    title: t('help.screen.h'),
-    build: () => {
-      if (isModern) return [buildModernLegend()];
-      const legendText = document.createElement('p');
-      legendText.className = 'menu__text';
-      legendText.textContent = t('help.screen.t');
-      return [legendIllustration(t('help.screen.h')), legendText];
-    },
-  };
-
-  // An external sensor already active (#287): the wizard never switches
-  // the source (✕ must leave it as it was, ADR 0014), and #285 disables
-  // every phone-calibration action while a box is active — so the phone
-  // path leaves the calibration step out rather than leading into a
-  // screen where nothing can be pressed. The source step says so.
-  const externalActive = options.getSensorSource() !== 'phone';
-  const phoneSteps = externalActive
-    ? [placementStep, settingsStep, rampsStep]
-    : [placementStep, settingsStep, rampsStep, sensorCalibrationStep];
-  const externalSteps = [connectStep, boxPositionStep, readScreenStep, settingsStep, rampsStep];
-
-  // welcomeStep, then languageStep/appearanceStep/soundStep, always lead
-  // (#189, design review) — every branch below prepends all four. Depends
-  // on `sensorChoice`, so it's re-run both up front and every time the
-  // source-step radio changes (see sourceStep above) — the displayed step
-  // count always matches the path the user has (currently) chosen, never
-  // a stale guess from before they picked.
-  function resolveSteps(): Step[] {
-    const leading = [welcomeStep, languageStep, appearanceStep, soundStep];
-    return sourceChoiceAvailable
-      ? [
-          ...leading,
-          sourceStep,
-          vehicleStep,
-          ...(sensorChoice === 'external' ? externalSteps : phoneSteps),
-        ]
-      : [...leading, vehicleStep, ...phoneSteps];
-  }
-
-  let steps: Step[] = resolveSteps();
-
   let index = 0;
 
   function finish(done: boolean): void {
     overlay.remove();
-    options.onFinished(done, sourceChoiceAvailable ? sensorChoice : 'phone');
+    options.onFinished(done, state.sourceChoiceAvailable ? state.sensorChoice : 'phone');
   }
 
   function renderStep(): void {
+    const steps = resolveSteps(state);
     const step = steps[index];
     if (!step) {
       finish(true);
