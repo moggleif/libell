@@ -358,7 +358,7 @@ demand (R50).
 
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
 the bubble level embedded at its center; per-wheel readouts sit directly at the wheels
-(the step name and one height, the lift in whole mm — R6), drawn on the SVG in Classic and on floating wheel cards in Modern, for the motorhome and the caravan alike (`stepAndLiftText` in `src/ui/rvDiagram.ts`). Everything is inline SVG, sized in viewport units so the
+(the step name and one height, the lift in whole mm — R6), drawn on the SVG in Classic and on floating wheel cards in Modern, for the motorhome and the caravan alike (`stepAndLiftText` in `src/ui/diagramParts.ts`). Everything is inline SVG, sized in viewport units so the
 diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
 in the full-width menu, opened from the bottom action bar; amber warning lamps in the top bar point to unsaved
 settings or a missing calibration. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language (sv/en/fr/es/de) in `src/ui/messages/`.
