@@ -21,7 +21,7 @@
 //     the bug is invisible, so the rule is enforced against the
 //     stylesheet instead.
 //
-// Run after `npm run build`; CI runs it on every branch. Exits non-zero
+// Run after `npm run build`; CI runs it on every pull request. Exits non-zero
 // on anything that does not fit.
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
