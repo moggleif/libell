@@ -219,8 +219,6 @@ URL and must keep working with no signal.
 
 ## R11 — Phone calibration and dashboard warning lamps
 
-> **Open bug:** in Modern the "⚠ Measurements" lamp opens the last-used Settings tab, not Vehicle (#399).
-
 - **Given** my phone or its case is not perfectly flat
 - **When** I place the phone on a surface I know is level and tap "Calibrate now" in
   Settings › Calibration (step 1 below)

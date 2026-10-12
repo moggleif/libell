@@ -11,8 +11,7 @@ import type { ExternalSensorPage, SensorPage } from '../ui/sensorPage';
 export interface NavigationDeps {
   /** Modern's tabbed Settings page, or Classic's ☰ menu. */
   settings:
-    | { settingsPage: Pick<SettingsPage, 'open' | 'openTab' | 'openTargets'> }
-    | { menu: Pick<Menu, 'open'> };
+    { settingsPage: Pick<SettingsPage, 'openTab' | 'openTargets'> } | { menu: Pick<Menu, 'open'> };
   /** Each box's own page; absent without Web Bluetooth. */
   externalSensorPage: Pick<ExternalSensorPage, 'openSource'> | null;
   /** The box list, or iOS's guide; absent when neither applies. */
@@ -72,8 +71,7 @@ export function createNavigation(deps: NavigationDeps): Navigation {
     openActiveSensorPage: () => void openActiveBox(),
     openLamp(section) {
       if (section === 'calibration') openCalibration();
-      else if ('settingsPage' in settings) settings.settingsPage.open();
-      else settings.menu.open(section);
+      else openSettingsSection(section);
     },
     openTargets() {
       if ('settingsPage' in settings) settings.settingsPage.openTargets();
