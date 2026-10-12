@@ -85,9 +85,18 @@ jobs:
   # The one check that can fail on a view growing taller than a phone
   # screen (#239, #241) — the unit tests run in happy-dom, which has
   # no layout engine and so measures every height as zero.
+  #
+  # One job per appearance, side by side (#494): the sweep is mostly
+  # settle pauses, so three in parallel take well under half the time of
+  # one after the other. The list must name every appearance in
+  # src/domain/appearance.ts — scripts/fitAppearances.test.ts fails if not.
   fit:
-    name: Level view and guide fit one phone screen
+    name: Level view and guide fit one phone screen (${{ matrix.appearance }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        appearance: [classic, modern, glossy]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -105,13 +114,15 @@ jobs:
         run: npm run build
 
       - name: Level view and guide fit one phone screen
+        env:
+          FIT_APPEARANCE: ${{ matrix.appearance }}
         run: |
           npx playwright install --with-deps chromium
           npm run fit
 
   # The required status check on main is named "Check, Test & Build", so
-  # this job keeps that name and passes only when all three jobs above
-  # passed. `always()` matters: without it a failed job would leave this
+  # this job keeps that name and passes only when all the jobs above
+  # passed (a matrix job's result is failure if any of its legs failed). `always()` matters: without it a failed job would leave this
   # one skipped, and GitHub counts a skipped required check as passing.
   build:
     name: Check, Test & Build
