@@ -99,6 +99,10 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
   function showNoData(nowMs: number): void {
     const unavailable = isSensorUnavailable(deps.sensor().getState());
     view.showNoData(unavailable, deps.externalSensors.canRetrySilently());
+    // Both overlays judge a reading; without one they would only hide
+    // R37's card (#398).
+    view.hideStale();
+    view.hidePose();
     if (unavailable) deps.externalSensors.maybeAutoRetry(nowMs);
   }
 
