@@ -296,8 +296,6 @@ export const de: Messages = {
   'calibration.vehicle.status': 'Fahrzeug-Nullpunkt: seitlich {roll}°, längs {pitch}°.',
   'calibration.vehicle.status.none':
     'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
-  'calibration.vehicle.err.notFlat':
-    'Das sieht nach mehr als nur Auflageneigung aus (>15°) — steht das Fahrzeug wirklich waagerecht?',
   'calibration.vehicle.warn.notFlat':
     'Das sieht nicht waagerecht aus (über 15°). Steht das Fahrzeug wirklich waagerecht? Nulle trotzdem, wenn du sicher bist.',
   'calibration.vehicle.anyway': 'Trotzdem nullen',
@@ -315,9 +313,8 @@ export const de: Messages = {
     'Drehe das Handy jetzt an derselben Stelle um eine halbe Drehung (180°) und tippe auf Erfassen.',
   'calibration.flip.capture': 'Erfassen',
   'calibration.flip.done': 'Fertig! Deine Fläche neigt sich um {surface}° — herausgerechnet.',
-  'calibration.flip.err.moved':
-    'Die beiden Erfassungen passen nicht zusammen — hat sich das Handy bewegt? Fang noch ' +
-    'einmal von vorn an.',
+  'calibration.flip.warn.moved':
+    'Die beiden Erfassungen weichen um mehr als 15° ab — hat sich das Handy bewegt? Fang von vorn an oder kalibriere trotzdem.',
   'calibration.pill.notDone': 'OFFEN',
   'calibration.pill.done': 'ERLEDIGT',
   'calibration.pill.none': 'KEINER',
@@ -327,8 +324,9 @@ export const de: Messages = {
   'targets.defaultName': 'Ziel {n}',
   'targets.add': 'Aktuelle Neigung als neues Ziel speichern',
   'targets.delete': '{name} löschen',
-  'targets.err.tooSteep':
-    'Das sieht nach mehr als einem gewollten Ziel aus (>15°) — versuche es erneut.',
+  'targets.warn.tooSteep':
+    'Das sieht steiler aus als ein gewolltes Ziel (über 15°). Versuche es erneut oder speichere trotzdem.',
+  'targets.anyway': 'Trotzdem speichern',
   'targets.badge': 'Ziel: {name}',
 
   'feedback.intro':

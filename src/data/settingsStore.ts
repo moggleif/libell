@@ -253,8 +253,8 @@ export function clearVehicleCalibration(storage: KeyValueStorage | null = defaul
 /**
  * An external source's installation offset (#131/R34, ADR 0014, keyed per
  * source by #263): the mechanism is identical to the phone's vehicle zero
- * above (capture with the vehicle verified level, validated by the same
- * >15° implausible-capture guard in `parseCalibration`), but each source
+ * above (capture with the vehicle verified level, read back up to
+ * `MAX_TILT_DEG` since a zero may be taken anyway above 15°, #425), but each source
  * gets its own key, so clearing or redoing one never touches — and is
  * never touched by — another source's, or the phone's own
  * `libell.vehicleCalibration`.
@@ -268,14 +268,14 @@ export function loadInstallCalibration(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
-  return readCalibration(installCalibrationKey(source), storage)?.value ?? null;
+  return readCalibration(installCalibrationKey(source), storage, MAX_TILT_DEG)?.value ?? null;
 }
 
 export function loadInstallCalibrationInfo(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): StoredCalibration | null {
-  return readCalibration(installCalibrationKey(source), storage);
+  return readCalibration(installCalibrationKey(source), storage, MAX_TILT_DEG);
 }
 
 export function saveInstallCalibration(

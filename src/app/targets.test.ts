@@ -72,10 +72,19 @@ describe('createTargets', () => {
       expect(onActiveChanged).not.toHaveBeenCalled();
     });
 
-    it('refuses more than an intentional target', () => {
+    // #425: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
+    it('warns, without saving, about more than an intentional target', () => {
       const { targets } = setup({ tilt: { rollDeg: 16, pitchDeg: 0 } });
-      expect(targets.add('Steep')).toBe(t('targets.err.tooSteep'));
+      expect(targets.add('Steep')).toEqual({ warning: t('targets.warn.tooSteep') });
       expect(targets.presets()).toEqual([]);
+    });
+
+    it('saves a steep target anyway when the user goes ahead (#425)', () => {
+      const { targets, storage } = setup({ tilt: { rollDeg: 16, pitchDeg: 0 } });
+      expect(targets.add('Steep', true)).toBeNull();
+      const saved = { id: 'id-1', name: 'Steep', offset: { rollDeg: 16, pitchDeg: 0 } };
+      expect(targets.presets()).toEqual([saved]);
+      expect(loadTargetPresets(storage)).toEqual([saved]);
     });
 
     it('passes on a reading error', () => {
