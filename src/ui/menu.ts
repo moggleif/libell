@@ -30,7 +30,8 @@ import type { ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
 import { createCalibrationSection } from './calibrationSection';
-import { t } from './i18n';
+import { createElement } from './dom';
+import { t, type MessageKey } from './i18n';
 import { setVisible } from './motion';
 
 export type MenuSection = 'general' | 'calibration' | 'vehicle' | 'ramps' | 'targets';
@@ -134,201 +135,229 @@ export interface Menu {
 }
 
 export function createMenu(options: MenuOptions): Menu {
-  const container = document.createElement('div');
+  const drawer = createDrawer();
+  const page = createPage();
+  const settingsForm = createMenuSettingsForm(options);
+  const calibration = createCalibrationSection(options, 'checklist');
+  const entries = createEntries(drawer, settingsForm, calibration.element, showPage);
+  const view = createMenuView(drawer, page);
+  const depth = createMenuHistory(() => view.render(depth.current()));
 
-  // --- Navigation drawer ---
-  const backdrop = document.createElement('div');
-  backdrop.className = 'menu';
+  function refreshPages(): void {
+    calibration.refresh();
+    settingsForm.refreshTargetsPage?.();
+  }
+  // The bottom bar's mute toggle (#161) can change soundOnLevel/
+  // soundGuidance while the menu is closed — resync every reopen.
+  function refreshBeforeShowing(): void {
+    refreshPages();
+    settingsForm.resyncSoundFields?.(options.getSoundPrefs());
+  }
+  function showDrawer(): void {
+    depth.advanceTo(1);
+    refreshBeforeShowing();
+    view.render(depth.current());
+  }
+  function showPage(section: MenuSection): void {
+    if (section !== 'calibration') {
+      settingsForm.replaceChildren(settingsForm.classicPages![section]);
+    }
+    depth.advanceTo(2);
+    refreshBeforeShowing();
+    view.render(depth.current(), entries.get(section));
+  }
+
+  wireBackButtons(drawer, page, depth.back);
+  return {
+    element: wrap(drawer.backdrop, page.element),
+    open: showPage,
+    isOpen: () => depth.current() > 0,
+    refresh() {
+      if (depth.current() > 0) refreshPages();
+    },
+    attach(button) {
+      button.addEventListener('click', () => {
+        if (depth.current() === 0) showDrawer();
+        else depth.back();
+      });
+    },
+  };
+}
+
+/** 0 = closed, 1 = the drawer, 2 = a page on top of it. */
+type Depth = 0 | 1 | 2;
+
+interface Drawer {
+  backdrop: HTMLElement;
+  panel: HTMLElement;
+  close: HTMLButtonElement;
+}
+
+function createDrawer(): Drawer {
+  const backdrop = createElement('div', 'menu');
   backdrop.hidden = true;
-  const drawer = document.createElement('div');
-  drawer.className = 'menu__drawer';
-  drawer.setAttribute('role', 'dialog');
-  drawer.setAttribute('aria-label', t('menu.title'));
+  const panel = createElement('div', 'menu__drawer');
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', t('menu.title'));
 
-  const header = document.createElement('div');
-  header.className = 'menu__header';
-  const title = document.createElement('span');
-  title.className = 'menu__title';
+  const header = createElement('div', 'menu__header');
+  const title = createElement('span', 'menu__title');
   title.textContent = t('menu.title');
-  const close = document.createElement('button');
+  const close = createElement('button', 'menu__close');
   close.type = 'button';
-  close.className = 'menu__close';
   close.setAttribute('aria-label', t('menu.close'));
   close.textContent = '✕';
   header.append(title, close);
-  drawer.append(header);
-  backdrop.append(drawer);
+  panel.append(header);
+  backdrop.append(panel);
+  return { backdrop, panel, close };
+}
 
-  // --- Full-screen page ---
-  const page = document.createElement('div');
-  page.className = 'menu-page';
-  page.hidden = true;
-  const pageHeader = document.createElement('div');
-  pageHeader.className = 'menu-page__header';
-  const back = document.createElement('button');
+interface MenuPage {
+  element: HTMLElement;
+  back: HTMLButtonElement;
+  title: HTMLHeadingElement;
+  body: HTMLElement;
+}
+
+/** The full-screen page with its ‹ Back header. */
+function createPage(): MenuPage {
+  const element = createElement('div', 'menu-page');
+  element.hidden = true;
+  const header = createElement('div', 'menu-page__header');
+  const back = createElement('button', 'menu-page__back');
   back.type = 'button';
-  back.className = 'menu-page__back';
   back.textContent = '‹';
-  const pageTitle = document.createElement('h2');
-  pageTitle.className = 'menu-page__title';
-  pageTitle.tabIndex = -1;
-  pageHeader.append(back, pageTitle);
-  const pageBody = document.createElement('div');
-  pageBody.className = 'menu-page__body';
-  page.append(pageHeader, pageBody);
+  const title = createElement('h2', 'menu-page__title');
+  title.tabIndex = -1;
+  header.append(back, title);
+  const body = createElement('div', 'menu-page__body');
+  element.append(header, body);
+  return { element, back, title, body };
+}
 
-  container.append(backdrop, page);
-
-  // --- Section registry ---
-  const sections = new Map<
-    MenuSection,
-    { label: string; body: HTMLElement; item: HTMLButtonElement }
-  >();
-  let onPageClosed: (() => void) | null = null;
-
-  function addSection(id: MenuSection, label: string, body: HTMLElement): void {
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.className = 'menu__item';
-    item.textContent = label;
-    item.addEventListener('click', () => showPage(id));
-    drawer.append(item);
-    sections.set(id, { label, body, item });
-  }
-
-  // --- History-integrated open/close state ---
-  // depth 0 = closed, 1 = drawer, 2 = page. UI closes go through
-  // history.back() so the browser/Android back gesture and our buttons
-  // share one code path.
-  let depth = 0;
-
-  function render(section?: MenuSection): void {
-    setVisible(backdrop, depth > 0);
-    setVisible(page, depth === 2);
-    if (depth === 2 && section) {
-      const entry = sections.get(section);
-      if (entry) {
-        pageTitle.textContent = entry.label;
-        pageBody.replaceChildren(entry.body);
-        pageTitle.focus();
-        onPageClosed = () => entry.item.focus();
-      }
-    }
-    if (depth === 1) {
-      onPageClosed?.();
-      onPageClosed = null;
-    }
-  }
-
-  function showDrawer(): void {
-    if (depth === 0) {
-      history.pushState({ libellMenu: 1 }, '');
-      depth = 1;
-    }
-    refreshCalibration();
-    settingsForm.refreshTargetsPage?.();
-    // The bottom bar's mute toggle (#161) can change soundOnLevel/
-    // soundGuidance while the menu is closed — resync every reopen.
-    settingsForm.resyncSoundFields?.(options.getSoundPrefs());
-    render();
-  }
-
-  // Opening a page straight from closed (depth 0 -> 2) advances depth in
-  // one step and calls render() exactly once at the final depth — not via
-  // showDrawer() then again here. setVisible (#105) arms a ~400ms fallback
-  // timer on every hide call; calling render() at the intermediate depth 1
-  // would hide-then-immediately-reshow `page` in the same tick, leaving
-  // that stale timer armed to forcibly close the page a moment after it
-  // opened. Two pushState calls still land (0->1->2), so back/gesture
-  // behavior is unchanged.
-  function showPage(section: MenuSection): void {
-    // General/Vehicle/Ramps/Targets share one settingsForm instance (see
-    // the file header comment) — swap its mounted content to the
-    // requested page before it's shown, same as Modern's own tab switch.
-    if (
-      section === 'general' ||
-      section === 'vehicle' ||
-      section === 'ramps' ||
-      section === 'targets'
-    ) {
-      settingsForm.replaceChildren(settingsForm.classicPages![section]);
-    }
-    if (depth === 0) {
-      history.pushState({ libellMenu: 1 }, '');
-      depth = 1;
-    }
-    if (depth === 1) {
-      history.pushState({ libellMenu: 2 }, '');
-      depth = 2;
-    }
-    refreshCalibration();
-    settingsForm.refreshTargetsPage?.();
-    settingsForm.resyncSoundFields?.(options.getSoundPrefs());
-    render(section);
-  }
-
-  window.addEventListener('popstate', () => {
-    if (depth > 0) {
-      depth -= 1;
-      render();
-    }
+/** ✕, ‹ and a tap on the backdrop outside the drawer all go one step back. */
+function wireBackButtons(drawer: Drawer, page: MenuPage, back: () => void): void {
+  drawer.close.addEventListener('click', back);
+  page.back.addEventListener('click', back);
+  drawer.backdrop.addEventListener('click', (event) => {
+    if (event.target === drawer.backdrop) back();
   });
+}
 
-  const goBack = () => {
-    if (depth > 0) history.back();
-  };
+function wrap(...children: HTMLElement[]): HTMLElement {
+  const container = document.createElement('div');
+  container.append(...children);
+  return container;
+}
 
-  close.addEventListener('click', goBack);
-  back.addEventListener('click', goBack);
-  backdrop.addEventListener('click', (event) => {
-    if (event.target === backdrop) goBack();
-  });
-
-  // --- Settings: Vehicle / Ramps / Level / General, one shared form
-  // split into four drawer pages (see the file header comment) — order
-  // matches Modern's tabs, with Calibration third (#329).
-  const settingsForm: SettingsFormElement = createSettingsForm(
+/**
+ * Vehicle / Ramps / Level / General: one shared form split into four
+ * drawer pages (see the file header comment). Every change is stored as
+ * it is made (#328); only ✕/back close the drawer.
+ */
+function createMenuSettingsForm(options: MenuOptions): SettingsFormElement {
+  return createSettingsForm(
     options.initialSettings,
-    // Every change is stored as it is made (#328); only ✕/back close the
-    // drawer.
-    (settings) => {
-      options.onSettingsSaved(settings);
-    },
+    (settings) => options.onSettingsSaved(settings),
     options,
     { splitPages: true, onShareVehicleSetup: options.onShareVehicleSetup },
     options,
   );
-  addSection('vehicle', t('settings.tab.vehicle'), settingsForm);
-  addSection('ramps', t('settings.tab.ramps'), settingsForm);
+}
 
-  // --- Calibration (one-shot + flip) — the one page that stays fully
-  // standalone, outside the shared settingsForm (#122, ADR 0013 above).
-  // As a two-step checklist (#330), same as Modern's tab.
-  const calibrationSection = createCalibrationSection(options, 'checklist');
-  const refreshCalibration = calibrationSection.refresh;
-  addSection('calibration', t('menu.calibration'), calibrationSection.element);
+interface MenuEntry {
+  label: string;
+  body: HTMLElement;
+  item: HTMLButtonElement;
+}
 
-  addSection('targets', t('settings.tab.level'), settingsForm);
-  addSection('general', t('settings.general'), settingsForm);
+/** The drawer's entries, in Modern's tab order with Calibration third (#329). */
+const ENTRY_LABELS: readonly [MenuSection, MessageKey][] = [
+  ['vehicle', 'settings.tab.vehicle'],
+  ['ramps', 'settings.tab.ramps'],
+  ['calibration', 'menu.calibration'],
+  ['targets', 'settings.tab.level'],
+  ['general', 'settings.general'],
+];
 
+/**
+ * One drawer item per entry. Calibration is the one page that stays
+ * fully standalone, outside the shared settings form (#122, ADR 0013).
+ */
+function createEntries(
+  drawer: Drawer,
+  settingsForm: SettingsFormElement,
+  calibrationBody: HTMLElement,
+  showPage: (section: MenuSection) => void,
+): Map<MenuSection, MenuEntry> {
+  const entries = new Map<MenuSection, MenuEntry>();
+  for (const [section, labelKey] of ENTRY_LABELS) {
+    const label = t(labelKey);
+    const item = createElement('button', 'menu__item');
+    item.type = 'button';
+    item.textContent = label;
+    item.addEventListener('click', () => showPage(section));
+    drawer.panel.append(item);
+    const body = section === 'calibration' ? calibrationBody : settingsForm;
+    entries.set(section, { label, body, item });
+  }
+  return entries;
+}
+
+/**
+ * Shows the drawer and the page for a depth. Opening a page focuses its
+ * title; going back to the drawer returns focus to the entry that opened it.
+ */
+function createMenuView(drawer: Drawer, page: MenuPage) {
+  let returnFocus: (() => void) | null = null;
+  function showEntry(entry: MenuEntry): void {
+    page.title.textContent = entry.label;
+    page.body.replaceChildren(entry.body);
+    page.title.focus();
+    returnFocus = () => entry.item.focus();
+  }
   return {
-    element: container,
-    open(section) {
-      showPage(section);
+    render(depth: Depth, entry?: MenuEntry): void {
+      setVisible(drawer.backdrop, depth > 0);
+      setVisible(page.element, depth === 2);
+      if (depth === 2 && entry) showEntry(entry);
+      if (depth === 1) {
+        returnFocus?.();
+        returnFocus = null;
+      }
     },
-    isOpen() {
-      return depth > 0;
+  };
+}
+
+/**
+ * The menu's depth, kept in the browser history so the Android back
+ * button/gesture and our own buttons share one code path: every close
+ * goes through `history.back()` and lands in `onBack`.
+ *
+ * Opening a page straight from closed pushes both entries (0 → 1 → 2) but
+ * the caller renders only once, at the final depth. setVisible (#105) arms
+ * a ~400ms fallback timer on every hide; rendering at the intermediate
+ * depth would hide-then-reshow the page in one tick and leave that timer
+ * armed to close the page a moment after it opened.
+ */
+function createMenuHistory(onBack: () => void) {
+  let depth: Depth = 0;
+  window.addEventListener('popstate', () => {
+    if (depth === 0) return;
+    depth -= 1;
+    onBack();
+  });
+  return {
+    current: (): Depth => depth,
+    advanceTo(target: Depth): void {
+      while (depth < target) {
+        history.pushState({ libellMenu: depth + 1 }, '');
+        depth += 1;
+      }
     },
-    refresh() {
-      if (depth === 0) return;
-      refreshCalibration();
-      settingsForm.refreshTargetsPage?.();
-    },
-    attach(button) {
-      button.addEventListener('click', () => {
-        if (depth === 0) showDrawer();
-        else goBack();
-      });
+    back(): void {
+      if (depth > 0) history.back();
     },
   };
 }
