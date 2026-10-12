@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  loadInstallCalibrationInfo,
-  saveInstallCalibration,
-  type KeyValueStorage,
-} from '../data/settingsStore';
+import { loadInstallCalibrationInfo, saveInstallCalibration } from '../data/calibrationStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
 import { createInstallOffsets } from './installOffsets';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import {
-  clearCalibration,
   hasDoneOnboarding,
   hasSeenOnboarding,
   markOnboardingSeen,
@@ -14,12 +13,18 @@ import {
   setBoxPending,
   markMeasurementsSaved,
   migrateMeasurementsSaved,
-  loadCalibration,
   loadSettings,
   markOnboardingDone,
-  saveCalibration,
   saveSettings,
-  type KeyValueStorage,
+  loadActiveTargetId,
+  loadTargetPresets,
+  saveActiveTargetId,
+  saveTargetPresets,
+} from './settingsStore';
+import {
+  clearCalibration,
+  loadCalibration,
+  saveCalibration,
   clearVehicleCalibration,
   loadVehicleCalibration,
   saveVehicleCalibration,
@@ -30,11 +35,8 @@ import {
   loadInstallCalibrationInfo,
   migrateLegacyInstallCalibration,
   saveInstallCalibration,
-  loadActiveTargetId,
-  loadTargetPresets,
-  saveActiveTargetId,
-  saveTargetPresets,
-} from './settingsStore';
+} from './calibrationStore';
+import type { KeyValueStorage } from './keyValueStorage';
 import type { TargetPreset } from '../domain/targetPresets';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {

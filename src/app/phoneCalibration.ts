@@ -18,8 +18,8 @@ import {
   loadVehicleCalibrationInfo,
   saveCalibration,
   saveVehicleCalibration,
-  type KeyValueStorage,
-} from '../data/settingsStore';
+} from '../data/calibrationStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
 import { t } from '../ui/i18n';
 import { exceedsCalibrationLimit } from './tiltReading';
 

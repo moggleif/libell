@@ -6,7 +6,8 @@
  * copied rather than moved.
  */
 import { migrateLegacyRememberedDeviceId } from '../data/sensorDeviceStore';
-import { migrateLegacyInstallCalibration, migrateMeasurementsSaved } from '../data/settingsStore';
+import { migrateMeasurementsSaved } from '../data/settingsStore';
+import { migrateLegacyInstallCalibration } from '../data/calibrationStore';
 
 export function runStartupMigrations(): void {
   migrateLegacyInstallCalibration();

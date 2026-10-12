@@ -17,8 +17,8 @@ import {
   loadTargetPresets,
   saveActiveTargetId,
   saveTargetPresets,
-  type KeyValueStorage,
 } from '../data/settingsStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
 import { t } from '../ui/i18n';
 
 export interface TargetsDeps {

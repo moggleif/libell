@@ -35,7 +35,6 @@
     "src/ui/targetsSection.ts > createTargetsSection": 123
   },
   "fileBaseline": {
-    "src/data/settingsStore.ts": 444,
     "src/domain/settings.ts": 584,
     "src/main.ts": 414,
     "src/sensor/easyLevelSensor.ts": 431,

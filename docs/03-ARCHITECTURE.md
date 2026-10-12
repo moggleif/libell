@@ -33,8 +33,9 @@ src/
 │   ├── calibration.ts, targetPresets.ts  # the three calibration terms (ADR 0010/0013/0014)
 │   ├── pose.ts, stillness.ts, staleness.ts  # when a reading can be trusted
 │   └── settings.ts   # LevelSettings + Calibration (validation, legacy migrations)
-├── data/          # settingsStore.ts (settings + calibration), sensorDeviceStore.ts
-│                  # (each box's remembered device id, #130) — localStorage read/write
+├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
+│                  # (the calibration layers), sensorDeviceStore.ts (each box's
+│                  # remembered device id, #130) — localStorage read/write
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
 │                  # externalSensors.ts (the registry), externalSensorController.ts
 │                  # (connect, reconnect, fallback), easyLevel*.ts and xparkle*.ts (each
@@ -267,7 +268,7 @@ source-independent) — see ADR 0014 for the full rule.
 
 Installation calibration for a mounted external sensor (#131, R34) fills in the
 concrete storage shape ADR 0014 deferred, keyed per source by #263 (ADR 0016):
-`settingsStore.ts`'s `loadInstallCalibration`/`saveInstallCalibration`/
+`calibrationStore.ts`'s `loadInstallCalibration`/`saveInstallCalibration`/
 `clearInstallCalibration` all take a `SensorSource` and file it under
 `libell.installCalibration.<source>` — the same shape as `libell.vehicleCalibration`,
 just never the same key, so no two sources (and never a source and the phone) can be

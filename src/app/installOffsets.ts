@@ -13,9 +13,9 @@ import {
   clearInstallCalibration,
   loadInstallCalibrationInfo,
   saveInstallCalibration,
-  type KeyValueStorage,
   type StoredCalibration,
-} from '../data/settingsStore';
+} from '../data/calibrationStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
 
 export interface InstallOffsets {
   /** The box's zero, or null for none yet (and always for the phone). */

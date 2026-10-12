@@ -13,7 +13,7 @@
  * reconnecting to the wrong one is not a recoverable mistake.
  */
 import type { SensorSource } from '../domain/settings';
-import type { KeyValueStorage } from './settingsStore';
+import { defaultStorage, type KeyValueStorage } from './keyValueStorage';
 
 const DEVICE_KEY_PREFIX = 'libell.sensorDevice.';
 
@@ -26,15 +26,6 @@ const DEVICE_MIGRATED_KEY = 'libell.sensorDevice.migrated';
 
 function deviceKey(source: SensorSource): string {
   return `${DEVICE_KEY_PREFIX}${source}`;
-}
-
-function defaultStorage(): KeyValueStorage | null {
-  try {
-    return typeof localStorage === 'undefined' ? null : localStorage;
-  } catch {
-    // Access can throw when storage is disabled (e.g. private mode).
-    return null;
-  }
 }
 
 export function loadRememberedDeviceId(

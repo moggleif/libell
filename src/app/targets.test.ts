@@ -4,8 +4,8 @@ import {
   loadTargetPresets,
   saveActiveTargetId,
   saveTargetPresets,
-  type KeyValueStorage,
 } from '../data/settingsStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
 import type { Calibration } from '../domain/settings';
 import { t } from '../ui/i18n';
 import { createTargets } from './targets';

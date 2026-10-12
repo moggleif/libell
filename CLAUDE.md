@@ -33,8 +33,9 @@ src/
 ├── main.ts        # entry point: only creates the app/ modules and connects them
 ├── app/           # the modules main.ts composes (#374, #392), each with its own tests
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
-├── data/          # settingsStore.ts (settings + calibration), sensorDeviceStore.ts
-│                  # (each box's remembered device id, #130) — all localStorage
+├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
+│                  # (the calibration layers), sensorDeviceStore.ts (each box's
+│                  # remembered device id, #130) — all localStorage
 ├── sensor/        # orientation.ts (the phone) and the Sensorbox sources: registry,
 │                  # controller, EasyLevel and Xparkle adapters, protocols, simulators
 └── ui/            # DOM + SVG components, menu, i18n (t()), styles
