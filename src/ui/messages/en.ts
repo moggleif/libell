@@ -408,8 +408,6 @@ export const en = {
   'calibration.vehicle.clear': 'Forget the zero',
   'calibration.vehicle.status': 'Vehicle zero: side/side {roll}°, front/back {pitch}°.',
   'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
-  'calibration.vehicle.err.notFlat':
-    'That looks like more than placement tilt (>15°) — is the vehicle really level?',
   'calibration.vehicle.warn.notFlat':
     'This does not look level (over 15°). Is the vehicle really level? Zero anyway if you are sure.',
   'calibration.vehicle.anyway': 'Zero anyway',

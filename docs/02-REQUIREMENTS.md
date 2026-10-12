@@ -1057,7 +1057,9 @@ cross-platform goal — they are not this app's code and are not covered here.
   (`EASYLEVEL_ZERO_SAMPLE_MS`), showing "Zeroing…" meanwhile; if the box drops while
   sampling, nothing is stored and the page says the box is not connected.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** it is rejected with an explanation (the phone's own R11/R24 warn instead, #411).
+- **Then** nothing is stored yet: a warning asks whether the vehicle really is level,
+  with a "Zero anyway" button that zeroes it regardless — the same warning R24 gives the
+  phone (#425); the zero is kept after a reload.
 - **Given** a stored installation offset
 - **Then** the step reads "Zeroed" with its age, reusing R26's "(14 days ago)" age
   display, and offers "Zero again" and "Forget the zero" (R51; no separate Check,

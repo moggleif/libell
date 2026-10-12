@@ -76,7 +76,7 @@ export interface CalibrationOptions {
   /** "Set vehicle level" for that sensor — the same action as on its own
    * page (R34), which for a box that zeroes itself is asynchronous. Returns
    * an error text, or null on success. */
-  calibrateExternalSensor?(): string | null | Promise<string | null>;
+  calibrateExternalSensor?(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   /** Opens the active box's own page (#316), for its position and
    * direction; no link is shown when omitted. */
   openExternalSensor?(): void;
@@ -141,7 +141,19 @@ export function createCalibrationSection(
   externalButton.textContent = t('sensorSource.install.now');
   const externalStatus = document.createElement('p');
   externalStatus.className = 'menu__text menu__text--status';
-  externalSection.append(externalHeading, externalIntro, externalButton, externalStatus);
+  // "Zero anyway" for a box's tilt warning (#425), like the phone's below.
+  const externalAnywayButton = document.createElement('button');
+  externalAnywayButton.type = 'button';
+  externalAnywayButton.className = 'menu__action menu__action--secondary';
+  externalAnywayButton.textContent = t('calibration.vehicle.anyway');
+  externalAnywayButton.hidden = true;
+  externalSection.append(
+    externalHeading,
+    externalIntro,
+    externalButton,
+    externalStatus,
+    externalAnywayButton,
+  );
   // The way to the rest of the box's setup (#316): its position and
   // direction live on its own page, one quiet link away.
   if (options.openExternalSensor) {
@@ -156,6 +168,8 @@ export function createCalibrationSection(
   function refreshExternal(message?: string): void {
     const external = options.getExternalSensor?.() ?? null;
     externalSection.hidden = external === null;
+    externalAnywayButton.hidden = true;
+    externalStatus.classList.remove('menu__text--warning');
     if (!external) return;
     externalHeading.textContent = t('calibration.external.h');
     if (message !== undefined) {
@@ -171,22 +185,31 @@ export function createCalibrationSection(
     }
   }
 
-  externalButton.addEventListener('click', () => {
+  function zeroExternal(anyway: boolean): void {
     const name = options.getExternalSensor?.()?.name ?? '';
-    const done = (error: string | null) =>
-      refreshExternal(error ?? t('calibration.external.done', { name }));
-    const result = options.calibrateExternalSensor?.() ?? null;
+    const done = (result: CaptureResult) => {
+      if (typeof result !== 'object' || result === null) {
+        refreshExternal(result ?? t('calibration.external.done', { name }));
+        return;
+      }
+      refreshExternal(result.warning);
+      externalStatus.classList.add('menu__text--warning');
+      externalAnywayButton.hidden = false;
+    };
+    const result = options.calibrateExternalSensor?.(anyway) ?? null;
     if (!(result instanceof Promise)) {
       done(result);
       return;
     }
     externalButton.disabled = true;
     refreshExternal(t('calibration.external.working'));
-    void result.then((error) => {
+    void result.then((answer) => {
       externalButton.disabled = false;
-      done(error);
+      done(answer);
     });
-  });
+  }
+  externalButton.addEventListener('click', () => zeroExternal(false));
+  externalAnywayButton.addEventListener('click', () => zeroExternal(true));
   const sensorHeading = document.createElement('h3');
   sensorHeading.className = modern ? 'calibration-card__title' : 'menu__heading';
   sensorHeading.textContent = t('calibration.sensor.h');

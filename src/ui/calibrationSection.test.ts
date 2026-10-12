@@ -326,6 +326,26 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
   });
 
+  it('warns about a tilted box and zeroes it anyway on request (#425)', async () => {
+    const calibrateExternalSensor = vi.fn((anyway?: boolean) =>
+      Promise.resolve(anyway ? null : { warning: 'Is the vehicle level?' }),
+    );
+    const { options } = externalOptions({ calibrateExternalSensor });
+    const section = createCalibrationSection(options);
+    buttonByText(section.element, 'Zero now').click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(section.element.textContent).toContain('Is the vehicle level?');
+    const anyway = buttonByText(section.element, t('calibration.vehicle.anyway'));
+    expect(anyway.hidden).toBe(false);
+    anyway.click();
+    expect(calibrateExternalSensor).toHaveBeenLastCalledWith(true);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(anyway.hidden).toBe(true);
+    expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
+  });
+
   it('links to the box’s own page for the rest of its setup (#316)', () => {
     const openExternalSensor = vi.fn();
     const { options } = externalOptions({ openExternalSensor });

@@ -296,8 +296,6 @@ export const de: Messages = {
   'calibration.vehicle.status': 'Fahrzeug-Nullpunkt: seitlich {roll}°, längs {pitch}°.',
   'calibration.vehicle.status.none':
     'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
-  'calibration.vehicle.err.notFlat':
-    'Das sieht nach mehr als nur Auflageneigung aus (>15°) — steht das Fahrzeug wirklich waagerecht?',
   'calibration.vehicle.warn.notFlat':
     'Das sieht nicht waagerecht aus (über 15°). Steht das Fahrzeug wirklich waagerecht? Nulle trotzdem, wenn du sicher bist.',
   'calibration.vehicle.anyway': 'Trotzdem nullen',

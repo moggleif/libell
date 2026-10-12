@@ -295,8 +295,6 @@ export const sv: Messages = {
   'calibration.vehicle.clear': 'Glöm nolläget',
   'calibration.vehicle.status': 'Fordonets nolläge: sidled {roll}°, längsled {pitch}°.',
   'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
-  'calibration.vehicle.err.notFlat':
-    'Det ser ut som mer än platslutning (>15°) — står fordonet verkligen plant?',
   'calibration.vehicle.warn.notFlat':
     'Det här ser inte plant ut (över 15°). Står fordonet verkligen plant? Nollställ ändå om du är säker.',
   'calibration.vehicle.anyway': 'Nollställ ändå',

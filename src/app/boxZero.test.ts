@@ -117,10 +117,19 @@ describe('createBoxZeroing', () => {
       expect(onChanged).not.toHaveBeenCalled();
     });
 
-    it('refuses a box too steep to be level', async () => {
+    // #425: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
+    it('warns, without storing, when the box looks too steep to be level', async () => {
       const { zeroing, offsets } = setup({ readings: [{ rollDeg: 20, pitchDeg: 0 }] });
-      await expect(zeroing.zero('easylevel')).resolves.toBe(t('calibration.vehicle.err.notFlat'));
+      await expect(zeroing.zero('easylevel')).resolves.toEqual({
+        warning: t('calibration.vehicle.warn.notFlat'),
+      });
       expect(offsets.valueOf('easylevel')).toBeNull();
+    });
+
+    it('zeroes anyway when the user goes ahead (#425)', async () => {
+      const { zeroing, offsets } = setup({ readings: [{ rollDeg: 20, pitchDeg: 0 }] });
+      await expect(zeroing.zero('easylevel', true)).resolves.toBeNull();
+      expect(offsets.valueOf('easylevel')).toEqual({ rollDeg: 20, pitchDeg: 0 });
     });
   });
 

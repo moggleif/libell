@@ -302,8 +302,6 @@ export const fr: Messages = {
   'calibration.vehicle.status': 'Zéro du véhicule : latéral {roll}°, longitudinal {pitch}°.',
   'calibration.vehicle.status.none':
     'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
-  'calibration.vehicle.err.notFlat':
-    'Cela ressemble à plus qu’une inclinaison de pose (>15°) — le véhicule est-il vraiment de niveau ?',
   'calibration.vehicle.warn.notFlat':
     'Cela ne semble pas de niveau (plus de 15°). Le véhicule est-il vraiment de niveau ? Mettez à zéro quand même si vous en êtes sûr.',
   'calibration.vehicle.anyway': 'Mettre à zéro quand même',

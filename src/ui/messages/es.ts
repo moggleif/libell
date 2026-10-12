@@ -293,8 +293,6 @@ export const es: Messages = {
   'calibration.vehicle.clear': 'Olvidar el cero',
   'calibration.vehicle.status': 'Cero del vehículo: lado/lado {roll}°, delante/detrás {pitch}°.',
   'calibration.vehicle.status.none': 'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
-  'calibration.vehicle.err.notFlat':
-    'Esto parece más que la inclinación del sitio (>15°): ¿está el vehículo realmente nivelado?',
   'calibration.vehicle.warn.notFlat':
     'Esto no parece nivelado (más de 15°). ¿Está el vehículo realmente nivelado? Pon a cero de todos modos si estás seguro.',
   'calibration.vehicle.anyway': 'Poner a cero de todos modos',

@@ -56,7 +56,10 @@ export function calibrationOptions(deps: MenuOptionDeps) {
     isPhoneActive: () => activeSensor().getSource() === 'phone',
     getExternalSensor: () =>
       externalCalibrationStateFor(activeSensor().getSource(), deps.installOffsets),
-    calibrateExternalSensor: () => deps.boxZero.zero(activeSensor().getSource()),
+    calibrateExternalSensor: (anyway?: boolean) =>
+      anyway
+        ? deps.boxZero.zero(activeSensor().getSource(), true)
+        : deps.boxZero.zero(activeSensor().getSource()),
   };
 }
 
@@ -89,7 +92,8 @@ export function boxConnectionOptions(descriptor: ExternalSensorDescriptor, deps:
     disconnectSensor: () => deps.externalSensors.disconnect(),
     getInstallCalibration: () => deps.installOffsets.valueOf(id),
     getInstallCalibrationCapturedAt: () => deps.installOffsets.capturedAtOf(id),
-    calibrateInstall: () => deps.boxZero.zero(id),
+    calibrateInstall: (anyway?: boolean) =>
+      anyway ? deps.boxZero.zero(id, true) : deps.boxZero.zero(id),
     clearInstallCalibration: () => deps.boxZero.clear(id),
   };
 }
