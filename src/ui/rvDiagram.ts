@@ -12,9 +12,9 @@
  * up front widening into the box body, roof inset, mirrors, side window
  * strips, roof hatch, rear hatch, awning, a dashed crosshair through the
  * bubble — with per-wheel status shown only in the floating "wheel cards"
- * (HTML, not SVG) positioned over the diagram, see `buildWheelCard`; the
- * SVG itself carries no per-wheel marker at all, so the silhouette stays
- * clean. A card's position on screen already says which wheel it is, so
+ * (HTML, not SVG) positioned over the diagram, see `buildWheelCard` in
+ * `diagramParts.ts`; the SVG itself carries no per-wheel marker at all, so
+ * the silhouette stays clean. A card's position on screen already says which wheel it is, so
  * the card carries no visible position text either — only an aria-label,
  * for anyone not reading the layout visually (screen-cleanup follow-up).
  * Both variants share one severity→color/glyph vocabulary and the same
@@ -22,57 +22,30 @@
  */
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
-import { formatLength, type AppearanceSetting, type AxleConfig } from '../domain/settings';
+import type { AppearanceSetting, AxleConfig } from '../domain/settings';
 import { t, type MessageKey } from './i18n';
+import {
+  CLASSIC_BUBBLE,
+  MODERN_BUBBLE,
+  SEVERITY_GLYPH,
+  createBubbleLevel,
+  createClassicWheel,
+  crosshair,
+  diagramContainer,
+  diagramSvg,
+  buildWheelCard,
+  fillWheelCard,
+  modernFrame,
+  modernFrontArrow,
+  path,
+  placeWheelCard,
+  rect,
+  stepAndLiftText,
+  type ClassicWheel,
+  type WheelCard,
+} from './diagramParts';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-/** Shape per state so color is never the only signal (WCAG 1.4.1).
- * Exported: onboarding's Modern legend (#110) reuses it instead of
- * duplicating the glyph set. */
-export const SEVERITY_GLYPH = { none: '✓', small: '↑', large: '✕', unserved: '–' } as const;
-
-const WHEEL_LABEL: Record<WheelId, MessageKey> = {
-  frontLeft: 'diagram.wheel.frontLeft',
-  frontRight: 'diagram.wheel.frontRight',
-  rearLeft: 'diagram.wheel.rearLeft',
-  rearRight: 'diagram.wheel.rearRight',
-};
-
-function svgEl<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-): SVGElementTagNameMap[K] {
-  const el = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
-  return el;
-}
-
-/** Step and height text for one wheel — shared by the classic on-SVG
- * labels, the modern wheel cards and both caravan drawings, so every
- * view reads the same plan the same way (#368): the step to drive up onto
- * by name, and one height, the wheel's missing lift. The step's own height
- * is not repeated next to its name; two millimetre figures side by side
- * read as two answers. A gray wheel gets no figure at all: it asks for no
- * action, and a height on a wheel to leave alone only begs the question
- * of what to do with it (the status row says how far the ramps fall short). */
-export function stepAndLiftText(
-  severity: DisplayResult['wheels'][WheelId]['severity'],
-  stepMm: number,
-  displayMm: number,
-  unit: 'mm' | 'cm',
-  stepHeightsMm: number[],
-): { step: string; lift: string } {
-  if (severity === 'none') return { step: '', lift: formatLength(displayMm, unit) };
-  // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel — say
-  // so instead of leaving the step line blank (screen-cleanup follow-up).
-  if (stepMm <= 0) return { step: t('diagram.noRamp'), lift: '' };
-  const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
-  return {
-    step: stepNumber > 0 ? t('diagram.step', { n: stepNumber }) : `↑ ${formatLength(stepMm, unit)}`,
-    lift: formatLength(displayMm, unit),
-  };
-}
+export { SEVERITY_GLYPH, stepAndLiftText, updateBubble } from './diagramParts';
 
 export interface RvDiagram {
   element: HTMLElement;
@@ -86,44 +59,12 @@ export function createRvDiagram(
   return appearance === 'modern' ? createModernDiagram() : createClassicDiagram(rearAxle);
 }
 
-/** Shared bubble-level physics: lerp toward the high side, snap under
- * reduced motion, flip to the "level" fill when settled there. Used by
- * the caravan drawings too. */
-export function updateBubble(
-  bubble: SVGCircleElement,
-  result: Pick<DisplayResult, 'rollDeg' | 'pitchDeg' | 'isLevel'>,
-  center: { x: number; y: number },
-  travel: number,
-  fullScaleDeg: number,
-  reduceMotion: MediaQueryList,
-  state: { get(): { x: number; y: number }; set(x: number, y: number): void },
-): void {
-  const targetX = center.x + Math.max(-1, Math.min(1, result.rollDeg / fullScaleDeg)) * travel;
-  const targetY = center.y + Math.max(-1, Math.min(1, result.pitchDeg / fullScaleDeg)) * travel;
-  const current = state.get();
-  const x = reduceMotion.matches ? targetX : current.x + (targetX - current.x) * 0.3;
-  const y = reduceMotion.matches ? targetY : current.y + (targetY - current.y) * 0.3;
-  state.set(x, y);
-  bubble.setAttribute('cx', x.toFixed(2));
-  bubble.setAttribute('cy', y.toFixed(2));
-  bubble.setAttribute(
-    'class',
-    result.isLevel ? 'rv-diagram__bubble rv-diagram__bubble--level' : 'rv-diagram__bubble',
-  );
-}
-
 // ============================================================
 // Classic — unchanged from before #106.
 // ============================================================
 
-interface ClassicWheelRefs {
-  /** One rect for a single wheel, two for a boggie pair (ADR 0009). */
-  markers: SVGRectElement[];
-  glyph: SVGTextElement;
-  stepLabel: SVGTextElement;
-  liftLabel: SVGTextElement;
-}
-
+const CLASSIC_VIEWBOX = { width: 240, height: 310 };
+const CLASSIC_BUBBLE_CENTER = { x: 120, y: 172 };
 const CLASSIC_WHEEL_POS: Record<WheelId, { x: number; y: number }> = {
   frontLeft: { x: 46, y: 96 },
   frontRight: { x: 194, y: 96 },
@@ -131,481 +72,138 @@ const CLASSIC_WHEEL_POS: Record<WheelId, { x: number; y: number }> = {
   rearRight: { x: 194, y: 244 },
 };
 
-const CLASSIC_BUBBLE_CENTER = { x: 120, y: 172 };
-const CLASSIC_BUBBLE_TRAVEL = 22;
-/** Degrees of tilt that push the bubble to the edge of its travel. */
-const BUBBLE_FULL_SCALE_DEG = 5;
-
-/**
- * Wheel marker(s) within the same 28×48 footprint: a single wheel is one
- * rect; a boggie pair is two shorter rects with a gap — same outer
- * bounds, so glyphs and labels keep their positions.
- */
-export function wheelMarkers(x: number, y: number, pair: boolean): SVGRectElement[] {
-  const rect = (top: number, height: number) =>
-    svgEl('rect', {
-      x: String(x - 14),
-      y: String(top),
-      width: '28',
-      height: String(height),
-      rx: '1',
-      class: 'rv-diagram__wheel',
-    });
-  return pair ? [rect(y - 24, 22), rect(y + 2, 22)] : [rect(y - 24, 48)];
-}
-
-/**
- * The drawing's own proportions, and the only place they are written
- * down: the `<svg viewBox>` and the `--diagram-aspect` custom property
- * the layout sizes the diagram with (styles.css) are both derived from
- * this, so the box the diagram is fitted into can never drift out of
- * proportion with the drawing inside it — which is what keeps the
- * floating wheel cards, positioned as a percentage of that box, pinned
- * to the wheels they point at (#241).
- */
-const CLASSIC_VIEWBOX = { width: 240, height: 310 };
-
 function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
-  const container = document.createElement('div');
-  container.className = 'rv-diagram';
-  container.style.setProperty(
-    '--diagram-aspect',
-    String(CLASSIC_VIEWBOX.width / CLASSIC_VIEWBOX.height),
-  );
-
-  const svg = svgEl('svg', {
-    viewBox: `0 0 ${CLASSIC_VIEWBOX.width} ${CLASSIC_VIEWBOX.height}`,
-    role: 'img',
-    'aria-label': t('diagram.aria'),
-  });
-
-  // Front arrow — the shape alone says "front", no text label (#161 follow-up).
-  const arrow = svgEl('path', {
-    d: 'M120 8 L110 26 L117 26 L117 40 L123 40 L123 26 L130 26 Z',
-    class: 'rv-diagram__arrow',
-  });
-
-  // RV body: a plain rectangular outline — Classic's "unstyled HTML"
-  // square-cornered counterpart to Modern's heavily rounded silhouette
-  // (rx: 28, buildModernDiagram below).
-  const body = svgEl('rect', {
-    x: '58',
-    y: '72',
-    width: '124',
-    height: '196',
-    rx: '2',
-    class: 'rv-diagram__body',
-  });
-  const windshield = svgEl('path', {
-    d: 'M74 92 Q120 76 166 92 L160 110 Q120 100 80 110 Z',
-    class: 'rv-diagram__windshield',
-  });
-
-  svg.append(arrow, body, windshield);
-
-  const wheels = {} as Record<WheelId, ClassicWheelRefs>;
-  for (const id of WHEEL_IDS) {
-    const { x, y } = CLASSIC_WHEEL_POS[id];
-    const markers = wheelMarkers(x, y, rearAxle === 'boggie' && id.startsWith('rear'));
-    // Above the wheel: which ramp step to drive up onto. Below it: the
-    // lift, the wheel's one height figure (#368).
-    const stepLabel = svgEl('text', {
-      x: String(x),
-      y: String(y - 34),
-      'text-anchor': 'middle',
-      class: 'rv-diagram__step-label',
-    });
-    const liftLabel = svgEl('text', {
-      x: String(x),
-      y: String(y + 42),
-      'text-anchor': 'middle',
-      class: 'rv-diagram__lift-label',
-    });
-    const glyph = svgEl('text', {
-      x: String(x),
-      y: String(y + 7),
-      class: 'rv-diagram__wheel-glyph',
-    });
-    svg.append(...markers, glyph, stepLabel, liftLabel);
-    wheels[id] = { markers, glyph, stepLabel, liftLabel };
-  }
-
-  // Bubble level in the middle of the vehicle.
-  const dial = svgEl('circle', {
-    cx: String(CLASSIC_BUBBLE_CENTER.x),
-    cy: String(CLASSIC_BUBBLE_CENTER.y),
-    r: '34',
-    class: 'rv-diagram__bubble-dial',
-  });
-  const ring = svgEl('circle', {
-    cx: String(CLASSIC_BUBBLE_CENTER.x),
-    cy: String(CLASSIC_BUBBLE_CENTER.y),
-    r: '11',
-    class: 'rv-diagram__bubble-ring',
-  });
-  // Starts in its dial, not at the SVG origin (#244): an SVG circle with
-  // no cx/cy defaults to 0,0, so until the first sensor reading arrived
-  // the bubble sat in the drawing's top-left corner, half of it clipped
-  // by the edge — a stray half-disc on screen every time a reading was
-  // slow (an EasyLevel box connecting, a sensor waking up). The state
-  // below already started at the centre; only the element did not.
-  const bubble = svgEl('circle', {
-    r: '8',
-    cx: String(CLASSIC_BUBBLE_CENTER.x),
-    cy: String(CLASSIC_BUBBLE_CENTER.y),
-    class: 'rv-diagram__bubble',
-  });
-  svg.append(dial, ring, bubble);
-
+  const container = diagramContainer(CLASSIC_VIEWBOX, 'rv-diagram');
+  const svg = diagramSvg(CLASSIC_VIEWBOX, t('diagram.aria'));
+  const wheels = classicWheels(rearAxle);
+  const bubble = createBubbleLevel(CLASSIC_BUBBLE_CENTER, CLASSIC_BUBBLE);
+  svg.append(...classicBody());
+  for (const id of WHEEL_IDS) svg.append(...wheels[id].elements);
+  svg.append(...bubble.elements);
   container.append(svg);
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let bx = CLASSIC_BUBBLE_CENTER.x;
-  let by = CLASSIC_BUBBLE_CENTER.y;
 
   return {
     element: container,
     update(result, unit, stepHeightsMm) {
-      for (const id of WHEEL_IDS) {
-        // Values arrive hysteresis-stabilized — a still phone shows a
-        // still diagram.
-        const { displayMm, stepMm, severity } = result.wheels[id];
-        const { markers, glyph, stepLabel, liftLabel } = wheels[id];
-        // A boggie pair shares one severity — both wheels get equal steps.
-        for (const marker of markers)
-          marker.setAttribute('class', `rv-diagram__wheel rv-diagram__wheel--${severity}`);
-        glyph.textContent = SEVERITY_GLYPH[severity];
-        const text = stepAndLiftText(severity, stepMm, displayMm, unit, stepHeightsMm);
-        stepLabel.textContent = text.step;
-        liftLabel.textContent = severity === 'none' ? '' : text.lift;
-      }
-      updateBubble(
-        bubble,
-        result,
-        CLASSIC_BUBBLE_CENTER,
-        CLASSIC_BUBBLE_TRAVEL,
-        BUBBLE_FULL_SCALE_DEG,
-        reduceMotion,
-        {
-          get: () => ({ x: bx, y: by }),
-          set: (x, y) => {
-            bx = x;
-            by = y;
-          },
-        },
-      );
+      // Values arrive hysteresis-stabilized — a still phone shows a
+      // still diagram.
+      for (const id of WHEEL_IDS) wheels[id].update(result.wheels[id], unit, stepHeightsMm);
+      bubble.update(result);
     },
   };
+}
+
+/** A plain rectangular outline under a front arrow — Classic's
+ * "unstyled HTML" square-cornered counterpart to Modern's heavily rounded
+ * silhouette. The arrow's shape alone says "front", with no text label
+ * (#161 follow-up). */
+function classicBody(): SVGElement[] {
+  return [
+    path('M120 8 L110 26 L117 26 L117 40 L123 40 L123 26 L130 26 Z', 'rv-diagram__arrow'),
+    rect(58, 72, 124, 196, 2, 'rv-diagram__body'),
+    path('M74 92 Q120 76 166 92 L160 110 Q120 100 80 110 Z', 'rv-diagram__windshield'),
+  ];
+}
+
+/** One Classic wheel per corner; a boggie rear axle draws each rear wheel
+ * as a pair (ADR 0009). */
+function classicWheels(rearAxle: AxleConfig): Record<WheelId, ClassicWheel> {
+  const wheels = {} as Record<WheelId, ClassicWheel>;
+  for (const id of WHEEL_IDS) {
+    const pair = rearAxle === 'boggie' && id.startsWith('rear');
+    wheels[id] = createClassicWheel(CLASSIC_WHEEL_POS[id], pair);
+  }
+  return wheels;
 }
 
 // ============================================================
 // Modern (#106) — redrawn silhouette, wheel cards.
 // ============================================================
 
-/** Card anchor point per wheel — the SVG itself carries no per-wheel
- * marker, so only the vertical position (for `card.style.top`) matters.
- * Front sits well clear of the cab (which ends at y=124) so the card
- * never overlaps it; rear mirrors the same distance from the box's
- * bottom edge. */
+const MODERN_VIEWBOX = { width: 260, height: 420 };
+const MODERN_BUBBLE_CENTER = { x: 130, y: 236 };
+/** Card anchor height per wheel. Front sits well clear of the cab (which
+ * ends at y=124) so the card never overlaps it; rear mirrors the same
+ * distance from the box's bottom edge. */
 const MODERN_WHEEL_Y: Record<WheelId, number> = {
   frontLeft: 165,
   frontRight: 165,
   rearLeft: 318,
   rearRight: 318,
 };
-const MODERN_VIEWBOX = { width: 260, height: 420 };
-const MODERN_BUBBLE_CENTER = { x: 130, y: 236 };
-const MODERN_BUBBLE_TRAVEL = 28;
-const MODERN_BUBBLE_FULL_SCALE_DEG = 5;
 
-interface ModernWheelRefs {
-  card: HTMLDivElement;
-  cardMarkerGlyph: HTMLSpanElement;
-  cardStep: HTMLDivElement;
-  cardMm: HTMLDivElement;
-}
-
-/** One floating wheel card, empty until the diagram's `update` fills it.
- * Exported for the Modern caravan (#368), whose axle and jockey wheels
- * use the same cards; `label` is the card's aria-label. */
-export function buildWheelCard(
-  label: string,
-  side: 'left' | 'right' | 'center',
-): {
-  card: HTMLDivElement;
-  markerGlyph: HTMLSpanElement;
-  step: HTMLDivElement;
-  mm: HTMLDivElement;
-} {
-  const card = document.createElement('div');
-  card.className = `wheel-card wheel-card--${side}`;
-  // No visible position text (#161 follow-up): the card's position over
-  // the silhouette already says which wheel it is. The name still reaches
-  // anyone not reading the layout visually, via aria-label.
-  card.setAttribute('aria-label', label);
-  const marker = document.createElement('div');
-  marker.className = 'wheel-card__marker';
-  const markerGlyph = document.createElement('span');
-  marker.append(markerGlyph);
-  const text = document.createElement('div');
-  text.className = 'wheel-card__text';
-  const step = document.createElement('div');
-  step.className = 'wheel-card__step';
-  const mm = document.createElement('div');
-  mm.className = 'wheel-card__mm';
-  text.append(step, mm);
-  card.append(marker, text);
-  return { card, markerGlyph, step, mm };
-}
+const WHEEL_LABEL: Record<WheelId, MessageKey> = {
+  frontLeft: 'diagram.wheel.frontLeft',
+  frontRight: 'diagram.wheel.frontRight',
+  rearLeft: 'diagram.wheel.rearLeft',
+  rearRight: 'diagram.wheel.rearRight',
+};
 
 function createModernDiagram(): RvDiagram {
-  const container = document.createElement('div');
-  container.className = 'rv-diagram rv-diagram--modern';
-  container.style.setProperty(
-    '--diagram-aspect',
-    String(MODERN_VIEWBOX.width / MODERN_VIEWBOX.height),
-  );
-
-  const stage = document.createElement('div');
-  stage.className = 'rv-diagram__stage';
-
-  const svg = svgEl('svg', {
-    viewBox: `0 0 ${MODERN_VIEWBOX.width} ${MODERN_VIEWBOX.height}`,
-    role: 'img',
-    'aria-label': t('diagram.aria'),
-  });
-
-  const arrow = svgEl('path', {
-    d: 'M130 6 L118 28 L126 28 L126 44 L134 44 L134 28 L142 28 Z',
-    class: 'rv-diagram__arrow',
-  });
-
-  // Cab: a narrower rounded nose up front, widening into the box body
-  // below it — same fill/stroke class as the box, overlapping it
-  // seamlessly, so the two read as one silhouette. This narrow-cab/
-  // wide-box shape is the strongest "motorhome" cue there is — stronger
-  // than the wheels it replaces. Widened from the original 80 to read
-  // less stubby against the box (small-adjustments follow-up).
-  const cab = svgEl('rect', {
-    x: '80',
-    y: '74',
-    width: '100',
-    height: '60',
-    rx: '28',
-    class: 'rv-diagram__body',
-  });
-
-  // Mirrors sit right at the front corners, level with the windshield,
-  // overlapping the cab edge by a couple of units so they read as
-  // mounted onto it rather than floating beside it (small-adjustments
-  // follow-up). Sized down 30% from the original 14×18.
-  const mirrorLeft = svgEl('rect', {
-    x: '72',
-    y: '85',
-    width: '10',
-    height: '13',
-    rx: '4',
-    class: 'rv-diagram__trim',
-  });
-  const mirrorRight = svgEl('rect', {
-    x: '178',
-    y: '85',
-    width: '10',
-    height: '13',
-    rx: '4',
-    class: 'rv-diagram__trim',
-  });
-
-  // Two-tone box body: outer shell, then an inset "roof" panel on top.
-  // Longer than the cab by design (#161 follow-up: a motorhome reads as
-  // a long box behind a short cab, not a stubby capsule).
-  const body = svgEl('rect', {
-    x: '62',
-    y: '106',
-    width: '136',
-    height: '288',
-    rx: '28',
-    class: 'rv-diagram__body',
-  });
-  const roof = svgEl('rect', {
-    x: '74',
-    y: '141',
-    width: '112',
-    height: '232',
-    rx: '20',
-    class: 'rv-diagram__roof',
-  });
-  const windshield = svgEl('path', {
-    d: 'M88 92 Q130 78 172 92 L166 122 Q130 110 94 122 Z',
-    class: 'rv-diagram__windshield',
-  });
-
-  // A thin window band along each side of the box — a second, subtler
-  // "this is a coachbuilt vehicle" cue, now that the wheels no longer
-  // carry that weight.
-  const windowLeft = svgEl('rect', {
-    x: '68',
-    y: '160',
-    width: '6',
-    height: '190',
-    rx: '3',
-    class: 'rv-diagram__trim',
-  });
-  const windowRight = svgEl('rect', {
-    x: '186',
-    y: '160',
-    width: '6',
-    height: '190',
-    rx: '3',
-    class: 'rv-diagram__trim',
-  });
-
-  // Roof hatch (skylight) and a rear hatch — panel-filled, outlined.
-  const roofHatch = svgEl('rect', {
-    x: '106',
-    y: '172',
-    width: '48',
-    height: '34',
-    rx: '6',
-    class: 'rv-diagram__hatch',
-  });
-  const rearHatch = svgEl('rect', {
-    x: '112',
-    y: '318',
-    width: '36',
-    height: '24',
-    rx: '5',
-    class: 'rv-diagram__hatch',
-  });
-  const awning = svgEl('rect', {
-    x: '176',
-    y: '234',
-    width: '8',
-    height: '40',
-    rx: '4',
-    class: 'rv-diagram__trim',
-  });
-
-  // A dashed crosshair through the bubble — a measuring-instrument
-  // touch (from the Claude Design handoff) that reads as "level", not
-  // as an attempt at a photo.
-  const crosshairV = svgEl('line', {
-    x1: '130',
-    y1: '160',
-    x2: '130',
-    y2: '312',
-    class: 'rv-diagram__crosshair',
-  });
-  const crosshairH = svgEl('line', {
-    x1: '82',
-    y1: '236',
-    x2: '178',
-    y2: '236',
-    class: 'rv-diagram__crosshair',
-  });
-
-  svg.append(
-    arrow,
-    cab,
-    mirrorLeft,
-    mirrorRight,
-    body,
-    roof,
-    windshield,
-    windowLeft,
-    windowRight,
-    roofHatch,
-    rearHatch,
-    awning,
-    crosshairV,
-    crosshairH,
-  );
-
-  // Per-wheel status lives entirely in the floating wheel cards — no
-  // on-body marker. The old wheel-shaped rects behind the cards read as
-  // leftover wheels and fought the silhouette (follow-up after #161).
-  const wheels = {} as Record<WheelId, ModernWheelRefs>;
-  const cardLayer = document.createElement('div');
-  cardLayer.className = 'wheel-card-layer';
-  for (const id of WHEEL_IDS) {
-    const side = id.endsWith('Left') ? 'left' : 'right';
-    const { card, markerGlyph, step, mm } = buildWheelCard(t(WHEEL_LABEL[id]), side);
-    // Measured from the centre of the *drawn* vehicle, not of the stage
-    // around it (#241): the stage is deliberately wider than the drawing
-    // so the cards have margins to sit in, and the drawing letterboxes
-    // within it, so a plain percentage of the stage no longer lands on
-    // the wheel. `--drawn-height` is the drawing's on-screen height, set
-    // by the card layer in styles.css.
-    const offsetFromCentre = MODERN_WHEEL_Y[id] / MODERN_VIEWBOX.height - 0.5;
-    card.style.top = `calc(50% + (${offsetFromCentre.toFixed(6)} * var(--drawn-height)))`;
-    // The wheel this card belongs to, in the drawing's own coordinates —
-    // read back by the fit test (scripts/fit-test.mjs), which maps it
-    // through the SVG's transform to check the card really did land on
-    // its wheel at whatever size the diagram was squeezed to (#241).
-    card.dataset.wheelY = String(MODERN_WHEEL_Y[id]);
-    cardLayer.append(card);
-
-    wheels[id] = { card, cardMarkerGlyph: markerGlyph, cardStep: step, cardMm: mm };
-  }
-
-  const dial = svgEl('circle', {
-    cx: String(MODERN_BUBBLE_CENTER.x),
-    cy: String(MODERN_BUBBLE_CENTER.y),
-    r: '44',
-    class: 'rv-diagram__bubble-dial',
-  });
-  const ring = svgEl('circle', {
-    cx: String(MODERN_BUBBLE_CENTER.x),
-    cy: String(MODERN_BUBBLE_CENTER.y),
-    r: '13',
-    class: 'rv-diagram__bubble-ring',
-  });
-  // Starts in its dial rather than at the SVG origin — see the Classic
-  // bubble above for why (#244).
-  const bubble = svgEl('circle', {
-    r: '10',
-    cx: String(MODERN_BUBBLE_CENTER.x),
-    cy: String(MODERN_BUBBLE_CENTER.y),
-    class: 'rv-diagram__bubble',
-  });
-  svg.append(dial, ring, bubble);
-
-  stage.append(svg, cardLayer);
-  container.append(stage);
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let bx = MODERN_BUBBLE_CENTER.x;
-  let by = MODERN_BUBBLE_CENTER.y;
+  const { container, svg, cardLayer } = modernFrame(MODERN_VIEWBOX, t('diagram.aria'));
+  const cards = modernWheelCards(cardLayer);
+  const bubble = createBubbleLevel(MODERN_BUBBLE_CENTER, MODERN_BUBBLE);
+  svg.append(...modernSilhouette(), ...bubble.elements);
 
   return {
     element: container,
     update(result, unit, stepHeightsMm) {
       for (const id of WHEEL_IDS) {
         const { displayMm, stepMm, severity } = result.wheels[id];
-        const refs = wheels[id];
-        refs.cardMarkerGlyph.textContent = SEVERITY_GLYPH[severity];
-        refs.card.className = `wheel-card wheel-card--${
-          id.endsWith('Left') ? 'left' : 'right'
-        } wheel-card--${severity}`;
         const text = stepAndLiftText(severity, stepMm, displayMm, unit, stepHeightsMm);
-        refs.cardStep.textContent = severity === 'none' ? t('diagram.done') : text.step;
-        refs.cardMm.textContent = text.lift;
+        fillWheelCard(cards[id], sideOf(id), severity, SEVERITY_GLYPH[severity], text);
       }
-      updateBubble(
-        bubble,
-        result,
-        MODERN_BUBBLE_CENTER,
-        MODERN_BUBBLE_TRAVEL,
-        MODERN_BUBBLE_FULL_SCALE_DEG,
-        reduceMotion,
-        {
-          get: () => ({ x: bx, y: by }),
-          set: (x, y) => {
-            bx = x;
-            by = y;
-          },
-        },
-      );
+      bubble.update(result);
     },
   };
+}
+
+function sideOf(id: WheelId): 'left' | 'right' {
+  return id.endsWith('Left') ? 'left' : 'right';
+}
+
+/**
+ * The two-tone Modern motorhome: a narrower cab up front widening into
+ * the box body, roof inset, mirrors, side window strips, roof hatch, rear
+ * hatch, awning and a dashed crosshair through the bubble. The SVG carries
+ * no per-wheel marker at all: per-wheel status lives entirely in the
+ * floating wheel cards, since wheel-shaped rects behind the cards read as
+ * leftover wheels and fought the silhouette (follow-up after #161).
+ */
+function modernSilhouette(): SVGElement[] {
+  return [
+    modernFrontArrow(),
+    // Cab: a narrower rounded nose overlapping the box seamlessly, so the
+    // two read as one silhouette. This narrow-cab/wide-box shape is the
+    // strongest "motorhome" cue there is (widened from 80 to read less
+    // stubby, small-adjustments follow-up).
+    rect(80, 74, 100, 60, 28, 'rv-diagram__body'),
+    // Mirrors at the front corners, level with the windshield, overlapping
+    // the cab edge so they read as mounted onto it.
+    rect(72, 85, 10, 13, 4, 'rv-diagram__trim'),
+    rect(178, 85, 10, 13, 4, 'rv-diagram__trim'),
+    // Box body, then an inset roof panel. Longer than the cab by design: a
+    // motorhome reads as a long box behind a short cab (#161 follow-up).
+    rect(62, 106, 136, 288, 28, 'rv-diagram__body'),
+    rect(74, 141, 112, 232, 20, 'rv-diagram__roof'),
+    path('M88 92 Q130 78 172 92 L166 122 Q130 110 94 122 Z', 'rv-diagram__windshield'),
+    // A thin window band along each side: a subtler "coachbuilt" cue.
+    rect(68, 160, 6, 190, 3, 'rv-diagram__trim'),
+    rect(186, 160, 6, 190, 3, 'rv-diagram__trim'),
+    // Roof hatch (skylight), rear hatch and awning.
+    rect(106, 172, 48, 34, 6, 'rv-diagram__hatch'),
+    rect(112, 318, 36, 24, 5, 'rv-diagram__hatch'),
+    rect(176, 234, 8, 40, 4, 'rv-diagram__trim'),
+    crosshair(130, 160, 130, 312),
+    crosshair(82, 236, 178, 236),
+  ];
+}
+
+function modernWheelCards(cardLayer: HTMLDivElement): Record<WheelId, WheelCard> {
+  const cards = {} as Record<WheelId, WheelCard>;
+  for (const id of WHEEL_IDS) {
+    cards[id] = buildWheelCard(t(WHEEL_LABEL[id]), sideOf(id));
+    placeWheelCard(cardLayer, cards[id].card, MODERN_WHEEL_Y[id], MODERN_VIEWBOX);
+  }
+  return cards;
 }

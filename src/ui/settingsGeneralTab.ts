@@ -18,6 +18,7 @@ import {
   type NumberField,
   type RawSettings,
   type SettingsFormContext,
+  type SettingsFormState,
 } from './settingsFields';
 import { isLanguage, LANGUAGE_NAMES, LANGUAGES, t } from './i18n';
 
@@ -50,44 +51,105 @@ export function createGeneralTab(
   context: SettingsFormContext,
   actions: GeneralTabActions,
 ): GeneralTab {
-  const { state } = context;
   const language = createLanguageField(context.compact);
+  const unit = createUnitField(initial.displayUnit, context.state, actions);
+  const theme = createThemeField(initial.theme, context);
+  const appearance = createAppearanceField(initial.appearance, context);
+  const sound = createSoundFields(initial);
+  const more = createMore(context, actions);
 
+  const lookElements = (): HTMLElement[] => [theme.element, appearance.element];
+
+  return {
+    languageField: language.element,
+    lookElements,
+    soundElements: sound.elements,
+    elements: () => [
+      language.element,
+      ...lookElements(),
+      unit.element,
+      sound.heading,
+      ...sound.elements(),
+      more.element,
+    ],
+    fineTuning: more.fields,
+    relabel: () => {
+      unit.caption.textContent = t('settings.unit');
+      language.relabel();
+      theme.caption.textContent = t('settings.theme');
+      theme.relabelOptions();
+      appearance.caption.textContent = t('settings.appearance');
+      appearance.relabelOptions();
+      sound.relabel();
+      more.relabel();
+    },
+    read: (raw) => {
+      raw.displayUnit = context.state.unit;
+      raw.soundOnLevel = sound.chime.control.checked;
+      raw.soundGuidance = sound.guidance.control.checked;
+      raw.theme = theme.control.value;
+      raw.appearance = appearance.control.value;
+    },
+    populate: (settings) => {
+      unit.control.value = settings.displayUnit;
+      theme.control.value = settings.theme;
+      applyTheme(settings.theme);
+      appearance.control.value = settings.appearance;
+      applyAppearance(settings.appearance);
+      sound.show(settings);
+    },
+    resyncSound: (prefs) => sound.show(prefs),
+  };
+}
+
+/** mm or cm: updates the form state, then lets the form convert the
+ * lengths it shows. */
+function createUnitField(
+  initial: DisplayUnit,
+  state: SettingsFormState,
+  actions: GeneralTabActions,
+) {
   const unit = createSelectField<DisplayUnit>(
     [
       { value: 'mm', text: 'mm' },
       { value: 'cm', text: 'cm' },
     ],
-    initial.displayUnit,
+    initial,
   );
   unit.control.addEventListener('change', () => {
     const previous = state.unit;
     state.unit = unit.value() === 'cm' ? 'cm' : 'mm';
     actions.unitChanged(previous);
   });
+  return unit;
+}
 
+function createThemeField(initial: ThemeSetting, context: SettingsFormContext) {
   const theme = createSelectField<ThemeSetting>(
     [
       { value: 'system', label: 'theme.system' },
       { value: 'light', label: 'theme.light' },
       { value: 'dark', label: 'theme.dark' },
     ],
-    initial.theme,
+    initial,
   );
   // Live preview, and stored at once like every other change (#328).
   theme.control.addEventListener('change', () => {
     applyTheme(theme.value());
     context.changed();
   });
+  return theme;
+}
 
-  // A preset independent of light/dark (#104).
+/** A preset independent of light/dark (#104). */
+function createAppearanceField(initial: AppearanceSetting, context: SettingsFormContext) {
   const appearance = createSelectField<AppearanceSetting>(
     [
       { value: 'classic', label: 'appearance.classic' },
       { value: 'modern', label: 'appearance.modern' },
       { value: 'glossy', label: 'appearance.glossy' },
     ],
-    initial.appearance,
+    initial,
   );
   // Live preview for colors, same as Theme — but this axis also decides
   // *structure* (tabs vs. pages, the main diagram, onboarding), which is
@@ -104,70 +166,34 @@ export function createGeneralTab(
     markReopenSettings(); // #345, see the Language select
     location.reload();
   });
+  return appearance;
+}
 
-  const soundHeading = createSectionHeading();
-  const sound = createCheckboxField(initial.soundOnLevel);
-  // A separate opt-in from the chime (#121): pulse rate/pitch while
-  // approaching level.
-  const soundGuidance = createCheckboxField(initial.soundGuidance);
-  const soundGuidanceHint = createHint();
-
-  const more = createMore(context, actions);
-
-  const lookElements = (): HTMLElement[] => [theme.element, appearance.element];
-  const soundElements = (): HTMLElement[] => [
-    sound.element,
-    soundGuidance.element,
-    soundGuidanceHint,
-  ];
-
+/**
+ * The level chime and, a separate opt-in (#121), audio guidance that
+ * pulses rate/pitch while approaching level — under a Sound heading.
+ */
+function createSoundFields(initial: LevelSettings) {
+  const heading = createSectionHeading();
+  const chime = createCheckboxField(initial.soundOnLevel);
+  const guidance = createCheckboxField(initial.soundGuidance);
+  const guidanceHint = createHint();
   return {
-    languageField: language.element,
-    lookElements,
-    soundElements,
-    elements: () => [
-      language.element,
-      ...lookElements(),
-      unit.element,
-      soundHeading,
-      ...soundElements(),
-      more.element,
-    ],
-    fineTuning: more.fields,
-    relabel: () => {
-      unit.caption.textContent = t('settings.unit');
-      language.relabel();
-      theme.caption.textContent = t('settings.theme');
-      theme.relabelOptions();
-      appearance.caption.textContent = t('settings.appearance');
-      appearance.relabelOptions();
-      sound.caption.textContent = t('settings.sound');
-      soundGuidance.caption.textContent = t('settings.soundGuidance');
-      soundGuidanceHint.textContent = t('settings.soundGuidance.help');
+    heading,
+    chime,
+    guidance,
+    elements: (): HTMLElement[] => [chime.element, guidance.element, guidanceHint],
+    show: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>): void => {
+      chime.control.checked = sound.soundOnLevel;
+      guidance.control.checked = sound.soundGuidance;
+    },
+    relabel: (): void => {
+      chime.caption.textContent = t('settings.sound');
+      guidance.caption.textContent = t('settings.soundGuidance');
+      guidanceHint.textContent = t('settings.soundGuidance.help');
       // Reuses the wizard's own step title (#189 follow-up) — same name
       // for the same grouping, not new copy for the same idea.
-      soundHeading.textContent = t('onboard.sound.h');
-      more.relabel();
-    },
-    read: (raw) => {
-      raw.displayUnit = state.unit;
-      raw.soundOnLevel = sound.control.checked;
-      raw.soundGuidance = soundGuidance.control.checked;
-      raw.theme = theme.control.value;
-      raw.appearance = appearance.control.value;
-    },
-    populate: (settings) => {
-      unit.control.value = settings.displayUnit;
-      theme.control.value = settings.theme;
-      applyTheme(settings.theme);
-      appearance.control.value = settings.appearance;
-      applyAppearance(settings.appearance);
-      sound.control.checked = settings.soundOnLevel;
-      soundGuidance.control.checked = settings.soundGuidance;
-    },
-    resyncSound: (prefs) => {
-      sound.control.checked = prefs.soundOnLevel;
-      soundGuidance.control.checked = prefs.soundGuidance;
+      heading.textContent = t('onboard.sound.h');
     },
   };
 }

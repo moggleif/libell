@@ -11,6 +11,7 @@ import {
   type RawSettings,
   type SelectField,
   type SettingsFormContext,
+  type SettingsFormState,
 } from './settingsFields';
 import { t } from './i18n';
 
@@ -32,59 +33,9 @@ export function createVehicleTab(
 ): VehicleTab {
   const { state } = context;
   const isCaravan = (): boolean => state.vehicle === 'caravan';
-
-  // Motorhome (four wheels) or caravan (single axle + jockey wheel, #72):
-  // the caravan hides the front track width and relabels the wheelbase as
-  // the axle-to-jockey distance.
-  const vehicleField = createSelectField<VehicleType>(
-    [
-      { value: 'motorhome', label: 'vehicle.motorhome' },
-      { value: 'caravan', label: 'vehicle.caravan' },
-    ],
-    initial.vehicleType,
-  );
-  // Single or boggie (tandem) pair (#81): an independent dimension, not
-  // more vehicle types — the boggie is one leveling axle at its midpoint
-  // (ADR 0009).
-  const axleField = createSelectField<AxleConfig>(
-    [
-      { value: 'single', label: 'axle.single' },
-      { value: 'boggie', label: 'axle.boggie' },
-    ],
-    initial.rearAxle,
-  );
-  const whenChanged = (field: SelectField<string>, update: () => void): void => {
-    field.control.addEventListener('change', () => {
-      update();
-      context.relabelAll();
-      context.changed();
-    });
-  };
-  whenChanged(axleField, () => {
-    state.axle = axleField.value() === 'boggie' ? 'boggie' : 'single';
-  });
-
-  const wheelbase = createLengthField(
-    'wheelbaseMm',
-    { label: () => (isCaravan() ? 'settings.axleToJockey' : 'settings.wheelbase'), stepMm: 10 },
-    state,
-  );
-  const trackFront = createLengthField(
-    'trackWidthFrontMm',
-    { label: () => 'settings.trackFront', stepMm: 10 },
-    state,
-  );
-  // A caravan's single axle has no "rear".
-  const trackRear = createLengthField(
-    'trackWidthRearMm',
-    { label: () => (isCaravan() ? 'settings.track' : 'settings.trackRear'), stepMm: 10 },
-    state,
-  );
+  const { vehicleField, axleField } = createVehicleFields(initial, context);
+  const [wheelbase, trackFront, trackRear] = createMeasurements(state);
   const measurements = [wheelbase, trackFront, trackRear];
-
-  whenChanged(vehicleField, () => {
-    state.vehicle = vehicleField.value() === 'caravan' ? 'caravan' : 'motorhome';
-  });
 
   // Where to find the numbers — the biggest data-entry hurdle for new
   // users is not typing, it's knowing (#69).
@@ -92,21 +43,7 @@ export function createVehicleTab(
   measureHint.className = 'settings__hint';
   measureHint.textContent = t('settings.measureHint');
 
-  // Share vehicle setup (R41, #207): a link carrying only the vehicle-
-  // geometry fields on this page — never calibration, never UI/behavior
-  // preferences (`domain/vehicleShare.ts`) — for a family member using the
-  // same vehicle.
-  const shareButton = document.createElement('button');
-  shareButton.type = 'button';
-  // The trailing class is a stable hook for the fit test, which has to
-  // reach the incoming-setup view the way a real user does — by producing
-  // a real share link from this button (scripts/fit-test.mjs). Matching on
-  // the label instead would mean duplicating the i18n table in the test.
-  // A quiet link, not a button (#329): sharing is a rare errand, and a
-  // full-width button made it look like the page's main action.
-  shareButton.className = 'link-button settings__share-vehicle';
-  shareButton.textContent = t('settings.shareVehicle');
-  shareButton.addEventListener('click', () => onShare(context.currentSettings()));
+  const shareButton = createShareButton(() => onShare(context.currentSettings()));
 
   return {
     measurements,
@@ -140,4 +77,90 @@ export function createVehicleTab(
       axleField.control.value = settings.rearAxle;
     },
   };
+}
+
+/**
+ * The vehicle type and its axle. Either change updates the form state,
+ * relabels the whole form and saves.
+ */
+function createVehicleFields(initial: LevelSettings, context: SettingsFormContext) {
+  const { state } = context;
+  // Motorhome (four wheels) or caravan (single axle + jockey wheel, #72):
+  // the caravan hides the front track width and relabels the wheelbase as
+  // the axle-to-jockey distance.
+  const vehicleField = createSelectField<VehicleType>(
+    [
+      { value: 'motorhome', label: 'vehicle.motorhome' },
+      { value: 'caravan', label: 'vehicle.caravan' },
+    ],
+    initial.vehicleType,
+  );
+  // Single or boggie (tandem) pair (#81): an independent dimension, not
+  // more vehicle types — the boggie is one leveling axle at its midpoint
+  // (ADR 0009).
+  const axleField = createSelectField<AxleConfig>(
+    [
+      { value: 'single', label: 'axle.single' },
+      { value: 'boggie', label: 'axle.boggie' },
+    ],
+    initial.rearAxle,
+  );
+  const whenChanged = (field: SelectField<string>, update: () => void): void => {
+    field.control.addEventListener('change', () => {
+      update();
+      context.relabelAll();
+      context.changed();
+    });
+  };
+  whenChanged(axleField, () => {
+    state.axle = axleField.value() === 'boggie' ? 'boggie' : 'single';
+  });
+  whenChanged(vehicleField, () => {
+    state.vehicle = vehicleField.value() === 'caravan' ? 'caravan' : 'motorhome';
+  });
+  return { vehicleField, axleField };
+}
+
+/** Wheelbase, front and rear track width, captioned for the vehicle. */
+function createMeasurements(state: SettingsFormState): [NumberField, NumberField, NumberField] {
+  const isCaravan = (): boolean => state.vehicle === 'caravan';
+  return [
+    createLengthField(
+      'wheelbaseMm',
+      { label: () => (isCaravan() ? 'settings.axleToJockey' : 'settings.wheelbase'), stepMm: 10 },
+      state,
+    ),
+    createLengthField(
+      'trackWidthFrontMm',
+      { label: () => 'settings.trackFront', stepMm: 10 },
+      state,
+    ),
+    // A caravan's single axle has no "rear".
+    createLengthField(
+      'trackWidthRearMm',
+      { label: () => (isCaravan() ? 'settings.track' : 'settings.trackRear'), stepMm: 10 },
+      state,
+    ),
+  ];
+}
+
+/**
+ * Share vehicle setup (R41, #207): a link carrying only the vehicle-
+ * geometry fields on this page — never calibration, never UI/behavior
+ * preferences (`domain/vehicleShare.ts`) — for a family member using the
+ * same vehicle.
+ */
+function createShareButton(onClick: () => void): HTMLButtonElement {
+  const shareButton = document.createElement('button');
+  shareButton.type = 'button';
+  // The trailing class is a stable hook for the fit test, which has to
+  // reach the incoming-setup view the way a real user does — by producing
+  // a real share link from this button (scripts/fit-test.mjs). Matching on
+  // the label instead would mean duplicating the i18n table in the test.
+  // A quiet link, not a button (#329): sharing is a rare errand, and a
+  // full-width button made it look like the page's main action.
+  shareButton.className = 'link-button settings__share-vehicle';
+  shareButton.textContent = t('settings.shareVehicle');
+  shareButton.addEventListener('click', onClick);
+  return shareButton;
 }

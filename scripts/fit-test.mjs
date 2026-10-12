@@ -207,7 +207,7 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
       return p.matrixTransform(ctm).y;
     };
     // Each card carries its wheel's y in the drawing's own coordinates
-    // (rvDiagram.ts), so the expected position is read off the drawing
+    // (`placeWheelCard` in diagramParts.ts), so the expected position is read off the drawing
     // rather than hardcoded here.
     const cards = [...document.querySelectorAll('.wheel-card')].map((card) => {
       const r = card.getBoundingClientRect();
