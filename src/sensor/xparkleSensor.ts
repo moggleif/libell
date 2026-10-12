@@ -44,14 +44,14 @@ import {
   type LinkOptions,
   type XparkleLink,
 } from './xparkleLink';
+import type { XparkleReading } from './xparkleProtocol';
+import type { XparkleOrientation } from './xparkleReplies';
 import {
   buildPasswordFrame,
   buildResetZero,
   XPARKLE_DEFAULT_PASSWORD,
   XPARKLE_PASSWORD_MODE,
-  type XparkleOrientation,
-  type XparkleReading,
-} from './xparkleProtocol';
+} from './xparkleCommands';
 import {
   isXparkleAvailable,
   type XparkleConnection,

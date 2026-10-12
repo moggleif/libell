@@ -7,7 +7,7 @@ import {
   type XparkleConnection,
   type XparkleTransport,
 } from './xparkleTransport';
-import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleProtocol';
+import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleCommands';
 
 /** A live payload: flags, two big-endian 1/100° magnitudes, battery. */
 function livePayload(pitchHundredths: number, rollHundredths: number, battery = 80): DataView {

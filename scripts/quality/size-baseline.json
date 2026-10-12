@@ -12,7 +12,6 @@
     "src/sensor/orientation.ts > createOrientationSensor": 84,
     "src/sensor/simulatedLink.ts > createSimulatedLink": 59,
     "src/sensor/webBluetoothLink.ts > createWebBluetoothLink": 80,
-    "src/sensor/xparkleProtocol.ts > createXparkleFrameReassembler": 54,
     "src/ui/boxPasswordBlock.ts > createBoxPasswordBlock": 74,
     "src/ui/feedback.ts > createFeedbackSection": 98,
     "src/ui/helpIllustrations.ts > measuresIllustration": 51,
@@ -35,7 +34,6 @@
   "fileBaseline": {
     "src/main.ts": 414,
     "src/sensor/easyLevelSensor.ts": 431,
-    "src/sensor/xparkleProtocol.ts": 461,
     "src/ui/calibrationSection.ts": 536,
     "src/ui/settingsPanel.ts": 684,
     "src/ui/settingsRampsTab.ts": 498

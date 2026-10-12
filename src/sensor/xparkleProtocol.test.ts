@@ -1,23 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import {
+  gravityFromAngles,
+  gravityFromReading,
+  LIVE_PAYLOAD_MIN_BYTES,
+  MAX_PLAUSIBLE_ANGLE_DEG,
+  parseLivePayload,
+} from './xparkleProtocol';
+import {
+  createXparkleFrameReassembler,
+  orientationFromByte,
+  parseParameterReply,
+  XPARKLE_ORIENTATIONS,
+} from './xparkleReplies';
+import {
   buildCommandFrame,
   buildFactoryReset,
   buildPasswordFrame,
   buildQueryParameters,
   buildResetZero,
-  createXparkleFrameReassembler,
-  gravityFromAngles,
-  gravityFromReading,
   isValidXparklePassword,
-  LIVE_PAYLOAD_MIN_BYTES,
-  MAX_PLAUSIBLE_ANGLE_DEG,
-  orientationFromByte,
-  parseLivePayload,
-  parseParameterReply,
   XPARKLE_COMMAND,
-  XPARKLE_ORIENTATIONS,
   XPARKLE_PASSWORD_MODE,
-} from './xparkleProtocol';
+} from './xparkleCommands';
 import { tiltFromGravity } from '../domain/leveling';
 
 /** Big-endian uint16 bytes, the encoding every multi-byte field uses. */

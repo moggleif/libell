@@ -7,19 +7,23 @@ import { applyAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { GravityVector } from '../domain/leveling';
 import type { SensorState } from './orientation';
 import {
-  buildPasswordFrame,
-  buildQueryParameters,
-  createXparkleFrameReassembler,
   gravityFromAngles,
   gravityFromReading,
-  orientationFromByte,
   parseLivePayload,
-  parseParameterReply,
-  XPARKLE_DEFAULT_PASSWORD,
-  XPARKLE_PASSWORD_MODE,
-  type XparkleOrientation,
   type XparkleReading,
 } from './xparkleProtocol';
+import {
+  createXparkleFrameReassembler,
+  orientationFromByte,
+  parseParameterReply,
+  type XparkleOrientation,
+} from './xparkleReplies';
+import {
+  buildPasswordFrame,
+  buildQueryParameters,
+  XPARKLE_DEFAULT_PASSWORD,
+  XPARKLE_PASSWORD_MODE,
+} from './xparkleCommands';
 import type { XparkleConnection, XparkleTransport } from './xparkleTransport';
 
 /**
