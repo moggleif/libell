@@ -183,7 +183,7 @@ box into that same transport seam behind `?xparkle-sim`.
 **The Web Bluetooth link** (`src/sensor/webBluetoothLink.ts`, #418) is the connect,
 teardown, retry and silent-reconnect code a real BLE box needs, written once. An adapter
 gives it only its scan filter and a `wire(server)` that opens the box's own service and
-characteristics; the Xparkle transport is built on it.
+characteristics. Both the Xparkle and the EasyLevel transport are built on it.
 
 **A rejected Xparkle password is fixed in Libell (#367).** What Libell can do about it,
 weighed against the protocol (`docs/competitor-notes.md`):
