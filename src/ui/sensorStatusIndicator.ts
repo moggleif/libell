@@ -13,18 +13,19 @@
  * away on the External sensor page.
  *
  * The connected/disconnected looks mirror `OrientationSensor.getState()`,
- * switching to a warning look the moment the connection is lost, so
- * stale instructions never look live.
+ * switching to a warning look the moment the connection is lost or its
+ * data goes stale (R32), so stale instructions never look live.
  */
 import type { SensorSource } from '../domain/settings';
 import type { SensorState } from '../sensor/orientation';
-import { t } from './i18n';
+import { t, type MessageKey } from './i18n';
 import { svgEl } from './svg';
 
 export interface SensorStatusIndicator {
   element: HTMLButtonElement;
-  /** `source`/`state` mirror `OrientationSensor.getSource()`/`getState()`. */
-  update(source: SensorSource, state: SensorState): void;
+  /** `source`/`state` mirror `OrientationSensor.getSource()`/`getState()`;
+   * `stale` is R35's verdict on the source's latest sample. */
+  update(source: SensorSource, state: SensorState, stale?: boolean): void;
 }
 
 /** IC-chip glyph: a body plus four pins per side, unfilled and stroked
@@ -71,7 +72,7 @@ export function createSensorStatusIndicator(
 
   return {
     element: button,
-    update(source, state) {
+    update(source, state, stale = false) {
       if (!visible) return;
       // The guide-only icon has no box behind it, only a page explaining
       // Bluefy.
@@ -88,12 +89,19 @@ export function createSensorStatusIndicator(
         button.title = label;
         return;
       }
-      const connected = state !== 'disconnected';
-      button.classList.toggle('sensor-status--connected', connected);
-      button.classList.toggle('sensor-status--disconnected', !connected);
-      const label = connected ? t('sensorStatus.connected') : t('sensorStatus.disconnected');
-      button.setAttribute('aria-label', label);
-      button.title = label;
+      const label = boxLabel(state, stale);
+      const live = label === 'sensorStatus.connected';
+      button.classList.toggle('sensor-status--connected', live);
+      button.classList.toggle('sensor-status--disconnected', !live);
+      const text = t(label);
+      button.setAttribute('aria-label', text);
+      button.title = text;
     },
   };
+}
+
+/** A lost link outranks stale data: it says more about what to do. */
+function boxLabel(state: SensorState, stale: boolean): MessageKey {
+  if (state === 'disconnected') return 'sensorStatus.disconnected';
+  return stale ? 'sensorStatus.stale' : 'sensorStatus.connected';
 }
