@@ -55,12 +55,22 @@ export interface OrientationSensor {
   getLastSampleAt(): number | null;
 }
 
-/** True when the platform (iOS 13+) requires a user tap before motion data. */
+/**
+ * True when the platform (iOS 13+) requires a user tap before motion data.
+ * Chromium 153+ offers `requestPermission()` too but still delivers events
+ * without it (#410); `navigator.userAgentData` exists only in Chromium, never
+ * in WebKit (Chrome on iOS included), so it tells the two apart.
+ */
 export function needsPermissionGesture(): boolean {
   return (
     typeof DeviceMotionEvent !== 'undefined' &&
-    typeof (DeviceMotionEvent as unknown as PermissionRequester).requestPermission === 'function'
+    typeof (DeviceMotionEvent as unknown as PermissionRequester).requestPermission === 'function' &&
+    !isChromium()
   );
+}
+
+function isChromium(): boolean {
+  return typeof navigator !== 'undefined' && 'userAgentData' in navigator;
 }
 
 export function isSensorSupported(): boolean {

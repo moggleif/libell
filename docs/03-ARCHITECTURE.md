@@ -130,6 +130,7 @@ raw values.
 | ----------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Android (Chrome, HTTPS) | Events fire after `addEventListener`, no prompt                                                              |
 | iOS 13+ (Safari, HTTPS) | `DeviceMotionEvent.requestPermission()` **must** be called from a user gesture; returns `granted` / `denied` |
+| Chromium 153+ (HTTPS)   | Offers `requestPermission()` too but fires events without it; told apart by `navigator.userAgentData` (#410) |
 | Insecure origin         | Events never fire — the app must say so rather than showing a frozen level                                   |
 
 The sensor module exposes an explicit state (`unsupported`, `needs-permission`, `granted`,
