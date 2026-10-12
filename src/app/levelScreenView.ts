@@ -20,42 +20,45 @@ export interface LevelScreenViewDeps {
 export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDeps): LevelFrameView {
   root.replaceChildren();
   root.classList.add('app--level');
+  const parts = createParts(deps);
+  root.append(
+    parts.levelOverlay.element,
+    parts.engine.element,
+    parts.status.element,
+    parts.tilt.element,
+    parts.waiting,
+    parts.fallbackPrompt.element,
+    parts.pose.element,
+    parts.stale.element,
+  );
+  return viewOf(parts, deps);
+}
 
+type Parts = ReturnType<typeof createParts>;
+
+function createParts(deps: LevelScreenViewDeps) {
   const status = createStatusLine();
   const tilt = createTiltReadout();
-  const waiting = hint(t('main.waiting'));
-  const fallbackPrompt = createSensorFallbackPrompt(deps.retry, deps.usePhoneSensor);
-  const levelOverlay = createLevelOverlay();
-  const engine = deps.createEngine({
-    showStatus(text, isLevel) {
-      status.show(text);
-      status.markLevel(isLevel);
-    },
-    showTilt: (reading) => tilt.update(reading),
-  });
-  const pose = createPoseOverlay(deps.openActiveSensorPage);
-  const stale = createStaleOverlay(deps.openActiveSensorPage);
-
-  root.append(
-    levelOverlay.element,
-    engine.element,
-    status.element,
-    tilt.element,
-    waiting,
-    fallbackPrompt.element,
-    pose.element,
-    stale.element,
-  );
-
-  // While there is no reading at all (first load, or a lost box), the
-  // diagram and readout are dimmed and say nothing: the last
-  // frame's steps must never stay on screen looking live.
-  const dim = (noData: boolean): void => {
-    engine.element.classList.toggle('is-no-data', noData);
-    tilt.element.classList.toggle('is-no-data', noData);
-    if (noData) status.show('');
+  return {
+    status,
+    tilt,
+    waiting: hint(t('main.waiting')),
+    fallbackPrompt: createSensorFallbackPrompt(deps.retry, deps.usePhoneSensor),
+    levelOverlay: createLevelOverlay(),
+    engine: deps.createEngine({
+      showStatus(text, isLevel) {
+        status.show(text);
+        status.markLevel(isLevel);
+      },
+      showTilt: (reading) => tilt.update(reading),
+    }),
+    pose: createPoseOverlay(deps.openActiveSensorPage),
+    stale: createStaleOverlay(deps.openActiveSensorPage),
   };
+}
 
+function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
+  const { status, waiting, fallbackPrompt, levelOverlay, engine, pose, stale } = parts;
   return {
     pause() {
       pose.element.hidden = true;
@@ -64,14 +67,14 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
       levelOverlay.hideNow();
     },
     showNoData(unavailable, canRetrySilently) {
-      dim(true);
+      dim(parts, true);
       fallbackPrompt.update(unavailable, canRetrySilently);
       // The plain hint and the Retry prompt never show at once.
       waiting.hidden = unavailable;
       if (!unavailable) waiting.textContent = t('main.waiting');
     },
     showReading() {
-      dim(false);
+      dim(parts, false);
       waiting.hidden = true;
       fallbackPrompt.update(false, true);
     },
@@ -90,6 +93,15 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
     },
     hideCelebration: () => levelOverlay.hideNow(),
   };
+}
+
+/** While there is no reading at all (first load, or a lost box), the
+ * diagram and readout are dimmed and say nothing: the last frame's steps
+ * must never stay on screen looking live. */
+function dim({ engine, tilt, status }: Parts, noData: boolean): void {
+  engine.element.classList.toggle('is-no-data', noData);
+  tilt.element.classList.toggle('is-no-data', noData);
+  if (noData) status.show('');
 }
 
 /**

@@ -13,6 +13,9 @@
 src/
 ├── main.ts        # entry point: only creates the app/ modules and connects them (#392)
 ├── app/           # the modules main.ts composes (#374, #392), each with its own tests:
+│                  # core.ts (settings, sensors and calibration layers), pages.ts
+│                  # (the pages over the main screen), mainScreen.ts (mute, indicators,
+│                  # level screen) — the three steps main.ts runs (#484),
 │                  # externalSensorWiring.ts (box adapters, health, learn guide, password),
 │                  # installOffsets.ts (each box's zero), boxZero.ts (zeroing a box),
 │                  # phoneCalibration.ts (bias + vehicle zero), targets.ts (target presets),
@@ -145,7 +148,7 @@ implements — the
 phone sensor above, the fixed-tilt `?demo` stand-in in `src/app/demoSensor.ts`, and
 the two Sensorbox adapters: `src/sensor/easyLevelSensor.ts` (#116, R32) and
 `src/sensor/xparkleSensor.ts` (#270, R49), opt-in from the top bar's sensor icon or the
-menu's "Sensor box" page, only offered when `navigator.bluetooth` exists. `main.ts` selects
+menu's "Sensor box" page, only offered when `navigator.bluetooth` exists. `src/app/core.ts` selects
 between implementations through the external-sensor controller's active sensor; `domain/` never learns which one is
 active. `easyLevelSensor.ts` is the `OrientationSensor` face; one live link (status
 before accel, the calibration gate, the silence watch) runs in `easyLevelLink.ts`, the
@@ -167,7 +170,7 @@ imports no protocol module: each adapter's own struct is mapped in
 **The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
 external-sensor lifecycle for every source: lazy adapter construction, connect and
 disconnect, the silent auto-reconnect at app open (#130), the background auto-retry
-(#211) and the "use phone sensor" escape hatch (#134). `main.ts` holds no device-named
+(#211) and the "use phone sensor" escape hatch (#134). `src/app/core.ts` holds no device-named
 closure of its own — it supplies the adapter factory (`createExternalSensor` in
 `src/app/externalSensorWiring.ts`) and three callbacks (build the
 level screen, refresh the indicators, refresh the status row) and reads
@@ -283,7 +286,7 @@ conflated. All three read back up to `MAX_TILT_DEG` rather than the 15° capture
 since the user may calibrate or zero anyway above 15° (#411, #425). `sensorDeviceStore.ts` keys the
 remembered device id the same way (`libell.sensorDevice.<source>`). Both carry a
 one-shot migration from the device-named keys #130/#131 used, which copies rather than
-moves, so a rolled-back build still finds the user's pairing and offset. `main.ts`'s `zeroCalibration()` picks which
+moves, so a rolled-back build still finds the user's pairing and offset. `src/app/core.ts`'s `zeroCalibration()` picks which
 pair to sum from the ACTIVE `sensor.getSource()`: the phone's sensor calibration +
 vehicle zero (`src/app/phoneCalibration.ts`) while the phone is active, or just the
 active box's installation offset (`src/app/installOffsets.ts`) while a box is — there
@@ -334,7 +337,9 @@ responsive and must stay usable in landscape rather than relying on a hard lock.
 
 ## State (`src/main.ts`)
 
-The entry point only creates the `src/app/` modules and connects them. The level screen
+The entry point only creates the `src/app/` modules and connects them, in three steps:
+`src/app/core.ts` (the state and the sensors), `src/app/pages.ts` (the pages) and
+`src/app/mainScreen.ts` (the main screen). The level screen
 reads the active sensor, runs `computeLeveling` (or the caravan's) in
 `src/app/levelEngine.ts`, and hands the result to the render functions in `ui/`.
 Rendering is driven by `requestAnimationFrame` (`src/app/levelScreen.ts`) so sensor

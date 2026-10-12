@@ -174,3 +174,54 @@ describe('createBoxZeroing', () => {
     expect(onChanged).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('createBoxZeroing when there is no reading, and on its own clock (#484)', () => {
+  function withoutReading(source: SensorSource) {
+    const offsets = memoryOffsets();
+    const zeroing = createBoxZeroing({
+      activeSensor: () => ({ getSource: () => source }) as unknown as OrientationSensor,
+      getXparkle: () => null,
+      offsets,
+      readTilt: () => 'no reading',
+      onChanged: vi.fn(),
+    });
+    return { zeroing, offsets };
+  }
+
+  it('says why an EasyLevel zero cannot start, and stores nothing', async () => {
+    const { zeroing, offsets } = withoutReading('easylevel');
+    expect(await zeroing.zero('easylevel')).toBe('no reading');
+    expect(offsets.stored.size).toBe(0);
+  });
+
+  it('says why any other source cannot be zeroed, and stores nothing', () => {
+    const { zeroing, offsets } = withoutReading('phone');
+    expect(zeroing.zero('phone')).toBe('no reading');
+    expect(offsets.stored.size).toBe(0);
+  });
+
+  it('samples an EasyLevel box on real timers by default, and stamps wall time', async () => {
+    vi.useFakeTimers({ now: 5000 });
+    try {
+      const offsets = memoryOffsets();
+      const zeroing = createBoxZeroing({
+        activeSensor: () =>
+          ({
+            getSource: () => 'easylevel',
+            getState: () => 'granted',
+            getLastSampleAt: () => 0,
+          }) as unknown as OrientationSensor,
+        getXparkle: () => null,
+        offsets,
+        readTilt: () => ({ rollDeg: 1, pitchDeg: 2 }),
+        onChanged: vi.fn(),
+      });
+      const result = zeroing.zero('easylevel');
+      await vi.advanceTimersByTimeAsync(EASYLEVEL_ZERO_SAMPLE_MS + 100);
+      expect(await result).toBeNull();
+      expect(offsets.stored.get('easylevel')?.[1]).toBeGreaterThanOrEqual(5000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

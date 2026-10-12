@@ -58,72 +58,86 @@ export interface PhoneCalibration {
   checkZero(): string;
 }
 
+/** The deps and what is stored now; the functions below work on one. */
+interface PhoneLayers {
+  readonly deps: PhoneCalibrationDeps;
+  readonly now: () => number;
+  bias: ReturnType<typeof loadCalibrationInfo>;
+  vehicleZero: ReturnType<typeof loadVehicleCalibrationInfo>;
+}
+
 export function createPhoneCalibration(deps: PhoneCalibrationDeps): PhoneCalibration {
-  const { storage } = deps;
-  const now = deps.now ?? Date.now;
-  let bias = loadCalibrationInfo(storage);
-  let vehicleZero = loadVehicleCalibrationInfo(storage);
-
-  function storeBias(value: Calibration): void {
-    const capturedAt = now();
-    bias = { value, capturedAt };
-    saveCalibration(value, storage, capturedAt);
-    deps.onCaptured();
-  }
-
-  function checkAgainst(offset: Calibration | null): string {
-    const reading = deps.readTilt();
-    if (typeof reading === 'string') return reading;
-    const off = Math.max(
-      Math.abs(reading.rollDeg - (offset?.rollDeg ?? 0)),
-      Math.abs(reading.pitchDeg - (offset?.pitchDeg ?? 0)),
-    );
-    const key = off <= CHECK_GOOD_DEG ? 'calibration.check.good' : 'calibration.check.off';
-    return t(key, { off: off.toFixed(1) });
-  }
-
-  const zero = () => combineCalibrations(bias?.value ?? null, vehicleZero?.value ?? null);
-
-  return {
-    bias: () => bias?.value ?? null,
-    biasCapturedAt: () => bias?.capturedAt ?? null,
-    vehicleZero: () => vehicleZero?.value ?? null,
-    vehicleZeroCapturedAt: () => vehicleZero?.capturedAt ?? null,
-    zero,
-    calibrate(anyway = false) {
-      const reading = deps.readTilt();
-      if (typeof reading === 'string') return reading;
-      if (!anyway && exceedsCalibrationLimit(reading)) {
-        return { warning: t('calibration.warn.notFlat') };
-      }
-      storeBias(reading);
-      return null;
-    },
-    applyBias: storeBias,
-    clearBias() {
-      bias = null;
-      clearCalibration(storage);
-      deps.onCleared();
-    },
-    zeroVehicle(anyway = false) {
-      const reading = deps.readTilt();
-      if (typeof reading === 'string') return reading;
-      if (!anyway && exceedsCalibrationLimit(reading)) {
-        return { warning: t('calibration.vehicle.warn.notFlat') };
-      }
-      const value = vehicleZeroFromReading(reading, bias?.value ?? null);
-      const capturedAt = now();
-      vehicleZero = { value, capturedAt };
-      saveVehicleCalibration(value, storage, capturedAt);
-      deps.onCaptured();
-      return null;
-    },
-    clearVehicleZero() {
-      vehicleZero = null;
-      clearVehicleCalibration(storage);
-      deps.onCleared();
-    },
-    checkBias: () => checkAgainst(bias?.value ?? null),
-    checkZero: () => checkAgainst(zero()),
+  const layers: PhoneLayers = {
+    deps,
+    now: deps.now ?? Date.now,
+    bias: loadCalibrationInfo(deps.storage),
+    vehicleZero: loadVehicleCalibrationInfo(deps.storage),
   };
+  const zero = () =>
+    combineCalibrations(layers.bias?.value ?? null, layers.vehicleZero?.value ?? null);
+  return {
+    bias: () => layers.bias?.value ?? null,
+    biasCapturedAt: () => layers.bias?.capturedAt ?? null,
+    vehicleZero: () => layers.vehicleZero?.value ?? null,
+    vehicleZeroCapturedAt: () => layers.vehicleZero?.capturedAt ?? null,
+    zero,
+    calibrate: (anyway = false) => calibrate(layers, anyway),
+    applyBias: (value) => storeBias(layers, value),
+    clearBias() {
+      layers.bias = null;
+      clearCalibration(deps.storage);
+      deps.onCleared();
+    },
+    zeroVehicle: (anyway = false) => zeroVehicle(layers, anyway),
+    clearVehicleZero() {
+      layers.vehicleZero = null;
+      clearVehicleCalibration(deps.storage);
+      deps.onCleared();
+    },
+    checkBias: () => checkAgainst(deps, layers.bias?.value ?? null),
+    checkZero: () => checkAgainst(deps, zero()),
+  };
+}
+
+function calibrate(layers: PhoneLayers, anyway: boolean): CaptureResult {
+  const reading = layers.deps.readTilt();
+  if (typeof reading === 'string') return reading;
+  if (!anyway && exceedsCalibrationLimit(reading)) {
+    return { warning: t('calibration.warn.notFlat') };
+  }
+  storeBias(layers, reading);
+  return null;
+}
+
+function storeBias(layers: PhoneLayers, value: Calibration): void {
+  const capturedAt = layers.now();
+  layers.bias = { value, capturedAt };
+  saveCalibration(value, layers.deps.storage, capturedAt);
+  layers.deps.onCaptured();
+}
+
+function zeroVehicle(layers: PhoneLayers, anyway: boolean): CaptureResult {
+  const { deps } = layers;
+  const reading = deps.readTilt();
+  if (typeof reading === 'string') return reading;
+  if (!anyway && exceedsCalibrationLimit(reading)) {
+    return { warning: t('calibration.vehicle.warn.notFlat') };
+  }
+  const value = vehicleZeroFromReading(reading, layers.bias?.value ?? null);
+  const capturedAt = layers.now();
+  layers.vehicleZero = { value, capturedAt };
+  saveVehicleCalibration(value, deps.storage, capturedAt);
+  deps.onCaptured();
+  return null;
+}
+
+function checkAgainst(deps: PhoneCalibrationDeps, offset: Calibration | null): string {
+  const reading = deps.readTilt();
+  if (typeof reading === 'string') return reading;
+  const off = Math.max(
+    Math.abs(reading.rollDeg - (offset?.rollDeg ?? 0)),
+    Math.abs(reading.pitchDeg - (offset?.pitchDeg ?? 0)),
+  );
+  const key = off <= CHECK_GOOD_DEG ? 'calibration.check.good' : 'calibration.check.off';
+  return t(key, { off: off.toFixed(1) });
 }
