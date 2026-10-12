@@ -47,6 +47,7 @@ export const en = {
   // away in the "External sensor" menu page.
   'sensorStatus.connected': 'Sensor box connected',
   'sensorStatus.disconnected': 'Sensor box — lost contact, tap for details',
+  'sensorStatus.stale': 'Sensor box — no new data, tap for details',
   // Screen-cleanup follow-up: shown whenever the phone's own sensor is
   // active but an external one is available to connect — the only
   // remaining entry point to External sensor now that the ☰ menu no

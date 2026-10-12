@@ -1,5 +1,6 @@
 /** Vehicle parameters used by the leveling math, and their validation. */
 import { parseAxisMapping, type AxisMapping } from './axisMapping';
+import { isAppearance, type AppearanceSetting } from './appearance';
 
 export interface LevelSettings {
   /**
@@ -135,7 +136,7 @@ export interface EasyLevelSettings {
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
-export type AppearanceSetting = 'classic' | 'modern' | 'glossy';
+export type { AppearanceSetting };
 
 /**
  * The multi-source seam (ADR 0014): which `OrientationSensor` produced a
@@ -422,10 +423,7 @@ export function parseSettings(value: unknown): LevelSettings {
       typeof raw.soundOnLevel === 'boolean' ? raw.soundOnLevel : DEFAULT_SETTINGS.soundOnLevel,
     soundGuidance: raw.soundGuidance === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
-    appearance:
-      raw.appearance === 'classic' || raw.appearance === 'modern' || raw.appearance === 'glossy'
-        ? raw.appearance
-        : DEFAULT_SETTINGS.appearance,
+    appearance: isAppearance(raw.appearance) ? raw.appearance : DEFAULT_SETTINGS.appearance,
     // A corrupt or future-version value falls back to the phone, which
     // every install has.
     sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)

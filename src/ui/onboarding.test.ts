@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { showOnboarding, type OnboardingOptions } from './onboarding';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage, t } from './i18n';
@@ -364,6 +364,65 @@ describe('onboarding wizard — vehicle type shapes the rest of the guide (#184)
   });
 });
 
+describe('onboarding wizard — the vehicle choice survives a skipped measurements step (#397)', () => {
+  function skip(): void {
+    const buttons = [...card().querySelectorAll('button')];
+    buttons.find((b) => b.textContent === t('onboard.skipStep'))!.click();
+  }
+
+  function rampCountLabel(): HTMLLabelElement | undefined {
+    return [...card().querySelectorAll('label')].find((l) =>
+      l.textContent?.includes(t('settings.rampCount')),
+    );
+  }
+
+  it("a caravan's ramps step hides the ramp count even when measurements was skipped", () => {
+    open({ initialSettings: classicSettings() });
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    expect(rampCountLabel()?.hidden).toBe(true);
+  });
+
+  it("the ramps step's Next saves the picked vehicle type, not the stored one", () => {
+    const saved: LevelSettings[] = [];
+    open({ initialSettings: classicSettings(), onSettingsSaved: (s) => saved.push(s) });
+    saved.length = 0; // the preference steps' own saves
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    next(); // ramps -> calibration
+    expect(saved.map((s) => s.vehicleType)).toEqual(['caravan']);
+  });
+
+  it('finishing with both forms skipped still stores the picked vehicle type', () => {
+    let saved: LevelSettings | null = null;
+    open({ initialSettings: classicSettings(), onSettingsSaved: (s) => (saved = s) });
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    skip(); // ramps -> calibration
+    next(); // calibration -> done
+    expect(document.querySelector('.onboarding')).toBeNull();
+    expect(saved!.vehicleType).toBe('caravan');
+  });
+
+  it('finishing without changing the vehicle saves nothing extra', () => {
+    const saved: LevelSettings[] = [];
+    open({ initialSettings: classicSettings(), onSettingsSaved: (s) => saved.push(s) });
+    saved.length = 0; // the preference steps' own saves
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    skip(); // ramps -> calibration
+    next(); // calibration -> done
+    expect(saved).toEqual([]);
+  });
+});
+
 describe('onboarding wizard — ramps step (design review): the ramp catalog/count, never in the wizard before', () => {
   it('shows the ready-made ramp picker and ramp count, with the default catalog steps pre-filled', () => {
     open({ initialSettings: classicSettings() });
@@ -693,6 +752,82 @@ describe('onboarding wizard — sensor source choice (#135)', () => {
         expect(card().textContent).not.toContain(
           t('onboard.boxPosition.notConnected', { next: t('onboard.next') }),
         );
+      });
+    });
+
+    describe('a box that rejects its password on the connect step (#390)', () => {
+      // The frames the step asks for, run by hand so the verdict's arrival
+      // is the only thing that changes between two looks at the card.
+      function stubFrames(): () => void {
+        let pending: FrameRequestCallback[] = [];
+        vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+          pending.push(callback);
+          return pending.length;
+        });
+        return () => {
+          const due = pending;
+          pending = [];
+          due.forEach((callback) => callback(0));
+        };
+      }
+
+      function openConnectStep(rejected: () => boolean, tryPassword: () => void): void {
+        withBluetooth();
+        open({
+          initialSettings: classicSettings(),
+          getSensorSource: () => 'easylevel',
+          getSensorState: () => 'granted',
+          password: {
+            isRejected: rejected,
+            tryPassword: () => {
+              tryPassword();
+              return Promise.resolve(true);
+            },
+          },
+        });
+        const external = card().querySelector<HTMLInputElement>('input[value="external"]')!;
+        external.checked = true;
+        external.dispatchEvent(new Event('change'));
+        next(); // -> vehicle
+        next(); // -> connect
+      }
+
+      const passwordField = () => card().querySelector<HTMLElement>('.box-password')!;
+
+      afterEach(() => vi.unstubAllGlobals());
+
+      it('shows "Wrong password" and the field once the verdict arrives, without leaving the step', () => {
+        const frame = stubFrames();
+        let rejected = false;
+        openConnectStep(
+          () => rejected,
+          () => {},
+        );
+        expect(card().textContent).toContain(t('box.state.connected'));
+        rejected = true; // the verdict lands after the connect resolved
+        frame();
+        expect(card().textContent).toContain(t('box.state.password'));
+        expect(card().textContent).not.toContain(t('box.state.connected'));
+        expect(passwordField().hidden).toBe(false);
+      });
+
+      it('hides the field and shows "Connected" again once the right code is typed', async () => {
+        const frame = stubFrames();
+        let rejected = true;
+        openConnectStep(
+          () => rejected,
+          () => (rejected = false),
+        );
+        expect(passwordField().hidden).toBe(false);
+        passwordField().querySelector('input')!.value = '1234';
+        [...passwordField().querySelectorAll('button')]
+          .find((button) => button.textContent === t('box.password.retry'))!
+          .click();
+        await Promise.resolve();
+        await Promise.resolve();
+        frame();
+        expect(passwordField().hidden).toBe(true);
+        expect(card().textContent).toContain(t('box.state.connected'));
       });
     });
 

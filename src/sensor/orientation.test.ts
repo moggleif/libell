@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { computeLeveling } from '../domain/leveling';
 import { DEFAULT_SETTINGS, type SensorSource } from '../domain/settings';
-import { createOrientationSensor, type OrientationSensor } from './orientation';
+import {
+  createOrientationSensor,
+  needsPermissionGesture,
+  type OrientationSensor,
+} from './orientation';
 
 /**
  * A minimal stand-in for a not-yet-built second `OrientationSensor`
@@ -47,5 +51,35 @@ describe('OrientationSensor as a multi-source seam (#128)', () => {
   it('reports no last-sample timestamp before any reading has arrived (#132)', () => {
     const sensor = createOrientationSensor();
     expect(sensor.getLastSampleAt()).toBeNull();
+  });
+});
+
+describe('needsPermissionGesture (#410)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function stubBrowser(options: { requestPermission: boolean; chromium: boolean }): void {
+    const motion = function DeviceMotionEvent() {};
+    if (options.requestPermission) {
+      Object.assign(motion, { requestPermission: () => Promise.resolve('granted') });
+    }
+    vi.stubGlobal('DeviceMotionEvent', motion);
+    vi.stubGlobal('navigator', options.chromium ? { userAgentData: { brands: [] } } : {});
+  }
+
+  it('is true on iOS Safari, which offers requestPermission and is not Chromium', () => {
+    stubBrowser({ requestPermission: true, chromium: false });
+    expect(needsPermissionGesture()).toBe(true);
+  });
+
+  it('is false on Chrome 153+, which offers requestPermission but needs no tap', () => {
+    stubBrowser({ requestPermission: true, chromium: true });
+    expect(needsPermissionGesture()).toBe(false);
+  });
+
+  it('is false where requestPermission does not exist', () => {
+    stubBrowser({ requestPermission: false, chromium: false });
+    expect(needsPermissionGesture()).toBe(false);
   });
 });

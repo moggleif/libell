@@ -15,7 +15,7 @@
 // modules: the unit tests reach each module, but only a whole running app
 // shows that the modules are still wired to each other the same way.
 //
-// Run after `npm run build`; CI runs it on every branch. Exits non-zero
+// Run after `npm run build`; CI runs it on every pull request. Exits non-zero
 // on any failed assertion.
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -259,6 +259,12 @@ async function easyLevelFlow(browser) {
     async () => (await storedSettings(page)).sensorSource === 'phone',
     'disconnect should pick the phone',
   );
+  // The steps stay, greyed out, still showing what is set (#400).
+  await button(box, 'Zero the vehicle').waitFor();
+  assert(
+    await button(box, 'Zero now').isDisabled(),
+    'after Disconnect the zero step should be greyed out',
+  );
 
   assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
   await context.close();
@@ -501,16 +507,14 @@ async function wizardPasswordFlow(browser) {
   await wizard(page).getByText('Sensor box', { exact: true }).click();
   await nextUntil(page, 'Sensor box');
   await button(wizard(page), 'Connect').click();
-  await wizard(page).getByText('Connected', { exact: true }).waitFor();
-  // The connect step is drawn once, so the verdict that arrives after the
-  // connect shows when the step is drawn again.
-  await button(wizard(page), 'Next').click();
-  await button(wizard(page), 'Back').click();
+  // The verdict arrives after the connect; the step redraws live (#390).
+  await wizard(page).getByText('Wrong password', { exact: true }).waitFor();
   const password = wizard(page).locator('.box-password');
   await password.waitFor();
   await password.locator('input').fill('1234');
   await button(password, '').click();
   await password.waitFor({ state: 'hidden' });
+  await wizard(page).getByText('Connected', { exact: true }).waitFor();
   assert(
     (await storedSettings(page)).sensorDevices.xparkle.password === '1234',
     'a password typed in the wizard should be kept for later connects',
@@ -857,7 +861,13 @@ async function soundFlow(browser) {
   await page.waitForTimeout(500);
   assert((await audioLog(page)).created === 0, 'audio should wait for a user gesture');
 
-  // Muting turns both sounds off and stores it, without unlocking audio.
+  // The first tap anywhere unlocks audio, so the chime works after a
+  // plain reload (#396).
+  await page.locator('.rv-diagram').first().click();
+  const tapped = await audioLog(page);
+  assert(tapped.created === 1 && tapped.resumed === 1, 'the first tap should unlock audio');
+
+  // Muting turns both sounds off and stores it, without touching audio.
   await sound.click();
   await eventually(async () => {
     const stored = await storedSettings(page);
@@ -869,9 +879,10 @@ async function soundFlow(browser) {
     'muted class',
   );
   assert(await page.locator('#sound-icon-waves').isHidden(), 'muted hides the waves');
-  assert((await audioLog(page)).created === 0, 'muting should not unlock audio');
+  const muted = await audioLog(page);
+  assert(muted.created === 1 && muted.resumed === 1, 'muting should not touch audio');
 
-  // Unmuting restores both and is the gesture that unlocks audio.
+  // Unmuting restores both and resumes audio again.
   await sound.click();
   await eventually(async () => {
     const stored = await storedSettings(page);
@@ -880,7 +891,7 @@ async function soundFlow(browser) {
   assert((await sound.getAttribute('aria-label')) === 'Mute sound', 'unmuted label');
   assert(await page.locator('#sound-icon-mute').isHidden(), 'unmuted hides the mute icon');
   const unlocked = await audioLog(page);
-  assert(unlocked.created === 1 && unlocked.resumed === 1, 'unmuting should unlock audio once');
+  assert(unlocked.created === 1 && unlocked.resumed === 2, 'unmuting should resume audio');
 
   // Off level, the guidance pulses play.
   await eventually(
@@ -967,7 +978,8 @@ const appHint = (page) => page.locator('#app .app__hint').first();
 // link, and how the phone sensor is started.
 async function startupFlow(browser) {
   // Chromium 153 offers iOS's requestPermission too; these hide it so a
-  // case pins the start-up without the Start tap, or stub it as iOS's.
+  // case pins the start-up without the Start tap, or stub it as iOS's,
+  // which also hides Chromium's userAgentData marker (#410).
   const permission = (motion, orientation) => `
     for (const [api, value] of [
       [window.DeviceMotionEvent, ${motion}],
@@ -977,6 +989,9 @@ async function startupFlow(browser) {
     }
   `;
   const notIos = permission('undefined', 'undefined');
+  const ios = (answer) =>
+    permission(...Array(2).fill(`() => Promise.resolve('${answer}')`)) +
+    'delete Navigator.prototype.userAgentData;';
 
   // The top bar is labelled and reserves the corner its icon sits in.
   let app = await openApp(browser, 'xparkle-sim', {}, undefined, notIos);
@@ -1086,18 +1101,26 @@ async function startupFlow(browser) {
   assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
   await app.context.close();
 
+  // Chrome 153+ offers requestPermission but needs no tap (#410): straight
+  // to the level screen, even when that request would never settle.
+  app = await openApp(
+    browser,
+    'xparkle-sim',
+    {},
+    undefined,
+    permission(...Array(2).fill('() => new Promise(() => {})')),
+  );
+  page = app.page;
+  await page.locator('#app.app--level').waitFor();
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
   // iOS asks for motion access on a tap: Start, then the level screen.
   for (const [answer, expected] of [
     ['granted', null],
     ['denied', 'denied'],
   ]) {
-    app = await openApp(
-      browser,
-      'xparkle-sim',
-      {},
-      undefined,
-      permission(...Array(2).fill(`() => Promise.resolve('${answer}')`)),
-    );
+    app = await openApp(browser, 'xparkle-sim', {}, undefined, ios(answer));
     page = app.page;
     assert(
       (await appHint(page).textContent()) ===

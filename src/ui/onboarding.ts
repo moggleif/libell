@@ -18,6 +18,7 @@
  */
 import { createElement } from './dom';
 import { t } from './i18n';
+import { saveVehicleChoice } from './onboarding/settingsSteps';
 import { resolveSteps } from './onboarding/stepList';
 import {
   buildBody,
@@ -41,6 +42,7 @@ export function showOnboarding(options: OnboardingOptions): void {
   let index = 0;
 
   function finish(done: boolean): void {
+    if (done) saveVehicleChoice(state);
     overlay.remove();
     options.onFinished(done, state.sourceChoiceAvailable ? state.sensorChoice : 'phone');
   }

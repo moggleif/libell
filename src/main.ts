@@ -67,7 +67,7 @@ import { startSensors } from './app/sensorStartup';
 import { mountSensorPages, type SensorPages } from './app/sensorPages';
 import { createSettingsAdoption } from './app/settingsAdoption';
 import { mountSettingsSurface, type SettingsSurface } from './app/settingsSurface';
-import { createMuteToggle, createSound, type Sound } from './app/sound';
+import { createMuteToggle, createSound, unlockOnFirstGesture, type Sound } from './app/sound';
 import { runStartupMigrations } from './app/startupMigrations';
 import { createTargets } from './app/targets';
 import { readTilt } from './app/tiltReading';
@@ -316,6 +316,7 @@ function mountMainScreen(
     },
     createMuteToggle(core.settings, core.sound.unlock).toggle,
   );
+  unlockOnFirstGesture(document, core.sound.unlock);
   screen.lamps = mountLamps(document.querySelector('#indicators'), {
     demo: core.demo,
     activeSource: () => core.sensor().getSource(),

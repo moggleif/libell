@@ -31,6 +31,7 @@ export const sv: Messages = {
   // external source (today: EasyLevel) is active — never in phone mode.
   'sensorStatus.connected': 'Sensorbox ansluten',
   'sensorStatus.disconnected': 'Sensorbox — tappade kontakten, tryck för detaljer',
+  'sensorStatus.stale': 'Sensorbox — ingen ny data, tryck för detaljer',
   'sensorStatus.idle': 'Sensorbox — tryck för att ansluta',
   'sensorStatus.idle.guide': 'Sensorbox — tryck för guide till iPhone',
 

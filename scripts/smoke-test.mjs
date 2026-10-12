@@ -1,7 +1,7 @@
 // Smoke test: serves the built app (dist/) and asserts that the level
 // screen actually renders in ?demo mode — diagram SVG present, status
 // line non-empty, version footer sane. Run after `npm run build`; CI
-// runs it on every branch. Exits non-zero on any failed assertion.
+// runs it on every pull request. Exits non-zero on any failed assertion.
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
