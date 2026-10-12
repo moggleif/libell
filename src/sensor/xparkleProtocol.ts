@@ -96,19 +96,17 @@ function toDataView(data: PacketBytes): DataView {
  * GATT service and characteristics (`com.skyrc.balance.config.Constants`).
  * These are 16-bit-derived UUIDs rather than vendor-random ones like
  * EasyLevel's `faf52c20-...`, and none of them is on Web Bluetooth's
- * blocklist.
+ * blocklist. The box also has `fff1` (serial number / firmware read, and
+ * the OTA write target) and `fff6` (device name read), which Libell does
+ * not use.
  */
 export const XPARKLE_SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb';
-/** Serial number / firmware read, and the OTA write target. */
-export const XPARKLE_VERSION_CHARACTERISTIC_UUID = '0000fff1-0000-1000-8000-00805f9b34fb';
 /** Live tilt + battery. READ, polled — never notified (see `xparkleSensor.ts`). */
 export const XPARKLE_LIVE_CHARACTERISTIC_UUID = '0000fff2-0000-1000-8000-00805f9b34fb';
 /** Command frames are written here (`buildCommandFrame` below). */
 export const XPARKLE_WRITE_CHARACTERISTIC_UUID = '0000fff3-0000-1000-8000-00805f9b34fb';
 /** NOTIFY — carries command replies only, not live readings. */
 export const XPARKLE_NOTIFY_CHARACTERISTIC_UUID = '0000fff4-0000-1000-8000-00805f9b34fb';
-/** Device name read. */
-export const XPARKLE_NAME_CHARACTERISTIC_UUID = '0000fff6-0000-1000-8000-00805f9b34fb';
 
 /**
  * Advertised-name fragments the official app matches on
