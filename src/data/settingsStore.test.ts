@@ -252,9 +252,16 @@ describe('per-source installation calibration store (#131, ADR 0014; keyed per s
     expect(loadInstallCalibration('easylevel', storage)).toBeNull();
     storage.setItem(
       'libell.installCalibration.easylevel',
-      JSON.stringify({ rollDeg: 40, pitchDeg: 0 }),
+      JSON.stringify({ rollDeg: 200, pitchDeg: 0 }),
     );
     expect(loadInstallCalibration('easylevel', storage)).toBeNull();
+  });
+
+  // #425: a box zero taken anyway above 15° must survive a reload.
+  it('keeps an installation offset the user took anyway above 15°', () => {
+    const storage = memoryStorage();
+    saveInstallCalibration('easylevel', { rollDeg: 40, pitchDeg: 0 }, storage);
+    expect(loadInstallCalibration('easylevel', storage)).toEqual({ rollDeg: 40, pitchDeg: 0 });
   });
 
   it('stores its capture timestamp independently of the other calibration layers', () => {
@@ -325,7 +332,7 @@ describe('target preset store (#122, ADR 0013)', () => {
     const storage = memoryStorage();
     storage.setItem(
       'libell.targetPresets',
-      JSON.stringify([preset, { id: 'bad', name: 'x', offset: { rollDeg: 99, pitchDeg: 0 } }]),
+      JSON.stringify([preset, { id: 'bad', name: 'x', offset: { rollDeg: 200, pitchDeg: 0 } }]),
     );
     expect(loadTargetPresets(storage)).toEqual([preset]);
   });
@@ -428,7 +435,7 @@ describe('migrating #131’s installation offset to its per-source key (#263)', 
 
   it('still validates what it copied — a corrupt legacy value reads as none', () => {
     const storage = memoryStorage();
-    storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 40, pitchDeg: 0 }));
+    storage.setItem(LEGACY_KEY, JSON.stringify({ rollDeg: 200, pitchDeg: 0 }));
     migrateLegacyInstallCalibration(storage);
     expect(loadInstallCalibration('easylevel', storage)).toBeNull();
   });
