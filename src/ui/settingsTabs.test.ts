@@ -405,3 +405,50 @@ describe('settings — the wizard steps (#376)', () => {
     expect(document.querySelector('.toast')).toBeNull();
   });
 });
+
+describe('a Modern form built without hosts (#481)', () => {
+  function buildBare(): SettingsFormElement {
+    const initial: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
+    const form = createSettingsForm(initial, vi.fn());
+    document.body.append(form);
+    return form;
+  }
+
+  it('still draws the Calibration tab, from an inert stand-in', () => {
+    const form = buildBare();
+    form.selectCalibrationTab!();
+    const panel = form.querySelector<HTMLElement>('.settings__tabpanel[data-tab="calibration"]')!;
+    expect(panel.hidden).toBe(false);
+    expect(panel.childElementCount).toBeGreaterThan(0);
+  });
+
+  it('still draws the Level tab, with no saved targets', () => {
+    const form = buildBare();
+    form.selectTargetsTab!();
+    const panel = form.querySelector<HTMLElement>('.settings__tabpanel[data-tab="targets"]')!;
+    expect(panel.hidden).toBe(false);
+    expect(panel.childElementCount).toBeGreaterThan(0);
+  });
+
+  it('redraws whichever tab is open, and opens on Vehicle', () => {
+    const form = buildBare();
+    const selected = () =>
+      form.querySelector<HTMLElement>('.settings__tab[aria-selected="true"]')!.dataset.tab;
+    expect(selected()).toBe('vehicle');
+    form.selectTab!('general');
+    form.refreshOpenTab!();
+    expect(selected()).toBe('general');
+  });
+
+  it('labels every tab in the tab bar', () => {
+    const form = buildBare();
+    const labels = [...form.querySelectorAll('.settings__tab')].map((tab) => tab.textContent);
+    expect(labels).toEqual([
+      t('settings.tab.vehicle'),
+      t('settings.tab.ramps'),
+      t('menu.calibration'),
+      t('settings.tab.level'),
+      t('settings.general'),
+    ]);
+  });
+});
