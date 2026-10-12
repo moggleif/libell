@@ -3,8 +3,8 @@
  * pages share. Each group is built here once and spread into every bag
  * that needs it, so the same field can never be wired two ways.
  */
-import type { Calibration, EasyLevelMounting } from '../domain/settings';
-import { easyLevelSettings } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
+import { type EasyLevelMounting, easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { ExternalSensorController } from '../sensor/externalSensorController';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { OrientationSensor } from '../sensor/orientation';

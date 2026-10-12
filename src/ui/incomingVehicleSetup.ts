@@ -3,7 +3,8 @@
  * geometry only after an explicit tap. `domain/vehicleShare.ts` decides
  * which fields; this only previews and confirms them.
  */
-import { formatLength, type LevelSettings } from '../domain/settings';
+import type { LevelSettings } from '../domain/settings';
+import { formatLength } from '../domain/lengths';
 import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
 

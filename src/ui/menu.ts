@@ -11,8 +11,8 @@
  * standalone. The Level page keeps the section id 'targets', which the
  * main screen's target badge opens.
  */
-import type { CaptureResult } from '../domain/calibration';
-import type { Calibration, LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
+import type { Calibration, CaptureResult } from '../domain/calibration';
+import type { LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
 import type { ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DEFAULT_SETTINGS, easyLevelSettings, type LevelSettings } from '../domain/settings';
+import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
+import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { OrientationSensor } from '../sensor/orientation';
 import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';

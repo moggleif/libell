@@ -5,7 +5,7 @@ import {
   migrateLegacyRememberedDeviceId,
   saveRememberedDeviceId,
 } from './sensorDeviceStore';
-import type { KeyValueStorage } from './settingsStore';
+import type { KeyValueStorage } from './keyValueStorage';
 
 function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage {
   const data = new Map(Object.entries(initial));

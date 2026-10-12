@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { APPEARANCES, isAppearance } from './appearance';
-import { parseSettings } from './settings';
+import { parseSettings } from './settingsParsing';
 
 describe('APPEARANCES', () => {
   it('lists every appearance the settings accept, Glossy included', () => {

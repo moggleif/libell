@@ -4,9 +4,9 @@ import {
   loadVehicleCalibrationInfo,
   saveCalibration,
   saveVehicleCalibration,
-  type KeyValueStorage,
-} from '../data/settingsStore';
-import type { Calibration } from '../domain/settings';
+} from '../data/calibrationStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
+import type { Calibration } from '../domain/calibration';
 import { t } from '../ui/i18n';
 import { createPhoneCalibration } from './phoneCalibration';
 

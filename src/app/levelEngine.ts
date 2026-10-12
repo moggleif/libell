@@ -6,7 +6,9 @@
 import { computeCaravanLeveling, createCaravanStabilizer } from '../domain/caravan';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from '../domain/leveling';
 import { deficitMagnitude } from '../domain/rampPlan';
-import { formatLength, type Calibration, type LevelSettings } from '../domain/settings';
+import type { LevelSettings } from '../domain/settings';
+import { formatLength } from '../domain/lengths';
+import type { Calibration } from '../domain/calibration';
 import { createDisplayStabilizer, type DisplayResult } from '../domain/stability';
 import { createCaravanDiagram } from '../ui/caravanDiagram';
 import { t } from '../ui/i18n';

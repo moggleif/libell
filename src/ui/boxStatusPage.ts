@@ -2,7 +2,8 @@
  * A box's own page, reached from its card on the External sensor page.
  * `refresh()` is called every animation frame by `sensorPage.ts` while open.
  */
-import type { Calibration, SensorSource } from '../domain/settings';
+import type { SensorSource } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import type { GravityVector } from '../domain/leveling';
 import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';

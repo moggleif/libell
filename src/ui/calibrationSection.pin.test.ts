@@ -11,8 +11,7 @@ import {
   type CalibrationSection,
 } from './calibrationSection';
 import { setLanguage } from './i18n';
-import type { Calibration } from '../domain/settings';
-import type { CaptureResult } from '../domain/calibration';
+import type { Calibration, CaptureResult } from '../domain/calibration';
 
 setLanguage('en');
 

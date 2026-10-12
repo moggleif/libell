@@ -3,7 +3,9 @@
  * and the wizard's box step, assembled from the shared groups in
  * `menuOptionParts.ts`.
  */
-import { easyLevelSettings, type Calibration, type LevelSettings } from '../domain/settings';
+import type { LevelSettings } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
+import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';

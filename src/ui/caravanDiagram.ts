@@ -1,6 +1,7 @@
 /** Top-down caravan diagram (ADR 0008). */
 import type { CaravanDisplayResult, JockeyDirection } from '../domain/caravan';
-import { formatLength, type AppearanceSetting, type AxleConfig } from '../domain/settings';
+import type { AppearanceSetting, AxleConfig } from '../domain/settings';
+import { formatLength } from '../domain/lengths';
 import { t } from './i18n';
 import { svgEl } from './svg';
 import {

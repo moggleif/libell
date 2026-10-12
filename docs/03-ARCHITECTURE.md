@@ -32,9 +32,12 @@ src/
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
 │   ├── calibration.ts, targetPresets.ts  # the three calibration terms (ADR 0010/0013/0014)
 │   ├── pose.ts, stillness.ts, staleness.ts  # when a reading can be trusted
-│   └── settings.ts   # LevelSettings + Calibration (validation, legacy migrations)
-├── data/          # settingsStore.ts (settings + calibration), sensorDeviceStore.ts
-│                  # (each box's remembered device id, #130) — localStorage read/write
+│   ├── settings.ts   # LevelSettings and DEFAULT_SETTINGS; settingsParsing.ts reads a
+│   │                 # stored blob back (validation, legacy migrations)
+│   └── sensorDeviceSettings.ts  # typed per-box settings inside sensorDevices
+├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
+│                  # (the calibration layers), sensorDeviceStore.ts (each box's
+│                  # remembered device id, #130) — localStorage read/write
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
 │                  # externalSensors.ts (the registry), externalSensorController.ts
 │                  # (connect, reconnect, fallback), easyLevel*.ts and xparkle*.ts (each
@@ -175,7 +178,8 @@ with fake adapters and fake time.
 Settings that belong to one source rather than to the app or the vehicle live in
 `LevelSettings.sensorDevices`, keyed by source id (#264): an untyped bag so an entry for
 a source this build does not know survives a load/save round trip, read through typed
-accessors (`easyLevelSettings`, `withEasyLevelSettings`) that validate field by field at
+accessors (`easyLevelSettings`, `withEasyLevelSettings` in
+`src/domain/sensorDeviceSettings.ts`) that validate field by field at
 the point of use. `parseSettings` migrates #212/#217's flat `easyLevel*` fields into it
 once.
 
@@ -200,7 +204,7 @@ weighed against the protocol (`docs/competitor-notes.md`):
 - _Offer the factory code_ (`"0000"`): already what every connect does first.
 - _Let the user type the box's code_: what the vendor app itself does when the box
   rejects the stored one. Chosen. The code lives in `XparkleSettings.password`
-  (`domain/settings.ts`, four digits or the factory code), is offered on every connect,
+  (`domain/sensorDeviceSettings.ts`, four digits or the factory code), is offered on every connect,
   and "Try again" offers it at once on the live link (`XparkleSensor.verifyPassword()`)
   and waits a bounded time for the verdict — no reconnect, since readings keep flowing
   either way (the box does not gate `fff2` on the password, #273).
@@ -267,7 +271,7 @@ source-independent) — see ADR 0014 for the full rule.
 
 Installation calibration for a mounted external sensor (#131, R34) fills in the
 concrete storage shape ADR 0014 deferred, keyed per source by #263 (ADR 0016):
-`settingsStore.ts`'s `loadInstallCalibration`/`saveInstallCalibration`/
+`calibrationStore.ts`'s `loadInstallCalibration`/`saveInstallCalibration`/
 `clearInstallCalibration` all take a `SensorSource` and file it under
 `libell.installCalibration.<source>` — the same shape as `libell.vehicleCalibration`,
 just never the same key, so no two sources (and never a source and the phone) can be

@@ -2,20 +2,24 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_EASYLEVEL_SETTINGS,
   DEFAULT_SETTINGS,
-  easyLevelSettings,
-  EASYLEVEL_MOUNTINGS,
+  measurementsDiffer,
+  toggleMute,
+} from './settings';
+import { parseSettings } from './settingsParsing';
+import {
   formatLength,
   formatLengthValue,
   formatStepHeightsList,
-  measurementsDiffer,
-  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   parseStepHeightsList,
-  parseSettings,
-  toggleMute,
+} from './lengths';
+import {
+  easyLevelSettings,
+  EASYLEVEL_MOUNTINGS,
+  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   withEasyLevelSettings,
   withXparkleSettings,
   xparkleSettings,
-} from './settings';
+} from './sensorDeviceSettings';
 
 describe('parseSettings', () => {
   it('returns valid stored settings unchanged', () => {
@@ -58,6 +62,35 @@ describe('parseSettings', () => {
   it('migrates legacy cm step heights to mm', () => {
     expect(parseSettings({ blockHeightCm: 5 }).rampStepHeightsMm).toEqual([50]);
     expect(parseSettings({ blockHeightsCm: [2, 4, 6] }).rampStepHeightsMm).toEqual([20, 40, 60]);
+  });
+
+  it('prefers mm values over legacy cm, and per-axle cm over the shared track (#480)', () => {
+    const result = parseSettings({
+      wheelbaseMm: 4100,
+      wheelbaseCm: 350,
+      trackWidthFrontCm: 190,
+      trackWidthCm: 200,
+      trackWidthRearMm: 1700,
+      trackWidthRearCm: 165,
+    });
+    expect(result.wheelbaseMm).toBe(4100);
+    expect(result.trackWidthFrontMm).toBe(1900);
+    expect(result.trackWidthRearMm).toBe(1700);
+  });
+
+  it('takes step heights from the newest stored format that has any (#480)', () => {
+    const all = { rampStepHeightsMm: [30], blockHeightsCm: [2], blockHeightCm: 5 };
+    expect(parseSettings(all).rampStepHeightsMm).toEqual([30]);
+    const noMm = { rampStepHeightsMm: [], blockHeightsCm: [2, 'x', 4], blockHeightCm: 5 };
+    expect(parseSettings(noMm).rampStepHeightsMm).toEqual([20, 40]);
+    expect(parseSettings({ blockHeightsCm: [], blockHeightCm: 5 }).rampStepHeightsMm).toEqual([50]);
+    expect(parseSettings({ rampStepHeightsMm: [-1, 0] }).rampStepHeightsMm).toEqual(
+      DEFAULT_SETTINGS.rampStepHeightsMm,
+    );
+  });
+
+  it('keeps the stored field order, so a saved blob reads the same as before (#480)', () => {
+    expect(Object.keys(parseSettings({}))).toEqual(Object.keys(DEFAULT_SETTINGS));
   });
 
   it('sorts, dedupes and cleans the step height list', () => {

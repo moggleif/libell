@@ -2,7 +2,8 @@
  * The main screen's indicators: each mounts into its slot and redraws on
  * `refresh()`.
  */
-import type { Calibration, SensorSource } from '../domain/settings';
+import type { SensorSource } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import type { OrientationSensor } from '../sensor/orientation';
 import { createIndicators } from '../ui/indicators';
 import type { MenuSection } from '../ui/menu';

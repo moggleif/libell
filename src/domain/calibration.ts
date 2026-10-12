@@ -1,7 +1,8 @@
 /**
- * Flip calibration.
+ * The phone's calibration: the stored value, its validation, and flip
+ * calibration, the way it is captured.
  *
- * Take reading A with the phone on any reasonably flat spot, rotate the
+ * Flip calibration: take reading A with the phone on any reasonably flat spot, rotate the
  * phone half a turn (180°) in place, take reading B. The rotation flips
  * the sign of the surface's contribution but keeps the phone's own bias
  * in the device frame:
@@ -11,7 +12,49 @@
  * so `bias = (A + B) / 2` and `surface = (A − B) / 2` — the surface tilt
  * cancels exactly, and no known-level surface is needed.
  */
-import type { Calibration } from './settings';
+
+/**
+ * Phone calibration: the roll/pitch the sensor reports when the phone lies
+ * on a surface known to be level (a case, a slightly warped table). Stored
+ * separately from the vehicle settings and subtracted from every reading.
+ */
+export interface Calibration {
+  rollDeg: number;
+  pitchDeg: number;
+}
+
+/** Offsets beyond this are a mis-tap, not a phone bias. */
+const MAX_CALIBRATION_DEG = 15;
+
+/**
+ * The widest a tilt can read (`atan2`'s range). The phone's calibration and
+ * vehicle zero may be stored beyond 15° when the user goes ahead despite the
+ * warning, so reading them back only rejects what no sensor could produce.
+ */
+export const MAX_TILT_DEG = 180;
+
+/** Validate a stored calibration; null when missing, corrupt or beyond
+ * `maxDeg` on either axis (default: the 15° capture limit). */
+export function parseCalibration(
+  value: unknown,
+  maxDeg: number = MAX_CALIBRATION_DEG,
+): Calibration | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const raw = value as Record<string, unknown>;
+  const rollDeg = raw.rollDeg;
+  const pitchDeg = raw.pitchDeg;
+  if (
+    typeof rollDeg !== 'number' ||
+    typeof pitchDeg !== 'number' ||
+    !Number.isFinite(rollDeg) ||
+    !Number.isFinite(pitchDeg) ||
+    Math.abs(rollDeg) > maxDeg ||
+    Math.abs(pitchDeg) > maxDeg
+  ) {
+    return null;
+  }
+  return { rollDeg, pitchDeg };
+}
 
 /** A bias beyond this is a moved phone or a mis-capture, not case tilt. */
 const MAX_BIAS_DEG = 15;

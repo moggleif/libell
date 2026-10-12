@@ -29,7 +29,7 @@
  * to the gesture-triggered `start()`.
  */
 import type { GravityVector } from '../domain/leveling';
-import type { EasyLevelMounting, SensorSource } from '../domain/settings';
+import type { EasyLevelMounting } from '../domain/sensorDeviceSettings';
 import type { OrientationSensor, SensorState } from './orientation';
 import {
   applyEasyLevelMounting,
@@ -416,7 +416,7 @@ export function createEasyLevelSensor(
     getGravity: () => gravity,
     getRawGravity: () => rawGravity,
     getDeviceId: () => connection?.deviceId ?? null,
-    getSource: (): SensorSource => 'easylevel',
+    getSource: () => 'easylevel',
     getLastSampleAt: () => lastSampleAt,
     getStatusBytes: () => statusBytes,
     getStatus: () => status,

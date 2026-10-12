@@ -5,7 +5,6 @@
     "src/app/levelScreenView.ts > mountLevelScreenView": 74,
     "src/app/navigation.ts > createNavigation": 53,
     "src/app/phoneCalibration.ts > createPhoneCalibration": 69,
-    "src/domain/settings.ts > parseSettings": 75,
     "src/main.ts > createCore": 68,
     "src/main.ts > mountPages": 59,
     "src/sensor/easyLevelSensor.ts > createEasyLevelSensor": 155,
@@ -35,14 +34,12 @@
     "src/ui/targetsSection.ts > createTargetsSection": 123
   },
   "fileBaseline": {
-    "src/data/settingsStore.ts": 444,
-    "src/domain/settings.ts": 584,
     "src/main.ts": 414,
     "src/sensor/easyLevelSensor.ts": 431,
     "src/sensor/xparkleProtocol.ts": 461,
     "src/sensor/xparkleSensor.ts": 528,
     "src/ui/calibrationSection.ts": 536,
-    "src/ui/settingsPanel.ts": 688,
-    "src/ui/settingsRampsTab.ts": 502
+    "src/ui/settingsPanel.ts": 684,
+    "src/ui/settingsRampsTab.ts": 498
   }
 }

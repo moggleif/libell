@@ -7,7 +7,7 @@
  * there holds. Libell never blocks anything on this: it shows the user,
  * live, whether the box stands, and says how to fix it when it does not.
  */
-import type { Calibration } from './settings';
+import type { Calibration } from './calibration';
 
 /** Past this on either axis the box is not standing upright — the same
  * 45° the external pose overlay enters "extreme" at (`pose.ts`). */

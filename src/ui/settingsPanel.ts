@@ -15,12 +15,8 @@
  * construction time. Changing Appearance reloads the app rather than
  * restructuring the open form (see `settingsGeneralTab.ts`).
  */
-import {
-  DEFAULT_SETTINGS,
-  measurementsDiffer,
-  parseSettings,
-  type LevelSettings,
-} from '../domain/settings';
+import { DEFAULT_SETTINGS, measurementsDiffer, type LevelSettings } from '../domain/settings';
+import { parseSettings } from '../domain/settingsParsing';
 import { saveSettings, markMeasurementsSaved, loadSettings } from '../data/settingsStore';
 import { showActionToast } from './toast';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';

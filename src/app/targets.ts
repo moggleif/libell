@@ -4,8 +4,7 @@
  * never stored in the same field. "Normal" (no active target) leaves the
  * effective calibration identical to the zero.
  */
-import type { CaptureResult } from '../domain/calibration';
-import type { Calibration } from '../domain/settings';
+import type { Calibration, CaptureResult } from '../domain/calibration';
 import {
   offsetTooSteep,
   presetOffsetFromReading,
@@ -17,8 +16,8 @@ import {
   loadTargetPresets,
   saveActiveTargetId,
   saveTargetPresets,
-  type KeyValueStorage,
 } from '../data/settingsStore';
+import type { KeyValueStorage } from '../data/keyValueStorage';
 import { t } from '../ui/i18n';
 
 export interface TargetsDeps {

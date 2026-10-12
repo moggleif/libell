@@ -8,12 +8,8 @@
  * the compact form: a ready-made-ramp `<select>` with a chip editor (no
  * separator syntax to learn).
  */
-import {
-  formatLength,
-  formatLengthValue,
-  MAX_RAMP_COUNT,
-  type LevelSettings,
-} from '../domain/settings';
+import { MAX_RAMP_COUNT, type LevelSettings } from '../domain/settings';
+import { formatLength, formatLengthValue } from '../domain/lengths';
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
 import {
   createHint,

@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { showOnboarding, type OnboardingOptions } from './onboarding';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import { setLanguage, t } from './i18n';
-import { DEFAULT_SETTINGS, type Calibration, type LevelSettings } from '../domain/settings';
+import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 
 setLanguage('en');
 

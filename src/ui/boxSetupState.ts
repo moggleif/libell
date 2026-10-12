@@ -2,8 +2,7 @@
  * What a box's card and setup checklist show, as pure functions: no DOM, so
  * every decision is tested on its own.
  */
-import type { CaptureResult } from '../domain/calibration';
-import type { Calibration } from '../domain/settings';
+import type { Calibration, CaptureResult } from '../domain/calibration';
 import { isMountedRight } from '../domain/uprightMount';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxConnection } from './boxConnection';

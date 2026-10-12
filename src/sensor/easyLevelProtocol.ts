@@ -69,7 +69,7 @@
  * conversion — the same contract the phone sensor fulfills.
  */
 import type { GravityVector } from '../domain/leveling';
-import type { EasyLevelMounting } from '../domain/settings';
+import type { EasyLevelMounting } from '../domain/sensorDeviceSettings';
 
 /**
  * `faf52c21-...` (NOTIFY): 6x signed int16, little-endian, in order

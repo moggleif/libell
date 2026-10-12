@@ -3,7 +3,7 @@
  * calibration, check and target action starts from.
  */
 import { tiltFromGravity } from '../domain/leveling';
-import type { Calibration } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import type { OrientationSensor } from '../sensor/orientation';
 import { t } from '../ui/i18n';
 

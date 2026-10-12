@@ -9,7 +9,8 @@
  * correction. Settings mapping: `trackWidthRearMm` is the axle track,
  * `wheelbaseMm` the distance from the axle to the jockey wheel.
  */
-import type { Calibration, LevelSettings } from './settings';
+import type { LevelSettings } from './settings';
+import type { Calibration } from './calibration';
 import {
   recommendStep,
   tiltFromGravity,

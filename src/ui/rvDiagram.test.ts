@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { createRvDiagram, stepAndLiftText, updateBubble } from './rvDiagram';
-import { formatLength } from '../domain/settings';
+import { formatLength } from '../domain/lengths';
 import { setLanguage, t } from './i18n';
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 

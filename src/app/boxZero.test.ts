@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Calibration, SensorSource } from '../domain/settings';
+import type { SensorSource } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import type { XparkleSensor } from '../sensor/xparkleSensor';
 import { t } from '../ui/i18n';

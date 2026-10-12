@@ -16,6 +16,7 @@ import {
   easyLevelMountingForPlacement,
   easyLevelPlacementOf,
 } from '../domain/mountingFacing';
+import type { LevelSettings, SensorSource } from '../domain/settings';
 import {
   easyLevelSettings,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
@@ -23,9 +24,7 @@ import {
   withXparkleSettings,
   xparkleSettings,
   type EasyLevelMounting,
-  type LevelSettings,
-  type SensorSource,
-} from '../domain/settings';
+} from '../domain/sensorDeviceSettings';
 import {
   createEasyLevelSensor,
   createWebBluetoothTransport,
