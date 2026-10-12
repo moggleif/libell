@@ -1,6 +1,6 @@
 /**
- * The app's one copy of the settings (#392, step 5). `set` stores what it
- * is given; `adopt` takes settings a form has already stored.
+ * The app's one copy of the settings. `set` stores what it is given;
+ * `adopt` takes settings a form has already stored.
  */
 import type { LevelSettings } from '../domain/settings';
 import type { SettingsAccess } from './externalSensorWiring';

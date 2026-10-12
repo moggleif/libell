@@ -1,6 +1,6 @@
 /**
- * Zeroing an external box (#131, #290, ADR 0014): "set vehicle level" for
- * the box in use, stored as that box's installation offset.
+ * Zeroing an external box (ADR 0014): "set vehicle level" for the box in
+ * use, stored as that box's installation offset.
  */
 import { averageReadings, vehicleZeroFromReading, type CaptureResult } from '../domain/calibration';
 import type { Calibration, SensorSource } from '../domain/settings';
@@ -13,30 +13,26 @@ import { exceedsCalibrationLimit } from './tiltReading';
 
 /** How long an EasyLevel zero averages the box's samples. */
 export const EASYLEVEL_ZERO_SAMPLE_MS = 1500;
-/** How often the sampling looks for a new sample. */
 const SAMPLE_POLL_MS = 50;
 
 export interface BoxZeroDeps {
-  /** The source feeding readings now. */
   activeSensor(): OrientationSensor;
   /** The Xparkle adapter, if one was ever built. */
   getXparkle(): XparkleSensor | null;
   offsets: InstallOffsets;
   /** The active sensor's tilt now, or the message to show instead. */
   readTilt(): Calibration | string;
-  /** A zero was stored or forgotten: refresh the lamps. */
   onChanged(): void;
   /** Wall time for the stored timestamp; defaults to `Date.now`. */
   now?: () => number;
   /** Monotonic time for the sampling window; defaults to `performance.now`. */
   clock?: () => number;
-  /** Defaults to a `setTimeout` promise. */
   wait?: (ms: number) => Promise<void>;
 }
 
 export interface BoxZeroing {
   /** Zero a box: null when stored, an error message, or a tilt warning
-   * above 15° unless `anyway` says the user chose to go ahead (#425).
+   * above 15° unless `anyway` says the user chose to go ahead.
    * Async for the boxes that need it. */
   zero(source: SensorSource, anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   clear(source: SensorSource): void;
@@ -53,10 +49,8 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
     deps.onChanged();
   }
 
-  /** Store a box's zero from a reading; above 15° only once the user has
-   * seen the warning and chosen to go ahead (#425). There is no box
-   * hardware-bias layer to subtract (unlike the phone's), so `null` here
-   * means "none". */
+  /** There is no box hardware-bias layer to subtract (unlike the phone's),
+   * so `null` here means "none". */
   function storeReading(
     source: SensorSource,
     reading: Calibration,
@@ -100,9 +94,9 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
   }
 
   /**
-   * The Xparkle box zeroes itself (#290, `resetZero`). It must stand
-   * upright for a zero to hold (#273); nothing is refused here, since its
-   * page shows live whether it stands (#304). Libell then stores a zero
+   * The Xparkle box zeroes itself (`resetZero`). It must stand upright for
+   * a zero to hold; nothing is refused here, since its page shows live
+   * whether it stands. Libell then stores a zero
    * offset with the time: it changes no reading, but it is what the lamp,
    * the age text and "Check" go by, and it replaces any older Libell-side
    * offset so two zeros are never stacked.

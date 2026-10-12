@@ -1,8 +1,6 @@
 /**
- * Where each shortcut on the main screen leads (#392, step 3): the lamps,
- * the sensor icon, the target badge, Help's topic buttons and the
- * overlays' links to a box. One router, so every surface that names a
- * place opens the same page for it.
+ * Where each shortcut on the main screen leads. One router, so every
+ * surface that names a place opens the same page for it.
  */
 import type { SensorSource } from '../domain/settings';
 import type { HelpTarget } from '../ui/infoMenu';
@@ -20,7 +18,7 @@ export interface NavigationDeps {
   /** The box list, or iOS's guide; absent when neither applies. */
   sensorPage: Pick<SensorPage, 'open'> | null;
   activeSource: () => SensorSource;
-  /** A box chosen in the wizard but not connected yet (#365). */
+  /** A box chosen in the wizard but not connected yet. */
   isBoxPending: () => boolean;
 }
 
@@ -37,7 +35,7 @@ export interface Navigation {
 export function createNavigation(deps: NavigationDeps): Navigation {
   const { settings, externalSensorPage, sensorPage } = deps;
 
-  /** The active box's own page, if a box is in use and has one. */
+  /** False when the phone is in use or there are no box pages. */
   function openActiveBox(): boolean {
     const source = deps.activeSource();
     if (source === 'phone' || !externalSensorPage) return false;
@@ -52,15 +50,15 @@ export function createNavigation(deps: NavigationDeps): Navigation {
 
   // With a box in use, calibrating is about the box's setup, so it opens
   // the box's page, where its checklist expands the next step not yet
-  // done (#316). A box chosen in the wizard, not yet connected (#365):
-  // the list, to connect it.
+  // done. A box chosen in the wizard, not yet connected: the list, to
+  // connect it.
   function openCalibration(): void {
     if (openActiveBox()) return;
     if (deps.isBoxPending() && sensorPage) sensorPage.open();
     else openSettingsSection('calibration');
   }
 
-  // With a box in use (connected or lost), its own page (#315): its
+  // With a box in use (connected or lost), its own page: its
   // state, Reconnect and setup are all there. The list stays the way to
   // add or switch boxes while the phone is active.
   function openSensor(): void {

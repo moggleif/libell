@@ -1,8 +1,8 @@
 /**
- * Each external box's installation offset (#131, ADR 0014): the "vehicle
- * zero" for that box, held in memory and mirrored to storage.
+ * Each external box's installation offset (ADR 0014): the "vehicle zero"
+ * for that box, held in memory and mirrored to storage.
  *
- * One per box (#263/#272): each box sits in its own place in the vehicle,
+ * One per box: each box sits in its own place in the vehicle,
  * so two boxes never share a value — ADR 0014's "never conflate" rule,
  * held here the same way it is held in storage. The phone has no entry:
  * its own two calibration layers live elsewhere.

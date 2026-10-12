@@ -1,8 +1,4 @@
-/**
- * The level screen's elements (#392, step 2): the vehicle diagram, the
- * status row, the tilt readout, the waiting hint, the lost-box prompt and
- * the overlays, driven by the frame through `LevelFrameView`.
- */
+/** The level screen's elements, driven by the frame through `LevelFrameView`. */
 import { t } from '../ui/i18n';
 import { createLevelOverlay } from '../ui/levelOverlay';
 import { createSensorFallbackPrompt } from '../ui/sensorFallbackPrompt';
@@ -12,9 +8,8 @@ import type { LevelFrameView, PoseProblem } from './levelFrame';
 
 export interface LevelScreenViewDeps {
   createEngine(output: EngineOutput): LevelEngine;
-  /** The active box's own page (#285, #286). */
   openActiveSensorPage(): void;
-  /** The lost-box prompt's Reconnect and its way back to the phone (#134). */
+  /** The lost-box prompt's Reconnect and its way back to the phone. */
   retry(): Promise<void> | void;
   usePhoneSensor(): void;
   /** What celebrating does besides the overlay: vibrate, chime. */
@@ -30,7 +25,6 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
   const tilt = createTiltReadout();
   const waiting = hint(t('main.waiting'));
   const fallbackPrompt = createSensorFallbackPrompt(deps.retry, deps.usePhoneSensor);
-  // Full-screen confirmation when level is reached (#124).
   const levelOverlay = createLevelOverlay();
   const engine = deps.createEngine({
     showStatus(text, isLevel) {
@@ -54,7 +48,7 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
   );
 
   // While there is no reading at all (first load, or a lost box), the
-  // diagram and readout are dimmed and say nothing (#312): the last
+  // diagram and readout are dimmed and say nothing: the last
   // frame's steps must never stay on screen looking live.
   const dim = (noData: boolean): void => {
     engine.element.classList.toggle('is-no-data', noData);
@@ -100,7 +94,7 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
 
 /**
  * The status row speaks only when it has something the diagram cannot
- * show (#252), and hides itself otherwise rather than hold a blank line.
+ * show, and hides itself otherwise rather than hold a blank line.
  */
 function createStatusLine() {
   const element = document.createElement('p');
@@ -134,8 +128,8 @@ function sensorPageButton(onClick: () => void): HTMLButtonElement {
   return button;
 }
 
-/** Wrong-pose overlay instead of wrong guidance (#51); for a box, what to
- * do about it and a link to its page (#285). */
+/** Wrong-pose overlay instead of wrong guidance; for a box, what to do
+ * about it and a link to its page. */
 function createPoseOverlay(openSensorPage: () => void) {
   const element = document.createElement('div');
   element.className = 'pose-overlay';
@@ -158,8 +152,8 @@ function createPoseOverlay(openSensorPage: () => void) {
   };
 }
 
-/** No trustworthy data at all (#132): the guidance is hidden rather than
- * left frozen; for a box, a link to its page (#286). */
+/** No trustworthy data at all: the guidance is hidden rather than left
+ * frozen; for a box, a link to its page. */
 function createStaleOverlay(openSensorPage: () => void) {
   const element = document.createElement('div');
   element.className = 'stale-overlay';

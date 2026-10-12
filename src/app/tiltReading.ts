@@ -1,6 +1,6 @@
 /**
- * Reading the active sensor's tilt in degrees (#374, step 2): the one
- * conversion every calibration, check and target action starts from.
+ * Reading the active sensor's tilt in degrees: the one conversion every
+ * calibration, check and target action starts from.
  */
 import { tiltFromGravity } from '../domain/leveling';
 import type { Calibration } from '../domain/settings';
@@ -12,7 +12,6 @@ const RAD_TO_DEG = 180 / Math.PI;
 /** A capture steeper than this on either axis is not "level", whatever it is. */
 const MAX_CALIBRATION_DEG = 15;
 
-/** Whether a reading is too steep to store as a calibration or a zero. */
 export function exceedsCalibrationLimit(reading: Calibration): boolean {
   return (
     Math.abs(reading.rollDeg) > MAX_CALIBRATION_DEG ||

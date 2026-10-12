@@ -1,7 +1,7 @@
 /**
- * The top bar and the bottom bar's labels (#392, step 5): Install and
- * Share, the translated labels, the version footer, and tapping the name
- * to check for an update (#301).
+ * The top bar and the bottom bar's labels: Install and Share, the
+ * translated labels, the version footer, and tapping the name to check
+ * for an update.
  */
 import { attachUpdateCheck, installUpdateReload } from '../ui/appUpdate';
 import { t } from '../ui/i18n';
@@ -28,7 +28,7 @@ export function setupTopBar(doc: Document = document, version = __APP_VERSION__)
 
   // The pinned top-right corner (Install, then the sensor icon) sits out
   // of the flex flow, so the bar reserves its measured width or an
-  // in-flow item can slide underneath it (#244). Measured rather than
+  // in-flow item can slide underneath it. Measured rather than
   // assumed: the Install label's width differs per language, and the
   // corner holds one control, two, or none.
   const corner = $<HTMLElement>('#topbar-corner');

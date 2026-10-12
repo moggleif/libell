@@ -1,8 +1,8 @@
 /**
- * The external-sensor wiring (#374, step 1): how each box's adapter is
- * built from the settings, and how its own extras — health, the learn
- * guide, the password — are mapped into the shapes the UI renders, so no
- * UI module ever imports a protocol or narrows on a box (#268).
+ * The external-sensor wiring: how each box's adapter is built from the
+ * settings, and how its own extras — health, the learn guide, the
+ * password — are mapped into the shapes the UI renders, so no UI module
+ * ever imports a protocol or narrows on a box.
  *
  * The lifecycle itself (connect, reconnect, fallback) is
  * `sensor/externalSensorController.ts`; this module only supplies what it
@@ -65,7 +65,6 @@ export interface SettingsAccess {
   set(next: LevelSettings): void;
 }
 
-/** What the per-box wiring needs from the app around it. */
 export interface BoxWiring {
   settings: SettingsAccess;
   /** The box's adapter if one was ever built, connected or not. */
@@ -75,11 +74,10 @@ export interface BoxWiring {
 }
 
 /**
- * Build the adapter for an external source (#265): the one place a source
- * id becomes a live adapter. `settings` is read live on every connect, so
- * the debug connect delay (#212), the mounting (#217), the learned
- * mapping (#293) and a typed password (#367) all take effect on the very
- * next attempt or reading without recreating anything.
+ * The one place a source id becomes a live adapter. `settings` is read
+ * live on every connect, so the debug connect delay, the mounting, the
+ * learned mapping and a typed password all take effect on the very next
+ * attempt or reading without recreating anything.
  */
 export function createExternalSensor(
   source: SensorSource,
@@ -101,7 +99,7 @@ export function createExternalSensor(
 }
 
 /**
- * The simulated box (#220) whenever `?easylevel-sim` is on — swapped at
+ * The simulated box whenever `?easylevel-sim` is on — swapped at
  * this one seam, so everything above it is the code a real box runs
  * through — else the real Web Bluetooth transport.
  */
@@ -114,7 +112,6 @@ function createEasyLevelTransport(settings: () => LevelSettings) {
   });
 }
 
-/** Whether a remembered device id can be reached right now (#223). */
 export function isRememberedDeviceUsable(source: SensorSource, deviceId: string): boolean {
   return source === 'xparkle'
     ? isRememberedXparkleDeviceUsable(deviceId)
@@ -122,7 +119,7 @@ export function isRememberedDeviceUsable(source: SensorSource, deviceId: string)
 }
 
 /** A simulated box is always reachable; a real one after a restart only
- * where the browser exposes getDevices() (#313). */
+ * where the browser exposes getDevices(). */
 export function hasPersistentDeviceAccess(): boolean {
   return (
     easyLevelSimulationMode() !== 'off' ||
@@ -132,7 +129,7 @@ export function hasPersistentDeviceAccess(): boolean {
 }
 
 /**
- * A box's health in the shape the UI renders (#268). A field left null
+ * A box's health in the shape the UI renders. A field left null
  * reads as "nothing has arrived yet"; a field the box does not have at all
  * is excluded by its descriptor's capabilities instead, so no row is drawn.
  */
@@ -169,8 +166,8 @@ function xparkleHealth(box: XparkleSensor): ExternalSensorHealth | null {
   };
 }
 
-/** Store (or with null, forget — back to the standard placement, and the
- * box's page asks again, #359) the EasyLevel mounting (#217). */
+/** Null forgets the mounting: back to the standard placement, and the
+ * box's page asks again. */
 export function pickEasyLevelMounting(mounting: EasyLevelMounting | null, wiring: BoxWiring): void {
   wiring.settings.set(
     withEasyLevelSettings(wiring.settings.get(), {
@@ -182,7 +179,7 @@ export function pickEasyLevelMounting(mounting: EasyLevelMounting | null, wiring
 }
 
 /**
- * The debug connect delay (#212), clamped here rather than trusted from
+ * The debug connect delay, clamped here rather than trusted from
  * the page's own input bounds: a value written straight into the settings
  * bypasses `parseSettings`'s clamp until the next reload.
  */
@@ -200,8 +197,8 @@ export function withEasyLevelConnectDelay(
 
 type LearnMountingWiring = Omit<LearnMountingOptions, 'name'>;
 
-/** The "learn the mounting" guide (#293) for the boxes that offer it;
- * undefined for every other source, so no guide is drawn. */
+/** The "learn the mounting" guide for the boxes that offer it; undefined
+ * for every other source, so no guide is drawn. */
 export function learnMountingFor(
   source: SensorSource,
   wiring: BoxWiring,
@@ -228,9 +225,9 @@ function learnXparkleMapping(wiring: BoxWiring): LearnMountingWiring {
 }
 
 /**
- * The EasyLevel lift guide (#360): it learns from the box's reading before
- * any rotation, and stores the result as one of the manual's two
- * placements (#359). A lift showing the arrow backward or sideways, or a
+ * The EasyLevel lift guide: it learns from the box's reading before any
+ * rotation, and stores the result as one of the manual's two
+ * placements. A lift showing the arrow backward or sideways, or a
  * mirrored one, is explained instead of stored.
  */
 function learnEasyLevelPlacement(wiring: BoxWiring): LearnMountingWiring {
@@ -260,7 +257,7 @@ function learnEasyLevelPlacement(wiring: BoxWiring): LearnMountingWiring {
 }
 
 /**
- * The box's password, for a source that has one (#272, #367): while the
+ * The box's password, for a source that has one: while the
  * box rejects the code it was offered, the user types the right one in
  * Libell and it is tried at once on the live link, then kept for every
  * later connect. Never routed through the vendor app.
@@ -280,8 +277,8 @@ export function passwordFor(
   };
 }
 
-/** A box's calibration state for the Calibration tab (#290); null for the
- * phone and for any source without an installation offset. */
+/** A box's calibration state for the Calibration tab; null for the phone
+ * and for any source without an installation offset. */
 export function externalCalibrationStateFor(
   source: SensorSource,
   offsets: InstallOffsets,
