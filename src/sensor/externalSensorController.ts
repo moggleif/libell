@@ -1,29 +1,16 @@
 /**
- * The external-sensor lifecycle, in one place (#265).
+ * The external-sensor lifecycle for every source, in one place: lazy
+ * adapter construction, connect and disconnect, the silent reconnect at
+ * app open, the background auto-retry and the "use phone sensor" escape
+ * hatch — so ADR 0014's "never silently switch source" rule is enforced
+ * here rather than across call sites in `main.ts`.
  *
- * ADR 0014 says `main.ts` selects between `OrientationSensor`
- * implementations "at exactly one line". That was true of the
- * *assignment*; everything around it — lazy adapter construction, connect
- * and disconnect, the silent auto-reconnect at app open (#130), the
- * background auto-retry loop (#211), the "use phone sensor" escape hatch
- * (#134) — grew in `main.ts` anyway, as two dozen device-named closures in
- * a 1400-line entry point. A second source would have duplicated all of
- * it, and ADR 0014's most important rule (never silently switch source)
- * was spread across a dozen call sites rather than enforced in one.
+ * **Everything is injected**, so the state machine is unit-testable with
+ * fake adapters and fake time — no `navigator.bluetooth`, timers or DOM.
  *
- * This module owns that lifecycle for every source. `main.ts` holds the
- * active sensor and wires callbacks; it no longer implements any of this.
- *
- * **Everything is injected**, so the whole state machine is unit-testable
- * with fake adapters and fake time — no `navigator.bluetooth`, no real
- * timers, no DOM — the same discipline `easyLevelSensor.ts` already
- * follows with its injected transport.
- *
- * **What this module does not do:** decide what a source *is* (that is the
- * registry, ADR 0016), speak any protocol (that is each adapter), or
- * render anything. It calls back into the shell for the three things a
- * source change means on screen, and leaves the shell to decide what those
- * look like.
+ * It does not decide what a source *is* (the registry, ADR 0016), speak
+ * any protocol (each adapter), or render anything (the shell, via
+ * callbacks).
  */
 import type { SensorSource } from '../domain/settings';
 import type { OrientationSensor, SensorState } from './orientation';
@@ -53,14 +40,14 @@ export interface ExternalSensorControllerOptions<T extends ExternalSensor> {
    * reuses it rather than starting from a fresh state machine.
    */
   createSensor(source: SensorSource): T | null;
-  /** The remembered device id for a source, if any (#130). */
+  /** The remembered device id for a source, if any. */
   loadDeviceId(source: SensorSource): string | null;
   saveDeviceId(source: SensorSource, deviceId: string): void;
   /**
-   * Whether a remembered id can possibly be reached right now (#223): a
-   * box remembered in one simulation mode can never be found in another,
-   * and attempting it anyway strands the app on R37's "unavailable"
-   * prompt with an auto-retry that can never succeed.
+   * Whether a remembered id can possibly be reached right now: a box
+   * remembered in one simulation mode can never be found in another, and
+   * trying anyway strands the app on R37's "unavailable" prompt with an
+   * auto-retry that can never succeed.
    */
   isRememberedDeviceUsable(source: SensorSource, deviceId: string): boolean;
   /** Which source the last session left active (`settings.sensorSource`). */
@@ -74,15 +61,15 @@ export interface ExternalSensorControllerOptions<T extends ExternalSensor> {
    */
   onLevelScreenNeeded(): void;
   /** The active source changed, so the calibration lamp's condition did
-   * too — it follows whichever source is active (#131). */
+   * too — it follows whichever source is active. */
   onIndicatorsChanged(): void;
   /** The connection state changed in a way the status row should show. */
   onStatusChanged(): void;
   /**
    * Whether this browser keeps device permission across app restarts
    * (`navigator.bluetooth.getDevices()`), so a silent reconnect can reach
-   * a box picked in an earlier session (#313). Chrome on Android keeps it
-   * behind a flag. Optional: defaults to true.
+   * a box picked in an earlier session. Chrome on Android keeps it behind
+   * a flag. Optional: defaults to true.
    */
   hasPersistentDeviceAccess?(): boolean;
 }
@@ -99,15 +86,14 @@ export interface ExternalSensorController<T extends ExternalSensor> {
    */
   connect(source: SensorSource): Promise<SensorState>;
   /**
-   * Explicit disconnect — falls back to the phone sensor and starts it
-   * (#321), exactly as `usePhoneSensor()` does. Deliberately
-   * does NOT forget the remembered device (#130): this is "not right now",
-   * not "never again", so the box stays one tap away while the next app
-   * open skips auto-reconnect.
+   * Explicit disconnect — falls back to the phone sensor and starts it,
+   * exactly as `usePhoneSensor()` does. Deliberately does NOT forget the
+   * remembered device: this is "not right now", not "never again", so the
+   * box stays one tap away while the next app open skips auto-reconnect.
    */
   disconnect(): void;
   /**
-   * The fallback prompt's "Use phone sensor" (#134). The same real switch
+   * The fallback prompt's "Use phone sensor". The same real switch
    * `disconnect()` performs, plus the one thing only this path needs: the
    * tap is itself a user gesture, and `phoneSensor.start()` may never have
    * run (an external source can take over the whole startup flow), which
@@ -116,24 +102,23 @@ export interface ExternalSensorController<T extends ExternalSensor> {
    */
   usePhoneSensor(): void;
   /**
-   * "Retry" (#134): the tap opens the device picker, exactly as the sensor
-   * page's connect button does (#307). The silent reconnect the button
-   * used before could not reach the box on Chrome for Android once the
-   * page had lost the device it picked, so the tap did nothing there. Must
-   * be called synchronously inside the click handler, like `connect()`.
+   * "Retry": the tap opens the device picker, like the sensor page's
+   * connect button — a silent reconnect cannot reach the box on Chrome for
+   * Android once the page has lost the device it picked. Must be called
+   * synchronously inside the click handler, like `connect()`.
    */
   retry(): Promise<void>;
-  /** The background counterpart to Retry (#211), on its own cadence. */
+  /** The background counterpart to Retry, on its own cadence. */
   maybeAutoRetry(nowMs: number): void;
   /**
-   * Whether that background retry can reach the active box at all (#313):
+   * Whether that background retry can reach the active box at all:
    * yes once the box was picked in this page session, or when the browser
    * keeps device permission across restarts; no after a restart without
    * it, where only a tap in the picker can bring the box back.
    */
   canRetrySilently(): boolean;
   /**
-   * Silent reconnect at app open (#130). Resolves true once an external
+   * Silent reconnect at app open. Resolves true once an external
    * source has taken over the startup flow — whether the box actually
    * answered or not, since a failed attempt still renders its
    * 'disconnected' state honestly through the ordinary per-frame loop.
@@ -146,15 +131,13 @@ export interface ExternalSensorController<T extends ExternalSensor> {
 export function createExternalSensorController<T extends ExternalSensor>(
   options: ExternalSensorControllerOptions<T>,
 ): ExternalSensorController<T> {
-  /** Adapters are built lazily and kept, so a reconnect reuses the same
-   * state machine rather than starting a fresh one. */
   const sensors = new Map<SensorSource, T>();
   let active: OrientationSensor = options.phoneSensor;
   /** Which external source is active, or null while the phone is. */
   let activeSource: SensorSource | null = null;
   let lastAutoRetryAt: number | null = null;
   let autoRetryInFlight = false;
-  /** Sources picked in the device picker during this page session (#313). */
+  /** Sources picked in the device picker during this page session. */
   const pickedThisSession = new Set<SensorSource>();
 
   function sensorFor(source: SensorSource): T | null {
@@ -166,10 +149,8 @@ export function createExternalSensorController<T extends ExternalSensor>(
   }
 
   /**
-   * Adopt a source as the one feeding readings. The single place that
-   * switch happens — ADR 0014's "never silently switch" rule is a property
-   * of this function having exactly one caller path per outcome, rather
-   * than of a dozen call sites each remembering to do the right thing.
+   * Adopt a source as the one feeding readings — the single place that
+   * switch happens (ADR 0014: never silently switch source).
    */
   function adopt(source: SensorSource, sensor: T): void {
     if (activeSource !== null && activeSource !== source) {
@@ -197,9 +178,8 @@ export function createExternalSensorController<T extends ExternalSensor>(
       pickedThisSession.add(source);
       adopt(source, sensor);
       options.rememberSource(source);
-      // Remember this specific device (#130), not just "some sensor", so a
-      // later app open can try a silent reconnect instead of showing the
-      // picker again.
+      // Remember this specific device, so a later app open can try a silent
+      // reconnect instead of showing the picker again.
       const deviceId = sensor.getDeviceId();
       if (deviceId) options.saveDeviceId(source, deviceId);
       options.onLevelScreenNeeded();
@@ -215,8 +195,8 @@ export function createExternalSensorController<T extends ExternalSensor>(
     options.onStatusChanged();
   }
 
-  /** The background loop's silent attempt at the same box (#211): no
-   * gesture to open a picker with, so a reconnect is all it can do. */
+  /** The background loop has no gesture to open a picker with, so a
+   * silent reconnect is all it can do. */
   async function reconnectSilently(): Promise<void> {
     const source = activeSource;
     const sensor = source === null ? null : (sensors.get(source) ?? null);
@@ -266,10 +246,9 @@ export function createExternalSensorController<T extends ExternalSensor>(
     getActiveSensor: () => active,
     getSensor: (source) => sensors.get(source) ?? null,
     connect,
-    // Both start the phone (#321): an external source can take over the
-    // whole startup flow, so the phone may never have been started, and a
-    // plain switch left the screen waiting for a sensor that never
-    // delivered. The tap is the gesture iOS needs; a no-op once granted.
+    // Both start the phone: an external source can take over the whole
+    // startup flow, so the phone may never have been started. The tap is
+    // the gesture iOS needs; a no-op once granted.
     disconnect() {
       fallBackToPhone();
       void options.phoneSensor.start();

@@ -1,169 +1,72 @@
 /**
- * EasyLevel BLE box — pure packet parsing (#116, re-verified end to end by
- * #215).
+ * EasyLevel BLE box — pure packet parsing, kept apart from the Web
+ * Bluetooth transport so it is testable with plain byte arrays.
  *
- * Reverse-engineered by decompiling the official Android apps — no public
- * spec exists, and no physical box has been available to verify against.
- * #215 redid this from the actual `.xapk`/`.apk` files (`EasyLevel 5.0.7`,
- * `EasyLevelRV 2.5.0`, `EasyLevelRV 2.2.2`, all APKPure), tracing the full
- * `faf52c21-...` NOTIFY handler through to the app's own displayed
- * roll/pitch, not just the packet layout #116/#123 had already confirmed.
- * Kept in its own module, separate from `easyLevelSensor.ts`'s Web
- * Bluetooth transport, so the byte parsing is fully unit-testable with
- * plain synthetic byte arrays — no `navigator.bluetooth` mocking needed.
+ * Reverse-engineered by decompiling the official Android apps
+ * (`EasyLevel 5.0.7`, `EasyLevelRV 2.5.0` — same logic under different
+ * obfuscated names — and `EasyLevelRV 2.2.2`, map-based dispatch,
+ * consistent as far as checked); no public spec exists. Class names below
+ * are from `EasyLevel 5.0.7` and are not stable across builds:
+ * `Lz0/b$b;->onCharacteristicChanged()` calls `Ly0/a;->i(characteristic,
+ * value)`, the app's BLE ViewModel, which branches on the UUID.
  *
- * #215's traced call chain, `EasyLevel 5.0.7` class names (obfuscated;
- * `EasyLevelRV 2.5.0` is the same logic byte-for-byte under different
- * obfuscated names — confirmed by decompiling both — `EasyLevelRV 2.2.2`
- * uses a map-based dispatch for the same two UUIDs, consistent as far as
- * checked but not re-derived formula-by-formula):
- * `Lz0/b$b;->onCharacteristicChanged()` (the `BluetoothGattCallback`) calls
- * the abstract `Lz0/b;->i(characteristic, value)`, implemented by
- * `Ly0/a;->i()` (the app's BLE ViewModel) — this is the one method that
- * both branches below trace back to.
+ * **Axis mapping:** the `faf52c21-...` branch reads bytes 0–5 as signed
+ * int16 LE accelX/Y/Z (6–11 gyroX/Y/Z). They feed `C0.a`, whose
+ * `toString()` names its fields `accnGyrXangle`, `accnGyrYangle`
+ * (gyro-fused), `accXangle`, `accYangle` (accel-only). `LO0/e;->k()`
+ * (case 1, `MainActivity`'s dispatcher) reads prefs `"sensor_Placing"` and
+ * `"SF_INVERTED"`, then `MainActivity.S()` (`"level0_LeftRight"`) and
+ * `.U()` (`"level0_FrontBack"`): **accelX drives Left/Right (roll), accelY
+ * drives Front/Back (pitch)** — Libell's `x`→roll, `y`→pitch, for the
+ * default `sensor_Placing` of `1`.
  *
- * **Axis mapping (established, not assumed):** `Ly0/a;->i()` branches on
- * `characteristic.getUuid()`; the `faf52c21-...` branch reads bytes 0–1,
- * 2–3, 4–5 as signed int16 LE accelX/Y/Z (bytes 6–11 likewise for
- * gyroX/Y/Z) — matching this module's existing layout below, now confirmed
- * end to end rather than just at the byte-offset level. Those three values
- * feed `D0.b.a()`/inline `D0.c` code computing `C0.a` — a Kotlin data class
- * whose own `toString()` names its four fields `accnGyrXangle`,
- * `accnGyrYangle` (gyro-fused), `accXangle`, `accYangle` (accel-only) — so
- * "X" tracks the accelX packet field and "Y" tracks accelY, no swap. That
- * `C0.a` is observed in `LO0/e;->k()` (case 1, `MainActivity`'s dispatcher
- * lambda), which reads prefs `"sensor_Placing"` (1 or 2 — a *mounting*
- * rotation choice, not a protocol detail, see below) and `"SF_INVERTED"`,
- * then calls `MainActivity.S()`/`.U()`. `S()` reads pref keys
- * `"level0_LeftRight"`/`"custom_LeftRight"`; `U()` reads
- * `"level0_FrontBack"`/`"custom_FrontBack"` — confirming **the accelX
- * packet field drives the app's own Left/Right (roll) display, and accelY
- * drives Front/Back (pitch)**, exactly Libell's existing `x`→roll,
- * `y`→pitch convention, for the app's default `sensor_Placing` setting (its
- * stored default is `1`).
+ * The app's formula is `atan2(accel_i, sqrt(other² + other²))`; Libell
+ * keeps its simpler `atan2(x, z)`/`atan2(y, z)` (`src/domain/leveling.ts`)
+ * so every source shares one tested path. The two agree closely over the
+ * ±30° range both operate in.
  *
- * The official formula itself is `atan2(accel_i, sqrt(other² + other²))`
- * (tilt-compensated, using both other axes) rather than this app's simpler
- * `atan2(x, z)`/`atan2(y, z)` (`src/domain/leveling.ts`) — a formula-shape
- * difference, not an axis or sign bug; the two agree closely over the
- * ±30° range both apps operate in, and Libell intentionally keeps its own
- * formula so every source (phone, `?demo`, EasyLevel) shares one already-
- * tested code path. Not reproduced here.
+ * **Unresolved: absolute polarity.** Whether a more positive accelX means
+ * the right or left side is low depends on the MEMS chip's mounting on the
+ * board, which decompilation cannot reveal. The app's `S()` negates
+ * (`-accXangle`) for the default placement, which could be compensating
+ * for the chip or for something else. Libell passes `x`/`y` through
+ * unflipped; only a physical box can settle this.
  *
- * **What #215 could NOT establish from the app alone:** the *absolute*
- * polarity — whether a physically-more-positive accelX reading means the
- * vehicle's right or left side is low — depends on the MEMS chip's
- * package/silkscreen orientation, a hardware fact no amount of app
- * decompilation resolves. The app's own `S()` applies a sign flip
- * (`s1 = -accXangle` for the default placement) that could just as easily
- * be compensating for the chip's polarity as for something else. Absent
- * new evidence, Libell's existing unflipped `x`/`y` passthrough is left
- * unchanged rather than guessing a new sign — flagged here as the one
- * remaining risk a physical box would be needed to close.
- *
- * **Mounting rotation (`"sensor_Placing"`, pref values `1`/`2`) — now
- * implemented (#217):** the app's own settings screen (`dialog_sensor.xml`,
- * `ivSensorPlacing1`/`2`) shows this as two illustrations,
- * `top_wideside_rv.webp` / `top_shortside_rv.webp` — the same physical box
- * rotated 90°, mounted either wide-edge-forward or short-edge-forward. This
- * is a genuine **installation** fact (how one specific user physically
- * bolted the box in), not a protocol fact — the box does not transmit which
- * way it is mounted, so no packet inspection can recover it for any given
- * install; Libell exposes it as a user-facing setting instead (#217,
- * `EasyLevelMounting`/`applyEasyLevelMounting` below), the same way the
- * official app does.
- *
- * `LO0/e;->k()`'s dispatcher (case 1, re-verified against `EasyLevel 5.0.7`
- * directly for #217) computes, from the same `angle.a`/`b`/`c`/`d`
- * (`accnGyrXangle`/`accnGyrYangle`/`accXangle`/`accYangle`) fields
- * regardless of placement:
+ * **Mounting rotation (`"sensor_Placing"` 1/2):** the app's settings
+ * (`dialog_sensor.xml`, `top_wideside_rv.webp` / `top_shortside_rv.webp`)
+ * show the same box rotated 90°. The box does not transmit how it is
+ * mounted, so it is a user setting (`applyEasyLevelMounting`). `LO0/e;->k()`
+ * computes, from the same fields regardless of placement:
  * ```
  * placement 1 (default): Left/Right = -accXangle,  Front/Back =  accYangle
  * placement 2:            Left/Right = -accYangle,  Front/Back = -accXangle
  * ```
- * Solving placement 2's pair in terms of placement 1's own (i.e. what
- * placement 2 displays given the same raw reading placement 1 would call
- * `(Roll1, Pitch1)`): `accXangle = -Roll1`, `accYangle = Pitch1`, so
- * `Roll2 = -accYangle = -Pitch1` and `Pitch2 = -accXangle = Roll1` — a
- * clean 90° rotation of the (Roll, Pitch) pair, `(Roll2, Pitch2) =
- * (-Pitch1, Roll1)`, independent of either side's absolute sign
- * convention (only the *relative* rotation between the two placements is
- * used here — Libell's own unresolved absolute-polarity question, above,
- * is unaffected and unchanged by this). `applyEasyLevelMounting` applies
- * that same rotation directly to Libell's own gravity vector: `x` (roll
- * driver) and `y` (pitch driver) become `(-y, x)`; `z` is untouched (bytes
- * 12–17/8–19's calibration and every placement transform in the app only
- * ever remap which raw axis feeds Left/Right vs Front/Back — none of them
- * touch Z).
+ * so `(Roll2, Pitch2) = (-Pitch1, Roll1)` — a clean 90° rotation,
+ * independent of the unresolved absolute polarity. On the gravity vector
+ * that is `(x, y)` → `(-y, x)`; `z` is untouched (no placement transform
+ * or calibration in the app ever remaps Z).
  *
- * `faf52c22-...`'s battery/temperature/firmware-tier bytes were added later
- * (#123), re-reading the same decompiled sources: under-reported in #116's
- * original pass as "undecoded beyond byte 7," they were not — see
- * `parseEasyLevelStatus` below.
+ * **Calibration bias, tier ≥ 3:** the `faf52c22-...` branch decodes bytes
+ * 8–19 as six signed int16 LE zero-bias offsets (accelX/Y/Z, gyroX/Y/Z)
+ * when firmware tier ≥ 3 (raw byte7 ≥ 48), stored for the next accel
+ * notification. `D0.b.a()` subtracts them from the raw counts (additive,
+ * per axis) *before* scaling by `1/16384` and `atan2` — an additive offset
+ * does NOT cancel out of `atan2`, so `parseAccelPacket` applies it too.
  *
- * Battery and tier-1 temperature truncation (whole units, not fractional)
- * were added after directly decompiling the official `EasyLevel 5.0.7`
- * `.xapk` end to end (`Ly0/a;->i()`'s NOTIFY handler) — #116/#123's earlier
- * passes read the right formulas but missed the `(int)` casts the app
- * applies before its own clamp.
+ * **Calibration bias, legacy tier < 3:** the ViewModel defaults its tier
+ * to `16` (legacy) until a status notification arrives, and on legacy
+ * firmware reads accelX/Y/Z bias from bytes 12–17 of the `faf52c21-...`
+ * packet itself (gyro zeroed) into the same struct, through the same
+ * `D0.b.a()`. A legacy accel packet is therefore always 18 bytes and newer
+ * firmware's never carries bytes 12–17, so "payload ≥ 18 bytes" identifies
+ * the legacy format with no tier state across calls.
  *
- * **Bytes 8–19 calibration — #215 found these ARE used, contradicting an
- * earlier comment here that claimed they already were applied in Libell's
- * own math (they were not — `parseAccelPacket` ignored them entirely).**
- * `Ly0/a;->i()`'s `faf52c22-...` branch decodes bytes 8–19 as six signed
- * int16 LE — accelX, accelY, accelZ, gyroX, gyroY, gyroZ zero-bias offsets,
- * in the same axis order as the `faf52c21-...` packet — whenever firmware
- * tier ≥ 3 (raw byte7 ≥ 48), storing them for the next accel notification
- * to consume. `D0.b.a()`/the inline `D0.c` tier-≥-5 path both start by
- * subtracting this bias from the raw accel/gyro counts (`accelX_raw -
- * bias.accelX`, additive, matched by axis) *before* scaling by `1/16384`
- * (the standard ±2g/16-bit LSB size) and computing `atan2` — an additive
- * offset applied before the ratio, which does NOT cancel out of `atan2`
- * the way a shared multiplicative scale would. `parseAccelPacket` below
- * now applies this same additive correction.
- *
- * **Legacy firmware calibration (bytes 12–17 of `faf52c21-...` itself,
- * tier < 3) — now implemented (#217):** re-verified directly against
- * `Ly0/a;->i()`'s `faf52c21-...` branch. Whenever the last-known firmware
- * tier byte is < 48 (tier < 3 — read unconditionally, since this ViewModel
- * defaults `this.n` to `16` before any status notification has ever
- * arrived, i.e. the app itself assumes legacy firmware until told
- * otherwise), it reads three MORE signed int16 LE values straight out of
- * the same accel packet at bytes 12–17 — accelX, accelY, accelZ, in that
- * order, no gyro equivalent — into the *identical* bias struct
- * (`D0.b.f`/this module's `EasyLevelCalibration`) the tier-≥-3 status
- * bytes populate, with the gyro fields zeroed, then calls the *same*
- * bias-subtraction function (`D0.b.a()`) tier 3–4 firmware uses. Same
- * offsets, same axes, same additive semantics as the faf52c22 case above —
- * only the wire location differs. This means a legacy accel packet is
- * always 18 bytes, never 6 or 12: tier ≥ 3 firmware's shorter packets
- * never carry bytes 12–17 at all (confirmed by the same decompiled
- * branch), so `parseAccelPacket` below treats "payload ≥ 18 bytes" as a
- * reliable, purely-local proxy for "this is the legacy embedded-
- * calibration format," taking priority over any `calibration` argument
- * passed in — exactly mirroring the official app's own tier gate without
- * needing `parseAccelPacket` to track firmware tier as separate state
- * across calls (this module stays a pure function of each packet's own
- * bytes for this path, unlike the faf52c22-sourced case, which
- * necessarily depends on a previous notification).
- *
- * Deliberate simplification — do not reimplement the box's own filter:
- * `D0.b.a()`/`D0.c`'s tier-≥-3 path runs the bias-corrected accel-only
- * angle through a two-stage complementary filter (concrete IIR
- * coefficients ≈0.0083/0.005 per axis, plus a gyro-rate frame-rotation
- * step) before the app displays it — genuine smoothing/fusion for
- * responsiveness, confirmed structurally distinct from the bias/coordinate
- * correction above (which happens strictly before the filter, on the raw
- * per-sample reading). Libell does NOT reimplement that filter: roll/pitch
- * throughout this app is computed as `atan2(x, z)` / `atan2(y, z)`-style
- * trig (`src/domain/leveling.ts`), which only depends on the RATIO between
- * the (now bias-corrected) accelerometer axes — not their absolute unit or
- * scale. So beyond the bias subtraction, the accel triplet is mapped
- * directly into a `GravityVector` with no unit conversion: proportional
- * units are enough, exactly the same contract the phone sensor already
- * fulfills for `domain/`. This is simpler, avoids guessing undocumented
- * filter constants, and keeps all leveling math in the one already-tested
- * place.
+ * **Deliberately not reimplemented:** the app's tier-≥-3 two-stage
+ * complementary filter (IIR ≈0.0083/0.005 per axis plus a gyro-rate
+ * rotation step), which runs after the bias correction. Libell's leveling
+ * trig depends only on the ratio between the bias-corrected axes, so the
+ * accel triplet maps straight into a `GravityVector` with no unit
+ * conversion — the same contract the phone sensor fulfills.
  */
 import type { GravityVector } from '../domain/leveling';
 import type { EasyLevelMounting } from '../domain/settings';
@@ -187,14 +90,9 @@ function toDataView(data: PacketBytes): DataView {
 }
 
 /**
- * Zero-bias offsets decoded from `faf52c22-...` bytes 8–19 (#215) — six
- * signed int16 LE values, same axis order as the `faf52c21-...` accel/gyro
- * packet. Subtracted (additively, per axis) from the raw accel counts
- * before any leveling math, matching `Ly0/a;->i()`'s own
- * `accelX_raw - bias.accelX` step (see the module doc comment above).
- * `gyroX`/`gyroY`/`gyroZ` are decoded for completeness (and to document
- * `faf52c22-...`'s full byte layout) but never consumed downstream — the
- * gyro axes themselves are unused anywhere in this codebase.
+ * Zero-bias offsets from `faf52c22-...` bytes 8–19, same axis order as the
+ * `faf52c21-...` packet, subtracted per axis from the raw accel counts.
+ * The gyro fields document the full byte layout but are never consumed.
  */
 export interface EasyLevelCalibration {
   accelX: number;
@@ -205,28 +103,20 @@ export interface EasyLevelCalibration {
   gyroZ: number;
 }
 
-/** Legacy firmware (tier < 3, #217) appends its own accelX/Y/Z bias
- * directly to the `faf52c21-...` packet at bytes 12–17 — see the module
- * doc comment's "Legacy firmware calibration" section. A payload this long
- * (or longer) is never sent by tier-≥-3 firmware, so its presence alone
- * reliably identifies the legacy format, no separate tier tracking needed. */
+/** Legacy firmware (tier < 3) appends its own accelX/Y/Z bias to the
+ * `faf52c21-...` packet at bytes 12–17; tier-≥-3 firmware never sends a
+ * payload this long, so its length alone identifies the legacy format. */
 export const ACCEL_PACKET_WITH_LEGACY_CALIBRATION_MIN_BYTES = 18;
 
 /**
  * Parse `faf52c21-...`'s payload into a `GravityVector`. Returns `null`
- * when the payload is too short to contain even the accel triplet —
- * never throws, since firmware payload length is not fully verified
- * (#116).
+ * when the payload is too short for the accel triplet — never throws,
+ * since firmware payload length is not fully verified.
  *
- * `calibration` is the most recent `faf52c22-...` bias reading (#215, see
- * `parseEasyLevelStatus`'s `calibration` field) — omitted, or `null` before
- * one has arrived, or on firmware that never provides one (tier < 3), in
- * which case the raw accel counts pass through unmodified, exactly as
- * before #215. Ignored (#217) whenever the payload itself is
- * `ACCEL_PACKET_WITH_LEGACY_CALIBRATION_MIN_BYTES` or longer — that shape
- * only ever occurs on legacy (tier < 3) firmware, which carries its own
- * bias at bytes 12–17 instead, taking priority the same way the official
- * app's own tier gate would.
+ * `calibration` is the latest `faf52c22-...` bias; without one the raw
+ * counts pass through. Ignored when the payload carries its own legacy
+ * bias (`ACCEL_PACKET_WITH_LEGACY_CALIBRATION_MIN_BYTES` or longer),
+ * mirroring the official app's tier gate.
  */
 export function parseAccelPacket(
   data: PacketBytes,
@@ -254,31 +144,19 @@ export function parseAccelPacket(
 }
 
 /**
- * Applies the user's chosen mounting transform (#217, extended to all four
- * rotations by #222) to an already bias-corrected `GravityVector` — a
- * quarter, half or three-quarter turn of the (x, y) pair, `z` untouched in
- * every case (no rotation in this set changes which way is up); a no-op
- * for `'standard'`.
+ * Applies the user's mounting to an already bias-corrected
+ * `GravityVector` — a quarter, half or three-quarter turn of (x, y), `z`
+ * untouched; a no-op for `'standard'`.
  *
- * **Why four, when the official app models two (#222):** its
- * `"sensor_Placing"` 1/2 only covers 0° and 90° — wide-edge-forward or
- * short-edge-forward. A rectangular box bolted into a real vehicle can
- * just as easily end up 180° or 270° round, and those are the dangerous
- * two: they invert a sign rather than add an offset, so the installation
- * offset (R34, which subtracts a CONSTANT) cannot undo them. Level still
- * reads level, the calibration looks like it succeeded, and then the app
- * confidently names the wrong wheel. `'rotated180'`/`'rotated270'` are
- * the plain continuations of the same rotation group `#217` derived from
- * `LO0/e;->k()` (two quarter turns are the half turn, four return to the
- * start — asserted in the tests), not separately reverse-engineered
- * behavior: the official app simply never offers them.
- * See the module doc comment for the exact derivation from
- * `LO0/e;->k()`'s decompiled placement-1/2 branches. Deliberately a
- * separate step from `parseAccelPacket` (called after it, never inside
- * it): mounting is a Libell-side *display/orientation* choice the user
- * sets, not a fact recoverable from the packet itself the way calibration
- * is, and this keeps it trivially provable never to reach any other
- * `OrientationSensor` (the phone sensor never calls this function at all).
+ * **Why four, when the official app offers two:** a box can just as
+ * easily end up 180° or 270° round, and those are the dangerous two: they
+ * invert a sign, which the installation offset (R34, a constant) cannot
+ * undo — level still reads level, then the app names the wrong wheel. The
+ * extra two are continuations of the same rotation group derived from
+ * `LO0/e;->k()`, not separately reverse-engineered.
+ *
+ * Kept separate from `parseAccelPacket`: mounting is a user setting, not a
+ * packet fact, and this way it never reaches another `OrientationSensor`.
  */
 export function applyEasyLevelMounting(
   gravity: GravityVector,
@@ -297,22 +175,15 @@ export function applyEasyLevelMounting(
 }
 
 /**
- * `faf52c22-...` (NOTIFY/READ) status payload (#123) — battery, temperature,
- * firmware tier and (#215) calibration, decoded straight from the official
- * app's decompiled `Ly0/a;->i()` NOTIFY handler (class names are from the
- * `EasyLevel 5.0.7` `.xapk` decompiled for #215 — obfuscated names are not
- * stable across builds, see the module doc comment's `#116`/`#123`-era
- * names for the same handler in an earlier build). Bytes 8–19 additionally
- * carry six little-endian int16 zero/calibration values on firmware tier
- * ≥ 3 (byte7 ≥ 48) — see `calibration` below; #215 found these were
- * decoded by neither this function nor `parseAccelPacket`, contradicting
- * an earlier version of this comment that claimed they were already used.
+ * `faf52c22-...` (NOTIFY/READ) status payload — battery, temperature and
+ * firmware tier, plus calibration in bytes 8–19 on firmware tier ≥ 3
+ * (byte7 ≥ 48), as decoded by the app's `Ly0/a;->i()` handler.
  */
 export const STATUS_PACKET_MIN_BYTES = 8;
-/** Bytes 8–19 (`calibration`, #215) additionally require this many. */
+/** Bytes 8–19 (`calibration`) additionally require this many. */
 export const STATUS_PACKET_WITH_CALIBRATION_MIN_BYTES = 20;
 /** `firmwareTierFromByte`'s tier at and above which `faf52c22-...` carries
- * the bytes-8–19 calibration block (see the module doc comment, #215). */
+ * the bytes-8–19 calibration block. */
 const CALIBRATION_MIN_FIRMWARE_TIER = 3;
 
 export interface EasyLevelStatus {
@@ -322,18 +193,15 @@ export interface EasyLevelStatus {
   /** Bytes 2–3, little-endian uint16 "rawMv" run through
    * `clamp(trunc(rawMv × 0.1 − 200), 0, 100)` — a clean 2.0–3.0 V window
    * matching the CR2450 coin cell the EasyLevel manual specifies. Truncated
-   * to a whole percent: the official app's own `(int)` cast does this
-   * before its clamp, confirmed by decompiling `EasyLevel 5.0.7`'s
-   * `Ly0/a;->i()` handler directly (not just a bytecode fragment
-   * read, as #116's original pass was). */
+   * to a whole percent, like the official app's `(int)` cast before its
+   * clamp. */
   batteryPercent: number;
   /** Firmware-tier-dependent formula (see `parseEasyLevelStatus`). */
   temperatureCelsius: number;
-  /** Bytes 8–19 (#215) — `null` when the payload is shorter than
+  /** Bytes 8–19 — `null` when the payload is shorter than
    * `STATUS_PACKET_WITH_CALIBRATION_MIN_BYTES` or `firmwareTier` is below
-   * `CALIBRATION_MIN_FIRMWARE_TIER`, matching the official app's own gate
-   * (it never reads these bytes on older firmware either). Feed this
-   * straight into `parseAccelPacket`'s `calibration` parameter. */
+   * `CALIBRATION_MIN_FIRMWARE_TIER`, matching the official app's gate. Feed
+   * this into `parseAccelPacket`'s `calibration` parameter. */
   calibration: EasyLevelCalibration | null;
 }
 
@@ -342,22 +210,14 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /**
- * Byte 7's tier thresholds — firmware tier 1 (byte7 < 32) uses one
- * temperature formula, tier 2+ (byte7 ≥ 32) another; the remaining
- * thresholds (48/64/80/96/112) only matter for the calibration-bytes gate
- * (tier ≥ 3) and diagnostics, not the temperature formula itself.
+ * Byte 7's tier thresholds — tier 1 (byte7 < 32) and tier 2+ use different
+ * temperature formulas; the higher thresholds only matter for the
+ * calibration gate (tier ≥ 3) and diagnostics.
  *
- * `byte7` is the raw byte value (0–255), same as everywhere else in this
- * file — but the official app reads it into a Java `byte` (-128..127) and
- * compares *that* signed value against these thresholds, confirmed by
- * decompiling `EasyLevel 5.0.7` directly. Sign extension means any raw
- * byte ≥ 128 is always negative in the app's own comparison, and therefore
- * always resolves to tier 1 — never tier 5–7, however high the raw byte
- * is. Almost certainly never hit by any real box (tier climbs by 16 per
- * step, so byte7 ≥ 128 would already be an unheard-of tier 8+), but this
- * matches the app's own byte-for-byte behavior rather than a plausible-
- * looking guess, for the exact "unfamiliar firmware tier" case the debug
- * page (`boxStatusPage.ts`) exists to surface honestly.
+ * `byte7` is the raw 0–255 value, but the official app compares it as a
+ * signed Java `byte`, so any raw byte ≥ 128 resolves to tier 1. Unlikely
+ * on a real box, but mirrored byte for byte so the debug page shows an
+ * unfamiliar tier honestly.
  */
 export function firmwareTierFromByte(byte7: number): number {
   const signed = byte7 >= 128 ? byte7 - 256 : byte7;
@@ -371,11 +231,9 @@ export function firmwareTierFromByte(byte7: number): number {
 }
 
 /**
- * Parse `faf52c22-...`'s payload into battery/temperature/firmware-tier
- * and (#215) calibration. Returns `null` when the payload is too short to
- * contain even the first 8 bytes this needs — never throws, same "firmware
- * payload length is not fully verified" discipline `parseAccelPacket`
- * follows (#116/#123).
+ * Parse `faf52c22-...`'s payload. Returns `null` when it is shorter than
+ * the 8 bytes this needs — never throws, since firmware payload length is
+ * not fully verified.
  */
 export function parseEasyLevelStatus(data: PacketBytes): EasyLevelStatus | null {
   const view = toDataView(data);
@@ -389,27 +247,18 @@ export function parseEasyLevelStatus(data: PacketBytes): EasyLevelStatus | null 
   const rawMv = view.getUint16(2, true);
   const batteryPercent = clamp(Math.trunc(rawMv * 0.1 - 200), 0, 100);
 
-  // Firmware tier 1 boxes pack temperature into byte 0 alone (signed,
-  // 1/16 °C per unit); tier 2+ upgraded to a full signed int16 LE across
-  // bytes 0–1 at 1/100 °C per unit. Branching on the tier here, not just
-  // implementing the newer formula, matters: an old-firmware box would
-  // otherwise report a wrong temperature. Tier 1 additionally truncates to
-  // a whole degree (another `(int)` cast in the official app, applied only
-  // on this branch — tier 2+ keeps the fractional 1/100 °C precision).
-  //
-  // Branches on `firmwareTier === 1` (not `byte7 < 32` directly) so this
-  // stays exactly in sync with `firmwareTierFromByte`'s own signed-byte
-  // comparison above — including its byte7 ≥ 128 quirk — with no risk of
-  // the two silently drifting apart.
+  // Tier 1 packs temperature into byte 0 alone (signed, 1/16 °C per unit,
+  // offset 25, truncated to a whole degree by the app's `(int)` cast); tier
+  // 2+ uses a signed int16 LE across bytes 0–1 at 1/100 °C. Branches on
+  // `firmwareTier`, not `byte7 < 32`, so the signed-byte quirk stays in one
+  // place.
   const temperatureCelsius =
     firmwareTier === 1
       ? clamp(Math.trunc(view.getInt8(0) / 16 + 25), -40, 80)
       : clamp(view.getInt16(0, true) / 100, -40, 80);
 
-  // Bytes 8–19 (#215) — six signed int16 LE zero-bias values, gated the
-  // same way the official app gates them: both a long-enough payload and
-  // firmware tier ≥ 3. Older firmware's `faf52c22-...` genuinely has
-  // nothing here (the app never reads past byte 7 on that firmware either).
+  // Gated like the official app: a long-enough payload and tier ≥ 3 (the
+  // app never reads past byte 7 on older firmware).
   const calibration: EasyLevelCalibration | null =
     view.byteLength >= STATUS_PACKET_WITH_CALIBRATION_MIN_BYTES &&
     firmwareTier >= CALIBRATION_MIN_FIRMWARE_TIER
