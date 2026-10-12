@@ -117,6 +117,13 @@ vector, the direct equivalent of Android's `TYPE_GRAVITY`. Fall back to
 angle, converting back into an equivalent gravity vector. Either way, apply an exponential
 moving average to suppress jitter.
 
+A Sensorbox delivers far fewer samples, raw (the Xparkle is polled twice a second), so
+its reading is smoothed on the level screen instead: `src/app/levelFrame.ts` runs it
+through a time-based low-pass (`src/domain/boxSmoothing.ts`) on every frame, so the
+screen glides between two samples rather than jumping once per sample (#457). A new
+source or a lost reading starts it afresh. The box's own page and box zeroing read the
+raw values.
+
 ### Permission model
 
 | Platform                | Behavior                                                                                                     |

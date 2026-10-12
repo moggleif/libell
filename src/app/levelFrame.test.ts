@@ -41,6 +41,7 @@ function setup(initial: Setup = {}) {
   };
   const settings: LevelSettings = { ...DEFAULT_SETTINGS, ...initial.settings };
   const calls: string[] = [];
+  const ticked: GravityVector[] = [];
   const view: LevelFrameView = {
     pause: () => void calls.push('pause'),
     showNoData: (unavailable, silent) => void calls.push(`noData:${unavailable}:${silent}`),
@@ -50,7 +51,8 @@ function setup(initial: Setup = {}) {
     showPose: (problem) =>
       void calls.push(`pose:${problem.message}:${problem.hint}:${problem.offerSensorPage}`),
     hidePose: () => void calls.push('hidePose'),
-    tick: (_gravity, nowMs) => {
+    tick: (gravity, nowMs) => {
+      ticked.push(gravity);
       calls.push(`tick:${nowMs}`);
       return world.engine;
     },
@@ -86,7 +88,7 @@ function setup(initial: Setup = {}) {
     frame(now);
     return [...calls];
   };
-  return { run, world, calls, refreshStatus, externalSensors, playGuidancePulse };
+  return { run, world, calls, ticked, refreshStatus, externalSensors, playGuidancePulse };
 }
 
 describe('createLevelFrame', () => {
@@ -299,6 +301,46 @@ describe('createLevelFrame', () => {
       rocking.world.gravity = ROCKED;
       rocking.run(1000);
       expect(rocking.playGuidancePulse).toHaveBeenCalledTimes(1);
+    });
+  });
+  // #457: the Xparkle is polled twice a second, so its raw reading jumps
+  // once per poll; the screen glides between polls instead.
+  describe('box smoothing', () => {
+    it('glides a box reading over the frames between two polls', () => {
+      const { run, world, ticked } = setup({ source: 'xparkle' });
+      run(0);
+      world.gravity = ROCKED;
+      for (let t = 16; t < 500; t += 16) run(t);
+      const xs = ticked.slice(1).map((g) => g.x);
+      xs.slice(1).forEach((x, i) => expect(x).toBeGreaterThan(xs[i] ?? Infinity));
+      expect(xs[xs.length - 1]).toBeLessThan(ROCKED.x);
+    });
+
+    it('passes the phone reading through, it is smoothed at the sensor', () => {
+      const { run, world, ticked } = setup({ source: 'phone' });
+      run(0);
+      world.gravity = ROCKED;
+      run(16);
+      expect(ticked[1]).toEqual(ROCKED);
+    });
+
+    it('starts afresh when the source changes', () => {
+      const { run, world, ticked } = setup({ source: 'xparkle' });
+      run(0);
+      world.source = 'easylevel';
+      world.gravity = ROCKED;
+      run(16);
+      expect(ticked[1]).toEqual(ROCKED);
+    });
+
+    it('starts afresh after the box reading was lost', () => {
+      const { run, world, ticked } = setup({ source: 'xparkle' });
+      run(0);
+      world.gravity = null;
+      run(16);
+      world.gravity = ROCKED;
+      run(32);
+      expect(ticked[1]).toEqual(ROCKED);
     });
   });
 });

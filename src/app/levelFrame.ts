@@ -4,9 +4,10 @@
  * `levelScreenView.ts` behind `LevelFrameView`; this module only decides.
  */
 import { createAudioGuidance, type GuidanceDirection } from '../domain/audioGuidance';
+import { BOX_SMOOTHING_TIME_CONSTANT_MS, createGravityLowPass } from '../domain/boxSmoothing';
 import { tiltFromGravity, type GravityVector } from '../domain/leveling';
 import { createExternalPoseDetector, createPoseDetector, type ExternalPose } from '../domain/pose';
-import type { LevelSettings } from '../domain/settings';
+import type { LevelSettings, SensorSource } from '../domain/settings';
 import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from '../domain/staleness';
 import { createStillnessDetector } from '../domain/stillness';
 import type { ExternalSensorController } from '../sensor/externalSensorController';
@@ -77,6 +78,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
   const isStill = createStillnessDetector();
   const celebration = createCelebration(deps);
   const guidance = createGuidancePulses(deps);
+  const smoothBox = createBoxSmoothing();
 
   function frame(nowMs: number): void {
     // Refreshed every frame, a page open or not: a lost box is only ever
@@ -87,7 +89,8 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
       view.pause();
       return;
     }
-    const gravity = deps.sensor().getGravity();
+    const sensor = deps.sensor();
+    const gravity = smoothBox(sensor.getSource(), sensor.getGravity(), nowMs);
     if (gravity) showReading(gravity, nowMs);
     else showNoData(nowMs);
   }
@@ -158,6 +161,26 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
   }
 
   return frame;
+}
+
+/**
+ * A box's few, raw readings glide frame by frame (`domain/boxSmoothing.ts`);
+ * the phone's are smoothed at the sensor already. A new source or a lost
+ * reading starts the glide afresh, so it never blends two sources.
+ */
+function createBoxSmoothing() {
+  const lowPass = createGravityLowPass(BOX_SMOOTHING_TIME_CONSTANT_MS);
+  let lastSource: SensorSource | null = null;
+  return (
+    source: SensorSource,
+    gravity: GravityVector | null,
+    nowMs: number,
+  ): GravityVector | null => {
+    if (source !== lastSource || gravity === null || source === 'phone') lowPass.reset();
+    lastSource = source;
+    if (gravity === null || source === 'phone') return gravity;
+    return lowPass(gravity, nowMs);
+  };
 }
 
 function phoneProblem(message: MessageKey): PoseProblem {
