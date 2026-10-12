@@ -978,7 +978,8 @@ const appHint = (page) => page.locator('#app .app__hint').first();
 // link, and how the phone sensor is started.
 async function startupFlow(browser) {
   // Chromium 153 offers iOS's requestPermission too; these hide it so a
-  // case pins the start-up without the Start tap, or stub it as iOS's.
+  // case pins the start-up without the Start tap, or stub it as iOS's,
+  // which also hides Chromium's userAgentData marker (#410).
   const permission = (motion, orientation) => `
     for (const [api, value] of [
       [window.DeviceMotionEvent, ${motion}],
@@ -988,6 +989,9 @@ async function startupFlow(browser) {
     }
   `;
   const notIos = permission('undefined', 'undefined');
+  const ios = (answer) =>
+    permission(...Array(2).fill(`() => Promise.resolve('${answer}')`)) +
+    'delete Navigator.prototype.userAgentData;';
 
   // The top bar is labelled and reserves the corner its icon sits in.
   let app = await openApp(browser, 'xparkle-sim', {}, undefined, notIos);
@@ -1097,18 +1101,26 @@ async function startupFlow(browser) {
   assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
   await app.context.close();
 
+  // Chrome 153+ offers requestPermission but needs no tap (#410): straight
+  // to the level screen, even when that request would never settle.
+  app = await openApp(
+    browser,
+    'xparkle-sim',
+    {},
+    undefined,
+    permission(...Array(2).fill('() => new Promise(() => {})')),
+  );
+  page = app.page;
+  await page.locator('#app.app--level').waitFor();
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+
   // iOS asks for motion access on a tap: Start, then the level screen.
   for (const [answer, expected] of [
     ['granted', null],
     ['denied', 'denied'],
   ]) {
-    app = await openApp(
-      browser,
-      'xparkle-sim',
-      {},
-      undefined,
-      permission(...Array(2).fill(`() => Promise.resolve('${answer}')`)),
-    );
+    app = await openApp(browser, 'xparkle-sim', {}, undefined, ios(answer));
     page = app.page;
     assert(
       (await appHint(page).textContent()) ===

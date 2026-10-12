@@ -25,7 +25,8 @@ URL and must keep working with no signal.
 - **Given** I am on iOS, where motion access requires a user gesture
 - **When** the app opens
 - **Then** a single clear "Start" button is shown, and one tap grants motion access and
-  reveals the level. On Android no prompt appears at all.
+  reveals the level. On Android no prompt appears at all, even in Chrome 153+, which
+  offers iOS's permission API too (#410).
 - **Given** motion access is denied or the page is served over plain HTTP
 - **Then** the app explains why it cannot read the tilt instead of showing a frozen level.
 
