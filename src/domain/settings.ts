@@ -348,8 +348,20 @@ export interface Calibration {
 /** Offsets beyond this are a mis-tap, not a phone bias. */
 const MAX_CALIBRATION_DEG = 15;
 
-/** Validate a stored calibration; null when missing or corrupt. */
-export function parseCalibration(value: unknown): Calibration | null {
+/**
+ * The widest a tilt can read (`atan2`'s range). Since #411 ("Varning är
+ * rätt. Aldrig stopp.") the phone's calibration and vehicle zero may be
+ * stored beyond 15° when the user goes ahead despite the warning, so
+ * reading them back only rejects what no sensor could have produced.
+ */
+export const MAX_TILT_DEG = 180;
+
+/** Validate a stored calibration; null when missing, corrupt or beyond
+ * `maxDeg` on either axis (default: the 15° capture limit). */
+export function parseCalibration(
+  value: unknown,
+  maxDeg: number = MAX_CALIBRATION_DEG,
+): Calibration | null {
   if (typeof value !== 'object' || value === null) return null;
   const raw = value as Record<string, unknown>;
   const rollDeg = raw.rollDeg;
@@ -359,8 +371,8 @@ export function parseCalibration(value: unknown): Calibration | null {
     typeof pitchDeg !== 'number' ||
     !Number.isFinite(rollDeg) ||
     !Number.isFinite(pitchDeg) ||
-    Math.abs(rollDeg) > MAX_CALIBRATION_DEG ||
-    Math.abs(pitchDeg) > MAX_CALIBRATION_DEG
+    Math.abs(rollDeg) > maxDeg ||
+    Math.abs(pitchDeg) > maxDeg
   ) {
     return null;
   }

@@ -28,7 +28,7 @@
  * run has nothing to check or clear yet, and Settings keeps them under More.
  */
 import type { AppearanceSetting, Calibration } from '../domain/settings';
-import { flipCalibration } from '../domain/calibration';
+import { flipCalibration, type CaptureResult } from '../domain/calibration';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
 
@@ -39,16 +39,19 @@ export interface CalibrationOptions {
    */
   appearance: AppearanceSetting;
   getCalibration(): Calibration | null;
-  /** Capture the current tilt as the phone's zero point. Returns an error text, or null on success. */
-  calibrate(): string | null;
+  /** Capture the current tilt as the phone's zero point: null on success,
+   * an error text, or a warning that offers "Calibrate anyway" (#411) —
+   * `anyway` is set when the user chose it. */
+  calibrate(anyway?: boolean): CaptureResult;
   /** Raw (uncalibrated) tilt reading for the flip flow, or an error text. */
   readTilt(): Calibration | string;
   applyCalibration(calibration: Calibration): void;
   clearCalibration(): void;
   /** The vehicle zero (#83): the phone spot's own tilt, captured with the vehicle verified level. */
   getVehicleCalibration(): Calibration | null;
-  /** Capture the current position as level. Returns an error text, or null on success. */
-  calibrateVehicle(): string | null;
+  /** Capture the current position as level — answers like `calibrate`,
+   * with "Zero anyway" for its warning (#411). */
+  calibrateVehicle(anyway?: boolean): CaptureResult;
   /** When each calibration was captured (#87) — null when unknown. */
   getCalibrationCapturedAt(): number | null;
   getVehicleCalibrationCapturedAt(): number | null;
@@ -234,6 +237,20 @@ export function createCalibrationSection(
   const vehiclePill = document.createElement('span');
   if (modern) vehiclePill.className = 'calibration-card__pill';
 
+  // "… anyway" (#411, "Varning är rätt. Aldrig stopp."): shown only while a
+  // capture's tilt warning is up — the warning says what looks wrong, the
+  // button leaves the call to the user.
+  const makeAnyway = (key: 'calibration.anyway' | 'calibration.vehicle.anyway') => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'menu__action menu__action--secondary';
+    button.textContent = t(key);
+    button.hidden = true;
+    return button;
+  };
+  const calibrateAnywayButton = makeAnyway('calibration.anyway');
+  const vehicleAnywayButton = makeAnyway('calibration.vehicle.anyway');
+
   // Check buttons (#87): compare the current reading against the stored
   // zero and answer plainly — grayed out while nothing is stored.
   const checkButton = document.createElement('button');
@@ -257,11 +274,21 @@ export function createCalibrationSection(
     if (phoneActive) {
       // Clear/Check are re-derived by the refreshes; the capture actions
       // are only ever disabled by this gate, so lift it here.
-      for (const button of [calibrateButton, flipButton, vehicleButton]) button.disabled = false;
+      for (const button of [
+        calibrateButton,
+        calibrateAnywayButton,
+        flipButton,
+        vehicleButton,
+        vehicleAnywayButton,
+      ]) {
+        button.disabled = false;
+      }
       return;
     }
     for (const button of [
       calibrateButton,
+      calibrateAnywayButton,
+      vehicleAnywayButton,
       clearButton,
       checkButton,
       flipButton,
@@ -275,6 +302,8 @@ export function createCalibrationSection(
 
   function refreshCalibration(error?: string): void {
     const calibration = options.getCalibration();
+    calibrateAnywayButton.hidden = true;
+    calibrationStatus.classList.remove('menu__text--warning');
     if (error) {
       calibrationStatus.textContent = error;
     } else if (checklist) {
@@ -306,6 +335,8 @@ export function createCalibrationSection(
 
   function refreshVehicle(error?: string): void {
     const vehicle = options.getVehicleCalibration();
+    vehicleAnywayButton.hidden = true;
+    vehicleStatus.classList.remove('menu__text--warning');
     if (error) {
       vehicleStatus.textContent = error;
     } else if (checklist) {
@@ -332,11 +363,31 @@ export function createCalibrationSection(
   }
   // `openStep` (checklist only): a step showing a message stays open; a
   // success or a clear hands over to the next undone step.
-  vehicleButton.addEventListener('click', () => {
-    const error = options.calibrateVehicle() ?? undefined;
-    openStep = error ? 'vehicle' : null;
-    refreshVehicle(error);
-  });
+  /** Shows a capture's answer; a tilt warning brings its "anyway" button. */
+  function showCapture(
+    result: CaptureResult,
+    step: 'phone' | 'vehicle',
+    refresh: (message?: string) => void,
+    status: HTMLElement,
+    anywayButton: HTMLButtonElement,
+  ): void {
+    const message = typeof result === 'object' && result ? result.warning : result;
+    openStep = message ? step : null;
+    refresh(message ?? undefined);
+    if (typeof result !== 'object' || !result) return;
+    status.classList.add('menu__text--warning');
+    anywayButton.hidden = false;
+  }
+  const captureVehicle = (anyway: boolean) =>
+    showCapture(
+      options.calibrateVehicle(anyway),
+      'vehicle',
+      refreshVehicle,
+      vehicleStatus,
+      vehicleAnywayButton,
+    );
+  vehicleButton.addEventListener('click', () => captureVehicle(false));
+  vehicleAnywayButton.addEventListener('click', () => captureVehicle(true));
   vehicleClearButton.addEventListener('click', () => {
     options.clearVehicleCalibration();
     openStep = null;
@@ -350,11 +401,16 @@ export function createCalibrationSection(
     openStep = 'vehicle';
     refreshVehicle(options.checkVehicleCalibration());
   });
-  calibrateButton.addEventListener('click', () => {
-    const error = options.calibrate() ?? undefined;
-    openStep = error ? 'phone' : null;
-    refreshCalibration(error);
-  });
+  const capturePhone = (anyway: boolean) =>
+    showCapture(
+      options.calibrate(anyway),
+      'phone',
+      refreshCalibration,
+      calibrationStatus,
+      calibrateAnywayButton,
+    );
+  calibrateButton.addEventListener('click', () => capturePhone(false));
+  calibrateAnywayButton.addEventListener('click', () => capturePhone(true));
   clearButton.addEventListener('click', () => {
     options.clearCalibration();
     openStep = null;
@@ -474,6 +530,7 @@ export function createCalibrationSection(
       hint('calibration.step.phone.hint'),
       calibrateButton,
       calibrationStatus,
+      calibrateAnywayButton,
       flipLink,
       flipBlock,
       makeMore(checkButton, clearButton),
@@ -486,6 +543,7 @@ export function createCalibrationSection(
       hint('calibration.step.vehicle.hint'),
       vehicleButton,
       vehicleStatus,
+      vehicleAnywayButton,
       makeMore(vehicleCheckButton, vehicleClearButton),
     );
 
@@ -555,6 +613,7 @@ export function createCalibrationSection(
       flipStatus,
       ...(maintenance ? [checkClearRow] : []),
       calibrationStatus,
+      calibrateAnywayButton,
     );
 
     const vehicleHeader = document.createElement('div');
@@ -571,6 +630,7 @@ export function createCalibrationSection(
       vehicleButton,
       ...(maintenance ? [vehicleRow] : []),
       vehicleStatus,
+      vehicleAnywayButton,
     );
 
     calibrationBody.className = 'calibration-cards';
@@ -589,6 +649,7 @@ export function createCalibrationSection(
       sensorHeading,
       calibrationIntro,
       calibrationStatus,
+      calibrateAnywayButton,
       calibrateButton,
       flipIntro,
       flipButton,
@@ -600,6 +661,7 @@ export function createCalibrationSection(
       vehicleHeading,
       vehicleIntro,
       vehicleStatus,
+      vehicleAnywayButton,
       vehicleButton,
       ...(maintenance ? [vehicleCheckButton, vehicleClearButton] : []),
     );

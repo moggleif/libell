@@ -474,3 +474,67 @@ describe('calibration checklist in Settings (#330)', () => {
     expect(buttonByText(section.element, 'Zero now').closest('[hidden]')).toBeNull();
   });
 });
+
+// #411: "Varning är rätt. Aldrig stopp." Above 15° the capture comes back as
+// a warning with a "… anyway" action, in every layout.
+describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
+  const layouts = [
+    ['classic', 'cards'],
+    ['modern', 'cards'],
+    ['modern', 'checklist'],
+  ] as const;
+
+  for (const [appearance, layout] of layouts) {
+    it(`calibrates the phone anyway (${appearance} ${layout})`, () => {
+      const calibrate = vi.fn((anyway?: boolean) =>
+        anyway ? null : { warning: 'Does not look flat' },
+      );
+      const section = createCalibrationSection(makeOptions({ appearance, calibrate }), layout);
+      expect(buttonByText(section.element, t('calibration.anyway'))?.hidden ?? true).toBe(true);
+      buttonByText(section.element, t('calibration.now')).click();
+      expect(section.element.textContent).toContain('Does not look flat');
+      const anyway = buttonByText(section.element, t('calibration.anyway'));
+      expect(anyway.hidden).toBe(false);
+      anyway.click();
+      expect(calibrate).toHaveBeenLastCalledWith(true);
+      expect(anyway.hidden).toBe(true);
+      expect(section.element.textContent).not.toContain('Does not look flat');
+    });
+
+    it(`zeroes the vehicle anyway (${appearance} ${layout})`, () => {
+      const calibrateVehicle = vi.fn((anyway?: boolean) =>
+        anyway ? null : { warning: 'Is the vehicle level?' },
+      );
+      const section = createCalibrationSection(
+        makeOptions({ appearance, calibrateVehicle }),
+        layout,
+      );
+      const zeroNow =
+        layout === 'checklist' ? 'calibration.step.vehicle.now' : 'calibration.vehicle.now';
+      buttonByText(section.element, t(zeroNow)).click();
+      expect(section.element.textContent).toContain('Is the vehicle level?');
+      const anyway = buttonByText(section.element, t('calibration.vehicle.anyway'));
+      expect(anyway.hidden).toBe(false);
+      anyway.click();
+      expect(calibrateVehicle).toHaveBeenLastCalledWith(true);
+      expect(anyway.hidden).toBe(true);
+    });
+  }
+
+  it('offers no "anyway" for a plain error, which going ahead cannot fix', () => {
+    const section = createCalibrationSection(makeOptions({ calibrate: () => 'no sensor' }));
+    buttonByText(section.element, t('calibration.now')).click();
+    expect(section.element.textContent).toContain('no sensor');
+    expect(buttonByText(section.element, t('calibration.anyway')).hidden).toBe(true);
+  });
+
+  it('keeps the checklist step open while the warning shows', () => {
+    const section = createCalibrationSection(
+      makeOptions({ calibrate: () => ({ warning: 'Does not look flat' }) }),
+      'checklist',
+    );
+    buttonByText(section.element, t('calibration.now')).click();
+    const phone = section.element.querySelector<HTMLElement>('.box-step__body')!;
+    expect(phone.hidden).toBe(false);
+  });
+});

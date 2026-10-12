@@ -290,8 +290,9 @@ export const fr: Messages = {
   'calibration.err.notRunning':
     'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
     'l’écran principal.',
-  'calibration.err.notFlat':
-    'Le téléphone ne semble pas à plat — posez-le sur une surface de niveau et réessayez.',
+  'calibration.warn.notFlat':
+    'Cela ne semble pas plat (plus de 15°), l’étalonnage sera donc faux. Posez le téléphone sur une surface plane, ou étalonnez quand même.',
+  'calibration.anyway': 'Étalonner quand même',
   'calibration.sensor.h': 'Étalonner le téléphone',
   'calibration.vehicle.h': 'Mettre le véhicule à zéro',
   'calibration.vehicle.intro':
@@ -303,6 +304,9 @@ export const fr: Messages = {
     'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
   'calibration.vehicle.err.notFlat':
     'Cela ressemble à plus qu’une inclinaison de pose (>15°) — le véhicule est-il vraiment de niveau ?',
+  'calibration.vehicle.warn.notFlat':
+    'Cela ne semble pas de niveau (plus de 15°). Le véhicule est-il vraiment de niveau ? Mettez à zéro quand même si vous en êtes sûr.',
+  'calibration.vehicle.anyway': 'Mettre à zéro quand même',
   'calibration.age.today': '(aujourd’hui)',
   'calibration.age.days': '(il y a {n} jours)',
   'calibration.check': 'Vérifier',
