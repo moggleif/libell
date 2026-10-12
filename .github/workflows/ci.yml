@@ -11,9 +11,12 @@ on:
 permissions:
   contents: read
 
+# The two slow Playwright checks, `flows` and `fit`, run as their own jobs
+# beside the rest instead of after it (#473). Each job builds the app itself:
+# the build takes seconds, less than passing dist/ between jobs.
 jobs:
-  build:
-    name: Check, Test & Build
+  checks:
+    name: Checks, unit tests & smoke
     runs-on: ubuntu-latest
 
     steps:
@@ -45,17 +48,6 @@ jobs:
           npx playwright install --with-deps chromium
           npm run smoke
 
-      # The external-sensor flows through the real wiring in main.ts (#374),
-      # against the simulated boxes.
-      - name: Box flows in the built app
-        run: npm run flows
-
-      # The one check that can fail on a view growing taller than a phone
-      # screen (#239, #241) — the unit tests run in happy-dom, which has
-      # no layout engine and so measures every height as zero.
-      - name: Level view and guide fit one phone screen
-        run: npm run fit
-
       - name: Upload built site
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -63,3 +55,76 @@ jobs:
           path: dist/
           if-no-files-found: error
           retention-days: 30
+
+  # The external-sensor flows through the real wiring in main.ts (#374),
+  # against the simulated boxes.
+  flows:
+    name: Box flows in the built app
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Box flows in the built app
+        run: |
+          npx playwright install --with-deps chromium
+          npm run flows
+
+  # The one check that can fail on a view growing taller than a phone
+  # screen (#239, #241) — the unit tests run in happy-dom, which has
+  # no layout engine and so measures every height as zero.
+  fit:
+    name: Level view and guide fit one phone screen
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Level view and guide fit one phone screen
+        run: |
+          npx playwright install --with-deps chromium
+          npm run fit
+
+  # The required status check on main is named "Check, Test & Build", so
+  # this job keeps that name and passes only when all three jobs above
+  # passed. `always()` matters: without it a failed job would leave this
+  # one skipped, and GitHub counts a skipped required check as passing.
+  build:
+    name: Check, Test & Build
+    needs: [checks, flows, fit]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: All CI jobs passed
+        env:
+          RESULTS: ${{ needs.checks.result }} ${{ needs.flows.result }} ${{ needs.fit.result }}
+        run: |
+          echo "checks, flows, fit: ${RESULTS}"
+          for RESULT in ${RESULTS}; do
+            [ "$RESULT" = success ] || exit 1
+          done
