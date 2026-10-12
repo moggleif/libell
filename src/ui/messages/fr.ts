@@ -186,7 +186,7 @@ export const fr: Messages = {
   'onboard.legend.ok': 'Vert ✓ — cette roue est de niveau.',
   'onboard.legend.up': 'Orange ↑ — montez cette roue sur le palier indiqué.',
   'onboard.legend.no': 'Rouge ✕ — aucun palier ne suffit ; allez sur un endroit plus plat.',
-  'onboard.legend.dim': 'Gris – — pas de rampe à cette roue ; laissez-la telle quelle.',
+  'onboard.legend.dim': 'Gris – — pas de rampe à cette roue ; le chiffre indique ce qui manque.',
   'settings.wheelbase': 'Empattement',
   'settings.trackFront': 'Voie avant',
   'settings.trackRear': 'Voie arrière',
@@ -357,7 +357,7 @@ export const fr: Messages = {
     'Vert ✓ : c’est fait, rien à faire.\n' +
     'Orange ↑ : montez cette roue sur le palier indiqué à côté.\n' +
     'Rouge ✕ : vos rampes ne suffisent pas ici. Déplacez le véhicule.\n' +
-    'Gris – : pas de rampe à cette roue. Laissez-la telle quelle.\n' +
+    'Gris – : pas de rampe à cette roue. Le chiffre indique ce qui manque, si vous voulez glisser autre chose dessous.\n' +
     'Quand la bulle repose au milieu, vous êtes de niveau.',
   'help.what.t':
     'Posez le téléphone à plat dans le véhicule, le haut vers l’avant, toujours au même endroit.\n' +

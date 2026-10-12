@@ -274,7 +274,7 @@ export const en = {
   'onboard.legend.ok': 'Green ✓ — that wheel is level.',
   'onboard.legend.up': 'Orange ↑ — drive that wheel up onto the step shown.',
   'onboard.legend.no': 'Red ✕ — no step is enough; move to a flatter spot.',
-  'onboard.legend.dim': 'Gray – — no ramp at that wheel; leave it as it is.',
+  'onboard.legend.dim': 'Gray – — no ramp at that wheel; the figure shows how much it lacks.',
   'settings.wheelbase': 'Wheelbase',
   'settings.trackFront': 'Track width front',
   'settings.trackRear': 'Track width rear',
@@ -470,7 +470,7 @@ export const en = {
     'Green ✓: done, nothing to do.\n' +
     'Orange ↑: drive that wheel up onto the step shown next to it.\n' +
     'Red ✕: your ramps are not enough here. Move the vehicle.\n' +
-    'Gray –: no ramp at that wheel. Leave it as it is.\n' +
+    'Gray –: no ramp at that wheel. The figure shows how much it lacks, if you want to put something else under it.\n' +
     'When the bubble rests in the middle, you are level.',
   'help.what.t':
     'Lay the phone flat in the vehicle, top toward the front, in the same spot every time.\n' +

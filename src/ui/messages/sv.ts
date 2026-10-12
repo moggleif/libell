@@ -188,7 +188,8 @@ export const sv: Messages = {
   'onboard.legend.ok': 'Grönt ✓ — hjulet står i våg.',
   'onboard.legend.up': 'Orange ↑ — kör upp hjulet på steget som visas.',
   'onboard.legend.no': 'Rött ✕ — inget steg räcker; flytta till ett planare ställe.',
-  'onboard.legend.dim': 'Grått – — ingen kloss vid det hjulet, låt det vara.',
+  'onboard.legend.dim':
+    'Grått – — ingen kloss vid det hjulet; siffran visar hur mycket som saknas.',
 
   'settings.wheelbase': 'Hjulbas',
   'settings.trackFront': 'Spårvidd fram',
@@ -353,7 +354,7 @@ export const sv: Messages = {
     'Grönt ✓: klart, inget att göra.\n' +
     'Orange ↑: kör upp hjulet på steget som står bredvid.\n' +
     'Rött ✕: klossarna räcker inte här. Flytta fordonet.\n' +
-    'Grått –: ingen kloss vid det hjulet. Låt det vara.\n' +
+    'Grått –: ingen kloss vid det hjulet. Siffran visar hur mycket som saknas, om du vill lägga något annat under.\n' +
     'När bubblan vilar i mitten står du i våg.',
   'help.what.t':
     'Lägg telefonen plant i fordonet med ovansidan mot fronten, på samma plats varje gång.\n' +

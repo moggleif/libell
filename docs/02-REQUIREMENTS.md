@@ -94,12 +94,11 @@ URL and must keep working with no signal.
   on the shown step, red only when not even the highest step could fix that wheel by
   itself — move the vehicle instead — and toned-down gray (–) when it is low but gets
   no ramp: fewer ramps than low wheels, nothing to do at that wheel. A wheel a step
-  could fix is never red, even while the global plan leaves it short. Orange and red
-  wheels show their required lift (whole mm, or cm per R14). The gray state shows no
-  height at all (#368: a figure on a wheel to leave alone only raised the question of
-  what it meant; the status row says how far the ramps fall short, R6), and its step
-  line reads "No ramp" (screen-cleanup follow-up) rather than sitting blank, so it
-  reads as "nothing to do here", never as "level".
+  could fix is never red, even while the global plan leaves it short. Orange, red and
+  gray wheels show their required lift (whole mm, or cm per R14). The gray wheel keeps
+  its figure (#459, reversing #368) because the user may still put a board or similar
+  under it; its step line reads "No ramp" (screen-cleanup follow-up) rather than
+  sitting blank, so it never reads as "level".
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
@@ -711,7 +710,7 @@ URL and must keep working with no signal.
 - **Then** the diagram never asks me to ramp more wheels than that: the plan picks the
   combination of wheels and steps that leaves the vehicle closest to level (smallest
   remaining height deficit, ADR 0011), a low wheel that gets no ramp is toned down
-  (gray –, R5) rather than alarmed — there is nothing to do at it. The wheel cards
+  (gray –, R5) rather than alarmed — no ramp goes there, though it still shows its lift (#459). The wheel cards
   alone say which wheels to drive up (the status line no longer counts them, #252);
   the status line says the ramps are not enough when no placement helps at all. A
   boggie pair consumes two

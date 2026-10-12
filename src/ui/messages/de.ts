@@ -183,7 +183,7 @@ export const de: Messages = {
   'onboard.legend.ok': 'Grün ✓ — dieses Rad steht waagerecht.',
   'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe fahren.',
   'onboard.legend.no': 'Rot ✕ — keine Stufe reicht; such dir einen ebeneren Platz.',
-  'onboard.legend.dim': 'Grau – — an diesem Rad kein Keil; lass es so.',
+  'onboard.legend.dim': 'Grau – — an diesem Rad kein Keil; die Zahl zeigt, wie viel fehlt.',
   'settings.wheelbase': 'Radstand',
   'settings.trackFront': 'Spurweite vorn',
   'settings.trackRear': 'Spurweite hinten',
@@ -350,7 +350,7 @@ export const de: Messages = {
     'Grün ✓: fertig, nichts zu tun.\n' +
     'Orange ↑: fahr das Rad auf die daneben angezeigte Stufe.\n' +
     'Rot ✕: deine Keile reichen hier nicht. Stell das Fahrzeug um.\n' +
-    'Grau –: an diesem Rad kein Keil. Lass es so.\n' +
+    'Grau –: an diesem Rad kein Keil. Die Zahl zeigt, wie viel fehlt, falls du etwas anderes unterlegen willst.\n' +
     'Ruht die Blase in der Mitte, stehst du waagerecht.',
   'help.what.t':
     'Leg das Handy flach ins Fahrzeug, die Oberseite nach vorn, jedes Mal an dieselbe Stelle.\n' +
