@@ -128,7 +128,8 @@ they block a merge like any failing test. Each failure names the file and what t
   left alone, since they describe a module's interface. When the guard fails, drop
   `export` if the file uses the name itself, or delete the code if nothing does.
 - **Doc paths:** every repository path and file name mentioned in `README.md`,
-  `CLAUDE.md`, `SECURITY.md` and the numbered documents in `docs/` must exist. When you
+  `CLAUDE.md`, `SECURITY.md`, the numbered documents in `docs/` and the repo skills in
+  `.claude/skills/` must exist. When you
   rename or move a file, update the documents that name it in the same change. ADRs are
   dated records and are not checked.
 - **Coverage:** CI runs the unit tests with `npm run test:coverage`, which fails when
