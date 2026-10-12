@@ -1012,3 +1012,139 @@ describe('settings form — every change is saved at once (#328)', () => {
     expect(onSave.mock.lastCall![0]).toMatchObject({ wheelbaseMm: 4500, theme: 'dark' });
   });
 });
+
+// #420: pinned before createSettingsForm is split into smaller builders —
+// what each layout exposes to its host, and the captions it labels.
+describe('settings form — layouts and what they expose (#420)', () => {
+  const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
+  const preset = { id: 'p1', name: 'Ramp spot', offset: { rollDeg: 1, pitchDeg: 0 } };
+
+  function targetsHost(presets: () => (typeof preset)[]) {
+    return {
+      getTargetPresets: presets,
+      getActiveTargetId: () => null,
+      selectTarget: () => {},
+      addTargetPreset: () => null,
+      deleteTargetPreset: () => {},
+    };
+  }
+  const selected = (form: HTMLFormElement): string[] =>
+    [...form.querySelectorAll('.settings__tab[aria-selected="true"]')].map(
+      (tab) => (tab as HTMLElement).dataset.tab!,
+    );
+  const shown = (form: HTMLFormElement): string[] =>
+    [...form.querySelectorAll<HTMLElement>('[role="tabpanel"], .settings__tabpanel')]
+      .filter((panel) => !panel.hidden)
+      .map((panel) => panel.dataset.tab!);
+
+  it('Modern labels each tab button', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    const labels = [...form.querySelectorAll('.settings__tab')].map((tab) => tab.textContent);
+    expect(labels).toEqual([
+      t('settings.tab.vehicle'),
+      t('settings.tab.ramps'),
+      t('menu.calibration'),
+      t('settings.tab.level'),
+      t('settings.general'),
+    ]);
+  });
+
+  it('Modern puts the tab bar first, then one panel per tab', () => {
+    const form = createSettingsForm(modern, vi.fn());
+    expect(form.firstElementChild?.classList).toContain('settings__tabs');
+    expect(form.firstElementChild?.getAttribute('role')).toBe('tablist');
+    expect([...form.children].slice(1).map((panel) => (panel as HTMLElement).dataset.tab)).toEqual([
+      'vehicle',
+      'ramps',
+      'calibration',
+      'targets',
+      'general',
+    ]);
+  });
+
+  for (const id of ['vehicle', 'ramps', 'calibration', 'targets', 'general'] as const) {
+    it(`Modern selectTab('${id}') shows only that tab`, () => {
+      const form = createSettingsForm(modern, vi.fn());
+      form.selectTab!(id);
+      expect(selected(form)).toEqual([id]);
+      expect(shown(form)).toEqual([id]);
+    });
+  }
+
+  it('Modern selectTargetsTab and refreshOpenTab redraw the saved targets from the host', () => {
+    let presets: (typeof preset)[] = [];
+    const form = createSettingsForm(
+      modern,
+      vi.fn(),
+      undefined,
+      undefined,
+      targetsHost(() => presets),
+    );
+    presets = [preset];
+    form.selectTargetsTab!();
+    expect(form.textContent).toContain('Ramp spot');
+    presets = [];
+    form.refreshOpenTab!();
+    expect(form.textContent).not.toContain('Ramp spot');
+    expect(selected(form)).toEqual(['targets']);
+  });
+
+  it('Modern has no Classic pages', () => {
+    const form = createSettingsForm(modern, vi.fn(), undefined, { splitPages: true });
+    expect(form.classicPages).toBeUndefined();
+    expect(form.refreshTargetsPage).toBeUndefined();
+  });
+
+  it('Classic split pages mount the Vehicle page, have no tab selectors, and refresh targets', () => {
+    let presets: (typeof preset)[] = [];
+    const form = createSettingsForm(
+      classic,
+      vi.fn(),
+      undefined,
+      { splitPages: true },
+      targetsHost(() => presets),
+    );
+    expect([...form.children]).toEqual([form.classicPages!.vehicle]);
+    expect(form.selectTab).toBeUndefined();
+    expect(form.selectTargetsTab).toBeUndefined();
+    expect(form.refreshOpenTab).toBeUndefined();
+    presets = [preset];
+    form.refreshTargetsPage!();
+    expect(form.classicPages!.targets.textContent).toContain('Ramp spot');
+  });
+
+  it("the flat Classic page heads each tab's group, in tab order", () => {
+    const form = createSettingsForm(classic, vi.fn());
+    const headings = [...form.querySelectorAll(':scope > .settings__section')].map(
+      (heading) => heading.textContent,
+    );
+    expect(headings).toEqual([
+      t('settings.section.vehicle'),
+      t('settings.section.ramps'),
+      t('settings.tab.level'),
+      t('settings.general'),
+      t('onboard.sound.h'),
+    ]);
+    expect(form.classicPages).toBeUndefined();
+    expect(form.refreshTargetsPage).toBeUndefined();
+    expect(form.selectTab).toBeUndefined();
+  });
+
+  it('the flat Classic page keeps the compact ramp select, not the Ramps page', () => {
+    const form = createSettingsForm(classic, vi.fn());
+    expect(form.querySelector('.klossar__selected')).toBeNull();
+    expect(form.textContent).toContain(t('settings.ramp'));
+    expect(form.textContent).not.toContain(t('targets.normal'));
+  });
+
+  for (const compact of ['measurements', 'language', 'appearance', 'sound', 'ramps'] as const) {
+    it(`the ${compact} step exposes no tabs, pages or headings`, () => {
+      const form = createSettingsForm(modern, vi.fn(), undefined, { compact, splitPages: true });
+      expect(form.querySelector('.settings__tabs')).toBeNull();
+      expect(form.querySelector(':scope > .settings__section')).toBeNull();
+      expect(form.selectTab).toBeUndefined();
+      expect(form.classicPages).toBeUndefined();
+      expect(form.refreshTargetsPage).toBeUndefined();
+    });
+  }
+});
