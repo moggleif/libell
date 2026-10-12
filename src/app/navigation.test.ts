@@ -114,12 +114,12 @@ describe('createNavigation', () => {
       expect(calls).toEqual(['list']);
     });
 
-    it('opens Settings on its last tab in Modern, the section in Classic', () => {
+    it("opens the lamp's own section in Modern and Classic alike (#399)", () => {
       const modern = setup();
       modern.navigation.openLamp('vehicle');
       const classic = setup({ appearance: 'classic' });
       classic.navigation.openLamp('vehicle');
-      expect(modern.calls).toEqual(['settings']);
+      expect(modern.calls).toEqual(['settings:vehicle']);
       expect(classic.calls).toEqual(['menu:vehicle']);
     });
   });
