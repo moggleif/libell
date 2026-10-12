@@ -32,13 +32,14 @@ export function tiltLineText(tilt: Calibration | null, hasPosition: boolean): st
   return hasPosition ? '' : t('sensorStatus.reading', { value: '—' });
 }
 
+function celsiusText(temperatureCelsius: number | null | undefined): string {
+  return temperatureCelsius == null
+    ? t('sensorSource.detail.notAvailable')
+    : `${temperatureCelsius.toFixed(1)}°C`;
+}
+
 export function temperatureText(temperatureCelsius: number | null | undefined): string {
-  return t('sensorSource.detail.temperature', {
-    value:
-      temperatureCelsius == null
-        ? t('sensorSource.detail.notAvailable')
-        : `${temperatureCelsius.toFixed(1)}°C`,
-  });
+  return t('sensorSource.detail.temperature', { value: celsiusText(temperatureCelsius) });
 }
 
 /** `lastSampleAt` is `performance.now()`-based (monotonic, page-relative),
@@ -61,6 +62,7 @@ export function rawAccelText(rawAccel: GravityVector | null): string | null {
 export interface DebugSnapshot {
   name: string;
   state: SensorState;
+  temperatureCelsius: number | null | undefined;
   deviceId: string | null;
   lastSampleAge: string;
   rawAccel: GravityVector | null;
@@ -73,6 +75,7 @@ export function debugSummaryText(snapshot: DebugSnapshot): string {
   return [
     `Libell ${snapshot.name} debug info`,
     `Connection state: ${snapshot.state}`,
+    `Temperature: ${celsiusText(snapshot.temperatureCelsius)}`,
     `Device ID: ${snapshot.deviceId ?? notAvailable}`,
     `Last sample: ${snapshot.lastSampleAge}`,
     `Raw accelerometer (x/y/z): ${rawAccelText(snapshot.rawAccel) ?? notAvailable}`,
