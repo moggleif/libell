@@ -25,17 +25,21 @@
  * that doesn't require battery/temperature to share space with the
  * connect/disconnect controls.
  */
-import {
-  MAX_EASYLEVEL_CONNECT_DELAY_MS,
-  type Calibration,
-  type SensorSource,
-} from '../domain/settings';
+import type { Calibration, SensorSource } from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
 import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import { CHROME_FLAGS_ADDRESS, offersSilentReconnectTip } from '../sensor/silentReconnect';
-import { createBoxPasswordBlock, type BoxPasswordOptions } from './boxPasswordBlock';
+import { createBoxDebugDisclosure, type BoxDebugDisclosure } from './boxDebugDisclosure';
+import {
+  createBoxPasswordBlock,
+  type BoxPasswordBlock,
+  type BoxPasswordOptions,
+} from './boxPasswordBlock';
+import { boxConnection, type BoxConnection } from './boxConnection';
+import { connectButtonText, headerText, showsConnectButton, tiltLineText } from './boxStatusText';
+import { createElement } from './dom';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import { showToast } from './toast';
@@ -117,27 +121,179 @@ export interface BoxStatusPage {
   refresh(): void;
 }
 
-/** "0.4 s ago" from a `performance.now()`-based sample timestamp — never a
- * wall-clock date, since `getLastSampleAt()` is monotonic and
- * page-relative, not a `Date.now()` epoch value. */
-function ageText(lastSampleAt: number | null, nowMs: number): string {
-  if (lastSampleAt === null) return '—';
-  const seconds = Math.max(0, (nowMs - lastSampleAt) / 1000);
-  return t('sensorStatus.debug.age', { s: seconds.toFixed(1) });
+/**
+ * The header (#314, the #309 UX review): the connection state in a few
+ * words, and — whenever the box is not delivering — the one button that
+ * fixes it, right here. `redraw` is the whole page's refresh, so a connect
+ * from here shows on every row at once.
+ */
+function createHeader(
+  connectSensor: (() => Promise<SensorState>) | undefined,
+  redraw: () => void,
+): {
+  element: HTMLElement;
+  refresh(connection: BoxConnection, batteryPercent: number | null): void;
+} {
+  const element = createElement('div', 'box-header');
+  const stateRow = createElement('p', 'menu__text menu__text--status box-header__state');
+  const stateDot = createElement('span', 'box-header__dot');
+  stateDot.setAttribute('aria-hidden', 'true');
+  const stateText = document.createElement('span');
+  stateRow.append(stateDot, stateText);
+  const connectButton = createElement('button', 'menu__action');
+  connectButton.type = 'button';
+  connectButton.hidden = true;
+  element.append(stateRow, connectButton);
+
+  let connecting = false;
+  connectButton.addEventListener('click', () => {
+    if (!connectSensor) return;
+    connecting = true;
+    redraw();
+    void connectSensor().finally(() => {
+      connecting = false;
+      redraw();
+    });
+  });
+
+  function refresh(connection: BoxConnection, batteryPercent: number | null): void {
+    stateRow.classList.toggle('is-connected', connection === 'connected');
+    stateRow.classList.toggle('is-lost', connection === 'lost' || connection === 'password');
+    stateText.textContent = headerText(connection, batteryPercent);
+    connectButton.hidden = !showsConnectButton(Boolean(connectSensor), connection);
+    connectButton.disabled = connecting;
+    connectButton.textContent = connectButtonText(connecting, connection !== 'notConnected');
+  }
+  return { element, refresh };
 }
 
-function hexBytes(bytes: Uint8Array | null): string | null {
-  if (!bytes) return null;
-  return [...bytes].map((b) => b.toString(16).padStart(2, '0')).join(' ');
+/** One live status line (#332): the box's position, then its tilt. */
+function createLiveLine(): {
+  element: HTMLElement;
+  positionSlot: HTMLElement;
+  refresh(tilt: Calibration | null): void;
+} {
+  const element = createElement('p', 'menu__text box-live');
+  const positionSlot = createElement('span', 'box-live__position');
+  const tiltText = document.createElement('span');
+  element.append(positionSlot, tiltText);
+  function refresh(tilt: Calibration | null): void {
+    const hasPosition = [...positionSlot.children].some((c) => !(c as HTMLElement).hidden);
+    tiltText.textContent = tiltLineText(tilt, hasPosition);
+  }
+  return { element, positionSlot, refresh };
+}
+
+/** A plain threshold + hysteresis band (#123's `isLowBattery`). */
+function createLowBatteryRow(): {
+  element: HTMLElement;
+  refresh(batteryPercent: number | null): void;
+} {
+  const element = createElement('p', 'menu__text menu__text--warning');
+  element.hidden = true;
+  let wasLow = false;
+  function refresh(batteryPercent: number | null): void {
+    wasLow = batteryPercent === null ? false : isLowBattery(batteryPercent, wasLow);
+    element.hidden = !wasLow;
+    if (wasLow && batteryPercent !== null) {
+      element.textContent = t('sensorSource.lowBattery', {
+        value: `${Math.round(batteryPercent)}%`,
+      });
+    }
+  }
+  return { element, refresh };
+}
+
+/**
+ * Silent-reconnect tip (#310): for any box, closed by default, and only in
+ * a Chromium browser off iOS that has Web Bluetooth but not `getDevices()`
+ * (never Bluefy on iPhone: no `chrome://flags`). Without it a restarted app
+ * needs the device picker again (#307); the flag that adds it is not
+ * something every user should have to learn, so it lives here rather than
+ * in the reconnect prompt.
+ */
+function createSilentReconnectTip(): HTMLElement {
+  const element = createElement('details', 'menu__detail sensor-status__advanced');
+  const summary = createElement('summary', 'sensor-status__debug-summary');
+  summary.textContent = t('sensorStatus.advanced');
+  const intro = createElement('p', 'menu__text');
+  intro.textContent = t('sensorStatus.silentReconnect.intro');
+  const steps = createElement('p', 'menu__text');
+  steps.textContent = t('sensorStatus.silentReconnect.steps', { address: CHROME_FLAGS_ADDRESS });
+  const copyButton = createElement('button', 'menu__action menu__action--secondary');
+  copyButton.type = 'button';
+  copyButton.textContent = t('sensorStatus.silentReconnect.copy', {
+    address: CHROME_FLAGS_ADDRESS,
+  });
+  copyButton.addEventListener('click', () => {
+    void navigator.clipboard.writeText(CHROME_FLAGS_ADDRESS).then(
+      () => showToast(t('sensorStatus.silentReconnect.copied')),
+      () => showToast(t('sensorStatus.debug.copy.failed')),
+    );
+  });
+  element.append(summary, intro, steps, copyButton);
+  return element;
+}
+
+/** Everything on the page that redraws itself from the live values. */
+interface LiveParts {
+  header: ReturnType<typeof createHeader>;
+  passwordBlock: BoxPasswordBlock | null;
+  liveLine: ReturnType<typeof createLiveLine>;
+  lowBattery: ReturnType<typeof createLowBatteryRow>;
+  debug: BoxDebugDisclosure;
+}
+
+function refreshLiveParts(options: BoxStatusOptions, parts: LiveParts): void {
+  const isActive = options.getSensorSource() === options.sensor.id;
+  const connection = boxConnection(
+    isActive,
+    options.getSensorState(),
+    () => options.password?.isRejected() ?? false,
+  );
+  const health = isActive ? options.getHealth() : null;
+  const batteryPercent = health?.batteryPercent ?? null;
+  parts.header.refresh(connection, options.sensor.capabilities.battery ? batteryPercent : null);
+  parts.passwordBlock?.refresh();
+  // Only this box's own reading: while it is not in use, or has lost
+  // contact, the tilt would be the phone's or stale, so a dash (#343).
+  const delivering = connection === 'connected' || connection === 'password';
+  parts.liveLine.refresh(delivering ? options.getCalibratedTilt() : null);
+  parts.lowBattery.refresh(batteryPercent);
+  parts.debug.refresh(isActive, health);
+}
+
+/**
+ * Top to bottom: the header, the password fix, the live line, the battery
+ * warning, the box's setup (#226, #314) and its Disconnect (#332) — both
+ * built by `sensorSourceSection.ts` and placed by `sensorPage.ts` — then
+ * the debug info and the silent-reconnect tip.
+ */
+function appendInOrder(
+  body: HTMLElement,
+  options: BoxStatusOptions,
+  parts: LiveParts,
+  slots: { settingsSlot: HTMLElement; footerSlot: HTMLElement },
+): void {
+  const capabilities = options.sensor.capabilities;
+  body.append(parts.header.element);
+  if (parts.passwordBlock) body.append(parts.passwordBlock.element);
+  body.append(parts.liveLine.element);
+  if (capabilities.battery) body.append(parts.lowBattery.element);
+  body.append(slots.settingsSlot, slots.footerSlot);
+  // A source without raw bytes would show a disclosure full of dashes and
+  // a control that does nothing (#272).
+  if (capabilities.debugBytes) body.append(parts.debug.element);
+  if ((options.offersSilentReconnectTip ?? offersSilentReconnectTip)()) {
+    body.append(createSilentReconnectTip());
+  }
 }
 
 export function createBoxStatusPage(options: BoxStatusOptions): BoxStatusPage {
-  const notAvailable = t('sensorSource.detail.notAvailable');
-
   const page = createStandalonePage(
     t('sensorStatus.title', { name: options.sensor.displayName }),
     () => {
-      syncConnectDelay();
+      parts.debug.syncConnectDelay();
       refresh();
     },
   );
@@ -145,313 +301,32 @@ export function createBoxStatusPage(options: BoxStatusOptions): BoxStatusPage {
   // paint above it, not just rely on DOM append order elsewhere.
   page.element.classList.add('sensor-status-page');
 
-  // The header (#314, the #309 UX review): the connection state in a few
-  // words, and — whenever the box is not delivering — the one button that
-  // fixes it, right here. This page used to tell the user to tap a
-  // Reconnect button that only existed on the list page above it.
-  const header = document.createElement('div');
-  header.className = 'box-header';
-  const stateRow = document.createElement('p');
-  stateRow.className = 'menu__text menu__text--status box-header__state';
-  const stateDot = document.createElement('span');
-  stateDot.className = 'box-header__dot';
-  stateDot.setAttribute('aria-hidden', 'true');
-  const stateText = document.createElement('span');
-  stateRow.append(stateDot, stateText);
-  const connectButton = document.createElement('button');
-  connectButton.type = 'button';
-  connectButton.className = 'menu__action';
-  connectButton.hidden = true;
-  let connecting = false;
-  connectButton.addEventListener('click', () => {
-    if (!options.connectSensor) return;
-    connecting = true;
-    refresh();
-    void options.connectSensor().finally(() => {
-      connecting = false;
-      refresh();
-    });
-  });
-  header.append(stateRow, connectButton);
-  const passwordBlock = options.password
-    ? createBoxPasswordBlock(options.password, options.sensor.displayName)
-    : null;
-  // No signal-strength row (#228). Web Bluetooth exposes RSSI only through
-  // `advertisementreceived` (via `watchAdvertisements()`), never for an
-  // established GATT connection — and a BLE peripheral generally stops
-  // advertising once connected, which is exactly the state this page is
-  // open in. So there is nothing to measure here, ever.
-  // No battery row (the header says it) and no row for the box's own
-  // mounting setting (the direction step says it), #332.
-  const temperatureRow = document.createElement('p');
-  temperatureRow.className = 'menu__text';
-  // One live status line (#332): the box's position, then its tilt.
-  const readingRow = document.createElement('p');
-  readingRow.className = 'menu__text box-live';
-  const positionSlot = document.createElement('span');
-  positionSlot.className = 'box-live__position';
-  const tiltText = document.createElement('span');
-  readingRow.append(positionSlot, tiltText);
-  // A plain threshold + hysteresis band (#123's `isLowBattery`).
-  const lowBatteryRow = document.createElement('p');
-  lowBatteryRow.className = 'menu__text menu__text--warning';
-  lowBatteryRow.hidden = true;
-  let wasLowBattery = false;
-  const capabilities = options.sensor.capabilities;
-  page.body.append(header);
-  if (passwordBlock) page.body.append(passwordBlock.element);
-  page.body.append(readingRow);
-  if (capabilities.battery) page.body.append(lowBatteryRow);
+  // No signal-strength row (#228): Web Bluetooth exposes RSSI only while
+  // advertising, which a connected box has stopped. No battery row (the
+  // header says it) and no row for the box's own mounting setting (the
+  // direction step says it), #332.
+  const parts: LiveParts = {
+    header: createHeader(options.connectSensor, () => refresh()),
+    passwordBlock: options.password
+      ? createBoxPasswordBlock(options.password, options.sensor.displayName)
+      : null,
+    liveLine: createLiveLine(),
+    lowBattery: createLowBatteryRow(),
+    debug: createBoxDebugDisclosure(options),
+  };
+  const slots = {
+    settingsSlot: document.createElement('div'),
+    footerSlot: createElement('div', 'box-footer'),
+  };
+  appendInOrder(page.body, options, parts, slots);
+  const refresh = () => refreshLiveParts(options, parts);
 
-  // This sensor's own setup (#226, #314): the checklist built by
-  // `sensorSourceSection.ts` and placed here by `sensorPage.ts`.
-  const settingsSlot = document.createElement('div');
-  page.body.append(settingsSlot);
-
-  const footerSlot = document.createElement('div');
-  footerSlot.className = 'box-footer';
-  page.body.append(footerSlot);
-
-  // Debug info (a `debugBytes` box only): closed by default, same native-<details>
-  // discipline as the settings page's Advanced disclosure (#157) — no JS
-  // needed to track open/closed state. The whole block is hidden while the
-  // phone's own sensor is active — there is no "raw box data" to show.
-  const debugDetails = document.createElement('details');
-  debugDetails.className = 'menu__detail sensor-status__debug';
-  const debugSummary = document.createElement('summary');
-  debugSummary.className = 'sensor-status__debug-summary';
-  debugSummary.textContent = t('sensorStatus.debug');
-  const debugIntro = document.createElement('p');
-  debugIntro.className = 'menu__text';
-  debugIntro.textContent = t('sensorStatus.debug.intro');
-  const deviceIdRow = document.createElement('p');
-  deviceIdRow.className = 'menu__text';
-  const lastSampleRow = document.createElement('p');
-  lastSampleRow.className = 'menu__text';
-  const rawAccelRow = document.createElement('p');
-  rawAccelRow.className = 'menu__text';
-  const firmwareTierRow = document.createElement('p');
-  firmwareTierRow.className = 'menu__text';
-  const rawStatusBytesRow = document.createElement('p');
-  rawStatusBytesRow.className = 'menu__text';
-  const copyDebugButton = document.createElement('button');
-  copyDebugButton.type = 'button';
-  copyDebugButton.className = 'menu__action';
-  copyDebugButton.textContent = t('sensorStatus.debug.copy');
-
-  // Connect-delay workaround (#212): an experimental hardware-
-  // compatibility knob, not a normal setting, so it lives here rather
-  // than the settings panel. Reuses `.settings__field`/`.settings__checkbox`
-  // as-is (same look as the settings form's own toggles) rather than
-  // inventing a parallel style for one control.
-  const connectDelayHint = document.createElement('p');
-  connectDelayHint.className = 'settings__hint';
-  connectDelayHint.textContent = t('sensorStatus.debug.connectDelay.intro');
-  const connectDelayEnableField = document.createElement('label');
-  connectDelayEnableField.className = 'settings__field';
-  const connectDelayEnableCaption = document.createElement('span');
-  connectDelayEnableCaption.textContent = t('sensorStatus.debug.connectDelay.enable');
-  const connectDelayEnableInput = document.createElement('input');
-  connectDelayEnableInput.type = 'checkbox';
-  connectDelayEnableInput.className = 'settings__checkbox';
-  connectDelayEnableField.append(connectDelayEnableCaption, connectDelayEnableInput);
-  const connectDelayMsField = document.createElement('label');
-  connectDelayMsField.className = 'settings__field';
-  const connectDelayMsCaption = document.createElement('span');
-  connectDelayMsCaption.textContent = t('sensorStatus.debug.connectDelay.ms');
-  const connectDelayMsInput = document.createElement('input');
-  connectDelayMsInput.type = 'number';
-  connectDelayMsInput.min = '0';
-  connectDelayMsInput.max = String(MAX_EASYLEVEL_CONNECT_DELAY_MS);
-  connectDelayMsInput.step = '50';
-  connectDelayMsField.append(connectDelayMsCaption, connectDelayMsInput);
-
-  debugDetails.append(debugSummary, debugIntro);
-  // Only the rows this device can actually fill (#268, ADR 0016).
-  if (capabilities.temperature) debugDetails.append(temperatureRow);
-  debugDetails.append(deviceIdRow, lastSampleRow, rawAccelRow);
-  if (capabilities.firmwareVersion) debugDetails.append(firmwareTierRow);
-  if (capabilities.debugBytes) debugDetails.append(rawStatusBytesRow);
-  debugDetails.append(
-    copyDebugButton,
-    connectDelayHint,
-    connectDelayEnableField,
-    connectDelayMsField,
-  );
-  // The whole disclosure, not just its rows: its contents — raw protocol
-  // bytes, the raw accelerometer triplet, the #212 connect-delay
-  // workaround — are one device's own debug surface, and a source without
-  // them would show a disclosure full of dashes and a control that does
-  // nothing (#272).
-  if (capabilities.debugBytes) page.body.append(debugDetails);
-
-  // Silent-reconnect tip (#310): for any box, closed by default, and only
-  // in a Chromium browser off iOS that has Web Bluetooth but not
-  // `getDevices()` (never Bluefy on iPhone: no `chrome://flags`). Without
-  // it a restarted app needs the device picker again (#307); the flag that
-  // adds it is not something every user should have to learn, so it lives
-  // here rather than in the reconnect prompt.
-  if ((options.offersSilentReconnectTip ?? offersSilentReconnectTip)()) {
-    const advanced = document.createElement('details');
-    advanced.className = 'menu__detail sensor-status__advanced';
-    const advancedSummary = document.createElement('summary');
-    advancedSummary.className = 'sensor-status__debug-summary';
-    advancedSummary.textContent = t('sensorStatus.advanced');
-    const tipIntro = document.createElement('p');
-    tipIntro.className = 'menu__text';
-    tipIntro.textContent = t('sensorStatus.silentReconnect.intro');
-    const tipSteps = document.createElement('p');
-    tipSteps.className = 'menu__text';
-    tipSteps.textContent = t('sensorStatus.silentReconnect.steps', {
-      address: CHROME_FLAGS_ADDRESS,
-    });
-    const copyFlagsButton = document.createElement('button');
-    copyFlagsButton.type = 'button';
-    copyFlagsButton.className = 'menu__action menu__action--secondary';
-    copyFlagsButton.textContent = t('sensorStatus.silentReconnect.copy', {
-      address: CHROME_FLAGS_ADDRESS,
-    });
-    copyFlagsButton.addEventListener('click', () => {
-      void navigator.clipboard.writeText(CHROME_FLAGS_ADDRESS).then(
-        () => showToast(t('sensorStatus.silentReconnect.copied')),
-        () => showToast(t('sensorStatus.debug.copy.failed')),
-      );
-    });
-    advanced.append(advancedSummary, tipIntro, tipSteps, copyFlagsButton);
-    page.body.append(advanced);
-  }
-
-  /**
-   * Reads the stored connect-delay setting into the two controls above —
-   * called once per page open (from `createStandalonePage`'s `onOpen`
-   * below), deliberately NOT from `refresh()`: `refresh()` runs every
-   * animation frame while this page is open, and re-asserting `.value`/
-   * `.checked` on every frame would fight the user mid-edit (a keystroke
-   * into the ms field getting reset before the next one lands). The
-   * read-only debug rows above have no such problem — nothing ever types
-   * into them — so only these two controls need this split.
-   */
-  function syncConnectDelay(): void {
-    const { enabled, ms } = options.getEasyLevelConnectDelay();
-    connectDelayEnableInput.checked = enabled;
-    connectDelayMsInput.value = String(ms);
-    connectDelayMsInput.disabled = !enabled;
-  }
-
-  function commitConnectDelay(): void {
-    connectDelayMsInput.disabled = !connectDelayEnableInput.checked;
-    options.setEasyLevelConnectDelay(
-      connectDelayEnableInput.checked,
-      Number(connectDelayMsInput.value),
-    );
-  }
-  connectDelayEnableInput.addEventListener('change', commitConnectDelay);
-  connectDelayMsInput.addEventListener('change', commitConnectDelay);
-
-  function refresh(): void {
-    const source = options.getSensorSource();
-    const state = options.getSensorState();
-    const isActive = source === options.sensor.id;
-    const lost = isActive && state === 'disconnected';
-    const rejected = isActive && !lost && (options.password?.isRejected() ?? false);
-    stateRow.classList.toggle('is-connected', isActive && !lost && !rejected);
-    stateRow.classList.toggle('is-lost', lost || rejected);
-    passwordBlock?.refresh();
-
-    const health = isActive ? options.getHealth() : null;
-    const batteryKnown = capabilities.battery && health?.batteryPercent != null;
-    stateText.textContent = !isActive
-      ? t('box.state.notConnected')
-      : lost
-        ? t('box.state.lost')
-        : rejected
-          ? t('box.state.password')
-          : batteryKnown
-            ? `${t('box.state.connected')} · ${t('box.state.battery', {
-                value: `${Math.round(health?.batteryPercent ?? 0)} %`,
-              })}`
-            : t('box.state.connected');
-    connectButton.hidden = !options.connectSensor || (isActive && !lost);
-    connectButton.disabled = connecting;
-    connectButton.textContent = connecting
-      ? t('sensorSource.status.connecting')
-      : isActive
-        ? t('sensorFallback.retry')
-        : t('box.connect');
-    const batteryPercent = health?.batteryPercent ?? null;
-    temperatureRow.textContent = t('sensorSource.detail.temperature', {
-      value:
-        health?.temperatureCelsius == null
-          ? notAvailable
-          : `${health.temperatureCelsius.toFixed(1)}°C`,
-    });
-    // Only this box's own reading: while it is not in use, or has lost
-    // contact, the tilt would be the phone's or stale, so a dash (#343).
-    const tilt = isActive && !lost ? options.getCalibratedTilt() : null;
-    // After the position when there is one ("✓ Stands upright · Side…"),
-    // else on its own.
-    const hasPosition = [...positionSlot.children].some((c) => !(c as HTMLElement).hidden);
-    const separator = hasPosition ? ' · ' : '';
-    tiltText.textContent = tilt
-      ? `${separator}${t('tilt.sideSide')} ${tilt.rollDeg.toFixed(1)}° · ${t('tilt.frontBack')} ${tilt.pitchDeg.toFixed(1)}°`
-      : hasPosition
-        ? ''
-        : t('sensorStatus.reading', { value: '—' });
-
-    wasLowBattery = batteryPercent === null ? false : isLowBattery(batteryPercent, wasLowBattery);
-    lowBatteryRow.hidden = !wasLowBattery;
-    if (wasLowBattery && batteryPercent !== null) {
-      lowBatteryRow.textContent = t('sensorSource.lowBattery', {
-        value: `${Math.round(batteryPercent)}%`,
-      });
-    }
-
-    debugDetails.hidden = !isActive;
-    if (isActive) {
-      deviceIdRow.textContent = t('sensorStatus.debug.deviceId', {
-        value: options.getDeviceId() ?? notAvailable,
-      });
-      lastSampleRow.textContent = t('sensorStatus.debug.lastSample', {
-        value: ageText(options.getLastSampleAt(), performance.now()),
-      });
-      const rawAccel = options.getRawAccel();
-      rawAccelRow.textContent = t('sensorStatus.debug.rawAccel', {
-        value: rawAccel ? `${rawAccel.x}, ${rawAccel.y}, ${rawAccel.z}` : notAvailable,
-      });
-      firmwareTierRow.textContent = t('sensorStatus.debug.firmwareTier', {
-        value: health?.firmwareLabel ?? notAvailable,
-      });
-      rawStatusBytesRow.textContent = t('sensorStatus.debug.rawStatusBytes', {
-        value: hexBytes(options.getEasyLevelStatusBytes()) ?? notAvailable,
-      });
-    }
-  }
-
-  copyDebugButton.addEventListener('click', () => {
-    const health = options.getHealth();
-    const rawAccel = options.getRawAccel();
-    const text = [
-      `Libell ${options.sensor.displayName} debug info`,
-      `Connection state: ${options.getSensorState()}`,
-      `Device ID: ${options.getDeviceId() ?? notAvailable}`,
-      `Last sample: ${ageText(options.getLastSampleAt(), performance.now())}`,
-      `Raw accelerometer (x/y/z): ${rawAccel ? `${rawAccel.x}, ${rawAccel.y}, ${rawAccel.z}` : notAvailable}`,
-      `Firmware: ${health?.firmwareLabel ?? notAvailable}`,
-      `Raw status bytes: ${hexBytes(options.getEasyLevelStatusBytes()) ?? notAvailable}`,
-    ].join('\n');
-    void navigator.clipboard.writeText(text).then(
-      () => showToast(t('sensorStatus.debug.copied')),
-      () => showToast(t('sensorStatus.debug.copy.failed')),
-    );
-  });
-
-  syncConnectDelay();
+  parts.debug.syncConnectDelay();
   refresh();
   return {
     element: page.element,
-    settingsSlot,
-    footerSlot,
-    positionSlot,
+    ...slots,
+    positionSlot: parts.liveLine.positionSlot,
     isOpen: page.isOpen,
     open: page.open,
     close: page.close,
