@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
+import type { TargetPreset } from '../domain/targetPresets';
 
 setLanguage('en');
 
@@ -226,5 +227,141 @@ describe('Settings form resyncs sound fields on every reopen (#161)', () => {
     const [chimeAfter, guidanceAfter] = soundCheckboxes(menu);
     expect(chimeAfter!.checked).toBe(false);
     expect(guidanceAfter!.checked).toBe(false);
+  });
+});
+
+// #420: pinned before createMenu is split into smaller builders — the
+// drawer's own chrome, its history-integrated open/close, and focus.
+describe('menu — drawer chrome, navigation and focus (#420)', () => {
+  // Reduced motion makes setVisible hide at once, so `hidden` is final.
+  beforeEach(() => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function openDrawer(options: Partial<MenuOptions> = {}) {
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings(), ...options }));
+    document.body.append(menu.element);
+    const button = document.createElement('button');
+    menu.attach(button);
+    button.click();
+    return { menu, button };
+  }
+  const q = <T extends HTMLElement>(menu: { element: HTMLElement }, selector: string): T =>
+    menu.element.querySelector<T>(selector)!;
+  const item = (menu: { element: HTMLElement }, label: string): HTMLButtonElement =>
+    [...menu.element.querySelectorAll<HTMLButtonElement>('.menu__item')].find(
+      (i) => i.textContent === label,
+    )!;
+
+  it('the drawer is a labelled dialog with a title and a labelled ✕', () => {
+    const { menu } = openDrawer();
+    const drawer = q(menu, '.menu__drawer');
+    expect(drawer.getAttribute('role')).toBe('dialog');
+    expect(drawer.getAttribute('aria-label')).toBe(t('menu.title'));
+    expect(q(menu, '.menu__title').textContent).toBe(t('menu.title'));
+    const close = q<HTMLButtonElement>(menu, '.menu__close');
+    expect(close.type).toBe('button');
+    expect(close.getAttribute('aria-label')).toBe(t('menu.close'));
+    expect(close.textContent).toBe('✕');
+    expect(q(menu, '.menu-page__back').textContent).toBe('‹');
+  });
+
+  it('starts closed, with both the drawer and the page hidden', () => {
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    expect(q(menu, '.menu').hidden).toBe(true);
+    expect(q(menu, '.menu-page').hidden).toBe(true);
+  });
+
+  it('opening the drawer shows it without a page and pushes one history entry', () => {
+    const pushState = vi.spyOn(history, 'pushState');
+    const { menu } = openDrawer();
+    expect(q(menu, '.menu').hidden).toBe(false);
+    expect(q(menu, '.menu-page').hidden).toBe(true);
+    expect(pushState).toHaveBeenCalledTimes(1);
+    expect(pushState).toHaveBeenLastCalledWith({ libellMenu: 1 }, '');
+  });
+
+  it('open() straight from closed pushes the drawer and the page entries', () => {
+    const pushState = vi.spyOn(history, 'pushState');
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    menu.open('vehicle');
+    expect(pushState.mock.calls.map((call) => call[0])).toEqual([
+      { libellMenu: 1 },
+      { libellMenu: 2 },
+    ]);
+  });
+
+  it('clicking an entry opens its page, titled with the entry, and focuses the title', () => {
+    const { menu } = openDrawer();
+    item(menu, t('settings.tab.ramps')).click();
+    const title = q(menu, '.menu-page__title');
+    expect(q(menu, '.menu-page').hidden).toBe(false);
+    expect(title.textContent).toBe(t('settings.tab.ramps'));
+    expect(document.activeElement).toBe(title);
+  });
+
+  it('‹ goes back to the drawer and puts focus back on the entry that opened the page', () => {
+    const { menu } = openDrawer();
+    const entry = item(menu, t('menu.calibration'));
+    entry.click();
+    q<HTMLButtonElement>(menu, '.menu-page__back').click();
+    expect(menu.isOpen()).toBe(true);
+    expect(q(menu, '.menu-page').hidden).toBe(true);
+    expect(q(menu, '.menu').hidden).toBe(false);
+    expect(document.activeElement).toBe(entry);
+  });
+
+  it('✕ closes the drawer', () => {
+    const { menu } = openDrawer();
+    q<HTMLButtonElement>(menu, '.menu__close').click();
+    expect(menu.isOpen()).toBe(false);
+    expect(q(menu, '.menu').hidden).toBe(true);
+  });
+
+  it('a click on the backdrop closes the drawer; a click inside it does not', () => {
+    const { menu } = openDrawer();
+    q(menu, '.menu__drawer').click();
+    expect(menu.isOpen()).toBe(true);
+    q(menu, '.menu').click();
+    expect(menu.isOpen()).toBe(false);
+  });
+
+  it('the phone back gesture closes the page first, then the drawer', () => {
+    const { menu } = openDrawer();
+    item(menu, t('settings.general')).click();
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    expect(menu.isOpen()).toBe(true);
+    expect(q(menu, '.menu-page').hidden).toBe(true);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    expect(menu.isOpen()).toBe(false);
+  });
+
+  it('the attached button closes the drawer from a page in one step back', () => {
+    const { menu, button } = openDrawer();
+    item(menu, t('settings.tab.vehicle')).click();
+    button.click();
+    expect(menu.isOpen()).toBe(true);
+    expect(q(menu, '.menu-page').hidden).toBe(true);
+  });
+
+  it('opening the drawer redraws the Level page from the current presets', () => {
+    let presets: TargetPreset[] = [];
+    const menu = createMenu(
+      makeOptions({ initialSettings: classicSettings(), getTargetPresets: () => presets }),
+    );
+    presets = [{ id: 'p1', name: 'Ramp spot', offset: { rollDeg: 1, pitchDeg: 0 } }];
+    menu.open('targets');
+    expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain('Ramp spot');
+  });
+
+  it('refresh() does nothing while the menu is closed', () => {
+    const getTargetPresets = vi.fn(() => []);
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings(), getTargetPresets }));
+    getTargetPresets.mockClear();
+    menu.refresh();
+    expect(getTargetPresets).not.toHaveBeenCalled();
   });
 });
