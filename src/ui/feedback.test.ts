@@ -79,3 +79,25 @@ describe('feedback form', () => {
     expect(params.get('body')).toContain('- App version:');
   });
 });
+
+describe('the feedback category (#483)', () => {
+  it('offers the three categories, Bug picked first', () => {
+    const section = createFeedbackSection();
+    const radios = [...section.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+    expect(radios.map((radio) => radio.value)).toEqual(['bug', 'suggestion', 'other']);
+    expect(radios.map((radio) => radio.checked)).toEqual([true, false, false]);
+    expect(section.querySelector('legend')?.textContent).toBe(t('feedback.category'));
+  });
+
+  it('names the picked category in the issue title', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const section = createFeedbackSection();
+    const suggestion = section.querySelector<HTMLInputElement>('input[value="suggestion"]')!;
+    suggestion.checked = true;
+    suggestion.dispatchEvent(new Event('change'));
+    section.querySelector<HTMLInputElement>('input[type="text"]')!.value = 'Darker theme';
+    section.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    const params = new URL(String(open.mock.calls[0]![0])).searchParams;
+    expect(params.get('title')).toBe(`[Feedback] ${t('feedback.cat.suggestion')}: Darker theme`);
+  });
+});

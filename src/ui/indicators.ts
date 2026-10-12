@@ -28,24 +28,16 @@ export interface Indicators {
   }): void;
 }
 
+type LampState = Parameters<Indicators['update']>[0];
+
 export function createIndicators(openMenu: (section: MenuSection) => void): Indicators {
   const container = document.createElement('div');
   container.className = 'indicators';
-
-  function lamp(label: string, section: MenuSection, title: string): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'indicators__lamp';
-    button.title = title;
-    button.setAttribute('aria-label', title);
-    button.textContent = label;
-    button.addEventListener('click', () => openMenu(section));
-    container.append(button);
-    return button;
-  }
-
-  const settingsLamp = lamp(t('lamp.setup'), 'vehicle', t('lamp.setup.title'));
-  const calibrationLamp = lamp(t('lamp.calibrate'), 'calibration', t('lamp.calibrate.title'));
+  const settingsLamp = lamp(t('lamp.setup'), t('lamp.setup.title'), () => openMenu('vehicle'));
+  const calibrationLamp = lamp(t('lamp.calibrate'), t('lamp.calibrate.title'), () =>
+    openMenu('calibration'),
+  );
+  container.append(settingsLamp, calibrationLamp);
 
   // The first update() reflects state already true before the app painted:
   // apply it instantly, not animate a "change" that never visually happened.
@@ -53,30 +45,49 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
 
   return {
     element: container,
-    update({ settingsSaved, calibrationLamp: missing, externalSensor = false }) {
-      const calibrated = missing === null;
-      // A box only ever lacks its zero.
-      const step = externalSensor ? 'zero' : (missing ?? 'calibrate');
-      const calibrationTitle = t(
-        externalSensor
-          ? 'lamp.calibrate.title.sensor'
-          : step === 'zero'
-            ? 'lamp.zero.title'
-            : 'lamp.calibrate.title',
-      );
-      calibrationLamp.textContent = t(step === 'zero' ? 'lamp.zero' : 'lamp.calibrate');
-      calibrationLamp.title = calibrationTitle;
-      calibrationLamp.setAttribute('aria-label', calibrationTitle);
-      if (first) {
-        first = false;
-        settingsLamp.hidden = settingsSaved;
-        calibrationLamp.hidden = calibrated;
-        if (!settingsSaved) settingsLamp.classList.add('is-visible');
-        if (!calibrated) calibrationLamp.classList.add('is-visible');
+    update(state) {
+      labelCalibrationLamp(calibrationLamp, state);
+      const showSettings = !state.settingsSaved;
+      const showCalibration = state.calibrationLamp !== null;
+      if (!first) {
+        setVisible(settingsLamp, showSettings);
+        setVisible(calibrationLamp, showCalibration);
         return;
       }
-      setVisible(settingsLamp, !settingsSaved);
-      setVisible(calibrationLamp, !calibrated);
+      first = false;
+      settingsLamp.hidden = !showSettings;
+      calibrationLamp.hidden = !showCalibration;
+      if (showSettings) settingsLamp.classList.add('is-visible');
+      if (showCalibration) calibrationLamp.classList.add('is-visible');
     },
   };
+}
+
+function lamp(label: string, title: string, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'indicators__lamp';
+  button.title = title;
+  button.setAttribute('aria-label', title);
+  button.textContent = label;
+  button.addEventListener('click', onClick);
+  return button;
+}
+
+function labelCalibrationLamp(
+  calibrationLamp: HTMLButtonElement,
+  { calibrationLamp: missing, externalSensor = false }: LampState,
+): void {
+  // A box only ever lacks its zero.
+  const step = externalSensor ? 'zero' : (missing ?? 'calibrate');
+  const calibrationTitle = t(
+    externalSensor
+      ? 'lamp.calibrate.title.sensor'
+      : step === 'zero'
+        ? 'lamp.zero.title'
+        : 'lamp.calibrate.title',
+  );
+  calibrationLamp.textContent = t(step === 'zero' ? 'lamp.zero' : 'lamp.calibrate');
+  calibrationLamp.title = calibrationTitle;
+  calibrationLamp.setAttribute('aria-label', calibrationTitle);
 }

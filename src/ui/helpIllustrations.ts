@@ -115,26 +115,25 @@ export function measuresIllustration(
   vehicleType: VehicleType = 'motorhome',
 ): SVGSVGElement {
   const root = svg('0 0 200 160', label);
-  if (vehicleType === 'caravan') {
-    root.append(
-      svgEl('path', { d: 'M70 60 L100 30 L130 60', class: 'illu__drawbar' }),
-      svgEl('circle', { cx: '100', cy: '30', r: '7', class: 'illu__wheel' }),
-      outline(55, 60, 90, 88),
-      wheelRect(45, 120),
-      // Mirrors the left wheel (45) about the 100 centre line.
-      wheelRect(155, 120),
-      svgEl('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
-      svgEl('line', {
-        x1: '45',
-        y1: '133',
-        x2: '155',
-        y2: '133',
-        class: 'illu__measure illu__measure--dash',
-      }),
-    );
-    return root;
-  }
-  root.append(
+  root.append(...(vehicleType === 'caravan' ? caravanMeasures() : motorhomeMeasures()));
+  return root;
+}
+
+function caravanMeasures(): SVGElement[] {
+  return [
+    svgEl('path', { d: 'M70 60 L100 30 L130 60', class: 'illu__drawbar' }),
+    svgEl('circle', { cx: '100', cy: '30', r: '7', class: 'illu__wheel' }),
+    outline(55, 60, 90, 88),
+    wheelRect(45, 120),
+    // Mirrors the left wheel (45) about the 100 centre line.
+    wheelRect(155, 120),
+    svgEl('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
+    trackWidthLine(133),
+  ];
+}
+
+function motorhomeMeasures(): SVGElement[] {
+  return [
     outline(55, 12, 90, 136),
     windshield(55, 12, 90, 136),
     wheelRect(45, 30),
@@ -143,21 +142,18 @@ export function measuresIllustration(
     wheelRect(155, 116),
     svgEl('line', { x1: '100', y1: '43', x2: '100', y2: '129', class: 'illu__measure' }),
     // Front axle track width.
-    svgEl('line', {
-      x1: '45',
-      y1: '43',
-      x2: '155',
-      y2: '43',
-      class: 'illu__measure illu__measure--dash',
-    }),
+    trackWidthLine(43),
     // Rear axle track width.
-    svgEl('line', {
-      x1: '45',
-      y1: '129',
-      x2: '155',
-      y2: '129',
-      class: 'illu__measure illu__measure--dash',
-    }),
-  );
-  return root;
+    trackWidthLine(129),
+  ];
+}
+
+function trackWidthLine(y: number): SVGElement {
+  return svgEl('line', {
+    x1: '45',
+    y1: String(y),
+    x2: '155',
+    y2: String(y),
+    class: 'illu__measure illu__measure--dash',
+  });
 }
