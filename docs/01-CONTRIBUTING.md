@@ -76,8 +76,8 @@ Every merge to `main` builds and publishes `dist/` to GitHub Pages via
 enabled once for the repository. Versions, candidate builds and release texts
 (`docs/releases/`) are specified in ADR 0007
 ([`docs/adr/0007-pages-as-qa-and-versioning.md`](adr/0007-pages-as-qa-and-versioning.md)).
-Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a branch
-can be previewed before it is merged.
+Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a pull
+request can be previewed before it is merged.
 
 ## Testing on a real phone
 

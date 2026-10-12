@@ -398,7 +398,8 @@ warning lamps, in memory only), so screenshots and demos show the product rather
 the first-run state. The `?easylevel-sim` (R44) and `?xparkle-sim` (R48) flags are its
 Sensorbox siblings: a simulated BLE box behind the transport seam, for exercising the external-sensor flow
 on machines (and CI screenshots) with no hardware. CI runs
-`format:check`, `typecheck`, `test` and `build` on every branch, then three Playwright
+`format:check`, `typecheck`, `test` and `build` on every pull request and every push
+to `main` (once per PR push, not also on the branch push — #471), then three Playwright
 checks against the built app: `smoke` (it renders at all), `flows` (the simulated
 boxes, the wizard, the level screen, sound, navigation, settings saves and start-up
 through the real wiring — #374, #392) and `fit` (every view fits a
