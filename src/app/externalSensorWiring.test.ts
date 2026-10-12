@@ -1,11 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import {
-  DEFAULT_SETTINGS,
   easyLevelSettings,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
   xparkleSettings,
-  type LevelSettings,
-} from '../domain/settings';
+} from '../domain/sensorDeviceSettings';
 import { SIMULATED_EASYLEVEL_DEVICE_ID } from '../sensor/easyLevelSimulator';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
 import type { XparkleSensor } from '../sensor/xparkleSensor';

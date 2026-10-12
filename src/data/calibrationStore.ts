@@ -3,12 +3,8 @@
  * vehicle zero, and each external source's installation offset. Corrupt or
  * missing values read as null, so they can never break startup.
  */
-import {
-  MAX_TILT_DEG,
-  parseCalibration,
-  type Calibration,
-  type SensorSource,
-} from '../domain/settings';
+import type { SensorSource } from '../domain/settings';
+import { MAX_TILT_DEG, parseCalibration, type Calibration } from '../domain/calibration';
 import { defaultStorage, type KeyValueStorage } from './keyValueStorage';
 
 const CALIBRATION_KEY = 'libell.calibration';

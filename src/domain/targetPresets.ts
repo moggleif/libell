@@ -11,7 +11,7 @@
  * `null` active id, never a preset of its own, so it can never be lost
  * or accidentally overwritten.
  */
-import { MAX_TILT_DEG, type Calibration } from './settings';
+import { MAX_TILT_DEG, type Calibration } from './calibration';
 
 export interface TargetPreset {
   id: string;

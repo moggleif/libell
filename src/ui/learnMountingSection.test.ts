@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createLearnMountingSection, type LearnMountingOptions } from './learnMountingSection';
 import { setLanguage, t } from './i18n';
 import type { AxisMapping } from '../domain/axisMapping';
-import type { Calibration } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 
 setLanguage('en');
 

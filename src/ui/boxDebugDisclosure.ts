@@ -3,7 +3,7 @@
  * plus the connect-delay workaround. Hidden while the box is not in use:
  * there is no raw box data to show.
  */
-import { MAX_EASYLEVEL_CONNECT_DELAY_MS } from '../domain/settings';
+import { MAX_EASYLEVEL_CONNECT_DELAY_MS } from '../domain/sensorDeviceSettings';
 import type { ExternalSensorHealth } from '../sensor/externalSensors';
 import type { BoxStatusOptions } from './boxStatusPage';
 import {

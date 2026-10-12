@@ -17,7 +17,7 @@
  * it is measured, it composes with whatever the box itself already applies —
  * there is nothing to double-correct.
  */
-import type { Calibration } from './settings';
+import type { Calibration } from './calibration';
 
 export interface AxisMapping {
   /** The box's roll axis is the vehicle's pitch, and vice versa. */

@@ -22,13 +22,13 @@ import {
   DEFAULT_SETTINGS,
   DRAIN_POSITIONS,
   MAX_RAMP_COUNT,
-  normalizeHeights,
-  positiveNumber,
   type AxleConfig,
   type DrainPosition,
   type LevelSettings,
   type VehicleType,
 } from './settings';
+import { normalizeHeights } from './lengths';
+import { positiveNumber } from './untrustedValues';
 
 export type VehicleGeometry = Pick<
   LevelSettings,

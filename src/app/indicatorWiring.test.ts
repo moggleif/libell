@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
-import type { Calibration, SensorSource } from '../domain/settings';
+import type { SensorSource } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import {
   createBoxPending,

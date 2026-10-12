@@ -2,7 +2,8 @@
  * The level screen as a whole: built from the engine, the view and the
  * frame, and rebuilt when a saved change alters what it is built from.
  */
-import type { Calibration, LevelSettings } from '../domain/settings';
+import type { LevelSettings } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import { createLevelEngine } from './levelEngine';
 import { createLevelFrame, type LevelFrameDeps } from './levelFrame';
 import { mountLevelScreenView } from './levelScreenView';

@@ -6,7 +6,7 @@ import {
   saveVehicleCalibration,
 } from '../data/calibrationStore';
 import type { KeyValueStorage } from '../data/keyValueStorage';
-import type { Calibration } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import { t } from '../ui/i18n';
 import { createPhoneCalibration } from './phoneCalibration';
 

@@ -10,8 +10,8 @@
  * layouts; the calibration logic is shared. `layout: 'wizard'` drops
  * Check/Clear: a first run has nothing to check or clear yet.
  */
-import type { AppearanceSetting, Calibration } from '../domain/settings';
-import type { CaptureResult } from '../domain/calibration';
+import type { AppearanceSetting } from '../domain/settings';
+import type { Calibration, CaptureResult } from '../domain/calibration';
 import { createCalibrationFlip, type CalibrationFlip } from './calibrationFlip';
 import {
   calibrationStatusText,

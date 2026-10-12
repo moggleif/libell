@@ -23,8 +23,9 @@
  * `onOpenStatus` is optional so callers that don't need the box's page (the
  * onboarding wizard) need not pass it.
  */
-import type { CaptureResult } from '../domain/calibration';
-import type { Calibration, EasyLevelMounting, SensorSource, VehicleType } from '../domain/settings';
+import type { Calibration, CaptureResult } from '../domain/calibration';
+import type { SensorSource, VehicleType } from '../domain/settings';
+import type { EasyLevelMounting } from '../domain/sensorDeviceSettings';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxPasswordOptions } from './boxPasswordBlock';

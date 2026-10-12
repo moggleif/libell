@@ -12,7 +12,7 @@
  * single facing describes — then no facing is shown as picked.
  */
 import type { AxisMapping } from './axisMapping';
-import type { EasyLevelMounting } from './settings';
+import type { EasyLevelMounting } from './sensorDeviceSettings';
 
 export type Facing = 'front' | 'right' | 'rear' | 'left';
 

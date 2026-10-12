@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { setLanguage, t } from './i18n';
-import type { Calibration } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 
 setLanguage('en');
 

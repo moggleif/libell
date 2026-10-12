@@ -3,8 +3,7 @@
  * known-level surface is needed. Captures that disagree are never refused:
  * the step warns and offers "Calibrate anyway".
  */
-import type { Calibration } from '../domain/settings';
-import { flipCalibration, type FlipResult } from '../domain/calibration';
+import { type Calibration, flipCalibration, type FlipResult } from '../domain/calibration';
 import type { CalibrationOptions } from './calibrationSection';
 import { createElement } from './dom';
 import { t } from './i18n';

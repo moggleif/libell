@@ -4,7 +4,8 @@
  * outdated or hand-edited value can never break startup. The calibration
  * layers live in `calibrationStore.ts`.
  */
-import { parseSettings, type LevelSettings } from '../domain/settings';
+import type { LevelSettings } from '../domain/settings';
+import { parseSettings } from '../domain/settingsParsing';
 import {
   parseActiveTargetId,
   parseTargetPresets,

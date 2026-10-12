@@ -2,20 +2,24 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_EASYLEVEL_SETTINGS,
   DEFAULT_SETTINGS,
-  easyLevelSettings,
-  EASYLEVEL_MOUNTINGS,
+  measurementsDiffer,
+  toggleMute,
+} from './settings';
+import { parseSettings } from './settingsParsing';
+import {
   formatLength,
   formatLengthValue,
   formatStepHeightsList,
-  measurementsDiffer,
-  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   parseStepHeightsList,
-  parseSettings,
-  toggleMute,
+} from './lengths';
+import {
+  easyLevelSettings,
+  EASYLEVEL_MOUNTINGS,
+  MAX_EASYLEVEL_CONNECT_DELAY_MS,
   withEasyLevelSettings,
   withXparkleSettings,
   xparkleSettings,
-} from './settings';
+} from './sensorDeviceSettings';
 
 describe('parseSettings', () => {
   it('returns valid stored settings unchanged', () => {

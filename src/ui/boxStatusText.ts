@@ -2,7 +2,7 @@
  * What the box's own page says, as pure functions: no DOM, so every decision
  * is tested on its own.
  */
-import type { Calibration } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import type { GravityVector } from '../domain/leveling';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxConnection } from './boxConnection';

@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { WHEEL_IDS, type GravityVector, type WheelId } from '../domain/leveling';
-import { DEFAULT_SETTINGS, formatLength, type LevelSettings } from '../domain/settings';
+import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
+import { formatLength } from '../domain/lengths';
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 import { t } from '../ui/i18n';
 import { createLevelEngine, motorhomeStatusText, type EngineOutput } from './levelEngine';

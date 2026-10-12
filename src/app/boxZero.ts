@@ -2,8 +2,13 @@
  * Zeroing an external box (ADR 0014): "set vehicle level" for the box in
  * use, stored as that box's installation offset.
  */
-import { averageReadings, vehicleZeroFromReading, type CaptureResult } from '../domain/calibration';
-import type { Calibration, SensorSource } from '../domain/settings';
+import {
+  averageReadings,
+  type Calibration,
+  type CaptureResult,
+  vehicleZeroFromReading,
+} from '../domain/calibration';
+import type { SensorSource } from '../domain/settings';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { OrientationSensor } from '../sensor/orientation';
 import { XPARKLE_DESCRIPTOR, type XparkleSensor } from '../sensor/xparkleSensor';

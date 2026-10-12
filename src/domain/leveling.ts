@@ -7,7 +7,8 @@
  * and pitch follow, and per wheel the height difference to the highest
  * wheel — which is the reference, because blocks only go under wheels.
  */
-import type { Calibration, LevelSettings } from './settings';
+import type { LevelSettings } from './settings';
+import type { Calibration } from './calibration';
 
 export interface GravityVector {
   x: number;

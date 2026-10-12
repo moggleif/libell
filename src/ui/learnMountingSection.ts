@@ -6,7 +6,7 @@
  * Forgetting lives in the hosting direction step, not here.
  */
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
-import type { Calibration } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import { t, type MessageKey } from './i18n';
 
 export interface LearnMountingOptions {

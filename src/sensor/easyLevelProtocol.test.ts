@@ -8,7 +8,7 @@ import {
   parseAccelPacket,
   parseEasyLevelStatus,
 } from './easyLevelProtocol';
-import { EASYLEVEL_MOUNTINGS } from '../domain/settings';
+import { EASYLEVEL_MOUNTINGS } from '../domain/sensorDeviceSettings';
 
 /** Build a little-endian int16 byte array from signed values. */
 function le16(...values: number[]): number[] {

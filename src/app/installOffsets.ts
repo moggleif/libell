@@ -7,8 +7,8 @@
  * held here the same way it is held in storage. The phone has no entry:
  * its own two calibration layers live elsewhere.
  */
-import type { Calibration, SensorSource } from '../domain/settings';
-import { SENSOR_SOURCES } from '../domain/settings';
+import { SENSOR_SOURCES, type SensorSource } from '../domain/settings';
+import type { Calibration } from '../domain/calibration';
 import {
   clearInstallCalibration,
   loadInstallCalibrationInfo,

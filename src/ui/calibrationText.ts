@@ -2,8 +2,7 @@
  * What the calibration section says, as pure functions: no DOM, so every
  * decision is tested on its own.
  */
-import type { CaptureResult } from '../domain/calibration';
-import type { Calibration } from '../domain/settings';
+import type { Calibration, CaptureResult } from '../domain/calibration';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
 

@@ -3,7 +3,7 @@
  * diagram only says where its parts go.
  */
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
-import { formatLength } from '../domain/settings';
+import { formatLength } from '../domain/lengths';
 import { createElement } from './dom';
 import { t } from './i18n';
 import { svgEl } from './svg';
