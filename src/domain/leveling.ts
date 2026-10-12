@@ -19,13 +19,6 @@ export type WheelId = 'frontLeft' | 'frontRight' | 'rearLeft' | 'rearRight';
 
 export const WHEEL_IDS: readonly WheelId[] = ['frontLeft', 'frontRight', 'rearLeft', 'rearRight'];
 
-export const WHEEL_LABELS: Record<WheelId, string> = {
-  frontLeft: 'Front left',
-  frontRight: 'Front right',
-  rearLeft: 'Rear left',
-  rearRight: 'Rear right',
-};
-
 export interface WheelLift {
   /** How much this wheel must be raised, in mm (≥ 0). */
   liftMm: number;

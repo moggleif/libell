@@ -34,22 +34,12 @@
 import type { SensorSource } from '../domain/settings';
 import type { SensorState } from '../sensor/orientation';
 import { t } from './i18n';
+import { svgEl } from './svg';
 
 export interface SensorStatusIndicator {
   element: HTMLButtonElement;
   /** `source`/`state` mirror `OrientationSensor.getSource()`/`getState()`. */
   update(source: SensorSource, state: SensorState): void;
-}
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function svgEl<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-): SVGElementTagNameMap[K] {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-  return node;
 }
 
 /** IC-chip glyph: a body plus four pins per side, unfilled and stroked
