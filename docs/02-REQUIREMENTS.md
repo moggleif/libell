@@ -1113,8 +1113,6 @@ cross-platform goal — they are not this app's code and are not covered here.
 
 ## R35 — Stale sensor data is never shown as live (#132)
 
-> **Open bug:** when a stale box is then lost, the overlay stays up over R37's card (#398).
-
 A disconnected or stalled sensor silently freezing on its last reading while the app
 keeps showing "drive forward" is actively dangerous — P0. This is a third, distinct
 safety state: never R17's "wrong phone pose" overlay (the phone is flat, but the
@@ -1148,6 +1146,9 @@ noisy samples to arrive; this fires when no new samples arrive at all).
   never shown at the same time as this overlay (that one needs no reading at all,
   this one a reading that has gone old); it has no such button (#313) — the top-bar
   sensor icon reaches the box's page from there.
+- **Given** the overlay is shown for a box
+- **When** the box is then lost and there is no reading at all (#398)
+- **Then** the overlay hides, and so does R17's pose overlay: only R37's card shows.
 - How staleness is detected (one pure check shared by every source, time passed in as
   a parameter) is specified in `docs/03-ARCHITECTURE.md` §Sensor, "Stale-data safety
   state".
