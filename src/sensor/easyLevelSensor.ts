@@ -353,6 +353,66 @@ export interface EasyLevelSensor extends OrientationSensor {
   disconnect(): void;
 }
 
+/**
+ * Watches a live link for a stream that has stopped (#358): `onSilence`
+ * runs once nothing has been heard for `EASYLEVEL_SILENCE_LIMIT_MS` while
+ * `isLive()` holds.
+ */
+function createSilenceWatch(now: () => number, isLive: () => boolean, onSilence: () => void) {
+  let lastHeardAt = 0;
+  let timer: ReturnType<typeof setInterval> | null = null;
+  function stop(): void {
+    if (timer !== null) clearInterval(timer);
+    timer = null;
+  }
+  return {
+    start() {
+      stop();
+      lastHeardAt = now();
+      timer = setInterval(() => {
+        if (isLive() && now() - lastHeardAt > EASYLEVEL_SILENCE_LIMIT_MS) onSilence();
+      }, SILENCE_CHECK_INTERVAL_MS);
+    },
+    stop,
+    /** Any accel notification counts, even one the calibration gate holds back. */
+    heard() {
+      lastHeardAt = now();
+    },
+  };
+}
+
+/**
+ * Holds back accel samples after a connect until the box's calibration is
+ * known (#217): until a status notification has arrived, no status is
+ * coming at all, or the grace window has passed. A held-back sample looks
+ * from the outside as if it had not arrived yet, never as a value known to
+ * be missing available calibration.
+ */
+function createCalibrationGate(now: () => number) {
+  const connectedAtMs = now();
+  let waiting = true;
+  return {
+    /** A status notification arrived, or none ever will. */
+    open() {
+      waiting = false;
+    },
+    /** Whether this sample is still held back. */
+    holdsBack(): boolean {
+      if (!waiting) return false;
+      if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) return true;
+      waiting = false; // give up waiting; best-effort from here on
+      return false;
+    },
+  };
+}
+
+/** A copy, not a view over the notification's own buffer (#219): the
+ * debug page's hex dump must stay what actually arrived even if a
+ * transport reuses its buffer for the next notification. */
+function copyBytes(view: DataView): Uint8Array {
+  return new Uint8Array(view.buffer, view.byteOffset, view.byteLength).slice();
+}
+
 export function createEasyLevelSensor(
   transport: EasyLevelTransport = createWebBluetoothTransport(),
   /** Read live on every accel sample (#217), never cached — mirrors
@@ -377,164 +437,134 @@ export function createEasyLevelSensor(
   let connection: EasyLevelConnection | null = null;
   // #132: stamped on every accepted accel notification — the only honest
   // signal that data is still actually arriving, as opposed to the GATT
-  // link merely still being open (this issue's first example: notifications
-  // silently stopping while the connection stays "connected").
+  // link merely still being open.
   let lastSampleAt: number | null = null;
-  // #358: when the box was last heard at all — any accel notification,
-  // including one still held back by the initial-calibration wait — or
-  // when the link came up. Only the silence watchdog reads it.
-  let lastHeardAt = 0;
-  let silenceTimer: ReturnType<typeof setInterval> | null = null;
+  const silenceWatch = createSilenceWatch(now, () => state === 'granted', closeSilentLink);
 
-  function stopSilenceWatch(): void {
-    if (silenceTimer !== null) clearInterval(silenceTimer);
-    silenceTimer = null;
+  /** Closed actively (#219): a half-open link keeps the box from
+   * advertising, so no reconnect could find it. The transport's teardown
+   * reports nothing through `onDisconnect`, so the lost state is set here,
+   * keeping `connection` for its device id. */
+  function closeSilentLink(): void {
+    connection?.disconnect();
+    onGattDisconnected();
   }
 
-  /** Watch a live link for a stream that has stopped (#358). */
-  function startSilenceWatch(): void {
-    stopSilenceWatch();
-    lastHeardAt = now();
-    silenceTimer = setInterval(() => {
-      if (state !== 'granted' || now() - lastHeardAt <= EASYLEVEL_SILENCE_LIMIT_MS) return;
-      // Closed actively (#219): a half-open link keeps the box from
-      // advertising, so no reconnect could find it. The transport's
-      // teardown reports nothing through `onDisconnect`, so the lost state
-      // is set here, keeping `connection` for its device id.
-      connection?.disconnect();
-      onGattDisconnected();
-    }, SILENCE_CHECK_INTERVAL_MS);
-  }
-
-  function onGattDisconnected(): void {
-    stopSilenceWatch();
-    // Lost, not denied: surfaces distinctly (#116's AC) so the UI can
-    // offer reconnection instead of silently freezing on the last value.
-    state = 'disconnected';
+  /** Never show stale as live (R35, #132): readings, battery and
+   * temperature from before a drop are not current either. */
+  function clearReadings(): void {
     gravity = null;
     rawGravity = null;
     lastSampleAt = null;
-    // Same "never show stale as live" rule R35 already applies to gravity
-    // (#132) — a battery/temperature reading from before the drop is not
-    // an honest "current" reading either.
     status = null;
   }
 
-  /** Shared by start() and reconnect(): wire a fresh EasyLevelConnection's
-   * notify characteristics into this sensor's readings. */
-  async function wireConnection(next: EasyLevelConnection): Promise<void> {
-    connection = next;
-    const connectedAtMs = now();
-    // #217: true until either a status notification has been observed, no
-    // status is coming at all (subscribeStatus fails/absent below), or the
-    // grace window expires — see the module doc comment and
-    // `sensorFallback.ts`'s `EASYLEVEL_INITIAL_CALIBRATION_WAIT_MS`. While
-    // true, accel notifications are received but not exposed through
-    // `getGravity()`/`getLastSampleAt()` — from the outside, as if they
-    // had not arrived yet, never as a value known to be missing available
-    // calibration.
-    let awaitingInitialCalibration = true;
+  function onGattDisconnected(): void {
+    silenceWatch.stop();
+    // Lost, not denied: surfaces distinctly (#116's AC) so the UI can
+    // offer reconnection instead of silently freezing on the last value.
+    state = 'disconnected';
+    clearReadings();
+  }
 
-    // Subscribed before accel below — see the module doc comment's
-    // "Startup ordering" section for why this order matters and what it
-    // can and can't guarantee.
+  function handleStatus(view: DataView): void {
+    statusBytes = copyBytes(view);
+    status = parseEasyLevelStatus(view);
+  }
+
+  function handleAccel(view: DataView): void {
+    // The latest status's bias, if any (#215), read fresh on every sample
+    // so a later calibration, or a drop that clears it, applies at once.
+    const calibrated = parseAccelPacket(view, status?.calibration);
+    rawGravity = calibrated;
+    gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
+    lastSampleAt = now();
+  }
+
+  /** Best-effort only — see the module doc comment. A firmware without
+   * this characteristic, or one that rejects the subscription, must never
+   * prevent leveling from working. Any status notification, even an
+   * unparseable one, opens the calibration gate. */
+  async function subscribeStatus(
+    live: EasyLevelConnection,
+    gate: ReturnType<typeof createCalibrationGate>,
+  ): Promise<void> {
     try {
-      // Best-effort only — see the module doc comment. A firmware without
-      // this characteristic, or one that rejects the subscription, must
-      // never prevent leveling from working.
-      await connection.subscribeStatus((view) => {
-        // A copy, not a view over the notification's own buffer (#219) —
-        // the debug page's hex dump must stay what actually arrived even
-        // if a transport reuses its buffer for the next notification.
-        statusBytes = new Uint8Array(view.buffer, view.byteOffset, view.byteLength).slice();
-        status = parseEasyLevelStatus(view);
-        // Any status notification — even a too-short/unparseable one —
-        // means we've learned what this characteristic has to say; nothing
-        // further to wait for.
-        awaitingInitialCalibration = false;
+      await live.subscribeStatus((view) => {
+        handleStatus(view);
+        gate.open();
       });
     } catch {
-      // No status characteristic, or subscribe failed: nothing calibration
-      // could ever come from, so don't wait for it.
-      awaitingInitialCalibration = false;
+      gate.open();
     }
+  }
+
+  /** Wire a fresh connection's notify characteristics into this sensor's
+   * readings. Status is subscribed before accel; see the module doc
+   * comment's "Startup ordering" section. */
+  async function wireConnection(next: EasyLevelConnection): Promise<void> {
+    connection = next;
+    const gate = createCalibrationGate(now);
+    await subscribeStatus(next, gate);
     try {
-      await connection.subscribeAccel((view) => {
-        lastHeardAt = now();
-        if (awaitingInitialCalibration) {
-          if (!isEasyLevelInitialCalibrationWaitExpired(connectedAtMs, now())) {
-            return; // still within the grace window — drop this sample
-          }
-          awaitingInitialCalibration = false; // give up waiting; best-effort from here on
-        }
-        // The most recent status notification's bytes-8-19 bias, if any
-        // (#215) — `status` is set by the subscribeStatus handler above, and
-        // read fresh on every accel sample so a later calibration (or a
-        // reconnect that loses it, clearing `status` back to null) takes
-        // effect immediately rather than needing its own plumbing.
-        const calibrated = parseAccelPacket(view, status?.calibration);
-        rawGravity = calibrated;
-        gravity = calibrated ? applyEasyLevelMounting(calibrated, getMounting()) : null;
-        lastSampleAt = now();
+      await next.subscribeAccel((view) => {
+        silenceWatch.heard();
+        if (!gate.holdsBack()) handleAccel(view);
       });
     } catch (error) {
-      // #219: this connection was made but could not be wired — release it
-      // rather than leaving the GATT link half-open (which would keep a
-      // real box captive and un-advertising; see `connectToDevice`'s
-      // teardown comment). The transport's disconnect() reports nothing
-      // through `onDisconnect`, so the caller's own catch still decides
-      // the surfaced state ('denied'/'disconnected').
+      // #219: made but not wired, so released rather than left half-open.
+      // The transport's disconnect() reports nothing through
+      // `onDisconnect`, so the caller still decides the surfaced state.
       next.disconnect();
       connection = null;
       throw error;
     }
   }
 
+  async function adopt(next: EasyLevelConnection): Promise<SensorState> {
+    await wireConnection(next);
+    state = 'granted';
+    silenceWatch.start();
+    return state;
+  }
+
+  /** The state to report instead of connecting, or null to go ahead. */
+  function refusalToConnect(): SensorState | null {
+    if (state === 'granted') return state;
+    if (!isEasyLevelAvailable()) {
+      state = 'unsupported';
+      return state;
+    }
+    return null;
+  }
+
   return {
     async start(): Promise<SensorState> {
-      if (state === 'granted') return state;
-      if (!isEasyLevelAvailable()) {
-        state = 'unsupported';
-        return state;
-      }
+      const refusal = refusalToConnect();
+      if (refusal) return refusal;
       try {
-        await wireConnection(await transport.connect(onGattDisconnected));
-        state = 'granted';
-        startSilenceWatch();
-        return state;
+        return await adopt(await transport.connect(onGattDisconnected));
       } catch {
-        // Covers a cancelled device picker, a GATT connect failure, or a
-        // missing service — all surfaced the same way the phone sensor
-        // surfaces a denied permission. A box that was already lost stays
-        // lost (#307): Retry's picker being cancelled must not hide the
-        // unavailable prompt or stop its background retry.
+        // A cancelled picker, a failed connect or a missing service, all
+        // surfaced like a denied phone permission. A box that was already
+        // lost stays lost (#307): Retry's picker being cancelled must not
+        // hide the unavailable prompt or stop its background retry.
         if (state !== 'disconnected') state = 'denied';
         return state;
       }
     },
     async reconnect(deviceId: string): Promise<SensorState> {
-      if (state === 'granted') return state;
-      if (!isEasyLevelAvailable()) {
-        state = 'unsupported';
-        return state;
-      }
+      const refusal = refusalToConnect();
+      if (refusal) return refusal;
       try {
-        const result = await transport.reconnect(deviceId, onGattDisconnected);
-        if (!result) {
-          state = 'disconnected';
-          return state;
-        }
-        await wireConnection(result);
-        state = 'granted';
-        startSilenceWatch();
-        return state;
+        const next = await transport.reconnect(deviceId, onGattDisconnected);
+        if (next) return await adopt(next);
       } catch {
-        // A subscribe failure after a successful GATT connect, say — same
-        // honest "not actually connected" outcome as transport.reconnect()
-        // itself resolving null.
-        state = 'disconnected';
-        return state;
+        // A subscribe failure after a successful GATT connect, say: the
+        // same honest "not connected" as finding no box at all.
       }
+      state = 'disconnected';
+      return state;
     },
     getState: () => state,
     getGravity: () => gravity,
@@ -545,14 +575,11 @@ export function createEasyLevelSensor(
     getStatusBytes: () => statusBytes,
     getStatus: () => status,
     disconnect(): void {
-      stopSilenceWatch();
+      silenceWatch.stop();
       connection?.disconnect();
       connection = null;
       state = 'idle';
-      gravity = null;
-      rawGravity = null;
-      lastSampleAt = null;
-      status = null;
+      clearReadings();
     },
   };
 }
