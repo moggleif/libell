@@ -99,6 +99,17 @@ describe('createCaravanStabilizer', () => {
     expect(shown.isLevel).toBe(false);
   });
 
+  it('judges each axle wheel on the first reading against its own step (#485)', () => {
+    // Negative roll = right side low, so the right wheel takes the lift.
+    const rollFor = (liftMm: number) => -(Math.atan(liftMm / 1800) * 180) / Math.PI;
+    const firstShown = (liftMm: number) =>
+      createCaravanStabilizer()(raw(rollFor(liftMm), 0), SETTINGS, 0);
+    expect(firstShown(10).axle.right.severity).toBe('none');
+    expect(firstShown(44).axle.right).toEqual({ displayMm: 44, stepMm: 44, severity: 'small' });
+    expect(firstShown(200).axle.right).toEqual({ displayMm: 200, stepMm: 112, severity: 'large' });
+    expect(firstShown(200).axle.left).toEqual({ displayMm: 0, stepMm: 0, severity: 'none' });
+  });
+
   it('does not flap the jockey direction at boundary jitter', () => {
     const stabilize = createCaravanStabilizer();
     // Start clearly level, then jitter right at the tolerance boundary:

@@ -347,6 +347,32 @@ describe('two-ramp plan display (#93)', () => {
     expect(severities.every((s) => s === 'none' || s === 'small')).toBe(true);
   });
 
+  it('swaps to a clearly better plan only after the rest dwell (#485)', () => {
+    const stabilize = createDisplayStabilizer();
+    stabilize(resultFor(0, 30, 50, 80), planSettings, 0);
+    // The tilt moves to the front right: the shown rear plan no longer helps.
+    let display = stabilize(resultFor(0, 80, 0, 0), planSettings, 100);
+    expect(display.wheels.rearRight.stepMm).toBe(80);
+    expect(display.wheels.frontRight.stepMm).toBe(0);
+    display = stabilize(resultFor(0, 80, 0, 0), planSettings, 100 + planSettings.dwellRestMs);
+    expect(display.wheels.frontRight.stepMm).toBe(80);
+    expect(display.wheels.rearRight.stepMm).toBe(0);
+    expect(display.wheels.rearLeft.stepMm).toBe(0);
+  });
+
+  it('keeps the shown plan while a better one flickers shorter than the dwell (#485)', () => {
+    const stabilize = createDisplayStabilizer();
+    stabilize(resultFor(0, 30, 50, 80), planSettings, 0);
+    let now = 0;
+    for (let i = 0; i < 20; i++) {
+      now += planSettings.dwellRestMs / 2;
+      const lifts: [number, number, number, number] = i % 2 ? [0, 30, 50, 80] : [0, 80, 0, 0];
+      const display = stabilize(resultFor(...lifts), planSettings, now);
+      expect(display.wheels.rearRight.stepMm).toBe(80);
+      expect(display.wheels.frontRight.stepMm).toBe(0);
+    }
+  });
+
   it("exposes the shown plan's residual deficit for the status line (#125)", () => {
     // Same unreachable tilt as above: best two-ramp plan leaves 30 mm.
     const display = createDisplayStabilizer()(resultFor(0, 30, 50, 80), planSettings, 0);
