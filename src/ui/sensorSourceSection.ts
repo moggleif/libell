@@ -173,11 +173,10 @@ export function createSensorSourceSection(
     drawnFor = drawKey();
     card.refresh();
     // This section's own source, not "any external source": with more than
-    // one listed, each card answers for itself.
-    const active = options.getSensorSource() === options.sensor.id;
-    checklist.element.hidden = !active;
-    footer.hidden = !active;
-    if (active) checklist.refresh();
+    // one listed, each card answers for itself. The steps stay, greyed out by
+    // the checklist itself, so they still show what is set (#400).
+    footer.hidden = options.getSensorSource() !== options.sensor.id;
+    checklist.refresh();
   }
 
   refresh();

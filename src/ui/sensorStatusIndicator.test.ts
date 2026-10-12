@@ -39,6 +39,16 @@ describe('createSensorStatusIndicator (#129, screen-cleanup follow-up)', () => {
     expect(indicator.element.getAttribute('aria-label')?.toLowerCase()).toContain('lost');
   });
 
+  it('switches to the warning look while a connected box sends no new data (R32, #401)', () => {
+    const indicator = createSensorStatusIndicator(true, false, vi.fn());
+    indicator.update('xparkle', 'granted', true);
+    expect(indicator.element.classList.contains('sensor-status--disconnected')).toBe(true);
+    expect(indicator.element.classList.contains('sensor-status--connected')).toBe(false);
+    expect(indicator.element.getAttribute('aria-label')).toContain('no new data');
+    indicator.update('xparkle', 'granted', false);
+    expect(indicator.element.classList.contains('sensor-status--connected')).toBe(true);
+  });
+
   it('returns to the neutral "tap to connect" state, not hidden, once the source falls back to the phone', () => {
     const indicator = createSensorStatusIndicator(true, false, vi.fn());
     indicator.update('easylevel', 'disconnected');

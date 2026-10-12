@@ -387,9 +387,10 @@ describe('picking the mounting by tapping a side of the vehicle (#217, #222, #31
     return button;
   }
 
-  it('hides the checklist while the phone is the active source', () => {
+  it('shows the checklist greyed out while the phone is the active source (#400)', () => {
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => 'phone' }));
-    expect(section.installElement.hidden).toBe(true);
+    expect(section.installElement.hidden).toBe(false);
+    expect(findButton(section.installElement, 'Zero now').disabled).toBe(true);
   });
 
   it('stays open after a side is tapped, so the choice is seen (#347)', () => {
@@ -508,6 +509,36 @@ describe('the position step, live (#304, #314)', () => {
     section.refreshLive();
     expect(zero.disabled).toBe(false);
     expect(picker.disabled).toBe(false);
+  });
+
+  it('keeps the steps after Disconnect, greyed out but still opening to show what is set (#400)', () => {
+    let source: 'phone' | 'xparkle' = 'xparkle';
+    const section = createSensorSourceSection(
+      makeOptions({
+        sensor: XPARKLE_DESCRIPTOR,
+        getSensorSource: () => source,
+        getSensorState: () => 'granted',
+        disconnectSensor: () => {
+          source = 'phone';
+        },
+        learnMounting: {
+          getRawReading: () => null,
+          getLearnedMounting: () => null,
+          setLearnedMounting: () => {},
+        },
+      }),
+    );
+    findButton(section.moreElement, 'Disconnect').click();
+    expect(section.installElement.hidden).toBe(false);
+    expect(findButton(section.installElement, 'Zero now').disabled).toBe(true);
+    const headers = [
+      ...section.installElement.querySelectorAll<HTMLButtonElement>('.box-step__header'),
+    ];
+    expect(headers).toHaveLength(2);
+    for (const header of headers) expect(header.disabled).toBe(false);
+    headers[1]!.click();
+    const zeroBody = headers[1]!.parentElement!.querySelector<HTMLElement>('.box-step__body')!;
+    expect(zeroBody.hidden).toBe(false);
   });
 
   it('shows Disconnect as soon as the box connects, without reopening the page (#343)', () => {
@@ -889,7 +920,7 @@ describe('pinned before the #416 split', () => {
     findButton(section.element, 'Disconnect').click();
     expect(disconnectSensor).toHaveBeenCalledOnce();
     expect(onSourceChanged).toHaveBeenCalledOnce();
-    expect(section.installElement.hidden).toBe(true);
+    expect(section.installElement.hidden).toBe(false);
     expect(section.moreElement.hidden).toBe(true);
   });
 

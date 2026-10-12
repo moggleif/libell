@@ -345,13 +345,12 @@ URL and must keep working with no signal.
 
 ## R16 — Reaching level is celebrated exactly once
 
-> **Open bug:** after a reload the chime stays silent until a setting changes or mute is toggled (#396).
-
 - **Given** the vehicle becomes level while I watch the screen
 - **Then** a brief full-screen ✓ overlay is shown and the phone vibrates; a chime also
   sounds unless the "Chime when level" setting has been explicitly turned off (default:
   `DEFAULT_SETTINGS` in `src/domain/settings.ts`, #153 — audio is unlocked by a user
-  gesture, satisfying autoplay policies). An install or settings blob that predates
+  gesture, satisfying autoplay policies: the first tap or key press anywhere after
+  launch, so the chime works after a reload without touching Settings or mute, #396). An install or settings blob that predates
   this default is treated the same as a fresh install: the chime is on unless the user
   has explicitly chosen off.
 - **Given** the vehicle then jitters around the tolerance boundary
@@ -395,8 +394,6 @@ URL and must keep working with no signal.
   open and returns after closing it only if the sensor still sits wrong (#297).
 
 ## R18 — A first-run introduction, skippable and reopenable
-
-> **Open bug:** skipping the measurements step loses the vehicle choice (#397).
 
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
@@ -539,6 +536,10 @@ URL and must keep working with no signal.
 - **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
 - **Then** tapping "Next" saves those values before advancing — the only way to persist
   them, since the step shows no separate Save button (see above).
+- **Given** a vehicle type picked in the wizard that differs from the stored one
+- **When** I skip the measurements step (or every form step)
+- **Then** every later step still follows the picked vehicle (a caravan's ramps step has
+  no ramp count), and reaching the end stores the picked vehicle type (#397).
 - **Given** any step (#365, reworking #189's one generic note)
 - **Then** a Skip button is shown only where Next would save something — measurements
   and ramps; everywhere else Next is the one way on. A step that can leave something
@@ -833,8 +834,8 @@ URL and must keep working with no signal.
   the next departure from level starts direction tracking fresh.
 - **Given** iOS's autoplay restrictions
 - **Then** guidance audio reuses the same `unlockAudio()` gesture-unlock as the
-  R16 chime — the same gesture (a change in Settings, or unmuting from the bottom
-  bar, R38) unlocks both.
+  R16 chime — the same gesture (the first tap or key press after launch, a change in
+  Settings, or unmuting from the bottom bar, R38) unlocks both.
 
 ## R31 — Saved level targets: switch between more than one intentional tilt
 
@@ -877,8 +878,6 @@ URL and must keep working with no signal.
   Everything is stored in `localStorage` only — no account, no backend.
 
 ## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
-
-> **Open bug:** the sensor icon does not yet switch to its warning look while data is stale (#401).
 
 - **Given** a phone with Chrome/Android and Web Bluetooth support
 - **When** the user opens the Sensor box page and taps "Connect" on the EasyLevel
@@ -1284,8 +1283,6 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 
 ## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
 
-> **Open bug:** "Copy debug info" leaves out the temperature (#402).
-
 The Sensor box page (R32) lists every sensor box Libell supports that can work in this
 browser — one card each, EasyLevel and Xparkle RVS01 today (#268, R49); tapping the
 card of the box in use opens a deeper, focused page for that sensor alone, refreshed
@@ -1355,8 +1352,8 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   accelerometer int16 triplet (`easyLevelProtocol.ts`'s unscaled x/y/z — never run
   through the leveling math), the firmware tier decoded from the status
   characteristic (#123), and the status characteristic's raw bytes as hex — plus a
-  "Copy debug info" button producing a plain-text block of all of the above, ready
-  to paste into a bug report.
+  "Copy debug info" button producing a plain-text block of all of the above, the
+  temperature included (#402), ready to paste into a bug report.
 - **Given** the box is not the active source (the phone is)
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
   show — as is the box's setup checklist, while the state and reading lines above
@@ -1567,7 +1564,7 @@ everything above that seam is exactly the code a real box runs through.
 - **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
   the real transport is not even constructed.
 
-## R45 — Every view fits a phone screen (#239, #241, #243)
+## R45 — Every view fits a phone screen (#239, #241, #243, #403)
 
 R4 and R18 state this for the level view and the first-run guide. It holds for every
 other view too — settings, help, the sensor box pages, the iOS sensor guide (R39),
@@ -1593,6 +1590,11 @@ the incoming shared-setup dialog, the Classic settings drawer.
   a share link the app itself produces — and the last requirement above is checked
   against the stylesheet rather than at runtime, because no browser available in CI
   reproduces the iOS viewport behaviour it guards against.
+- **Given** `npm run fit`
+- **Then** it walks every appearance the app offers, Glossy included, taken from the
+  same list Settings offers rather than a copy, and fails if any view overflows in any
+  of them. Glossy shares Classic's layout but adds its own gradients, bevels and
+  shadows, so passing in Classic says nothing about Glossy.
 
 ## R46 — The bubble starts in its dial (#244)
 
@@ -1779,6 +1781,12 @@ present this source as more proven than it is.
   not answered; a code that is not four digits is explained, not sent. The code is kept
   in Libell's settings and offered on every later connect. Readings keep flowing
   throughout: nothing is blocked while the code is wrong.
+- **Given** the guide's Sensor box step is shown (#390)
+- **When** I connect a box that rejects its password
+- **Then** the card shows "Wrong password" and the password field without leaving the
+  step, because the verdict arrives after the connect and the card redraws live, as on
+  the box's own page. When I type the right code, the field hides, the card shows
+  "Connected" and the code is kept.
 - **Given** the Xparkle box is connected and the user taps "Zero now" ("Nollställ nu")
   or "Zero again" — on its own page (R51) or in the Calibration tab (R11)
 - **Then** Libell has the box zero itself with its own command (#290), so its readings
@@ -1821,8 +1829,6 @@ present this source as more proven than it is.
 
 ## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
-> **Open bug:** after Disconnect the setup steps are hidden instead of greyed out (#400).
-
 The #309 UX review found the box page three stacked sections of paragraphs and buttons,
 jargon ("installation offset", "raw reading"), no order, and — when the connection was
 lost — a line telling the user to tap a Reconnect button that only existed on another
@@ -1856,7 +1862,7 @@ its descriptor's capabilities (ADR 0016).
   Connect/Reconnect button or anywhere else (#343)
 - **Then** the page redraws at once: Disconnect and the live actions appear, or grey
   out, without leaving and reopening it.
-- **Given** the box is the active source
+- **Given** the box is the active source (or not, then greyed out as above, #400)
 - **Then** the page shows a checklist of two steps, each with a ✓ when done and only
   the next undone one expanded (in a neutral frame: green means done, never "open", #343); every step can be opened and run at any time — guidance,
   never a gate:
