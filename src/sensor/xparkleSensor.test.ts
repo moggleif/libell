@@ -1,15 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createXparkleSensor, XPARKLE_DESCRIPTOR } from './xparkleSensor';
+import { XPARKLE_POLL_INTERVAL_MS, XPARKLE_READ_TIMEOUT_MS } from './xparkleLink';
 import {
-  createXparkleSensor,
   createXparkleWebBluetoothTransport,
   XPARKLE_ADVERTISEMENT_WAIT_MS,
-  XPARKLE_DESCRIPTOR,
-  XPARKLE_POLL_INTERVAL_MS,
-  XPARKLE_READ_TIMEOUT_MS,
   type XparkleConnection,
   type XparkleTransport,
-} from './xparkleSensor';
-import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleProtocol';
+} from './xparkleTransport';
+import { buildCommandFrame, buildResetZero, XPARKLE_COMMAND } from './xparkleCommands';
 
 /** A live payload: flags, two big-endian 1/100° magnitudes, battery. */
 function livePayload(pitchHundredths: number, rollHundredths: number, battery = 80): DataView {
@@ -667,5 +665,65 @@ describe('Retry without getDevices() (#288, Chrome on Android)', () => {
       configurable: true,
     });
     expect(await createXparkleWebBluetoothTransport().reconnect('xparkle-1', vi.fn())).toBeNull();
+  });
+});
+
+describe('what a lost link keeps and what it clears (#477)', () => {
+  async function connectedThenLost() {
+    const timers = fakeTimers();
+    const box = fakeBox();
+    let onDisconnect: (() => void) | null = null;
+    let now = 1000;
+    const sensor = createXparkleSensor(
+      {
+        connect: (handler) => {
+          onDisconnect = handler;
+          return Promise.resolve(box.connection);
+        },
+        reconnect: () => Promise.resolve(box.connection),
+      },
+      { ...timers, now: () => now },
+    );
+    await sensor.start();
+    box.reply(buildCommandFrame(XPARKLE_COMMAND.password, [1]));
+    box.reply(buildCommandFrame(XPARKLE_COMMAND.queryParameters, [0, 1, 0, 230, 0, 200, 2, 1]));
+    await timers.flush();
+    now = 2000;
+    onDisconnect!();
+    return { sensor, box, timers };
+  }
+
+  it('clears the reading, but keeps the device, last sample time, orientation and verdict', async () => {
+    const { sensor } = await connectedThenLost();
+    expect(sensor.getState()).toBe('disconnected');
+    expect(sensor.getReading()).toBeNull();
+    expect(sensor.getGravity()).toBeNull();
+    expect(sensor.getDeviceId()).toBe('xparkle-1');
+    expect(sensor.getLastSampleAt()).toBe(1000);
+    expect(sensor.getOrientation()).toBe('left');
+    expect(sensor.isPasswordRejected()).toBe(true);
+  });
+
+  it('forgets the old password verdict when the box is adopted again', async () => {
+    const { sensor, timers } = await connectedThenLost();
+    await sensor.reconnect('xparkle-1');
+    await timers.flush();
+    expect(sensor.getState()).toBe('granted');
+    expect(sensor.isPasswordRejected()).toBe(false);
+    expect(sensor.getReading()).not.toBeNull();
+  });
+
+  it('goes idle and closes the link when the user disconnects', async () => {
+    let closed = 0;
+    const timers = fakeTimers();
+    const { transport } = makeTransport(fakeBox({ disconnect: () => void (closed += 1) }));
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+    await timers.flush();
+    sensor.disconnect();
+    expect(sensor.getState()).toBe('idle');
+    expect(sensor.getGravity()).toBeNull();
+    expect(closed).toBe(1);
+    expect(timers.count()).toBe(0);
   });
 });

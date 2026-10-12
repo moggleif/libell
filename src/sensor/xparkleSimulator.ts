@@ -19,14 +19,14 @@
  * Bytes through the seam only: no `navigator.bluetooth`, no UI. Lives in
  * `sensor/`, not `domain/`, because it owns real timers (ADR 0002).
  */
+import { parseParameterReply } from './xparkleReplies';
 import {
   buildCommandFrame,
-  parseParameterReply,
   XPARKLE_COMMAND,
   XPARKLE_DEFAULT_PASSWORD,
   XPARKLE_FRAME_HEADER,
-} from './xparkleProtocol';
-import type { XparkleConnection, XparkleTransport } from './xparkleSensor';
+} from './xparkleCommands';
+import type { XparkleConnection, XparkleTransport } from './xparkleTransport';
 import { createSimulatedLink, type SimulatedSession } from './simulatedLink';
 
 export type XparkleSimulationMode = 'off' | 'steady' | 'drop' | 'badpassword';

@@ -36,11 +36,8 @@ import {
   isRememberedEasyLevelDeviceUsable,
 } from '../sensor/easyLevelSimulator';
 import { externalSensorById, type ExternalSensorHealth } from '../sensor/externalSensors';
-import {
-  createXparkleSensor,
-  createXparkleTransport,
-  type XparkleSensor,
-} from '../sensor/xparkleSensor';
+import { createXparkleSensor, type XparkleSensor } from '../sensor/xparkleSensor';
+import { createXparkleTransport } from '../sensor/xparkleTransport';
 import { isRememberedXparkleDeviceUsable, xparkleSimulationMode } from '../sensor/xparkleSimulator';
 import type { BoxPasswordOptions } from '../ui/boxPasswordBlock';
 import type { ExternalSensorCalibrationState } from '../ui/calibrationSection';

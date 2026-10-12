@@ -10,7 +10,8 @@ import {
   xparkleSimulationMode,
 } from './xparkleSimulator';
 import { createXparkleSensor } from './xparkleSensor';
-import { buildResetZero, parseLivePayload } from './xparkleProtocol';
+import { parseLivePayload } from './xparkleProtocol';
+import { buildResetZero } from './xparkleCommands';
 
 describe('xparkleSimulationMode (#271)', () => {
   it('is off without the flag', () => {
