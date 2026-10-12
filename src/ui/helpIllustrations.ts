@@ -12,28 +12,16 @@
  * which knows the vehicle the user just picked, passes the other value.
  */
 import type { VehicleType } from '../domain/settings';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function el<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-  text?: string,
-): SVGElementTagNameMap[K] {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
+import { svgEl } from './svg';
 
 function svg(viewBox: string, label: string): SVGSVGElement {
-  const root = el('svg', { viewBox, role: 'img', class: 'illu' });
+  const root = svgEl('svg', { viewBox, role: 'img', class: 'illu' });
   root.setAttribute('aria-label', label);
   return root;
 }
 
 function outline(x: number, y: number, w: number, h: number): SVGRectElement {
-  return el('rect', {
+  return svgEl('rect', {
     x: String(x),
     y: String(y),
     width: String(w),
@@ -57,14 +45,14 @@ function windshield(x: number, y: number, w: number, h: number): SVGPathElement 
   const topPeak = y + h * 0.02;
   const botSide = y + h * 0.19;
   const botPeak = y + h * 0.14;
-  return el('path', {
+  return svgEl('path', {
     d: `M${left} ${topSide} Q${mid} ${topPeak} ${right} ${topSide} L${right} ${botSide} Q${mid} ${botPeak} ${left} ${botSide} Z`,
     class: 'illu__windshield',
   });
 }
 
 function frontArrow(): SVGPathElement {
-  return el('path', {
+  return svgEl('path', {
     d: 'M100 6 L92 20 L97 20 L97 30 L103 30 L103 20 L108 20 Z',
     class: 'illu__accent',
   });
@@ -77,15 +65,15 @@ export function placementIllustration(
 ): SVGSVGElement {
   const root = svg('0 0 200 150', label);
   const phone = [
-    el('rect', { x: '86', y: '66', width: '28', height: '48', rx: '5', class: 'illu__phone' }),
-    el('rect', { x: '92', y: '72', width: '16', height: '30', rx: '2', class: 'illu__screen' }),
-    el('path', { d: 'M100 62 L96 68 L104 68 Z', class: 'illu__accent' }),
+    svgEl('rect', { x: '86', y: '66', width: '28', height: '48', rx: '5', class: 'illu__phone' }),
+    svgEl('rect', { x: '92', y: '72', width: '16', height: '30', rx: '2', class: 'illu__screen' }),
+    svgEl('path', { d: 'M100 62 L96 68 L104 68 Z', class: 'illu__accent' }),
   ];
   if (vehicleType === 'caravan') {
     root.append(
       frontArrow(),
-      el('path', { d: 'M76 56 L100 30 L124 56', class: 'illu__drawbar' }),
-      el('circle', { cx: '100', cy: '30', r: '6', class: 'illu__wheel' }),
+      svgEl('path', { d: 'M76 56 L100 30 L124 56', class: 'illu__drawbar' }),
+      svgEl('circle', { cx: '100', cy: '30', r: '6', class: 'illu__wheel' }),
       outline(58, 56, 84, 86),
       ...phone,
     );
@@ -107,7 +95,7 @@ export function legendIllustration(label: string): SVGSVGElement {
   states.forEach(([cls, glyph], i) => {
     const x = 30 + i * 60;
     root.append(
-      el('rect', {
+      svgEl('rect', {
         x: String(x),
         y: '12',
         width: '28',
@@ -115,14 +103,14 @@ export function legendIllustration(label: string): SVGSVGElement {
         rx: '9',
         class: `illu__wheel ${cls}`,
       }),
-      el('text', { x: String(x + 14), y: '42', class: 'illu__glyph' }, glyph),
+      svgEl('text', { x: String(x + 14), y: '42', class: 'illu__glyph' }, glyph),
     );
   });
   return root;
 }
 
 function wheelRect(x: number, y: number): SVGRectElement {
-  return el('rect', {
+  return svgEl('rect', {
     x: String(x - 7),
     y: String(y),
     width: '14',
@@ -146,8 +134,8 @@ export function measuresIllustration(
   const root = svg('0 0 200 160', label);
   if (vehicleType === 'caravan') {
     root.append(
-      el('path', { d: 'M70 60 L100 30 L130 60', class: 'illu__drawbar' }),
-      el('circle', { cx: '100', cy: '30', r: '7', class: 'illu__wheel' }),
+      svgEl('path', { d: 'M70 60 L100 30 L130 60', class: 'illu__drawbar' }),
+      svgEl('circle', { cx: '100', cy: '30', r: '7', class: 'illu__wheel' }),
       outline(55, 60, 90, 88),
       wheelRect(45, 120),
       // Mirrors the left wheel (45) about the 100 centre line, matching
@@ -155,8 +143,8 @@ export function measuresIllustration(
       // was 145, sitting asymmetrically inside the body outline (#184
       // follow-up: "högerdäcken ligger fel").
       wheelRect(155, 120),
-      el('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
-      el('line', {
+      svgEl('line', { x1: '100', y1: '30', x2: '100', y2: '133', class: 'illu__measure' }),
+      svgEl('line', {
         x1: '45',
         y1: '133',
         x2: '155',
@@ -174,9 +162,9 @@ export function measuresIllustration(
     wheelRect(155, 30),
     wheelRect(45, 116),
     wheelRect(155, 116),
-    el('line', { x1: '100', y1: '43', x2: '100', y2: '129', class: 'illu__measure' }),
+    svgEl('line', { x1: '100', y1: '43', x2: '100', y2: '129', class: 'illu__measure' }),
     // Front axle track width.
-    el('line', {
+    svgEl('line', {
       x1: '45',
       y1: '43',
       x2: '155',
@@ -184,7 +172,7 @@ export function measuresIllustration(
       class: 'illu__measure illu__measure--dash',
     }),
     // Rear axle track width.
-    el('line', {
+    svgEl('line', {
       x1: '45',
       y1: '129',
       x2: '155',

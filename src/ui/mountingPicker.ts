@@ -19,6 +19,7 @@ import {
 } from '../domain/mountingFacing';
 import type { VehicleType } from '../domain/settings';
 import { t } from './i18n';
+import { svgEl } from './svg';
 
 /** An upright box is seen edge-on from above (a thin bar); a flat one is
  * seen face-on (a squarer block). */
@@ -36,17 +37,6 @@ export interface MountingPickerOptions {
 export interface MountingPicker {
   element: HTMLElement;
   refresh(): void;
-}
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function svgEl<K extends keyof SVGElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string>,
-): SVGElementTagNameMap[K] {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-  return node;
 }
 
 const DEGREES: Record<Facing, number> = { front: 0, right: 90, rear: 180, left: 270 };
