@@ -19,17 +19,10 @@
     "src/ui/mountingPicker.ts > createMountingPicker": 52,
     "src/ui/sensorFallbackPrompt.ts > createSensorFallbackPrompt": 69,
     "src/ui/sensorPage.ts > createSensorPage": 72,
-    "src/ui/settingsGeneralTab.ts > createGeneralTab": 55,
-    "src/ui/settingsGeneralTab.ts > createMore": 62,
-    "src/ui/settingsRampsTab.ts > createRampsTab": 82,
-    "src/ui/settingsVehicleTab.ts > createVehicleTab": 52,
     "src/ui/standalonePage.ts > createStandalonePage": 78,
     "src/ui/targetsSection.ts > createTargetsSection": 123
   },
   "fileBaseline": {
-    "src/main.ts": 414,
-    "src/ui/calibrationSection.ts": 536,
-    "src/ui/settingsPanel.ts": 684,
-    "src/ui/settingsRampsTab.ts": 498
+    "src/main.ts": 414
   }
 }

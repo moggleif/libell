@@ -4,7 +4,8 @@
  * the drawer-based `menu.ts` instead.
  */
 import type { MenuOptions, MenuSection } from './menu';
-import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
+import { createSettingsForm } from './settingsPanel';
+import type { SettingsFormElement } from './settingsLayout';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 

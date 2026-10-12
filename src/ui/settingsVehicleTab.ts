@@ -32,19 +32,11 @@ export function createVehicleTab(
   onShare: (settings: LevelSettings) => void,
 ): VehicleTab {
   const { state } = context;
-  const isCaravan = (): boolean => state.vehicle === 'caravan';
   const { vehicleField, axleField } = createVehicleFields(initial, context);
   const [wheelbase, trackFront, trackRear] = createMeasurements(state);
   const measurements = [wheelbase, trackFront, trackRear];
-
-  // Where to find the numbers — the biggest data-entry hurdle for new
-  // users is not typing, it's knowing.
-  const measureHint = document.createElement('p');
-  measureHint.className = 'settings__hint';
-  measureHint.textContent = t('settings.measureHint');
-
+  const measureHint = createMeasureHint();
   const shareButton = createShareButton(() => onShare(context.currentSettings()));
-
   return {
     measurements,
     measureHint,
@@ -55,19 +47,7 @@ export function createVehicleTab(
       measureHint,
       shareButton,
     ],
-    relabel: () => {
-      vehicleField.caption.textContent = t('settings.vehicle');
-      vehicleField.relabelOptions();
-      axleField.caption.textContent = t(isCaravan() ? 'settings.axle' : 'settings.rearAxle');
-      axleField.relabelOptions();
-      // A caravan has one axle — the front track width does not apply.
-      trackFront.element.hidden = isCaravan();
-      // A caravan's "wheelbase" is the axle-to-jockey distance, which the
-      // registration document does not list.
-      measureHint.textContent =
-        t(isCaravan() ? 'settings.measureHint.caravan' : 'settings.measureHint') +
-        (state.axle === 'boggie' ? ` ${t('settings.measureHint.boggie')}` : '');
-    },
+    relabel: () => relabel({ vehicleField, axleField, trackFront, measureHint }, state),
     read: (raw) => {
       raw.vehicleType = state.vehicle;
       raw.rearAxle = state.axle;
@@ -77,6 +57,37 @@ export function createVehicleTab(
       axleField.control.value = settings.rearAxle;
     },
   };
+}
+
+/** Where to find the numbers — the biggest data-entry hurdle for new
+ * users is not typing, it's knowing. */
+function createMeasureHint(): HTMLParagraphElement {
+  const measureHint = document.createElement('p');
+  measureHint.className = 'settings__hint';
+  measureHint.textContent = t('settings.measureHint');
+  return measureHint;
+}
+
+function relabel(
+  parts: ReturnType<typeof createVehicleFields> & {
+    trackFront: NumberField;
+    measureHint: HTMLParagraphElement;
+  },
+  state: SettingsFormState,
+): void {
+  const { vehicleField, axleField, trackFront, measureHint } = parts;
+  const isCaravan = state.vehicle === 'caravan';
+  vehicleField.caption.textContent = t('settings.vehicle');
+  vehicleField.relabelOptions();
+  axleField.caption.textContent = t(isCaravan ? 'settings.axle' : 'settings.rearAxle');
+  axleField.relabelOptions();
+  // A caravan has one axle — the front track width does not apply.
+  trackFront.element.hidden = isCaravan;
+  // A caravan's "wheelbase" is the axle-to-jockey distance, which the
+  // registration document does not list.
+  measureHint.textContent =
+    t(isCaravan ? 'settings.measureHint.caravan' : 'settings.measureHint') +
+    (state.axle === 'boggie' ? ` ${t('settings.measureHint.boggie')}` : '');
 }
 
 /**

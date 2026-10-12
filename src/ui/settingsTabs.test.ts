@@ -7,7 +7,8 @@
 // captions, input names, `selectTab` and `classicPages` — never its
 // internals, so the same tests hold before and after the split.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
+import { createSettingsForm } from './settingsPanel';
+import type { SettingsFormElement } from './settingsLayout';
 import { setLanguage, t, type MessageKey } from './i18n';
 import { loadSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';

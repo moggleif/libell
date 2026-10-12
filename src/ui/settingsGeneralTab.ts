@@ -50,15 +50,16 @@ export function createGeneralTab(
   context: SettingsFormContext,
   actions: GeneralTabActions,
 ): GeneralTab {
-  const language = createLanguageField(context.compact);
-  const unit = createUnitField(initial.displayUnit, context.state, actions);
-  const theme = createThemeField(initial.theme, context);
-  const appearance = createAppearanceField(initial.appearance, context);
-  const sound = createSoundFields(initial);
-  const more = createMore(context, actions);
-
-  const lookElements = (): HTMLElement[] => [theme.element, appearance.element];
-
+  const fields: GeneralFields = {
+    language: createLanguageField(context.compact),
+    unit: createUnitField(initial.displayUnit, context.state, actions),
+    theme: createThemeField(initial.theme, context),
+    appearance: createAppearanceField(initial.appearance, context),
+    sound: createSoundFields(initial),
+    more: createMore(context, actions),
+  };
+  const { language, unit, sound, more } = fields;
+  const lookElements = (): HTMLElement[] => [fields.theme.element, fields.appearance.element];
   return {
     languageField: language.element,
     lookElements,
@@ -72,33 +73,56 @@ export function createGeneralTab(
       more.element,
     ],
     fineTuning: more.fields,
-    relabel: () => {
-      unit.caption.textContent = t('settings.unit');
-      language.relabel();
-      theme.caption.textContent = t('settings.theme');
-      theme.relabelOptions();
-      appearance.caption.textContent = t('settings.appearance');
-      appearance.relabelOptions();
-      sound.relabel();
-      more.relabel();
-    },
-    read: (raw) => {
-      raw.displayUnit = context.state.unit;
-      raw.soundOnLevel = sound.chime.control.checked;
-      raw.soundGuidance = sound.guidance.control.checked;
-      raw.theme = theme.control.value;
-      raw.appearance = appearance.control.value;
-    },
-    populate: (settings) => {
-      unit.control.value = settings.displayUnit;
-      theme.control.value = settings.theme;
-      applyTheme(settings.theme);
-      appearance.control.value = settings.appearance;
-      applyAppearance(settings.appearance);
-      sound.show(settings);
-    },
+    relabel: () => relabel(fields),
+    read: (raw) => read(fields, context.state, raw),
+    populate: (settings) => populate(fields, settings),
     resyncSound: (prefs) => sound.show(prefs),
   };
+}
+
+/** The tab's fields; the functions below work on these. */
+interface GeneralFields {
+  language: ReturnType<typeof createLanguageField>;
+  unit: ReturnType<typeof createUnitField>;
+  theme: ReturnType<typeof createThemeField>;
+  appearance: ReturnType<typeof createAppearanceField>;
+  sound: ReturnType<typeof createSoundFields>;
+  more: ReturnType<typeof createMore>;
+}
+
+function relabel({ language, unit, theme, appearance, sound, more }: GeneralFields): void {
+  unit.caption.textContent = t('settings.unit');
+  language.relabel();
+  theme.caption.textContent = t('settings.theme');
+  theme.relabelOptions();
+  appearance.caption.textContent = t('settings.appearance');
+  appearance.relabelOptions();
+  sound.relabel();
+  more.relabel();
+}
+
+function read(
+  { sound, theme, appearance }: GeneralFields,
+  state: SettingsFormState,
+  raw: RawSettings,
+): void {
+  raw.displayUnit = state.unit;
+  raw.soundOnLevel = sound.chime.control.checked;
+  raw.soundGuidance = sound.guidance.control.checked;
+  raw.theme = theme.control.value;
+  raw.appearance = appearance.control.value;
+}
+
+function populate(
+  { unit, theme, appearance, sound }: GeneralFields,
+  settings: LevelSettings,
+): void {
+  unit.control.value = settings.displayUnit;
+  theme.control.value = settings.theme;
+  applyTheme(settings.theme);
+  appearance.control.value = settings.appearance;
+  applyAppearance(settings.appearance);
+  sound.show(settings);
 }
 
 /** mm or cm: updates the form state, then lets the form convert the
@@ -238,13 +262,27 @@ function createLanguageField(compact: boolean) {
  * and has its place on the Level tab.
  */
 function createMore(context: SettingsFormContext, actions: GeneralTabActions) {
-  const { state } = context;
   const element = document.createElement('details');
   element.className = 'settings__advanced settings__more';
   const summary = document.createElement('summary');
   summary.className = 'settings__advanced-summary';
   const heading = createSectionHeading();
+  const tuning = createFineTuningFields(context.state);
+  const resetAll = createResetAllButton(actions);
+  element.append(summary, heading, ...tuning.elements, resetAll);
+  return {
+    element,
+    fields: tuning.fields,
+    relabel: (): void => {
+      heading.textContent = t('settings.fineTuning');
+      tuning.relabel();
+      summary.textContent = t('settings.more');
+      resetAll.textContent = t('settings.resetAll');
+    },
+  };
+}
 
+function createFineTuningFields(state: SettingsFormState) {
   const stability = createLengthField(
     'stabilityMm',
     { label: () => 'settings.stability', stepMm: 0.5, min: 0 },
@@ -267,35 +305,23 @@ function createMore(context: SettingsFormContext, actions: GeneralTabActions) {
     state,
   );
   const dwellHint = createHint();
+  return {
+    elements: [stability.element, stabilityHint, dwellRest.element, dwellMotion.element, dwellHint],
+    fields: [stability, dwellRest, dwellMotion],
+    relabel: (): void => {
+      stabilityHint.textContent = t('settings.stability.hint');
+      dwellHint.textContent = t('settings.dwell.hint');
+    },
+  };
+}
 
-  // The one whole-form action. It keeps the appearance: that
-  // decides the page's whole structure, and changing it reloads the app,
-  // which would take the Undo toast with it.
+/** The one whole-form action. It keeps the appearance: that decides the
+ * page's whole structure, and changing it reloads the app, which would take
+ * the Undo toast with it. */
+function createResetAllButton(actions: GeneralTabActions): HTMLButtonElement {
   const resetAll = document.createElement('button');
   resetAll.type = 'button';
   resetAll.className = 'menu__action menu__action--secondary settings__reset-all';
   resetAll.addEventListener('click', () => actions.resetAll());
-
-  element.append(
-    summary,
-    heading,
-    stability.element,
-    stabilityHint,
-    dwellRest.element,
-    dwellMotion.element,
-    dwellHint,
-    resetAll,
-  );
-
-  return {
-    element,
-    fields: [stability, dwellRest, dwellMotion],
-    relabel: (): void => {
-      heading.textContent = t('settings.fineTuning');
-      stabilityHint.textContent = t('settings.stability.hint');
-      dwellHint.textContent = t('settings.dwell.hint');
-      summary.textContent = t('settings.more');
-      resetAll.textContent = t('settings.resetAll');
-    },
-  };
+  return resetAll;
 }

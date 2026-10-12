@@ -360,12 +360,14 @@ Settings is open (the sensor source and `sensorDevices`, saved directly by the s
 pages), the form never writes those from its own snapshot: each save reads them back
 from storage first and only replaces the fields the form shows.
 
-Each tab is its own module — `settingsVehicleTab.ts`, `settingsRampsTab.ts`,
-`settingsLevelTab.ts`, `settingsGeneralTab.ts` (Calibration embeds
-`calibrationSection.ts`) — built from the shared field helpers in `settingsFields.ts`.
-`settingsPanel.ts` owns what they share: the form state, saving and Undo, the message
-for an unusable number, and the layout (Modern's tabs, Classic's ☰ pages, the wizard's
-steps).
+Each tab is its own module — `settingsVehicleTab.ts`, `settingsRampsTab.ts` (with
+`rampChoice.ts` and `rampsPage.ts`), `settingsLevelTab.ts`, `settingsGeneralTab.ts`
+(Calibration embeds `calibrationSection.ts`, whose controls and layouts are
+`calibrationControls.ts` and `calibrationLayouts.ts`) — built from the shared field
+helpers in `settingsFields.ts`. `settingsPanel.ts` owns what they share: the form state
+and its values. Saving, Undo and the message for an unusable number are
+`settingsAutoSave.ts`; the layout (Modern's tabs, Classic's ☰ pages, the wizard's
+steps) is `settingsLayout.ts`.
 
 ## Offline
 

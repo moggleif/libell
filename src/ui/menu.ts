@@ -16,7 +16,8 @@ import type { LevelSettings, SensorSource, SoundPrefs } from '../domain/settings
 import type { TargetPreset } from '../domain/targetPresets';
 import type { ExternalSensorHealth } from '../sensor/externalSensors';
 import type { SensorState } from '../sensor/orientation';
-import { createSettingsForm, type SettingsFormElement } from './settingsPanel';
+import { createSettingsForm } from './settingsPanel';
+import type { SettingsFormElement } from './settingsLayout';
 import { createCalibrationSection } from './calibrationSection';
 import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
