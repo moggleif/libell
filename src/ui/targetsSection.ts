@@ -12,6 +12,7 @@
  * of a third block there, built from the same `menu__*` classes so it
  * still reads as part of the same UI family in both Classic and Modern.
  */
+import type { CaptureResult } from '../domain/calibration';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
 
@@ -20,9 +21,10 @@ export interface TargetsOptions {
   getActiveTargetId(): string | null;
   /** Switch the active target; `null` selects "Normal" (true level). */
   selectTarget(id: string | null): void;
-  /** Capture the current tilt as a new preset named `name`. Returns an
-   * error text, or null on success. */
-  addTargetPreset(name: string): string | null;
+  /** Capture the current tilt as a new preset named `name`: null on
+   * success, an error text, or a warning above 15° that offers "Save
+   * anyway" — `anyway` is set when the user chose it (#425). */
+  addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
 }
 
@@ -54,6 +56,14 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
 
   const addStatus = document.createElement('p');
   addStatus.className = 'menu__text menu__text--status';
+
+  // "Save anyway" (#425, "Varning är rätt. Aldrig stopp."): shown only
+  // while a too-steep warning is up.
+  const anywayButton = document.createElement('button');
+  anywayButton.type = 'button';
+  anywayButton.className = 'menu__action menu__action--secondary';
+  anywayButton.textContent = t('targets.anyway');
+  anywayButton.hidden = true;
 
   function makeRow(
     labelText: string,
@@ -127,19 +137,24 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
     return t('targets.defaultName', { n });
   }
 
-  addButton.addEventListener('click', () => {
+  function add(anyway: boolean): void {
     const name = nameInput.value.trim() || nextDefaultName();
-    const error = options.addTargetPreset(name);
-    if (error) {
-      addStatus.textContent = error;
+    const result = anyway ? options.addTargetPreset(name, true) : options.addTargetPreset(name);
+    const warned = typeof result === 'object' && result !== null;
+    anywayButton.hidden = !warned;
+    addStatus.classList.toggle('menu__text--warning', warned);
+    if (result !== null) {
+      addStatus.textContent = warned ? result.warning : result;
       return;
     }
     nameInput.value = '';
     addStatus.textContent = '';
     refresh();
-  });
+  }
+  addButton.addEventListener('click', () => add(false));
+  anywayButton.addEventListener('click', () => add(true));
 
   refresh();
-  body.append(list, addRow, addStatus);
+  body.append(list, addRow, addStatus, anywayButton);
   return { element: body, refresh };
 }

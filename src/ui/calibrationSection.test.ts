@@ -29,6 +29,12 @@ function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
   return [...root.querySelectorAll('button')].find((b) => b.textContent === text)!;
 }
 
+/** The one shown button with this text — "Calibrate anyway" exists for
+ * both the one-shot and the flip calibration (#425). */
+function visibleButton(root: HTMLElement, text: string): HTMLButtonElement | undefined {
+  return [...root.querySelectorAll('button')].find((b) => b.textContent === text && !b.hidden);
+}
+
 describe('calibration section (#83)', () => {
   it('shows both calibrations with their own status', () => {
     let vehicle: Calibration | null = { rollDeg: 0.4, pitchDeg: 0.2 };
@@ -326,6 +332,26 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
   });
 
+  it('warns about a tilted box and zeroes it anyway on request (#425)', async () => {
+    const calibrateExternalSensor = vi.fn((anyway?: boolean) =>
+      Promise.resolve(anyway ? null : { warning: 'Is the vehicle level?' }),
+    );
+    const { options } = externalOptions({ calibrateExternalSensor });
+    const section = createCalibrationSection(options);
+    buttonByText(section.element, 'Zero now').click();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(section.element.textContent).toContain('Is the vehicle level?');
+    const anyway = buttonByText(section.element, t('calibration.vehicle.anyway'));
+    expect(anyway.hidden).toBe(false);
+    anyway.click();
+    expect(calibrateExternalSensor).toHaveBeenLastCalledWith(true);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(anyway.hidden).toBe(true);
+    expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
+  });
+
   it('links to the box’s own page for the rest of its setup (#316)', () => {
     const openExternalSensor = vi.fn();
     const { options } = externalOptions({ openExternalSensor });
@@ -490,10 +516,10 @@ describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
         anyway ? null : { warning: 'Does not look flat' },
       );
       const section = createCalibrationSection(makeOptions({ appearance, calibrate }), layout);
-      expect(buttonByText(section.element, t('calibration.anyway'))?.hidden ?? true).toBe(true);
+      expect(visibleButton(section.element, t('calibration.anyway'))).toBeUndefined();
       buttonByText(section.element, t('calibration.now')).click();
       expect(section.element.textContent).toContain('Does not look flat');
-      const anyway = buttonByText(section.element, t('calibration.anyway'));
+      const anyway = visibleButton(section.element, t('calibration.anyway'))!;
       expect(anyway.hidden).toBe(false);
       anyway.click();
       expect(calibrate).toHaveBeenLastCalledWith(true);
@@ -525,7 +551,7 @@ describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
     const section = createCalibrationSection(makeOptions({ calibrate: () => 'no sensor' }));
     buttonByText(section.element, t('calibration.now')).click();
     expect(section.element.textContent).toContain('no sensor');
-    expect(buttonByText(section.element, t('calibration.anyway')).hidden).toBe(true);
+    expect(visibleButton(section.element, t('calibration.anyway'))).toBeUndefined();
   });
 
   it('keeps the checklist step open while the warning shows', () => {
@@ -536,5 +562,48 @@ describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
     buttonByText(section.element, t('calibration.now')).click();
     const phone = section.element.querySelector<HTMLElement>('.box-step__body')!;
     expect(phone.hidden).toBe(false);
+  });
+});
+
+// #425: two flip captures that disagree (the phone moved) warn, and the
+// user may keep the result anyway.
+describe('flip captures that disagree (#425)', () => {
+  it('warns, stores nothing, and calibrates anyway on request', () => {
+    const readings = [
+      { rollDeg: 20, pitchDeg: 0 },
+      { rollDeg: 20, pitchDeg: 0 },
+    ];
+    const applyCalibration = vi.fn();
+    const section = createCalibrationSection(
+      makeOptions({ readTilt: () => readings.shift()!, applyCalibration }),
+    );
+    buttonByText(section.element, t('calibration.flip.start')).click();
+    buttonByText(section.element, t('calibration.flip.capture')).click();
+    expect(applyCalibration).not.toHaveBeenCalled();
+    expect(section.element.textContent).toContain(t('calibration.flip.warn.moved'));
+    const anyway = [...section.element.querySelectorAll('button')].filter(
+      (b) => b.textContent === t('calibration.anyway') && !b.hidden,
+    );
+    expect(anyway).toHaveLength(1);
+    anyway[0]!.click();
+    expect(applyCalibration).toHaveBeenCalledWith({ rollDeg: 20, pitchDeg: 0 });
+    expect(anyway[0]!.hidden).toBe(true);
+    expect(section.element.textContent).not.toContain(t('calibration.flip.warn.moved'));
+  });
+
+  it('drops the pending result when the flip starts over', () => {
+    const readings = [
+      { rollDeg: 20, pitchDeg: 0 },
+      { rollDeg: 20, pitchDeg: 0 },
+      { rollDeg: 1, pitchDeg: 0 },
+    ];
+    const section = createCalibrationSection(makeOptions({ readTilt: () => readings.shift()! }));
+    buttonByText(section.element, t('calibration.flip.start')).click();
+    buttonByText(section.element, t('calibration.flip.capture')).click();
+    buttonByText(section.element, t('calibration.flip.start')).click();
+    const visibleAnyway = [...section.element.querySelectorAll('button')].filter(
+      (b) => b.textContent === t('calibration.anyway') && !b.hidden,
+    );
+    expect(visibleAnyway).toHaveLength(0);
   });
 });

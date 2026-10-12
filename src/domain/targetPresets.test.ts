@@ -25,6 +25,12 @@ describe('parseTargetPreset (#122)', () => {
     });
   });
 
+  // #425: a target saved anyway above 15° must survive a reload.
+  it('keeps a target steeper than 15°', () => {
+    const preset = { id: 'a', name: 'Ramp', offset: { rollDeg: 20, pitchDeg: 0 } };
+    expect(parseTargetPreset(preset)).toEqual(preset);
+  });
+
   it('rejects missing/invalid fields', () => {
     expect(parseTargetPreset(null)).toBeNull();
     expect(parseTargetPreset({})).toBeNull();
@@ -35,7 +41,7 @@ describe('parseTargetPreset (#122)', () => {
       parseTargetPreset({ id: 'a', name: '   ', offset: { rollDeg: 0, pitchDeg: 0 } }),
     ).toBeNull();
     expect(
-      parseTargetPreset({ id: 'a', name: 'x', offset: { rollDeg: 99, pitchDeg: 0 } }),
+      parseTargetPreset({ id: 'a', name: 'x', offset: { rollDeg: 200, pitchDeg: 0 } }),
     ).toBeNull();
     expect(parseTargetPreset({ id: 'a', name: 'x', offset: null })).toBeNull();
   });
@@ -55,7 +61,7 @@ describe('parseTargetPresets (#122)', () => {
   it('keeps only the valid entries, dropping a corrupt one without losing the rest', () => {
     const result = parseTargetPresets([
       { id: 'a', name: 'Shower drain', offset: { rollDeg: 1, pitchDeg: 0 } },
-      { id: 'b', name: 'bad', offset: { rollDeg: 99, pitchDeg: 0 } },
+      { id: 'b', name: 'bad', offset: { rollDeg: 200, pitchDeg: 0 } },
       { id: 'c', name: 'Grey-water drainage', offset: { rollDeg: -0.5, pitchDeg: 0.3 } },
     ]);
     expect(result.map((p) => p.id)).toEqual(['a', 'c']);
