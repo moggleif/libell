@@ -833,7 +833,7 @@ body {
  *
  * So the layer stays the full stage (horizontal reference) and publishes
  * the drawn area's height as `--drawn-height` for the cards' own `top` to
- * work from (see rvDiagram.ts). That expression is the same fit the SVG
+ * work from (see `placeWheelCard` in diagramParts.ts). That expression is the same fit the SVG
  * performs internally, written out: whichever binds first, the stage's
  * height or the height a full-width drawing would need. */
 .wheel-card-layer {
