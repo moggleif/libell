@@ -38,6 +38,7 @@ export const fr: Messages = {
 
   'sensorStatus.connected': 'Boîtier capteur connecté',
   'sensorStatus.disconnected': 'Boîtier capteur — contact perdu, touchez pour les détails',
+  'sensorStatus.stale': 'Boîtier capteur — plus de nouvelles données, touchez pour les détails',
   'sensorStatus.idle': 'Boîtier capteur — touchez pour connecter',
   'sensorStatus.idle.guide': 'Boîtier capteur — touchez pour le guide iPhone',
 
