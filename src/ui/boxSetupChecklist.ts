@@ -317,7 +317,6 @@ function wireStepHeader(step: Step, refocus: Refocus, close: () => void): void {
 export function createBoxSetupChecklist(options: SensorSourceOptions): BoxSetupChecklist {
   const shape: BoxShape = options.sensor.capabilities.upright ? 'upright' : 'flat';
   const element = createElement('div', 'box-setup');
-  element.hidden = true;
   const position = createPositionLine(options, shape);
   let focus: StepFocus = { kind: 'next' };
   const refocus: Refocus = (next) => {

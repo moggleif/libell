@@ -259,6 +259,12 @@ async function easyLevelFlow(browser) {
     async () => (await storedSettings(page)).sensorSource === 'phone',
     'disconnect should pick the phone',
   );
+  // The steps stay, greyed out, still showing what is set (#400).
+  await button(box, 'Zero the vehicle').waitFor();
+  assert(
+    await button(box, 'Zero now').isDisabled(),
+    'after Disconnect the zero step should be greyed out',
+  );
 
   assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
   await context.close();
@@ -855,7 +861,13 @@ async function soundFlow(browser) {
   await page.waitForTimeout(500);
   assert((await audioLog(page)).created === 0, 'audio should wait for a user gesture');
 
-  // Muting turns both sounds off and stores it, without unlocking audio.
+  // The first tap anywhere unlocks audio, so the chime works after a
+  // plain reload (#396).
+  await page.locator('.rv-diagram').first().click();
+  const tapped = await audioLog(page);
+  assert(tapped.created === 1 && tapped.resumed === 1, 'the first tap should unlock audio');
+
+  // Muting turns both sounds off and stores it, without touching audio.
   await sound.click();
   await eventually(async () => {
     const stored = await storedSettings(page);
@@ -867,9 +879,10 @@ async function soundFlow(browser) {
     'muted class',
   );
   assert(await page.locator('#sound-icon-waves').isHidden(), 'muted hides the waves');
-  assert((await audioLog(page)).created === 0, 'muting should not unlock audio');
+  const muted = await audioLog(page);
+  assert(muted.created === 1 && muted.resumed === 1, 'muting should not touch audio');
 
-  // Unmuting restores both and is the gesture that unlocks audio.
+  // Unmuting restores both and resumes audio again.
   await sound.click();
   await eventually(async () => {
     const stored = await storedSettings(page);
@@ -878,7 +891,7 @@ async function soundFlow(browser) {
   assert((await sound.getAttribute('aria-label')) === 'Mute sound', 'unmuted label');
   assert(await page.locator('#sound-icon-mute').isHidden(), 'unmuted hides the mute icon');
   const unlocked = await audioLog(page);
-  assert(unlocked.created === 1 && unlocked.resumed === 1, 'unmuting should unlock audio once');
+  assert(unlocked.created === 1 && unlocked.resumed === 2, 'unmuting should resume audio');
 
   // Off level, the guidance pulses play.
   await eventually(

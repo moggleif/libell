@@ -39,6 +39,7 @@ export const de: Messages = {
 
   'sensorStatus.connected': 'Sensorbox verbunden',
   'sensorStatus.disconnected': 'Sensorbox — Verbindung verloren, für Details tippen',
+  'sensorStatus.stale': 'Sensorbox — keine neuen Daten, für Details tippen',
   'sensorStatus.idle': 'Sensorbox — zum Verbinden tippen',
   'sensorStatus.idle.guide': 'Sensorbox — für die iPhone-Anleitung tippen',
 
