@@ -200,15 +200,120 @@ export interface XparkleSensorOptions {
   now?: () => number;
 }
 
+interface Timers {
+  setTimer: (handler: () => void, ms: number) => number;
+  clearTimer: (id: number) => void;
+}
+
+/** A reading turned into the vehicle's gravity, through the learned
+ * mounting (#293) when there is one. */
+function vehicleGravity(reading: XparkleReading, mapping: AxisMapping | null): GravityVector {
+  if (!mapping) return gravityFromReading(reading);
+  const mapped = applyAxisMapping(reading, mapping);
+  return gravityFromAngles(mapped.rollDeg, mapped.pitchDeg);
+}
+
+/** `promise`, or a rejection once `ms` has passed without an answer. */
+function withTimeout<T>(promise: Promise<T>, ms: number, timers: Timers): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = timers.setTimer(() => reject(new Error('read timed out')), ms);
+    promise.then(
+      (value) => {
+        timers.clearTimer(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        timers.clearTimer(timer);
+        reject(error instanceof Error ? error : new Error(String(error)));
+      },
+    );
+  });
+}
+
+/** Command byte 4 (`XPARKLE_COMMAND.password`) marks the password verdict. */
+function isPasswordReply(frame: Uint8Array): boolean {
+  return frame.length > 2 && frame[2] === 0x04;
+}
+
+/**
+ * Calls `poll` now and again `intervalMs` after each attempt ends, for as
+ * long as `isConnected()` holds. Rescheduled after each attempt rather
+ * than on a fixed interval, so a slow read delays the next one instead of
+ * stacking behind it.
+ */
+function createPollLoop(
+  poll: () => Promise<void>,
+  isConnected: () => boolean,
+  intervalMs: number,
+  timers: Timers,
+) {
+  let timer: number | null = null;
+  function stop(): void {
+    if (timer !== null) timers.clearTimer(timer);
+    timer = null;
+  }
+  function tick(): void {
+    void poll().finally(() => {
+      if (isConnected()) timer = timers.setTimer(tick, intervalMs);
+    });
+  }
+  return {
+    start() {
+      stop();
+      tick();
+    },
+    stop,
+  };
+}
+
+/**
+ * The official app's own post-connect sequence, minus the serial-number
+ * read it uses only for its update check: subscribe, send the password,
+ * ask for the stored parameters. Every step is best-effort — a box that
+ * refuses any of them must not stop leveling from working, since only
+ * the `fff2` read is actually required for that.
+ */
+async function sendHandshake(
+  live: XparkleConnection,
+  onReply: (view: DataView) => void,
+  password: string,
+): Promise<void> {
+  try {
+    await live.subscribeNotify(onReply);
+  } catch {
+    // No replies, so no orientation and no password verdict — the live
+    // read below is unaffected.
+  }
+  const frame = buildPasswordFrame(
+    XPARKLE_PASSWORD_MODE.verify,
+    XPARKLE_DEFAULT_PASSWORD,
+    password,
+  );
+  if (frame) {
+    try {
+      await live.write(frame);
+    } catch {
+      // Treated as "unknown", not "rejected": a failed write says
+      // nothing about whether the password itself is right.
+    }
+  }
+  try {
+    await live.write(buildQueryParameters());
+  } catch {
+    // Orientation stays null; it is display-only.
+  }
+}
+
 export function createXparkleSensor(
   transport: XparkleTransport,
   options: XparkleSensorOptions = {},
 ): XparkleSensor {
   const getPassword = options.getPassword ?? (() => XPARKLE_DEFAULT_PASSWORD);
   const getAxisMapping = options.getAxisMapping ?? (() => null);
-  const setTimer =
-    options.setTimer ?? ((handler, ms) => setTimeout(handler, ms) as unknown as number);
-  const clearTimer = options.clearTimer ?? ((id) => clearTimeout(id));
+  const timers: Timers = {
+    setTimer: options.setTimer ?? ((handler, ms) => setTimeout(handler, ms) as unknown as number),
+    clearTimer: options.clearTimer ?? ((id) => clearTimeout(id)),
+  };
   const now = options.now ?? (() => performance.now());
 
   let connection: XparkleConnection | null = null;
@@ -221,19 +326,19 @@ export function createXparkleSensor(
   let onPasswordVerdict: ((accepted: boolean | null) => void) | null = null;
   let deviceId: string | null = null;
   let lastSampleAt: number | null = null;
-  let pollTimer: number | null = null;
   let pollInFlight = false;
   const replies = createXparkleFrameReassembler();
-
-  function stopPolling(): void {
-    if (pollTimer !== null) clearTimer(pollTimer);
-    pollTimer = null;
-  }
+  const polling = createPollLoop(
+    pollOnce,
+    () => connection !== null,
+    XPARKLE_POLL_INTERVAL_MS,
+    timers,
+  );
 
   /** Everything a lost link must reset — including the last reading, so a
    * stale value can never be mistaken for a live one. */
   function markDisconnected(): void {
-    stopPolling();
+    polling.stop();
     replies.reset();
     connection = null;
     gravity = null;
@@ -247,14 +352,16 @@ export function createXparkleSensor(
     const parameters = parseParameterReply(frame);
     if (parameters) {
       orientation = orientationFromByte(parameters.installationOrientation);
-      return;
-    }
-    // The only other reply this adapter cares about is the password
-    // verdict; command byte 4, per `XPARKLE_COMMAND.password`.
-    if (frame.length > 2 && frame[2] === 0x04) {
+    } else if (isPasswordReply(frame)) {
       passwordRejected = !passwordAccepted(frame);
       onPasswordVerdict?.(!passwordRejected);
     }
+  }
+
+  function acceptReading(parsed: XparkleReading): void {
+    reading = parsed;
+    gravity = vehicleGravity(parsed, getAxisMapping());
+    lastSampleAt = now();
   }
 
   async function pollOnce(): Promise<void> {
@@ -262,113 +369,57 @@ export function createXparkleSensor(
     if (!live || pollInFlight) return;
     pollInFlight = true;
     try {
-      const view = await withTimeout(live.readLive());
+      const view = await withTimeout(live.readLive(), XPARKLE_READ_TIMEOUT_MS, timers);
       const parsed = view ? parseLivePayload(view) : null;
-      if (parsed) {
-        reading = parsed;
-        const mapping = getAxisMapping();
-        if (mapping) {
-          const mapped = applyAxisMapping(parsed, mapping);
-          gravity = gravityFromAngles(mapped.rollDeg, mapped.pitchDeg);
-        } else {
-          gravity = gravityFromReading(parsed);
-        }
-        lastSampleAt = now();
-      }
       // A payload that parses to null is a bad packet, not a lost link:
       // the next poll is 500 ms away, and `staleTimeoutMs` is what
       // eventually hides the guidance if they keep coming.
+      if (parsed) acceptReading(parsed);
     } catch {
       // A read that fails or times out is the link going, not a bad
-      // packet — the ordinary 'disconnected' path (retry, fallback prompt)
-      // takes it from here. Only for the link this read was made on: a
-      // newer one adopted meanwhile is not the one that failed.
-      if (connection !== live) return;
-      markDisconnected();
-      // And the link is actively closed (#288). The box may still hold the
-      // GATT connection Chrome thinks is open, and a BLE peripheral does
-      // not advertise while it does — so a half-open link left behind here
-      // made every later Retry and auto-retry miss a box sitting right
-      // there (#219's lesson, on the one failure path that skipped it).
-      // The transport's teardown removes its disconnect listener first, so
-      // this is never reported as a second lost connection.
-      live.disconnect();
+      // packet — but only for the link this read was made on: a newer one
+      // adopted meanwhile is not the one that failed.
+      if (connection === live) dropFailedLink(live);
     } finally {
       pollInFlight = false;
     }
   }
 
-  function withTimeout<T>(promise: Promise<T>): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      const timer = setTimer(() => reject(new Error('read timed out')), XPARKLE_READ_TIMEOUT_MS);
-      promise.then(
-        (value) => {
-          clearTimer(timer);
-          resolve(value);
-        },
-        (error: unknown) => {
-          clearTimer(timer);
-          reject(error instanceof Error ? error : new Error(String(error)));
-        },
-      );
-    });
-  }
-
-  function startPolling(): void {
-    stopPolling();
-    const tick = () => {
-      void pollOnce().finally(() => {
-        // Rescheduled after each attempt rather than on a fixed interval,
-        // so a slow read delays the next one instead of stacking behind it.
-        if (connection) pollTimer = setTimer(tick, XPARKLE_POLL_INTERVAL_MS);
-      });
-    };
-    tick();
-  }
-
   /**
-   * The official app's own post-connect sequence, minus the serial-number
-   * read it uses only for its update check: subscribe, send the password,
-   * ask for the stored parameters. Every step is best-effort — a box that
-   * refuses any of them must not stop leveling from working, since only
-   * the `fff2` read is actually required for that.
+   * The ordinary 'disconnected' path (retry, fallback prompt), and the
+   * link actively closed (#288): a BLE peripheral does not advertise while
+   * it still holds a GATT connection, so a half-open link left behind made
+   * every later Retry miss a box sitting right there (#219). The
+   * transport's teardown removes its disconnect listener first, so this is
+   * never reported as a second lost connection.
    */
-  async function handshake(live: XparkleConnection): Promise<void> {
-    replies.reset();
-    passwordRejected = false;
-    try {
-      await live.subscribeNotify(handleReply);
-    } catch {
-      // No replies, so no orientation and no password verdict — the live
-      // read below is unaffected.
-    }
-    const frame = buildPasswordFrame(
-      XPARKLE_PASSWORD_MODE.verify,
-      XPARKLE_DEFAULT_PASSWORD,
-      getPassword(),
-    );
-    if (frame) {
-      try {
-        await live.write(frame);
-      } catch {
-        // Treated as "unknown", not "rejected": a failed write says
-        // nothing about whether the password itself is right.
-      }
-    }
-    try {
-      await live.write(buildQueryParameters());
-    } catch {
-      // Orientation stays null; it is display-only.
-    }
+  function dropFailedLink(live: XparkleConnection): void {
+    markDisconnected();
+    live.disconnect();
   }
 
   async function adopt(live: XparkleConnection): Promise<SensorState> {
     connection = live;
     deviceId = live.deviceId;
     state = 'granted';
-    await handshake(live);
-    startPolling();
+    replies.reset();
+    passwordRejected = false;
+    await sendHandshake(live, handleReply, getPassword());
+    polling.start();
     return state;
+  }
+
+  /** The box's next password verdict, or null after the reply timeout. */
+  function nextPasswordVerdict(): Promise<boolean | null> {
+    return new Promise<boolean | null>((resolve) => {
+      const timer = timers.setTimer(() => finish(null), XPARKLE_PASSWORD_REPLY_TIMEOUT_MS);
+      function finish(result: boolean | null): void {
+        timers.clearTimer(timer);
+        onPasswordVerdict = null;
+        resolve(result);
+      }
+      onPasswordVerdict = finish;
+    });
   }
 
   return {
@@ -388,15 +439,12 @@ export function createXparkleSensor(
     async reconnect(id) {
       try {
         const live = await transport.reconnect(id, markDisconnected);
-        if (!live) {
-          state = 'disconnected';
-          return state;
-        }
-        return await adopt(live);
+        if (live) return await adopt(live);
       } catch {
-        state = 'disconnected';
-        return state;
+        // Silent by design, like a box that cannot be found.
       }
+      state = 'disconnected';
+      return state;
     },
 
     disconnect() {
@@ -423,15 +471,7 @@ export function createXparkleSensor(
         getPassword(),
       );
       if (!live || !frame) return null;
-      const verdict = new Promise<boolean | null>((resolve) => {
-        const timer = setTimer(() => finish(null), XPARKLE_PASSWORD_REPLY_TIMEOUT_MS);
-        function finish(result: boolean | null): void {
-          clearTimer(timer);
-          onPasswordVerdict = null;
-          resolve(result);
-        }
-        onPasswordVerdict = finish;
-      });
+      const verdict = nextPasswordVerdict();
       try {
         await live.write(frame);
       } catch {
