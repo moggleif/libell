@@ -1,56 +1,36 @@
 /**
- * Sensor unavailable fallback prompt (#134) — the interactive recovery UI
- * for when the active box connection cannot be reached: never a
- * frozen or ambiguous screen, always an explicit choice between Retry and
- * "Use phone sensor" (the issue's own example wording). This is the
- * actionable form of the plain "waiting" hint `main.ts`'s frame loop
- * already showed for this exact case (`sensor.getState() === 'disconnected'`,
- * see `sensor/sensorFallback.ts`) — not a second, competing "sensor is
- * down" surface.
+ * Recovery prompt for when the active box cannot be reached: never a frozen
+ * or ambiguous screen, always an explicit choice between Retry and "Use
+ * phone sensor". It is the actionable form of the "waiting" hint for
+ * `sensor.getState() === 'disconnected'` (see `sensor/sensorFallback.ts`),
+ * not a second "sensor is down" surface.
  *
- * ADR 0014 splits calibration three ways per source, so a silent,
- * automatic switch to the phone could show a plausible-looking but wrong
- * reading — "Use phone sensor" is therefore always this explicit tap.
- * `main.ts` wires it to the exact same switch-to-phone path the menu's
- * own "Disconnect" button already uses, never a parallel implementation.
- * "Retry" opens the device picker for the active source, the same connect
- * the sensor page's button runs (#307) — one tap, one attempt from this
- * component's own point of view; on failure the state simply stays
- * 'disconnected' and this prompt stays shown (or reappears, per `update()`
- * below). This component itself never loops or retries on its own —
- * `main.ts` separately drives a silent background `reconnect()` (#211), so recovery
- * does not depend on the user finding this button — but that lives
- * entirely outside this file: from here, a tap still means exactly one
- * attempt, no more.
+ * ADR 0014 splits calibration three ways per source, so a silent switch to
+ * the phone could show a plausible-looking but wrong reading — "Use phone
+ * sensor" is therefore always an explicit tap. A Retry tap is exactly one
+ * attempt; the silent background `reconnect()` is driven elsewhere.
  *
- * One sentence, one primary action, one quiet link (#313, the #309 UX
- * review). It used to lead with a paragraph about the phone lying flat —
- * an option the user had not picked — and offer three equal buttons. The
- * phone's own pose rule is now said only after switching to it, by R17's
- * wrong-pose overlay, and the top-bar chip already reaches the box page.
+ * One sentence, one primary action, one quiet link. The phone's own pose
+ * rule is said only after switching to it, by the wrong-pose overlay.
  */
 import { t } from './i18n';
 
 export interface SensorFallbackPrompt {
   element: HTMLElement;
   /**
-   * Shown only while `unavailable` is true — driven by
-   * `sensor/sensorFallback.ts`'s `isSensorUnavailable(sensor.getState())`,
-   * never computed independently here. Recovery is automatic: the caller
-   * simply stops passing `true` once the state resolves (a successful
-   * Retry, or the source having switched to the phone) — there is no
-   * separate "clear" method.
+   * Shown only while `unavailable` is true (`isSensorUnavailable` in
+   * `sensor/sensorFallback.ts`); there is no separate "clear" method.
    *
-   * `canRetrySilently` says whether the background retry (#211) can reach
-   * the box at all (#313): after an app restart on a browser without
-   * `getDevices()` it cannot, so the card asks for the one tap instead of
-   * promising an automatic retry that will never land.
+   * `canRetrySilently` says whether the background retry can reach the box
+   * at all: after an app restart on a browser without `getDevices()` it
+   * cannot, so the card asks for the one tap instead of promising an
+   * automatic retry that will never land.
    */
   update(unavailable: boolean, canRetrySilently: boolean): void;
 }
 
 export function createSensorFallbackPrompt(
-  /** Opens the device picker (#307); resolves once that attempt is over. */
+  /** Opens the device picker; resolves once that attempt is over. */
   onRetry: () => Promise<void> | void,
   onUsePhone: () => void,
 ): SensorFallbackPrompt {
@@ -83,7 +63,7 @@ export function createSensorFallbackPrompt(
   actions.append(retryButton, usePhoneButton);
   container.append(actions);
 
-  /** A tapped Reconnect that did not bring the box back (#313). Cleared
+  /** A tapped Reconnect that did not bring the box back. Cleared
    * as soon as the prompt hides, so a later loss starts fresh. */
   let failed = false;
   let silent = true;

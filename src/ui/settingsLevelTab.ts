@@ -1,6 +1,6 @@
 /**
- * Settings › Level (#329): what counts as level (Tolerance), which side
- * drains, and the saved targets (#122, ADR 0013), which the host supplies
+ * Settings › Level: what counts as level (Tolerance), which side drains,
+ * and the saved targets (ADR 0013), which the host supplies
  * as an embedded section.
  */
 import { DRAIN_POSITIONS, type DrainPosition, type LevelSettings } from '../domain/settings';
@@ -35,10 +35,8 @@ export function createLevelTab(initial: LevelSettings, context: SettingsFormCont
   );
   const toleranceHint = createHint();
 
-  // Where the waste-water outlet sits (#93). Within the tolerance the plan
-  // leaves this side lowest so the drains keep working. It decides which
-  // way the vehicle may lean within the tolerance, so it is about level,
-  // not about the ramps (#329).
+  // Where the waste-water outlet sits. Within the tolerance the plan leaves
+  // this side lowest so the drains keep working — about level, not ramps.
   const drain = createSelectField<DrainPosition>(
     DRAIN_POSITIONS.map((value) => ({ value, label: `drain.${value}` as MessageKey })),
     initial.drainPosition,

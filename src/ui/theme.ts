@@ -1,9 +1,7 @@
 /**
  * Applies the theme setting: 'system' follows the phone (no attribute,
  * the prefers-color-scheme media query decides), 'light'/'dark' force a
- * palette via the data-theme attribute on <html>. The browser-chrome
- * theme-color metas are synced to the palette actually in effect, read
- * from the CSS token so no hex value lives in TypeScript.
+ * palette via the data-theme attribute on <html>.
  */
 import type { AppearanceSetting, ThemeSetting } from '../domain/settings';
 
@@ -15,9 +13,8 @@ export function applyTheme(theme: ThemeSetting): void {
 }
 
 /**
- * Applies the visual preset (#104): a `data-appearance` attribute,
- * independent of and orthogonal to `data-theme`. 'classic' is the
- * default — no attribute, same as today's only look.
+ * Applies the visual preset: a `data-appearance` attribute, orthogonal to
+ * `data-theme`. 'classic' is the default — no attribute.
  */
 export function applyAppearance(appearance: AppearanceSetting): void {
   const rootEl = document.documentElement;
@@ -28,8 +25,7 @@ export function applyAppearance(appearance: AppearanceSetting): void {
 
 /** The browser-chrome theme-color metas follow whichever palette is
  * actually in effect, read from the CSS token so no hex value lives in
- * TypeScript — recomputed whenever either axis (theme or appearance)
- * changes. */
+ * TypeScript. */
 function syncThemeColorMeta(): void {
   const rootEl = document.documentElement;
   const surface = getComputedStyle(rootEl).getPropertyValue('--surface').trim();

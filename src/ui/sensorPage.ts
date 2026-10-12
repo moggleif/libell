@@ -1,30 +1,18 @@
 /**
- * External sensor page (screen-cleanup follow-up): reached only from the
- * top-right sensor-status icon in the top bar now that the ☰ Settings
- * menu no longer carries an "External sensor" entry — its own standalone
- * page (`standalonePage.ts`), with a ✕ to close, never a ‹ back into a
- * drawer. Only ever constructed when at least one external source can work
- * in this browser (`hasAvailableExternalSensor()`, checked by the caller)
- * — never a silently broken option on Safari/iOS (#116's original
- * acceptance criteria, still true here).
+ * External sensor page, reached from the top-bar sensor-status icon. Only
+ * constructed when at least one external source can work in this browser
+ * (`hasAvailableExternalSensor()`, checked by the caller) — never a silently
+ * broken option on Safari/iOS.
  *
- * **A list, not a device** (#268): one section per available source, each
- * with its own device page behind its own row, built from the same
- * components parameterised by that source's descriptor (ADR 0016). With
- * one source registered this looks and behaves exactly as #226 left it.
+ * **A list, not a device**: one section per available source, each with its
+ * own device page behind its row, built from the same components
+ * parameterised by that source's descriptor (ADR 0016). The device pages
+ * are composed here; `main.ts` only needs `refreshLive()`.
  *
- * Each device page is composed here, alongside its section, rather than
- * `main.ts` wiring pages directly — `main.ts` only ever needs
- * `refreshLive()` below, never the pages themselves.
- *
- * `statusElements` are returned rather than appended to `document.body`
- * here, matching how `main.ts` attaches every other top-level page itself
- * (and keeping this factory free of a real-DOM side effect tests don't
- * need). They must be attached AFTER `element` — `openStack`'s "most
- * recently opened page reveals whichever is beneath it on close" only
- * looks right if a device page's `.menu-page` paints on top of this one's
- * when both are open, which plain DOM order already gives them at their
- * shared z-index.
+ * `statusElements` are returned rather than appended to `document.body`,
+ * like every other top-level page. They must be attached AFTER `element`:
+ * a device page has to paint on top of this one at their shared z-index,
+ * which DOM order gives them.
  */
 import {
   createSensorSourceSection,
@@ -44,23 +32,18 @@ export interface SensorPage {
 }
 
 /**
- * `createSensorPage`'s actual return type — a `SensorPage` plus the two
- * extras only it (not `iosSensorGuidePage.ts`'s same-shaped stand-in, which
- * has no device pages to show) can offer. Kept as a separate interface
- * rather than widening `SensorPage` itself, so that page never has to fake
- * a `statusElements`/`refreshLive()` it can't meaningfully implement.
+ * Separate from `SensorPage` so `iosSensorGuidePage.ts`'s same-shaped
+ * stand-in, which has no device pages, need not fake these extras.
  */
 export interface ExternalSensorPage extends SensorPage {
-  /** Each source's own page element — attach them too, right after
-   * `element` (see the module doc comment for why the order matters). */
+  /** Each source's own page element — attach right after `element` (see
+   * the module doc comment for why the order matters). */
   statusElements: HTMLElement[];
-  /** Re-reads the open device page's live values, but only while one is
-   * actually open, and the list's cards while it is — call unconditionally every animation frame, same
-   * "runs every frame regardless of what's open" discipline `main.ts`
-   * already uses for the top-bar sensor-status dot. */
+  /** Re-reads the open device page's live values, and the list's cards
+   * while it is open — call unconditionally every animation frame. */
   refreshLive(): void;
-  /** Opens one source's own device page directly (#285) — the quick route
-   * from "this sensor looks wrong" to its live values and mounting. */
+  /** Opens one source's own device page directly — the quick route from
+   * "this sensor looks wrong" to its live values and mounting. */
   openSource(id: string): void;
 }
 
@@ -70,13 +53,11 @@ export function createSensorPage(
   sensors: readonly ExternalSensorDescriptor[],
   optionsFor: (sensor: ExternalSensorDescriptor) => SensorPageOptions,
 ): ExternalSensorPage {
-  // Declared before the page so its `onOpen` can close over it; filled
-  // immediately below, and never read until the page is actually opened.
+  // Declared before the page so its `onOpen` can close over it.
   const sources: { id: string; statusPage: BoxStatusPage; section: SensorSourceSection }[] = [];
   const refreshAll = () => {
     for (const source of sources) source.section.refresh();
   };
-  // Titled for what it lists (#324): every box this browser can use.
   const page = createStandalonePage(t('sensorList.title'), refreshAll);
 
   for (const sensor of sensors) {
@@ -85,20 +66,17 @@ export function createSensorPage(
     const section = createSensorSourceSection(
       options,
       () => {
-        // The mounting/offset controls live on the device page (#226) and
-        // are refreshed by this section, not by that page — so re-read them
-        // here, on the way in, exactly as opening the list page does for
-        // the half it still shows.
+        // The mounting/offset controls on the device page are refreshed by
+        // this section, not by that page — so re-read them on the way in.
         section.refresh();
         statusPage.open();
       },
-      // Connecting one source changes what every other row should say
-      // (#272) — none of them is "using the phone's own sensor" any more.
+      // Connecting one source changes what every other row should say —
+      // none of them is "using the phone's own sensor" any more.
       () => refreshAll(),
     );
-    // A list of sources: just the connect half (#226). The per-device
-    // settings half goes on that device's own page below, so this page
-    // never grows longer than the detail pages its chevrons lead to.
+    // Only the connect half here; the per-device settings go on the device
+    // page, so this list never grows longer than the pages it leads to.
     page.body.append(section.connectElement);
     statusPage.settingsSlot.append(section.installElement);
     statusPage.footerSlot.append(section.moreElement);
@@ -106,10 +84,9 @@ export function createSensorPage(
     sources.push({ id: sensor.id, statusPage, section });
   }
 
-  // Said once, under the cards (#324), never per box: what is used while
-  // no box is. No browser requirement here: this page only exists where
-  // Web Bluetooth does, so naming one browser was wrong in the others
-  // (#320, Bluefy on iOS).
+  // Said once, under the cards, never per box: what is used while no box
+  // is. No browser named: this page exists wherever Web Bluetooth does,
+  // including Bluefy on iOS.
   const phoneLine = document.createElement('p');
   phoneLine.className = 'menu__text sensor-list__phone';
   phoneLine.textContent = t('sensorList.phone');
@@ -118,9 +95,9 @@ export function createSensorPage(
   return {
     element: page.element,
     statusElements: sources.map((source) => source.statusPage.element),
-    // A device page opened straight from a main-screen overlay (#285,
-    // #286) has no list page beneath it — it still counts as open, or
-    // `main.ts` keeps that overlay painted on top of it (#297).
+    // A device page opened straight from a main-screen overlay has no list
+    // page beneath it — it still counts as open, or `main.ts` keeps that
+    // overlay painted on top of it.
     isOpen: () => page.isOpen() || sources.some((source) => source.statusPage.isOpen()),
     attach: page.attach,
     open: page.open,
@@ -133,8 +110,8 @@ export function createSensorPage(
     refreshLive: () => {
       for (const source of sources) {
         // The list's own cards too: a box's password verdict arrives after
-        // the connect that drew them (#367). Cheap — a card redraws only
-        // when what it shows has changed.
+        // the connect that drew them. Cheap — a card redraws only when what
+        // it shows has changed.
         if (page.isOpen() && !source.statusPage.isOpen()) source.section.refreshLive();
         if (!source.statusPage.isOpen()) continue;
         // The position first: the status page's live line starts with it.

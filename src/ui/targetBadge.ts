@@ -1,12 +1,8 @@
 /**
- * Main-screen target badge (#122): the *only* thing the main screen ever
- * shows about target presets — a small, unobtrusive pill, hidden
- * whenever "Normal" (true level) is active, so the normal/level case
- * shows nothing extra at all. Tapping it opens the Targets menu section,
- * the same "tap the status to open the matching section" pattern the
- * topbar warning lamps use (`indicators.ts`) — but this is informational,
- * never a warning, so it gets its own neutral style, not the amber lamp
- * one.
+ * Main-screen target badge: the only thing the main screen shows about
+ * target presets — a small pill, hidden while "Normal" (true level) is
+ * active. Tapping it opens the Targets section, like the warning lamps,
+ * but it is informational, so it has its own neutral style.
  */
 import { t } from './i18n';
 

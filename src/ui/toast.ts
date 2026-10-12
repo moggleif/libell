@@ -1,11 +1,6 @@
-/**
- * Small transient confirmation ("Link copied!", "Diagnostics copied!") —
- * originally `share.ts`'s private helper, pulled out here (#133) so the
- * diagnostics page's "Copy diagnostics" confirmation reuses the exact same
- * pattern instead of a second one-off implementation.
- */
+/** Small transient confirmations ("Link copied!", "Diagnostics copied!"). */
 
-/** Fades/slides the toast in and out (#105) instead of appearing and
+/** Fades/slides the toast in and out instead of appearing and
  * vanishing instantly; skipped under `prefers-reduced-motion`. Returns the
  * element so a caller can drop it early when a follow-up replaces it. */
 export function showToast(text: string): HTMLElement {
@@ -31,7 +26,7 @@ export function showToast(text: string): HTMLElement {
 }
 
 /**
- * A toast with one action button (#328: "Saved · Undo"). Stays longer
+ * A toast with one action button ("Saved · Undo"). Stays longer
  * than a plain toast, since it asks for a decision; the action removes
  * it at once. Replacing it early is the caller's job (`remove()` on the
  * returned element).

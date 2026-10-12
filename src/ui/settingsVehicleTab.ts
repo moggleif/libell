@@ -1,5 +1,5 @@
 /**
- * Settings › Vehicle (#329): the vehicle type, its axle, the three
+ * Settings › Vehicle: the vehicle type, its axle, the three
  * measurements the leveling math runs on, where to find them, and a link
  * to share them with another phone.
  */
@@ -38,7 +38,7 @@ export function createVehicleTab(
   const measurements = [wheelbase, trackFront, trackRear];
 
   // Where to find the numbers — the biggest data-entry hurdle for new
-  // users is not typing, it's knowing (#69).
+  // users is not typing, it's knowing.
   const measureHint = document.createElement('p');
   measureHint.className = 'settings__hint';
   measureHint.textContent = t('settings.measureHint');
@@ -63,7 +63,7 @@ export function createVehicleTab(
       // A caravan has one axle — the front track width does not apply.
       trackFront.element.hidden = isCaravan();
       // A caravan's "wheelbase" is the axle-to-jockey distance, which the
-      // registration document does not list (#327).
+      // registration document does not list.
       measureHint.textContent =
         t(isCaravan() ? 'settings.measureHint.caravan' : 'settings.measureHint') +
         (state.axle === 'boggie' ? ` ${t('settings.measureHint.boggie')}` : '');
@@ -85,7 +85,7 @@ export function createVehicleTab(
  */
 function createVehicleFields(initial: LevelSettings, context: SettingsFormContext) {
   const { state } = context;
-  // Motorhome (four wheels) or caravan (single axle + jockey wheel, #72):
+  // Motorhome (four wheels) or caravan (single axle + jockey wheel):
   // the caravan hides the front track width and relabels the wheelbase as
   // the axle-to-jockey distance.
   const vehicleField = createSelectField<VehicleType>(
@@ -95,7 +95,7 @@ function createVehicleFields(initial: LevelSettings, context: SettingsFormContex
     ],
     initial.vehicleType,
   );
-  // Single or boggie (tandem) pair (#81): an independent dimension, not
+  // Single or boggie (tandem) pair: an independent dimension, not
   // more vehicle types — the boggie is one leveling axle at its midpoint
   // (ADR 0009).
   const axleField = createSelectField<AxleConfig>(
@@ -145,7 +145,7 @@ function createMeasurements(state: SettingsFormState): [NumberField, NumberField
 }
 
 /**
- * Share vehicle setup (R41, #207): a link carrying only the vehicle-
+ * Share vehicle setup: a link carrying only the vehicle-
  * geometry fields on this page — never calibration, never UI/behavior
  * preferences (`domain/vehicleShare.ts`) — for a family member using the
  * same vehicle.
@@ -157,8 +157,8 @@ function createShareButton(onClick: () => void): HTMLButtonElement {
   // reach the incoming-setup view the way a real user does — by producing
   // a real share link from this button (scripts/fit-test.mjs). Matching on
   // the label instead would mean duplicating the i18n table in the test.
-  // A quiet link, not a button (#329): sharing is a rare errand, and a
-  // full-width button made it look like the page's main action.
+  // A quiet link, not a button: sharing is a rare errand, not the page's
+  // main action.
   shareButton.className = 'link-button settings__share-vehicle';
   shareButton.textContent = t('settings.shareVehicle');
   shareButton.addEventListener('click', onClick);

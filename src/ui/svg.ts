@@ -1,5 +1,5 @@
 /**
- * The one helper every SVG drawing builds its elements with (#419): an
+ * The one helper every SVG drawing builds its elements with: an
  * element in the SVG namespace with its attributes set, and optionally
  * its text. DOM is built element by element, never from markup (ADR 0001).
  */

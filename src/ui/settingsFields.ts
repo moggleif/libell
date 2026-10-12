@@ -1,5 +1,5 @@
 /**
- * The building blocks every Settings tab shares (#376): a captioned field
+ * The building blocks every Settings tab shares: a captioned field
  * row, select/number/checkbox fields, hints and section headings, and the
  * state and callbacks the tabs need from the form that owns them.
  *
@@ -25,7 +25,7 @@ export interface SettingsFormContext {
   readonly state: SettingsFormState;
   /** True in the wizard's reduced steps, which save on Next only. */
   readonly compact: boolean;
-  /** Stores the form's values at once (#328); a no-op in a wizard step. */
+  /** Stores the form's values at once; a no-op in a wizard step. */
   changed(): void;
   /** Rewrites every caption, after the unit or the vehicle changed. */
   relabelAll(): void;

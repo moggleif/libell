@@ -1,16 +1,11 @@
 /**
- * Target presets UI (#122, ADR 0013): a menu section listing "Normal"
- * (true level, always first, never deletable) followed by the user's
- * saved presets — tap a row to select it, the ✕ to delete it. Adding a
- * preset captures the current tilt (the same capture-first pattern
- * `calibrationSection.ts` uses for the vehicle zero) and names it from
- * the text field, or "Target N" when it is left empty (#329).
+ * Target presets UI (ADR 0013): "Normal" (true level, always first, never
+ * deletable) followed by the user's saved presets. Adding a preset
+ * captures the current tilt, the same capture-first pattern
+ * `calibrationSection.ts` uses for the vehicle zero.
  *
  * Deliberately NOT part of `calibrationSection.ts`: a preset is a
- * *target*, not a calibration (see the module doc comment in
- * `../domain/targetPresets.ts`) — it gets its own menu section instead
- * of a third block there, built from the same `menu__*` classes so it
- * still reads as part of the same UI family in both Classic and Modern.
+ * *target*, not a calibration (see `../domain/targetPresets.ts`).
  */
 import type { CaptureResult } from '../domain/calibration';
 import type { TargetPreset } from '../domain/targetPresets';
@@ -23,7 +18,7 @@ export interface TargetsOptions {
   selectTarget(id: string | null): void;
   /** Capture the current tilt as a new preset named `name`: null on
    * success, an error text, or a warning above 15° that offers "Save
-   * anyway" — `anyway` is set when the user chose it (#425). */
+   * anyway" — `anyway` is set when the user chose it. */
   addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
 }
@@ -57,8 +52,7 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
   const addStatus = document.createElement('p');
   addStatus.className = 'menu__text menu__text--status';
 
-  // "Save anyway" (#425, "Varning är rätt. Aldrig stopp."): shown only
-  // while a too-steep warning is up.
+  // Warn, never block: shown only while a too-steep warning is up.
   const anywayButton = document.createElement('button');
   anywayButton.type = 'button';
   anywayButton.className = 'menu__action menu__action--secondary';
@@ -127,9 +121,8 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
     );
   }
 
-  // Nothing is disabled (#329): a target saved without a name gets the
-  // lowest "Target N" not already taken, and can be told apart later by
-  // its number rather than not being saved at all.
+  // Nothing is disabled: a target saved without a name gets the lowest
+  // "Target N" not already taken.
   function nextDefaultName(): string {
     const taken = new Set(options.getTargetPresets().map((p) => p.name));
     let n = 1;

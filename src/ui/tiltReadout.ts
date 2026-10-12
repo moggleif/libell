@@ -1,5 +1,5 @@
 /**
- * Current tilt in degrees (issue #8): small gray text, front/back and
+ * Current tilt in degrees: small gray text, front/back and
  * side/side. Tabular figures so the digits don't jitter as values change.
  */
 import { t } from './i18n';

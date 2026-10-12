@@ -1,35 +1,20 @@
 /**
- * Main-screen external-sensor indicator (#129): a small electronics-chip
- * icon in the top bar — a generic "sensor hardware" glyph rather than a
- * Bluetooth symbol, since it also has to make sense for the iOS
- * guide-only case below, where nothing is actually paired over
- * Bluetooth. Originally shown only while an external source (today:
- * EasyLevel, #116/ADR 0014) was the active `OrientationSensor` — but the
- * ☰ Settings menu no longer carries an "External sensor" entry
- * (screen-cleanup follow-up), so this indicator is now the *only* way to
- * reach that page: it stays visible whenever Web Bluetooth exists at all,
- * with a distinct neutral "tap to connect" look while the phone's own
- * sensor is still active, alongside its existing connected/disconnected
- * looks. Hidden only when Web Bluetooth doesn't exist in this browser and
- * no guide-only fallback applies — never a silently broken option (#116's
- * original acceptance criteria). On iOS specifically (R39), Web Bluetooth
- * never exists, but the dot stays visible anyway in a distinct "tap for
- * setup guide" look: tapping it opens the Bluefy workaround guide
- * (`iosSensorGuidePage.ts`) instead of a connect flow that could never
- * work in Safari.
+ * Main-screen external-sensor indicator: an electronics-chip icon in the
+ * top bar — not a Bluetooth symbol, since it must also make sense in the
+ * iOS guide-only case, where nothing is paired over Bluetooth. It is the
+ * only way to reach the External sensor page, so it stays visible whenever
+ * Web Bluetooth exists, with a neutral "tap to connect" look while the
+ * phone's own sensor is active. Hidden only when there is no Web Bluetooth
+ * and no guide-only fallback — never a silently broken option. On iOS
+ * there is never Web Bluetooth; the icon opens the Bluefy setup guide
+ * (`iosSensorGuidePage.ts`) instead.
  *
  * Deliberately no numbers here — battery/RSSI/temperature live one tap
- * away on the External sensor page (`sensorPage.ts` /
- * `sensorSourceSection.ts`), reached by tapping this indicator, the same
- * "tap the indicator to open the matching page" pattern the warning lamps
- * use (`indicators.ts`).
+ * away on the External sensor page.
  *
- * The connected/disconnected distinction is the visible half of #129's
- * "never leave apparently-live instructions on screen" guarantee: the
- * indicator honestly mirrors `OrientationSensor.getState()`, switching to
- * a clearly different (warning) look the moment the connection is lost.
- * The freeze/stale-data logic itself — actually holding back the wheel
- * diagram from looking live on stale data — is #132's separate scope.
+ * The connected/disconnected looks mirror `OrientationSensor.getState()`,
+ * switching to a warning look the moment the connection is lost, so
+ * stale instructions never look live.
  */
 import type { SensorSource } from '../domain/settings';
 import type { SensorState } from '../sensor/orientation';
@@ -43,9 +28,7 @@ export interface SensorStatusIndicator {
 }
 
 /** IC-chip glyph: a body plus four pins per side, unfilled and stroked
- * only — `.sensor-status__icon` (styles.css) sets the stroke color, so
- * the existing connected/disconnected/idle classes keep coloring it
- * exactly as they colored the old plain dot. */
+ * only — `.sensor-status__icon` sets the stroke color per state class. */
 function chipIcon(): SVGSVGElement {
   const icon = svgEl('svg', {
     viewBox: '0 0 24 24',
@@ -71,11 +54,9 @@ function chipIcon(): SVGSVGElement {
 
 export function createSensorStatusIndicator(
   easyLevelSupported: boolean,
-  /** True only on iOS without Web Bluetooth (R39) — `onClick` still opens
-   * `sensorPage`, but there it is `iosSensorGuidePage.ts`, not the ordinary
-   * connect flow. Mutually exclusive with `easyLevelSupported` in practice
-   * (iOS never has Web Bluetooth today), but read independently below so
-   * neither assumes the other. */
+  /** True only on iOS without Web Bluetooth — `onClick` then opens
+   * `iosSensorGuidePage.ts`, not the connect flow. Mutually exclusive with
+   * `easyLevelSupported` in practice, but read independently. */
   guideOnly: boolean,
   onClick: () => void,
 ): SensorStatusIndicator {
@@ -83,9 +64,7 @@ export function createSensorStatusIndicator(
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'sensor-status';
-  // Never shown at all without Web Bluetooth or a guide to fall back to —
-  // nothing this button could usefully open (#116's "never a silently
-  // broken option").
+  // Without Web Bluetooth or a guide there is nothing this could open.
   button.hidden = !visible;
   button.append(chipIcon());
   button.addEventListener('click', onClick);
@@ -94,9 +73,8 @@ export function createSensorStatusIndicator(
     element: button,
     update(source, state) {
       if (!visible) return;
-      // The guide-only dot never reflects source/state — there is no
-      // box behind it to connect or disconnect, only a page
-      // explaining Bluefy (R39).
+      // The guide-only icon has no box behind it, only a page explaining
+      // Bluefy.
       if (guideOnly) {
         const label = t('sensorStatus.idle.guide');
         button.setAttribute('aria-label', label);
