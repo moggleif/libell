@@ -1,6 +1,5 @@
 /**
- * Saved vehicle level targets / presets (#122, ADR 0013) — pure
- * TypeScript, no browser APIs.
+ * Saved vehicle level targets / presets (ADR 0013).
  *
  * A target preset is an intentional request for the vehicle to be
  * NON-level (e.g. tilted toward the shower or grey-water drain). This is
@@ -32,8 +31,7 @@ const MAX_OFFSET_DEG = 15;
  * stay a badge, not a paragraph. */
 const MAX_NAME_LENGTH = 40;
 
-/** More presets than this cannot help fast selection — same idea as
- * `MAX_RAMP_COUNT` in settings.ts. */
+/** More presets than this cannot help fast selection. */
 export const MAX_PRESET_COUNT = 20;
 
 function isValidOffset(value: unknown): value is Calibration {
@@ -45,14 +43,12 @@ function isValidOffset(value: unknown): value is Calibration {
     Number.isFinite(raw.rollDeg) &&
     Number.isFinite(raw.pitchDeg) &&
     // Up to any tilt a sensor can read: a target may be saved anyway above
-    // `MAX_OFFSET_DEG` (#425), and must survive a reload.
+    // `MAX_OFFSET_DEG`, and must survive a reload.
     Math.abs(raw.rollDeg) <= MAX_TILT_DEG &&
     Math.abs(raw.pitchDeg) <= MAX_TILT_DEG
   );
 }
 
-/** Validate one stored preset; null when missing or corrupt — the same
- * validate-on-read discipline as `parseCalibration` in settings.ts. */
 export function parseTargetPreset(value: unknown): TargetPreset | null {
   if (typeof value !== 'object' || value === null) return null;
   const raw = value as Record<string, unknown>;
@@ -62,11 +58,8 @@ export function parseTargetPreset(value: unknown): TargetPreset | null {
   return { id: raw.id, name: raw.name.trim().slice(0, MAX_NAME_LENGTH), offset: raw.offset };
 }
 
-/**
- * Parse the stored preset list: each entry validated independently — one
- * corrupt preset never drops the rest — deduplicated by id and capped at
- * `MAX_PRESET_COUNT`.
- */
+/** Each entry is validated independently — one corrupt preset never drops
+ * the rest. */
 export function parseTargetPresets(value: unknown): TargetPreset[] {
   if (!Array.isArray(value)) return [];
   const seen = new Set<string>();
@@ -81,12 +74,8 @@ export function parseTargetPresets(value: unknown): TargetPreset[] {
   return result;
 }
 
-/**
- * Validate a stored active-target id against the known presets — a
- * dangling or corrupt id (a preset deleted elsewhere, hand-edited
- * storage) resolves to "Normal" (`null`), never a crash or a silently
- * wrong target.
- */
+/** A dangling or corrupt id resolves to "Normal" (`null`), never a silently
+ * wrong target. */
 export function parseActiveTargetId(value: unknown, presets: TargetPreset[]): string | null {
   if (typeof value !== 'string') return null;
   return presets.some((preset) => preset.id === value) ? value : null;
@@ -122,8 +111,8 @@ export function presetOffsetFromReading(
   };
 }
 
-/** True when a captured reading looks too steep to be an intentional
- * target rather than a mis-capture — then the user is warned first (#425). */
+/** Too steep to be an intentional target rather than a mis-capture — the
+ * user is warned first. */
 export function offsetTooSteep(offset: Calibration): boolean {
   return Math.abs(offset.rollDeg) > MAX_OFFSET_DEG || Math.abs(offset.pitchDeg) > MAX_OFFSET_DEG;
 }

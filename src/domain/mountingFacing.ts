@@ -1,6 +1,5 @@
 /**
- * Which way a mounted box faces, picked by tapping a side of the vehicle
- * (#314, the #309 UX review) — pure, no browser APIs.
+ * Which way a mounted box faces, picked by tapping a side of the vehicle.
  *
  * Every box has a reference side (the Xparkle box: its back, the screw
  * mount; the EasyLevel box: the arrow on its picture). The user taps the
@@ -8,7 +7,7 @@
  * quarter turn of the box about the vertical axis, which is all either
  * box's own representation needs:
  *   - the EasyLevel box keeps its four `EasyLevelMounting` rotations (R43);
- *   - the Xparkle box keeps an `AxisMapping` (#293), here a pure rotation.
+ *   - the Xparkle box keeps an `AxisMapping`, here a pure rotation.
  * A mapping learned by lifting the vehicle can also be mirrored, which no
  * single facing describes — then no facing is shown as picked.
  */
@@ -77,13 +76,12 @@ export function facingForAxisMapping(
 }
 
 /**
- * The EasyLevel box's placement as its manual describes it (#359): one of
- * the arrows on its lid always points forward, and the only choice is
- * whether the box's wide side or its short side faces the front. These
- * are the official app's `sensor_Placing` 1 and 2 (#217), Libell's
- * `standard` and `rotated90`. The other two rotations (#222) put the
- * arrows backward or sideways, which the manual does not allow; they are
- * still applied if stored, but never offered.
+ * The EasyLevel box's placement as its manual describes it: one of the arrows
+ * on its lid always points forward, and the only choice is whether the box's
+ * wide or short side faces the front. These are the official app's
+ * `sensor_Placing` 1 and 2, Libell's `standard` and `rotated90`. The other
+ * two rotations put the arrows backward or sideways, which the manual does
+ * not allow; they are still applied if stored, but never offered.
  */
 export type EasyLevelPlacement = 'wide' | 'short';
 
@@ -109,8 +107,8 @@ export function easyLevelPlacementOf(device: {
 }
 
 /**
- * Each EasyLevel rotation as the lift guide (#293) would learn it from
- * the box's unrotated readings (#360). `applyEasyLevelMounting` turns the
+ * Each EasyLevel rotation as the lift guide would learn it from the box's
+ * unrotated readings. `applyEasyLevelMounting` turns the
  * (x, y) gravity pair; seen as tilt, that is a swap of pitch and roll
  * plus a sign on each — checked against it in `easyLevelProtocol.test.ts`.
  */

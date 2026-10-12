@@ -1,9 +1,9 @@
 /**
- * A box that must stand upright (#304) — pure, no browser APIs.
+ * A box that must stand upright.
  *
- * The Xparkle RVS01 (R49) only measures correctly standing up. Lying on
- * its back it reads about 90° of pitch, and there turning it about its own
- * axis moves both angles — found on hardware (#273) — so no zero taken
+ * The Xparkle RVS01 (R49) only measures correctly standing up. Lying on its back
+ * it reads about 90° of pitch, and there turning it about its own axis moves
+ * both angles — found on hardware — so no zero taken
  * there holds. Libell never blocks anything on this: it shows the user,
  * live, whether the box stands, and says how to fix it when it does not.
  */
@@ -23,7 +23,7 @@ export function isStandingUpright(reading: Calibration): boolean {
 }
 
 /**
- * Whether a mounted box sits the way it measures right (#314): within the
+ * Whether a mounted box sits the way it measures right: within the
  * same 45° on both axes, whichever way it is built to sit — standing for
  * the Xparkle box, lying flat for the EasyLevel box. Each box reports its
  * angles from its own measuring position, so one rule serves both.

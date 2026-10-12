@@ -1,5 +1,5 @@
 /**
- * Leveling math — pure TypeScript, no browser APIs.
+ * Leveling math.
  *
  * Input is the gravity vector in device coordinates with the phone lying
  * flat inside the vehicle, top edge toward the front (x = right, y = front,
@@ -41,10 +41,7 @@ export interface LevelingResult {
 
 const RAD_TO_DEG = 180 / Math.PI;
 
-/**
- * Roll/pitch (radians) from the gravity vector, with an optional stored
- * calibration subtracted — shared by the motorhome and caravan math.
- */
+/** Roll/pitch in radians, with the calibration subtracted. */
 export function tiltFromGravity(
   gravity: GravityVector,
   calibration: Calibration | null,
@@ -104,9 +101,8 @@ export function computeLeveling(
 
 /**
  * Pick the available ramp step (mm) closest to the required lift (mm).
- * "No step" (0) is a candidate too, so a lift smaller than half the
- * lowest step recommends staying off the ramp — the generalization of the
- * old round-to-nearest-block behavior. Ties go to the lower step.
+ * "No step" (0) is a candidate too, so a lift smaller than half the lowest
+ * step recommends staying off the ramp. Ties go to the lower step.
  */
 export function recommendStep(liftMm: number, stepsMm: number[]): number {
   let best = 0;

@@ -1,38 +1,29 @@
 /**
- * Continuous audio leveling guidance (#121) — pure TypeScript, no browser
- * APIs (ADR 0002). A completion chime (R16) already announces "reached
- * level"; this maps ongoing distance-from-level to a guidance signal a
- * thin Web Audio adapter can play while approaching, so the driver can
- * watch the ramps instead of the screen.
+ * Continuous audio leveling guidance while approaching level, so the driver
+ * can watch the ramps instead of the screen. The completion chime (R16) owns the
+ * "reached level" moment.
  *
- * The input is the STABILIZED distance from level, in mm — the same
- * number both vehicle engines already derive from their stabilizer
- * (`stability.ts`'s `DisplayResult` for a motorhome, the caravan's
- * stabilized axle/jockey result) and report as `EngineTick.maxCorrectionMm`
- * in `main.ts`. Never fed a raw sensor reading — that hysteresis is what
- * keeps this module's own dead band meaningful (R25, R27).
+ * The input is the STABILIZED distance from level, in mm
+ * (`EngineTick.maxCorrectionMm`), never a raw sensor reading — the
+ * stabilizer's hysteresis is what keeps this module's dead band meaningful
+ * (R25, R27).
  *
  * Two independent things come out of one tick:
- * - pulse rate / pitch: purely a function of the *current* distance, so it
- *   never lags — it just tracks whatever the stabilized display already
- *   shows;
- * - direction (improving / worsening): needs its own hysteresis on top,
- *   per the issue's requirement that sensor noise or a stabilizer bounce
- *   must never flip it. A candidate direction is judged against the best
- *   (closest-to-level) point reached since the last committed direction —
- *   not a stale start — and must clear the Stability dead band *and* hold
- *   for a dwell before it is adopted, exactly the dead-band-plus-dwell
- *   shape `stability.ts` uses for the display itself.
+ * - pulse rate / pitch: a function of the current distance only, so it never
+ *   lags;
+ * - direction (improving / worsening): needs its own hysteresis so sensor
+ *   noise or a stabilizer bounce never flips it. A candidate is judged against
+ *   the best (closest-to-level) point since the last committed direction, and
+ *   must clear the Stability dead band *and* hold for a dwell — the same shape
+ *   `stability.ts` uses for the display.
  */
 import type { LevelSettings } from './settings';
 
 export type GuidanceDirection = 'improving' | 'worsening' | 'steady';
 
 export interface GuidanceState {
-  /** Milliseconds between pulses; null while level or not yet reading —
-   * nothing to pulse, the R16 chime owns the "reached" moment. */
+  /** Null while level or not yet reading — the R16 chime owns "reached". */
   pulseIntervalMs: number | null;
-  /** Oscillator pitch for the pulse, in Hz; null alongside pulseIntervalMs. */
   pitchHz: number | null;
   /** Trend of the stabilized distance since the last committed direction. */
   direction: GuidanceDirection;
@@ -48,9 +39,8 @@ export const MIN_PITCH_HZ = 440;
 export const MAX_PITCH_HZ = 880;
 /** Distance beyond the tolerance that maps to the slowest/lowest pulse. */
 export const GUIDANCE_RANGE_MM = 120;
-/** A direction change must hold this long before it is adopted — the same
- * dead-band-plus-dwell shape as stability.ts's STATE_DWELL_MS, sized so a
- * distinct "getting closer / wrong way" cadence reads as deliberate. */
+/** A direction change must hold this long before it is adopted, so a
+ * "getting closer / wrong way" change reads as deliberate. */
 export const DIRECTION_DWELL_MS = 800;
 
 function clamp01(v: number): number {
@@ -64,11 +54,8 @@ function progressOf(distanceMm: number, toleranceMm: number): number {
 }
 
 /**
- * Creates a stateful guidance tracker: feed it every stabilized
- * distance-from-level (mm) with a monotonic timestamp, and it returns what
- * to play. State is per-instance, like `createStillnessDetector` and
- * `createDisplayStabilizer` — the app owns one instance per level screen,
- * tests own their own.
+ * Feed it every stabilized distance-from-level (mm) with a monotonic
+ * timestamp; it returns what to play.
  */
 export function createAudioGuidance(): (
   distanceMm: number,
@@ -76,9 +63,9 @@ export function createAudioGuidance(): (
   settings: LevelSettings,
   nowMs: number,
 ) => GuidanceState {
-  // The best (closest-to-level) distance reached since the last committed
-  // direction — the reference a reversal is judged against, so a long
-  // improving streak doesn't leave a stale, far-away anchor behind.
+  // The best distance since the last committed direction: the reference a
+  // reversal is judged against, so a long improving streak doesn't leave a
+  // stale, far-away anchor behind.
   let extremeMm: number | null = null;
   let direction: GuidanceDirection = 'steady';
   let pendingDirection: GuidanceDirection | null = null;
@@ -86,8 +73,7 @@ export function createAudioGuidance(): (
 
   return (distanceMm, isLevel, settings, nowMs) => {
     if (isLevel) {
-      // The chime owns "reached" — no continuous pulsing while level, and
-      // the next departure tracks direction fresh, like a cold start.
+      // The next departure tracks direction fresh, like a cold start.
       extremeMm = distanceMm;
       direction = 'steady';
       pendingDirection = null;

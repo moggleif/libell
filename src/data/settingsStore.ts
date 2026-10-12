@@ -21,59 +21,42 @@ import {
 const STORAGE_KEY = 'libell.settings';
 const CALIBRATION_KEY = 'libell.calibration';
 const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
-// The EasyLevel box's own installation offset (#131, ADR 0014): where the
-// permanently-mounted enclosure physically sits, exactly the same concept
-// as VEHICLE_CALIBRATION_KEY above but for a different sensor source — its
-// own distinctly-named key so it can never be read as, or overwrite, the
-// phone's vehicle zero, and switching sensors never mixes the two.
 /**
- * An external source's installation offset is keyed by the source id
- * (#263, ADR 0016) rather than named after one device: `libell
- * .installCalibration.easylevel`, `...xparkle`, and so on. ADR 0014
- * committed to the rule — a second source's value is its own, never
- * written into another's — and left the shape to whoever built a second
- * source; this is that shape.
+ * An external source's installation offset (ADR 0014, 0016): the same concept
+ * as the phone's vehicle zero, but keyed per source id so one source's value is
+ * never read as, or written into, another's or the phone's.
  */
 const INSTALL_CALIBRATION_KEY_PREFIX = 'libell.installCalibration.';
 
-/**
- * Where #131 stored the EasyLevel box's installation offset before #263.
- * Read once by `migrateLegacyInstallCalibration` and then left alone —
- * see that function for why it is copied rather than moved.
- */
+/** The EasyLevel offset's pre-per-source key; read only by the migration. */
 const LEGACY_EASYLEVEL_CALIBRATION_KEY = 'libell.easyLevelInstallCalibration';
 
-/** Set once the legacy copy above has been done, so it never runs twice
- * and can never resurrect a value the user has since cleared. */
+/** Marks the migration done, so it can never resurrect a value the user has
+ * since cleared. */
 const INSTALL_CALIBRATION_MIGRATED_KEY = 'libell.installCalibration.migrated';
 
 function installCalibrationKey(source: SensorSource): string {
   return `${INSTALL_CALIBRATION_KEY_PREFIX}${source}`;
 }
-// Set once the vehicle measurements (wheelbase, track widths) have been
-// saved (#364): the ⚠ Setup lamp's own condition. Any other save also
-// writes STORAGE_KEY, so its mere presence can't say this — the wizard's
-// Language step used to put the lamp out before the measurements step.
+// Set once the vehicle measurements have been saved: the ⚠ Setup lamp's
+// condition. Any other save also writes STORAGE_KEY, so its presence can't
+// say this.
 const MEASUREMENTS_SAVED_KEY = 'libell.measurementsSaved';
-/** Set on the first start that knows MEASUREMENTS_SAVED_KEY, so the
- * one-off carry-over for existing users never runs twice. */
+/** Guards the one-off carry-over of existing users to MEASUREMENTS_SAVED_KEY. */
 const MEASUREMENTS_MIGRATED_KEY = 'libell.measurementsSaved.migrated';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
-// Distinct from ONBOARDED_KEY (design review, follow-up): that one means
-// "the wizard has been dismissed at least once, either way" and gates the
-// auto-launch on first load — an early ✕ sets it too, same as reaching
-// the end. This one means "actually stepped through to the end" (whatever
-// individual steps were skipped along the way) and is what "Show
-// introduction" checks to decide whether it still reads as an unfinished
-// first-run task (green) or a plain re-launch (secondary).
+// Distinct from ONBOARDED_KEY, which means "dismissed at least once" (an
+// early ✕ sets it too) and gates the auto-launch. This one means "stepped
+// through to the end" and decides whether "Show introduction" reads as an
+// unfinished first-run task or a plain re-launch.
 const ONBOARDING_DONE_KEY = 'libell.onboardingDone';
-// The wizard's box path finished with no box connected (#365): the user
-// chose a box, so until one connects (or they calibrate the phone after
-// all) the amber lamp asks for the box instead of ⚠ Calibrate.
+// The wizard's box path finished with no box connected: until one connects
+// (or the phone is calibrated after all) the amber lamp asks for the box
+// instead of ⚠ Calibrate.
 const BOX_PENDING_KEY = 'libell.boxPending';
-// Separate keys from the calibration ones above (#122, ADR 0013): a
-// preset is never stored in the same field as either calibration layer.
+// Separate from the calibration keys (ADR 0013): a preset is never stored in
+// the same field as either calibration layer.
 const TARGET_PRESETS_KEY = 'libell.targetPresets';
 const ACTIVE_TARGET_KEY = 'libell.activeTarget';
 
@@ -125,7 +108,6 @@ export function hasStoredSettings(storage: KeyValueStorage | null = defaultStora
   }
 }
 
-/** True once the vehicle measurements have been saved (#364). */
 export function hasStoredMeasurements(storage: KeyValueStorage | null = defaultStorage()): boolean {
   try {
     return storage?.getItem(MEASUREMENTS_SAVED_KEY) != null;
@@ -143,11 +125,10 @@ export function markMeasurementsSaved(storage: KeyValueStorage | null = defaultS
 }
 
 /**
- * Carries existing users over to MEASUREMENTS_SAVED_KEY (#364): before it
- * existed, stored settings were the lamp's whole condition, so anyone who
- * already has them keeps an unlit lamp. Runs once ever — on the very
- * first start too, where nothing is stored yet — so a wizard that saves
- * the language and reloads can never be mistaken for an older install.
+ * Carries existing users over to MEASUREMENTS_SAVED_KEY: anyone with stored
+ * settings keeps an unlit lamp. Runs once ever — on the very first start too,
+ * where nothing is stored yet — so a wizard that saves the language and
+ * reloads can never be mistaken for an older install.
  */
 export function migrateMeasurementsSaved(storage: KeyValueStorage | null = defaultStorage()): void {
   try {
@@ -160,8 +141,8 @@ export function migrateMeasurementsSaved(storage: KeyValueStorage | null = defau
   }
 }
 
-/** A stored calibration plus when it was captured (#87) — null for
- * values saved before timestamps existed; they stay valid. */
+/** `capturedAt` is null for values saved before timestamps existed; they
+ * stay valid. */
 export interface StoredCalibration {
   value: Calibration;
   capturedAt: number | null;
@@ -219,9 +200,8 @@ export function saveCalibration(
   writeCalibration(CALIBRATION_KEY, calibration, capturedAt, storage);
 }
 
-/** The vehicle zero (#83): the phone's normal spot, validated like the
- * sensor calibration — corrupt values read as null; beyond 15° stays,
- * since the user may zero anyway (#411). */
+/** The vehicle zero: the phone's normal spot. Corrupt values read as null;
+ * beyond 15° stays, since the user may zero anyway. */
 export function loadVehicleCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
@@ -251,18 +231,10 @@ export function clearVehicleCalibration(storage: KeyValueStorage | null = defaul
 }
 
 /**
- * An external source's installation offset (#131/R34, ADR 0014, keyed per
- * source by #263): the mechanism is identical to the phone's vehicle zero
- * above (capture with the vehicle verified level, read back up to
- * `MAX_TILT_DEG` since a zero may be taken anyway above 15°, #425), but each source
- * gets its own key, so clearing or redoing one never touches — and is
- * never touched by — another source's, or the phone's own
- * `libell.vehicleCalibration`.
- *
- * That independence is not a nicety: an installation offset describes
- * where one particular box is bolted into one particular vehicle, so
- * letting two sources share a value would produce confidently wrong
- * guidance rather than an obvious failure.
+ * An external source's installation offset (R34, ADR 0014): same mechanism as the
+ * vehicle zero, but each source has its own key. The offset describes where
+ * one box is bolted into one vehicle, so sharing a value between sources
+ * would give confidently wrong guidance rather than an obvious failure.
  */
 export function loadInstallCalibration(
   source: SensorSource,
@@ -299,19 +271,14 @@ export function clearInstallCalibration(
 }
 
 /**
- * Copy #131's EasyLevel installation offset to its per-source key (#263).
- * Runs once, guarded by its own marker key, and only when the new key is
- * empty — so it can never overwrite a newer value, and can never bring
- * back one the user has cleared since.
+ * Copy the legacy EasyLevel installation offset to its per-source key. Runs
+ * once, and only when the new key is empty, so it never overwrites a newer
+ * value.
  *
- * **Copied, not moved.** The legacy key is left exactly as it was, so a
- * build rolled back to before #263 still finds the user's offset instead
- * of asking them to re-level. The cost is that an offset recaptured after
- * this migration would not be seen by such a rollback — it would find the
- * older value, which is "the keys as it left them", and is a far better
- * failure than a rolled-back build silently using no offset at all. A few
- * stale bytes in `localStorage` are cheap; making somebody re-level their
- * motorhome is not.
+ * **Copied, not moved**, so a rolled-back build still finds the user's offset
+ * instead of asking them to re-level. The cost: an offset recaptured later is
+ * not seen by such a rollback, which finds the older value — far better than
+ * silently using no offset at all.
  */
 export function migrateLegacyInstallCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
@@ -326,9 +293,7 @@ export function migrateLegacyInstallCalibration(
     }
     storage.setItem(INSTALL_CALIBRATION_MIGRATED_KEY, '1');
   } catch {
-    // Storage unavailable (private mode, quota): the user keeps whatever
-    // the legacy key holds and is asked to set the offset again at worst.
-    // Never fatal, and never half-migrated — the marker is written last.
+    // Never half-migrated: the marker is written last.
   }
 }
 
@@ -351,8 +316,8 @@ export function saveLanguage(
   }
 }
 
-/** Clears a stored language override (the "Automatic" choice, screen-cleanup
- * follow-up) — back to detecting from the browser's own language on every load. */
+/** The "Automatic" choice: back to detecting the browser's language on every
+ * load. */
 export function clearLanguage(storage: KeyValueStorage | null = defaultStorage()): void {
   try {
     storage?.removeItem(LANGUAGE_KEY);
@@ -377,9 +342,7 @@ export function markOnboardingSeen(storage: KeyValueStorage | null = defaultStor
   }
 }
 
-/** True once the wizard has actually been stepped through to the end —
- * see `ONBOARDING_DONE_KEY` above for how this differs from
- * `hasSeenOnboarding`. */
+/** See `ONBOARDING_DONE_KEY` for how this differs from `hasSeenOnboarding`. */
 export function hasDoneOnboarding(storage: KeyValueStorage | null = defaultStorage()): boolean {
   try {
     return storage?.getItem(ONBOARDING_DONE_KEY) === '1';
@@ -396,8 +359,6 @@ export function markOnboardingDone(storage: KeyValueStorage | null = defaultStor
   }
 }
 
-/** True while the wizard's box path was finished without a box connected
- * (#365) — see `BOX_PENDING_KEY`. */
 export function isBoxPending(storage: KeyValueStorage | null = defaultStorage()): boolean {
   try {
     return storage?.getItem(BOX_PENDING_KEY) === '1';
@@ -426,8 +387,7 @@ export function clearCalibration(storage: KeyValueStorage | null = defaultStorag
   }
 }
 
-/** Saved target presets (#122): validated on every read, same discipline
- * as settings and calibration — one corrupt entry never breaks startup. */
+/** Validated on every read: one corrupt entry never breaks startup. */
 export function loadTargetPresets(
   storage: KeyValueStorage | null = defaultStorage(),
 ): TargetPreset[] {
@@ -452,10 +412,9 @@ export function saveTargetPresets(
 }
 
 /**
- * The active target id — "Normal" (`null`) unless a preset was
- * explicitly selected. Validated against the current preset list so a
- * preset deleted elsewhere (or corrupt storage) can never leave the app
- * targeting a nonexistent preset.
+ * "Normal" (`null`) unless a preset was explicitly selected. Validated against
+ * the current presets, so a deleted preset or corrupt storage can never leave
+ * the app targeting a nonexistent one.
  */
 export function loadActiveTargetId(
   presets: TargetPreset[],
@@ -470,8 +429,8 @@ export function loadActiveTargetId(
   }
 }
 
-/** `null` (Normal) removes the key entirely — Normal is never a stored
- * value, so it can never be corrupted or lost (#122). */
+/** `null` (Normal) removes the key: Normal is never a stored value, so it can
+ * never be corrupted or lost. */
 export function saveActiveTargetId(
   id: string | null,
   storage: KeyValueStorage | null = defaultStorage(),

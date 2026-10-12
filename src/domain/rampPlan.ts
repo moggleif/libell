@@ -1,5 +1,5 @@
 /**
- * Ramp placement planning — pure TypeScript, no browser APIs (ADR 0011).
+ * Ramp placement planning (ADR 0011).
  *
  * Ramps are sold in pairs and most owners carry exactly two, yet a
  * combined roll + pitch tilt leaves three wheels below the highest
@@ -32,10 +32,8 @@ export interface RampPlan {
   drainScoreMm: number;
 }
 
-// A side/axle position averages its two wheels (the middle of that edge);
-// a corner position (design review) targets just the one wheel — a
-// tighter match for a waste-water outlet that sits at one specific
-// corner, not spread across a whole side.
+// A side/axle position averages its two wheels; a corner position targets
+// just the one wheel, for an outlet that sits at one specific corner.
 const DRAIN_WHEELS: Record<Exclude<DrainPosition, 'none'>, readonly WheelId[]> = {
   left: ['frontLeft', 'rearLeft'],
   right: ['frontRight', 'rearRight'],
@@ -139,13 +137,12 @@ export function planRamps(lifts: Record<WheelId, number>, settings: LevelSetting
   return best!;
 }
 
-/** Rough sense of how far an unreachable plan leaves the vehicle (#125). */
 export type DeficitMagnitude = 'close' | 'far';
 
 /**
  * Categorize `maxDeficitMm` for the "ramps not enough" status line, without
  * ever claiming to know which way to move the vehicle — tilt data alone
- * can't say that (#125). "close" covers a shortfall of up to one more
+ * can't say that. "close" covers a shortfall of up to one more
  * tolerance-width past the pass/fail line (i.e. within twice `toleranceMm`
  * of level) — plausibly closeable with a small nudge; beyond that the plan
  * is "far" off and only relocating helps. Call only when `achievesLevel`
