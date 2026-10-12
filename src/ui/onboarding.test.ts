@@ -364,6 +364,65 @@ describe('onboarding wizard — vehicle type shapes the rest of the guide (#184)
   });
 });
 
+describe('onboarding wizard — the vehicle choice survives a skipped measurements step (#397)', () => {
+  function skip(): void {
+    const buttons = [...card().querySelectorAll('button')];
+    buttons.find((b) => b.textContent === t('onboard.skipStep'))!.click();
+  }
+
+  function rampCountLabel(): HTMLLabelElement | undefined {
+    return [...card().querySelectorAll('label')].find((l) =>
+      l.textContent?.includes(t('settings.rampCount')),
+    );
+  }
+
+  it("a caravan's ramps step hides the ramp count even when measurements was skipped", () => {
+    open({ initialSettings: classicSettings() });
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    expect(rampCountLabel()?.hidden).toBe(true);
+  });
+
+  it("the ramps step's Next saves the picked vehicle type, not the stored one", () => {
+    const saved: LevelSettings[] = [];
+    open({ initialSettings: classicSettings(), onSettingsSaved: (s) => saved.push(s) });
+    saved.length = 0; // the preference steps' own saves
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    next(); // ramps -> calibration
+    expect(saved.map((s) => s.vehicleType)).toEqual(['caravan']);
+  });
+
+  it('finishing with both forms skipped still stores the picked vehicle type', () => {
+    let saved: LevelSettings | null = null;
+    open({ initialSettings: classicSettings(), onSettingsSaved: (s) => (saved = s) });
+    pickVehicle('caravan');
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    skip(); // ramps -> calibration
+    next(); // calibration -> done
+    expect(document.querySelector('.onboarding')).toBeNull();
+    expect(saved!.vehicleType).toBe('caravan');
+  });
+
+  it('finishing without changing the vehicle saves nothing extra', () => {
+    const saved: LevelSettings[] = [];
+    open({ initialSettings: classicSettings(), onSettingsSaved: (s) => saved.push(s) });
+    saved.length = 0; // the preference steps' own saves
+    next(); // vehicle -> placement
+    next(); // placement -> measurements
+    skip(); // measurements -> ramps
+    skip(); // ramps -> calibration
+    next(); // calibration -> done
+    expect(saved).toEqual([]);
+  });
+});
+
 describe('onboarding wizard — ramps step (design review): the ramp catalog/count, never in the wizard before', () => {
   it('shows the ready-made ramp picker and ramp count, with the default catalog steps pre-filled', () => {
     open({ initialSettings: classicSettings() });

@@ -394,8 +394,6 @@ URL and must keep working with no signal.
 
 ## R18 — A first-run introduction, skippable and reopenable
 
-> **Open bug:** skipping the measurements step loses the vehicle choice (#397).
-
 - **Given** I open Libell for the very first time, on a browser without Web Bluetooth
   support (R32's exact gate)
 - **Then** a nine-step wizard runs: welcome (design review — what Libell is for, before
@@ -537,6 +535,10 @@ URL and must keep working with no signal.
 - **Given** the measurements step, with the vehicle's Wheelbase/Track width filled in
 - **Then** tapping "Next" saves those values before advancing — the only way to persist
   them, since the step shows no separate Save button (see above).
+- **Given** a vehicle type picked in the wizard that differs from the stored one
+- **When** I skip the measurements step (or every form step)
+- **Then** every later step still follows the picked vehicle (a caravan's ramps step has
+  no ramp count), and reaching the end stores the picked vehicle type (#397).
 - **Given** any step (#365, reworking #189's one generic note)
 - **Then** a Skip button is shown only where Next would save something — measurements
   and ramps; everywhere else Next is the one way on. A step that can leave something
