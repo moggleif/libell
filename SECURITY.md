@@ -20,13 +20,16 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
 - **No HTML injection surface.** The DOM is built exclusively with `createElement` /
   `textContent`; `innerHTML` and friends are not used.
 - **Framing is refused.** Pages cannot send headers and browsers ignore
-  `frame-ancestors` in a meta CSP, so `main.ts` blanks the page and breaks out of any
-  hostile iframe instead (clickjacking guard).
+  `frame-ancestors` in a meta CSP, so `src/app/frameGuard.ts` blanks the page and
+  breaks out of any hostile iframe instead (clickjacking guard).
 - **Untrusted storage is validated.** Everything read from `localStorage` passes
   validation with per-field fallback, so hand-edited or corrupt values cannot break
   or subvert startup.
-- **Sensor data stays on the device.** Tilt readings are processed in memory and never
-  leave the phone.
+- **Sensor data stays on the device.** Tilt readings, from the phone or from a Sensorbox
+  over Web Bluetooth, are processed in memory and never leave the phone.
+- **The Xparkle box's password is a pairing code, not a secret.** The box's four-digit
+  code is kept in `localStorage` with the other settings and is only ever written to
+  that box over Bluetooth. Libell never changes it.
 
 ## Supply chain
 
@@ -39,5 +42,5 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
 
 ## Supported versions
 
-Only the latest deployed version (the footer shows it) is supported — the PWA
+Only the latest deployed version (the top bar and the About page show it) is supported — the PWA
 auto-updates on next launch after every deploy.

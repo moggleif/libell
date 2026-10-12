@@ -8,14 +8,17 @@ plan for the ramps you actually own: which wheels to drive up, onto which step, 
 your ramps can't finish the job at all.
 
 Lay the phone flat inside the vehicle (for example on the table) with the **top edge of
-the phone pointing toward the front**. (With an external sensor box the phone can be anywhere — the box measures.) Libell shows a top-down view of the RV: green
-wheels are already within tolerance, orange wheels show which ramp step to drive up onto
-and how many mm they are missing, gray wheels are low but get no ramp because your ramp
-set doesn't stretch that far, and red means even your tallest step can't fix that wheel
-by itself — reposition instead. If no arrangement of your ramps reaches level at all, the
-status line says so and gives a rough sense of how far off ("close" or "far"). A bubble
-level sits in the middle of the diagram, and a big "Your RV is level!" confirms when you
-are done. Everything works offline once loaded; there is no account.
+the phone pointing toward the front**, or let a Sensorbox measure instead (see below).
+Libell shows a top-down view of the motorhome or caravan: green ✓ wheels are already
+within tolerance, orange ↑ wheels show which ramp step to drive up onto and how many mm
+they are missing, gray – wheels get no ramp because your ramp set doesn't stretch that
+far, and red ✕ means your ramps can't fix that wheel — move the vehicle instead. If no
+arrangement of your ramps reaches level at all, the status line says so and gives a
+rough sense of how far off ("close" or "far"). A bubble level sits in the middle of the
+diagram, and a big "Your RV is level!" (with an optional chime) confirms when you are
+done. A caravan gets a ramp for the low axle wheel and a signed correction for the
+jockey wheel; a tandem (boggie) axle is supported too. Everything works offline once
+loaded; there is no account.
 
 ## Using it on your phone
 
@@ -26,13 +29,27 @@ Open the app link above and, when you want it permanently available:
 
 It then launches standalone, like any other app, and keeps working with no signal.
 
-First-time setup lives under the **☰ menu** (yellow warning lamps in the top bar remind
-you until it is done):
+The first time you open it, a short introduction walks you through language,
+appearance, sound, vehicle type, how to place the phone, your measurements and ramps,
+and calibrating the phone. Every step can be skipped; **Help → Show introduction**
+reopens it. After that:
 
-1. **Settings** — wheelbase and front/rear track width (mm), your leveling ramps' step
-   heights in mm (e.g. `20; 40; 60`), tolerance and display stability.
-2. **Calibration** — put the phone on a known-level surface and tap _Calibrate now_ to
-   cancel phone/case bias.
+- **Settings** (bottom bar) holds the vehicle (wheelbase and track widths in mm, rear
+  axle), your ramps (pick a ready-made ramp by name or type the step heights, and how
+  many you own) and fine-tuning such as tolerance, stability and which side your
+  waste-water drain is on.
+- **Calibrate** the phone once on a surface you know is level, so the phone's own bias is
+  cancelled.
+- **Zero the vehicle** the first time you park on level ground (check with a spirit
+  level), with the phone in its usual spot, so the spot's own tilt is cancelled.
+  The **⚠ Calibrate** and **⚠ Zero** lamps in the top bar remind you until each is done.
+- **Targets** let you save an intentional tilt, for example toward the shower drain, and
+  switch between them.
+- The middle button of the bottom bar turns sound on and off, including the optional
+  audio guidance while you drive onto the ramps.
+- You can share your vehicle setup (measurements and ramps, never calibration) with a
+  link, send feedback as a GitHub issue, and use the app in Swedish, English, French,
+  Spanish or German.
 
 Two platform notes:
 
@@ -40,13 +57,24 @@ Two platform notes:
   shows a "Start" button. Android grants access silently.
 - **HTTPS is required.** Motion sensors are unavailable on plain HTTP origins.
 
-Want to use an external EasyLevel BLE sensor instead of the phone's own tilt sensor?
-That works today on Chrome/Android; on iPhone, Safari doesn't support Web Bluetooth at
-all, but [there's a supported workaround](docs/ios-easylevel-bluefy-guide.md).
+## Sensorbox: an external sensor
+
+Instead of the phone's own sensor, Libell can read a Bluetooth leveling box mounted in
+the vehicle: the **EasyLevel** box (R32) or the **Xparkle RVS01** (R49). Tap the sensor
+icon at the top right to connect; the box's own page then walks you through its
+position, its direction and zeroing the vehicle. The Xparkle box stands upright; the
+EasyLevel box lies flat, lid up, with one arrow pointing forward. With a box connected
+it doesn't matter how the phone lies, and the phone needs no calibration.
+
+This needs Web Bluetooth, which Chrome on Android has. If Chrome can't reconnect to the
+box on its own after a restart, the box's page has an **Advanced** tip for turning that
+on in `chrome://flags`. On iPhone, Safari and every other browser lack Web Bluetooth;
+[the Bluefy browser is the supported workaround](docs/ios-easylevel-bluefy-guide.md).
+What each box does is specified in [`docs/02-REQUIREMENTS.md`](docs/02-REQUIREMENTS.md).
 
 ## How leveling works
 
-The phone's gravity vector gives the vehicle's roll and pitch; from your wheelbase and
+The measured gravity vector (from the phone or the box) gives the vehicle's roll and pitch; from your wheelbase and
 track widths the app computes each wheel's required lift, taking the **highest wheel as
 the reference** (blocks only go _under_ wheels). Because ramps are sold in pairs and most
 owners carry only two or three, raising every low wheel independently is often not
@@ -60,41 +88,22 @@ source for the formulas.
 
 ## Tech
 
-- TypeScript (strict) + Vite, no UI framework — plain DOM and inline SVG
-- Vitest, Prettier
-- `vite-plugin-pwa` (Workbox) for the manifest and offline service worker
-- Static deployment to GitHub Pages
+A TypeScript PWA built with Vite, with no UI framework and no backend, deployed as a
+static site to GitHub Pages. The stack, layers and math are described in
+[`docs/03-ARCHITECTURE.md`](docs/03-ARCHITECTURE.md), and the reasons behind them in
+[`docs/adr/`](docs/adr/README.md).
 
 ## Developing
 
 ```sh
 npm install
 npm run dev           # http://localhost:5173/libell/
-npm run test          # unit tests
-npm run typecheck     # tsc --noEmit
-npm run build         # production build into dist/
 ```
 
-The base path defaults to `/libell/` for GitHub Pages project hosting. Override it with
-`BASE_PATH=/ npm run build` for a custom domain or root-level hosting.
+Add `?demo` to the address for a fixed synthetic tilt, or `?easylevel-sim` /
+`?xparkle-sim` for a simulated Sensorbox, so the app runs on a machine with no sensors.
+Every merge to `main` deploys to GitHub Pages; versions and release builds are described
+in [ADR 0007](docs/adr/0007-pages-as-qa-and-versioning.md).
 
-## Deployment, versions & releases
-
-Pushes to `main` build and publish `dist/` to GitHub Pages via
-`.github/workflows/deploy.yml`. This requires **Settings → Pages → Source: GitHub
-Actions** to be enabled once for the repository.
-
-The `VERSION` file holds the current **major.minor**. The first deploy of a new
-major.minor is the release — `vX.Y.0`, tagged and published as a GitHub Release; every
-later merge on the same minor is a QA/candidate build named after the release it builds
-on plus the merged pull request: shown as `X.Y.0 – CR<PR>` under the app's logo and
-tagged `vX.Y.0-CR<PR>`. Release texts live in `docs/releases/<tag>.md` and are applied
-automatically on push.
-
-Every CI run also uploads the built site as a `libell-site-<sha>` artifact, so a branch
-can be previewed before it is merged.
-
-## Development docs
-
-See `docs/01-CONTRIBUTING.md` for the workflow and `CLAUDE.md` for architecture rules.
-Enable the shared git hooks once: `git config core.hookspath .githooks`.
+See [`docs/01-CONTRIBUTING.md`](docs/01-CONTRIBUTING.md) for the build, test and
+deployment workflow, and [`CLAUDE.md`](CLAUDE.md) for the code rules.
