@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { createRvDiagram } from './rvDiagram';
+import { createRvDiagram, stepAndLiftText, updateBubble } from './rvDiagram';
+import { formatLength } from '../domain/settings';
 import { setLanguage, t } from './i18n';
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 
@@ -302,4 +303,131 @@ describe('the bubble starts in its dial, not at the SVG origin (#244)', () => {
       expect(cy).toBeCloseTo(Number(dial.getAttribute('cy')), 5);
     });
   }
+});
+
+// Regression pin for the #419 refactor: the full markup of every
+// motorhome variant, freshly built and after a sequence of readings that
+// covers every wheel state, both units and the bubble's travel. The
+// refactor must leave every byte of it as it is.
+describe('rvDiagram output (#419)', () => {
+  const READINGS: [DisplayResult, 'mm' | 'cm'][] = [
+    [{ ...result({}), isLevel: true }, 'mm'],
+    [
+      {
+        ...result({
+          frontLeft: { displayMm: 3, stepMm: 0, severity: 'none' },
+          frontRight: { displayMm: 63, stepMm: 78, severity: 'small' },
+          rearLeft: { displayMm: 140, stepMm: 112, severity: 'large' },
+          rearRight: { displayMm: 6, stepMm: 0, severity: 'unserved' },
+        }),
+        rollDeg: 2.5,
+        pitchDeg: -7,
+      },
+      'mm',
+    ],
+    [
+      {
+        ...result({
+          frontLeft: { displayMm: 50, stepMm: 60, severity: 'small' },
+          rearRight: { displayMm: 27, stepMm: 44, severity: 'small' },
+        }),
+        rollDeg: -1.2,
+        pitchDeg: 0.4,
+      },
+      'cm',
+    ],
+  ];
+
+  for (const [axle, appearance] of [
+    ['single', 'classic'],
+    ['boggie', 'classic'],
+    ['single', 'modern'],
+    ['boggie', 'modern'],
+  ] as const) {
+    it(`${appearance}, ${axle} rear axle`, () => {
+      const diagram = createRvDiagram(axle, appearance);
+      const markup = [diagram.element.outerHTML];
+      for (const [reading, unit] of READINGS) {
+        diagram.update(reading, unit, STEPS);
+        markup.push(diagram.element.outerHTML);
+      }
+      expect(markup).toMatchSnapshot();
+    });
+  }
+});
+
+// Regression pins for the exported helpers the caravan diagram reuses,
+// so the #419 refactor can move them without changing what they do.
+describe('stepAndLiftText (#419)', () => {
+  it('gives a green wheel its lift and no step', () => {
+    expect(stepAndLiftText('none', 0, 3, 'mm', STEPS)).toEqual({ step: '', lift: '3 mm' });
+  });
+
+  it('says "No ramp" and gives no lift when no step reaches the wheel', () => {
+    expect(stepAndLiftText('unserved', 0, 6, 'mm', STEPS)).toEqual({ step: 'No ramp', lift: '' });
+  });
+
+  it('names a configured step by its number', () => {
+    expect(stepAndLiftText('small', 78, 63, 'mm', STEPS)).toEqual({
+      step: 'Step 2',
+      lift: '63 mm',
+    });
+  });
+
+  it('gives a step that is not configured as its height, in the chosen unit', () => {
+    expect(stepAndLiftText('large', 60, 50, 'cm', STEPS)).toEqual({
+      step: `↑ ${formatLength(60, 'cm')}`,
+      lift: formatLength(50, 'cm'),
+    });
+  });
+});
+
+describe('updateBubble (#419)', () => {
+  function bubbleAt(x: number, y: number) {
+    const bubble = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    let position = { x, y };
+    const state = {
+      get: () => position,
+      set: (nx: number, ny: number) => {
+        position = { x: nx, y: ny };
+      },
+    };
+    return { bubble, state, position: () => position };
+  }
+  const motion = { matches: false } as MediaQueryList;
+  const reduced = { matches: true } as MediaQueryList;
+  const center = { x: 100, y: 200 };
+
+  it('moves 30% of the way toward the tilt, clamped to its travel', () => {
+    const { bubble, state, position } = bubbleAt(100, 200);
+    updateBubble(
+      bubble,
+      { rollDeg: 10, pitchDeg: -2.5, isLevel: false },
+      center,
+      20,
+      5,
+      motion,
+      state,
+    );
+    expect(position()).toEqual({ x: 106, y: 197 });
+    expect(bubble.getAttribute('cx')).toBe('106.00');
+    expect(bubble.getAttribute('cy')).toBe('197.00');
+    expect(bubble.getAttribute('class')).toBe('rv-diagram__bubble');
+  });
+
+  it('snaps straight to the target under reduced motion and marks it level', () => {
+    const { bubble, state } = bubbleAt(100, 200);
+    updateBubble(
+      bubble,
+      { rollDeg: -2.5, pitchDeg: 5, isLevel: true },
+      center,
+      20,
+      5,
+      reduced,
+      state,
+    );
+    expect(bubble.getAttribute('cx')).toBe('90.00');
+    expect(bubble.getAttribute('cy')).toBe('220.00');
+    expect(bubble.getAttribute('class')).toBe('rv-diagram__bubble rv-diagram__bubble--level');
+  });
 });
