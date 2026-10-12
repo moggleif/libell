@@ -7,8 +7,6 @@
     "src/app/phoneCalibration.ts > createPhoneCalibration": 69,
     "src/main.ts > createCore": 68,
     "src/main.ts > mountPages": 59,
-    "src/sensor/externalSensorController.ts > createExternalSensorController": 137,
-    "src/sensor/orientation.ts > createOrientationSensor": 84,
     "src/ui/boxPasswordBlock.ts > createBoxPasswordBlock": 74,
     "src/ui/feedback.ts > createFeedbackSection": 98,
     "src/ui/helpIllustrations.ts > measuresIllustration": 51,

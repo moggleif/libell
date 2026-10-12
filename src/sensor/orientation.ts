@@ -102,87 +102,110 @@ function gravityFromOrientation(betaDeg: number, gammaDeg: number): GravityVecto
   };
 }
 
+/** The phone sensor's mutable state; the functions below work on one. */
+interface PhoneReadings {
+  state: SensorState;
+  smoothed: GravityVector | null;
+  usingMotion: boolean;
+  /** Stamped on every accepted reading, not on "listener attached" — the
+   * only honest signal that the stream is still alive. */
+  lastSampleAt: number | null;
+  /** Made once, so a second start() racing the first adds no duplicate. */
+  readonly onMotion: (event: DeviceMotionEvent) => void;
+  readonly onOrientation: (event: DeviceOrientationEvent) => void;
+}
+
 export function createOrientationSensor(): OrientationSensor {
-  let state: SensorState = 'idle';
-  let smoothed: GravityVector | null = null;
-  let usingMotion = false;
-  // Stamped on every accepted reading, not on "listener attached" — the
-  // only honest signal that the stream is still alive.
-  let lastSampleAt: number | null = null;
-
-  function accept(reading: GravityVector): void {
-    smoothed =
-      smoothed === null
-        ? reading
-        : {
-            x: smoothed.x + SMOOTHING_ALPHA * (reading.x - smoothed.x),
-            y: smoothed.y + SMOOTHING_ALPHA * (reading.y - smoothed.y),
-            z: smoothed.z + SMOOTHING_ALPHA * (reading.z - smoothed.z),
-          };
-    lastSampleAt = performance.now();
-  }
-
-  function onMotion(event: DeviceMotionEvent): void {
-    const g = event.accelerationIncludingGravity;
-    if (g && g.x !== null && g.y !== null && g.z !== null) {
-      usingMotion = true;
-      accept(normalizeGravity(g.x, g.y, g.z));
-    }
-  }
-
-  function onOrientation(event: DeviceOrientationEvent): void {
-    // Motion data wins when both fire; orientation is only the fallback.
-    if (!usingMotion && event.beta !== null && event.gamma !== null) {
-      accept(gravityFromOrientation(event.beta, event.gamma));
-    }
-  }
-
-  async function requestPermissions(): Promise<'granted' | 'denied'> {
-    if (!needsPermissionGesture()) return 'granted';
-    try {
-      const motion = await (
-        DeviceMotionEvent as unknown as Required<PermissionRequester>
-      ).requestPermission();
-      // DeviceOrientation has its own gate on iOS; best-effort so the
-      // fallback path works too, but the motion verdict decides.
-      const orientationApi = DeviceOrientationEvent as unknown as PermissionRequester;
-      if (typeof orientationApi.requestPermission === 'function') {
-        await orientationApi.requestPermission().catch(() => 'denied');
-      }
-      return motion;
-    } catch {
-      return 'denied';
-    }
-  }
-
-  return {
-    async start(): Promise<SensorState> {
-      if (state === 'granted') return state;
-      if (!isSensorSupported()) {
-        state = 'unsupported';
-        return state;
-      }
-      const permission = await requestPermissions();
-      if (permission === 'denied') {
-        state = 'denied';
-        return state;
-      }
-      if (typeof DeviceMotionEvent !== 'undefined') {
-        window.addEventListener('devicemotion', onMotion);
-      }
-      if (typeof DeviceOrientationEvent !== 'undefined') {
-        // Attach the fallback after a grace period so a working
-        // devicemotion stream is never mixed with orientation data.
-        window.setTimeout(() => {
-          if (!usingMotion) window.addEventListener('deviceorientation', onOrientation);
-        }, MOTION_TIMEOUT_MS);
-      }
-      state = 'granted';
-      return state;
-    },
-    getState: () => state,
-    getGravity: () => smoothed,
-    getSource: () => 'phone',
-    getLastSampleAt: () => lastSampleAt,
+  const phone: PhoneReadings = {
+    state: 'idle',
+    smoothed: null,
+    usingMotion: false,
+    lastSampleAt: null,
+    onMotion: (event) => onMotion(phone, event),
+    onOrientation: (event) => onOrientation(phone, event),
   };
+  return {
+    start: () => startPhone(phone),
+    getState: () => phone.state,
+    getGravity: () => phone.smoothed,
+    getSource: () => 'phone',
+    getLastSampleAt: () => phone.lastSampleAt,
+  };
+}
+
+async function startPhone(phone: PhoneReadings): Promise<SensorState> {
+  if (phone.state === 'granted') return phone.state;
+  if (!isSensorSupported()) {
+    phone.state = 'unsupported';
+    return phone.state;
+  }
+  if ((await requestPermissions()) === 'denied') {
+    phone.state = 'denied';
+    return phone.state;
+  }
+  listen(phone);
+  phone.state = 'granted';
+  return phone.state;
+}
+
+function listen(phone: PhoneReadings): void {
+  if (typeof DeviceMotionEvent !== 'undefined') {
+    window.addEventListener('devicemotion', phone.onMotion);
+  }
+  if (typeof DeviceOrientationEvent !== 'undefined') {
+    // Attach the fallback after a grace period so a working devicemotion
+    // stream is never mixed with orientation data.
+    window.setTimeout(() => {
+      if (!phone.usingMotion) {
+        window.addEventListener('deviceorientation', phone.onOrientation);
+      }
+    }, MOTION_TIMEOUT_MS);
+  }
+}
+
+function onMotion(phone: PhoneReadings, event: DeviceMotionEvent): void {
+  const g = event.accelerationIncludingGravity;
+  if (g && g.x !== null && g.y !== null && g.z !== null) {
+    phone.usingMotion = true;
+    accept(phone, normalizeGravity(g.x, g.y, g.z));
+  }
+}
+
+function onOrientation(phone: PhoneReadings, event: DeviceOrientationEvent): void {
+  // Motion data wins when both fire; orientation is only the fallback.
+  if (!phone.usingMotion && event.beta !== null && event.gamma !== null) {
+    accept(phone, gravityFromOrientation(event.beta, event.gamma));
+  }
+}
+
+function accept(phone: PhoneReadings, reading: GravityVector): void {
+  phone.smoothed = phone.smoothed === null ? reading : smooth(phone.smoothed, reading);
+  phone.lastSampleAt = performance.now();
+}
+
+/** One step of the exponential moving average. */
+function smooth(previous: GravityVector, reading: GravityVector): GravityVector {
+  return {
+    x: previous.x + SMOOTHING_ALPHA * (reading.x - previous.x),
+    y: previous.y + SMOOTHING_ALPHA * (reading.y - previous.y),
+    z: previous.z + SMOOTHING_ALPHA * (reading.z - previous.z),
+  };
+}
+
+async function requestPermissions(): Promise<'granted' | 'denied'> {
+  if (!needsPermissionGesture()) return 'granted';
+  try {
+    const motion = await (
+      DeviceMotionEvent as unknown as Required<PermissionRequester>
+    ).requestPermission();
+    // DeviceOrientation has its own gate on iOS; best-effort so the
+    // fallback path works too, but the motion verdict decides.
+    const orientationApi = DeviceOrientationEvent as unknown as PermissionRequester;
+    if (typeof orientationApi.requestPermission === 'function') {
+      await orientationApi.requestPermission().catch(() => 'denied');
+    }
+    return motion;
+  } catch {
+    return 'denied';
+  }
 }

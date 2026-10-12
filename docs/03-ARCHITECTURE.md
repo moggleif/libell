@@ -172,7 +172,7 @@ closure of its own — it supplies the adapter factory (`createExternalSensor` i
 `src/app/externalSensorWiring.ts`) and three callbacks (build the
 level screen, refresh the indicators, refresh the status row) and reads
 `getActiveSensor()` fresh on every use. ADR 0014's "never silently switch source" rule
-is enforced by one `adopt()`/`fallBackToPhone()` pair rather than by a dozen call sites,
+is enforced by one `adopt()`/`switchToPhone()` pair rather than by a dozen call sites,
 and connecting a second source disconnects the first rather than leaving two adapters
 delivering samples. Everything is injected, so the whole state machine is unit-tested
 with fake adapters and fake time.

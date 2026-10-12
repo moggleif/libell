@@ -420,3 +420,110 @@ describe('whether a silent retry can reach the box (#313)', () => {
     expect(controller.canRetrySilently()).toBe(true);
   });
 });
+
+describe('what the controller reports as its state changes (#479)', () => {
+  /** Lets a background retry's promise chain settle. */
+  async function settle(): Promise<void> {
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+  }
+
+  it('a background reconnect that succeeds keeps the box active and refreshes indicators and status', async () => {
+    const easylevel = fakeExternal('easylevel');
+    const { controller, calls } = makeController({}, { easylevel: easylevel.sensor });
+    await controller.connect('easylevel');
+    calls.indicators = 0;
+    calls.status = 0;
+
+    controller.maybeAutoRetry(1000);
+    await settle();
+
+    expect(controller.getActiveSensor()).toBe(easylevel.sensor);
+    expect(calls.indicators).toBe(1);
+    expect(calls.status).toBe(1);
+  });
+
+  it('a background reconnect that fails refreshes only the status, and stays on the box', async () => {
+    const easylevel = fakeExternal('easylevel', {
+      reconnect: () => Promise.resolve('disconnected'),
+    });
+    const { controller, calls } = makeController({}, { easylevel: easylevel.sensor });
+    await controller.connect('easylevel');
+    calls.indicators = 0;
+    calls.status = 0;
+
+    controller.maybeAutoRetry(1000);
+    await settle();
+
+    expect(controller.getActiveSensor()).toBe(easylevel.sensor);
+    expect(calls.indicators).toBe(0);
+    expect(calls.status).toBe(1);
+  });
+
+  it('a background retry with no device id at all tries nothing and reports nothing', async () => {
+    const easylevel = fakeExternal('easylevel', { getDeviceId: () => null });
+    const { controller, calls } = makeController({}, { easylevel: easylevel.sensor });
+    await controller.connect('easylevel');
+    calls.status = 0;
+
+    controller.maybeAutoRetry(1000);
+    await settle();
+
+    expect(easylevel.calls.reconnect).toEqual([]);
+    expect(calls.status).toBe(0);
+  });
+
+  it('a refused connect reports nothing and remembers no device', async () => {
+    const easylevel = fakeExternal('easylevel', { start: () => Promise.resolve('denied') });
+    const { controller, calls, remembered } = makeController({}, { easylevel: easylevel.sensor });
+
+    expect(await controller.connect('easylevel')).toBe('denied');
+
+    expect(calls.indicators).toBe(0);
+    expect(calls.levelScreen).toBe(0);
+    expect(remembered).toEqual({});
+    expect(controller.canRetrySilently()).toBe(false);
+  });
+
+  it('a connect whose device has no id is adopted without remembering one', async () => {
+    const easylevel = fakeExternal('easylevel', { getDeviceId: () => null });
+    const { controller, remembered } = makeController({}, { easylevel: easylevel.sensor });
+
+    expect(await controller.connect('easylevel')).toBe('granted');
+
+    expect(controller.getActiveSensor()).toBe(easylevel.sensor);
+    expect(remembered).toEqual({});
+  });
+
+  it('falling back to the phone refreshes the indicators', async () => {
+    const easylevel = fakeExternal('easylevel');
+    const { controller, calls } = makeController({}, { easylevel: easylevel.sensor });
+    await controller.connect('easylevel');
+    calls.indicators = 0;
+
+    controller.disconnect();
+
+    expect(calls.indicators).toBe(1);
+    expect(controller.canRetrySilently()).toBe(false);
+  });
+
+  it('app-open reconnect stands down when this build has no adapter for the source', async () => {
+    const { controller, calls } = makeController({
+      getPreferredSource: () => 'easylevel',
+      loadDeviceId: () => 'remembered-1',
+    });
+
+    expect(await controller.attemptAutoReconnect()).toBe(false);
+    expect(controller.getActiveSensor()).toBe(phoneSensor);
+    expect(calls.status).toBe(0);
+  });
+
+  it('knows no adapter until one has been built', async () => {
+    const easylevel = fakeExternal('easylevel');
+    const { controller } = makeController({}, { easylevel: easylevel.sensor });
+    expect(controller.getSensor('easylevel')).toBeNull();
+
+    await controller.connect('easylevel');
+
+    expect(controller.getSensor('easylevel')).toBe(easylevel.sensor);
+  });
+});
