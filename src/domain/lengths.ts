@@ -7,8 +7,9 @@ export function normalizeHeights(values: number[]): number[] {
 
 /**
  * Parse the settings-form text for available step heights: mm values
- * separated by semicolons (commas tolerated as a decimal or list
- * separator), e.g. "20; 45; 60". Invalid entries are dropped.
+ * separated by semicolons, e.g. "20; 45; 60". A comma is a decimal comma
+ * only between bare digits with no other comma ("4,5", "20,40"); otherwise
+ * it separates steps ("20, 40", "20,40,60"). Invalid entries are dropped.
  */
 export function parseStepHeightsList(text: string): number[] {
   const items = text.split(';').flatMap((part) => {

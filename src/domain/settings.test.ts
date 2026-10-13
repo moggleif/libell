@@ -393,6 +393,17 @@ describe('parseStepHeightsList', () => {
     expect(parseStepHeightsList('')).toEqual([]);
   });
 
+  it('reads a comma-separated list as separate steps (#528)', () => {
+    expect(parseStepHeightsList('20, 40, 60')).toEqual([20, 40, 60]);
+    expect(parseStepHeightsList('4,5; 40, 50')).toEqual([4.5, 40, 50]);
+  });
+
+  it('reads one comma between bare digits as a decimal comma, not a list (#528)', () => {
+    expect(parseStepHeightsList('4,5')).toEqual([4.5]);
+    expect(parseStepHeightsList('20,40')).toEqual([20.4]);
+    expect(parseStepHeightsList('20,40,60')).toEqual([20, 40, 60]);
+  });
+
   it('round-trips through the display format', () => {
     expect(formatStepHeightsList(parseStepHeightsList('60;20;40'))).toBe('20; 40; 60');
   });
