@@ -143,6 +143,11 @@ describe('buildLevelScreen', () => {
       vibrate: () => {},
     });
     expect(root.querySelector('svg')?.getAttribute('aria-label')).toContain('caravan');
-    expect(() => step(0)).not.toThrow();
+    const before = root.textContent;
+    step(0);
+    step(1000);
+    // A step draws the reading: the tilt readout for the flat gravity (#526).
+    expect(root.textContent).not.toBe(before);
+    expect(root.textContent).toContain('Front/back +0.0°');
   });
 });

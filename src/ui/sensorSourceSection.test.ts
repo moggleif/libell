@@ -652,8 +652,10 @@ describe('a box that rejects its password (#272, #367)', () => {
     expect(section.connectElement.textContent).toContain(t('box.state.connected'));
   });
 
-  it('works for a source that has no password at all', () => {
-    expect(() => createSensorSourceSection(makeOptions())).not.toThrow();
+  it('shows no password block for a source that has no password at all (#526)', () => {
+    const section = createSensorSourceSection(makeOptions());
+    expect(section.connectElement.querySelector('.box-password')).toBeNull();
+    expect(section.connectElement.textContent).not.toContain(t('box.password.label'));
   });
 });
 

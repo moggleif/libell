@@ -203,10 +203,13 @@ describe('boxSetupOptions', () => {
   it("adds the box's password and learn guide where it has them", () => {
     const xparkle = boxSetupOptions(XPARKLE_DESCRIPTOR, fakeDeps().deps);
     expect(xparkle.password?.isRejected()).toBe(false);
-    expect(xparkle.learnMounting).toBeDefined();
+    // Each box's own guide: the Xparkle one reads the connected box's angles,
+    // the EasyLevel one finds no EasyLevel box here (#526).
+    expect(xparkle.learnMounting?.getRawReading()).toEqual({ pitchDeg: 0, rollDeg: 0 });
     const easyLevel = boxSetupOptions(EASYLEVEL_DESCRIPTOR, fakeDeps().deps);
     expect(easyLevel.password).toBeUndefined();
-    expect(easyLevel.learnMounting).toBeDefined();
+    expect(easyLevel.learnMounting?.getRawReading()).toBeNull();
+    expect(easyLevel.learnMounting?.check).toBeTypeOf('function');
   });
 });
 

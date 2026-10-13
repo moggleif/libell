@@ -80,8 +80,11 @@ function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen
     usePhoneSensor: () => externalSensors.usePhoneSensor(),
     playChime: sound.playChime,
     playGuidancePulse: sound.playGuidancePulse,
-    vibrate(pattern) {
-      if ('vibrate' in navigator) navigator.vibrate(pattern);
-    },
+    vibrate: vibrateIfSupported,
   });
+}
+
+/** Haptics where the browser has them (not iOS Safari); a no-op elsewhere. */
+export function vibrateIfSupported(pattern: VibratePattern): void {
+  if ('vibrate' in navigator) navigator.vibrate(pattern);
 }

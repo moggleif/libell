@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createCore, type Screen } from './core';
-import { mountMainScreen } from './mainScreen';
+import { mountMainScreen, vibrateIfSupported } from './mainScreen';
 import { mountPages } from './pages';
 
 /** The parts of index.html the main screen mounts into. */
@@ -35,12 +35,32 @@ describe('mountMainScreen', () => {
     history.replaceState(null, '', '/?demo');
   });
 
-  it('fills in the screen the core calls back into', () => {
-    const { screen } = mount();
-    expect(screen.lamps).toBeDefined();
-    expect(screen.targetBadge).toBeDefined();
-    expect(screen.sensorStatus).toBeDefined();
-    expect(screen.levelScreen).toBeDefined();
+  it('fills in the screen the core calls back into, mounted into the shell (#526)', () => {
+    const { screen, root } = mount();
+    const indicators = document.querySelector('#indicators')!;
+    const slot = document.querySelector('#sensor-slot')!;
+    // The lamps and the target badge, side by side; the sensor icon in its slot.
+    expect(indicators.childElementCount).toBe(2);
+    expect(indicators.querySelector('.target-badge')).not.toBeNull();
+    expect(slot.childElementCount).toBe(1);
+    const indicatorsBefore = indicators.innerHTML;
+    screen.lamps.refresh();
+    screen.targetBadge.refresh();
+    screen.sensorStatus.refresh();
+    expect(indicators.innerHTML).toBe(indicatorsBefore);
+    screen.levelScreen.show();
+    expect(root.childElementCount).toBeGreaterThan(0);
+  });
+
+  it('forwards a vibration only where the browser can vibrate (#526)', () => {
+    const vibrateFn = vi.fn(() => true);
+    Object.defineProperty(navigator, 'vibrate', { value: vibrateFn, configurable: true });
+    vibrateIfSupported([30, 50]);
+    expect(vibrateFn).toHaveBeenCalledWith([30, 50]);
+    delete (navigator as { vibrate?: unknown }).vibrate;
+    expect('vibrate' in navigator).toBe(false);
+    expect(() => vibrateIfSupported(20)).not.toThrow();
+    expect(vibrateFn).toHaveBeenCalledOnce();
   });
 
   it('syncs the top-bar corner once the sensor status is in it', () => {
