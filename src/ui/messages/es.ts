@@ -182,8 +182,8 @@ export const es: Messages = {
   'onboard.zeroLater':
     'El vehículo se pone a cero la primera vez que aparcas en suelo llano. {lamp} te lo recordará hasta que esté hecho.',
   'onboard.legend.ok': 'Verde ✓: esa rueda está nivelada.',
-  'onboard.legend.up': 'Naranja ↑: sube esa rueda al nivel indicado.',
-  'onboard.legend.no': 'Rojo ✕: ningún nivel basta; muévete a un sitio más llano.',
+  'onboard.legend.up': 'Naranja ↑: sube esa rueda al escalón indicado.',
+  'onboard.legend.no': 'Rojo ✕: ningún escalón basta; muévete a un sitio más llano.',
   'onboard.legend.dim': 'Gris –: ninguna rampa en esa rueda; la cifra indica cuánto falta.',
   'settings.wheelbase': 'Distancia entre ejes',
   'settings.trackFront': 'Ancho de vía delantero',
@@ -206,8 +206,8 @@ export const es: Messages = {
   'settings.measureHint.caravan':
     'Mide desde el eje hasta la rueda jockey. Unos cm de error no importan.',
   'settings.measureHint.boggie': 'Con doble eje, mide hasta el centro del par de ejes.',
-  'settings.steps': 'Alturas de nivel de la rampa',
-  'settings.steps.add': 'Añadir nivel',
+  'settings.steps': 'Alturas de los escalones de la rampa',
+  'settings.steps.add': 'Añadir escalón',
   'settings.steps.remove': 'Quitar {value}',
   'settings.ramp': 'Rampa prefabricada',
   'settings.ramp.custom': 'Juego personalizado',
@@ -260,7 +260,7 @@ export const es: Messages = {
   'settings.klossar.changeRamp': 'Cambiar rampa',
   'settings.rampCountHint': 'La app las coloca donde más ayudan.',
   'settings.klossar.selected': 'Seleccionado',
-  'settings.klossar.stepsHeading': 'Alturas de nivel',
+  'settings.klossar.stepsHeading': 'Alturas de los escalones',
 
   'status.measuring': 'Midiendo…',
   'status.almost': 'Casi nivelado: faltan {left}',
@@ -386,7 +386,7 @@ export const es: Messages = {
     'En iPhone: toca Iniciar cada vez que abras la app.\n' +
     '¿Sigue fallando? Escribe un informe en Comentarios.',
   'help.open': 'Abrir {name}',
-  'help.open.sensor': 'Abrir el sensor',
+  'help.open.sensor': 'Abrir la caja sensora',
   'help.open.feedback': 'Escribir un informe',
 
   'main.hint': 'Deja el móvil plano dentro del vehículo, con el borde superior hacia delante.',
@@ -406,7 +406,7 @@ export const es: Messages = {
   'diagram.caravan.aria':
     'Vista desde arriba de tu caravana con las ruedas del eje y la rueda jockey',
   'diagram.front': 'Delante',
-  'diagram.step': 'Nivel {n}',
+  'diagram.step': 'Escalón {n}',
   'diagram.done': 'Hecho',
   'diagram.noRamp': 'Sin rampa',
   'diagram.wheel.frontLeft': 'DEL IZQ',

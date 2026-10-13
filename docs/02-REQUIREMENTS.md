@@ -762,10 +762,10 @@ URL and must keep working with no signal.
   box, targets)
 - **Then** it ends in a button to that place: "Open Vehicle", "Open Ramps", "Open
   Calibration", "Open Level" (named after the Settings tab they open, so they follow
-  its name), and "Open the sensor". Tapping one closes Help, then opens that Settings
+  its name), and "Open the sensor box". Tapping one closes Help, then opens that Settings
   tab (Classic: that ☰ section). Calibration with a sensor box in use opens the box's
   page instead (a box chosen in the wizard but not yet connected: the sensor list, to
-  connect it, #365), and "Open the sensor" goes where the top-right sensor icon goes — the
+  connect it, #365), and "Open the sensor box" goes where the top-right sensor icon goes — the
   same routes as the lamp and the icon. Where the app has no sensor page at all (no Web
   Bluetooth and not iOS), the Sensor box topic still explains but has no button.
 - **Given** "If something is wrong"
