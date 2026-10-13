@@ -440,6 +440,8 @@ export const sv: Messages = {
   'calibration.external.h': 'Nollställ fordonet',
   'calibration.external.intro':
     'Ställ fordonet plant en gång med ett vattenpass och nollställ sedan.',
+  'calibration.external.phoneHidden':
+    'Telefonens egen kalibrering visas inte medan Sensorboxen mäter. Vill du kalibrera telefonen: öppna boxen och tryck först på "{disconnect}".',
   'calibration.external.working': 'Nollställer…',
   'calibration.external.done': '{name} är nollställd: det här läget räknas nu som plant.',
   'calibration.external.err.notConnected': '{name} är inte ansluten. Anslut den och försök igen.',

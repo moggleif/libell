@@ -436,6 +436,8 @@ export const es: Messages = {
   'calibration.external.h': 'Poner el vehículo a cero',
   'calibration.external.intro':
     'Nivela el vehículo una vez con un nivel de burbuja y luego pon a cero.',
+  'calibration.external.phoneHidden':
+    'La calibración del móvil está oculta mientras mide la caja sensora. Para calibrar el móvil, abre la caja y toca primero «{disconnect}».',
   'calibration.external.working': 'Poniendo a cero…',
   'calibration.external.done':
     '{name} está puesto a cero: esta posición cuenta ahora como nivelada.',

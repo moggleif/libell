@@ -560,6 +560,8 @@ export const en = {
   'pose.sensorHintUpright': 'It only measures right standing up.',
   'calibration.external.h': 'Zero the vehicle',
   'calibration.external.intro': 'Level the vehicle once with a spirit level, then zero.',
+  'calibration.external.phoneHidden':
+    'The phone’s own calibration is hidden while the sensor box measures. To calibrate the phone, open the box and tap "{disconnect}" first.',
   'calibration.external.working': 'Zeroing…',
   'calibration.external.done': '{name} is zeroed: this position now counts as level.',
   'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',

@@ -447,6 +447,8 @@ export const fr: Messages = {
   'calibration.external.h': 'Mettre le véhicule à zéro',
   'calibration.external.intro':
     'Mettez le véhicule de niveau une fois avec un niveau à bulle, puis mettez à zéro.',
+  'calibration.external.phoneHidden':
+    'L’étalonnage du téléphone est masqué tant que le boîtier capteur mesure. Pour étalonner le téléphone, ouvrez le boîtier et touchez d’abord « {disconnect} ».',
   'calibration.external.working': 'Mise à zéro…',
   'calibration.external.done':
     '{name} est mis à zéro : cette position compte désormais comme le niveau.',

@@ -1102,9 +1102,10 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Then** the Calibration section also offers "Zero the vehicle" with "Zero now" for
   that sensor, in place of the hidden phone controls — the same action as on the
   sensor's own page (for the Xparkle box, R49's zeroing), so zeroing is found where a
-  user looks for it (#290); its status line gives the stored zero and its age. Below it
-  a quiet "Show the box" link opens the box's own page (R51) for its position and
-  direction (#316).
+  user looks for it (#290); its status line gives the stored zero and its age. A line
+  under it says the phone's own calibration is hidden while the box measures and that
+  "Disconnect" on the box's page brings it back (#515). Below it a quiet "Show the box"
+  link opens the box's own page (R51) for its position and direction (#316).
 - **Given** an external sensor is the active source and the amber calibration lamp is
   lit (#316)
 - **When** I tap the lamp
