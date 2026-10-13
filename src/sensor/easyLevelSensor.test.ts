@@ -614,11 +614,16 @@ function fakeBluetoothDevice(
   const service = {
     getCharacteristic: vi.fn().mockResolvedValue(characteristic),
   };
+  // Like a real device, disconnecting fires `gattserverdisconnected` at
+  // whatever listeners are still registered (#525).
+  const listeners = new Set<EventListener>();
   const server = {
     connect: options?.connectFails
       ? vi.fn().mockRejectedValue(new Error('device out of range'))
       : vi.fn(),
-    disconnect: vi.fn(),
+    disconnect: vi.fn(() => {
+      for (const listener of [...listeners]) listener(new Event('gattserverdisconnected'));
+    }),
     getPrimaryService: options?.getPrimaryServiceFails
       ? vi.fn().mockRejectedValue(new Error('service discovery failed'))
       : vi.fn().mockResolvedValue(service),
@@ -627,8 +632,12 @@ function fakeBluetoothDevice(
   return {
     id,
     gatt: server,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
+    addEventListener: vi.fn((type: string, listener: EventListener) => {
+      if (type === 'gattserverdisconnected') listeners.add(listener);
+    }),
+    removeEventListener: vi.fn((type: string, listener: EventListener) => {
+      if (type === 'gattserverdisconnected') listeners.delete(listener);
+    }),
   } as unknown as BluetoothDevice;
 }
 
@@ -684,14 +693,9 @@ describe('createWebBluetoothTransport() connection-lifecycle cleanup (#219)', ()
     });
     const transport = createWebBluetoothTransport();
     await expect(transport.connect(onDisconnect)).rejects.toThrow();
-    const removeEventListener = device.removeEventListener as ReturnType<typeof vi.fn>;
-    expect(removeEventListener).toHaveBeenCalledWith('gattserverdisconnected', onDisconnect);
-    // Removed BEFORE gatt.disconnect() fires the event, not after.
-    const disconnect = (device.gatt as unknown as { disconnect: ReturnType<typeof vi.fn> })
-      .disconnect;
-    expect(removeEventListener.mock.invocationCallOrder[0]!).toBeLessThan(
-      disconnect.mock.invocationCallOrder[0]!,
-    );
+    // The fake fires gattserverdisconnected on disconnect; it must reach no one (#525).
+    expect(device.gatt?.disconnect).toHaveBeenCalled();
+    expect(onDisconnect).not.toHaveBeenCalled();
   });
 
   it('applies the same cleanup on the silent reconnect() path — resolves null, but never leaves the GATT link dangling', async () => {
@@ -717,14 +721,22 @@ describe('createWebBluetoothTransport() connection-lifecycle cleanup (#219)', ()
 
     connection.disconnect();
 
-    const removeEventListener = device.removeEventListener as ReturnType<typeof vi.fn>;
-    expect(removeEventListener).toHaveBeenCalledWith('gattserverdisconnected', onDisconnect);
-    const disconnect = (device.gatt as unknown as { disconnect: ReturnType<typeof vi.fn> })
-      .disconnect;
-    expect(disconnect).toHaveBeenCalled();
-    expect(removeEventListener.mock.invocationCallOrder[0]!).toBeLessThan(
-      disconnect.mock.invocationCallOrder[0]!,
-    );
+    // The fake fires gattserverdisconnected on disconnect; it must reach no one (#525).
+    expect(device.gatt?.disconnect).toHaveBeenCalled();
+    expect(onDisconnect).not.toHaveBeenCalled();
+  });
+
+  it('still reports a disconnect the box itself causes (#525)', async () => {
+    const device = fakeBluetoothDevice('device-1');
+    const onDisconnect = vi.fn();
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: { requestDevice: vi.fn().mockResolvedValue(device) } },
+      configurable: true,
+    });
+    const transport = createWebBluetoothTransport();
+    await transport.connect(onDisconnect);
+    device.gatt?.disconnect(); // stands in for the link dropping on its own
+    expect(onDisconnect).toHaveBeenCalledOnce();
   });
 });
 
