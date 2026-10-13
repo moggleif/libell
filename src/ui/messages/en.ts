@@ -178,6 +178,7 @@ export const en = {
   'sensorStatus.debug': 'Debug info',
   'sensorStatus.debug.intro':
     'Raw values straight from the box — for troubleshooting if something isn’t working.',
+  'sensorStatus.debug.state': 'Connection state: {value}',
   'sensorStatus.debug.deviceId': 'Device ID: {value}',
   'sensorStatus.debug.lastSample': 'Last sample: {value}',
   'sensorStatus.debug.age': '{s} s ago',

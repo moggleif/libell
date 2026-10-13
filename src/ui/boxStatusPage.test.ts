@@ -791,7 +791,7 @@ describe('pinned before the #416 split', () => {
     findCopy(page.element).click();
     const text = (writeText.mock.calls[0] as unknown as [string])[0];
     const lines = text.split('\n');
-    expect(lines[0]).toBe('Libell EasyLevel debug info');
+    expect(lines[0]).toBe('Libell EasyLevel · Debug info'); // screen's own label (#524)
     expect(lines[1]).toBe('Connection state: granted');
     expect(lines[2]).toBe('Temperature: 19.5°C');
     expect(lines[3]).toBe('Device ID: dev-1');

@@ -85,15 +85,37 @@ describe('the debug values', () => {
       statusBytes: new Uint8Array([255]),
     });
     expect(text.split('\n')).toEqual([
-      'Libell EasyLevel debug info',
+      'Libell EasyLevel · Debug info',
       'Connection state: granted',
       'Temperature: 19.5°C',
       'Device ID: Not available yet',
       'Last sample: —',
       'Raw accelerometer (x/y/z): 1, 2, 3',
-      'Firmware: 3',
+      'Firmware tier: 3',
       'Raw status bytes: ff',
     ]);
+  });
+
+  it('uses the same labels as the screen, in the chosen language (#524)', () => {
+    setLanguage('sv');
+    try {
+      const lines = debugSummaryText({
+        name: 'Xparkle',
+        state: 'granted',
+        temperatureCelsius: null,
+        deviceId: 'dev-1',
+        lastSampleAge: '—',
+        rawAccel: null,
+        firmwareLabel: '2',
+        statusBytes: null,
+      }).split('\n');
+      expect(lines).toContain(t('sensorStatus.debug.deviceId', { value: 'dev-1' }));
+      expect(lines).toContain(t('sensorStatus.debug.firmwareTier', { value: '2' }));
+      expect(lines).toContain(t('sensorStatus.debug.state', { value: 'granted' }));
+      expect(lines[0]).toBe(`Libell Xparkle · ${t('sensorStatus.debug')}`);
+    } finally {
+      setLanguage('en');
+    }
   });
 
   it('says the temperature is not available before the box has sent one (#402)', () => {
