@@ -32,8 +32,10 @@ export const fr: Messages = {
     'Les mesures du véhicule n’ont jamais été enregistrées — touchez pour ouvrir les Réglages',
   'lamp.calibrate': '⚠ Étalonner',
   'lamp.zero': '⚠ Mettre à zéro',
-  'lamp.calibrate.title': 'Le téléphone n’est pas étalonné — touchez pour ouvrir l’Étalonnage',
-  'lamp.zero.title': 'Le véhicule n’est pas mis à zéro — touchez pour ouvrir l’Étalonnage',
+  'lamp.calibrate.title':
+    'Le téléphone n’est pas étalonné — touchez pour ouvrir « Étalonner et mettre à zéro »',
+  'lamp.zero.title':
+    'Le véhicule n’est pas mis à zéro — touchez pour ouvrir « Étalonner et mettre à zéro »',
   'lamp.calibrate.title.sensor': 'Le boîtier n’est pas mis à zéro — touchez pour ouvrir le boîtier',
 
   'sensorStatus.connected': 'Boîtier capteur connecté',
@@ -45,7 +47,7 @@ export const fr: Messages = {
   'menu.title': 'Menu',
   'menu.close': 'Fermer le menu',
   'menu.settings': 'Réglages',
-  'menu.calibration': 'Étalonnage',
+  'menu.calibration': 'Étalonner et mettre à zéro',
   'menu.targets': 'Cibles',
   'menu.feedback': 'Commentaires',
   'menu.help': 'Aide',

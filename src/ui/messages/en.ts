@@ -37,8 +37,8 @@ export const en = {
   'lamp.setup.title': 'The vehicle measurements have never been saved — tap to open Settings',
   'lamp.calibrate': '⚠ Calibrate',
   'lamp.zero': '⚠ Zero',
-  'lamp.calibrate.title': 'The phone is not calibrated — tap to open Calibration',
-  'lamp.zero.title': 'The vehicle is not zeroed — tap to open Calibration',
+  'lamp.calibrate.title': 'The phone is not calibrated — tap to open “Calibrate and zero”',
+  'lamp.zero.title': 'The vehicle is not zeroed — tap to open “Calibrate and zero”',
   'lamp.calibrate.title.sensor': 'The box is not zeroed — tap to open the box',
 
   // Main-screen external-sensor indicator (#129): shown only while an
@@ -60,7 +60,7 @@ export const en = {
   'menu.title': 'Menu',
   'menu.close': 'Close menu',
   'menu.settings': 'Settings',
-  'menu.calibration': 'Calibration',
+  'menu.calibration': 'Calibrate and zero',
   'menu.targets': 'Targets',
   'menu.feedback': 'Feedback',
   'menu.help': 'Help',
