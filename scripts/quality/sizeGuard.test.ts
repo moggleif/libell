@@ -7,9 +7,14 @@ import baseline from './size-baseline.json' with { type: 'json' };
 /** Limits for new code (#475). Existing exceptions live in size-baseline.json. */
 const LIMITS = { maxFunctionLines: 50, maxFileLines: 400 };
 
-/** Production code; language dictionaries are data, not logic, and grow with every string. */
+/**
+ * Production code, the scripts and the browser test scripts (#518); language
+ * dictionaries are data, not logic, and grow with every string.
+ */
 const isMeasured = (path: string, isDir: boolean) =>
-  isDir ? path !== 'src/ui/messages' : path.endsWith('.ts') && !path.endsWith('.test.ts');
+  isDir
+    ? path !== 'src/ui/messages'
+    : (path.endsWith('.ts') && !path.endsWith('.test.ts')) || path.endsWith('.mjs');
 
 const fnLines = (n: number) => `function big() {\n${'  x();\n'.repeat(n - 2)}}\n`;
 
@@ -102,9 +107,17 @@ describe('checkSizes', () => {
   });
 });
 
-describe('the app source', () => {
-  it('keeps every function and file within the size limits (#475)', () => {
+describe('the app source and scripts', () => {
+  it('keeps every function and file within the size limits (#475, #518)', () => {
     const rules: SizeRules = { ...LIMITS, ...baseline };
-    expect(checkSizes(readSources('src', isMeasured), rules)).toEqual([]);
+    const files = [...readSources('src', isMeasured), ...readSources('scripts', isMeasured)];
+    expect(checkSizes(files, rules)).toEqual([]);
+  });
+
+  it('measures the browser test scripts, not the unit tests (#518)', () => {
+    const scripts = readSources('scripts', isMeasured).map((file) => file.path);
+    expect(scripts).toContain('scripts/flows-test.mjs');
+    expect(scripts).toContain('scripts/flows/harness.mjs');
+    expect(scripts).not.toContain('scripts/quality/sizeGuard.test.ts');
   });
 });
