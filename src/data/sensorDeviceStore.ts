@@ -13,7 +13,14 @@
  * reconnecting to the wrong one is not a recoverable mistake.
  */
 import type { SensorSource } from '../domain/settings';
-import { defaultStorage, type KeyValueStorage } from './keyValueStorage';
+import {
+  defaultStorage,
+  guarded,
+  migrateOnce,
+  removeItem,
+  writeItem,
+  type KeyValueStorage,
+} from './keyValueStorage';
 
 const DEVICE_KEY_PREFIX = 'libell.sensorDevice.';
 
@@ -32,12 +39,10 @@ export function loadRememberedDeviceId(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): string | null {
-  try {
+  return guarded(() => {
     const raw = storage?.getItem(deviceKey(source));
     return typeof raw === 'string' && raw.length > 0 ? raw : null;
-  } catch {
-    return null;
-  }
+  }, null);
 }
 
 export function saveRememberedDeviceId(
@@ -45,23 +50,16 @@ export function saveRememberedDeviceId(
   id: string,
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
-  try {
-    storage?.setItem(deviceKey(source), id);
-  } catch {
-    // Storage full or unavailable: the next open just has nothing to
-    // auto-reconnect to.
-  }
+  // Storage full or unavailable: the next open just has nothing to
+  // auto-reconnect to.
+  writeItem(storage, deviceKey(source), id);
 }
 
 export function clearRememberedDeviceId(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
-  try {
-    storage?.removeItem(deviceKey(source));
-  } catch {
-    // Nothing to do.
-  }
+  removeItem(storage, deviceKey(source));
 }
 
 /**
@@ -74,17 +72,11 @@ export function clearRememberedDeviceId(
 export function migrateLegacyRememberedDeviceId(
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
-  try {
-    if (storage === null) return;
-    if (storage.getItem(DEVICE_MIGRATED_KEY) !== null) return;
-    const legacy = storage.getItem(LEGACY_EASYLEVEL_DEVICE_KEY);
+  migrateOnce(storage, DEVICE_MIGRATED_KEY, (store) => {
+    const legacy = store.getItem(LEGACY_EASYLEVEL_DEVICE_KEY);
     const target = deviceKey('easylevel');
-    if (typeof legacy === 'string' && legacy.length > 0 && storage.getItem(target) === null) {
-      storage.setItem(target, legacy);
+    if (typeof legacy === 'string' && legacy.length > 0 && store.getItem(target) === null) {
+      store.setItem(target, legacy);
     }
-    storage.setItem(DEVICE_MIGRATED_KEY, '1');
-  } catch {
-    // The marker is written last, so a failure leaves the migration to be
-    // retried rather than half-done.
-  }
+  });
 }
