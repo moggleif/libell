@@ -120,6 +120,7 @@ export const fr: Messages = {
   'sensorStatus.debug': 'Infos de débogage',
   'sensorStatus.debug.intro':
     'Valeurs brutes directement du boîtier — pour le dépannage si quelque chose ne fonctionne pas.',
+  'sensorStatus.debug.state': 'État de la connexion : {value}',
   'sensorStatus.debug.deviceId': 'ID de l’appareil : {value}',
   'sensorStatus.debug.lastSample': 'Dernière mesure : {value}',
   'sensorStatus.debug.age': 'il y a {s} s',

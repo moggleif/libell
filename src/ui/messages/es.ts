@@ -117,6 +117,7 @@ export const es: Messages = {
   'sensorStatus.debug': 'Información de depuración',
   'sensorStatus.debug.intro':
     'Valores en bruto directamente de la caja: para resolver problemas si algo no funciona.',
+  'sensorStatus.debug.state': 'Estado de la conexión: {value}',
   'sensorStatus.debug.deviceId': 'ID del dispositivo: {value}',
   'sensorStatus.debug.lastSample': 'Última muestra: {value}',
   'sensorStatus.debug.age': 'hace {s} s',

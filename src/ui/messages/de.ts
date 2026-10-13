@@ -120,6 +120,7 @@ export const de: Messages = {
   'sensorStatus.debug': 'Debug-Infos',
   'sensorStatus.debug.intro':
     'Rohwerte direkt aus der Box — zur Fehlersuche, wenn etwas nicht funktioniert.',
+  'sensorStatus.debug.state': 'Verbindungsstatus: {value}',
   'sensorStatus.debug.deviceId': 'Geräte-ID: {value}',
   'sensorStatus.debug.lastSample': 'Letzte Messung: {value}',
   'sensorStatus.debug.age': 'vor {s} s',

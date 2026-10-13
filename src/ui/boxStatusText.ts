@@ -70,16 +70,20 @@ export interface DebugSnapshot {
   statusBytes: Uint8Array | null;
 }
 
+/** The copied debug text, with the same translated labels as the rows on
+ * screen (#524); the values stay raw, as a bug report needs them. */
 export function debugSummaryText(snapshot: DebugSnapshot): string {
   const notAvailable = t('sensorSource.detail.notAvailable');
   return [
-    `Libell ${snapshot.name} debug info`,
-    `Connection state: ${snapshot.state}`,
-    `Temperature: ${celsiusText(snapshot.temperatureCelsius)}`,
-    `Device ID: ${snapshot.deviceId ?? notAvailable}`,
-    `Last sample: ${snapshot.lastSampleAge}`,
-    `Raw accelerometer (x/y/z): ${rawAccelText(snapshot.rawAccel) ?? notAvailable}`,
-    `Firmware: ${snapshot.firmwareLabel ?? notAvailable}`,
-    `Raw status bytes: ${hexBytes(snapshot.statusBytes) ?? notAvailable}`,
+    `Libell ${snapshot.name} · ${t('sensorStatus.debug')}`,
+    t('sensorStatus.debug.state', { value: snapshot.state }),
+    temperatureText(snapshot.temperatureCelsius),
+    t('sensorStatus.debug.deviceId', { value: snapshot.deviceId ?? notAvailable }),
+    t('sensorStatus.debug.lastSample', { value: snapshot.lastSampleAge }),
+    t('sensorStatus.debug.rawAccel', { value: rawAccelText(snapshot.rawAccel) ?? notAvailable }),
+    t('sensorStatus.debug.firmwareTier', { value: snapshot.firmwareLabel ?? notAvailable }),
+    t('sensorStatus.debug.rawStatusBytes', {
+      value: hexBytes(snapshot.statusBytes) ?? notAvailable,
+    }),
   ].join('\n');
 }

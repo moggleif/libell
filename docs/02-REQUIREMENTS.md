@@ -1368,7 +1368,8 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   through the leveling math), the firmware tier decoded from the status
   characteristic (#123), and the status characteristic's raw bytes as hex — plus a
   "Copy debug info" button producing a plain-text block of all of the above, the
-  temperature included (#402), ready to paste into a bug report.
+  temperature included (#402), ready to paste into a bug report. Its lines carry the
+  same translated labels as the rows on screen, plus the raw connection state (#524).
 - **Given** the box is not the active source (the phone is)
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
   show — as is the box's setup checklist, while the state and reading lines above

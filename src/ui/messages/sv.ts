@@ -123,6 +123,7 @@ export const sv: Messages = {
   'sensorStatus.debug': 'Felsökningsinfo',
   'sensorStatus.debug.intro':
     'Råa värden direkt från boxen — för felsökning om något inte fungerar som det ska.',
+  'sensorStatus.debug.state': 'Anslutningsläge: {value}',
   'sensorStatus.debug.deviceId': 'Enhets-ID: {value}',
   'sensorStatus.debug.lastSample': 'Senaste mätvärde: {value}',
   'sensorStatus.debug.age': '{s} s sedan',
