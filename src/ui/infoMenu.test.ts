@@ -303,9 +303,7 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       ['targets', 'targets', t('help.open', { name: t('settings.tab.level') })],
     ])("the %s topic's button closes Help, then opens %s", async (id, target, label) => {
       const openTarget = vi.fn();
-      const info = createInfoPage(
-        makeOptions(vi.fn(), () => true, { openTarget, hasSensorPage: true }),
-      );
+      const info = createInfoPage(makeOptions(vi.fn(), () => true, { openTarget }));
       const button = document.createElement('button');
       info.attach(button);
       button.click();
@@ -318,12 +316,10 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       await vi.waitFor(() => expect(openTarget).toHaveBeenCalledWith(target));
     });
 
-    it('has no sensor button where no sensor page exists, but still explains the box', () => {
-      const info = createInfoPage(
-        makeOptions(vi.fn(), () => true, { openTarget: vi.fn(), hasSensorPage: false }),
-      );
+    it('always offers the sensor button, since every browser has a Sensorbox page (#507)', () => {
+      const info = createInfoPage(makeOptions(vi.fn(), () => true, { openTarget: vi.fn() }));
       const sensor = topic(info, 'sensor');
-      expect(sensor.querySelector('.help-topic__go')).toBeNull();
+      expect(sensor.querySelector('.help-topic__go')?.textContent).toBe(t('help.open.sensor'));
       expect(body(sensor).textContent).toContain(t('help.sensor.t'));
     });
 

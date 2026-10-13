@@ -60,6 +60,8 @@ export const fr: Messages = {
   'sensorSource.disconnect': 'Déconnecter',
   'sensorSource.status.connecting': 'Connexion…',
   'sensorSource.err.unsupported': 'Web Bluetooth n’est pas pris en charge par ce navigateur.',
+  'sensorSource.unsupported.browser':
+    'Pour connecter un boîtier capteur, ouvrez Libell dans Chrome ou Edge sur Android ou sur un ordinateur. Le capteur du téléphone fonctionne ici comme d’habitude.',
   'sensorSource.err.password':
     'Le boîtier {name} n’a pas accepté son mot de passe. Saisissez ci-dessous le code à quatre chiffres du boîtier et touchez Réessayer. Le code d’usine est 0000. Si vous ne connaissez pas le code, changez-le dans l’application Xparkle.',
   'sensorSource.err.failed': 'Impossible de se connecter au capteur {name}.',

@@ -767,8 +767,9 @@ URL and must keep working with no signal.
   tab (Classic: that ☰ section). Calibration with a sensor box in use opens the box's
   page instead (a box chosen in the wizard but not yet connected: the sensor list, to
   connect it, #365), and "Open the sensor box" goes where the top-right sensor icon goes — the
-  same routes as the lamp and the icon. Where the app has no sensor page at all (no Web
-  Bluetooth and not iOS), the Sensor box topic still explains but has no button.
+  same routes as the lamp and the icon. In a browser with no Web Bluetooth that is not
+  iOS, the button opens a Sensorbox page that says why no box can be connected here and
+  that Chrome or Edge on Android or a computer can (#507).
 - **Given** "If something is wrong"
 - **Then** it ends in "Write a report", which switches to the Feedback tab (R12).
 - **Given** what the About tab already says (the pitch, works offline) and what a

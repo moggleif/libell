@@ -65,7 +65,7 @@ export function mountPages(core: Core, screen: Screen): Pages {
     activeSource: () => core.sensor().getSource(),
     isBoxPending: () => core.boxPending.isPending(),
   });
-  const infoPage = mountInfoPage(onboarding, sensorPages, navigation);
+  const infoPage = mountInfoPage(onboarding, navigation);
 
   screen.settingsSurface = settingsSurface;
   screen.navigation = navigation;
@@ -85,15 +85,10 @@ function createAdoption(core: Core, screen: Screen) {
 }
 
 /** The "?" page, opened from the help button. */
-function mountInfoPage(
-  onboarding: OnboardingLauncher,
-  sensorPages: SensorPages,
-  navigation: Navigation,
-): InfoPage {
+function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): InfoPage {
   const infoPage = createInfoPage({
     openOnboarding: onboarding.open,
     hasDoneOnboarding,
-    hasSensorPage: sensorPages.sensorPage !== null,
     openTarget: navigation.openHelpTarget,
   });
   document.body.append(infoPage.element);

@@ -62,6 +62,8 @@ export const sv: Messages = {
   'sensorSource.disconnect': 'Koppla från',
   'sensorSource.status.connecting': 'Ansluter…',
   'sensorSource.err.unsupported': 'Den här webbläsaren stöder inte Web Bluetooth.',
+  'sensorSource.unsupported.browser':
+    'För att ansluta en Sensorbox, öppna Libell i Chrome eller Edge på Android eller en dator. Telefonens egen sensor fungerar här som vanligt.',
   'sensorSource.err.password':
     '{name}-boxen godtog inte lösenordet. Skriv boxens fyrsiffriga kod nedan och tryck Försök igen. Fabrikskoden är 0000. Kan du inte koden byter du den i Xparkle-appen.',
   'sensorSource.err.failed': 'Kunde inte ansluta till {name}-sensorn.',

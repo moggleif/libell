@@ -64,7 +64,7 @@ function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen
     isPaused: () =>
       pages.settingsSurface.isOpen() ||
       pages.infoPage.isOpen() ||
-      (sensorPage?.isOpen() ?? false) ||
+      sensorPage.isOpen() ||
       pages.onboarding.isOpen(),
     refreshStatus() {
       screen.sensorStatus.refresh();

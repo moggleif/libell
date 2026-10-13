@@ -85,6 +85,8 @@ export const en = {
   // distinct from the plain "connected" text above so the settings page
   // never claims a live link that no longer exists.
   'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
+  'sensorSource.unsupported.browser':
+    'To connect a sensor box, open Libell in Chrome or Edge on Android or on a computer. The phone’s own sensor works here as usual.',
   // Some boxes ask for a password before they will talk (#272). Kept
   // separate from the generic failure so the user knows the hardware is
   // fine and only the password is wrong. The code is typed in Libell; only

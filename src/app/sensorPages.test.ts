@@ -6,6 +6,7 @@ const fakes = vi.hoisted(() => ({
   ios: false,
   list: null as unknown as { element: HTMLElement; statusElements: HTMLElement[] },
   guide: null as unknown as { element: HTMLElement },
+  unsupported: null as unknown as { element: HTMLElement },
   optionsFor: null as unknown,
 }));
 vi.mock('../sensor/externalSensors', () => ({
@@ -14,6 +15,9 @@ vi.mock('../sensor/externalSensors', () => ({
 }));
 vi.mock('../ui/platform', () => ({ isIos: () => fakes.ios }));
 vi.mock('../ui/iosSensorGuidePage', () => ({ createIosSensorGuidePage: () => fakes.guide }));
+vi.mock('../ui/unsupportedSensorPage', () => ({
+  createUnsupportedSensorPage: () => fakes.unsupported,
+}));
 vi.mock('../ui/sensorPage', () => ({
   createSensorPage: (_sensors: unknown, optionsFor: unknown) => {
     fakes.optionsFor = optionsFor;
@@ -31,6 +35,7 @@ describe('mountSensorPages', () => {
     const el = (name: string) => Object.assign(document.createElement('div'), { id: name });
     fakes.list = { element: el('list'), statusElements: [el('box-a'), el('box-b')] };
     fakes.guide = { element: el('guide') };
+    fakes.unsupported = { element: el('unsupported') };
   });
 
   it('mounts the list, then each box page on top of it', () => {
@@ -53,10 +58,15 @@ describe('mountSensorPages', () => {
     expect([...document.body.children].map((e) => e.id)).toEqual(['guide']);
   });
 
-  it('mounts nothing elsewhere', () => {
+  it('mounts a page that explains the missing Web Bluetooth elsewhere (#507)', () => {
     fakes.available = false;
     const pages = mountSensorPages(vi.fn());
-    expect(pages).toMatchObject({ supported: false, showIosGuide: false, sensorPage: null });
-    expect(document.body.children).toHaveLength(0);
+    expect(pages).toMatchObject({
+      supported: false,
+      showIosGuide: false,
+      externalSensorPage: null,
+    });
+    expect(pages.sensorPage).toBe(fakes.unsupported);
+    expect([...document.body.children].map((e) => e.id)).toEqual(['unsupported']);
   });
 });

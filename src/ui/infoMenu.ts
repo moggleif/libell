@@ -29,8 +29,6 @@ export interface InfoPageOptions {
   hasDoneOnboarding(): boolean;
   /** Called after this page has closed. Without it, topics show no buttons. */
   openTarget?(target: HelpTarget): void;
-  /** False where the app has no sensor page (no Web Bluetooth and not iOS). */
-  hasSensorPage?: boolean;
 }
 
 export interface InfoPage {
@@ -256,9 +254,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
       if (target === 'feedback') tabs.select('feedback');
       else page.close(() => options.openTarget?.(target));
     },
-    (target) =>
-      target === 'feedback' ||
-      (options.openTarget !== undefined && (target !== 'sensor' || options.hasSensorPage === true)),
+    (target) => target === 'feedback' || options.openTarget !== undefined,
   );
   resetHelp = helpPanel.reset;
   tabs.add('help', helpPanel.element);
