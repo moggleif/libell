@@ -110,7 +110,7 @@ describe('createSimulatedEasyLevelTransport (#220) — through the real sensor',
     delete (globalThis as { location?: unknown }).location;
   });
 
-  it('start() succeeds with no navigator.bluetooth while ?easylevel-sim is in the URL, and gravity flows calibrated', async () => {
+  it('connects with no navigator.bluetooth while ?easylevel-sim is in the URL, and gravity flows calibrated', async () => {
     vi.useFakeTimers();
     simulationEnvironment();
     const sensor = createEasyLevelSensor(createSimulatedEasyLevelTransport());
@@ -128,7 +128,7 @@ describe('createSimulatedEasyLevelTransport (#220) — through the real sensor',
     expect(sensor.getStatusBytes()?.byteLength).toBe(20);
   });
 
-  it('reconnect() succeeds for the remembered simulated id and resolves null-equivalent (disconnected) for any other id', async () => {
+  it('reconnects silently to the remembered simulated id, and reports disconnected for any other id', async () => {
     vi.useFakeTimers();
     simulationEnvironment();
     const transport = createSimulatedEasyLevelTransport();
@@ -140,7 +140,7 @@ describe('createSimulatedEasyLevelTransport (#220) — through the real sensor',
     expect(await other.reconnect('some-real-box-id')).toBe('disconnected');
   });
 
-  it('disconnect() stops the packet stream', async () => {
+  it('stops the packet stream on Disconnect', async () => {
     vi.useFakeTimers();
     simulationEnvironment();
     const sensor = createEasyLevelSensor(createSimulatedEasyLevelTransport());

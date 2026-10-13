@@ -73,7 +73,7 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     expect(page.isOpen()).toBe(false);
   });
 
-  it('openCalibration() jumps to the Kalibrering tab of the same live form instance', () => {
+  it('the calibration route opens the same live form on its calibration tab', () => {
     const page = createSettingsPage(makeOptions());
     page.openCalibration();
     expect(page.isOpen()).toBe(true);
@@ -85,7 +85,7 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     );
   });
 
-  it('openTargets() jumps to the Targets tab of the same live form instance', () => {
+  it('the targets route opens the same live form on its Targets tab', () => {
     const page = createSettingsPage(makeOptions());
     page.openTargets();
     expect(page.isOpen()).toBe(true);
@@ -95,7 +95,7 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     expect(page.element.textContent).toContain(t('targets.normal'));
   });
 
-  it('open() opens on whichever tab was last active, without forcing a change', () => {
+  it('reopens on the tab that was last active, without switching', () => {
     const page = createSettingsPage(makeOptions());
     page.openCalibration();
     page.element.querySelector<HTMLButtonElement>('.menu-page__back')!.click();

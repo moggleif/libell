@@ -156,7 +156,7 @@ describe('createSensorPage', () => {
       expect(page.statusElements[0]!.textContent).toContain('Zero the vehicle');
     });
 
-    it('refreshLive() is a no-op while the status page is closed', () => {
+    it('leaves live values alone while the status page is closed', () => {
       const getHealth = vi.fn(() => null);
       const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () => makeOptions({ getHealth }));
       getHealth.mockClear();
@@ -164,7 +164,7 @@ describe('createSensorPage', () => {
       expect(getHealth).not.toHaveBeenCalled();
     });
 
-    it('refreshLive() re-reads live values once the status page is open', () => {
+    it('updates live values while the status page is open', () => {
       let battery = 80;
       const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () =>
         makeOptions({
