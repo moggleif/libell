@@ -4,7 +4,7 @@
  * there is no raw box data to show.
  */
 import { MAX_EASYLEVEL_CONNECT_DELAY_MS } from '../domain/sensorDeviceSettings';
-import type { ExternalSensorHealth } from '../sensor/externalSensors';
+import type { BoxHealth } from '../sensor/boxes';
 import type { BoxStatusOptions } from './boxStatusPage';
 import {
   ageText,
@@ -20,7 +20,7 @@ import { showToast } from './toast';
 export interface BoxDebugDisclosure {
   element: HTMLElement;
   /** Cheap enough to call every frame. */
-  refresh(isActive: boolean, health: ExternalSensorHealth | null): void;
+  refresh(isActive: boolean, health: BoxHealth | null): void;
   /** Once per page open, never per frame; see `createConnectDelayControls`. */
   syncConnectDelay(): void;
 }
@@ -109,7 +109,7 @@ function createCopyButton(options: BoxStatusOptions): HTMLButtonElement {
 function refreshDebugRows(
   options: BoxStatusOptions,
   rows: DebugRows,
-  health: ExternalSensorHealth | null,
+  health: BoxHealth | null,
 ): void {
   const notAvailable = t('sensorSource.detail.notAvailable');
   rows.deviceId.textContent = t('sensorStatus.debug.deviceId', {
@@ -154,7 +154,7 @@ export function createBoxDebugDisclosure(options: BoxStatusOptions): BoxDebugDis
   if (capabilities.debugBytes) element.append(rows.rawStatusBytes);
   element.append(createCopyButton(options), ...connectDelay.elements);
 
-  function refresh(isActive: boolean, health: ExternalSensorHealth | null): void {
+  function refresh(isActive: boolean, health: BoxHealth | null): void {
     rows.temperature.textContent = temperatureText(health?.temperatureCelsius);
     element.hidden = !isActive;
     if (isActive) refreshDebugRows(options, rows, health);

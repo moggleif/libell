@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS,
-  isExternalSensorAutoRetryDue,
+  isBoxAutoRetryDue,
   isSensorUnavailable,
 } from './sensorFallback';
 import type { SensorState } from './orientation';
@@ -37,23 +37,19 @@ describe('isSensorUnavailable (#134)', () => {
   });
 });
 
-describe('isExternalSensorAutoRetryDue (#211)', () => {
+describe('isBoxAutoRetryDue (#211)', () => {
   it('is due immediately when no attempt has ever been made', () => {
-    expect(isExternalSensorAutoRetryDue(null, 0)).toBe(true);
+    expect(isBoxAutoRetryDue(null, 0)).toBe(true);
   });
 
   it('is not due before the interval has passed since the last attempt', () => {
-    expect(
-      isExternalSensorAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS - 1),
-    ).toBe(false);
+    expect(isBoxAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS - 1)).toBe(false);
   });
 
   it('is due exactly at the interval boundary, and past it', () => {
-    expect(isExternalSensorAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS)).toBe(
+    expect(isBoxAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS)).toBe(true);
+    expect(isBoxAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS + 5000)).toBe(
       true,
     );
-    expect(
-      isExternalSensorAutoRetryDue(1000, 1000 + EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS + 5000),
-    ).toBe(true);
   });
 });

@@ -6,7 +6,7 @@
 import { applyVehicleGeometry, decodeVehicleGeometry } from '../domain/vehicleShare';
 import { t } from '../ui/i18n';
 import type { IncomingVehicleSetupOptions } from '../ui/incomingVehicleSetup';
-import type { SettingsAccess } from './externalSensorWiring';
+import type { SettingsAccess } from './boxWiring';
 
 export interface IncomingSetupDeps {
   settings: SettingsAccess;

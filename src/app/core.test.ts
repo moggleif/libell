@@ -85,7 +85,7 @@ describe('createCore wiring a box in and out (#513)', () => {
   it('follows a switch to the simulated box and back to the phone', async () => {
     const screen = fakeScreen();
     const core = createCore(screen);
-    expect(await core.externalSensors.connect('easylevel')).toBe('granted');
+    expect(await core.boxes.connect('easylevel')).toBe('granted');
     expect(core.sensor().getSource()).toBe('easylevel');
     expect(core.settings.get().sensorSource).toBe('easylevel');
     expect(screen.levelScreen.show).toHaveBeenCalled();
@@ -93,14 +93,14 @@ describe('createCore wiring a box in and out (#513)', () => {
     expect(screen.lamps.refresh).toHaveBeenCalled();
     // The status chip follows a retry; the first connect leaves it to the frame loop.
     expect(screen.sensorStatus.refresh).not.toHaveBeenCalled();
-    await core.externalSensors.retry();
+    await core.boxes.retry();
     expect(screen.sensorStatus.refresh).toHaveBeenCalledOnce();
 
-    core.externalSensors.usePhoneSensor();
+    core.boxes.usePhoneSensor();
     expect(core.sensor().getSource()).toBe('phone');
     expect(core.settings.get().sensorSource).toBe('phone');
     expect(screen.settingsSurface.followSource).toHaveBeenLastCalledWith('phone');
-    core.externalSensors.disconnect();
+    core.boxes.disconnect();
   });
 
   it('refreshes the lamps when a box zero is forgotten or a mounting is learned', () => {

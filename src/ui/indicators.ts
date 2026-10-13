@@ -25,7 +25,7 @@ export interface Indicators {
     settingsSaved: boolean;
     calibrationLamp: CalibrationLamp;
     /** The calibration lamp is then about the sensor, never "the phone". */
-    externalSensor?: boolean;
+    usesBox?: boolean;
   }): void;
 }
 
@@ -76,12 +76,12 @@ function lamp(label: string, title: string, onClick: () => void): HTMLButtonElem
 
 function labelCalibrationLamp(
   calibrationLamp: HTMLButtonElement,
-  { calibrationLamp: missing, externalSensor = false }: LampState,
+  { calibrationLamp: missing, usesBox = false }: LampState,
 ): void {
   // A box only ever lacks its zero.
-  const step = externalSensor ? 'zero' : (missing ?? 'calibrate');
+  const step = usesBox ? 'zero' : (missing ?? 'calibrate');
   const calibrationTitle = t(
-    externalSensor
+    usesBox
       ? 'lamp.calibrate.title.sensor'
       : step === 'zero'
         ? 'lamp.zero.title'

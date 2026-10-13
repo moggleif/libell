@@ -17,7 +17,7 @@ describe('indicatorState', () => {
     expect(indicatorState(phone)).toEqual({
       settingsSaved: true,
       calibrationLamp: null,
-      externalSensor: false,
+      usesBox: false,
     });
   });
 
@@ -37,7 +37,7 @@ describe('indicatorState', () => {
     expect(indicatorState(box)).toEqual({
       settingsSaved: true,
       calibrationLamp: 'zero',
-      externalSensor: true,
+      usesBox: true,
     });
     expect(indicatorState({ ...box, phoneCalibrated: true }).calibrationLamp).toBe('zero');
   });
@@ -50,7 +50,7 @@ describe('indicatorState', () => {
     expect(indicatorState({ ...phone, boxPending: true })).toEqual({
       settingsSaved: true,
       calibrationLamp: 'zero',
-      externalSensor: true,
+      usesBox: true,
     });
   });
 
@@ -58,7 +58,7 @@ describe('indicatorState', () => {
     expect(indicatorState({ ...box, boxPending: true, boxZeroed: true })).toEqual({
       settingsSaved: true,
       calibrationLamp: null,
-      externalSensor: true,
+      usesBox: true,
     });
   });
 
@@ -73,7 +73,7 @@ describe('indicatorState', () => {
     expect(indicatorState(fresh)).toEqual({
       settingsSaved: true,
       calibrationLamp: null,
-      externalSensor: false,
+      usesBox: false,
     });
     expect(indicatorState({ ...box, demo: true }).calibrationLamp).toBeNull();
   });

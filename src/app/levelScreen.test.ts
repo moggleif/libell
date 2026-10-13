@@ -129,7 +129,7 @@ describe('buildLevelScreen', () => {
       sensor: () => sensor,
       isPaused: () => false,
       refreshStatus: () => {},
-      externalSensors: { canRetrySilently: () => true, maybeAutoRetry: () => {} },
+      boxes: { canRetrySilently: () => true, maybeAutoRetry: () => {} },
       hasSensorPage: false,
       isLandscape: () => false,
       isVisible: () => true,

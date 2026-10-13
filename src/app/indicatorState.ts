@@ -25,7 +25,7 @@ export function indicatorState(inputs: IndicatorInputs): IndicatorState {
   return {
     settingsSaved: inputs.demo || inputs.measurementsSaved,
     calibrationLamp: inputs.demo ? null : calibrationLamp(inputs, awaitingBox),
-    externalSensor: !inputs.phoneActive || awaitingBox,
+    usesBox: !inputs.phoneActive || awaitingBox,
   };
 }
 

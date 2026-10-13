@@ -35,11 +35,11 @@ function createParts(options: CalibrationOptions, modern: boolean) {
     disconnect: t('sensorSource.disconnect'),
   });
   element.append(heading, intro, zeroButton, status, anyway, phoneHidden);
-  if (options.openExternalSensor) {
+  if (options.openBoxPage) {
     const openBox = createElement('button', 'link-button');
     openBox.type = 'button';
     openBox.textContent = t('pose.openSensorPage');
-    openBox.addEventListener('click', () => options.openExternalSensor?.());
+    openBox.addEventListener('click', () => options.openBoxPage?.());
     element.append(openBox);
   }
   return { element, heading, zeroButton, status, anyway };
@@ -52,7 +52,7 @@ export function createExternalCalibration(
   const { element, heading, zeroButton, status, anyway } = createParts(options, modern);
 
   function refresh(message?: string): void {
-    const external = options.getExternalSensor?.() ?? null;
+    const external = options.getBox?.() ?? null;
     element.hidden = external === null;
     anyway.hidden = true;
     status.classList.remove('menu__text--warning');
@@ -70,8 +70,8 @@ export function createExternalCalibration(
   }
 
   function zero(goAhead: boolean): void {
-    const name = options.getExternalSensor?.()?.name ?? '';
-    const result = options.calibrateExternalSensor?.(goAhead) ?? null;
+    const name = options.getBox?.()?.name ?? '';
+    const result = options.calibrateBox?.(goAhead) ?? null;
     if (!(result instanceof Promise)) return show(result, name);
     zeroButton.disabled = true;
     refresh(t('calibration.external.working'));

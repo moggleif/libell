@@ -5,7 +5,7 @@
  * ever imports a protocol or narrows on a box.
  *
  * The lifecycle itself (connect, reconnect, fallback) is
- * `sensor/externalSensorController.ts`; this module only supplies what it
+ * `sensor/boxController.ts`; this module only supplies what it
  * and the pages ask for, one branch per source.
  */
 import { tiltFromGravity } from '../domain/leveling';
@@ -33,12 +33,12 @@ import {
   easyLevelSimulationMode,
   isRememberedEasyLevelDeviceUsable,
 } from '../sensor/easyLevelSimulator';
-import { externalSensorById, type ExternalSensorHealth } from '../sensor/externalSensors';
+import { boxById, type BoxHealth } from '../sensor/boxes';
 import { createXparkleSensor, type XparkleSensor } from '../sensor/xparkleSensor';
 import { createXparkleTransport } from '../sensor/xparkleTransport';
 import { isRememberedXparkleDeviceUsable, xparkleSimulationMode } from '../sensor/xparkleSimulator';
 import type { BoxPasswordOptions } from '../ui/boxPasswordBlock';
-import type { ExternalSensorCalibrationState } from '../ui/calibrationSection';
+import type { BoxCalibrationState } from '../ui/calibrationSection';
 import type { LearnMountingOptions } from '../ui/learnMountingSection';
 import type { InstallOffsets } from './installOffsets';
 
@@ -46,12 +46,12 @@ const RAD_TO_DEG = 180 / Math.PI;
 
 /**
  * Every adapter this build can construct. A union rather than the bare
- * `ExternalSensor` so the mappers below can reach each one's own extras
+ * `Box` so the mappers below can reach each one's own extras
  * after narrowing on the source asked for — the casts are safe because
- * `createExternalSensor` is the only thing that builds these, one branch
+ * `createBox` is the only thing that builds these, one branch
  * per source.
  */
-export type LibellExternalSensor = EasyLevelSensor | XparkleSensor;
+export type LibellBox = EasyLevelSensor | XparkleSensor;
 
 /** The live settings, read and replaced (and persisted) by the owner. */
 export interface SettingsAccess {
@@ -62,7 +62,7 @@ export interface SettingsAccess {
 export interface BoxWiring {
   settings: SettingsAccess;
   /** The box's adapter if one was ever built, connected or not. */
-  getSensor(source: SensorSource): LibellExternalSensor | null;
+  getSensor(source: SensorSource): LibellBox | null;
   /** A stored mounting changes what "level" reads as: refresh the lamps. */
   onMountingChanged(): void;
 }
@@ -73,10 +73,7 @@ export interface BoxWiring {
  * learned mapping and a typed password all take effect on the very next
  * attempt or reading without recreating anything.
  */
-export function createExternalSensor(
-  source: SensorSource,
-  settings: () => LevelSettings,
-): LibellExternalSensor | null {
+export function createBox(source: SensorSource, settings: () => LevelSettings): LibellBox | null {
   if (source === 'xparkle') {
     return createXparkleSensor(createXparkleTransport(), {
       getAxisMapping: () => xparkleSettings(settings()).axisMapping,
@@ -127,17 +124,14 @@ export function hasPersistentDeviceAccess(): boolean {
  * reads as "nothing has arrived yet"; a field the box does not have at all
  * is excluded by its descriptor's capabilities instead, so no row is drawn.
  */
-export function healthOf(
-  source: SensorSource,
-  sensor: LibellExternalSensor | null,
-): ExternalSensorHealth | null {
+export function healthOf(source: SensorSource, sensor: LibellBox | null): BoxHealth | null {
   if (!sensor) return null;
   if (source === 'easylevel') return easyLevelHealth(sensor as EasyLevelSensor);
   if (source === 'xparkle') return xparkleHealth(sensor as XparkleSensor);
   return null;
 }
 
-function easyLevelHealth(box: EasyLevelSensor): ExternalSensorHealth | null {
+function easyLevelHealth(box: EasyLevelSensor): BoxHealth | null {
   const status = box.getStatus();
   if (!status) return null;
   return {
@@ -149,7 +143,7 @@ function easyLevelHealth(box: EasyLevelSensor): ExternalSensorHealth | null {
 
 /** This box reports battery and nothing else; its descriptor says so, so
  * no temperature or firmware row is drawn to be left empty. */
-function xparkleHealth(box: XparkleSensor): ExternalSensorHealth | null {
+function xparkleHealth(box: XparkleSensor): BoxHealth | null {
   const reading = box.getReading();
   if (!reading) return null;
   return {
@@ -276,8 +270,8 @@ export function passwordFor(
 export function externalCalibrationStateFor(
   source: SensorSource,
   offsets: InstallOffsets,
-): ExternalSensorCalibrationState | null {
-  const descriptor = externalSensorById(source);
+): BoxCalibrationState | null {
+  const descriptor = boxById(source);
   if (!descriptor?.capabilities.installCalibration) return null;
   return {
     name: descriptor.displayName,

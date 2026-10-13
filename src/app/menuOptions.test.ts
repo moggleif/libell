@@ -4,7 +4,7 @@ import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { OrientationSensor } from '../sensor/orientation';
 import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
-import type { LibellExternalSensor } from './externalSensorWiring';
+import type { LibellBox } from './boxWiring';
 import type { MenuOptionDeps } from './menuOptionParts';
 import {
   boxPageOptions,
@@ -25,9 +25,9 @@ function setup(overrides: Partial<MenuOptionsDeps> = {}, easyLevel: unknown = nu
     boxZero: {},
     installOffsets: {},
     targets: { activeName: () => 'Ferry', presets: () => [] },
-    externalSensors: {
+    boxes: {
       getSensor: (source: string) =>
-        source === 'easylevel' ? (easyLevel as LibellExternalSensor | null) : null,
+        source === 'easylevel' ? (easyLevel as LibellBox | null) : null,
     },
     boxWiring: {
       settings: { get: () => settings, set: (next: LevelSettings) => (settings = next) },
@@ -42,7 +42,7 @@ function setup(overrides: Partial<MenuOptionsDeps> = {}, easyLevel: unknown = nu
     hasStoredMeasurements: () => false,
     onSettingsSaved: vi.fn(),
     openOnboarding: vi.fn(),
-    openExternalSensor: vi.fn(),
+    openBoxPage: vi.fn(),
     effectiveCalibration: () => null,
     shareVehicleSetup: vi.fn(),
     ...overrides,
@@ -82,11 +82,11 @@ describe('buildMenuOptions', () => {
     const { options, deps, settings } = setup();
     options.onSettingsSaved(settings());
     options.openOnboarding();
-    options.openExternalSensor();
+    options.openBoxPage();
     options.onShareVehicleSetup(settings());
     expect(deps.onSettingsSaved).toHaveBeenCalledWith(settings());
     expect(deps.openOnboarding).toHaveBeenCalledTimes(1);
-    expect(deps.openExternalSensor).toHaveBeenCalledTimes(1);
+    expect(deps.openBoxPage).toHaveBeenCalledTimes(1);
     expect(deps.shareVehicleSetup).toHaveBeenCalledWith(settings());
   });
 

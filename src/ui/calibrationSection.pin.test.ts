@@ -83,15 +83,15 @@ function makeHost(appearance: 'classic' | 'modern', withBox: boolean): Host {
     ...(withBox
       ? {
           isPhoneActive: () => host.phoneActive,
-          getExternalSensor: () => host.box,
-          calibrateExternalSensor: (anyway?: boolean) => {
+          getBox: () => host.box,
+          calibrateBox: (anyway?: boolean) => {
             const result = host.nextBox;
             if (result instanceof Promise) return result;
             const answer = capture(result, anyway);
             if (answer === null && host.box) host.box.offset = { rollDeg: 0.1, pitchDeg: 0.2 };
             return answer;
           },
-          openExternalSensor: () => {},
+          openBoxPage: () => {},
         }
       : {}),
   };

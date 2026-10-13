@@ -4,7 +4,7 @@ import { createSensorPage } from './sensorPage';
 import type { SensorSourceOptions } from './sensorSourceSection';
 import type { BoxStatusOptions } from './boxStatusPage';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import type { BoxDescriptor } from '../sensor/boxes';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
@@ -190,7 +190,7 @@ describe('createSensorPage', () => {
 
 /** A second, differently-shaped box: no temperature, no firmware row, no
  * mounting picker, no debug bytes — the shape the Xparkle RVS01 has. */
-const SECOND_BOX: ExternalSensorDescriptor = {
+const SECOND_BOX: BoxDescriptor = {
   id: 'phone' as never,
   displayName: 'Second Box',
   isAvailable: () => true,

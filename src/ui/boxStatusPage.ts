@@ -5,9 +5,9 @@
 import type { SensorSource } from '../domain/settings';
 import type { Calibration } from '../domain/calibration';
 import type { GravityVector } from '../domain/leveling';
-import { isLowBattery, type ExternalSensorHealth } from '../sensor/externalSensors';
+import { isLowBattery, type BoxHealth } from '../sensor/boxes';
 import type { SensorState } from '../sensor/orientation';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import type { BoxDescriptor } from '../sensor/boxes';
 import { CHROME_FLAGS_ADDRESS, offersSilentReconnectTip } from '../sensor/silentReconnect';
 import { createBoxDebugDisclosure, type BoxDebugDisclosure } from './boxDebugDisclosure';
 import {
@@ -23,12 +23,12 @@ import { t } from './i18n';
 import { showToast } from './toast';
 
 export interface BoxStatusOptions {
-  sensor: ExternalSensorDescriptor;
+  sensor: BoxDescriptor;
   getSensorSource(): SensorSource;
   getSensorState(): SensorState;
   /** Null before anything has arrived. Which fields are rendered is decided
    * by `sensor.capabilities`, not by the value. */
-  getHealth(): ExternalSensorHealth | null;
+  getHealth(): BoxHealth | null;
   /** The same effective calibration the leveling math uses; null before the
    * first sample. */
   getCalibratedTilt(): Calibration | null;

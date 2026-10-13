@@ -21,7 +21,7 @@ function setup(
   const menu = { open: vi.fn((section: string) => void calls.push(`menu:${section}`)) };
   const deps: NavigationDeps = {
     settings: appearance === 'modern' ? { settingsPage } : { menu },
-    externalSensorPage:
+    boxListPage:
       options.boxPages === false
         ? null
         : { openSource: (s: SensorSource) => void calls.push(`box:${s}`) },

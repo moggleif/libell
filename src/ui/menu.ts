@@ -14,7 +14,7 @@
 import type { Calibration, CaptureResult } from '../domain/calibration';
 import type { LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
-import type { ExternalSensorHealth } from '../sensor/externalSensors';
+import type { BoxHealth } from '../sensor/boxes';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm } from './settingsPanel';
 import type { SettingsFormElement } from './settingsLayout';
@@ -70,7 +70,7 @@ export interface MenuOptions {
   getSensorState(): SensorState;
   connectSensor(): Promise<SensorState>;
   disconnectSensor(): void;
-  getHealth(): ExternalSensorHealth | null;
+  getHealth(): BoxHealth | null;
   /** The box's installation offset (ADR 0014). Unused by this menu. */
   getInstallCalibration(): Calibration | null;
   calibrateInstall(anyway?: boolean): CaptureResult | Promise<CaptureResult>;

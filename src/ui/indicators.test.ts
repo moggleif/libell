@@ -44,7 +44,7 @@ describe('createIndicators', () => {
 
   it('names the sensor, not the phone, while an external sensor is what lacks calibration', () => {
     const indicators = createIndicators(vi.fn());
-    indicators.update({ settingsSaved: true, calibrationLamp: 'zero', externalSensor: true });
+    indicators.update({ settingsSaved: true, calibrationLamp: 'zero', usesBox: true });
     const [, calibrationLamp] =
       indicators.element.querySelectorAll<HTMLButtonElement>('.indicators__lamp');
     expect(calibrationLamp!.title).toBe(t('lamp.calibrate.title.sensor'));
@@ -58,7 +58,7 @@ describe('createIndicators', () => {
   // the lamp says so in the box page's own word.
   it('reads "Zero" while an external sensor lacks its zero, "Calibrate" for the phone', () => {
     const indicators = createIndicators(vi.fn());
-    indicators.update({ settingsSaved: true, calibrationLamp: 'zero', externalSensor: true });
+    indicators.update({ settingsSaved: true, calibrationLamp: 'zero', usesBox: true });
     const [, calibrationLamp] =
       indicators.element.querySelectorAll<HTMLButtonElement>('.indicators__lamp');
     expect(calibrationLamp!.textContent).toBe(t('lamp.zero'));

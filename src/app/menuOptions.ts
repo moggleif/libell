@@ -8,8 +8,8 @@ import type { Calibration } from '../domain/calibration';
 import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
-import { healthOf, withEasyLevelConnectDelay } from './externalSensorWiring';
+import type { BoxDescriptor } from '../sensor/boxes';
+import { healthOf, withEasyLevelConnectDelay } from './boxWiring';
 import {
   boxConnectionOptions,
   boxSetupOptions,
@@ -46,7 +46,7 @@ export interface MenuOptionsDeps {
   hasStoredMeasurements: () => boolean;
   onSettingsSaved(next: LevelSettings): void;
   openOnboarding(): void;
-  openExternalSensor(): void;
+  openBoxPage(): void;
   effectiveCalibration(): Calibration | null;
   shareVehicleSetup(current: LevelSettings): void;
 }
@@ -63,15 +63,15 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
     hasSavedSettings: () => deps.demo || deps.hasStoredMeasurements(),
     onSettingsSaved: (next: LevelSettings) => deps.onSettingsSaved(next),
     ...sharedOptions(parts),
-    openExternalSensor: deps.openExternalSensor,
+    openBoxPage: deps.openBoxPage,
     ...targetOptions(parts.targets),
     getCalibratedTilt: () => calibratedTilt(parts.activeSensor(), deps.effectiveCalibration()),
     getVehicleType: () => settings().vehicleType,
     getActiveTargetName: () => parts.targets.activeName(),
-    getHealth: () => healthOf('easylevel', parts.externalSensors.getSensor('easylevel')),
+    getHealth: () => healthOf('easylevel', parts.boxes.getSensor('easylevel')),
     // Raw status bytes are EasyLevel's own debug surface.
     getEasyLevelStatusBytes: () => {
-      const sensor = parts.externalSensors.getSensor('easylevel');
+      const sensor = parts.boxes.getSensor('easylevel');
       return sensor && sensor.getSource() === 'easylevel'
         ? (sensor as EasyLevelSensor).getStatusBytes()
         : null;
@@ -97,7 +97,7 @@ export type MenuOptionsBag = ReturnType<typeof buildMenuOptions>;
 /** One box's own page: its connection, live status and setup. */
 export function boxPageOptions(
   menu: MenuOptionsBag,
-  descriptor: ExternalSensorDescriptor,
+  descriptor: BoxDescriptor,
   parts: MenuOptionDeps,
 ) {
   return {
@@ -111,7 +111,7 @@ export function boxPageOptions(
 /** One box in the wizard's box step: connection and setup, no live status. */
 export function wizardBoxOptions(
   menu: MenuOptionsBag,
-  descriptor: ExternalSensorDescriptor,
+  descriptor: BoxDescriptor,
   parts: MenuOptionDeps,
 ) {
   return {

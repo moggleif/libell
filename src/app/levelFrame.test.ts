@@ -67,13 +67,13 @@ function setup(initial: Setup = {}) {
     getLastSampleAt: () => world.lastSampleAt,
   } as unknown as OrientationSensor;
   const refreshStatus = vi.fn();
-  const externalSensors = { canRetrySilently: vi.fn(() => true), maybeAutoRetry: vi.fn() };
+  const boxes = { canRetrySilently: vi.fn(() => true), maybeAutoRetry: vi.fn() };
   const playGuidancePulse = vi.fn();
   const frame = createLevelFrame({
     sensor: () => sensor,
     isPaused: () => world.paused,
     refreshStatus,
-    externalSensors,
+    boxes,
     hasSensorPage: initial.hasSensorPage ?? true,
     isLandscape: () => world.landscape,
     isVisible: () => world.visible,
@@ -88,7 +88,7 @@ function setup(initial: Setup = {}) {
     frame(now);
     return [...calls];
   };
-  return { run, world, calls, ticked, refreshStatus, externalSensors, playGuidancePulse };
+  return { run, world, calls, ticked, refreshStatus, boxes, playGuidancePulse };
 }
 
 describe('createLevelFrame', () => {
@@ -107,20 +107,20 @@ describe('createLevelFrame', () => {
 
   describe('without a reading', () => {
     it('shows no data and waits, while the sensor is still coming', () => {
-      const { run, externalSensors } = setup({ gravity: null, state: 'idle' });
+      const { run, boxes } = setup({ gravity: null, state: 'idle' });
       expect(run(0)).toEqual(['noData:false:true', 'hideStale', 'hidePose']);
-      expect(externalSensors.maybeAutoRetry).not.toHaveBeenCalled();
+      expect(boxes.maybeAutoRetry).not.toHaveBeenCalled();
     });
 
     it('offers the way back and retries in the background once the box is lost', () => {
-      const { run, externalSensors } = setup({
+      const { run, boxes } = setup({
         source: 'easylevel',
         gravity: null,
         state: 'disconnected',
       });
-      externalSensors.canRetrySilently.mockReturnValue(false);
+      boxes.canRetrySilently.mockReturnValue(false);
       expect(run(500)).toEqual(['noData:true:false', 'hideStale', 'hidePose']);
-      expect(externalSensors.maybeAutoRetry).toHaveBeenCalledWith(500);
+      expect(boxes.maybeAutoRetry).toHaveBeenCalledWith(500);
     });
 
     it('hides the stale and pose overlays when a stale box is then lost (#398)', () => {

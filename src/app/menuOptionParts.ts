@@ -5,8 +5,8 @@
  */
 import type { Calibration } from '../domain/calibration';
 import { type EasyLevelMounting, easyLevelSettings } from '../domain/sensorDeviceSettings';
-import type { ExternalSensorController } from '../sensor/externalSensorController';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import type { BoxController } from '../sensor/boxController';
+import type { BoxDescriptor } from '../sensor/boxes';
 import type { OrientationSensor } from '../sensor/orientation';
 import type { BoxZeroing } from './boxZero';
 import {
@@ -16,8 +16,8 @@ import {
   passwordFor,
   pickEasyLevelMounting,
   type BoxWiring,
-  type LibellExternalSensor,
-} from './externalSensorWiring';
+  type LibellBox,
+} from './boxWiring';
 import type { InstallOffsets } from './installOffsets';
 import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
@@ -30,10 +30,7 @@ export interface MenuOptionDeps {
   boxZero: BoxZeroing;
   installOffsets: InstallOffsets;
   targets: Targets;
-  externalSensors: Pick<
-    ExternalSensorController<LibellExternalSensor>,
-    'connect' | 'disconnect' | 'getSensor'
-  >;
+  boxes: Pick<BoxController<LibellBox>, 'connect' | 'disconnect' | 'getSensor'>;
   boxWiring: BoxWiring;
 }
 
@@ -54,9 +51,8 @@ export function calibrationOptions(deps: MenuOptionDeps) {
     checkVehicleCalibration: () => phone.checkZero(),
     readTilt: deps.readTilt,
     isPhoneActive: () => activeSensor().getSource() === 'phone',
-    getExternalSensor: () =>
-      externalCalibrationStateFor(activeSensor().getSource(), deps.installOffsets),
-    calibrateExternalSensor: (anyway?: boolean) =>
+    getBox: () => externalCalibrationStateFor(activeSensor().getSource(), deps.installOffsets),
+    calibrateBox: (anyway?: boolean) =>
       anyway
         ? deps.boxZero.zero(activeSensor().getSource(), true)
         : deps.boxZero.zero(activeSensor().getSource()),
@@ -83,12 +79,12 @@ export function sensorSourceOptions(deps: MenuOptionDeps) {
 
 /** One box's connection and its own installation zero: where one box is
  * bolted in says nothing about where another is. */
-export function boxConnectionOptions(descriptor: ExternalSensorDescriptor, deps: MenuOptionDeps) {
+export function boxConnectionOptions(descriptor: BoxDescriptor, deps: MenuOptionDeps) {
   const { id } = descriptor;
   return {
     sensor: descriptor,
-    connectSensor: () => deps.externalSensors.connect(id),
-    disconnectSensor: () => deps.externalSensors.disconnect(),
+    connectSensor: () => deps.boxes.connect(id),
+    disconnectSensor: () => deps.boxes.disconnect(),
     getInstallCalibration: () => deps.installOffsets.valueOf(id),
     getInstallCalibrationCapturedAt: () => deps.installOffsets.capturedAtOf(id),
     calibrateInstall: (anyway?: boolean) =>
@@ -98,7 +94,7 @@ export function boxConnectionOptions(descriptor: ExternalSensorDescriptor, deps:
 }
 
 /** The password and mounting guide, for the boxes that have them. */
-export function boxSetupOptions(descriptor: ExternalSensorDescriptor, deps: MenuOptionDeps) {
+export function boxSetupOptions(descriptor: BoxDescriptor, deps: MenuOptionDeps) {
   return {
     password: passwordFor(descriptor.id, deps.boxWiring),
     learnMounting: learnMountingFor(descriptor.id, deps.boxWiring),
@@ -106,8 +102,8 @@ export function boxSetupOptions(descriptor: ExternalSensorDescriptor, deps: Menu
 }
 
 /** One box's live status for its page; null until the box exists. */
-export function boxStatusOptions(descriptor: ExternalSensorDescriptor, deps: MenuOptionDeps) {
-  const box = () => deps.externalSensors.getSensor(descriptor.id);
+export function boxStatusOptions(descriptor: BoxDescriptor, deps: MenuOptionDeps) {
+  const box = () => deps.boxes.getSensor(descriptor.id);
   return {
     getHealth: () => healthOf(descriptor.id, box()),
     getDeviceId: () => box()?.getDeviceId() ?? null,

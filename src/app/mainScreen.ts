@@ -53,8 +53,8 @@ export function mountMainScreen(
 }
 
 function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen: Screen) {
-  const { externalSensors, sound } = core;
-  const { externalSensorPage, sensorPage } = pages.sensorPages;
+  const { boxes, sound } = core;
+  const { boxListPage, sensorPage } = pages.sensorPages;
   const landscape = window.matchMedia('(orientation: landscape)');
   return buildLevelScreen(root, {
     sensor: core.sensor,
@@ -69,15 +69,15 @@ function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen
     refreshStatus() {
       screen.sensorStatus.refresh();
       // The box page's live rows: a no-op unless that page is open.
-      externalSensorPage?.refreshLive();
+      boxListPage?.refreshLive();
     },
-    externalSensors,
-    hasSensorPage: externalSensorPage !== null,
+    boxes,
+    hasSensorPage: boxListPage !== null,
     isLandscape: () => landscape.matches,
     isVisible: () => document.visibilityState === 'visible',
     openActiveSensorPage: pages.navigation.openActiveSensorPage,
-    retry: () => externalSensors.retry(),
-    usePhoneSensor: () => externalSensors.usePhoneSensor(),
+    retry: () => boxes.retry(),
+    usePhoneSensor: () => boxes.usePhoneSensor(),
     playChime: sound.playChime,
     playGuidancePulse: sound.playGuidancePulse,
     vibrate: vibrateIfSupported,
