@@ -20,6 +20,7 @@ import {
   type SettingsFormState,
 } from './settingsFields';
 import { isLanguage, LANGUAGE_NAMES, LANGUAGES, t } from './i18n';
+import { createElement } from './dom';
 
 export interface GeneralTab {
   languageField: HTMLElement;
@@ -262,10 +263,8 @@ function createLanguageField(compact: boolean) {
  * and has its place on the Level tab.
  */
 function createMore(context: SettingsFormContext, actions: GeneralTabActions) {
-  const element = document.createElement('details');
-  element.className = 'settings__advanced settings__more';
-  const summary = document.createElement('summary');
-  summary.className = 'settings__advanced-summary';
+  const element = createElement('details', 'settings__advanced settings__more');
+  const summary = createElement('summary', 'settings__advanced-summary');
   const heading = createSectionHeading();
   const tuning = createFineTuningFields(context.state);
   const resetAll = createResetAllButton(actions);

@@ -4,6 +4,7 @@
  */
 
 import { t } from './i18n';
+import { createElement } from './dom';
 
 const REPO_URL = 'https://github.com/moggleif/libell';
 
@@ -14,23 +15,18 @@ const REPO_URL = 'https://github.com/moggleif/libell';
 export function createAboutSection(version: string | null = __APP_VERSION__): HTMLElement {
   const body = document.createElement('div');
 
-  const what = document.createElement('p');
-  what.className = 'menu__text';
+  const what = createElement('p', 'menu__text');
   what.textContent = t('about.text');
   body.append(what);
 
-  const offline = document.createElement('p');
-  offline.className = 'menu__text';
+  const offline = createElement('p', 'menu__text');
   offline.textContent = t('about.offline');
 
-  const privacy = document.createElement('p');
-  privacy.className = 'menu__text';
+  const privacy = createElement('p', 'menu__text');
   privacy.textContent = t('about.privacy');
 
-  const source = document.createElement('p');
-  source.className = 'menu__text';
-  const link = document.createElement('a');
-  link.className = 'menu__link';
+  const source = createElement('p', 'menu__text');
+  const link = createElement('a', 'menu__link');
   link.href = REPO_URL;
   link.target = '_blank';
   link.rel = 'noopener';
@@ -41,8 +37,7 @@ export function createAboutSection(version: string | null = __APP_VERSION__): HT
 
   // A build without a version shows none: better none than a wrong one.
   if (version) {
-    const line = document.createElement('p');
-    line.className = 'menu__text about__version';
+    const line = createElement('p', 'menu__text about__version');
     line.textContent = t('about.version', { v: version });
     body.append(line);
   }

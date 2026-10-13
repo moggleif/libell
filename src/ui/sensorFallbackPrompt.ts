@@ -14,6 +14,7 @@
  * rule is said only after switching to it, by the wrong-pose overlay.
  */
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface SensorFallbackPrompt {
   element: HTMLElement;
@@ -65,15 +66,11 @@ export function createSensorFallbackPrompt(
 }
 
 function createView() {
-  const container = document.createElement('div');
-  container.className = 'sensor-fallback';
+  const container = createElement('div', 'sensor-fallback');
   container.hidden = true;
-  const text = document.createElement('p');
-  text.className = 'sensor-fallback__text';
-  const hint = document.createElement('p');
-  hint.className = 'sensor-fallback__hint';
-  const actions = document.createElement('div');
-  actions.className = 'sensor-fallback__actions';
+  const text = createElement('p', 'sensor-fallback__text');
+  const hint = createElement('p', 'sensor-fallback__hint');
+  const actions = createElement('div', 'sensor-fallback__actions');
   const retryButton = document.createElement('button');
   retryButton.type = 'button';
   retryButton.className = 'menu__action';

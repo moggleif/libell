@@ -5,6 +5,7 @@
  */
 
 import { t, type MessageKey } from './i18n';
+import { createElement } from './dom';
 
 const REPO_ISSUES_URL = 'https://github.com/moggleif/libell/issues/new';
 
@@ -20,11 +21,9 @@ const MAX_DESCRIPTION = 2000;
 type Category = (typeof CATEGORIES)[number];
 
 export function createFeedbackSection(): HTMLElement {
-  const intro = document.createElement('p');
-  intro.className = 'menu__text';
+  const intro = createElement('p', 'menu__text');
   intro.textContent = t('feedback.intro');
-  const form = document.createElement('form');
-  form.className = 'settings__form';
+  const form = createElement('form', 'settings__form');
 
   let category: Category = CATEGORIES[0] ?? { id: 'other', label: 'feedback.cat.other' };
   const categoryRow = createCategoryRow(category, (picked) => (category = picked));
@@ -51,15 +50,12 @@ export function createFeedbackSection(): HTMLElement {
 }
 
 function createCategoryRow(initial: Category, onPick: (category: Category) => void) {
-  const categoryRow = document.createElement('fieldset');
-  categoryRow.className = 'feedback__categories';
-  const legend = document.createElement('legend');
-  legend.className = 'menu__text';
+  const categoryRow = createElement('fieldset', 'feedback__categories');
+  const legend = createElement('legend', 'menu__text');
   legend.textContent = t('feedback.category');
   categoryRow.append(legend);
   for (const cat of CATEGORIES) {
-    const label = document.createElement('label');
-    label.className = 'feedback__category';
+    const label = createElement('label', 'feedback__category');
     const radio = document.createElement('input');
     radio.type = 'radio';
     radio.name = 'category';
@@ -90,8 +86,7 @@ function createDescriptionInput(): HTMLTextAreaElement {
 }
 
 function createWideField<T extends HTMLElement>(captionText: string, input: T) {
-  const field = document.createElement('label');
-  field.className = 'settings__field settings__field--wide';
+  const field = createElement('label', 'settings__field settings__field--wide');
   const caption = document.createElement('span');
   caption.textContent = captionText;
   field.append(caption, input);
@@ -104,8 +99,7 @@ function createEmptyFieldWarning(
   titleInput: HTMLInputElement,
   descInput: HTMLTextAreaElement,
 ): HTMLParagraphElement {
-  const warning = document.createElement('p');
-  warning.className = 'menu__text menu__text--warning feedback__warning';
+  const warning = createElement('p', 'menu__text menu__text--warning feedback__warning');
   warning.setAttribute('role', 'status');
   const updateWarning = () => {
     const key = emptyFieldWarning(titleInput.value.trim() === '', descInput.value.trim() === '');

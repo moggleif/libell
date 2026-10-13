@@ -7,6 +7,7 @@ import type { LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
 import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
+import { createElement } from './dom';
 
 export interface IncomingVehicleSetupOptions {
   geometry: VehicleGeometry;
@@ -16,8 +17,7 @@ export interface IncomingVehicleSetupOptions {
 }
 
 export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): void {
-  const overlay = document.createElement('div');
-  overlay.className = 'incoming-setup';
+  const overlay = createElement('div', 'incoming-setup');
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-labelledby', 'incoming-setup-heading');
@@ -40,8 +40,7 @@ export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): 
     },
   );
 
-  const card = document.createElement('div');
-  card.className = 'incoming-setup__card';
+  const card = createElement('div', 'incoming-setup__card');
   card.append(heading, intro, geometryList(options), reminder, actions);
   overlay.append(card);
   document.body.append(overlay);
@@ -52,8 +51,7 @@ export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): 
 function geometryList({ geometry, displayUnit }: IncomingVehicleSetupOptions): HTMLElement {
   const unit = (mm: number) => formatLength(mm, displayUnit);
   const isCaravan = geometry.vehicleType === 'caravan';
-  const list = document.createElement('dl');
-  list.className = 'incoming-setup__list';
+  const list = createElement('dl', 'incoming-setup__list');
   const row = (labelKey: MessageKey, value: string): void => {
     const dt = document.createElement('dt');
     dt.textContent = t(labelKey);
@@ -79,15 +77,13 @@ function geometryList({ geometry, displayUnit }: IncomingVehicleSetupOptions): H
 }
 
 function paragraph(className: string, text: string): HTMLParagraphElement {
-  const element = document.createElement('p');
-  element.className = className;
+  const element = createElement('p', className);
   element.textContent = text;
   return element;
 }
 
 function createActions(onDismiss: () => void, onApply: () => void): HTMLElement {
-  const actions = document.createElement('div');
-  actions.className = 'incoming-setup__actions';
+  const actions = createElement('div', 'incoming-setup__actions');
   const dismissButton = document.createElement('button');
   dismissButton.type = 'button';
   dismissButton.className = 'menu__action menu__action--secondary';

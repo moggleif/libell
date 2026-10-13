@@ -134,6 +134,9 @@ they block a merge like any failing test. Each failure names the file and what t
   `.claude/skills/` must exist. When you
   rename or move a file, update the documents that name it in the same change. ADRs are
   dated records and are not checked.
+- **Element helper:** in `src/ui/` and `src/app/`, an element whose class is set on the
+  line after `document.createElement` is built with `createElement(tag, className)`
+  from `src/ui/dom.ts` instead (#521).
 - **Coverage:** CI runs the unit tests with `npm run test:coverage`, which fails when
   statement, branch, function or line coverage of `src/` drops below the floors in
   `vite.config.ts`. The floors sit about 0.8 points under `main`'s coverage when last

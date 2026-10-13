@@ -14,6 +14,7 @@ import {
 import type { VehicleType } from '../domain/settings';
 import { t } from './i18n';
 import { svgEl } from './svg';
+import { createElement } from './dom';
 
 /** An upright box is seen edge-on from above (a thin bar); a flat one is
  * seen face-on (a squarer block). */
@@ -185,12 +186,9 @@ function frontLabel(type: VehicleType): SVGElement {
 }
 
 export function createMountingPicker(options: MountingPickerOptions): MountingPicker {
-  const element = document.createElement('div');
-  element.className = 'mounting-picker';
-  const grid = document.createElement('div');
-  grid.className = 'mounting-picker__grid';
-  const center = document.createElement('div');
-  center.className = 'mounting-picker__center';
+  const element = createElement('div', 'mounting-picker');
+  const grid = createElement('div', 'mounting-picker__grid');
+  const center = createElement('div', 'mounting-picker__center');
 
   const buttons = new Map<Facing, HTMLButtonElement>();
   for (const facing of FACINGS) {
@@ -223,8 +221,7 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 /** A box lying flat with an arrow has its own two-choice picker below;
  * this one only ever asks the upright box. */
 function createUprightPrompt(shape: BoxShape): HTMLParagraphElement {
-  const prompt = document.createElement('p');
-  prompt.className = 'menu__text';
+  const prompt = createElement('p', 'menu__text');
   prompt.textContent = t('mounting.prompt.upright');
   prompt.hidden = shape !== 'upright';
   return prompt;
@@ -258,21 +255,16 @@ export interface PlacementPickerOptions {
  * allow.
  */
 export function createPlacementPicker(options: PlacementPickerOptions): MountingPicker {
-  const element = document.createElement('div');
-  element.className = 'placement-picker';
+  const element = createElement('div', 'placement-picker');
 
-  const prompt = document.createElement('p');
-  prompt.className = 'menu__text';
+  const prompt = createElement('p', 'menu__text');
   prompt.textContent = t('mounting.prompt.arrow');
 
-  const row = document.createElement('div');
-  row.className = 'placement-picker__row';
+  const row = createElement('div', 'placement-picker__row');
   const parts = new Map<EasyLevelPlacement, { button: HTMLButtonElement; picture: HTMLElement }>();
   for (const placement of EASYLEVEL_PLACEMENTS) {
-    const choice = document.createElement('div');
-    choice.className = 'placement-picker__choice';
-    const picture = document.createElement('div');
-    picture.className = 'placement-picker__picture';
+    const choice = createElement('div', 'placement-picker__choice');
+    const picture = createElement('div', 'placement-picker__picture');
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `placement-picker__button placement-picker__button--${placement}`;

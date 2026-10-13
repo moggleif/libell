@@ -23,6 +23,7 @@ import { createBoxStatusPage, type BoxStatusOptions, type BoxStatusPage } from '
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import { createElement } from './dom';
 
 export interface SensorPage {
   element: HTMLElement;
@@ -119,8 +120,7 @@ function addSource(
  * is. No browser named: this page exists wherever Web Bluetooth does,
  * including Bluefy on iOS. */
 function createPhoneLine(): HTMLParagraphElement {
-  const phoneLine = document.createElement('p');
-  phoneLine.className = 'menu__text sensor-list__phone';
+  const phoneLine = createElement('p', 'menu__text sensor-list__phone');
   phoneLine.textContent = t('sensorList.phone');
   return phoneLine;
 }

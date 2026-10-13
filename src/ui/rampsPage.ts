@@ -7,6 +7,7 @@ import { RAMP_MODELS, type RampModel } from '../domain/ramps';
 import type { RampChoice, StepEditor } from './rampChoice';
 import type { SettingsFormState } from './settingsFields';
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface RampsPageParts {
   choice: RampChoice;
@@ -30,8 +31,7 @@ export function buildRampsPage(panel: HTMLElement, parts: RampsPageParts): () =>
   const catalogue = createCatalogue(choice, state, parts.onPick);
   // The chip editor, under the custom row — shown only while a custom set
   // is chosen.
-  const customEditor = document.createElement('div');
-  customEditor.className = 'klossar__custom-editor';
+  const customEditor = createElement('div', 'klossar__custom-editor');
   customEditor.append(editor.caption, editor.chips, editor.addRow);
   const selection = createSelectionSummary(choice, state);
 
@@ -60,18 +60,15 @@ function createCatalogue(
   state: SettingsFormState,
   onPick: (model: RampModel | null) => void,
 ) {
-  const element = document.createElement('details');
-  element.className = 'settings__advanced klossar__picker-details';
-  const summary = document.createElement('summary');
-  summary.className = 'settings__advanced-summary';
+  const element = createElement('details', 'settings__advanced klossar__picker-details');
+  const summary = createElement('summary', 'settings__advanced-summary');
   // Set here rather than in `relabel`: this element only exists on the
   // Ramps page, and a language change reloads the whole app anyway.
   summary.textContent = t('settings.klossar.changeRamp');
   const filter = createBrandFilter(() => render(shownModel));
   element.append(summary, filter.row);
 
-  const list = document.createElement('div');
-  list.className = 'klossar__list';
+  const list = createElement('div', 'klossar__list');
   // "Custom set" leads the list: choosing your own step heights
   // is one of the options, and the one relevant whatever brand you own.
   // Never hidden by the brand filter.
@@ -81,8 +78,7 @@ function createCatalogue(
   list.append(custom.row);
 
   const models = RAMP_MODELS.map((model) => {
-    const mmLine = document.createElement('span');
-    mmLine.className = 'klossar__row-mm';
+    const mmLine = createElement('span', 'klossar__row-mm');
     const entry = catalogueRow(model.name, mmLine);
     entry.row.addEventListener('click', () => onPick(model));
     list.append(entry.row);
@@ -111,8 +107,7 @@ const brandOf = (model: RampModel): string => model.name.split(' ')[0]!;
 /** "All" and one chip per brand; exactly one is pressed. `changed` runs
  * after every pick. */
 function createBrandFilter(changed: () => void) {
-  const row = document.createElement('div');
-  row.className = 'klossar__filter';
+  const row = createElement('div', 'klossar__filter');
   let brandFilter: string | null = null;
   const brandChips = new Map<string | null, HTMLButtonElement>();
   const addBrandChip = (brand: string | null, label: string): void => {
@@ -143,19 +138,16 @@ function catalogueRow(name: string, mmLine?: HTMLElement) {
   const row = document.createElement('button');
   row.type = 'button';
   row.className = 'klossar__row';
-  const nameEl = document.createElement('span');
-  nameEl.className = 'klossar__row-name';
+  const nameEl = createElement('span', 'klossar__row-name');
   nameEl.textContent = name;
   if (mmLine) {
-    const info = document.createElement('span');
-    info.className = 'klossar__row-info';
+    const info = createElement('span', 'klossar__row-info');
     info.append(nameEl, mmLine);
     row.append(info);
   } else {
     row.append(nameEl);
   }
-  const radio = document.createElement('span');
-  radio.className = 'klossar__radio';
+  const radio = createElement('span', 'klossar__radio');
   radio.setAttribute('aria-hidden', 'true');
   row.append(radio);
   return {
@@ -172,20 +164,14 @@ function catalogueRow(name: string, mmLine?: HTMLElement) {
  * Thule Levelers, whose step heights are these".
  */
 function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {
-  const element = document.createElement('div');
-  element.className = 'klossar__selected';
-  const head = document.createElement('div');
-  head.className = 'klossar__footer-head';
-  const label = document.createElement('span');
-  label.className = 'klossar__footer-label';
+  const element = createElement('div', 'klossar__selected');
+  const head = createElement('div', 'klossar__footer-head');
+  const label = createElement('span', 'klossar__footer-label');
   label.textContent = t('settings.klossar.selected');
-  const modelName = document.createElement('span');
-  modelName.className = 'klossar__footer-model';
+  const modelName = createElement('span', 'klossar__footer-model');
   head.append(label, modelName);
-  const heading = document.createElement('span');
-  heading.className = 'klossar__footer-heading';
-  const grid = document.createElement('div');
-  grid.className = 'klossar__grid';
+  const heading = createElement('span', 'klossar__footer-heading');
+  const grid = createElement('div', 'klossar__grid');
   element.append(head, heading, grid);
 
   return {
@@ -204,13 +190,10 @@ function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {
 
 /** "Step n" over its height, one cell of the selection grid. */
 function stepCell(n: number, value: string): HTMLElement {
-  const element = document.createElement('div');
-  element.className = 'klossar__grid-cell';
-  const stepLabel = document.createElement('span');
-  stepLabel.className = 'klossar__grid-label';
+  const element = createElement('div', 'klossar__grid-cell');
+  const stepLabel = createElement('span', 'klossar__grid-label');
   stepLabel.textContent = t('diagram.step', { n });
-  const valueEl = document.createElement('span');
-  valueEl.className = 'klossar__grid-value';
+  const valueEl = createElement('span', 'klossar__grid-value');
   valueEl.textContent = value;
   element.append(stepLabel, valueEl);
   return element;

@@ -11,6 +11,7 @@
 import { mmToUnit, unitToMm } from '../domain/lengths';
 import type { AxleConfig, LevelSettings, VehicleType } from '../domain/settings';
 import { t, type MessageKey } from './i18n';
+import { createElement } from './dom';
 
 export type DisplayUnit = LevelSettings['displayUnit'];
 
@@ -44,8 +45,7 @@ export interface Field<T extends HTMLElement> {
 }
 
 function captioned<T extends HTMLElement>(control: T): Field<T> {
-  const element = document.createElement('label');
-  element.className = 'settings__field';
+  const element = createElement('label', 'settings__field');
   const caption = document.createElement('span');
   element.append(caption, control);
   return { element, caption, control };
@@ -66,8 +66,7 @@ export function createSelectField<V extends string>(
   options: readonly { value: V; label?: MessageKey; text?: string }[],
   selected: V,
 ): SelectField<V> {
-  const select = document.createElement('select');
-  select.className = 'settings__select';
+  const select = createElement('select', 'settings__select');
   const translated: [HTMLOptionElement, MessageKey][] = [];
   for (const { value, label, text } of options) {
     const option = document.createElement('option');
@@ -194,13 +193,11 @@ function createNumberField(
 }
 
 export function createHint(): HTMLParagraphElement {
-  const hint = document.createElement('p');
-  hint.className = 'settings__hint';
+  const hint = createElement('p', 'settings__hint');
   return hint;
 }
 
 export function createSectionHeading(): HTMLParagraphElement {
-  const heading = document.createElement('p');
-  heading.className = 'settings__section';
+  const heading = createElement('p', 'settings__section');
   return heading;
 }

@@ -25,6 +25,7 @@ import {
   type SettingsFormContext,
 } from './settingsFields';
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface RampsTab {
   /** The compact step editor: the ramp `<select>` and the chips. */
@@ -94,8 +95,7 @@ export function createRampsTab(initial: LevelSettings, context: SettingsFormCont
 
 /** The compact form's step editor: the ramp `<select>` and the chips. */
 function createStepsField({ editor, rampPicker }: RampsTabParts): HTMLElement {
-  const stepsField = document.createElement('div');
-  stepsField.className = 'settings__field settings__field--wide';
+  const stepsField = createElement('div', 'settings__field settings__field--wide');
   stepsField.append(editor.caption, rampPicker.row, editor.chips, editor.addRow);
   return stepsField;
 }

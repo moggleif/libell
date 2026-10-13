@@ -5,6 +5,7 @@
 import type { MenuSection } from './menu';
 import { t } from './i18n';
 import { setVisible } from './motion';
+import { createElement } from './dom';
 
 export type CalibrationLamp = 'calibrate' | 'zero' | null;
 
@@ -31,8 +32,7 @@ export interface Indicators {
 type LampState = Parameters<Indicators['update']>[0];
 
 export function createIndicators(openMenu: (section: MenuSection) => void): Indicators {
-  const container = document.createElement('div');
-  container.className = 'indicators';
+  const container = createElement('div', 'indicators');
   const settingsLamp = lamp(t('lamp.setup'), t('lamp.setup.title'), () => openMenu('vehicle'));
   const calibrationLamp = lamp(t('lamp.calibrate'), t('lamp.calibrate.title'), () =>
     openMenu('calibration'),

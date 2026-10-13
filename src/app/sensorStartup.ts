@@ -5,6 +5,7 @@
  */
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import { t } from '../ui/i18n';
+import { createElement } from '../ui/dom';
 
 export interface SensorStartupDeps {
   root: HTMLElement;
@@ -44,8 +45,7 @@ function showSensorState(state: SensorState, deps: SensorStartupDeps): void {
 }
 
 function hint(text: string): HTMLParagraphElement {
-  const element = document.createElement('p');
-  element.className = 'app__hint';
+  const element = createElement('p', 'app__hint');
   element.textContent = text;
   return element;
 }

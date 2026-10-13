@@ -8,6 +8,7 @@
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { Calibration } from '../domain/calibration';
 import { t, type MessageKey } from './i18n';
+import { createElement } from './dom';
 
 export interface LearnMountingOptions {
   name: string;
@@ -71,8 +72,7 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
 }
 
 function createView() {
-  const element = document.createElement('div');
-  element.className = 'learn-mounting';
+  const element = createElement('div', 'learn-mounting');
   const heading = paragraph('h3', 'menu__heading', t('sensorSource.learn.h'));
   const intro = paragraph('p', 'menu__text', t('sensorSource.learn.intro'));
   const instruction = paragraph('p', 'menu__text');
@@ -95,8 +95,7 @@ function createView() {
 }
 
 function paragraph(tag: 'h3' | 'p', className: string, text?: string): HTMLElement {
-  const element = document.createElement(tag);
-  element.className = className;
+  const element = createElement(tag, className);
   if (text !== undefined) element.textContent = text;
   return element;
 }

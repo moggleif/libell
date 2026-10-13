@@ -10,6 +10,7 @@
 import type { CaptureResult } from '../domain/calibration';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface TargetsOptions {
   getTargetPresets(): TargetPreset[];
@@ -29,8 +30,7 @@ export interface TargetsSection {
 }
 
 export function createTargetsSection(options: TargetsOptions): TargetsSection {
-  const list = document.createElement('div');
-  list.className = 'targets__list';
+  const list = createElement('div', 'targets__list');
   const refresh = (): void => refreshList(options, list, refresh);
   const adding = createAddControls();
   const add = (anyway: boolean): void => addPreset(options, adding, anyway, refresh);
@@ -67,8 +67,7 @@ function makeRow(
   onSelect: () => void,
   onDelete?: () => void,
 ): HTMLElement {
-  const row = document.createElement('div');
-  row.className = 'targets__row';
+  const row = createElement('div', 'targets__row');
   row.append(createSelectButton(labelText, active, onSelect));
   if (onDelete) row.append(createDeleteButton(labelText, onDelete));
   return row;
@@ -80,12 +79,10 @@ function createSelectButton(labelText: string, active: boolean, onSelect: () => 
   select.className = active
     ? 'targets__row-select targets__row-select--active'
     : 'targets__row-select';
-  const radio = document.createElement('span');
-  radio.className = 'targets__row-radio';
+  const radio = createElement('span', 'targets__row-radio');
   radio.setAttribute('aria-hidden', 'true');
   radio.textContent = active ? '●' : '○';
-  const label = document.createElement('span');
-  label.className = 'targets__row-label';
+  const label = createElement('span', 'targets__row-label');
   label.textContent = labelText;
   select.append(radio, label);
   select.addEventListener('click', onSelect);
@@ -111,11 +108,9 @@ function createAddControls() {
   nameInput.maxLength = 40;
   nameInput.placeholder = t('targets.name.placeholder');
   const addButton = secondaryButton(t('targets.add'));
-  const addRow = document.createElement('div');
-  addRow.className = 'targets__add';
+  const addRow = createElement('div', 'targets__add');
   addRow.append(nameInput, addButton);
-  const addStatus = document.createElement('p');
-  addStatus.className = 'menu__text menu__text--status';
+  const addStatus = createElement('p', 'menu__text menu__text--status');
   // Warn, never block: shown only while a too-steep warning is up.
   const anywayButton = secondaryButton(t('targets.anyway'));
   anywayButton.hidden = true;

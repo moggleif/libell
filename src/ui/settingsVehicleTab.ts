@@ -14,6 +14,7 @@ import {
   type SettingsFormState,
 } from './settingsFields';
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface VehicleTab {
   /** The three measurements, in the order they are shown. */
@@ -62,8 +63,7 @@ export function createVehicleTab(
 /** Where to find the numbers — the biggest data-entry hurdle for new
  * users is not typing, it's knowing. */
 function createMeasureHint(): HTMLParagraphElement {
-  const measureHint = document.createElement('p');
-  measureHint.className = 'settings__hint';
+  const measureHint = createElement('p', 'settings__hint');
   measureHint.textContent = t('settings.measureHint');
   return measureHint;
 }
