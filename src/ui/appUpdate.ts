@@ -28,7 +28,14 @@ export interface UpdateCheckDeps {
  */
 export async function checkForUpdate(deps: UpdateCheckDeps): Promise<UpdateCheckResult> {
   if (!deps.isOnline()) return 'offline';
-  const registration = await deps.getRegistration();
+  let registration: UpdatableRegistration | undefined;
+  try {
+    registration = await deps.getRegistration();
+  } catch {
+    // The browser could not look the worker up (e.g. blocked storage):
+    // no update check is possible here (#542).
+    return 'unsupported';
+  }
   if (!registration) return 'unsupported';
   try {
     await registration.update();

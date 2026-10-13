@@ -14,7 +14,10 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
   the repository contains no credentials. Feedback is filed by the visitor under their
   own GitHub account via a pre-filled issue URL.
 - **No third-party code at runtime.** No CDNs, no analytics, no remote requests; every
-  asset is same-origin and precached by the service worker. Production builds carry a
+  asset is same-origin, and everything the app loads is precached by the service
+  worker. The one exception is install metadata: the manifest's screenshot (shown only
+  in the install sheet) is generated from the built app after the service worker, so it
+  is fetched on demand instead. Production builds carry a
   `default-src 'self'` Content-Security-Policy meta tag and a `no-referrer` referrer
   policy, so injected external script/style is refused by the browser.
 - **No HTML injection surface.** The DOM is built exclusively with `createElement` /

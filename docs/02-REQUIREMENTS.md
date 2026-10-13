@@ -1872,6 +1872,11 @@ present this source as more proven than it is.
 - **When** I open the app, or bring it back to the foreground
 - **Then** the update is found and the app reloads into it once, without a second
   relaunch.
+- **Given** the browser cannot look up the app's service worker
+- **When** I tap the name / version
+- **Then** the "Checking…" message gives way to the message that updates can't be
+  checked here, never a check that never ends; on return to the foreground the failed
+  lookup passes silently (#542).
 
 ## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
