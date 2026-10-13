@@ -439,6 +439,8 @@ export const de: Messages = {
   'calibration.external.h': 'Fahrzeug nullen',
   'calibration.external.intro':
     'Stell das Fahrzeug einmal mit einer Wasserwaage waagerecht und nulle dann.',
+  'calibration.external.phoneHidden':
+    'Die Kalibrierung des Handys ist ausgeblendet, solange die Sensorbox misst. Um das Handy zu kalibrieren, öffne die Box und tippe zuerst auf „{disconnect}“.',
   'calibration.external.working': 'Wird genullt…',
   'calibration.external.done': '{name} ist genullt: Diese Lage gilt jetzt als waagerecht.',
   'calibration.external.err.notConnected':

@@ -309,6 +309,21 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     expect(button.closest('[hidden]')).not.toBeNull();
   });
 
+  it('says why the phone cards are gone and how to get them back (#515)', () => {
+    const { options, setPhone } = externalOptions();
+    const section = createCalibrationSection(options);
+    const line = t('calibration.external.phoneHidden', {
+      disconnect: t('sensorSource.disconnect'),
+    });
+    const note = [...section.element.querySelectorAll('p')].find((p) => p.textContent === line);
+    expect(note).toBeDefined();
+    expect(note!.closest('[hidden]')).toBeNull();
+
+    setPhone();
+    section.refresh();
+    expect(note!.closest('[hidden]')).not.toBeNull();
+  });
+
   it('waits for a box that zeroes itself, then says it is zeroed', async () => {
     let answer: (error: string | null) => void = () => {};
     const calibrateExternalSensor = vi.fn(

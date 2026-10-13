@@ -29,7 +29,12 @@ function createParts(options: CalibrationOptions, modern: boolean) {
   anyway.type = 'button';
   anyway.textContent = t('calibration.vehicle.anyway');
   anyway.hidden = true;
-  element.append(heading, intro, zeroButton, status, anyway);
+  // #515: the phone cards are hidden meanwhile; say why and how back.
+  const phoneHidden = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
+  phoneHidden.textContent = t('calibration.external.phoneHidden', {
+    disconnect: t('sensorSource.disconnect'),
+  });
+  element.append(heading, intro, zeroButton, status, anyway, phoneHidden);
   if (options.openExternalSensor) {
     const openBox = createElement('button', 'link-button');
     openBox.type = 'button';
