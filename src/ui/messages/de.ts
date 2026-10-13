@@ -305,6 +305,7 @@ export const de: Messages = {
   'calibration.check': 'Prüfen',
   'calibration.check.good': 'Immer noch gut — {off}° daneben.',
   'calibration.check.off': '{off}° daneben — neu kalibrieren wäre sinnvoll.',
+  'calibration.vehicle.check.off': '{off}° daneben — neu nullen wäre sinnvoll.',
   'calibration.flip.intro':
     'Keine waagerechte Fläche in der Nähe? Nimm die Umdreh-Kalibrierung: Handy irgendwo ' +
     'halbwegs eben hinlegen, erfassen, das Handy an derselben Stelle um eine halbe Drehung ' +

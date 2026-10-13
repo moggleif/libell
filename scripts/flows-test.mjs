@@ -322,7 +322,8 @@ async function phoneCalibrationFlow(browser) {
 }
 
 async function phoneCheckOffFlow(browser) {
-  // A calibration and zero taken elsewhere: the demo tilt now reads as off.
+  // A calibration and zero taken elsewhere: the demo tilt now reads as off,
+  // and the vehicle zero's advice is to zero again, not to recalibrate (#506).
   const level = JSON.stringify({ rollDeg: 0, pitchDeg: 0, capturedAt: Date.now() });
   const { context, page, errors } = await openApp(browser, 'demo', {
     'libell.calibration': level,
@@ -332,7 +333,7 @@ async function phoneCheckOffFlow(browser) {
   await button(settings, 'Zeroed (today)').click();
   await settings.locator('summary:visible').filter({ hasText: 'More' }).click();
   await button(settings, 'Check').click();
-  await settings.getByText('Off by 1.2° — consider recalibrating.').waitFor();
+  await settings.getByText('Off by 1.2° — consider zeroing again.').waitFor();
   assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
   await context.close();
 }
