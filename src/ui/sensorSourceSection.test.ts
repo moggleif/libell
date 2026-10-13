@@ -124,7 +124,7 @@ describe('createSensorSourceSection (#116)', () => {
     expect(findButton(section.connectElement, 'Connect EasyLevel sensor').hidden).toBe(false);
   });
 
-  it('refresh() re-reads the current source (menu re-opened after a connect elsewhere)', () => {
+  it('shows the current source again when reopened after a connect elsewhere', () => {
     let source: 'phone' | 'easylevel' = 'phone';
     const section = createSensorSourceSection(makeOptions({ getSensorSource: () => source }));
     source = 'easylevel';

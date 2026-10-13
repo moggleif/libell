@@ -10,7 +10,7 @@ describe('createStandalonePage (screen-cleanup follow-up)', () => {
     expect(page.element.querySelector('.menu-page__title')?.textContent).toBe('Title');
   });
 
-  it('open()/close() toggle synchronously', () => {
+  it('opens and closes at once, with no transition to wait for', () => {
     const page = createStandalonePage('Title');
     page.open();
     expect(page.isOpen()).toBe(true);
@@ -26,7 +26,7 @@ describe('createStandalonePage (screen-cleanup follow-up)', () => {
     expect(page.isOpen()).toBe(false);
   });
 
-  it('attach() toggles open/closed on alternating clicks', () => {
+  it('alternate taps on its button open and close it', () => {
     const page = createStandalonePage('Title');
     const button = document.createElement('button');
     page.attach(button);
@@ -46,7 +46,7 @@ describe('createStandalonePage (screen-cleanup follow-up)', () => {
     expect(page.isOpen()).toBe(true); // still open, not toggled by the second open()
   });
 
-  it('setTitle() updates the header text', () => {
+  it('shows a new title in its header', () => {
     const page = createStandalonePage('Title');
     page.setTitle('New title');
     expect(page.element.querySelector('.menu-page__title')?.textContent).toBe('New title');

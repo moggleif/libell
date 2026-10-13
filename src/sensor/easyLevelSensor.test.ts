@@ -315,7 +315,7 @@ describe('createEasyLevelSensor (#116)', () => {
     expect(sensor.getLastSampleAt()).toBeNull();
   });
 
-  it('getDeviceId() is null before connecting and the connected device id afterward', async () => {
+  it('has no device id before connecting, and the connected box’s id afterward', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
       configurable: true,
@@ -328,7 +328,7 @@ describe('createEasyLevelSensor (#116)', () => {
     expect(sensor.getDeviceId()).toBe('fake-device-id');
   });
 
-  it('getStatus() is null until the first faf52c22 notification, then parses battery/temperature/firmware tier (#123)', async () => {
+  it('has no status until the first faf52c22 notification, then reads battery, temperature and firmware tier from it (#123)', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
       configurable: true,
@@ -757,7 +757,7 @@ describe('createEasyLevelSensor() connection-lifecycle cleanup (#219)', () => {
     };
   }
 
-  it('start() disconnects a connection it made but could not wire (subscribeAccel failed), then reports denied', async () => {
+  it('a first connect that cannot be wired (subscribeAccel failed) drops the link and reports denied', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
       configurable: true,
@@ -769,7 +769,7 @@ describe('createEasyLevelSensor() connection-lifecycle cleanup (#219)', () => {
     expect(sensor.getDeviceId()).toBeNull();
   });
 
-  it('reconnect() disconnects a connection it made but could not wire, then reports disconnected', async () => {
+  it('a silent reconnect that cannot be wired drops the link and reports disconnected', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
       configurable: true,
@@ -781,7 +781,7 @@ describe('createEasyLevelSensor() connection-lifecycle cleanup (#219)', () => {
     expect(sensor.getDeviceId()).toBeNull();
   });
 
-  it('getStatusBytes() returns a copy of the notification bytes, immune to the transport reusing its buffer (#219)', async () => {
+  it('keeps its own copy of the status bytes, so the transport reusing its buffer cannot change them (#219)', async () => {
     Object.defineProperty(globalThis, 'navigator', {
       value: { bluetooth: {} },
       configurable: true,

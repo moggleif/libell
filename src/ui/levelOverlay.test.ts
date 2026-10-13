@@ -21,7 +21,7 @@ describe('createLevelOverlay', () => {
     expect(overlay.element.querySelector('.level-overlay__mark')!.textContent).toBe('✓');
   });
 
-  it('celebrate() shows it, then hides it again after the brief pause (#124 regression guard: unchanged without reduced motion)', () => {
+  it('a celebration shows the overlay, then hides it after a brief pause (#124 regression guard: unchanged without reduced motion)', () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
     const overlay = createLevelOverlay();
@@ -40,7 +40,7 @@ describe('createLevelOverlay', () => {
     vi.useRealTimers();
   });
 
-  it('celebrate() shows and hides instantly, with no animated transition, under prefers-reduced-motion (#124)', () => {
+  it('under prefers-reduced-motion a celebration shows and hides with no animated transition (#124)', () => {
     vi.useFakeTimers();
     stubReducedMotion(true);
     const overlay = createLevelOverlay();
@@ -56,7 +56,7 @@ describe('createLevelOverlay', () => {
     vi.useRealTimers();
   });
 
-  it('hideNow() hides immediately with no transition, even mid-celebration (state genuinely changed, e.g. no longer level)', () => {
+  it('hides at once with no transition, even mid-celebration, when the state changes (e.g. no longer level)', () => {
     vi.useFakeTimers();
     stubReducedMotion(false);
     const overlay = createLevelOverlay();

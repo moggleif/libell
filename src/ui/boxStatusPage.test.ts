@@ -351,7 +351,7 @@ describe('createBoxStatusPage', () => {
     });
   });
 
-  it('open()/close()/isOpen() delegate to the underlying standalone page', () => {
+  it('opens and closes as one standalone page, and says whether it is open', () => {
     const page = createBoxStatusPage(makeOptions());
     expect(page.isOpen()).toBe(false);
     page.open();

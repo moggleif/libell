@@ -164,7 +164,7 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     expect(onSettingsSaved.mock.lastCall![0].rampCount).toBe(3);
   });
 
-  it('attach(): first click opens the drawer, second click closes it', () => {
+  it('a first tap on the menu button opens the drawer, a second closes it', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     const button = document.createElement('button');
     menu.attach(button);
@@ -179,7 +179,7 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
 
   // #353: the box's own page opens on top of the menu; disconnecting there
   // must redraw Calibration beneath it, not leave the box showing.
-  it('refresh() redraws Calibration while it stays open (#353)', () => {
+  it('redraws Calibration while the drawer stays open (#353)', () => {
     let phone = false;
     const menu = createMenu(
       makeOptions({
@@ -284,7 +284,7 @@ describe('menu — drawer chrome, navigation and focus (#420)', () => {
     expect(pushState).toHaveBeenLastCalledWith({ libellMenu: 1 }, '');
   });
 
-  it('open() straight from closed pushes the drawer and the page entries', () => {
+  it('opening a page straight from closed adds history entries for the drawer and the page', () => {
     const pushState = vi.spyOn(history, 'pushState');
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     menu.open('vehicle');
@@ -357,7 +357,7 @@ describe('menu — drawer chrome, navigation and focus (#420)', () => {
     expect(menu.element.querySelector('.menu-page__body')?.textContent).toContain('Ramp spot');
   });
 
-  it('refresh() does nothing while the menu is closed', () => {
+  it('redraws nothing while the drawer is closed', () => {
     const getTargetPresets = vi.fn(() => []);
     const menu = createMenu(makeOptions({ initialSettings: classicSettings(), getTargetPresets }));
     getTargetPresets.mockClear();
