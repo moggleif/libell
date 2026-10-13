@@ -89,7 +89,7 @@ export const sv: Messages = {
   // monterad extern sensor.
   'sensorSource.install.now': 'Nollställ nu',
   'sensorSource.install.clear': 'Glöm nolläget',
-  'sensorSource.install.status': 'Nolläge: sidled {roll}°, längsled {pitch}°.',
+  'sensorSource.install.status': 'Nolläge: längsled {pitch}, sidled {roll}.',
   'sensorSource.install.status.none': 'Inget nolläge ännu — boxen mäter som den sitter.',
 
   // Lär in monteringen (#293): Libell följer boxen medan användaren
@@ -277,7 +277,7 @@ export const sv: Messages = {
   'calibration.intro':
     'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +
     'Den aktuella lutningen blir nollpunkten.',
-  'calibration.status': 'Kalibrerad: sidled {roll}°, längsled {pitch}°.',
+  'calibration.status': 'Kalibrerad: längsled {pitch}, sidled {roll}.',
   'calibration.status.none': 'Inte kalibrerad — använder sensorn som den är.',
   'calibration.now': 'Kalibrera nu',
   'calibration.step.phone.done': 'Telefonen kalibrerad',
@@ -299,7 +299,7 @@ export const sv: Messages = {
     'Kalibreringen gäller telefonen, inte platsen där den ligger. Lutar bordet lite visar appen den lutningen. Ställ fordonet plant en gång med ett vattenpass, lägg telefonen på sin vanliga plats och nollställ.',
   'calibration.vehicle.now': 'Nollställ nu',
   'calibration.vehicle.clear': 'Glöm nolläget',
-  'calibration.vehicle.status': 'Fordonets nolläge: sidled {roll}°, längsled {pitch}°.',
+  'calibration.vehicle.status': 'Fordonets nolläge: längsled {pitch}, sidled {roll}.',
   'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
   'calibration.vehicle.warn.notFlat':
     'Det här ser inte plant ut (över 15°). Står fordonet verkligen plant? Nollställ ändå om du är säker.',

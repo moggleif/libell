@@ -7,6 +7,7 @@ import type { GravityVector } from '../domain/leveling';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxConnection } from './boxConnection';
 import { t } from './i18n';
+import { tiltDegreesText } from './tiltText';
 
 export function headerText(connection: BoxConnection, batteryPercent: number | null): string {
   const state = t(`box.state.${connection}`);
@@ -27,7 +28,7 @@ export function connectButtonText(connecting: boolean, isActive: boolean): strin
 export function tiltLineText(tilt: Calibration | null, hasPosition: boolean): string {
   if (tilt) {
     const separator = hasPosition ? ' · ' : '';
-    return `${separator}${t('tilt.sideSide')} ${tilt.rollDeg.toFixed(1)}° · ${t('tilt.frontBack')} ${tilt.pitchDeg.toFixed(1)}°`;
+    return `${separator}${tiltDegreesText(tilt)}`;
   }
   return hasPosition ? '' : t('sensorStatus.reading', { value: '—' });
 }

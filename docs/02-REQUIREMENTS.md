@@ -132,6 +132,10 @@ URL and must keep working with no signal.
 
 - **Given** I am on the main screen
 - **Then** small gray text shows the current tilt in degrees as front/back and side/side.
+- **Given** a tilt in degrees is shown anywhere (the main screen, a box's page, the
+  Kalibrera and Nollställ status sentences)
+- **Then** it is written the same way (#510): front/back first, then side/side, each with
+  an explicit sign (+ or −) and one decimal.
 
 ## R9 — Vehicle parameters are configurable and persist
 

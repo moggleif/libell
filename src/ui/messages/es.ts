@@ -82,7 +82,7 @@ export const es: Messages = {
 
   'sensorSource.install.now': 'Poner a cero',
   'sensorSource.install.clear': 'Olvidar el cero',
-  'sensorSource.install.status': 'Cero: lado/lado {roll}°, delante/detrás {pitch}°.',
+  'sensorSource.install.status': 'Cero: delante/detrás {pitch}, lado/lado {roll}.',
   'sensorSource.install.status.none': 'Aún sin poner a cero: la caja mide tal como está montada.',
 
   'sensorSource.learn.h': 'Aprender el montaje',
@@ -273,7 +273,7 @@ export const es: Messages = {
   'calibration.intro':
     'Pon el móvil sobre una superficie que sepas que está nivelada y toca Calibrar ahora. ' +
     'La inclinación actual se convierte en el punto cero.',
-  'calibration.status': 'Calibrado: lado/lado {roll}°, delante/detrás {pitch}°.',
+  'calibration.status': 'Calibrado: delante/detrás {pitch}, lado/lado {roll}.',
   'calibration.status.none': 'Sin calibrar: se usa el sensor en bruto.',
   'calibration.now': 'Calibrar ahora',
   'calibration.step.phone.done': 'Teléfono calibrado',
@@ -295,7 +295,7 @@ export const es: Messages = {
     'La calibración es del móvil, no del sitio donde está apoyado. Si la mesa se inclina un poco, la app muestra esa inclinación. Nivela el vehículo una vez con un nivel de burbuja, pon el móvil en su sitio habitual y ponlo a cero.',
   'calibration.vehicle.now': 'Poner a cero',
   'calibration.vehicle.clear': 'Olvidar el cero',
-  'calibration.vehicle.status': 'Cero del vehículo: lado/lado {roll}°, delante/detrás {pitch}°.',
+  'calibration.vehicle.status': 'Cero del vehículo: delante/detrás {pitch}, lado/lado {roll}.',
   'calibration.vehicle.status.none': 'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
   'calibration.vehicle.warn.notFlat':
     'Esto no parece nivelado (más de 15°). ¿Está el vehículo realmente nivelado? Pon a cero de todos modos si estás seguro.',

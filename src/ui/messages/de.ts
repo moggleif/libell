@@ -85,7 +85,7 @@ export const de: Messages = {
 
   'sensorSource.install.now': 'Jetzt nullen',
   'sensorSource.install.clear': 'Nullpunkt vergessen',
-  'sensorSource.install.status': 'Nullpunkt: seitlich {roll}°, längs {pitch}°.',
+  'sensorSource.install.status': 'Nullpunkt: längs {pitch}, seitlich {roll}.',
   'sensorSource.install.status.none': 'Noch nicht genullt — die Box misst so, wie sie sitzt.',
 
   'sensorSource.learn.h': 'Montage anlernen',
@@ -277,7 +277,7 @@ export const de: Messages = {
   'calibration.intro':
     'Lege das Handy auf eine Fläche, von der du weißt, dass sie waagerecht ist, und tippe ' +
     'auf Jetzt kalibrieren. Die aktuelle Neigung wird zum Nullpunkt.',
-  'calibration.status': 'Kalibriert: seitlich {roll}°, längs {pitch}°.',
+  'calibration.status': 'Kalibriert: längs {pitch}, seitlich {roll}.',
   'calibration.status.none': 'Nicht kalibriert — der Rohwert des Sensors wird verwendet.',
   'calibration.now': 'Jetzt kalibrieren',
   'calibration.step.phone.done': 'Handy kalibriert',
@@ -299,7 +299,7 @@ export const de: Messages = {
     'Die Kalibrierung gilt dem Handy, nicht dem Platz, auf dem es liegt. Steht der Tisch leicht schief, zeigt die App diese Neigung. Stell das Fahrzeug einmal mit einer Wasserwaage waagerecht, leg das Handy an seinen gewohnten Platz und nulle.',
   'calibration.vehicle.now': 'Jetzt nullen',
   'calibration.vehicle.clear': 'Nullpunkt vergessen',
-  'calibration.vehicle.status': 'Fahrzeug-Nullpunkt: seitlich {roll}°, längs {pitch}°.',
+  'calibration.vehicle.status': 'Fahrzeug-Nullpunkt: längs {pitch}, seitlich {roll}.',
   'calibration.vehicle.status.none':
     'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
   'calibration.vehicle.warn.notFlat':

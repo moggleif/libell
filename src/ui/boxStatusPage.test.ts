@@ -83,8 +83,7 @@ describe('createBoxStatusPage', () => {
         getCalibratedTilt: () => ({ rollDeg: 1.2, pitchDeg: -0.3 }),
       }),
     );
-    expect(page.element.textContent).toContain('Side/side 1.2°');
-    expect(page.element.textContent).toContain('Front/back -0.3°');
+    expect(page.element.textContent).toContain('Front/back −0.3° · Side/side +1.2°');
   });
 
   it('shows a dash, never the phone’s or a stale reading, while the box is not delivering (#343)', () => {
@@ -572,8 +571,7 @@ describe('the same page for every box (#375)', () => {
 
       it('shows the box’s own live tilt', () => {
         const page = active({ getCalibratedTilt: () => ({ rollDeg: 0.7, pitchDeg: -1.4 }) });
-        expect(page.element.textContent).toContain('Side/side 0.7°');
-        expect(page.element.textContent).toContain('Front/back -1.4°');
+        expect(page.element.textContent).toContain('Front/back −1.4° · Side/side +0.7°');
       });
 
       it('says not connected, with a dash for the tilt, while another source is in use', () => {
@@ -724,7 +722,7 @@ describe('pinned before the #416 split', () => {
     page.positionSlot.append(position);
     page.refresh();
     expect(page.element.querySelector('.box-live')?.textContent).toBe(
-      `${t('tilt.sideSide')} 0.5° · ${t('tilt.frontBack')} 1.0°`,
+      `${t('tilt.frontBack')} +1.0° · ${t('tilt.sideSide')} +0.5°`,
     );
   });
 
