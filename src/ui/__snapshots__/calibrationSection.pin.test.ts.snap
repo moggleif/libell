@@ -13,16 +13,16 @@ div
     button.menu__action "Calibrate by flipping"
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Clear calibration"
   div
     h3.menu__heading "Zero the vehicle"
     p.menu__text "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # phone warning
 div
@@ -36,16 +36,16 @@ div
     button.menu__action "Calibrate by flipping"
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Clear calibration"
   div
     h3.menu__heading "Zero the vehicle"
     p.menu__text "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # phone calibrated anyway
 div
@@ -67,8 +67,8 @@ div
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle error
 div
@@ -90,8 +90,8 @@ div
     p.menu__text.menu__text--status "no sensor"
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle warning
 div
@@ -113,8 +113,8 @@ div
     p.menu__text.menu__text--status.menu__text--warning "not level"
     button.menu__action.menu__action--secondary "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle zeroed
 div
@@ -312,8 +312,8 @@ div
     button.menu__action "Calibrate by flipping"
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Clear calibration"
   div
     h3.menu__heading "Zero the vehicle"
     p.menu__text "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
@@ -335,16 +335,16 @@ div
     button.menu__action "Calibrate by flipping"
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Clear calibration"
   div
     h3.menu__heading "Zero the vehicle"
     p.menu__text "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # refreshed with an error
 div
@@ -358,16 +358,16 @@ div
     button.menu__action "Calibrate by flipping"
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Clear calibration"
   div
     h3.menu__heading "Zero the vehicle"
     p.menu__text "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # refreshed
 div
@@ -381,16 +381,16 @@ div
     button.menu__action "Calibrate by flipping"
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Clear calibration"
   div
     h3.menu__heading "Zero the vehicle"
     p.menu__text "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero""
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero""
 `;
 
 exports[`calibration section, pinned before the #416 split > draws every phone step the same (classic checklist) 1`] = `
@@ -414,8 +414,8 @@ div
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -427,8 +427,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # phone warning
 div
@@ -450,8 +450,8 @@ div
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -463,8 +463,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # phone calibrated anyway
 div
@@ -499,8 +499,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle error
 div
@@ -535,8 +535,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle warning
 div
@@ -571,8 +571,8 @@ div
         button.menu__action.menu__action--secondary "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle zeroed
 div
@@ -1026,8 +1026,8 @@ div
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step.is-done
       button.box-step__header
         span.box-step__mark "✓"
@@ -1062,8 +1062,8 @@ div
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -1075,8 +1075,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # refreshed with an error
 div
@@ -1098,8 +1098,8 @@ div
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -1111,8 +1111,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # refreshed
 div
@@ -1134,8 +1134,8 @@ div
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -1147,8 +1147,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero""
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero""
 `;
 
 exports[`calibration section, pinned before the #416 split > draws every phone step the same (classic wizard) 1`] = `
@@ -1414,8 +1414,8 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status "Not calibrated — using the raw sensor."
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
@@ -1425,8 +1425,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -1443,8 +1443,8 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status.menu__text--warning "tilted"
     button.menu__action.menu__action--secondary "Calibrate anyway"
   div.calibration-card
@@ -1454,8 +1454,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -1472,8 +1472,8 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status.menu__text--warning "tilted"
     button.menu__action.menu__action--secondary "Calibrate anyway"
   div.calibration-card
@@ -1483,8 +1483,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -1501,8 +1501,8 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status.menu__text--warning "tilted"
     button.menu__action.menu__action--secondary "Calibrate anyway"
   div.calibration-card
@@ -1512,8 +1512,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "no sensor"
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -1530,8 +1530,8 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status.menu__text--warning "tilted"
     button.menu__action.menu__action--secondary "Calibrate anyway"
   div.calibration-card
@@ -1541,8 +1541,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status.menu__text--warning "not level"
     button.menu__action.menu__action--secondary "Zero anyway"
 
@@ -1559,8 +1559,8 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status.menu__text--warning "tilted"
     button.menu__action.menu__action--secondary "Calibrate anyway"
   div.calibration-card
@@ -1588,10 +1588,10 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
-    p.menu__text.menu__text--status.menu__text--warning "tilted"
-    button.menu__action.menu__action--secondary "Calibrate anyway"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
+    p.menu__text.menu__text--status "Not calibrated yet, so there is nothing to check. Lay the phone on a level surface and tap \\"Calibrate now\\"."
+    button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
     div.calibration-card__header
       h3.calibration-card__title "Zero the vehicle"
@@ -1617,10 +1617,10 @@ div.calibration-cards
     p.menu__text.menu__text--status
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
-    p.menu__text.menu__text--status.menu__text--warning "tilted"
-    button.menu__action.menu__action--secondary "Calibrate anyway"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
+    p.menu__text.menu__text--status "Not calibrated yet, so there is nothing to check. Lay the phone on a level surface and tap \\"Calibrate now\\"."
+    button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
     div.calibration-card__header
       h3.calibration-card__title "Zero the vehicle"
@@ -1646,10 +1646,10 @@ div.calibration-cards
     p.menu__text.menu__text--status "Now rotate the phone half a turn (180°) on the same spot, then tap Capture."
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
-    p.menu__text.menu__text--status.menu__text--warning "tilted"
-    button.menu__action.menu__action--secondary "Calibrate anyway"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
+    p.menu__text.menu__text--status "Not calibrated yet, so there is nothing to check. Lay the phone on a level surface and tap \\"Calibrate now\\"."
+    button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
     div.calibration-card__header
       h3.calibration-card__title "Zero the vehicle"
@@ -1791,8 +1791,8 @@ div.calibration-cards
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status "Not calibrated — using the raw sensor."
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
@@ -1820,8 +1820,8 @@ div.calibration-cards
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status "Not calibrated — using the raw sensor."
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
@@ -1831,8 +1831,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -1849,8 +1849,8 @@ div.calibration-cards
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status "outside error"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
@@ -1860,8 +1860,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -1878,8 +1878,8 @@ div.calibration-cards
     p.menu__text.menu__text--status "no reading"
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     p.menu__text.menu__text--status "Not calibrated — using the raw sensor."
     button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
   div.calibration-card
@@ -1889,8 +1889,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway""
 `;
@@ -1916,8 +1916,8 @@ div.calibration-cards
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -1929,8 +1929,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # phone warning
 div.calibration-cards
@@ -1952,8 +1952,8 @@ div.calibration-cards
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -1965,8 +1965,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # phone calibrated anyway
 div.calibration-cards
@@ -2001,8 +2001,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle error
 div.calibration-cards
@@ -2037,8 +2037,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle warning
 div.calibration-cards
@@ -2073,8 +2073,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # vehicle zeroed
 div.calibration-cards
@@ -2528,8 +2528,8 @@ div.calibration-cards
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step.is-done
       button.box-step__header
         span.box-step__mark "✓"
@@ -2564,8 +2564,8 @@ div.calibration-cards
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -2577,8 +2577,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # refreshed with an error
 div.calibration-cards
@@ -2600,8 +2600,8 @@ div.calibration-cards
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -2613,8 +2613,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # refreshed
 div.calibration-cards
@@ -2636,8 +2636,8 @@ div.calibration-cards
           button.menu__action.menu__action--secondary [hidden] "Calibrate anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Clear calibration"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Clear calibration"
     div.box-step
       button.box-step__header
         span.box-step__mark "2"
@@ -2649,8 +2649,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero""
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero""
 `;
 
 exports[`calibration section, pinned before the #416 split > draws every phone step the same (modern wizard) 1`] = `
@@ -2983,8 +2983,8 @@ div
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # box active
 div
@@ -3015,7 +3015,7 @@ div
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
     button.menu__action [disabled] "Zero now"
     button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box warning
 div
@@ -3046,7 +3046,7 @@ div
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
     button.menu__action [disabled] "Zero now"
     button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box zeroed anyway
 div
@@ -3077,7 +3077,7 @@ div
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
     button.menu__action [disabled] "Zero now"
     button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box working
 div
@@ -3108,7 +3108,7 @@ div
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
     button.menu__action [disabled] "Zero now"
     button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # refreshed while working
 div
@@ -3139,7 +3139,7 @@ div
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
     button.menu__action [disabled] "Zero now"
     button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box answered
 div
@@ -3170,7 +3170,7 @@ div
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
     button.menu__action [disabled] "Zero now"
     button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+    button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # phone again
 div
@@ -3200,8 +3200,8 @@ div
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
     button.menu__action "Zero now"
-    button.menu__action.menu__action--secondary [disabled] "Check"
-    button.menu__action.menu__action--secondary [disabled] "Forget the zero""
+    button.menu__action.menu__action--secondary "Check"
+    button.menu__action.menu__action--secondary [hidden] "Forget the zero""
 `;
 
 exports[`calibration section, pinned before the #416 split > draws the active box's zero the same (classic checklist) 1`] = `
@@ -3246,8 +3246,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # box active
 div
@@ -3291,7 +3291,7 @@ div
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box warning
 div
@@ -3335,7 +3335,7 @@ div
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box zeroed anyway
 div
@@ -3379,7 +3379,7 @@ div
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box working
 div
@@ -3423,7 +3423,7 @@ div
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # refreshed while working
 div
@@ -3467,7 +3467,7 @@ div
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box answered
 div
@@ -3511,7 +3511,7 @@ div
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # phone again
 div
@@ -3554,8 +3554,8 @@ div
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero""
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero""
 `;
 
 exports[`calibration section, pinned before the #416 split > draws the active box's zero the same (classic wizard) 1`] = `
@@ -3809,8 +3809,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway"
 
@@ -3847,7 +3847,7 @@ div.calibration-cards
     button.menu__action [disabled] "Zero now"
     div.calibration-card__row
       button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
 
@@ -3884,7 +3884,7 @@ div.calibration-cards
     button.menu__action [disabled] "Zero now"
     div.calibration-card__row
       button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
 
@@ -3921,7 +3921,7 @@ div.calibration-cards
     button.menu__action [disabled] "Zero now"
     div.calibration-card__row
       button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
 
@@ -3958,7 +3958,7 @@ div.calibration-cards
     button.menu__action [disabled] "Zero now"
     div.calibration-card__row
       button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
 
@@ -3995,7 +3995,7 @@ div.calibration-cards
     button.menu__action [disabled] "Zero now"
     div.calibration-card__row
       button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
 
@@ -4032,7 +4032,7 @@ div.calibration-cards
     button.menu__action [disabled] "Zero now"
     div.calibration-card__row
       button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] [disabled] "Zero anyway"
 
@@ -4068,8 +4068,8 @@ div.calibration-cards
     p.calibration-card__body "Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero."
     button.menu__action "Zero now"
     div.calibration-card__row
-      button.menu__action.menu__action--secondary [disabled] "Check"
-      button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+      button.menu__action.menu__action--secondary "Check"
+      button.menu__action.menu__action--secondary [hidden] "Forget the zero"
     p.menu__text.menu__text--status "No vehicle zero — the phone spot counts as flat."
     button.menu__action.menu__action--secondary [hidden] "Zero anyway""
 `;
@@ -4116,8 +4116,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero"
 
 # box active
 div.calibration-cards
@@ -4161,7 +4161,7 @@ div.calibration-cards
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box warning
 div.calibration-cards
@@ -4205,7 +4205,7 @@ div.calibration-cards
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box zeroed anyway
 div.calibration-cards
@@ -4249,7 +4249,7 @@ div.calibration-cards
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box working
 div.calibration-cards
@@ -4293,7 +4293,7 @@ div.calibration-cards
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # refreshed while working
 div.calibration-cards
@@ -4337,7 +4337,7 @@ div.calibration-cards
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # box answered
 div.calibration-cards
@@ -4381,7 +4381,7 @@ div.calibration-cards
         details.menu__detail
           summary.sensor-status__debug-summary "More"
           button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero"
+          button.menu__action.menu__action--secondary [hidden] [disabled] "Forget the zero"
 
 # phone again
 div.calibration-cards
@@ -4424,8 +4424,8 @@ div.calibration-cards
         button.menu__action.menu__action--secondary [hidden] "Zero anyway"
         details.menu__detail
           summary.sensor-status__debug-summary "More"
-          button.menu__action.menu__action--secondary [disabled] "Check"
-          button.menu__action.menu__action--secondary [disabled] "Forget the zero""
+          button.menu__action.menu__action--secondary "Check"
+          button.menu__action.menu__action--secondary [hidden] "Forget the zero""
 `;
 
 exports[`calibration section, pinned before the #416 split > draws the active box's zero the same (modern wizard) 1`] = `

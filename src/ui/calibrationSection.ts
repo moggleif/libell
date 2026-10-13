@@ -17,6 +17,7 @@ import { createControls, drawControls, showWarning } from './calibrationControls
 import { buildLayout, type Layout, type LayoutResult, type Parts } from './calibrationLayouts';
 import { captureMessage, type CalibrationKind, type OpenStep } from './calibrationText';
 import { createExternalCalibration } from './externalCalibration';
+import { t } from './i18n';
 
 export interface CalibrationOptions {
   /** Read once at construction; see the module doc comment. */
@@ -180,9 +181,16 @@ function wireActions(
     phone: (anyway: boolean) => options.calibrate(anyway),
     vehicle: (anyway: boolean) => options.calibrateVehicle(anyway),
   };
+  // Nothing stored: Check stays tappable and says how to get a value (#517).
   const checks = {
-    phone: () => options.checkCalibration(),
-    vehicle: () => options.checkVehicleCalibration(),
+    phone: () =>
+      options.getCalibration()
+        ? options.checkCalibration()
+        : t('calibration.check.none', { now: t('calibration.now') }),
+    vehicle: () =>
+      options.getVehicleCalibration()
+        ? options.checkVehicleCalibration()
+        : t('calibration.vehicle.check.none', { now: t('calibration.vehicle.now') }),
   };
   const clears = {
     phone: () => options.clearCalibration(),

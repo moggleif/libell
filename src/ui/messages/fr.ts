@@ -316,6 +316,10 @@ export const fr: Messages = {
   'calibration.check.good': 'Toujours bon — écart de {off}°.',
   'calibration.check.off': 'Écart de {off}° — pensez à réétalonner.',
   'calibration.vehicle.check.off': 'Écart de {off}° — pensez à refaire le zéro.',
+  'calibration.check.none':
+    'Pas encore étalonné, il n’y a donc rien à vérifier. Posez le téléphone sur une surface plane et touchez « {now} ».',
+  'calibration.vehicle.check.none':
+    'Pas encore de zéro, il n’y a donc rien à vérifier. Mettez le véhicule de niveau avec un niveau à bulle et touchez « {now} ».',
   'calibration.flip.intro':
     'Pas de surface de niveau à proximité ? Utilisez l’étalonnage par retournement : posez ' +
     'le téléphone n’importe où d’assez plat, capturez, faites-lui faire un demi-tour (180°) ' +

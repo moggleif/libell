@@ -707,6 +707,12 @@ URL and must keep working with no signal.
   ("…consider zeroing again.", "…överväg att nollställa om.", #506), never to
   recalibrate. The answer shows in that same step; the calibrate / zero button is
   right there.
+- **Given** nothing is stored yet for that step (no sensor calibration, or no vehicle
+  zero)
+- **When** I tap its "Check"
+- **Then** Check is never greyed out: it answers that there is nothing to check yet and
+  how to get a value ("…tap "Calibrate now"." / "…tap "Zero now"."), and the step's
+  clear button is hidden rather than greyed, since there is nothing to clear (#517).
 - The timestamp never leaves the device.
 
 ## R27 — Only as many ramps as you own, placed where they help most
