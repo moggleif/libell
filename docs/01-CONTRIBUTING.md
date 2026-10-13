@@ -136,8 +136,9 @@ they block a merge like any failing test. Each failure names the file and what t
   dated records and are not checked.
 - **Coverage:** CI runs the unit tests with `npm run test:coverage`, which fails when
   statement, branch, function or line coverage of `src/` drops below the floors in
-  `vite.config.ts`. The floors were set from `main` when the guard arrived. Raise them
-  when coverage grows; never lower them to get green, add the missing tests instead.
+  `vite.config.ts`. The floors sit about 0.8 points under `main`'s coverage when last
+  raised. Raise them when coverage grows; never lower them to get green, add the
+  missing tests instead.
 
 ## Workflow
 
