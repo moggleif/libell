@@ -58,6 +58,8 @@ export const es: Messages = {
   'sensorSource.disconnect': 'Desconectar',
   'sensorSource.status.connecting': 'Conectando…',
   'sensorSource.err.unsupported': 'Este navegador no admite Web Bluetooth.',
+  'sensorSource.unsupported.browser':
+    'Para conectar una caja sensora, abre Libell en Chrome o Edge en Android o en un ordenador. El sensor del móvil funciona aquí como siempre.',
   'sensorSource.err.password':
     'La caja {name} no ha aceptado su contraseña. Escribe abajo el código de cuatro cifras de la caja y toca Reintentar. El código de fábrica es 0000. Si no sabes el código, cámbialo en la aplicación Xparkle.',
   'sensorSource.err.failed': 'No se ha podido conectar con el sensor {name}.',

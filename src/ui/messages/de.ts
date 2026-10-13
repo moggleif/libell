@@ -61,6 +61,8 @@ export const de: Messages = {
   'sensorSource.disconnect': 'Trennen',
   'sensorSource.status.connecting': 'Verbinden…',
   'sensorSource.err.unsupported': 'Dieser Browser unterstützt Web Bluetooth nicht.',
+  'sensorSource.unsupported.browser':
+    'Um eine Sensorbox zu verbinden, öffne Libell in Chrome oder Edge auf Android oder einem Computer. Der eigene Sensor des Handys funktioniert hier wie gewohnt.',
   'sensorSource.err.password':
     'Die {name}-Box hat ihr Passwort nicht akzeptiert. Gib unten den vierstelligen Code der Box ein und tippe auf Erneut versuchen. Der Werkscode ist 0000. Wenn du den Code nicht kennst, ändere ihn in der Xparkle-App.',
   'sensorSource.err.failed': 'Verbindung zum {name}-Sensor nicht möglich.',
