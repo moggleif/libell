@@ -703,7 +703,7 @@ async function navigationFlow(browser) {
   );
   await expectLanding(
     landing(page, lamp(page, 'Calibrate')),
-    'Settings / Calibration',
+    'Settings / Calibrate and zero',
     'the Calibrate lamp',
   );
   await expectLanding(
@@ -714,7 +714,7 @@ async function navigationFlow(browser) {
   for (const [topic, expected] of [
     ['Enter the measurements', 'Settings / Vehicle'],
     ['Ramps', 'Settings / Ramps'],
-    ['Calibrate and zero', 'Settings / Calibration'],
+    ['Calibrate and zero', 'Settings / Calibrate and zero'],
     ['Sensor box', 'Sensor box'],
     ['Targets and sound', 'Settings / Level'],
   ]) {
@@ -730,7 +730,7 @@ async function navigationFlow(browser) {
   assert((await lamps(page)).includes('⚠ Zero'), 'a calibrated phone should light ⚠ Zero');
   await expectLanding(
     landing(page, lamp(page, 'Zero')),
-    'Settings / Calibration',
+    'Settings / Calibrate and zero',
     "the phone's Zero lamp",
   );
   assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
@@ -780,12 +780,16 @@ async function navigationFlow(browser) {
     'libell.activeTarget': JSON.stringify('p1'),
   });
   page = app.page;
-  await expectLanding(landing(page, lamp(page, 'Calibrate')), 'Calibration', 'the Calibrate lamp');
+  await expectLanding(
+    landing(page, lamp(page, 'Calibrate')),
+    'Calibrate and zero',
+    'the Calibrate lamp',
+  );
   await expectLanding(landing(page, page.locator('.target-badge')), 'Level', 'the target badge');
   for (const [topic, expected] of [
     ['Enter the measurements', 'Vehicle'],
     ['Ramps', 'Ramps'],
-    ['Calibrate and zero', 'Calibration'],
+    ['Calibrate and zero', 'Calibrate and zero'],
     ['Targets and sound', 'Level'],
   ]) {
     await expectLanding(helpLanding(page, topic), expected, `Classic Help's ${topic}`);

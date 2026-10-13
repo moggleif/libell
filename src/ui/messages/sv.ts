@@ -39,14 +39,15 @@ export const sv: Messages = {
   'lamp.setup.title': 'Fordonets mått har aldrig sparats — tryck för att öppna Inställningar',
   'lamp.calibrate': '⚠ Kalibrera',
   'lamp.zero': '⚠ Nollställ',
-  'lamp.calibrate.title': 'Telefonen är inte kalibrerad — tryck för att öppna Kalibrering',
-  'lamp.zero.title': 'Fordonet är inte nollställt — tryck för att öppna Kalibrering',
+  'lamp.calibrate.title':
+    'Telefonen är inte kalibrerad — tryck för att öppna ”Kalibrera och nollställ”',
+  'lamp.zero.title': 'Fordonet är inte nollställt — tryck för att öppna ”Kalibrera och nollställ”',
   'lamp.calibrate.title.sensor': 'Boxen är inte nollställd — tryck för att öppna boxen',
 
   'menu.title': 'Meny',
   'menu.close': 'Stäng menyn',
   'menu.settings': 'Inställningar',
-  'menu.calibration': 'Kalibrering',
+  'menu.calibration': 'Kalibrera och nollställ',
   'menu.targets': 'Mål',
   'menu.feedback': 'Feedback',
   'menu.help': 'Hjälp',

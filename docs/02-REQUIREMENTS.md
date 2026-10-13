@@ -138,8 +138,9 @@ URL and must keep working with no signal.
 - **Given** I tap the gear icon
 - **Then** in Modern, it opens straight to the Settings tabs as its own page with a ✕ to
   close — no drawer at all, same "icon opens tabs directly, ✕ to close" shape as the "?"
-  page (R38). The tabs are, in this order, Vehicle, Ramps, Calibration, Level, General
-  (#329): the order a new owner sets things up in, with the app-wide preferences last.
+  page (R38). The tabs are, in this order, Vehicle, Ramps, Calibrate and zero, Level, General
+  (#329; the third tab holds both the phone's calibration and the vehicle zero, so its
+  name covers both, as Help's topic does, #516): the order a new owner sets things up in, with the app-wide preferences last.
   Settings first opens on Vehicle, and later on the tab it was left on. Classic (and
   Glossy, which shares its layout) has no tabs: the gear opens a small drawer ("Menu")
   instead, holding the same five in the same order as full-screen drawer pages. The
@@ -245,10 +246,10 @@ URL and must keep working with no signal.
 - **Given** the phone is the active sensor (#364)
 - **Then** the amber lamp follows the Calibration checklist's order: **⚠ Calibrate**
   while the phone is not calibrated, then **⚠ Zero** while the vehicle is not zeroed
-  (R24); both open Calibration, which expands the step not yet done. Once both are
+  (R24); both open Calibrate and zero (their tooltips name it, #516), which expands the step not yet done. Once both are
   done there is no amber lamp. With a box active the lamp is the box's ⚠ Zero, as
   before.
-- **Given** the phone is the active sensor and Settings → Calibration is open (Modern tab
+- **Given** the phone is the active sensor and Settings → Calibrate and zero is open (Modern tab
   or Classic page)
 - **Then** it is a checklist of two steps, the same pattern as the box's own setup
   (R51, #330): **1. the phone** and **2. the vehicle zero** (R24). A done step shows ✓
@@ -467,7 +468,7 @@ URL and must keep working with no signal.
   later in Settings.
 - **Given** the phone-sensor calibration step (#365: one path for zeroing)
 - **Then** it embeds the phone-calibration half of the same calibration component
-  Settings → Calibration uses (calibrate, or flip where nothing is flat), as a card
+  Settings → Calibrate and zero uses (calibrate, or flip where nothing is flat), as a card
   rather than Settings' checklist step, never a reduced rebuild that could drift from
   the real one (#184) — without Check / Clear, which a first run has no use for and
   Settings keeps under More. The wizard does not ask to zero the
@@ -761,7 +762,7 @@ URL and must keep working with no signal.
 - **Given** a topic about a place in the app (measurements, ramps, calibration, sensor
   box, targets)
 - **Then** it ends in a button to that place: "Open Vehicle", "Open Ramps", "Open
-  Calibration", "Open Level" (named after the Settings tab they open, so they follow
+  Calibrate and zero", "Open Level" (named after the Settings tab they open, so they follow
   its name), and "Open the sensor box". Tapping one closes Help, then opens that Settings
   tab (Classic: that ☰ section). Calibration with a sensor box in use opens the box's
   page instead (a box chosen in the wizard but not yet connected: the sensor list, to
@@ -1101,7 +1102,7 @@ cross-platform goal — they are not this app's code and are not covered here.
 - **Given** an external sensor is the active source and the amber calibration lamp is
   lit (#316)
 - **When** I tap the lamp
-- **Then** the box's own page opens rather than the Calibration tab, its checklist
+- **Then** the box's own page opens rather than the Calibrate and zero tab, its checklist
   (R51) expanding the next step not yet done: the direction before the zero.
 - This installation-offset step lives on the EasyLevel sensor's own page (R40, R51; the
   Sensor box page itself until #226 moved it, along with the mounting picker,
@@ -1794,7 +1795,7 @@ present this source as more proven than it is.
   the box's own page. When I type the right code, the field hides, the card shows
   "Connected" and the code is kept.
 - **Given** the Xparkle box is connected and the user taps "Zero now" ("Nollställ nu")
-  or "Zero again" — on its own page (R51) or in the Calibration tab (R11)
+  or "Zero again" — on its own page (R51) or in the Calibrate and zero tab (R11)
 - **Then** Libell has the box zero itself with its own command (#290), so its readings
   are relative to that position. Libell records the moment as a zero installation
   offset, which drives the "⚠ Zero" lamp and the age text, and replaces any older

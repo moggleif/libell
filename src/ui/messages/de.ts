@@ -33,8 +33,10 @@ export const de: Messages = {
     'Die Maße des Fahrzeugs wurden noch nie gespeichert — zum Öffnen der Einstellungen tippen',
   'lamp.calibrate': '⚠ Kalibrieren',
   'lamp.zero': '⚠ Nullen',
-  'lamp.calibrate.title': 'Das Handy ist nicht kalibriert — zum Öffnen der Kalibrierung tippen',
-  'lamp.zero.title': 'Das Fahrzeug ist nicht genullt — zum Öffnen der Kalibrierung tippen',
+  'lamp.calibrate.title':
+    'Das Handy ist nicht kalibriert — tippe, um „Kalibrieren und nullen“ zu öffnen',
+  'lamp.zero.title':
+    'Das Fahrzeug ist nicht genullt — tippe, um „Kalibrieren und nullen“ zu öffnen',
   'lamp.calibrate.title.sensor': 'Die Box ist nicht genullt — tippen, um die Box zu öffnen',
 
   'sensorStatus.connected': 'Sensorbox verbunden',
@@ -46,7 +48,7 @@ export const de: Messages = {
   'menu.title': 'Menü',
   'menu.close': 'Menü schließen',
   'menu.settings': 'Einstellungen',
-  'menu.calibration': 'Kalibrierung',
+  'menu.calibration': 'Kalibrieren und nullen',
   'menu.targets': 'Ziele',
   'menu.feedback': 'Rückmeldung',
   'menu.help': 'Hilfe',

@@ -159,6 +159,15 @@ describe('i18n terminology (#366)', () => {
     }
   });
 
+  it('names the tab that holds calibration and zero as Help names the topic (#516)', () => {
+    for (const lang of ALL) {
+      const tab = MESSAGES[lang]['menu.calibration'];
+      expect(tab, lang).toBe(MESSAGES[lang]['help.calibration.h']);
+      expect(MESSAGES[lang]['lamp.calibrate.title'], lang).toContain(tab);
+      expect(MESSAGES[lang]['lamp.zero.title'], lang).toContain(tab);
+    }
+  });
+
   it('the setup lamp names the measurements, as the help heading does', () => {
     const word: Record<string, string> = {
       en: 'Measurements',
