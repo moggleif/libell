@@ -6,10 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+# Read-only by default; only the job that needs more gets it (#540).
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # A half-deployed PWA serves a stale service worker, so let a running deploy
 # finish rather than cancelling it.
@@ -73,6 +72,12 @@ jobs:
     name: Build & Deploy
     needs: compute-version
     runs-on: ubuntu-latest
+    # Publishing to Pages needs a Pages-write token and an OIDC token.
+    # Job permissions replace the workflow's, so checkout's read is kept.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
