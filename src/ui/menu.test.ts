@@ -364,3 +364,22 @@ describe('menu — drawer chrome, navigation and focus (#420)', () => {
     expect(getTargetPresets).not.toHaveBeenCalled();
   });
 });
+
+describe('focus while the ☰ menu is open (#537)', () => {
+  it('moves focus into the drawer, keeps Tab inside, and returns it to ☰ on close', () => {
+    document.body.replaceChildren();
+    const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    const button = document.createElement('button');
+    const main = document.createElement('main');
+    main.append(button);
+    document.body.append(main, menu.element);
+    menu.attach(button);
+    button.focus();
+    button.click();
+    expect(main.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(menu.element.querySelector('.menu__close'));
+    button.click();
+    expect(main.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(button);
+  });
+});

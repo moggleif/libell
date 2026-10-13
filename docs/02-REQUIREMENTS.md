@@ -1957,3 +1957,18 @@ its descriptor's capabilities (ADR 0016).
 - **Then** its accessible name is translated and starts with the text on screen, so voice
   control can say what it sees; a lamp's name then says what is missing, and the title's
   that a tap checks for a new version (R50).
+
+## R53 — Screen readers hear what changes; focus stays in an open page (#537)
+
+- **Given** a screen reader on the level screen
+- **When** the vehicle becomes level, the data goes stale, the phone is held wrong, or
+  the status row gets a new sentence
+- **Then** that change is read once: through a live region that is always in the page
+  (an overlay or row that is un-hidden as its text changes is often skipped), urgent
+  for stale data, and not again on each frame that repeats it.
+- **Given** any page or dialog opened from a button: a Settings or "?" page, the box
+  pages, Classic's ☰ menu, the first-run guide or an incoming vehicle-setup link
+- **Then** focus moves into it, Tab and the screen reader stay inside it because the
+  rest of the app is inert while it is open, and closing it puts focus back on the
+  button that opened it. The guide and the setup link are modal dialogs named by their
+  heading.

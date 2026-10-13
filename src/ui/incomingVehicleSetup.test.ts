@@ -104,3 +104,19 @@ describe('the incoming vehicle setup confirmation (#483)', () => {
     expect(overlay.isConnected).toBe(false);
   });
 });
+
+describe('focus in the shared-setup dialog (#537)', () => {
+  it('moves focus to its heading, keeps Tab inside, and gives focus back on close', () => {
+    const main = document.createElement('main');
+    const opener = document.createElement('button');
+    main.append(opener);
+    document.body.append(main);
+    opener.focus();
+    const { overlay } = show(MOTORHOME);
+    expect(document.activeElement).toBe(overlay.querySelector('.incoming-setup__heading'));
+    expect(main.hasAttribute('inert')).toBe(true);
+    overlay.querySelector<HTMLButtonElement>('button')!.click();
+    expect(main.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(opener);
+  });
+});

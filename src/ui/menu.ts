@@ -21,6 +21,7 @@ import type { SettingsFormElement } from './settingsLayout';
 import { createCalibrationSection } from './calibrationSection';
 import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
+import { holdFocus, type FocusHold } from './focusHold';
 import { setVisible } from './motion';
 
 export type MenuSection = 'general' | 'calibration' | 'vehicle' | 'ramps' | 'targets';
@@ -114,7 +115,8 @@ export function createMenu(options: MenuOptions): Menu {
   const settingsForm = createMenuSettingsForm(options);
   const calibration = createCalibrationSection(options, 'checklist');
   const entries = createEntries(drawer, settingsForm, calibration.element, showPage);
-  const view = createMenuView(drawer, page);
+  const element = wrap(drawer.backdrop, page.element);
+  const view = createMenuView(drawer, page, element);
   const depth = createMenuHistory(() => view.render(depth.current()));
 
   function refreshPages(): void {
@@ -143,7 +145,7 @@ export function createMenu(options: MenuOptions): Menu {
 
   wireBackButtons(drawer, page, depth.back);
   return {
-    element: wrap(drawer.backdrop, page.element),
+    element,
     open: showPage,
     isOpen: () => depth.current() > 0,
     refresh() {
@@ -274,10 +276,12 @@ function createEntries(
 
 /**
  * Opening a page focuses its title; going back to the drawer returns focus
- * to the entry that opened it.
+ * to the entry that opened it. While the menu is open the rest of the app
+ * is inert, and closing it returns focus to the ☰ button (#537).
  */
-function createMenuView(drawer: Drawer, page: MenuPage) {
+function createMenuView(drawer: Drawer, page: MenuPage, menu: HTMLElement) {
   let returnFocus: (() => void) | null = null;
+  let hold: FocusHold | null = null;
   function showEntry(entry: MenuEntry): void {
     page.title.textContent = entry.label;
     page.body.replaceChildren(entry.body);
@@ -286,12 +290,20 @@ function createMenuView(drawer: Drawer, page: MenuPage) {
   }
   return {
     render(depth: Depth, entry?: MenuEntry): void {
+      if (depth > 0 && !hold) {
+        hold = holdFocus(menu);
+        if (depth === 1) drawer.close.focus();
+      }
       setVisible(drawer.backdrop, depth > 0);
       setVisible(page.element, depth === 2);
       if (depth === 2 && entry) showEntry(entry);
       if (depth === 1) {
         returnFocus?.();
         returnFocus = null;
+      }
+      if (depth === 0) {
+        hold?.release();
+        hold = null;
       }
     },
   };

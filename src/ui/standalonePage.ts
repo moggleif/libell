@@ -9,6 +9,7 @@
  * would otherwise see. A module-level stack of open pages makes only the
  * most recently opened page react, and it only ever closes itself.
  */
+import { holdFocus, type FocusHold } from './focusHold';
 import { setVisible } from './motion';
 import { t } from './i18n';
 import { createElement } from './dom';
@@ -61,6 +62,8 @@ interface Page {
   readonly titleEl: HTMLHeadingElement;
   readonly onOpen: (() => void) | undefined;
   open: boolean;
+  /** Keeps focus inside while open, and returns it to the opener (#537). */
+  hold: FocusHold | null;
   /** Applies the closed state directly — never calls history.back() itself,
    * so this is safe to use both from a real close() and as this page's
    * popstate reaction (already-consumed history entry, nothing left to
@@ -75,9 +78,12 @@ export function createStandalonePage(initialTitle: string, onOpen?: () => void):
     titleEl,
     onOpen,
     open: false,
+    hold: null,
     applyClosed: () => {
       page.open = false;
       setVisible(element, false);
+      page.hold?.release();
+      page.hold = null;
     },
   };
   const close = (after?: () => void): void => closePage(page, after);
@@ -130,6 +136,7 @@ function show(page: Page): void {
   history.pushState({ libellStandalonePage: 1 }, '');
   openStack.push(page.applyClosed);
   setVisible(page.element, true);
+  page.hold = holdFocus(page.element);
   page.titleEl.focus();
   page.onOpen?.();
 }
