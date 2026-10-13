@@ -447,10 +447,14 @@ export const en = {
   'diagram.done': 'Done',
   // A low wheel no ramp reaches (R5): says why nothing happens there.
   'diagram.noRamp': 'No ramp',
-  'diagram.wheel.frontLeft': 'FRONT L',
-  'diagram.wheel.frontRight': 'FRONT R',
-  'diagram.wheel.rearLeft': 'REAR L',
-  'diagram.wheel.rearRight': 'REAR R',
+  'diagram.wheel.frontLeft': 'Front left',
+  'diagram.wheel.frontRight': 'Front right',
+  'diagram.wheel.rearLeft': 'Rear left',
+  'diagram.wheel.rearRight': 'Rear right',
+  // Spoken only (#534): after a red ✕ wheel's step and lift.
+  'diagram.notEnough': 'not enough',
+  // One wheel in the drawing's screen-reader text: its position, then what it needs.
+  'diagram.speech.wheel': '{wheel}: {instruction}',
   'caravan.crankUp': 'Crank up',
   'caravan.crankDown': 'Crank down',
   // Modern caravan wheel cards' aria-labels (#368).

@@ -193,10 +193,10 @@ describe('rvDiagram — modern appearance (#106)', () => {
     diagram.update(result({}), 'mm', STEPS);
     const c = cardsOf(diagram.element);
     expect(c.count).toBe(4);
-    expect(c.ariaLabel(0)).toBe('FRONT L');
-    expect(c.ariaLabel(1)).toBe('FRONT R');
-    expect(c.ariaLabel(2)).toBe('REAR L');
-    expect(c.ariaLabel(3)).toBe('REAR R');
+    expect(c.ariaLabel(0)).toBe('Front left');
+    expect(c.ariaLabel(1)).toBe('Front right');
+    expect(c.ariaLabel(2)).toBe('Rear left');
+    expect(c.ariaLabel(3)).toBe('Rear right');
     expect(diagram.element.querySelectorAll('.wheel-card__label')).toHaveLength(0);
   });
 

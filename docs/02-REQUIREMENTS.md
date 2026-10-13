@@ -121,6 +121,13 @@ URL and must keep working with no signal.
   (R25's "Measuring…"), that the ramps cannot help here at all and roughly how far off
   they are ("close" or "way off", R27), and how little is left when nearly level. A
   grey wheel says _that_ the ramps fall short; only this row says by how much.
+- **Given** a screen reader, in Classic or Modern, motorhome or caravan (#534)
+- **Then** it hears each wheel's position and what that wheel needs, in the chosen
+  language: the step and lift, "Done", "No ramp" with the lift, or the step and lift
+  followed by "not enough" where the wheel shows red ✕; for the caravan's jockey wheel,
+  the crank direction and amount. Classic's drawing carries this as its text
+  alternative, renewed with every reading; each Modern wheel card is a group named by
+  its position, with the marker glyph hidden and the "not enough" unseen.
 
 ## R7 — A live bubble level (secondary)
 
