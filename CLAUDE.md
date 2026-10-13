@@ -97,5 +97,7 @@ src/
   `vX.Y.0-CR<PR>`. Details in ADR 0007.
 - **Secure context**: sensors need HTTPS or `localhost`; iOS additionally needs a user
   gesture. Real-phone testing options are in `docs/01-CONTRIBUTING.md`.
+- **"granska"**: when Morgan writes it, the thread runs the `whole-repo-review` skill in
+  `.claude/skills/` over all of `main` (#504); it reports and files issues, never changes code.
 - **Sensor preference**: `DeviceMotionEvent.accelerationIncludingGravity` first,
   `DeviceOrientationEvent` fallback, smoothed — specified in `docs/03-ARCHITECTURE.md`.
