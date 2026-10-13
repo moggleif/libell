@@ -35,8 +35,12 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
 
 - GitHub Actions are pinned to commit SHAs, and workflow inputs/outputs reach shell
   steps via `env:` rather than inline interpolation.
-- Workflow permissions follow least privilege (`contents: read` unless a job tags or
-  publishes a release).
+- Workflow permissions follow least privilege: `contents: read` by default, with any
+  write granted only where it is needed. In the deploy, only the job that publishes to
+  GitHub Pages gets `pages: write` and `id-token: write` (the OIDC token Pages
+  requires), and only the tagging job gets `contents: write`. The release-notes
+  workflow writes release texts (`contents: write`), and CodeQL uploads its results
+  (`security-events: write`).
 - Dependabot watches npm packages and action pins weekly. All npm dependencies are
   build-time only; none ship to the client.
 
