@@ -69,7 +69,9 @@ export default defineConfig({
     },
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/icon.svg'],
+      // The glob below already precaches every icon; listing the manifest's
+      // icons again would precache each one twice (#542).
+      includeManifestIcons: false,
       manifest: {
         name: 'Libell',
         short_name: 'Libell',

@@ -382,7 +382,9 @@ steps) is `settingsLayout.ts`, which also assembles the Calibration tab around
 ## Offline
 
 Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`, `woff2`), so once the app
-has been opened with a connection it works with no signal at all. `registerType:
+has been opened with a connection it works with no signal at all. Each file is precached
+once: the manifest's icons are already in that glob (`includeManifestIcons: false`), and
+the install-sheet screenshot, generated from the built app afterwards, is not precached. `registerType:
 'autoUpdate'` lets a new worker activate on its own; `src/ui/appUpdate.ts` then reloads
 an already-controlled page once on `controllerchange`, re-checks for a new worker when
 the app returns to the foreground, and lets a tap on the top-bar name / version check on

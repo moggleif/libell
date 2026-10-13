@@ -56,6 +56,14 @@ describe('checkForUpdate (#301)', () => {
   it('reports unsupported when no worker is registered', async () => {
     expect(await checkForUpdate(deps(undefined))).toBe('unsupported');
   });
+
+  it('reports unsupported, rather than rejecting, when the lookup fails (#542)', async () => {
+    const failing = {
+      getRegistration: () => Promise.reject(new Error('blocked')),
+      isOnline: () => true,
+    };
+    expect(await checkForUpdate(failing)).toBe('unsupported');
+  });
 });
 
 describe('attachUpdateCheck (#301)', () => {
@@ -78,6 +86,20 @@ describe('attachUpdateCheck (#301)', () => {
     );
     expect([...document.querySelectorAll('.toast')].map((n) => n.textContent)).not.toContain(
       t('update.checking'),
+    );
+  });
+
+  it('still shows a result when the worker lookup fails (#542)', async () => {
+    const el = document.createElement('div');
+    attachUpdateCheck(el, {
+      getRegistration: () => Promise.reject(new Error('blocked')),
+      isOnline: () => true,
+    });
+    el.click();
+    await vi.waitFor(() =>
+      expect([...document.querySelectorAll('.toast')].map((n) => n.textContent)).toContain(
+        t('update.unsupported'),
+      ),
     );
   });
 });
@@ -109,6 +131,23 @@ describe('installUpdateReload (#512)', () => {
     expect(reload).toHaveBeenCalledOnce();
     change();
     expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it('checks quietly on return to the foreground, even when the lookup fails (#542)', async () => {
+    const getRegistration = vi.fn(() => Promise.reject(new Error('blocked')));
+    const container = Object.assign(new EventTarget(), { controller: null, getRegistration });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { serviceWorker: container, onLine: true },
+      configurable: true,
+    });
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    installUpdateReload();
+    document.dispatchEvent(new Event('visibilitychange'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    process.off('unhandledRejection', unhandled);
+    expect(getRegistration).toHaveBeenCalled();
+    expect(unhandled).not.toHaveBeenCalled();
   });
 
   it('reloads on the first change when a worker already controlled the page', () => {
