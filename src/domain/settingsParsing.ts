@@ -1,6 +1,6 @@
 /** Reading a stored settings blob back into a valid `LevelSettings`. */
 import { isAppearance } from './appearance';
-import { normalizeHeights } from './lengths';
+import { normalizeHeights, unitToMm } from './lengths';
 import {
   DEFAULT_SETTINGS,
   DRAIN_POSITIONS,
@@ -43,7 +43,7 @@ type StoredSettings = Record<string, unknown>;
 /** A legacy cm length as mm, or undefined when absent or unusable. */
 function legacyCmAsMm(value: unknown): number | undefined {
   const cm = positiveNumber(value, NaN);
-  return Number.isNaN(cm) ? undefined : cm * 10;
+  return Number.isNaN(cm) ? undefined : unitToMm(cm, 'cm');
 }
 
 type VehicleFields = Pick<

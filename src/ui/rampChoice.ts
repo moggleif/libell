@@ -3,9 +3,9 @@
  * form's editors for it: the ready-made-ramp `<select>` and the step-height
  * chips (also shown under "Custom set" on the Ramps page).
  */
-import { formatLength } from '../domain/lengths';
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
-import { fromUnit, type SettingsFormState } from './settingsFields';
+import { formatLength, unitToMm } from '../domain/lengths';
+import type { SettingsFormState } from './settingsFields';
 import { createElement } from './dom';
 import { t } from './i18n';
 
@@ -90,7 +90,7 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
       return;
     }
     input.value = '';
-    onAdd(fromUnit(v, state.unit));
+    onAdd(unitToMm(v, state.unit));
   });
 
   return {

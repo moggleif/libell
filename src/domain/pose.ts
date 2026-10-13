@@ -9,6 +9,7 @@
  * both thresholds.
  */
 import type { GravityVector } from './leveling';
+import { clamp } from './numbers';
 
 const ENTER_NOT_FLAT_DEG = 25;
 const EXIT_NOT_FLAT_DEG = 20;
@@ -20,7 +21,7 @@ export type Pose = 'flat' | 'not-flat';
 export function totalTiltDeg(gravity: GravityVector): number {
   const len = Math.hypot(gravity.x, gravity.y, gravity.z);
   if (len === 0) return 90;
-  return Math.acos(Math.min(1, Math.max(-1, gravity.z / len))) * RAD_TO_DEG;
+  return Math.acos(clamp(gravity.z / len, -1, 1)) * RAD_TO_DEG;
 }
 
 /** Stateful detector with hysteresis; feed it every reading. */

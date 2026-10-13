@@ -9,6 +9,7 @@
  * and the pages ask for, one branch per source.
  */
 import { tiltFromGravity } from '../domain/leveling';
+import { clamp } from '../domain/numbers';
 import {
   axisMappingForEasyLevelMounting,
   EASYLEVEL_PLACEMENTS,
@@ -181,7 +182,7 @@ export function withEasyLevelConnectDelay(
   enabled: boolean,
   ms: number,
 ): LevelSettings {
-  const clampedMs = Math.min(MAX_EASYLEVEL_CONNECT_DELAY_MS, Math.max(0, Math.round(ms) || 0));
+  const clampedMs = clamp(Math.round(ms) || 0, 0, MAX_EASYLEVEL_CONNECT_DELAY_MS);
   return withEasyLevelSettings(settings, {
     connectDelayEnabled: enabled,
     connectDelayMs: clampedMs,
