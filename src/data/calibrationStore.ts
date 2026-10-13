@@ -5,7 +5,14 @@
  */
 import type { SensorSource } from '../domain/settings';
 import { MAX_TILT_DEG, parseCalibration, type Calibration } from '../domain/calibration';
-import { defaultStorage, type KeyValueStorage } from './keyValueStorage';
+import {
+  defaultStorage,
+  migrateOnce,
+  readJson,
+  removeItem,
+  writeJson,
+  type KeyValueStorage,
+} from './keyValueStorage';
 
 const CALIBRATION_KEY = 'libell.calibration';
 const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
@@ -39,18 +46,15 @@ function readCalibration(
   storage: KeyValueStorage | null,
   maxDeg?: number,
 ): StoredCalibration | null {
-  try {
-    const raw = storage?.getItem(key);
-    if (raw === null || raw === undefined) return null;
-    const parsed: unknown = JSON.parse(raw);
-    const value = parseCalibration(parsed, maxDeg);
-    if (!value) return null;
-    const at = (parsed as Record<string, unknown>).capturedAt;
-    const capturedAt = typeof at === 'number' && Number.isFinite(at) && at > 0 ? at : null;
-    return { value, capturedAt };
-  } catch {
-    return null;
-  }
+  return readJson(storage, key, (parsed) => storedCalibration(parsed, maxDeg), null);
+}
+
+function storedCalibration(parsed: unknown, maxDeg?: number): StoredCalibration | null {
+  const value = parseCalibration(parsed, maxDeg);
+  if (!value) return null;
+  const at = (parsed as Record<string, unknown>).capturedAt;
+  const capturedAt = typeof at === 'number' && Number.isFinite(at) && at > 0 ? at : null;
+  return { value, capturedAt };
 }
 
 function writeCalibration(
@@ -59,11 +63,7 @@ function writeCalibration(
   capturedAt: number,
   storage: KeyValueStorage | null,
 ): void {
-  try {
-    storage?.setItem(key, JSON.stringify({ ...calibration, capturedAt }));
-  } catch {
-    // Storage full or unavailable: the in-memory value works until a restart.
-  }
+  writeJson(storage, key, { ...calibration, capturedAt });
 }
 
 export function loadCalibration(
@@ -109,11 +109,7 @@ export function saveVehicleCalibration(
 }
 
 export function clearVehicleCalibration(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    storage?.removeItem(VEHICLE_CALIBRATION_KEY);
-  } catch {
-    // Nothing to do — the in-memory state is cleared by the caller.
-  }
+  removeItem(storage, VEHICLE_CALIBRATION_KEY);
 }
 
 /**
@@ -149,11 +145,7 @@ export function clearInstallCalibration(
   source: SensorSource,
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
-  try {
-    storage?.removeItem(installCalibrationKey(source));
-  } catch {
-    // Nothing to do — the in-memory state is cleared by the caller.
-  }
+  removeItem(storage, installCalibrationKey(source));
 }
 
 /**
@@ -169,24 +161,13 @@ export function clearInstallCalibration(
 export function migrateLegacyInstallCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
-  try {
-    if (storage === null) return;
-    if (storage.getItem(INSTALL_CALIBRATION_MIGRATED_KEY) !== null) return;
-    const legacy = storage.getItem(LEGACY_EASYLEVEL_CALIBRATION_KEY);
+  migrateOnce(storage, INSTALL_CALIBRATION_MIGRATED_KEY, (store) => {
+    const legacy = store.getItem(LEGACY_EASYLEVEL_CALIBRATION_KEY);
     const target = installCalibrationKey('easylevel');
-    if (legacy !== null && storage.getItem(target) === null) {
-      storage.setItem(target, legacy);
-    }
-    storage.setItem(INSTALL_CALIBRATION_MIGRATED_KEY, '1');
-  } catch {
-    // Never half-migrated: the marker is written last.
-  }
+    if (legacy !== null && store.getItem(target) === null) store.setItem(target, legacy);
+  });
 }
 
 export function clearCalibration(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    storage?.removeItem(CALIBRATION_KEY);
-  } catch {
-    // Nothing to do — the in-memory state is cleared by the caller.
-  }
+  removeItem(storage, CALIBRATION_KEY);
 }

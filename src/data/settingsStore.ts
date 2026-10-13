@@ -11,7 +11,18 @@ import {
   parseTargetPresets,
   type TargetPreset,
 } from '../domain/targetPresets';
-import { defaultStorage, type KeyValueStorage } from './keyValueStorage';
+import {
+  defaultStorage,
+  guarded,
+  migrateOnce,
+  readFlag,
+  readJson,
+  removeItem,
+  writeFlag,
+  writeItem,
+  writeJson,
+  type MaybeStorage,
+} from './keyValueStorage';
 
 const STORAGE_KEY = 'libell.settings';
 // Set once the vehicle measurements have been saved: the ⚠ Setup lamp's
@@ -36,52 +47,24 @@ const BOX_PENDING_KEY = 'libell.boxPending';
 const TARGET_PRESETS_KEY = 'libell.targetPresets';
 const ACTIVE_TARGET_KEY = 'libell.activeTarget';
 
-export function loadSettings(storage: KeyValueStorage | null = defaultStorage()): LevelSettings {
-  let parsed: unknown;
-  try {
-    const raw = storage?.getItem(STORAGE_KEY);
-    parsed = raw === null || raw === undefined ? undefined : JSON.parse(raw);
-  } catch {
-    parsed = undefined;
-  }
-  return parseSettings(parsed);
+export function loadSettings(storage: MaybeStorage = defaultStorage()): LevelSettings {
+  return parseSettings(readJson<unknown>(storage, STORAGE_KEY, (value) => value, undefined));
 }
 
 export function saveSettings(
   settings: LevelSettings,
-  storage: KeyValueStorage | null = defaultStorage(),
+  storage: MaybeStorage = defaultStorage(),
 ): void {
-  try {
-    storage?.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch {
-    // Storage full or unavailable — the app keeps working with the
-    // in-memory value; it just won't survive a restart.
-  }
+  writeJson(storage, STORAGE_KEY, settings);
 }
 
-/** True once the user has saved vehicle settings at least once. */
-export function hasStoredSettings(storage: KeyValueStorage | null = defaultStorage()): boolean {
-  try {
-    return storage?.getItem(STORAGE_KEY) != null;
-  } catch {
-    return false;
-  }
+/** By presence, not '1': the only flag read that way since #364. */
+export function hasStoredMeasurements(storage: MaybeStorage = defaultStorage()): boolean {
+  return guarded(() => storage?.getItem(MEASUREMENTS_SAVED_KEY) != null, false);
 }
 
-export function hasStoredMeasurements(storage: KeyValueStorage | null = defaultStorage()): boolean {
-  try {
-    return storage?.getItem(MEASUREMENTS_SAVED_KEY) != null;
-  } catch {
-    return false;
-  }
-}
-
-export function markMeasurementsSaved(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    storage?.setItem(MEASUREMENTS_SAVED_KEY, '1');
-  } catch {
-    // Same graceful degradation as saveSettings.
-  }
+export function markMeasurementsSaved(storage: MaybeStorage = defaultStorage()): void {
+  writeFlag(storage, MEASUREMENTS_SAVED_KEY, true);
 }
 
 /**
@@ -90,121 +73,66 @@ export function markMeasurementsSaved(storage: KeyValueStorage | null = defaultS
  * where nothing is stored yet — so a wizard that saves the language and
  * reloads can never be mistaken for an older install.
  */
-export function migrateMeasurementsSaved(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    if (storage === null) return;
-    if (storage.getItem(MEASUREMENTS_MIGRATED_KEY) !== null) return;
-    if (storage.getItem(STORAGE_KEY) !== null) storage.setItem(MEASUREMENTS_SAVED_KEY, '1');
-    storage.setItem(MEASUREMENTS_MIGRATED_KEY, '1');
-  } catch {
-    // Storage unavailable: nothing is saved either way.
-  }
+export function migrateMeasurementsSaved(storage: MaybeStorage = defaultStorage()): void {
+  migrateOnce(storage, MEASUREMENTS_MIGRATED_KEY, (store) => {
+    if (store.getItem(STORAGE_KEY) !== null) store.setItem(MEASUREMENTS_SAVED_KEY, '1');
+  });
 }
 
-export function loadLanguage(storage: KeyValueStorage | null = defaultStorage()): unknown {
-  try {
-    return storage?.getItem(LANGUAGE_KEY);
-  } catch {
-    return null;
-  }
+/** Unknown: the caller validates it; null when storage is blocked. */
+export function loadLanguage(storage: MaybeStorage = defaultStorage()): unknown {
+  return guarded<unknown>(() => storage?.getItem(LANGUAGE_KEY), null);
 }
 
-export function saveLanguage(
-  lang: string,
-  storage: KeyValueStorage | null = defaultStorage(),
-): void {
-  try {
-    storage?.setItem(LANGUAGE_KEY, lang);
-  } catch {
-    // Non-fatal — auto-detection covers the next start.
-  }
+/** Blocked storage is non-fatal: auto-detection covers the next start. */
+export function saveLanguage(lang: string, storage: MaybeStorage = defaultStorage()): void {
+  writeItem(storage, LANGUAGE_KEY, lang);
 }
 
 /** The "Automatic" choice: back to detecting the browser's language on every
  * load. */
-export function clearLanguage(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    storage?.removeItem(LANGUAGE_KEY);
-  } catch {
-    // Nothing to do — the in-memory state is cleared by the caller.
-  }
+export function clearLanguage(storage: MaybeStorage = defaultStorage()): void {
+  removeItem(storage, LANGUAGE_KEY);
 }
 
-export function hasSeenOnboarding(storage: KeyValueStorage | null = defaultStorage()): boolean {
-  try {
-    return storage?.getItem(ONBOARDED_KEY) === '1';
-  } catch {
-    return true; // Storage unavailable — do not loop the wizard forever.
-  }
+/** Blocked storage reads as seen, so the wizard never loops. */
+export function hasSeenOnboarding(storage: MaybeStorage = defaultStorage()): boolean {
+  return readFlag(storage, ONBOARDED_KEY, true);
 }
 
-export function markOnboardingSeen(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    storage?.setItem(ONBOARDED_KEY, '1');
-  } catch {
-    // Non-fatal.
-  }
+export function markOnboardingSeen(storage: MaybeStorage = defaultStorage()): void {
+  writeFlag(storage, ONBOARDED_KEY, true);
 }
 
-/** See `ONBOARDING_DONE_KEY` for how this differs from `hasSeenOnboarding`. */
-export function hasDoneOnboarding(storage: KeyValueStorage | null = defaultStorage()): boolean {
-  try {
-    return storage?.getItem(ONBOARDING_DONE_KEY) === '1';
-  } catch {
-    return true; // Storage unavailable — default to the "done" look, not a false nag.
-  }
+/** See `ONBOARDING_DONE_KEY` for how this differs from `hasSeenOnboarding`.
+ * Blocked storage reads as done: the plain look, not a false nag. */
+export function hasDoneOnboarding(storage: MaybeStorage = defaultStorage()): boolean {
+  return readFlag(storage, ONBOARDING_DONE_KEY, true);
 }
 
-export function markOnboardingDone(storage: KeyValueStorage | null = defaultStorage()): void {
-  try {
-    storage?.setItem(ONBOARDING_DONE_KEY, '1');
-  } catch {
-    // Non-fatal.
-  }
+export function markOnboardingDone(storage: MaybeStorage = defaultStorage()): void {
+  writeFlag(storage, ONBOARDING_DONE_KEY, true);
 }
 
-export function isBoxPending(storage: KeyValueStorage | null = defaultStorage()): boolean {
-  try {
-    return storage?.getItem(BOX_PENDING_KEY) === '1';
-  } catch {
-    return false; // Storage unavailable — the ordinary phone lamp, not a box nag.
-  }
+/** Blocked storage reads as not pending: the ordinary phone lamp. */
+export function isBoxPending(storage: MaybeStorage = defaultStorage()): boolean {
+  return readFlag(storage, BOX_PENDING_KEY, false);
 }
 
-export function setBoxPending(
-  pending: boolean,
-  storage: KeyValueStorage | null = defaultStorage(),
-): void {
-  try {
-    if (pending) storage?.setItem(BOX_PENDING_KEY, '1');
-    else storage?.removeItem(BOX_PENDING_KEY);
-  } catch {
-    // Non-fatal.
-  }
+export function setBoxPending(pending: boolean, storage: MaybeStorage = defaultStorage()): void {
+  writeFlag(storage, BOX_PENDING_KEY, pending);
 }
 
 /** Validated on every read: one corrupt entry never breaks startup. */
-export function loadTargetPresets(
-  storage: KeyValueStorage | null = defaultStorage(),
-): TargetPreset[] {
-  try {
-    const raw = storage?.getItem(TARGET_PRESETS_KEY);
-    if (raw === null || raw === undefined) return [];
-    return parseTargetPresets(JSON.parse(raw));
-  } catch {
-    return [];
-  }
+export function loadTargetPresets(storage: MaybeStorage = defaultStorage()): TargetPreset[] {
+  return readJson(storage, TARGET_PRESETS_KEY, parseTargetPresets, []);
 }
 
 export function saveTargetPresets(
   presets: TargetPreset[],
-  storage: KeyValueStorage | null = defaultStorage(),
+  storage: MaybeStorage = defaultStorage(),
 ): void {
-  try {
-    storage?.setItem(TARGET_PRESETS_KEY, JSON.stringify(presets));
-  } catch {
-    // Same graceful degradation as saveSettings.
-  }
+  writeJson(storage, TARGET_PRESETS_KEY, presets);
 }
 
 /**
@@ -214,27 +142,17 @@ export function saveTargetPresets(
  */
 export function loadActiveTargetId(
   presets: TargetPreset[],
-  storage: KeyValueStorage | null = defaultStorage(),
+  storage: MaybeStorage = defaultStorage(),
 ): string | null {
-  try {
-    const raw = storage?.getItem(ACTIVE_TARGET_KEY);
-    if (raw === null || raw === undefined) return null;
-    return parseActiveTargetId(JSON.parse(raw), presets);
-  } catch {
-    return null;
-  }
+  return readJson(storage, ACTIVE_TARGET_KEY, (value) => parseActiveTargetId(value, presets), null);
 }
 
 /** `null` (Normal) removes the key: Normal is never a stored value, so it can
  * never be corrupted or lost. */
 export function saveActiveTargetId(
   id: string | null,
-  storage: KeyValueStorage | null = defaultStorage(),
+  storage: MaybeStorage = defaultStorage(),
 ): void {
-  try {
-    if (id === null) storage?.removeItem(ACTIVE_TARGET_KEY);
-    else storage?.setItem(ACTIVE_TARGET_KEY, JSON.stringify(id));
-  } catch {
-    // Same graceful degradation as saveSettings.
-  }
+  if (id === null) removeItem(storage, ACTIVE_TARGET_KEY);
+  else writeJson(storage, ACTIVE_TARGET_KEY, id);
 }

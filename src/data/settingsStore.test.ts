@@ -8,7 +8,6 @@ import {
   saveLanguage,
   clearLanguage,
   hasStoredMeasurements,
-  hasStoredSettings,
   isBoxPending,
   setBoxPending,
   markMeasurementsSaved,
@@ -90,13 +89,6 @@ describe('settingsStore', () => {
   it('falls back to defaults when storage is unavailable', () => {
     expect(loadSettings(null)).toEqual(DEFAULT_SETTINGS);
     expect(() => saveSettings(DEFAULT_SETTINGS, null)).not.toThrow();
-  });
-
-  it('reports whether settings were ever saved', () => {
-    const storage = memoryStorage();
-    expect(hasStoredSettings(storage)).toBe(false);
-    saveSettings(DEFAULT_SETTINGS, storage);
-    expect(hasStoredSettings(storage)).toBe(true);
   });
 });
 
