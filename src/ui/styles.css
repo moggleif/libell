@@ -1,4 +1,5 @@
-:root {
+:root,
+:root[data-theme='dark'] {
   --surface: #101418;
   --surface-raised: #1a2027;
   /* Classic has no sunken or inset UI; these fall back to neutral surfaces. */
@@ -37,23 +38,7 @@
 }
 
 /* Explicit theme from Settings overrides the system scheme by specificity.
- * No attribute = follow the phone. */
-:root[data-theme='dark'] {
-  --surface: #101418;
-  --surface-raised: #1a2027;
-  --surface-sunken: #101418;
-  --surface-inset: var(--surface-raised);
-  --outline: #2d333b;
-  --field-border: #768390;
-  --on-surface: #e6edf3;
-  --on-surface-muted: #8b949e;
-  --level: #3fb950;
-  --lift-small: #d29922;
-  --lift-large: #f85149;
-  --lift-unserved: #848d97;
-  --warning: #d29922;
-}
-
+ * No attribute = follow the phone; the dark theme is the first rule. */
 :root[data-theme='light'] {
   --surface: #f6f8fa;
   --surface-raised: #ffffff;
@@ -73,7 +58,8 @@
 /* ---- Modern appearance preset ----
  * An axis independent of light/dark; only the surface family differs,
  * status colors are shared. */
-:root[data-appearance='modern'] {
+:root[data-appearance='modern'],
+:root[data-appearance='modern'][data-theme='dark'] {
   --surface: #0c1310;
   --surface-raised: #16211b;
   --surface-sunken: #1d2c24;
@@ -95,16 +81,6 @@
     --on-surface: #12211a;
     --on-surface-muted: #55665c;
   }
-}
-
-:root[data-appearance='modern'][data-theme='dark'] {
-  --surface: #0c1310;
-  --surface-raised: #16211b;
-  --surface-sunken: #1d2c24;
-  --surface-inset: #22342a;
-  --outline: #2c4437;
-  --on-surface: #e9f1ec;
-  --on-surface-muted: #93a89b;
 }
 
 :root[data-appearance='modern'][data-theme='light'] {
@@ -272,7 +248,8 @@ body {
 }
 
 /* Classic is "unstyled HTML": flat color, outset/inset borders, square
- * corners. Modern and Glossy override each of these per component. */
+ * corners. Modern and Glossy override each of these per component (the
+ * primary buttons share theirs, by `.menu__action`). */
 .topbar__install {
   font: inherit;
   font-size: 0.9rem;
@@ -284,25 +261,6 @@ body {
   min-height: 44px;
   padding: 8px 18px;
   cursor: pointer;
-}
-
-:root[data-appearance='modern'] .topbar__install {
-  border: 0;
-  border-radius: 999px;
-}
-
-:root[data-appearance='glossy'] .topbar__install {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--level) 100%, white 35%),
-    var(--level) 65%,
-    color-mix(in srgb, var(--level) 100%, black 12%)
-  );
-  border: 1px solid color-mix(in srgb, var(--level) 100%, black 20%);
-  border-radius: 999px;
-  box-shadow:
-    0 1px 3px rgb(0 0 0 / 35%),
-    inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
 /* ---- Bottom action bar: settings / sound / help ----
@@ -565,25 +523,6 @@ body {
   border-radius: 0;
   padding: 14px 48px;
   cursor: pointer;
-}
-
-:root[data-appearance='modern'] .app__start {
-  border: 0;
-  border-radius: 999px;
-}
-
-:root[data-appearance='glossy'] .app__start {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--level) 100%, white 35%),
-    var(--level) 65%,
-    color-mix(in srgb, var(--level) 100%, black 12%)
-  );
-  border: 1px solid color-mix(in srgb, var(--level) 100%, black 20%);
-  border-radius: 999px;
-  box-shadow:
-    0 2px 4px rgb(0 0 0 / 35%),
-    inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
 /* ---- RV diagram (hero) ---- */
@@ -1215,11 +1154,17 @@ body {
   cursor: pointer;
 }
 
+/* The primary buttons' Modern and Glossy looks; only Glossy's outer
+ * shadow differs per button. */
+:root[data-appearance='modern'] .topbar__install,
+:root[data-appearance='modern'] .app__start,
 :root[data-appearance='modern'] .menu__action {
   border: 0;
   border-radius: 999px;
 }
 
+:root[data-appearance='glossy'] .topbar__install,
+:root[data-appearance='glossy'] .app__start,
 :root[data-appearance='glossy'] .menu__action {
   background: linear-gradient(
     to bottom,
@@ -1231,6 +1176,18 @@ body {
   border-radius: 999px;
   box-shadow:
     0 1px 3px rgb(0 0 0 / 30%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
+}
+
+:root[data-appearance='glossy'] .topbar__install {
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 35%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
+}
+
+:root[data-appearance='glossy'] .app__start {
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 35%),
     inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
@@ -2045,26 +2002,31 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Wrong-pose overlay: shown while the phone is not flat / rotated. */
-.pose-overlay {
+/* Wrong-pose overlay: shown while the phone is not flat / rotated. The
+ * stale-data overlay (sensor data stopped refreshing) shares its frame;
+ * safety-critical, its --warning text keeps it from being mistaken for
+ * the wrong-pose one. */
+.pose-overlay,
+.stale-overlay {
   position: absolute;
   inset: 0;
   z-index: 15;
   background: var(--surface);
   display: flex;
+  flex-direction: column;
+  gap: 12px;
   align-items: center;
   justify-content: center;
   padding: 24px;
   text-align: center;
 }
 
-.pose-overlay[hidden] {
+.pose-overlay[hidden],
+.stale-overlay[hidden],
+.pose-overlay__hint[hidden],
+.pose-overlay .menu__action[hidden],
+.stale-overlay .menu__action[hidden] {
   display: none;
-}
-
-.pose-overlay {
-  flex-direction: column;
-  gap: 12px;
 }
 
 .pose-overlay__text {
@@ -2080,46 +2042,10 @@ body {
   font-size: 0.95rem;
 }
 
-.pose-overlay__hint[hidden],
-.pose-overlay .menu__action[hidden] {
-  display: none;
-}
-
-.pose-overlay .menu__action {
-  max-width: 280px;
-  margin-top: 4px;
-}
-
-/* Stale-data overlay: sensor data stopped refreshing. Safety-critical; the
-   --warning tint keeps it from being mistaken for the wrong-pose overlay. */
-.stale-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 15;
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  text-align: center;
-}
-
-.stale-overlay[hidden] {
-  display: none;
-}
-
-.stale-overlay {
-  flex-direction: column;
-  gap: 12px;
-}
-
+.pose-overlay .menu__action,
 .stale-overlay .menu__action {
   max-width: 280px;
   margin-top: 4px;
-}
-
-.stale-overlay .menu__action[hidden] {
-  display: none;
 }
 
 .stale-overlay__text {
@@ -2689,7 +2615,9 @@ body {
 }
 
 /* The wizard step already is the card, so the embedded card sheds its
- * frame; onboarding.ts folds its heading into the step heading. */
+ * frame; onboarding.ts folds its heading into the step heading. The gap
+ * is Modern's and Glossy's: in Classic the later `.onboarding
+ * .calibration-card` rules win, in the others this list's specificity. */
 .onboarding .calibration-card,
 :root[data-appearance='modern'] .onboarding .calibration-card,
 :root[data-appearance='glossy'] .onboarding .calibration-card {
