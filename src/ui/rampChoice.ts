@@ -6,6 +6,7 @@
 import { formatLength } from '../domain/lengths';
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
 import { fromUnit, type SettingsFormState } from './settingsFields';
+import { createElement } from './dom';
 import { t } from './i18n';
 
 /**
@@ -60,8 +61,9 @@ export function createStepEditor(choice: RampChoice, state: SettingsFormState, e
   };
 }
 
-/** A number field and an Add button, enabled only for a positive number,
- * which hands the typed height over in mm. */
+/** A number field and an Add button, which hands a positive typed height
+ * over in mm. Any other value is left in the field with the same
+ * "must be positive" text the other number fields show (#514). */
 function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void) {
   const row = document.createElement('div');
   row.className = 'steps__add';
@@ -71,21 +73,23 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'menu__action menu__action--secondary steps__add-btn';
-  button.disabled = true;
   row.append(input, button);
+  const error = createElement('p', 'settings__hint settings__error');
+  error.setAttribute('role', 'alert');
+  error.hidden = true;
 
-  const typedStep = (): number | null => {
-    const v = input.valueAsNumber;
-    return Number.isFinite(v) && v > 0 ? v : null;
-  };
   input.addEventListener('input', () => {
-    button.disabled = typedStep() === null;
+    error.hidden = true;
   });
   button.addEventListener('click', () => {
-    const v = typedStep();
-    if (v === null) return;
+    const v = input.valueAsNumber;
+    if (!(Number.isFinite(v) && v > 0)) {
+      error.textContent = t('settings.err.positive');
+      error.hidden = false;
+      row.after(error);
+      return;
+    }
     input.value = '';
-    button.disabled = true;
     onAdd(fromUnit(v, state.unit));
   });
 
@@ -94,6 +98,7 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
     relabel: (): void => {
       input.placeholder = state.unit === 'cm' ? '4' : '40';
       button.textContent = `+ ${t('settings.steps.add')}`;
+      if (!error.hidden) error.textContent = t('settings.err.positive');
     },
   };
 }

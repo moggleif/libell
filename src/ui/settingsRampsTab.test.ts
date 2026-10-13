@@ -73,6 +73,12 @@ function addStep(field: HTMLElement, value: string): HTMLButtonElement {
   return button;
 }
 
+/** The visible "must be positive" text under the add row, if any. */
+function stepError(field: HTMLElement): HTMLElement | null {
+  const error = field.querySelector<HTMLElement>('.settings__error');
+  return error && !error.hidden ? error : null;
+}
+
 function removeChip(field: HTMLElement, label: string): void {
   const chip = [...field.querySelectorAll('.steps__chip')].find(
     (c) => c.firstElementChild?.textContent === label,
@@ -138,22 +144,46 @@ describe('the compact form', () => {
     expect(rampSelect(tab).value).toBe('Biltema nivåkloss');
   });
 
-  it('enables Add only for a positive number, and adds it in mm, sorted, once', () => {
+  it('adds a positive number in mm, sorted, once, and clears the field', () => {
     const { tab, changed } = build({}, 'cm');
-    const button = addStep(tab.stepsField, '');
-    expect(button.disabled).toBe(true);
-    addStep(tab.stepsField, '-2');
-    expect(button.disabled).toBe(true);
-    addStep(tab.stepsField, '6').click();
+    const button = addStep(tab.stepsField, '6');
+    expect(button.disabled).toBe(false);
+    button.click();
     expect(read(tab).rampStepHeightsMm).toEqual([44, 60, 78, 112]);
     expect(chips(tab.stepsField)).toEqual(['4.4 cm', '6 cm', '7.8 cm', '11.2 cm']);
-    expect(button.disabled).toBe(true);
     expect(tab.stepsField.querySelector<HTMLInputElement>('.steps__add input')!.value).toBe('');
     expect(rampSelect(tab).value).toBe('');
     expect(changed).toHaveBeenCalledOnce();
+    expect(stepError(tab.stepsField)).toBeNull();
 
     addStep(tab.stepsField, '6').click();
     expect(read(tab).rampStepHeightsMm).toEqual([44, 60, 78, 112]);
+  });
+
+  it.each(['', '0', '-2'])(
+    'keeps Add enabled and explains, rather than adds, for %j (#514)',
+    (value) => {
+      const { tab, changed } = build({}, 'cm');
+      const button = addStep(tab.stepsField, value);
+      expect(button.disabled).toBe(false);
+      button.click();
+      expect(changed).not.toHaveBeenCalled();
+      expect(read(tab).rampStepHeightsMm).toEqual(THULE);
+      const error = stepError(tab.stepsField)!;
+      expect(error.textContent).toBe(t('settings.err.positive'));
+      expect(error.getAttribute('role')).toBe('alert');
+      expect(tab.stepsField.querySelector<HTMLInputElement>('.steps__add input')!.value).toBe(
+        value,
+      );
+    },
+  );
+
+  it('hides the explanation once the field is typed in again (#514)', () => {
+    const { tab } = build();
+    addStep(tab.stepsField, '').click();
+    expect(stepError(tab.stepsField)).not.toBeNull();
+    addStep(tab.stepsField, '5');
+    expect(stepError(tab.stepsField)).toBeNull();
   });
 
   it('removes a step with its chip button, labelled with the value', () => {
