@@ -38,6 +38,16 @@ function page() {
 }
 
 describe('setupTopBar', () => {
+  it('names the action bar in the chosen language (#535)', () => {
+    page();
+    const nav = document.createElement('nav');
+    nav.className = 'bottombar';
+    nav.setAttribute('aria-label', 'Actions');
+    document.body.append(nav);
+    setupTopBar(document, null);
+    expect(nav.getAttribute('aria-label')).toBe(t('bottombar.label'));
+  });
+
   beforeEach(() => vi.clearAllMocks());
 
   it('sets up Install, Share and the update check on their elements', () => {

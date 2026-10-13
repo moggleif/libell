@@ -8,6 +8,7 @@ export const en = {
   'bottombar.sound.mute': 'Mute sound',
   'bottombar.sound.unmute': 'Unmute sound',
   'bottombar.help': 'Help',
+  'bottombar.label': 'Actions',
   'share.text': 'Level your motorhome or caravan with your phone.',
   'share.copied': 'Link copied!',
   // Update check (#301): tapping the name / version in the top bar.
@@ -234,6 +235,7 @@ export const en = {
   'settings.measureHint.boggie': 'With a boggie, measure to the centre of the axle pair.',
   'settings.steps': 'Ramp step heights',
   'settings.steps.add': 'Add step',
+  'settings.steps.new': 'New step height ({unit})',
   'settings.steps.remove': 'Remove {value}',
   'settings.ramp': 'Ready-made ramp',
   'settings.ramp.custom': 'Custom set',
@@ -357,6 +359,7 @@ export const en = {
   // A deliberate non-level target (ADR 0013); "Normal" is true level.
   'targets.normal': 'Normal (level)',
   'targets.name.placeholder': 'Name (e.g. "Shower drain")',
+  'targets.name.label': 'Name of the new target',
   'targets.defaultName': 'Target {n}',
   'targets.add': 'Save current tilt as new target',
   'targets.delete': 'Delete {name}',

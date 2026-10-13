@@ -96,7 +96,10 @@ export function attachUpdateCheck(
 ): void {
   target.setAttribute('role', 'button');
   target.tabIndex = 0;
-  target.setAttribute('aria-label', t('update.check'));
+  // Starts with what it shows (name and version) so voice control can say
+  // what it sees, then what a tap does (#535).
+  const shown = target.textContent?.replace(/\s+/g, ' ').trim();
+  target.setAttribute('aria-label', [shown, t('update.check')].filter(Boolean).join('. '));
   target.classList.add('topbar__identity--tappable');
 
   let busy = false;

@@ -8,6 +8,7 @@ export const fr: Messages = {
   'bottombar.sound.mute': 'Couper le son',
   'bottombar.sound.unmute': 'Activer le son',
   'bottombar.help': 'Aide',
+  'bottombar.label': 'Actions',
   'share.text': 'Mettez votre camping-car ou votre caravane de niveau avec votre téléphone.',
   'share.copied': 'Lien copié !',
   'update.check': 'Rechercher une nouvelle version',
@@ -217,6 +218,7 @@ export const fr: Messages = {
     'Avec un double essieu, mesurez jusqu’au centre de la paire d’essieux.',
   'settings.steps': 'Hauteurs des paliers de rampe',
   'settings.steps.add': 'Ajouter un palier',
+  'settings.steps.new': 'Nouvelle hauteur de palier ({unit})',
   'settings.steps.remove': 'Supprimer {value}',
   'settings.ramp': 'Rampe toute faite',
   'settings.ramp.custom': 'Jeu personnalisé',
@@ -338,6 +340,7 @@ export const fr: Messages = {
 
   'targets.normal': 'Normal (de niveau)',
   'targets.name.placeholder': 'Nom (par ex. « Évacuation douche »)',
+  'targets.name.label': 'Nom de la nouvelle cible',
   'targets.defaultName': 'Cible {n}',
   'targets.add': 'Enregistrer l’inclinaison actuelle comme nouvelle cible',
   'targets.delete': 'Supprimer {name}',

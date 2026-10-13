@@ -161,6 +161,8 @@ function catalogueRow(name: string, mmLine?: HTMLElement) {
   return {
     row,
     select: (selected: boolean): void => {
+      // The radio is hidden from screen readers; this says it instead (#535).
+      row.setAttribute('aria-pressed', String(selected));
       row.classList.toggle('klossar__row--selected', selected);
       radio.classList.toggle('klossar__radio--selected', selected);
     },

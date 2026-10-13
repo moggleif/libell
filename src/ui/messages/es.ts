@@ -8,6 +8,7 @@ export const es: Messages = {
   'bottombar.sound.mute': 'Silenciar el sonido',
   'bottombar.sound.unmute': 'Activar el sonido',
   'bottombar.help': 'Ayuda',
+  'bottombar.label': 'Acciones',
   'share.text': 'Nivela tu autocaravana o caravana con el móvil.',
   'share.copied': '¡Enlace copiado!',
   'update.check': 'Buscar una versión nueva',
@@ -211,6 +212,7 @@ export const es: Messages = {
   'settings.measureHint.boggie': 'Con doble eje, mide hasta el centro del par de ejes.',
   'settings.steps': 'Alturas de los escalones de la rampa',
   'settings.steps.add': 'Añadir escalón',
+  'settings.steps.new': 'Nueva altura de escalón ({unit})',
   'settings.steps.remove': 'Quitar {value}',
   'settings.ramp': 'Rampa prefabricada',
   'settings.ramp.custom': 'Juego personalizado',
@@ -327,6 +329,7 @@ export const es: Messages = {
 
   'targets.normal': 'Normal (nivelado)',
   'targets.name.placeholder': 'Nombre (p. ej. «Desagüe de la ducha»)',
+  'targets.name.label': 'Nombre del nuevo objetivo',
   'targets.defaultName': 'Objetivo {n}',
   'targets.add': 'Guardar la inclinación actual como nuevo objetivo',
   'targets.delete': 'Eliminar {name}',
