@@ -100,16 +100,19 @@ export function createAutoSave(
       persist(values.current());
     });
   }
+  // What parseSettings settled on (e.g. a motion delay clamped to the rest
+  // delay) is what the fields show, then it is stored.
+  function showAndPersist(settings: LevelSettings): void {
+    for (const field of values.numberFields) field.show(settings[field.key]);
+    persist(settings);
+  }
   function changed(): void {
     if (compact) return;
     invalidNumbers.restore(saved());
     const next = values.current();
     if (sameFormValues(next, saved())) return;
     const previous = saved();
-    // What parseSettings settled on (e.g. a motion delay clamped to the
-    // rest delay) is what the fields show.
-    for (const field of values.numberFields) field.show(next[field.key]);
-    persist(next);
+    showAndPersist(next);
     offerUndo(previous);
   }
   return {
@@ -121,9 +124,8 @@ export function createAutoSave(
         return;
       }
       const settings = values.current();
-      for (const field of values.numberFields) field.show(settings[field.key]);
       values.showRampSteps(settings.rampStepHeightsMm);
-      persist(settings);
+      showAndPersist(settings);
     },
     acceptSound: store.acceptSound,
   };

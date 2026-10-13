@@ -69,21 +69,9 @@ function createCatalogue(
   element.append(summary, filter.row);
 
   const list = createElement('div', 'klossar__list');
-  // "Custom set" leads the list: choosing your own step heights
-  // is one of the options, and the one relevant whatever brand you own.
-  // Never hidden by the brand filter.
-  const custom = catalogueRow(t('settings.ramp.custom'));
-  custom.row.classList.add('klossar__row--custom');
-  custom.row.addEventListener('click', () => onPick(null));
-  list.append(custom.row);
-
-  const models = RAMP_MODELS.map((model) => {
-    const mmLine = createElement('span', 'klossar__row-mm');
-    const entry = catalogueRow(model.name, mmLine);
-    entry.row.addEventListener('click', () => onPick(model));
-    list.append(entry.row);
-    return { ...entry, model, mmLine };
-  });
+  const custom = createCustomRow(onPick);
+  const models = createModelRows(onPick);
+  list.append(custom.row, ...models.map((entry) => entry.row));
   element.append(list);
 
   let shownModel: RampModel | null = null;
@@ -100,6 +88,26 @@ function createCatalogue(
   }
 
   return { element, render };
+}
+
+/** "Custom set" leads the list: choosing your own step heights is one of
+ * the options, and the one relevant whatever brand you own. Never hidden by
+ * the brand filter. */
+function createCustomRow(onPick: (model: RampModel | null) => void) {
+  const custom = catalogueRow(t('settings.ramp.custom'));
+  custom.row.classList.add('klossar__row--custom');
+  custom.row.addEventListener('click', () => onPick(null));
+  return custom;
+}
+
+/** One row per ready-made ramp, with a line for its step heights. */
+function createModelRows(onPick: (model: RampModel | null) => void) {
+  return RAMP_MODELS.map((model) => {
+    const mmLine = createElement('span', 'klossar__row-mm');
+    const entry = catalogueRow(model.name, mmLine);
+    entry.row.addEventListener('click', () => onPick(model));
+    return { ...entry, model, mmLine };
+  });
 }
 
 const brandOf = (model: RampModel): string => model.name.split(' ')[0]!;

@@ -90,4 +90,22 @@ describe('setupTopBar', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(els.bar.style.getPropertyValue('--topbar-corner')).toBe('40px');
   });
+
+  it('copes with a page that has none of its elements (#523)', () => {
+    document.body.replaceChildren();
+    const bar = setupTopBar(document, '1.0.0');
+    expect(() => bar.syncCorner()).not.toThrow();
+    expect(setupInstallButton).not.toHaveBeenCalled();
+    expect(setupShareButton).not.toHaveBeenCalled();
+    expect(attachUpdateCheck).not.toHaveBeenCalled();
+    expect(installUpdateReload).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips Install without its hint, but still labels the button (#523)', () => {
+    const els = page();
+    els.hint.remove();
+    setupTopBar(document, null);
+    expect(setupInstallButton).not.toHaveBeenCalled();
+    expect(els.install.textContent).toBe(t('topbar.install'));
+  });
 });
