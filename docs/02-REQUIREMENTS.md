@@ -201,7 +201,7 @@ URL and must keep working with no signal.
   Settings). Saving never closes the page; only ✕/back do. Not the first-run wizard,
   which keeps its own Skip/Next flow (R18).
 - **Given** I type a number that cannot be used (empty, zero, or negative where only a
-  positive value makes sense)
+  positive value makes sense, or a length outside its plausible range, #541)
 - **When** I leave the field
 - **Then** the value in effect stays, in the field and in storage, and one line under the
   field says what was wrong and that the previous value still applies (#328). Nothing is
@@ -216,6 +216,12 @@ URL and must keep working with no signal.
   the app.
 - **Given** the stored value is missing or corrupt
 - **Then** the app falls back to the defaults rather than failing to start.
+- **Given** a stored or shared length outside its plausible range (wheelbase, track
+  widths, step heights, tolerance and stability; the ranges are `LENGTH_RANGES_MM` in
+  `src/domain/settings.ts`)
+- **Then** that one value falls back to its default, or that step height is dropped, and
+  every other value is kept (#541). The Settings fields and the step-height Add row hold
+  typed values to the same ranges and say "from … to …" when one is outside.
 - **Given** the measurement fields (also in the wizard's measurements step, which
   reuses the same form)
 - **Then** a short muted hint says where the numbers are found: the registration
@@ -1422,6 +1428,9 @@ dwell, unit, sound, theme, appearance, sensor source) are deliberately excluded.
 - **Then** only the fields listed above are written to their settings; their own
   calibration, EasyLevel pairing, and every UI/behavior preference are left
   untouched.
+- **Given** a field inside a valid link is unusable, such as a length outside its
+  plausible range (R9's ranges)
+- **Then** that field falls back to its default and the rest of the link is kept.
 - **Given** the link's fragment is malformed, truncated, or from an unrecognized
   schema version
 - **Then** the app shows a clear error and applies nothing — fail closed, never a

@@ -238,7 +238,13 @@ const EDITS: Edit[] = [
 ];
 
 /** A typed number that cannot be used, and the message it gets. */
-const INVALID_NUMBERS: { tab: Tab; name: string; value: string; message: MessageKey }[] = [
+const INVALID_NUMBERS: {
+  tab: Tab;
+  name: string;
+  value: string;
+  message: MessageKey;
+  vars?: Record<string, number>;
+}[] = [
   { tab: 'vehicle', name: 'wheelbaseMm', value: '0', message: 'settings.err.positive' },
   { tab: 'vehicle', name: 'trackWidthFrontMm', value: '-1', message: 'settings.err.positive' },
   { tab: 'vehicle', name: 'trackWidthRearMm', value: '', message: 'settings.err.positive' },
@@ -246,6 +252,23 @@ const INVALID_NUMBERS: { tab: Tab; name: string; value: string; message: Message
   { tab: 'general', name: 'stabilityMm', value: '-1', message: 'settings.err.notNegative' },
   { tab: 'general', name: 'dwellRestMs', value: '0', message: 'settings.err.positive' },
   { tab: 'general', name: 'dwellMotionMs', value: '-10', message: 'settings.err.positive' },
+  // Outside the plausible range a stored length is dropped on reload, so
+  // the form keeps it out too (#541).
+  ...(
+    [
+      ['vehicle', 'wheelbaseMm', '15010', 500, 15000],
+      ['vehicle', 'wheelbaseMm', '400', 500, 15000],
+      ['vehicle', 'trackWidthRearMm', '4010', 500, 4000],
+      ['targets', 'toleranceMm', '201', 1, 200],
+      ['general', 'stabilityMm', '51', 0, 50],
+    ] as const
+  ).map(([tab, name, value, min, max]) => ({
+    tab,
+    name,
+    value,
+    message: 'settings.err.range' as const,
+    vars: { min, max },
+  })),
 ];
 
 for (const appearance of APPEARANCES) {
@@ -277,7 +300,7 @@ for (const appearance of APPEARANCES) {
       });
     }
 
-    for (const { tab, name, value, message } of INVALID_NUMBERS) {
+    for (const { tab, name, value, message, vars } of INVALID_NUMBERS) {
       it(`${name} = "${value}" keeps the value in effect and says why, right under the field`, () => {
         const { form, onSave, initial } = build(appearance);
         const input = numberInput(show(form, appearance, tab), name);
@@ -289,7 +312,7 @@ for (const appearance of APPEARANCES) {
         expect(error.classList).toContain('settings__error');
         expect(error.getAttribute('role')).toBe('alert');
         expect(error.hidden).toBe(false);
-        expect(error.textContent).toBe(t(message));
+        expect(error.textContent).toBe(t(message, vars));
       });
     }
 

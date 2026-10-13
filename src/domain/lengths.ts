@@ -1,6 +1,6 @@
 /** Lengths as the user types and reads them: step-height lists and mm/cm text. */
 
-export function normalizeHeights(values: number[]): number[] {
+function normalizeHeights(values: number[]): number[] {
   const cleaned = values.filter((v) => Number.isFinite(v) && v > 0);
   return [...new Set(cleaned)].sort((a, b) => a - b);
 }

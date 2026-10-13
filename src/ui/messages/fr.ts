@@ -265,6 +265,8 @@ export const fr: Messages = {
   'settings.err.positive':
     'Saisissez un nombre supérieur à 0. La valeur précédente reste en vigueur.',
   'settings.err.notNegative': 'Saisissez 0 ou plus. La valeur précédente reste en vigueur.',
+  'settings.err.range':
+    'Saisissez un nombre de {min} à {max}. La valeur précédente reste en vigueur.',
 
   'settings.tab.vehicle': 'Véhicule',
   'settings.tab.ramps': 'Rampes',
