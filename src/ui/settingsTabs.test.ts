@@ -345,10 +345,8 @@ for (const appearance of APPEARANCES) {
 
       const add = ramps.querySelector<HTMLInputElement>('.steps__add input')!;
       const addButton = ramps.querySelector<HTMLButtonElement>('.steps__add-btn')!;
-      expect(addButton.disabled).toBe(true);
       add.value = '150';
       add.dispatchEvent(new Event('input', { bubbles: true }));
-      expect(addButton.disabled).toBe(false);
       addButton.click();
       expect(onSave.mock.lastCall![0].rampStepHeightsMm).toEqual([44, 78, 112, 150]);
 

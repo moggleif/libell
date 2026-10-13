@@ -607,6 +607,11 @@ URL and must keep working with no signal.
 - **Then** the choice holds — even while the steps still match a catalog model — so I
   can start from a preset and edit freely; auto-matching resumes once a model is
   picked again (or the form is repopulated).
+- **Given** the step-height field is empty or holds 0 or a negative number
+- **When** I tap "Add step"
+- **Then** the button is never greyed out: nothing is added, the typed value stays, and
+  the same line as the other number fields ("Enter a number above 0…") says what to fix
+  until I type again; a positive number is added and the field cleared (#514).
 
 ## R22 — Caravan mode: single axle + jockey wheel
 
