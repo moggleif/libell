@@ -3,8 +3,7 @@
 export const en = {
   'topbar.install': 'Install',
   'topbar.share': 'Share Libell',
-  // Bottom action bar (#161): settings/sound/help, aria-labels only —
-  // the settings/help buttons show fixed glyphs (☰ / ?), never text.
+  // Bottom bar: aria-labels only; the buttons show fixed glyphs (☰ / ?).
   'bottombar.settings': 'Settings',
   'bottombar.sound.mute': 'Mute sound',
   'bottombar.sound.unmute': 'Unmute sound',
@@ -19,10 +18,7 @@ export const en = {
   'update.offline': "No connection, can't check for updates",
   'update.unsupported': "Updates aren't available here",
   'install.hint': 'Tap Share, then "Add to Home Screen".',
-  // "Share vehicle setup" (R41, #207): a link carrying only the vehicle-
-  // geometry fields (never calibration, never UI/behavior preferences —
-  // see domain/vehicleShare.ts) so a family member using the same
-  // vehicle doesn't have to re-measure and retype everything by hand.
+  // A shared link carries only the vehicle's measurements (R41).
   'share.vehicle.text': 'My vehicle setup for Libell — measurements and ramps.',
   'settings.shareVehicle': 'Share to another phone',
   'setup.incoming.h': 'Incoming vehicle setup',
@@ -41,20 +37,13 @@ export const en = {
   'lamp.zero.title': 'The vehicle is not zeroed — tap to open “Calibrate and zero”',
   'lamp.calibrate.title.sensor': 'The box is not zeroed — tap to open the box',
 
-  // Main-screen external-sensor indicator (#129): shown only while an
-  // external source (today: EasyLevel) is active — never in phone mode.
-  // Deliberately just an icon/dot, no numbers — detail lives one tap
-  // away in the "External sensor" menu page.
+  // The main screen's sensor chip: short, it sits in the top-right corner.
   'sensorStatus.connected': 'Sensor box connected',
   'sensorStatus.disconnected': 'Sensor box — lost contact, tap for details',
   'sensorStatus.stale': 'Sensor box — no new data, tap for details',
-  // Screen-cleanup follow-up: shown whenever the phone's own sensor is
-  // active but an external one is available to connect — the only
-  // remaining entry point to External sensor now that the ☰ menu no
-  // longer carries it.
+  // Phone in use, a box available: the way to the box pages.
   'sensorStatus.idle': 'Sensor box — tap to connect',
-  // iOS Safari (R39): tapping this opens the Bluefy workaround guide
-  // instead of a connect flow that could never work there.
+  // iOS (R39): opens the Bluefy guide instead of a connect flow.
   'sensorStatus.idle.guide': 'Sensor box — tap for iPhone setup guide',
 
   'menu.title': 'Menu',
@@ -66,41 +55,25 @@ export const en = {
   'menu.help': 'Help',
   'menu.intro': 'Show introduction',
   'menu.about': 'About Libell',
-  // Short form for the "?" page's tab button (screen-cleanup follow-up)
-  // — 'menu.about' above is the full title, too long for a tab pill.
+  // A tab pill: shorter than the full title 'menu.about'.
   'menu.about.tab': 'About',
   'menu.sensorSource': 'Sensor box',
 
-  // EasyLevel BLE box (#116) — an opt-in alternative to the phone's own
-  // sensor, only ever shown when Web Bluetooth exists (`menu.ts`).
-  // The device sentence only — the browser requirement is the same for
-  // every box and is shown once per page (#272), not once per row.
+  // One sentence per box; the browser requirement is said once per page.
   'sensorSource.connect': 'Connect {name} sensor',
   'sensorSource.disconnect': 'Disconnect',
-  // Shown on a source's own row while a DIFFERENT external source is
-  // feeding readings (#272) — claiming the phone is active would be
-  // plainly wrong once there is more than one box to choose from.
+  // On a box's row while a different box is the one in use.
   'sensorSource.status.connecting': 'Connecting…',
-  // Connection lost while the box stays the selected source (#129) —
-  // distinct from the plain "connected" text above so the settings page
-  // never claims a live link that no longer exists.
+  // Lost while still the chosen source: never claim a live link.
   'sensorSource.err.unsupported': 'Web Bluetooth is not supported in this browser.',
   'sensorSource.unsupported.browser':
     'To connect a sensor box, open Libell in Chrome or Edge on Android or on a computer. The phone’s own sensor works here as usual.',
-  // Some boxes ask for a password before they will talk (#272). Kept
-  // separate from the generic failure so the user knows the hardware is
-  // fine and only the password is wrong. The code is typed in Libell; only
-  // a forgotten code is changed in the vendor app, since Libell never
-  // changes a box's password (#367).
+  // The box is fine, only the code is wrong; Libell never changes it (#367).
   'sensorSource.err.password':
     'The {name} box did not accept its password. Type the box’s four-digit code below and tap Try again. The factory code is 0000. If you don’t know the code, change it in the Xparkle app.',
   'sensorSource.err.failed': 'Could not connect to the {name} sensor.',
 
-  // iOS Safari has no Web Bluetooth and Apple has no plans to add it
-  // (R39) — rather than hide this page outright there too, iOS shows a
-  // guide to a workaround: Bluefy, a third-party browser that adds Web
-  // Bluetooth, makes the page above work unchanged once Libell is opened
-  // inside it. See docs/ios-easylevel-bluefy-guide.md for the long form.
+  // iOS has no Web Bluetooth (R39): the Bluefy browser is the workaround.
   'sensorSource.ios.intro':
     "Safari can't connect to Bluetooth sensors directly, but there's a workaround:",
   'sensorSource.ios.step1': 'Install "Bluefy – Web Bluetooth Browser" from the App Store.',
@@ -112,34 +85,20 @@ export const en = {
     'the app may need one manual tap there, instead of happening silently.',
   'sensorSource.ios.bluefyLink': 'Find Bluefy in the App Store',
 
-  // Detailed sensor health (#129). Battery/temperature show real decoded
-  // values (#123) once the first `faf52c22-...` status notification
-  // arrives — "not available yet" only before that, which is honest for
-  // these two: they really do arrive. There is deliberately no signal-
-  // strength string any more (#228) — see `boxStatusPage.ts` for
-  // why RSSI can never be read for a connected device.
+  // "Not available yet" shows only until the box's first status message.
   'sensorSource.detail.temperature': 'Temperature: {value}',
   'sensorSource.detail.notAvailable': 'Not available yet',
-  // Low-battery warning (#123): a settings-page notice, not a
-  // leveling-screen interruption — see `easyLevelProtocol.ts`'s
-  // `isLowBattery` for the threshold/hysteresis it is driven by.
+  // A notice on the box page, never an interruption on the level screen.
   'sensorSource.lowBattery':
     '⚠ Low battery ({value}) — consider replacing the sensor box’s battery soon.',
 
-  // Installation calibration (#131, ADR 0014): the same "vehicle zero"
-  // concept R24 already applies to the phone, generalized to a
-  // permanently-mounted external sensor — the ">15° looks wrong",
-  // "age", and "Check" copy is intentionally reused from
-  // `calibration.vehicle.*` / `calibration.*` rather than re-invented.
-  // Shown only once a box is connected: an install offset means
-  // nothing until there is a live reading to capture.
+  // The box's zero (ADR 0014): same wording as the vehicle zero where it can be.
   'sensorSource.install.now': 'Zero now',
   'sensorSource.install.clear': 'Forget the zero',
   'sensorSource.install.status': 'Zero: front/back {pitch}, side/side {roll}.',
   'sensorSource.install.status.none': 'Not zeroed yet — the box measures as it sits.',
 
-  // Learn the mounting (#293): Libell watches the box while the user
-  // lifts the front, then the right side — no vendor app needed.
+  // Learn the mounting (#293): the user lifts the front, then the right side.
   'sensorSource.learn.h': 'Learn the mounting',
   'sensorSource.learn.intro':
     'Libell learns the direction from two lifts: first the front, then the right side.',
@@ -166,15 +125,10 @@ export const en = {
   'sensorSource.learn.err.sameAxis':
     'Both lifts tilted the same way. Raise the front first, then the right side, and try again.',
 
-  // Sensor status page: reached by tapping the sensor row on the
-  // External sensor page. `reading` is the same roll/pitch the main
-  // screen already computes, shown here too so a user checking the box
-  // itself doesn't have to leave this page to see it move.
+  // The box's own page: its state and the live reading.
   'sensorStatus.title': '{name} sensor',
   'sensorStatus.reading': 'Tilt now: {value}',
-  // Debug info (only for a box with the `debugBytes` capability, hidden
-  // while the phone's own sensor is active): raw values straight off the box, for troubleshooting a box
-  // that isn't behaving as expected — not everyday reading material.
+  // Raw values for troubleshooting, not everyday reading.
   'sensorStatus.debug': 'Debug info',
   'sensorStatus.debug.intro':
     'Raw values straight from the box — for troubleshooting if something isn’t working.',
@@ -195,9 +149,7 @@ export const en = {
     'Open {address}, search for “web bluetooth”, set “Use the new permissions backend for Web Bluetooth” to Enabled and tap Relaunch. Then connect the box once.',
   'sensorStatus.silentReconnect.copy': 'Copy {address}',
   'sensorStatus.silentReconnect.copied': 'Copied — paste it into Chrome’s address bar.',
-  // Connect-delay workaround (#212): an experimental, off-by-default
-  // hardware-compatibility knob, not a normal setting — only worth
-  // touching if the box's connection is actually unreliable.
+  // An experimental, off-by-default knob for an unreliable connection.
   'sensorStatus.debug.connectDelay.intro':
     'Experimental: only try this if your box’s connection is unreliable. Adds a fixed pause after connecting, before the app starts reading from it.',
   'sensorStatus.debug.connectDelay.enable': 'Enable connect delay',
@@ -215,55 +167,36 @@ export const en = {
   'about.source': 'Libell is free and open source (MIT license).',
   'about.source.link': 'Source code on GitHub',
 
-  // Welcome step (design-review follow-up): the very first thing a new
-  // user sees, before any question or form — what the app is for. Body
-  // reuses 'about.text' verbatim rather than separate copy.
+  // The very first thing a new user sees, before any question.
   'onboard.welcome.h': 'Welcome to Libell',
   'onboard.welcome.t':
     'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
     'finished later from Settings.',
-  // Only where an external sensor is an option (#365): the box is not in
-  // Settings, so "later from Settings" alone pointed the wrong way.
+  // The box is not in Settings, so this says where it is.
   'onboard.welcome.sensor':
     'A sensor box can be connected any time with the sensor icon at the top right.',
-  // Sound step (design review): Chime + Continuous audio guidance
-  // together, split out of #189's combined 'general' step. No existing
-  // section heading covers just these two (unlike 'settings.language'/
-  // 'settings.appearance', reused as-is for their own steps), so this is
-  // the one new short label the split needed.
+  // Heads the wizard step holding the chime and the audio guidance.
   'onboard.sound.h': 'Sound',
-  // Sensor source choice (#135, ADR 0014): the wizard's first step,
-  // shown only when an external sensor option actually exists
-  // (`isEasyLevelAvailable()`). The external radio reuses
-  // 'menu.sensorSource' ("External sensor") for its label, not a
-  // separate name here.
+  // The wizard's source step; the box radio is labelled 'menu.sensorSource'.
   'onboard.source.h': 'How do you want to measure?',
-  // #189: reassures anyone unfamiliar with the external-sensor concept
-  // that the default (pre-selected) choice is the normal one.
+  // Reassures that the pre-selected choice is the normal one.
   'onboard.source.intro':
     'Choose which sensor Libell should read tilt from — most people just use the phone.',
   'onboard.source.phone': 'This phone',
   // #287: shown on the source step only while a box is the active source.
   'onboard.source.externalActive':
     'A sensor box is active now. Choosing this phone skips the phone calibration. To calibrate the phone, open the box with the sensor icon at the top right and tap "{disconnect}" first.',
-  // Vehicle step: which vehicle every later step's imagery and field
-  // labels are drawn for. Reuses 'vehicle.motorhome'/'vehicle.caravan' —
-  // the exact same labels Settings uses — rather than separate copy.
+  // Labels come from 'vehicle.motorhome' / 'vehicle.caravan'.
   'onboard.vehicle.h': 'What are you leveling?',
   'onboard.vehicle.intro': 'Choose your vehicle — the rest of this guide matches it.',
   'onboard.step1.h': 'Place the phone like this',
   'onboard.next': 'Next',
-  // Back (#189): only shown from the second step on — lets a wrong tap
-  // (vehicle type, sensor source) be corrected without finishing the
-  // wizard or closing and restarting it.
+  // From the second step on, to correct a wrong tap.
   'onboard.back': 'Back',
   'onboard.close': 'Close the introduction',
   'onboard.done': 'Done',
   'onboard.skipStep': 'Skip',
-  // What leaving a step undone means, per step (#365; #189 had one
-  // shared note on every step). {lamp} and {next} are filled in from
-  // 'lamp.*' and 'onboard.next', so the note always names the real lamp
-  // and button.
+  // What skipping a step means; {lamp} and {next} name the real lamp and button.
   'onboard.note.measurements':
     'Skip, and the default measurements are used; {lamp} stays lit until you save yours.',
   'onboard.note.ramps':
@@ -307,37 +240,24 @@ export const en = {
   'settings.rampCount': 'Number of ramps',
   'settings.drain': 'Drain side',
   'settings.rampHint': 'The app picks where your ramps do the most good.',
-  // Split out of the old combined rampHint (design review): only matters
-  // if the owner cares where sink/shower water drains, so it moved
-  // behind the Drain field's own Advanced disclosure instead of always
-  // showing next to the ramp steps.
+  // Sink and shower water: shown under the Drain field.
   'settings.drainHint': 'Within the tolerance, this side is left lowest so water drains.',
   'settings.section.vehicle': 'Vehicle & measurements',
   'settings.section.ramps': 'Ramps',
-  // General (screen-cleanup follow-up): language/theme/sound, common
-  // enough to want a visible home — a Modern tab, or this Classic
-  // section — rather than Advanced's rarely-tuned pile.
+  // Language, theme and sound: a tab in Modern, a section in Classic.
   'settings.general': 'General',
   'settings.language': 'Language',
   'settings.language.auto': 'Automatic (device language)',
-  // Design review: the fields inside Advanced had labels but no
-  // explanation of what they actually do — this is why the disclosure
-  // "saknar beskrivning" (was missing a description). Split into one hint
-  // per field (follow-up), each placed right below its own field — the
-  // same pattern the response-delay hint below already uses — instead of
-  // one combined paragraph ahead of both fields.
+  // Each hint sits right below its own field.
   'settings.tolerance.hint': 'How close to level counts as level.',
   'settings.stability.hint': 'Smooths out small sensor jitter so the numbers do not flicker.',
   'drain.none': 'None / does not matter',
-  // "Middle" (design review): the mean of the two wheels on that edge —
-  // a coarser preference than a single corner, now that corners exist
-  // below as their own choice.
+  // "Middle": the mean of the two wheels on that edge, unlike a corner.
   'drain.left': 'Left, middle',
   'drain.right': 'Right, middle',
   'drain.front': 'Front, middle',
   'drain.rear': 'Rear, middle',
-  // Single-corner positions (design review): match a waste-water outlet
-  // that sits at one specific corner, not spread across a whole side.
+  // A waste-water outlet at one specific corner.
   'drain.frontLeft': 'Front left',
   'drain.frontRight': 'Front right',
   'drain.rearLeft': 'Rear left',
@@ -351,9 +271,6 @@ export const en = {
   'appearance.classic': 'Classic',
   'appearance.modern': 'Modern',
   'appearance.glossy': 'Glossy',
-  // Design review, follow-up: switching this now saves and reloads
-  // (matching Language above) so the whole app switches immediately,
-  // not just this form's colors.
   'settings.sound': 'Chime when level',
   'settings.soundGuidance': 'Continuous audio guidance',
   'settings.soundGuidance.help': 'The beep gets faster and higher the closer you get to level.',
@@ -398,14 +315,10 @@ export const en = {
   'calibration.warn.notFlat':
     'This does not look flat (over 15°), so the calibration will be wrong. Lay the phone on a flat surface, or calibrate anyway.',
   'calibration.anyway': 'Calibrate anyway',
-  // Design review: both card headings now lead with the verb "Calibrate"
-  // — they used to name what each card was about ("Phone sensor",
-  // "Vehicle zero position") without naming the shared action.
+  // Card headings lead with the verb (Kalibrera / Nollställ).
   'calibration.sensor.h': 'Calibrate the phone',
   'calibration.vehicle.h': 'Zero the vehicle',
-  // Design review: the two-layer overview used to live only on the Help
-  // page ('help.calibration.t' below) — moved to the top of the actual
-  // Kalibrering tab, where it is actionable, not just informational.
+  // The two-layer overview at the top of the calibration tab.
   'calibration.vehicle.intro':
     'Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero.',
   'calibration.vehicle.now': 'Zero now',
@@ -441,9 +354,7 @@ export const en = {
   'calibration.pill.done': 'DONE',
   'calibration.pill.none': 'NONE',
 
-  // Target presets (#122, ADR 0013): an intentional NON-level target,
-  // distinct from the calibration layers above — "Normal" (true level)
-  // is always available and is not one of the saved presets.
+  // A deliberate non-level target (ADR 0013); "Normal" is true level.
   'targets.normal': 'Normal (level)',
   'targets.name.placeholder': 'Name (e.g. "Shower drain")',
   'targets.defaultName': 'Target {n}',
@@ -453,8 +364,7 @@ export const en = {
     'That looks steeper than an intentional target (over 15°). Try again, or save anyway.',
   'targets.anyway': 'Save anyway',
   'targets.badge': 'Target: {name}',
-  // Offset summary (#160): read-only, inside the menu only — never the
-  // main screen (see targetBadge.ts/R31's own guard against that).
+  // Read-only, in the menu only, never on the main screen (R31).
 
   'feedback.intro':
     'Found a problem or have an idea? Fill this in and tap the button — it opens ' +
@@ -471,8 +381,7 @@ export const en = {
   'feedback.warn.desc': 'The description is empty — you can send the report anyway.',
   'feedback.warn.both': 'The title and description are empty — you can send the report anyway.',
 
-  // Help tab (#326): fold-out topics, one fact per line (R28). The
-  // screens themselves explain how; these say what and where.
+  // Help topics: one fact per line (R28), saying what and where.
   'help.screen.h': 'Reading the screen',
   'help.screen.t':
     'Green ✓: done, nothing to do.\n' +
@@ -536,9 +445,7 @@ export const en = {
   'diagram.front': 'Front',
   'diagram.step': 'Step {n}',
   'diagram.done': 'Done',
-  // Gray/"unserved" wheel (low, but no ramp reaches it, R5) — says why
-  // nothing is happening there instead of leaving the step line blank
-  // (screen-cleanup follow-up).
+  // A low wheel no ramp reaches (R5): says why nothing happens there.
   'diagram.noRamp': 'No ramp',
   'diagram.wheel.frontLeft': 'FRONT L',
   'diagram.wheel.frontRight': 'FRONT R',
@@ -576,11 +483,7 @@ export const en = {
 
   'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
 
-  // Sensor unavailable fallback prompt (#134): shown instead of the
-  // plain "waiting" hint once an EasyLevel connection cannot be
-  // reached — never a silent or automatic switch to the phone (ADR
-  // 0014's calibration split), always this explicit Retry / "Use phone
-  // sensor" choice.
+  // Never a silent switch to the phone: always Retry or Use phone sensor.
   'sensorFallback.lost': 'Lost contact with the box',
   'sensorFallback.autoRetry': 'Trying again automatically…',
   'sensorFallback.connect': 'Connect the box',
@@ -588,8 +491,7 @@ export const en = {
   'sensorFallback.notFound': 'No box found? Check that it is on and close by.',
   'sensorFallback.retry': 'Reconnect',
   'sensorFallback.usePhone': 'Use the phone instead',
-  // Box page (#314, the #309 UX review): the mounting picker, the
-  // header and the three-step setup checklist.
+  // Box page: the mounting picker, the header and the setup checklist.
   'mounting.prompt.upright': 'Tap where the box’s back (the screw mount) points.',
   'mounting.prompt.arrow':
     'One of the box’s arrows (on the lid, or on the circuit board under it) points forward. Which side faces the front?',
@@ -629,8 +531,7 @@ export const en = {
   'onboard.boxPosition.h': "The box's position",
   'onboard.boxPosition.later':
     "Direction and zero are set the first time you park. The box's page guides you, and the ⚠ Zero lamp reminds you until it's done.",
-  // The box path with no box connected (#365): said once, Next goes on —
-  // never "waiting for a reading" with nothing to wait for.
+  // Said once; Next goes on, never "waiting for a reading".
   'onboard.boxPosition.notConnected':
     'No box is connected yet, so its position can’t be shown. Tap {next} and connect later with the sensor icon at the top right.',
   'sensorList.title': 'Sensor box',
