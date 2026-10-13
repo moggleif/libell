@@ -214,6 +214,35 @@ export function stepAndLiftText(
 }
 
 // ============================================================
+// Speech (#534)
+// ============================================================
+
+/** What a screen reader says a wheel needs: what the drawing shows, plus
+ * "not enough" where the red ✕ says the ramps fall short. */
+function wheelInstruction(severity: Severity, text: { step: string; lift: string }): string {
+  if (severity === 'none') return t('diagram.done');
+  const said = [text.step, text.lift].filter(Boolean);
+  if (severity === 'large') said.push(t('diagram.notEnough'));
+  return said.join(', ');
+}
+
+/**
+ * The drawing's text alternative: its fixed description, then one
+ * "position: instruction" per wheel. `role="img"` hides the text drawn on
+ * the SVG, so this label is all a screen reader hears of the drawing.
+ */
+export function describeDrawing(
+  svg: SVGSVGElement,
+  description: string,
+  wheels: Array<[wheel: string, instruction: string]>,
+): void {
+  const said = wheels.map(([wheel, instruction]) =>
+    t('diagram.speech.wheel', { wheel, instruction }),
+  );
+  svg.setAttribute('aria-label', `${[description, ...said].join('. ')}.`);
+}
+
+// ============================================================
 // Classic wheel
 // ============================================================
 
@@ -239,7 +268,8 @@ function wheelText(x: number, y: number, className: string): SVGTextElement {
 
 export interface ClassicWheel {
   elements: SVGElement[];
-  update(wheel: DisplayWheel, unit: Unit, stepHeightsMm: number[]): void;
+  /** Redraws the wheel and returns what a screen reader should say of it. */
+  update(wheel: DisplayWheel, unit: Unit, stepHeightsMm: number[]): string;
 }
 
 export function createClassicWheel(at: Point, pair: boolean): ClassicWheel {
@@ -262,6 +292,7 @@ export function createClassicWheel(at: Point, pair: boolean): ClassicWheel {
       const text = stepAndLiftText(severity, stepMm, displayMm, unit, stepHeightsMm);
       stepLabel.textContent = text.step;
       liftLabel.textContent = severity === 'none' ? '' : text.lift;
+      return wheelInstruction(severity, text);
     },
   };
 }
@@ -277,22 +308,28 @@ export interface WheelCard {
   markerGlyph: HTMLSpanElement;
   step: HTMLDivElement;
   mm: HTMLDivElement;
+  /** Unseen: "not enough" for a screen reader, where the ✕ says it. */
+  note: HTMLSpanElement;
 }
 
 /** No visible position text: the card's place over the silhouette says
- * which wheel it is; `label` becomes its aria-label. */
+ * which wheel it is; `label` names the card as a group for a screen
+ * reader (#534), which then reads the step and lift inside it. */
 export function buildWheelCard(label: string, side: CardSide): WheelCard {
   const card = createElement('div', `wheel-card wheel-card--${side}`);
+  card.setAttribute('role', 'group');
   card.setAttribute('aria-label', label);
   const marker = createElement('div', 'wheel-card__marker');
+  marker.setAttribute('aria-hidden', 'true');
   const markerGlyph = document.createElement('span');
   marker.append(markerGlyph);
   const text = createElement('div', 'wheel-card__text');
   const step = createElement('div', 'wheel-card__step');
   const mm = createElement('div', 'wheel-card__mm');
-  text.append(step, mm);
+  const note = createElement('span', 'visually-hidden');
+  text.append(step, mm, note);
   card.append(marker, text);
-  return { card, markerGlyph, step, mm };
+  return { card, markerGlyph, step, mm, note };
 }
 
 /** Measured from the centre of the *drawn* vehicle, not of the stage: the
@@ -323,4 +360,5 @@ export function fillWheelCard(
   refs.card.className = `wheel-card wheel-card--${side} wheel-card--${severity}`;
   refs.step.textContent = severity === 'none' ? t('diagram.done') : text.step;
   refs.mm.textContent = text.lift;
+  refs.note.textContent = severity === 'large' ? t('diagram.notEnough') : '';
 }

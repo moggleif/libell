@@ -25,6 +25,7 @@ import {
   createBubbleLevel,
   createClassicWheel,
   crosshair,
+  describeDrawing,
   diagramContainer,
   diagramSvg,
   buildWheelCard,
@@ -81,7 +82,11 @@ function createClassicDiagram(rearAxle: AxleConfig): RvDiagram {
     update(result, unit, stepHeightsMm) {
       // Values arrive hysteresis-stabilized — a still phone shows a
       // still diagram.
-      for (const id of WHEEL_IDS) wheels[id].update(result.wheels[id], unit, stepHeightsMm);
+      const said = WHEEL_IDS.map((id): [string, string] => [
+        t(WHEEL_LABEL[id]),
+        wheels[id].update(result.wheels[id], unit, stepHeightsMm),
+      ]);
+      describeDrawing(svg, t('diagram.aria'), said);
       bubble.update(result);
     },
   };

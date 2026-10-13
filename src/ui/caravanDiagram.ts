@@ -12,6 +12,7 @@ import {
   createBubbleLevel,
   createClassicWheel,
   crosshair,
+  describeDrawing,
   diagramContainer,
   diagramSvg,
   fillWheelCard,
@@ -41,6 +42,8 @@ const SIDES = ['left', 'right'] as const;
 type Side = (typeof SIDES)[number];
 
 const JOCKEY_GLYPH = { ok: '✓', up: '↑', down: '↓' } as const;
+
+const AXLE_LABEL = { left: 'caravan.axleLeft', right: 'caravan.axleRight' } as const;
 
 function crankText(direction: JockeyDirection): string {
   if (direction === 'ok') return '';
@@ -77,8 +80,12 @@ function createClassicCaravan(axleConfig: AxleConfig): CaravanDiagram {
   return {
     element: container,
     update(result, unit, stepHeightsMm) {
-      for (const side of SIDES) axle[side].update(result.axle[side], unit, stepHeightsMm);
-      jockey.update(result.jockey, unit);
+      const said = SIDES.map((side): [string, string] => [
+        t(AXLE_LABEL[side]),
+        axle[side].update(result.axle[side], unit, stepHeightsMm),
+      ]);
+      said.push([t('caravan.jockeyWheel'), jockey.update(result.jockey, unit)]);
+      describeDrawing(svg, t('diagram.caravan.aria'), said);
       bubble.update(result);
     },
   };
@@ -105,7 +112,8 @@ function classicAxle(axleConfig: AxleConfig): Record<Side, ClassicWheel> {
  * collide with the front arrow. */
 function createClassicJockey(): {
   elements: SVGElement[];
-  update(jockey: CaravanDisplayResult['jockey'], unit: 'mm' | 'cm'): void;
+  /** Redraws the jockey wheel and returns what a screen reader should say. */
+  update(jockey: CaravanDisplayResult['jockey'], unit: 'mm' | 'cm'): string;
 } {
   const { x, y } = CLASSIC_JOCKEY;
   const marker = rect(x - 11, y - 18, 22, 36, 9, 'rv-diagram__wheel');
@@ -130,6 +138,9 @@ function createClassicJockey(): {
       glyph.textContent = JOCKEY_GLYPH[direction];
       action.textContent = crankText(direction);
       amount.textContent = direction === 'ok' ? '' : formatLength(displayMm, unit);
+      return direction === 'ok'
+        ? t('diagram.done')
+        : `${action.textContent}, ${amount.textContent}`;
     },
   };
 }
@@ -151,8 +162,8 @@ function createModernCaravan(): CaravanDiagram {
   svg.append(...modernSilhouette(), ...bubble.elements);
   const jockey = buildWheelCard(t('caravan.jockeyWheel'), 'center');
   const axle: Record<Side, WheelCard> = {
-    left: buildWheelCard(t('caravan.axleLeft'), 'left'),
-    right: buildWheelCard(t('caravan.axleRight'), 'right'),
+    left: buildWheelCard(t(AXLE_LABEL.left), 'left'),
+    right: buildWheelCard(t(AXLE_LABEL.right), 'right'),
   };
   placeWheelCard(cardLayer, jockey.card, MODERN_JOCKEY_Y, MODERN_VIEWBOX);
   for (const side of SIDES)
