@@ -15,7 +15,7 @@ they are missing, gray – wheels get no ramp because your ramp set doesn't stre
 far, and red ✕ means your ramps can't fix that wheel — move the vehicle instead. If no
 arrangement of your ramps reaches level at all, the status line says so and gives a
 rough sense of how far off ("close" or "far"). A bubble level sits in the middle of the
-diagram, and a big "Your RV is level!" (with an optional chime) confirms when you are
+diagram, and a big "Your vehicle is level!" (with an optional chime) confirms when you are
 done. A caravan gets a ramp for the low axle wheel and a signed correction for the
 jockey wheel; a tandem (boggie) axle is supported too. Everything works offline once
 loaded; there is no account.

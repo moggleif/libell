@@ -2,7 +2,7 @@
 
 ## Reporting
 
-Found a vulnerability? Open an issue via the in-app **☰ → Feedback** form (category
+Found a vulnerability? Open an issue via the in-app **? → Feedback** form (category
 Bug) or directly at <https://github.com/moggleif/libell/issues>. There is no bug
 bounty; reports are handled best-effort.
 

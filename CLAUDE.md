@@ -35,7 +35,8 @@ src/
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
-│                  # remembered device id, #130) — all localStorage
+│                  # remembered device id, #130) — all localStorage, through the
+│                  # guarded helpers in keyValueStorage.ts
 ├── sensor/        # orientation.ts (the phone) and the Sensorbox sources: registry,
 │                  # controller, EasyLevel and Xparkle adapters, protocols, simulators
 └── ui/            # DOM + SVG components, menu, i18n (t()), styles
@@ -69,8 +70,8 @@ src/
    failing test from the acceptance criteria, then implement until green. Never weaken
    or delete an existing test to get green — field-regression tests encode real bugs.
 3. **Verify visually.** For UI changes, run the app with `?demo` (fixed synthetic tilt,
-   works without sensors — also used by the screenshot generator) and check both
-   languages and both themes when they are affected.
+   works without sensors — also used by the screenshot generator) and check every
+   shipped language and both themes when they are affected.
 4. **All checks green before committing:**
    `npm run format:check && npm run typecheck && npm run test`
    (the shared hooks run these — enable once with `git config core.hookspath .githooks`).
