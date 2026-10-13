@@ -11,7 +11,6 @@ import {
   createPlainNumberField,
   createSectionHeading,
   createSelectField,
-  fromUnit,
   type SettingsFormState,
 } from './settingsFields';
 import { setLanguage, t } from './i18n';
@@ -21,13 +20,6 @@ setLanguage('en');
 function stateIn(unit: 'mm' | 'cm'): SettingsFormState {
   return { unit, vehicle: 'motorhome', axle: 'single' };
 }
-
-describe('fromUnit', () => {
-  it('turns cm into mm and leaves mm as it is', () => {
-    expect(fromUnit(4.4, 'cm')).toBeCloseTo(44);
-    expect(fromUnit(44, 'mm')).toBe(44);
-  });
-});
 
 describe('createSelectField', () => {
   it('builds a captioned label holding a select with the options, the given one selected', () => {

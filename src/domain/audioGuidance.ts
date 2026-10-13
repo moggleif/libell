@@ -17,6 +17,7 @@
  *   must clear the Stability dead band *and* hold for a dwell — the same shape
  *   `stability.ts` uses for the display.
  */
+import { clamp } from './numbers';
 import type { LevelSettings } from './settings';
 
 export type GuidanceDirection = 'improving' | 'worsening' | 'steady';
@@ -43,14 +44,10 @@ export const GUIDANCE_RANGE_MM = 120;
  * "getting closer / wrong way" change reads as deliberate. */
 export const DIRECTION_DWELL_MS = 800;
 
-function clamp01(v: number): number {
-  return Math.min(1, Math.max(0, v));
-}
-
 /** 0 (at/beyond GUIDANCE_RANGE_MM past tolerance) .. 1 (at the tolerance). */
 function progressOf(distanceMm: number, toleranceMm: number): number {
   const beyond = Math.max(0, distanceMm - toleranceMm);
-  return clamp01(1 - beyond / GUIDANCE_RANGE_MM);
+  return clamp(1 - beyond / GUIDANCE_RANGE_MM, 0, 1);
 }
 
 /**

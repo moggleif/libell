@@ -8,6 +8,7 @@
  * vehicle changes — the same pass that keeps labels like "Wheelbase (cm)"
  * and the caravan's "Axle to jockey wheel" current.
  */
+import { mmToUnit, unitToMm } from '../domain/lengths';
 import type { AxleConfig, LevelSettings, VehicleType } from '../domain/settings';
 import { t, type MessageKey } from './i18n';
 
@@ -35,14 +36,6 @@ export interface SettingsFormContext {
 
 /** Raw values a tab hands to `parseSettings`. */
 export type RawSettings = Record<string, unknown>;
-
-function toUnit(mm: number, unit: DisplayUnit): number {
-  return unit === 'cm' ? mm / 10 : mm;
-}
-
-export function fromUnit(value: number, unit: DisplayUnit): number {
-  return unit === 'cm' ? value * 10 : value;
-}
 
 export interface Field<T extends HTMLElement> {
   element: HTMLLabelElement;
@@ -151,8 +144,8 @@ export function createLengthField(
 ): NumberField {
   return createNumberField(key, true, options.min === 0, state, (field) => {
     field.caption.textContent = `${t(options.label())} (${state.unit})`;
-    field.control.step = String(toUnit(options.stepMm, state.unit));
-    field.control.min = String(options.min ?? toUnit(options.stepMm, state.unit));
+    field.control.step = String(mmToUnit(options.stepMm, state.unit));
+    field.control.min = String(options.min ?? mmToUnit(options.stepMm, state.unit));
   });
 }
 
@@ -182,14 +175,14 @@ function createNumberField(
   input.name = key;
   const field = captioned(input);
   const read = (): number =>
-    inUnit ? fromUnit(input.valueAsNumber, state.unit) : input.valueAsNumber;
+    inUnit ? unitToMm(input.valueAsNumber, state.unit) : input.valueAsNumber;
   return {
     ...field,
     key,
     inUnit,
     allowZero,
     show: (stored) => {
-      input.value = String(inUnit ? toUnit(stored, state.unit) : stored);
+      input.value = String(inUnit ? mmToUnit(stored, state.unit) : stored);
     },
     read,
     isUsable: () => {

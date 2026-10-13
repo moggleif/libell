@@ -4,6 +4,7 @@
  */
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 import { formatLength } from '../domain/lengths';
+import { clamp } from '../domain/numbers';
 import { createElement } from './dom';
 import { t } from './i18n';
 import { svgEl } from './svg';
@@ -120,8 +121,8 @@ export function updateBubble(
   reduceMotion: MediaQueryList,
   state: { get(): Point; set(x: number, y: number): void },
 ): void {
-  const targetX = center.x + Math.max(-1, Math.min(1, result.rollDeg / fullScaleDeg)) * travel;
-  const targetY = center.y + Math.max(-1, Math.min(1, result.pitchDeg / fullScaleDeg)) * travel;
+  const targetX = center.x + clamp(result.rollDeg / fullScaleDeg, -1, 1) * travel;
+  const targetY = center.y + clamp(result.pitchDeg / fullScaleDeg, -1, 1) * travel;
   const current = state.get();
   const x = reduceMotion.matches ? targetX : current.x + (targetX - current.x) * 0.3;
   const y = reduceMotion.matches ? targetY : current.y + (targetY - current.y) * 0.3;

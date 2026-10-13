@@ -29,11 +29,21 @@ export function formatStepHeightsList(heights: number[]): string {
   return heights.join('; ');
 }
 
+/** A length in mm, as a number in `unit` (ADR 0003: only display converts). */
+export function mmToUnit(mm: number, unit: 'mm' | 'cm'): number {
+  return unit === 'cm' ? mm / 10 : mm;
+}
+
+/** A number typed in `unit`, back to mm. */
+export function unitToMm(value: number, unit: 'mm' | 'cm'): number {
+  return unit === 'cm' ? value * 10 : value;
+}
+
 /** The number only, no unit suffix ("63" / "6.3"), for several lengths under
  * one shared unit label (R14). */
 export function formatLengthValue(mm: number, unit: 'mm' | 'cm'): string {
   if (unit === 'cm') {
-    const cm = mm / 10;
+    const cm = mmToUnit(mm, 'cm');
     return Number.isInteger(cm) ? String(cm) : cm.toFixed(1);
   }
   return String(Math.round(mm));

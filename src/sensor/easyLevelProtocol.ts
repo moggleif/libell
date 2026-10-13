@@ -69,6 +69,7 @@
  * conversion — the same contract the phone sensor fulfills.
  */
 import type { GravityVector } from '../domain/leveling';
+import { clamp } from '../domain/numbers';
 import type { EasyLevelMounting } from '../domain/sensorDeviceSettings';
 
 /**
@@ -203,10 +204,6 @@ export interface EasyLevelStatus {
    * `CALIBRATION_MIN_FIRMWARE_TIER`, matching the official app's gate. Feed
    * this into `parseAccelPacket`'s `calibration` parameter. */
   calibration: EasyLevelCalibration | null;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
 }
 
 /**

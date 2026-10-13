@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { createExternalPoseDetector, createPoseDetector, isUpsideDown } from './pose';
+import { createExternalPoseDetector, createPoseDetector, isUpsideDown, totalTiltDeg } from './pose';
+
+describe('totalTiltDeg (#519)', () => {
+  it('is the angle between gravity and the screen normal, 0° to 180°', () => {
+    expect(totalTiltDeg({ x: 0, y: 0, z: 9.81 })).toBe(0);
+    expect(totalTiltDeg({ x: 9.81, y: 0, z: 0 })).toBeCloseTo(90);
+    expect(totalTiltDeg({ x: 0, y: 0, z: -9.81 })).toBeCloseTo(180);
+    expect(totalTiltDeg({ x: 0, y: 0, z: 0 })).toBe(90);
+  });
+
+  it('stays a number when rounding puts z just past the length', () => {
+    const z = 0.1 + 0.2;
+    expect(Number.isNaN(totalTiltDeg({ x: 1e-17, y: 0, z }))).toBe(false);
+  });
+});
 
 describe('phone pose detector (#51)', () => {
   it('reads flat, tilted-past-25° and back with hysteresis', () => {
