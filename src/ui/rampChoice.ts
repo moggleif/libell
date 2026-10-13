@@ -34,8 +34,7 @@ export type StepEditor = ReturnType<typeof createStepEditor>;
  */
 export function createStepEditor(choice: RampChoice, state: SettingsFormState, edited: () => void) {
   const caption = document.createElement('span');
-  const chips = document.createElement('div');
-  chips.className = 'steps__chips';
+  const chips = createElement('div', 'steps__chips');
   const add = createAddStepRow(state, (mm) => {
     if (!choice.steps.includes(mm)) choice.steps = [...choice.steps, mm].sort((a, b) => a - b);
     edited();
@@ -65,8 +64,7 @@ export function createStepEditor(choice: RampChoice, state: SettingsFormState, e
  * over in mm. Any other value is left in the field with the same
  * "must be positive" text the other number fields show (#514). */
 function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void) {
-  const row = document.createElement('div');
-  row.className = 'steps__add';
+  const row = createElement('div', 'steps__add');
   const input = document.createElement('input');
   input.type = 'number';
   input.inputMode = 'decimal';
@@ -105,8 +103,7 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
 
 /** One step height as a chip, with a button that removes it. */
 function createStepChip(label: string, onRemove: () => void): HTMLElement {
-  const element = document.createElement('span');
-  element.className = 'steps__chip';
+  const element = createElement('span', 'steps__chip');
   const text = document.createElement('span');
   text.textContent = label;
   const remove = document.createElement('button');
@@ -130,12 +127,9 @@ function createStepChip(label: string, onRemove: () => void): HTMLElement {
  * tie-break, shared by both UIs.
  */
 export function createRampSelect(choice: RampChoice, onPick: (model: RampModel | null) => void) {
-  const row = document.createElement('div');
-  row.className = 'steps__ramp';
-  const caption = document.createElement('span');
-  caption.className = 'menu__text';
-  const select = document.createElement('select');
-  select.className = 'settings__select';
+  const row = createElement('div', 'steps__ramp');
+  const caption = createElement('span', 'menu__text');
+  const select = createElement('select', 'settings__select');
   const customOption = document.createElement('option');
   customOption.value = '';
   select.append(customOption);

@@ -4,6 +4,7 @@
  * rejects the factory one Libell offers.
  */
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface BoxPasswordOptions {
   isRejected(): boolean;
@@ -39,27 +40,23 @@ export function createBoxPasswordBlock(
 }
 
 function createView(name: string) {
-  const element = document.createElement('div');
-  element.className = 'box-password';
+  const element = createElement('div', 'box-password');
   element.hidden = true;
-  const message = document.createElement('p');
-  message.className = 'menu__text menu__text--warning';
+  const message = createElement('p', 'menu__text menu__text--warning');
   message.textContent = t('sensorSource.err.password', { name });
   const { field, input } = createCodeField();
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'menu__action';
   button.textContent = t('box.password.retry');
-  const status = document.createElement('p');
-  status.className = 'menu__text box-password__status';
+  const status = createElement('p', 'menu__text box-password__status');
   status.hidden = true;
   element.append(message, field, button, status);
   return { element, input, button, status };
 }
 
 function createCodeField() {
-  const field = document.createElement('label');
-  field.className = 'settings__field box-password__field';
+  const field = createElement('label', 'settings__field box-password__field');
   const caption = document.createElement('span');
   caption.textContent = t('box.password.label');
   const input = document.createElement('input');

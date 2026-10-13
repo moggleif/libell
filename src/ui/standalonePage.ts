@@ -11,6 +11,7 @@
  */
 import { setVisible } from './motion';
 import { t } from './i18n';
+import { createElement } from './dom';
 
 export interface StandalonePage {
   /** The page element, appended to the document body. */
@@ -97,11 +98,9 @@ export function createStandalonePage(initialTitle: string, onOpen?: () => void):
 }
 
 function createPageElements(initialTitle: string) {
-  const element = document.createElement('div');
-  element.className = 'menu-page';
+  const element = createElement('div', 'menu-page');
   element.hidden = true;
-  const header = document.createElement('div');
-  header.className = 'menu-page__header';
+  const header = createElement('div', 'menu-page__header');
   const closeButton = document.createElement('button');
   closeButton.type = 'button';
   // Reuses the ‹ back button's styling (big, tappable); ✕ means "close this
@@ -109,13 +108,11 @@ function createPageElements(initialTitle: string) {
   closeButton.className = 'menu-page__back';
   closeButton.setAttribute('aria-label', t('menu.close'));
   closeButton.textContent = '✕';
-  const titleEl = document.createElement('h2');
-  titleEl.className = 'menu-page__title';
+  const titleEl = createElement('h2', 'menu-page__title');
   titleEl.tabIndex = -1;
   titleEl.textContent = initialTitle;
   header.append(closeButton, titleEl);
-  const body = document.createElement('div');
-  body.className = 'menu-page__body';
+  const body = createElement('div', 'menu-page__body');
   element.append(header, body);
   return { element, closeButton, titleEl, body };
 }

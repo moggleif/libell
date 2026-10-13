@@ -16,6 +16,7 @@ import {
   placementIllustration,
 } from './helpIllustrations';
 import type { VehicleType } from '../domain/settings';
+import { createElement } from './dom';
 
 /** `main.ts` maps each to the right Settings tab or the sensor page. */
 export type HelpTarget = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'sensor';
@@ -132,17 +133,14 @@ function buildIntroButton(
 /** Both vehicles side by side: this static tab isn't tied to the user's
  * vehicle. */
 function buildVehiclePair(heading: string): HTMLElement {
-  const row = document.createElement('div');
-  row.className = 'illu-pair';
+  const row = createElement('div', 'illu-pair');
   const variants: [VehicleType, MessageKey][] = [
     ['motorhome', 'vehicle.motorhome'],
     ['caravan', 'vehicle.caravan'],
   ];
   for (const [vehicleType, labelKey] of variants) {
-    const item = document.createElement('div');
-    item.className = 'illu-pair__item';
-    const caption = document.createElement('p');
-    caption.className = 'illu-pair__caption';
+    const item = createElement('div', 'illu-pair__item');
+    const caption = createElement('p', 'illu-pair__caption');
     caption.textContent = t(labelKey);
     item.append(caption, measuresIllustration(`${heading} – ${t(labelKey)}`, vehicleType));
     row.append(item);
@@ -175,11 +173,9 @@ function buildHelpPanel(
     const body = buildTopicBody(topic, go, hasTarget);
     const button = buildTopicToggle(topic, body);
     button.addEventListener('click', () => show(body.hidden ? topic.id : null));
-    const heading = document.createElement('h3');
-    heading.className = 'help-topic__heading';
+    const heading = createElement('h3', 'help-topic__heading');
     heading.append(button);
-    const section = document.createElement('section');
-    section.className = 'help-topic';
+    const section = createElement('section', 'help-topic');
     section.dataset.topic = topic.id;
     section.append(heading, body);
     panel.append(section);
@@ -208,8 +204,7 @@ function buildTopicBody(
   go: (target: HelpTarget | 'feedback') => void,
   hasTarget: (target: HelpTarget | 'feedback') => boolean,
 ): HTMLElement {
-  const body = document.createElement('div');
-  body.className = 'help-topic__body';
+  const body = createElement('div', 'help-topic__body');
   body.id = `help-topic-${topic.id}`;
   if (topic.picture) body.append(topic.picture(t(topic.h)));
   body.append(textLine(topic.text));
@@ -227,8 +222,7 @@ function buildTopicBody(
 }
 
 function textLine(key: MessageKey): HTMLParagraphElement {
-  const line = document.createElement('p');
-  line.className = 'menu__text';
+  const line = createElement('p', 'menu__text');
   line.textContent = t(key);
   return line;
 }
@@ -272,8 +266,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
 
 /** Help, About and Feedback as tabs; selecting one also retitles the page. */
 function createInfoTabs(page: StandalonePage) {
-  const bar = document.createElement('div');
-  bar.className = 'settings__tabs';
+  const bar = createElement('div', 'settings__tabs');
   bar.setAttribute('role', 'tablist');
   const labels: Record<InfoTab, string> = {
     help: t('menu.help'),

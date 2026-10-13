@@ -1,11 +1,11 @@
 /** Small transient confirmations ("Link copied!", "Diagnostics copied!"). */
+import { createElement } from './dom';
 
 /** Fades/slides the toast in and out instead of appearing and
  * vanishing instantly; skipped under `prefers-reduced-motion`. Returns the
  * element so a caller can drop it early when a follow-up replaces it. */
 export function showToast(text: string): HTMLElement {
-  const toast = document.createElement('p');
-  toast.className = 'toast';
+  const toast = createElement('p', 'toast');
   toast.setAttribute('role', 'status');
   toast.textContent = text;
   document.body.append(toast);
@@ -32,8 +32,7 @@ export function showToast(text: string): HTMLElement {
  * returned element).
  */
 export function showActionToast(text: string, action: string, onAction: () => void): HTMLElement {
-  const toast = document.createElement('div');
-  toast.className = 'toast toast--action';
+  const toast = createElement('div', 'toast toast--action');
   toast.setAttribute('role', 'status');
   const label = document.createElement('span');
   label.textContent = text;
