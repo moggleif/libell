@@ -79,6 +79,8 @@ function createSelectButton(labelText: string, active: boolean, onSelect: () => 
   select.className = active
     ? 'targets__row-select targets__row-select--active'
     : 'targets__row-select';
+  // The ●/○ is hidden from screen readers; this says it instead (#535).
+  select.setAttribute('aria-pressed', String(active));
   const radio = createElement('span', 'targets__row-radio');
   radio.setAttribute('aria-hidden', 'true');
   radio.textContent = active ? '●' : '○';
@@ -107,6 +109,7 @@ function createAddControls() {
   nameInput.className = 'targets__name-input';
   nameInput.maxLength = 40;
   nameInput.placeholder = t('targets.name.placeholder');
+  nameInput.setAttribute('aria-label', t('targets.name.label'));
   const addButton = secondaryButton(t('targets.add'));
   const addRow = createElement('div', 'targets__add');
   addRow.append(nameInput, addButton);

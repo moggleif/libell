@@ -8,6 +8,7 @@ export const de: Messages = {
   'bottombar.sound.mute': 'Ton stummschalten',
   'bottombar.sound.unmute': 'Ton einschalten',
   'bottombar.help': 'Hilfe',
+  'bottombar.label': 'Aktionen',
   'share.text': 'Richte dein Wohnmobil oder deinen Wohnwagen mit dem Handy waagerecht aus.',
   'share.copied': 'Link kopiert!',
   'update.check': 'Nach neuer Version suchen',
@@ -213,6 +214,7 @@ export const de: Messages = {
   'settings.measureHint.boggie': 'Bei einer Doppelachse bis zur Mitte des Achspaars messen.',
   'settings.steps': 'Stufenhöhen der Keile',
   'settings.steps.add': 'Stufe hinzufügen',
+  'settings.steps.new': 'Neue Stufenhöhe ({unit})',
   'settings.steps.remove': '{value} entfernen',
   'settings.ramp': 'Fertiger Keil',
   'settings.ramp.custom': 'Eigener Satz',
@@ -332,6 +334,7 @@ export const de: Messages = {
 
   'targets.normal': 'Normal (waagerecht)',
   'targets.name.placeholder': 'Name (z. B. „Duschablauf“)',
+  'targets.name.label': 'Name des neuen Ziels',
   'targets.defaultName': 'Ziel {n}',
   'targets.add': 'Aktuelle Neigung als neues Ziel speichern',
   'targets.delete': '{name} löschen',

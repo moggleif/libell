@@ -8,6 +8,7 @@ export const sv: Messages = {
   'bottombar.sound.mute': 'Stäng av ljud',
   'bottombar.sound.unmute': 'Slå på ljud',
   'bottombar.help': 'Hjälp',
+  'bottombar.label': 'Åtgärder',
   'share.text': 'Få husbilen eller husvagnen i våg med telefonen.',
   'share.copied': 'Länken kopierad!',
   'update.check': 'Sök efter ny version',
@@ -217,6 +218,7 @@ export const sv: Messages = {
   'settings.measureHint.boggie': 'Med boggie mäter du till mitten av axelparet.',
   'settings.steps': 'Klossarnas steghöjder',
   'settings.steps.add': 'Lägg till steg',
+  'settings.steps.new': 'Ny steghöjd ({unit})',
   'settings.steps.remove': 'Ta bort {value}',
   'settings.ramp': 'Färdiga klossar',
   'settings.ramp.custom': 'Egen uppsättning',
@@ -335,6 +337,7 @@ export const sv: Messages = {
   // kvar och är inte ett av de sparade målen.
   'targets.normal': 'Normal (i våg)',
   'targets.name.placeholder': 'Namn (t.ex. "Duschavlopp")',
+  'targets.name.label': 'Namn på det nya målet',
   'targets.defaultName': 'Mål {n}',
   'targets.add': 'Spara aktuell lutning som nytt mål',
   'targets.delete': 'Ta bort {name}',

@@ -1935,3 +1935,20 @@ its descriptor's capabilities (ADR 0016).
 - **Then** the overlay says it in one sentence and one short reason ("The box is lying
   down" / "It only measures right standing up.") with one button, **Show the box**, which
   opens this page.
+
+## R52 — Screen readers and voice control get names and states (#535)
+
+- **Given** any shipped language
+- **When** the app starts (a language change reloads it)
+- **Then** the page's `lang` is that language's code, so a screen reader reads it in that
+  language's voice.
+- **Given** a single-choice list: the level targets (R31) or the ramp catalogue (R47)
+- **Then** each row says whether it is the selected one (pressed or not), since the ●/○
+  beside it is hidden from screen readers.
+- **Given** the add-step field and the new target's name field
+- **Then** each is named for what to type, in the chosen language (the add-step field
+  with the display unit), not only by its placeholder.
+- **Given** a warning lamp, the name-and-version title, or the bottom action bar
+- **Then** its accessible name is translated and starts with the text on screen, so voice
+  control can say what it sees; a lamp's name then says what is missing, and the title's
+  that a tap checks for a new version (R50).

@@ -48,7 +48,9 @@ describe('createIndicators', () => {
     const [, calibrationLamp] =
       indicators.element.querySelectorAll<HTMLButtonElement>('.indicators__lamp');
     expect(calibrationLamp!.title).toBe(t('lamp.calibrate.title.sensor'));
-    expect(calibrationLamp!.getAttribute('aria-label')).toBe(t('lamp.calibrate.title.sensor'));
+    expect(calibrationLamp!.getAttribute('aria-label')).toBe(
+      `${t('lamp.zero')}. ${t('lamp.calibrate.title.sensor')}`,
+    );
 
     indicators.update({ settingsSaved: true, calibrationLamp: 'calibrate' });
     expect(calibrationLamp!.title).toBe(t('lamp.calibrate.title'));

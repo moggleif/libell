@@ -37,6 +37,7 @@ function translateLabels(doc: Document): void {
   if (installHint) installHint.textContent = t('install.hint');
   doc.querySelector('#settings-button')?.setAttribute('aria-label', t('bottombar.settings'));
   doc.querySelector('#help-button')?.setAttribute('aria-label', t('bottombar.help'));
+  doc.querySelector('.bottombar')?.setAttribute('aria-label', t('bottombar.label'));
 }
 
 /**

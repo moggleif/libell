@@ -68,8 +68,8 @@ function lamp(label: string, title: string, onClick: () => void): HTMLButtonElem
   button.type = 'button';
   button.className = 'indicators__lamp';
   button.title = title;
-  button.setAttribute('aria-label', title);
   button.textContent = label;
+  nameAfterVisibleText(button, title);
   button.addEventListener('click', onClick);
   return button;
 }
@@ -89,5 +89,11 @@ function labelCalibrationLamp(
   );
   calibrationLamp.textContent = t(step === 'zero' ? 'lamp.zero' : 'lamp.calibrate');
   calibrationLamp.title = calibrationTitle;
-  calibrationLamp.setAttribute('aria-label', calibrationTitle);
+  nameAfterVisibleText(calibrationLamp, calibrationTitle);
+}
+
+/** The accessible name starts with the lamp's own words, so voice control
+ * can say what it sees, then says what is missing (#535). */
+function nameAfterVisibleText(lamp: HTMLButtonElement, title: string): void {
+  lamp.setAttribute('aria-label', `${lamp.textContent}. ${title}`);
 }

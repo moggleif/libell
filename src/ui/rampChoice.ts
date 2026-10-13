@@ -95,6 +95,7 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
     row,
     relabel: (): void => {
       input.placeholder = state.unit === 'cm' ? '4' : '40';
+      input.setAttribute('aria-label', t('settings.steps.new', { unit: state.unit }));
       button.textContent = `+ ${t('settings.steps.add')}`;
       if (!error.hidden) error.textContent = t('settings.err.positive');
     },

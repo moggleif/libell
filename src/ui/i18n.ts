@@ -53,8 +53,12 @@ export function getLanguage(): Language {
   return current;
 }
 
+/** Also tells the page, so a screen reader reads it in that language's
+ * voice (#535). The app reloads on a language change, so start-up is the
+ * one place it is applied. */
 export function setLanguage(lang: Language): void {
   current = lang;
+  if (typeof document !== 'undefined') document.documentElement.lang = lang;
 }
 
 /** Substitutes `{name}` placeholders from `vars`. */
