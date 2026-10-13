@@ -1,4 +1,5 @@
 /** The level screen's elements, driven by the frame through `LevelFrameView`. */
+import { createAnnouncer } from '../ui/announcer';
 import { t } from '../ui/i18n';
 import { createLevelOverlay } from '../ui/levelOverlay';
 import { createSensorFallbackPrompt } from '../ui/sensorFallbackPrompt';
@@ -31,6 +32,8 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
     parts.fallbackPrompt.element,
     parts.pose.element,
     parts.stale.element,
+    parts.announcer.element,
+    parts.alarm.element,
   );
   return viewOf(parts, deps);
 }
@@ -38,9 +41,14 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
 type Parts = ReturnType<typeof createParts>;
 
 function createParts(deps: LevelScreenViewDeps) {
-  const status = createStatusLine();
+  // What changes on screen without a tap is read out through these (#537).
+  const announcer = createAnnouncer();
+  const alarm = createAnnouncer(true);
+  const status = createStatusLine(announcer.say);
   const tilt = createTiltReadout();
   return {
+    announcer,
+    alarm,
     status,
     tilt,
     waiting: hint(t('main.waiting')),
@@ -53,13 +61,13 @@ function createParts(deps: LevelScreenViewDeps) {
       },
       showTilt: (reading) => tilt.update(reading),
     }),
-    pose: createPoseOverlay(deps.openActiveSensorPage),
-    stale: createStaleOverlay(deps.openActiveSensorPage),
+    pose: createPoseOverlay(deps.openActiveSensorPage, announcer.say),
+    stale: createStaleOverlay(deps.openActiveSensorPage, alarm.say),
   };
 }
 
 function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
-  const { status, waiting, fallbackPrompt, levelOverlay, engine, pose, stale } = parts;
+  const { status, waiting, fallbackPrompt, levelOverlay, engine, pose, stale, announcer } = parts;
   return {
     pause() {
       pose.element.hidden = true;
@@ -91,6 +99,7 @@ function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
     celebrate() {
       deps.onCelebrate();
       levelOverlay.celebrate();
+      announcer.say(t('main.level'));
     },
     hideCelebration: () => levelOverlay.hideNow(),
   };
@@ -107,12 +116,14 @@ function dim({ engine, tilt, status }: Parts, noData: boolean): void {
 
 /**
  * The status row speaks only when it has something the diagram cannot
- * show, and hides itself otherwise rather than hold a blank line.
+ * show, and hides itself otherwise rather than hold a blank line. A new
+ * sentence is read out through `say`: a live region that was hidden a
+ * moment ago is often not read.
  */
-function createStatusLine() {
+function createStatusLine(say: (text: string) => void) {
   const element = createElement('p', 'status-line');
-  element.setAttribute('aria-live', 'polite');
   const show = (text: string): void => {
+    if (text !== '' && text !== element.textContent) say(text);
     element.textContent = text;
     element.hidden = text === '';
   };
@@ -126,6 +137,7 @@ function createStatusLine() {
 
 function hint(text: string): HTMLParagraphElement {
   const element = createElement('p', 'app__hint');
+  element.setAttribute('role', 'status');
   element.textContent = text;
   return element;
 }
@@ -141,7 +153,7 @@ function sensorPageButton(onClick: () => void): HTMLButtonElement {
 
 /** Wrong-pose overlay instead of wrong guidance; for a box, what to do
  * about it and a link to its page. */
-function createPoseOverlay(openSensorPage: () => void) {
+function createPoseOverlay(openSensorPage: () => void, say: (text: string) => void) {
   const element = createElement('div', 'pose-overlay');
   element.hidden = true;
   const text = createElement('p', 'pose-overlay__text');
@@ -152,7 +164,10 @@ function createPoseOverlay(openSensorPage: () => void) {
   return {
     element,
     show(problem: PoseProblem) {
-      text.textContent = t(problem.message);
+      const message = t(problem.message);
+      // Every frame re-shows it; read it only when it appears or changes.
+      if (element.hidden || text.textContent !== message) say(message);
+      text.textContent = message;
       hintText.textContent = t(problem.hint);
       hintText.hidden = button.hidden = !problem.offerSensorPage;
       element.hidden = false;
@@ -162,7 +177,7 @@ function createPoseOverlay(openSensorPage: () => void) {
 
 /** No trustworthy data at all: the guidance is hidden rather than left
  * frozen; for a box, a link to its page. */
-function createStaleOverlay(openSensorPage: () => void) {
+function createStaleOverlay(openSensorPage: () => void, say: (text: string) => void) {
   const element = createElement('div', 'stale-overlay');
   element.hidden = true;
   const text = createElement('p', 'stale-overlay__text');
@@ -172,6 +187,7 @@ function createStaleOverlay(openSensorPage: () => void) {
   return {
     element,
     show(offerSensorPage: boolean) {
+      if (element.hidden) say(t('stale.dataUnavailable'));
       button.hidden = !offerSensorPage;
       element.hidden = false;
     },

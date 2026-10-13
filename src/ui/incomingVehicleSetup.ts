@@ -8,6 +8,7 @@ import { formatLength } from '../domain/lengths';
 import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
 import { createElement } from './dom';
+import { holdFocus } from './focusHold';
 
 export interface IncomingVehicleSetupOptions {
   geometry: VehicleGeometry;
@@ -25,10 +26,15 @@ export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): 
   const heading = document.createElement('h2');
   heading.id = 'incoming-setup-heading';
   heading.className = 'incoming-setup__heading';
+  heading.tabIndex = -1;
   heading.textContent = t('setup.incoming.h');
   const intro = paragraph('incoming-setup__intro', t('setup.incoming.intro'));
   const reminder = paragraph('incoming-setup__reminder', t('setup.incoming.reminder'));
-  const close = (): void => overlay.remove();
+  let hold = { release: () => {} };
+  const close = (): void => {
+    overlay.remove();
+    hold.release();
+  };
   const actions = createActions(
     () => {
       close();
@@ -44,6 +50,8 @@ export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): 
   card.append(heading, intro, geometryList(options), reminder, actions);
   overlay.append(card);
   document.body.append(overlay);
+  hold = holdFocus(overlay);
+  heading.focus();
 }
 
 /** What the link would set, in this phone's unit; a caravan's list leaves

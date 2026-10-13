@@ -104,3 +104,22 @@ describe('createStandalonePage (screen-cleanup follow-up)', () => {
     await vi.waitFor(() => expect(after).toHaveBeenCalledOnce());
   });
 });
+
+describe('focus while a page is open (#537)', () => {
+  it('keeps Tab inside the page and returns focus to the button that opened it', () => {
+    document.body.replaceChildren();
+    const page = createStandalonePage('Title');
+    const button = document.createElement('button');
+    const main = document.createElement('main');
+    main.append(button);
+    document.body.append(main, page.element);
+    page.attach(button);
+    button.focus();
+    button.click();
+    expect(main.hasAttribute('inert')).toBe(true);
+    expect(document.activeElement).toBe(page.element.querySelector('.menu-page__title'));
+    page.element.querySelector<HTMLButtonElement>('.menu-page__back')!.click();
+    expect(main.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(button);
+  });
+});

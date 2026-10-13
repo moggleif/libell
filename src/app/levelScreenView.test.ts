@@ -44,13 +44,17 @@ describe('mountLevelScreenView', () => {
       'sensor-fallback',
       'pose-overlay',
       'stale-overlay',
+      'visually-hidden',
+      'visually-hidden',
     ]);
   });
 
   it('starts with the status row empty and hidden, and every overlay hidden', () => {
     const { $ } = setup();
     expect($('.status-line').hidden).toBe(true);
-    expect($('.status-line').getAttribute('aria-live')).toBe('polite');
+    // Read through the announcer instead (#537): a just-unhidden live
+    // region is often skipped.
+    expect($('.status-line').hasAttribute('aria-live')).toBe(false);
     expect($('.app__hint').textContent).toBe(t('main.waiting'));
     expect($('.pose-overlay').hidden).toBe(true);
     expect($('.stale-overlay').hidden).toBe(true);
@@ -182,5 +186,62 @@ describe('mountLevelScreenView', () => {
     usePhone!.click();
     expect(deps.retry).toHaveBeenCalledTimes(1);
     expect(deps.usePhoneSensor).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('what a screen reader hears from the level screen (#537)', () => {
+  function announced(root: HTMLElement) {
+    return {
+      polite: () => root.querySelector('[role=status].visually-hidden')?.textContent,
+      urgent: () => root.querySelector('[role=alert]')?.textContent,
+    };
+  }
+
+  it('says once that the vehicle is level', () => {
+    const { root, view } = setup();
+    view.celebrate();
+    expect(announced(root).polite()).toBe(t('main.level'));
+  });
+
+  it('says a new status sentence once, not on every frame that repeats it', () => {
+    const { root, output } = setup();
+    const said = vi.spyOn(
+      root.querySelector('[role=status].visually-hidden')!,
+      'textContent',
+      'set',
+    );
+    output().showStatus('Almost level', false);
+    output().showStatus('Almost level', false);
+    expect(announced(root).polite()).toBe('Almost level');
+    expect(said.mock.calls.filter(([text]) => text === 'Almost level')).toHaveLength(1);
+  });
+
+  it('says the pose problem when it appears or changes, not on every frame', () => {
+    const { root, view } = setup();
+    const said = vi.spyOn(
+      root.querySelector('[role=status].visually-hidden')!,
+      'textContent',
+      'set',
+    );
+    const portrait = {
+      message: 'pose.portrait',
+      hint: 'pose.sensorHint',
+      offerSensorPage: false,
+    } as const;
+    view.showPose(portrait);
+    view.showPose(portrait);
+    expect(said.mock.calls.filter(([text]) => text === t('pose.portrait'))).toHaveLength(1);
+    view.hidePose();
+    view.showPose(portrait);
+    expect(said.mock.calls.filter(([text]) => text === t('pose.portrait'))).toHaveLength(2);
+  });
+
+  it('alerts once when the data goes stale', () => {
+    const { root, view } = setup();
+    const said = vi.spyOn(root.querySelector('[role=alert]')!, 'textContent', 'set');
+    view.showStale(false);
+    view.showStale(false);
+    expect(announced(root).urgent()).toBe(t('stale.dataUnavailable'));
+    expect(said.mock.calls.filter(([text]) => text === t('stale.dataUnavailable'))).toHaveLength(1);
   });
 });

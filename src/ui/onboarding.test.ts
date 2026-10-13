@@ -1475,3 +1475,24 @@ describe('onboarding wizard — regression pins for the module split (#415)', ()
     expect(card().textContent).toContain(t('box.step.position.flat.ok'));
   });
 });
+
+describe('the wizard as a dialog (#537)', () => {
+  it('is a modal dialog named by its step heading, and gives focus back when closed', () => {
+    document.body.replaceChildren();
+    const main = document.createElement('main');
+    const opener = document.createElement('button');
+    main.append(opener);
+    document.body.append(main);
+    opener.focus();
+    showOnboarding(makeOptions());
+    const overlay = document.querySelector<HTMLElement>('.onboarding')!;
+    expect(overlay.getAttribute('role')).toBe('dialog');
+    expect(overlay.getAttribute('aria-modal')).toBe('true');
+    const heading = document.getElementById(overlay.getAttribute('aria-labelledby')!);
+    expect(heading && overlay.contains(heading)).toBe(true);
+    expect(main.hasAttribute('inert')).toBe(true);
+    overlay.querySelector<HTMLButtonElement>('.onboarding__close')!.click();
+    expect(main.hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(opener);
+  });
+});
