@@ -36,9 +36,11 @@ describe('attachMuteButton', () => {
     expect(els.waves.hasAttribute('hidden')).toBe(false);
   });
 
-  it('tolerates missing elements', () => {
-    expect(() =>
-      attachMuteButton({ button: null, waves: null, mute: null }, () => true),
-    ).not.toThrow();
+  it('tolerates missing elements, still drawing the ones that exist (#526)', () => {
+    const waves = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const mute = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    attachMuteButton({ button: null, waves, mute }, () => true);
+    expect(waves.hasAttribute('hidden')).toBe(false);
+    expect(mute.hasAttribute('hidden')).toBe(true);
   });
 });

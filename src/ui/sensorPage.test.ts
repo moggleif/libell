@@ -299,8 +299,11 @@ describe('createSensorPage.openSource (#285)', () => {
     expect(page.isOpen()).toBe(true);
   });
 
-  it('ignores an unknown source id', () => {
+  it('ignores an unknown source id, opening nothing (#526)', () => {
     const page = createSensorPage([EASYLEVEL_DESCRIPTOR], () => makeOptions());
-    expect(() => page.openSource('nope' as never)).not.toThrow();
+    document.body.append(page.element, ...page.statusElements);
+    page.openSource('nope' as never);
+    expect(page.isOpen()).toBe(false);
+    expect(page.statusElements.every((e) => !e.classList.contains('is-visible'))).toBe(true);
   });
 });

@@ -69,7 +69,10 @@ describe('settings form', () => {
     const shareButton = [...form.querySelectorAll('button')].find(
       (b) => b.textContent === t('settings.shareVehicle'),
     )!;
-    expect(() => shareButton.click()).not.toThrow();
+    const before = input(form, 'wheelbaseMm').value;
+    shareButton.click();
+    // Nothing to hand over to: the form stays as it was (#526).
+    expect(input(form, 'wheelbaseMm').value).toBe(before);
   });
 
   it('round-trips an edited field through save', () => {
