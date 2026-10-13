@@ -1,6 +1,11 @@
 // @vitest-environment happy-dom
-import { describe, expect, it, vi } from 'vitest';
-import { attachUpdateCheck, checkForUpdate, type UpdatableRegistration } from './appUpdate';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  attachUpdateCheck,
+  checkForUpdate,
+  installUpdateReload,
+  type UpdatableRegistration,
+} from './appUpdate';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
@@ -74,5 +79,41 @@ describe('attachUpdateCheck (#301)', () => {
     expect([...document.querySelectorAll('.toast')].map((n) => n.textContent)).not.toContain(
       t('update.checking'),
     );
+  });
+});
+
+describe('installUpdateReload (#512)', () => {
+  const realNavigator = globalThis.navigator;
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Object.defineProperty(globalThis, 'navigator', { value: realNavigator, configurable: true });
+  });
+
+  function install(controller: object | null) {
+    const container = Object.assign(new EventTarget(), { controller });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { serviceWorker: container, onLine: true },
+      configurable: true,
+    });
+    const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
+    installUpdateReload();
+    const change = () => container.dispatchEvent(new Event('controllerchange'));
+    return { reload, change };
+  }
+
+  it('leaves the very first install alone, and reloads once for the next worker', () => {
+    const { reload, change } = install(null);
+    change();
+    expect(reload).not.toHaveBeenCalled();
+    change();
+    expect(reload).toHaveBeenCalledOnce();
+    change();
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it('reloads on the first change when a worker already controlled the page', () => {
+    const { reload, change } = install({});
+    change();
+    expect(reload).toHaveBeenCalledOnce();
   });
 });
