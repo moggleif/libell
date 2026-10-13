@@ -420,6 +420,10 @@ export const en = {
   'calibration.check.good': 'Still good — off by {off}°.',
   'calibration.check.off': 'Off by {off}° — consider recalibrating.',
   'calibration.vehicle.check.off': 'Off by {off}° — consider zeroing again.',
+  'calibration.check.none':
+    'Not calibrated yet, so there is nothing to check. Lay the phone on a level surface and tap "{now}".',
+  'calibration.vehicle.check.none':
+    'No zero yet, so there is nothing to check. Level the vehicle with a spirit level and tap "{now}".',
   'calibration.flip.intro':
     'No level surface around? Use flip calibration: put the phone down anywhere ' +
     'reasonably flat, capture, rotate the phone half a turn (180°) on the same ' +

@@ -86,8 +86,10 @@ export function drawControls(
     look.checklist,
     message,
   );
-  controls.clear.disabled = !calibration;
-  controls.check.disabled = !calibration;
+  // Nothing to clear: hidden, not greyed; Check explains instead (#517).
+  controls.clear.hidden = !calibration;
+  controls.clear.disabled = false;
+  controls.check.disabled = false;
   if (!look.modern) return;
   const pill = pillFor(kind, calibration !== null);
   controls.pill.textContent = pill.text;

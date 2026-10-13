@@ -58,12 +58,12 @@ describe('calibration section (#83)', () => {
     expect(calibrateVehicle).toHaveBeenCalledTimes(1);
   });
 
-  it('surfaces a rejection and disables clear while nothing is stored', () => {
+  it('surfaces a rejection and hides clear while nothing is stored (#517)', () => {
     const section = createCalibrationSection(
       makeOptions({ calibrateVehicle: () => 'not level enough' }),
     );
     const clear = buttonByText(section.element, 'Forget the zero');
-    expect(clear.disabled).toBe(true);
+    expect(clear.hidden).toBe(true);
     buttonByText(section.element, 'Zero now').click();
     expect(
       [...section.element.querySelectorAll('.menu__text--status')].some(
@@ -89,7 +89,7 @@ describe('calibration section (#83)', () => {
       (b) => b.textContent === 'Check',
     );
     expect(check).toHaveLength(2);
-    expect(check[1]!.disabled).toBe(true); // no vehicle zero stored
+    expect(check[1]!.disabled).toBe(false); // no vehicle zero stored, still tappable (#517)
     check[0]!.click();
     expect(checkCalibration).toHaveBeenCalledTimes(1);
     expect(statuses().some((s) => s === 'Still good — off by 0.1°.')).toBe(true);
@@ -106,10 +106,33 @@ describe('calibration section (#83)', () => {
       }),
     );
     const clear = buttonByText(section.element, 'Forget the zero');
-    expect(clear.disabled).toBe(false);
+    expect(clear.hidden).toBe(false);
     clear.click();
-    expect(clear.disabled).toBe(true);
+    expect(clear.hidden).toBe(true);
   });
+
+  it.each([
+    ['phone', 0, 'calibration.check.none', 'calibration.now'],
+    ['vehicle', 1, 'calibration.vehicle.check.none', 'calibration.vehicle.now'],
+  ] as const)(
+    'keeps Check tappable with no %s value stored, and says how to get one (#517)',
+    (_kind, index, key, now) => {
+      const checkCalibration = vi.fn(() => 'checked');
+      const checkVehicleCalibration = vi.fn(() => 'checked');
+      const section = createCalibrationSection(
+        makeOptions({ checkCalibration, checkVehicleCalibration }),
+      );
+      const check = [...section.element.querySelectorAll('button')].filter(
+        (b) => b.textContent === 'Check',
+      )[index]!;
+      expect(check.disabled).toBe(false);
+      check.click();
+      expect(checkCalibration).not.toHaveBeenCalled();
+      expect(checkVehicleCalibration).not.toHaveBeenCalled();
+      const statuses = [...section.element.querySelectorAll('.menu__text--status')];
+      expect(statuses.some((s) => s.textContent === t(key, { now: t(now) }))).toBe(true);
+    },
+  );
 });
 
 describe('calibration section — Modern two-card layout (#109)', () => {
