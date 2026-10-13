@@ -21,14 +21,14 @@
 import {
   DEFAULT_SETTINGS,
   DRAIN_POSITIONS,
+  LENGTH_RANGES_MM,
   MAX_RAMP_COUNT,
   type AxleConfig,
   type DrainPosition,
   type LevelSettings,
   type VehicleType,
 } from './settings';
-import { normalizeHeights } from './lengths';
-import { positiveNumber } from './untrustedValues';
+import { heightsWithin, numberWithin } from './untrustedValues';
 
 export type VehicleGeometry = Pick<
   LevelSettings,
@@ -121,15 +121,22 @@ export function decodeVehicleGeometry(text: string): VehicleGeometry | null {
 }
 
 function parseVehicleGeometry(raw: Record<string, unknown>): VehicleGeometry {
-  const heights = Array.isArray(raw.rampStepHeightsMm)
-    ? normalizeHeights(raw.rampStepHeightsMm.filter((v): v is number => typeof v === 'number'))
-    : [];
+  const { wheelbase, trackWidth, rampStep } = LENGTH_RANGES_MM;
+  const heights = heightsWithin(raw.rampStepHeightsMm, rampStep);
   return {
     vehicleType: raw.vehicleType === 'caravan' ? 'caravan' : ('motorhome' as VehicleType),
     rearAxle: raw.rearAxle === 'boggie' ? 'boggie' : ('single' as AxleConfig),
-    wheelbaseMm: positiveNumber(raw.wheelbaseMm, DEFAULT_SETTINGS.wheelbaseMm),
-    trackWidthFrontMm: positiveNumber(raw.trackWidthFrontMm, DEFAULT_SETTINGS.trackWidthFrontMm),
-    trackWidthRearMm: positiveNumber(raw.trackWidthRearMm, DEFAULT_SETTINGS.trackWidthRearMm),
+    wheelbaseMm: numberWithin(raw.wheelbaseMm, wheelbase, DEFAULT_SETTINGS.wheelbaseMm),
+    trackWidthFrontMm: numberWithin(
+      raw.trackWidthFrontMm,
+      trackWidth,
+      DEFAULT_SETTINGS.trackWidthFrontMm,
+    ),
+    trackWidthRearMm: numberWithin(
+      raw.trackWidthRearMm,
+      trackWidth,
+      DEFAULT_SETTINGS.trackWidthRearMm,
+    ),
     rampStepHeightsMm: heights.length > 0 ? heights : DEFAULT_SETTINGS.rampStepHeightsMm,
     rampCount:
       typeof raw.rampCount === 'number' && Number.isFinite(raw.rampCount) && raw.rampCount >= 1

@@ -1,9 +1,10 @@
 /** Reading a stored settings blob back into a valid `LevelSettings`. */
 import { isAppearance } from './appearance';
-import { normalizeHeights, unitToMm } from './lengths';
+import { unitToMm } from './lengths';
 import {
   DEFAULT_SETTINGS,
   DRAIN_POSITIONS,
+  LENGTH_RANGES_MM,
   MAX_RAMP_COUNT,
   SENSOR_SOURCES,
   type DrainPosition,
@@ -11,7 +12,13 @@ import {
   type SensorDeviceSettings,
   type SensorSource,
 } from './settings';
-import { isRecord, nonNegativeNumber, positiveNumber } from './untrustedValues';
+import {
+  heightsWithin,
+  isRecord,
+  numberWithin,
+  positiveNumber,
+  type Range,
+} from './untrustedValues';
 
 /**
  * Turn untrusted input (localStorage JSON, hand-edited or from an older
@@ -53,24 +60,32 @@ type VehicleFields = Pick<
 
 function parseVehicle(raw: StoredSettings): VehicleFields {
   const legacyTrackMm = legacyCmAsMm(raw.trackWidthCm);
-  const mmOrLegacy = (mmField: unknown, legacyMm: number | undefined, fallback: number) =>
-    positiveNumber(mmField, legacyMm ?? fallback);
+  const { wheelbase, trackWidth } = LENGTH_RANGES_MM;
+  const mmOrLegacy = (
+    mmField: unknown,
+    legacyMm: number | undefined,
+    range: Range,
+    fallback: number,
+  ) => numberWithin(mmField, range, numberWithin(legacyMm, range, fallback));
   return {
     vehicleType: raw.vehicleType === 'caravan' ? 'caravan' : 'motorhome',
     rearAxle: raw.rearAxle === 'boggie' ? 'boggie' : 'single',
     wheelbaseMm: mmOrLegacy(
       raw.wheelbaseMm,
       legacyCmAsMm(raw.wheelbaseCm),
+      wheelbase,
       DEFAULT_SETTINGS.wheelbaseMm,
     ),
     trackWidthFrontMm: mmOrLegacy(
       raw.trackWidthFrontMm,
       legacyCmAsMm(raw.trackWidthFrontCm) ?? legacyTrackMm,
+      trackWidth,
       DEFAULT_SETTINGS.trackWidthFrontMm,
     ),
     trackWidthRearMm: mmOrLegacy(
       raw.trackWidthRearMm,
       legacyCmAsMm(raw.trackWidthRearCm) ?? legacyTrackMm,
+      trackWidth,
       DEFAULT_SETTINGS.trackWidthRearMm,
     ),
   };
@@ -93,14 +108,17 @@ function parseRamps(raw: StoredSettings): RampFields {
 
 /** The newest stored format that holds any usable height wins. */
 function parseStepHeights(raw: StoredSettings): number[] {
-  const numbers = (list: unknown): number[] =>
-    Array.isArray(list) ? list.filter((v): v is number => typeof v === 'number') : [];
-  const mm = normalizeHeights(numbers(raw.rampStepHeightsMm));
+  const range = LENGTH_RANGES_MM.rampStep;
+  const mm = heightsWithin(raw.rampStepHeightsMm, range);
   if (mm.length > 0) return mm;
-  const fromCmList = normalizeHeights(numbers(raw.blockHeightsCm).map((v) => v * 10));
+  const cmList = Array.isArray(raw.blockHeightsCm) ? raw.blockHeightsCm : [];
+  const fromCmList = heightsWithin(
+    cmList.map((v: unknown) => (typeof v === 'number' ? unitToMm(v, 'cm') : v)),
+    range,
+  );
   if (fromCmList.length > 0) return fromCmList;
-  const singleBlockMm = legacyCmAsMm(raw.blockHeightCm);
-  return singleBlockMm === undefined ? DEFAULT_SETTINGS.rampStepHeightsMm : [singleBlockMm];
+  const singleBlockMm = numberWithin(legacyCmAsMm(raw.blockHeightCm), range, NaN);
+  return Number.isNaN(singleBlockMm) ? DEFAULT_SETTINGS.rampStepHeightsMm : [singleBlockMm];
 }
 
 type LevelingFeelFields = Pick<
@@ -113,8 +131,16 @@ function parseLevelingFeel(raw: StoredSettings): LevelingFeelFields {
   return {
     // A legacy toleranceDeg (degrees) has no unambiguous mm equivalent —
     // it falls back to the default.
-    toleranceMm: positiveNumber(raw.toleranceMm, DEFAULT_SETTINGS.toleranceMm),
-    stabilityMm: nonNegativeNumber(raw.stabilityMm, DEFAULT_SETTINGS.stabilityMm),
+    toleranceMm: numberWithin(
+      raw.toleranceMm,
+      LENGTH_RANGES_MM.tolerance,
+      DEFAULT_SETTINGS.toleranceMm,
+    ),
+    stabilityMm: numberWithin(
+      raw.stabilityMm,
+      LENGTH_RANGES_MM.stability,
+      DEFAULT_SETTINGS.stabilityMm,
+    ),
     dwellRestMs,
     // Clamped against the (already-validated) rest dwell, not its own
     // default, so a corrupt/legacy value can never end up slower than rest.

@@ -3,7 +3,12 @@
  * measurements the leveling math runs on, where to find them, and a link
  * to share them with another phone.
  */
-import type { AxleConfig, LevelSettings, VehicleType } from '../domain/settings';
+import {
+  LENGTH_RANGES_MM,
+  type AxleConfig,
+  type LevelSettings,
+  type VehicleType,
+} from '../domain/settings';
 import {
   createLengthField,
   createSelectField,
@@ -138,18 +143,26 @@ function createMeasurements(state: SettingsFormState): [NumberField, NumberField
   return [
     createLengthField(
       'wheelbaseMm',
-      { label: () => (isCaravan() ? 'settings.axleToJockey' : 'settings.wheelbase'), stepMm: 10 },
+      {
+        label: () => (isCaravan() ? 'settings.axleToJockey' : 'settings.wheelbase'),
+        stepMm: 10,
+        range: LENGTH_RANGES_MM.wheelbase,
+      },
       state,
     ),
     createLengthField(
       'trackWidthFrontMm',
-      { label: () => 'settings.trackFront', stepMm: 10 },
+      { label: () => 'settings.trackFront', stepMm: 10, range: LENGTH_RANGES_MM.trackWidth },
       state,
     ),
     // A caravan's single axle has no "rear".
     createLengthField(
       'trackWidthRearMm',
-      { label: () => (isCaravan() ? 'settings.track' : 'settings.trackRear'), stepMm: 10 },
+      {
+        label: () => (isCaravan() ? 'settings.track' : 'settings.trackRear'),
+        stepMm: 10,
+        range: LENGTH_RANGES_MM.trackWidth,
+      },
       state,
     ),
   ];

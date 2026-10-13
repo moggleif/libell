@@ -257,6 +257,7 @@ export const es: Messages = {
   'settings.resetAll': 'Restablecer todos los ajustes',
   'settings.err.positive': 'Introduce un número mayor que 0. Sigue valiendo el valor anterior.',
   'settings.err.notNegative': 'Introduce 0 o más. Sigue valiendo el valor anterior.',
+  'settings.err.range': 'Introduce un número de {min} a {max}. Sigue valiendo el valor anterior.',
 
   'settings.tab.vehicle': 'Vehículo',
   'settings.tab.ramps': 'Rampas',

@@ -178,6 +178,16 @@ describe('the compact form', () => {
     },
   );
 
+  it('explains, rather than adds, a step above the plausible range (#541)', () => {
+    const { tab, changed } = build({}, 'cm');
+    addStep(tab.stepsField, '51').click();
+    expect(changed).not.toHaveBeenCalled();
+    expect(read(tab).rampStepHeightsMm).toEqual(THULE);
+    expect(stepError(tab.stepsField)!.textContent).toBe(
+      t('settings.err.range', { min: 0.1, max: 50 }),
+    );
+  });
+
   it('hides the explanation once the field is typed in again (#514)', () => {
     const { tab } = build();
     addStep(tab.stepsField, '').click();

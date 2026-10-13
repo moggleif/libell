@@ -260,6 +260,7 @@ export const de: Messages = {
   'settings.resetAll': 'Alle Einstellungen zurücksetzen',
   'settings.err.positive': 'Gib eine Zahl über 0 ein. Der vorige Wert gilt weiter.',
   'settings.err.notNegative': 'Gib 0 oder mehr ein. Der vorige Wert gilt weiter.',
+  'settings.err.range': 'Gib eine Zahl von {min} bis {max} ein. Der vorige Wert gilt weiter.',
 
   'settings.tab.vehicle': 'Fahrzeug',
   'settings.tab.ramps': 'Keile',

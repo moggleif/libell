@@ -5,7 +5,8 @@
  */
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
 import { formatLength, unitToMm } from '../domain/lengths';
-import type { SettingsFormState } from './settingsFields';
+import { LENGTH_RANGES_MM } from '../domain/settings';
+import { rangeProblem, type SettingsFormState } from './settingsFields';
 import { createElement } from './dom';
 import { t } from './i18n';
 
@@ -61,8 +62,8 @@ export function createStepEditor(choice: RampChoice, state: SettingsFormState, e
 }
 
 /** A number field and an Add button, which hands a positive typed height
- * over in mm. Any other value is left in the field with the same
- * "must be positive" text the other number fields show (#514). */
+ * within the plausible range over in mm. Any other value is left in the
+ * field with the same text the other number fields show (#514, #541). */
 function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void) {
   const row = createElement('div', 'steps__add');
   const input = document.createElement('input');
@@ -79,16 +80,22 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
   input.addEventListener('input', () => {
     error.hidden = true;
   });
-  button.addEventListener('click', () => {
+  const problem = (): string | null => {
     const v = input.valueAsNumber;
-    if (!(Number.isFinite(v) && v > 0)) {
-      error.textContent = t('settings.err.positive');
+    if (!(Number.isFinite(v) && v > 0)) return t('settings.err.positive');
+    return rangeProblem(unitToMm(v, state.unit), LENGTH_RANGES_MM.rampStep, state.unit);
+  };
+  button.addEventListener('click', () => {
+    const text = problem();
+    if (text !== null) {
+      error.textContent = text;
       error.hidden = false;
       row.after(error);
       return;
     }
+    const mm = unitToMm(input.valueAsNumber, state.unit);
     input.value = '';
-    onAdd(unitToMm(v, state.unit));
+    onAdd(mm);
   });
 
   return {
@@ -97,7 +104,7 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
       input.placeholder = state.unit === 'cm' ? '4' : '40';
       input.setAttribute('aria-label', t('settings.steps.new', { unit: state.unit }));
       button.textContent = `+ ${t('settings.steps.add')}`;
-      if (!error.hidden) error.textContent = t('settings.err.positive');
+      if (!error.hidden) error.textContent = problem() ?? '';
     },
   };
 }

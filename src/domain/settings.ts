@@ -150,6 +150,20 @@ export const DRAIN_POSITIONS: readonly DrainPosition[] = [
 /** More ramps than this cannot help a four-wheel vehicle. */
 export const MAX_RAMP_COUNT = 4;
 
+/**
+ * The plausible range of each length read from storage or a shared link
+ * (#541), in mm and with both ends included. A value outside falls back to
+ * its default, and a step height outside is dropped, so nonsense such as a
+ * 1e308 mm wheelbase never reaches the guidance.
+ */
+export const LENGTH_RANGES_MM = {
+  wheelbase: { min: 500, max: 15000 },
+  trackWidth: { min: 500, max: 4000 },
+  rampStep: { min: 1, max: 500 },
+  tolerance: { min: 1, max: 200 },
+  stability: { min: 0, max: 50 },
+};
+
 /** Lives here rather than in the adapter so all defaults stay beside
  * `DEFAULT_SETTINGS`, which embeds this. */
 export const DEFAULT_EASYLEVEL_SETTINGS: EasyLevelSettings = {

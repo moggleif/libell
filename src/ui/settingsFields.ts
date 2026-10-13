@@ -8,8 +8,9 @@
  * vehicle changes — the same pass that keeps labels like "Wheelbase (cm)"
  * and the caravan's "Axle to jockey wheel" current.
  */
-import { mmToUnit, unitToMm } from '../domain/lengths';
+import { formatLengthValue, mmToUnit, unitToMm } from '../domain/lengths';
 import type { AxleConfig, LevelSettings, VehicleType } from '../domain/settings';
+import type { Range } from '../domain/untrustedValues';
 import { t, type MessageKey } from './i18n';
 import { createElement } from './dom';
 
@@ -119,6 +120,8 @@ export interface NumberField extends Field<HTMLInputElement> {
   read(): number;
   /** Whether the typed value can be stored. */
   isUsable(): boolean;
+  /** Why the typed value cannot be stored, or null when it can. */
+  problem(): string | null;
   relabel(): void;
 }
 
@@ -128,6 +131,9 @@ interface LengthOptions {
   stepMm: number;
   /** Lowest value the spinner offers; one step when omitted. */
   min?: number;
+  /** The plausible range in mm, the same one stored values are held to
+   * (`LENGTH_RANGES_MM`, #541). */
+  range?: Range;
 }
 
 interface PlainOptions {
@@ -141,7 +147,8 @@ export function createLengthField(
   options: LengthOptions,
   state: SettingsFormState,
 ): NumberField {
-  return createNumberField(key, true, options.min === 0, state, (field) => {
+  const limits = { allowZero: options.min === 0, range: options.range };
+  return createNumberField(key, true, limits, state, (field) => {
     field.caption.textContent = `${t(options.label())} (${state.unit})`;
     field.control.step = String(mmToUnit(options.stepMm, state.unit));
     field.control.min = String(options.min ?? mmToUnit(options.stepMm, state.unit));
@@ -153,7 +160,7 @@ export function createPlainNumberField(
   options: PlainOptions,
   state: SettingsFormState,
 ): NumberField {
-  const field = createNumberField(key, false, false, state, (f) => {
+  const field = createNumberField(key, false, { allowZero: false }, state, (f) => {
     f.caption.textContent = t(options.label);
   });
   field.control.min = String(options.min);
@@ -161,10 +168,17 @@ export function createPlainNumberField(
   return field;
 }
 
+interface Limits {
+  /** Zero is a usable value; otherwise it must be positive. */
+  allowZero: boolean;
+  /** The plausible range in mm, if the value has one. */
+  range?: Range | undefined;
+}
+
 function createNumberField(
   key: NumberKey,
   inUnit: boolean,
-  allowZero: boolean,
+  { allowZero, range }: Limits,
   state: SettingsFormState,
   relabel: (field: Field<HTMLInputElement>) => void,
 ): NumberField {
@@ -175,6 +189,13 @@ function createNumberField(
   const field = captioned(input);
   const read = (): number =>
     inUnit ? unitToMm(input.valueAsNumber, state.unit) : input.valueAsNumber;
+  const problem = (): string | null => {
+    const value = read();
+    if (!(Number.isFinite(value) && (allowZero ? value >= 0 : value > 0))) {
+      return t(allowZero ? 'settings.err.notNegative' : 'settings.err.positive');
+    }
+    return range ? rangeProblem(value, range, state.unit) : null;
+  };
   return {
     ...field,
     key,
@@ -184,12 +205,18 @@ function createNumberField(
       input.value = String(inUnit ? mmToUnit(stored, state.unit) : stored);
     },
     read,
-    isUsable: () => {
-      const value = read();
-      return Number.isFinite(value) && (allowZero ? value >= 0 : value > 0);
-    },
+    isUsable: () => problem() === null,
+    problem,
     relabel: () => relabel(field),
   };
+}
+
+/** The "from … to …" text for a length outside `range`, or null inside
+ * it; the step-height Add row shares it. */
+export function rangeProblem(mm: number, range: Range, unit: DisplayUnit): string | null {
+  if (mm >= range.min && mm <= range.max) return null;
+  const min = formatLengthValue(range.min, unit);
+  return t('settings.err.range', { min, max: formatLengthValue(range.max, unit) });
 }
 
 export function createHint(): HTMLParagraphElement {

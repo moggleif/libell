@@ -261,6 +261,7 @@ export const sv: Messages = {
   'settings.resetAll': 'Återställ alla inställningar',
   'settings.err.positive': 'Ange ett tal större än 0. Det förra värdet gäller.',
   'settings.err.notNegative': 'Ange 0 eller mer. Det förra värdet gäller.',
+  'settings.err.range': 'Ange ett tal från {min} till {max}. Det förra värdet gäller.',
 
   'settings.tab.vehicle': 'Fordon',
   'settings.tab.ramps': 'Klossar',

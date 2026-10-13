@@ -27,8 +27,8 @@ export interface FormValues {
 }
 
 /**
- * A number the user typed that cannot be used: empty, zero or
- * negative. Never refused silently and never replaced by a factory
+ * A number the user typed that cannot be used: empty, zero, negative or
+ * outside its plausible range. Never refused silently and never replaced by a factory
  * default: the field goes back to the value in effect, and one line
  * under it says what was wrong, until the next change.
  */
@@ -55,10 +55,9 @@ function createInvalidNumberReport(numberFields: NumberField[]): {
     /** Puts the value in effect back into every unusable number field. */
     restore(inEffect) {
       for (const field of numberFields) {
-        const usable = field.isUsable();
-        const message = field.allowZero ? 'settings.err.notNegative' : 'settings.err.positive';
-        showError(field.element, usable ? null : t(message));
-        if (!usable) field.show(inEffect[field.key]);
+        const problem = field.problem();
+        showError(field.element, problem);
+        if (problem !== null) field.show(inEffect[field.key]);
       }
     },
   };

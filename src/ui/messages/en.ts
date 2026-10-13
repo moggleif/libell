@@ -283,6 +283,7 @@ export const en = {
   'settings.resetAll': 'Reset all settings',
   'settings.err.positive': 'Enter a number above 0. The previous value still applies.',
   'settings.err.notNegative': 'Enter 0 or more. The previous value still applies.',
+  'settings.err.range': 'Enter a number from {min} to {max}. The previous value still applies.',
 
   'settings.tab.vehicle': 'Vehicle',
   'settings.tab.ramps': 'Ramps',

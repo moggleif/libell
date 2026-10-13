@@ -2,7 +2,12 @@
  * Settings › General: how the app looks and sounds, and More: the rarely
  * tuned Fine-tuning fields and "Reset all settings".
  */
-import { type AppearanceSetting, type LevelSettings, type ThemeSetting } from '../domain/settings';
+import {
+  LENGTH_RANGES_MM,
+  type AppearanceSetting,
+  type LevelSettings,
+  type ThemeSetting,
+} from '../domain/settings';
 import { clearLanguage, loadLanguage, saveLanguage, saveSettings } from '../data/settingsStore';
 import { markReopenSettings } from './reopenSettings';
 import { applyAppearance, applyTheme } from './theme';
@@ -284,7 +289,12 @@ function createMore(context: SettingsFormContext, actions: GeneralTabActions) {
 function createFineTuningFields(state: SettingsFormState) {
   const stability = createLengthField(
     'stabilityMm',
-    { label: () => 'settings.stability', stepMm: 0.5, min: 0 },
+    {
+      label: () => 'settings.stability',
+      stepMm: 0.5,
+      min: 0,
+      range: LENGTH_RANGES_MM.stability,
+    },
     state,
   );
   const stabilityHint = createHint();

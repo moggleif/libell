@@ -3,7 +3,12 @@
  * and the saved targets (ADR 0013), which the host supplies
  * as an embedded section.
  */
-import { DRAIN_POSITIONS, type DrainPosition, type LevelSettings } from '../domain/settings';
+import {
+  DRAIN_POSITIONS,
+  LENGTH_RANGES_MM,
+  type DrainPosition,
+  type LevelSettings,
+} from '../domain/settings';
 import {
   createHint,
   createLengthField,
@@ -30,7 +35,7 @@ export function createLevelTab(initial: LevelSettings, context: SettingsFormCont
   const { state } = context;
   const tolerance = createLengthField(
     'toleranceMm',
-    { label: () => 'settings.tolerance', stepMm: 1 },
+    { label: () => 'settings.tolerance', stepMm: 1, range: LENGTH_RANGES_MM.tolerance },
     state,
   );
   const toleranceHint = createHint();
