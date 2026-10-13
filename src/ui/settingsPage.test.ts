@@ -113,9 +113,8 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     // The host (main.ts) passes these calibration options in the same bag.
     const sensorOptions: Partial<CalibrationOptions> = {
       isPhoneActive: () => phone,
-      getExternalSensor: () =>
-        phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null },
-      calibrateExternalSensor: () => null,
+      getBox: () => (phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null }),
+      calibrateBox: () => null,
     };
     const page = createSettingsPage(makeOptions(sensorOptions));
     page.openCalibration();
@@ -140,9 +139,8 @@ describe('createSettingsPage — Modern gear icon (screen-cleanup follow-up)', (
     let phone = false;
     const sensorOptions: Partial<CalibrationOptions> = {
       isPhoneActive: () => phone,
-      getExternalSensor: () =>
-        phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null },
-      calibrateExternalSensor: () => null,
+      getBox: () => (phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null }),
+      calibrateBox: () => null,
     };
     const page = createSettingsPage(makeOptions(sensorOptions));
     page.openCalibration();

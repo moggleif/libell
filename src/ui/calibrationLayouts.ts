@@ -220,7 +220,7 @@ function layoutClassic(
 }
 
 function offersExternal(options: CalibrationOptions): boolean {
-  return !!options.getExternalSensor && !!options.calibrateExternalSensor;
+  return !!options.getBox && !!options.calibrateBox;
 }
 
 export function buildLayout(

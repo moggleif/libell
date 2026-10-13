@@ -1,14 +1,14 @@
 import type { LevelSettings } from '../../domain/settings';
 import type { CalibrationOptions } from '../calibrationSection';
 import type { SensorSourceOptions } from '../sensorSourceSection';
-import type { ExternalSensorDescriptor } from '../../sensor/externalSensors';
+import type { BoxDescriptor } from '../../sensor/boxes';
 
 export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptions {
   /**
    * With more than one sensor available the wizard offers them all rather
    * than silently picking one. Without it the wizard uses this bag.
    */
-  sensorOptionsFor?(sensor: ExternalSensorDescriptor): SensorSourceOptions;
+  sensorOptionsFor?(sensor: BoxDescriptor): SensorSourceOptions;
   initialSettings: LevelSettings;
   onSettingsSaved(settings: LevelSettings): void;
   /**

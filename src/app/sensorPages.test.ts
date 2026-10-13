@@ -9,9 +9,9 @@ const fakes = vi.hoisted(() => ({
   unsupported: null as unknown as { element: HTMLElement },
   optionsFor: null as unknown,
 }));
-vi.mock('../sensor/externalSensors', () => ({
-  hasAvailableExternalSensor: () => fakes.available,
-  availableExternalSensors: () => ['box'],
+vi.mock('../sensor/boxes', () => ({
+  hasAvailableBox: () => fakes.available,
+  availableBoxes: () => ['box'],
 }));
 vi.mock('../ui/platform', () => ({ isIos: () => fakes.ios }));
 vi.mock('../ui/iosSensorGuidePage', () => ({ createIosSensorGuidePage: () => fakes.guide }));
@@ -43,7 +43,7 @@ describe('mountSensorPages', () => {
     const pages = mountSensorPages(optionsFor);
     expect(pages.supported).toBe(true);
     expect(pages.showIosGuide).toBe(false);
-    expect(pages.externalSensorPage).toBe(fakes.list);
+    expect(pages.boxListPage).toBe(fakes.list);
     expect(pages.sensorPage).toBe(fakes.list);
     expect(fakes.optionsFor).toBe(optionsFor);
     expect([...document.body.children].map((e) => e.id)).toEqual(['list', 'box-a', 'box-b']);
@@ -53,7 +53,7 @@ describe('mountSensorPages', () => {
     fakes.available = false;
     fakes.ios = true;
     const pages = mountSensorPages(vi.fn());
-    expect(pages).toMatchObject({ supported: false, showIosGuide: true, externalSensorPage: null });
+    expect(pages).toMatchObject({ supported: false, showIosGuide: true, boxListPage: null });
     expect(pages.sensorPage).toBe(fakes.guide);
     expect([...document.body.children].map((e) => e.id)).toEqual(['guide']);
   });
@@ -64,7 +64,7 @@ describe('mountSensorPages', () => {
     expect(pages).toMatchObject({
       supported: false,
       showIosGuide: false,
-      externalSensorPage: null,
+      boxListPage: null,
     });
     expect(pages.sensorPage).toBe(fakes.unsupported);
     expect([...document.body.children].map((e) => e.id)).toEqual(['unsupported']);

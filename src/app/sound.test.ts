@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
-import type { SettingsAccess } from './externalSensorWiring';
+import type { SettingsAccess } from './boxWiring';
 import { createMuteToggle, createSound, unlockOnFirstGesture } from './sound';
 
 /** Rounds away floating-point noise in scheduled times and values. */

@@ -34,8 +34,8 @@
  * `setParameters` is never sent.
  */
 import type { AxisMapping } from '../domain/axisMapping';
-import type { ExternalSensor } from './externalSensorController';
-import type { ExternalSensorDescriptor } from './externalSensors';
+import type { Box } from './boxController';
+import type { BoxDescriptor } from './boxes';
 import {
   connectWithPicker,
   createXparkleLink,
@@ -58,7 +58,7 @@ import {
   type XparkleTransport,
 } from './xparkleTransport';
 
-export interface XparkleSensor extends ExternalSensor {
+export interface XparkleSensor extends Box {
   /** The latest reading (battery included), raw as the box reports it —
    * before any learned mounting, which is what learning a new one needs. */
   getReading(): XparkleReading | null;
@@ -168,7 +168,7 @@ async function zeroBox(live: XparkleConnection | null): Promise<boolean> {
  * double-correct (see the top of this file). The protocol carries no
  * temperature or debug bytes, so those rows are not drawn.
  */
-export const XPARKLE_DESCRIPTOR: ExternalSensorDescriptor = {
+export const XPARKLE_DESCRIPTOR: BoxDescriptor = {
   id: 'xparkle',
   displayName: 'Xparkle RVS01',
   isAvailable: isXparkleAvailable,

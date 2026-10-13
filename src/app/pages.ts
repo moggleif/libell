@@ -49,7 +49,7 @@ export function mountPages(core: Core, screen: Screen): Pages {
     hasStoredMeasurements,
     onSettingsSaved: adoption.fromSettings,
     openOnboarding: onboarding.open,
-    openExternalSensor: () => screen.navigation.openActiveSensorPage(),
+    openBoxPage: () => screen.navigation.openActiveSensorPage(),
     effectiveCalibration: core.effectiveCalibration,
     shareVehicleSetup: (current) => void shareVehicleSetup(pickVehicleGeometry(current)),
   });
@@ -60,7 +60,7 @@ export function mountPages(core: Core, screen: Screen): Pages {
   );
   const navigation = createNavigation({
     settings: settingsSurface.route,
-    externalSensorPage: sensorPages.externalSensorPage,
+    boxListPage: sensorPages.boxListPage,
     sensorPage: sensorPages.sensorPage,
     activeSource: () => core.sensor().getSource(),
     isBoxPending: () => core.boxPending.isPending(),

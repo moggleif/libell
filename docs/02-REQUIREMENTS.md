@@ -987,7 +987,7 @@ URL and must keep working with no signal.
 - **Given** the EasyLevel box is the active source and its battery is low
 - **When** its reported battery percentage drops below the low-battery threshold
   (with hysteresis so it doesn't flicker right at the line — see `isLowBattery` in
-  `src/sensor/externalSensors.ts`)
+  `src/sensor/boxes.ts`)
 - **Then** a warning is shown on the box's own page (R40), never as a leveling-screen
   interruption — the main leveling view is unaffected either way.
 

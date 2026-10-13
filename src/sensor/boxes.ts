@@ -19,7 +19,7 @@ import { XPARKLE_DESCRIPTOR } from './xparkleSensor';
  * Every flag is a row or control on the device page — a closed, concrete
  * list rather than an open capability bag.
  */
-export interface ExternalSensorCapabilities {
+export interface BoxCapabilities {
   /** Reports a battery level, and can therefore warn when it is low. */
   battery: boolean;
   /** Reports its own temperature. */
@@ -54,7 +54,7 @@ export type ReportedOrientation = 'front' | 'rear' | 'left' | 'right';
  * `id` doubles as the storage key segment and the per-device settings key,
  * so a source cannot be filed under one name and rendered under another.
  */
-export interface ExternalSensorDescriptor {
+export interface BoxDescriptor {
   id: SensorSource;
   /**
    * The product name. Deliberately **not** translated: a brand is
@@ -69,7 +69,7 @@ export interface ExternalSensorDescriptor {
    * at call time.
    */
   isAvailable(): boolean;
-  capabilities: ExternalSensorCapabilities;
+  capabilities: BoxCapabilities;
   /**
    * How long a silence from this source means its readings can no longer
    * be trusted (R35) — `isSensorStale`'s `timeoutMs`. Lives here because it
@@ -85,13 +85,13 @@ export interface ExternalSensorDescriptor {
  * be offered. The phone's own sensor is not here: it is not external, is
  * always the fallback, and has no page of its own.
  */
-export const EXTERNAL_SENSORS: readonly ExternalSensorDescriptor[] = [
+export const EXTERNAL_SENSORS: readonly BoxDescriptor[] = [
   EASYLEVEL_DESCRIPTOR,
   XPARKLE_DESCRIPTOR,
 ];
 
 /** Those that could actually work in this browser right now. */
-export function availableExternalSensors(): ExternalSensorDescriptor[] {
+export function availableBoxes(): BoxDescriptor[] {
   return EXTERNAL_SENSORS.filter((sensor) => sensor.isAvailable());
 }
 
@@ -99,7 +99,7 @@ export function availableExternalSensors(): ExternalSensorDescriptor[] {
  * True when at least one external source is usable here — the one gate
  * for whether the external-sensor UI exists at all.
  */
-export function hasAvailableExternalSensor(): boolean {
+export function hasAvailableBox(): boolean {
   return EXTERNAL_SENSORS.some((sensor) => sensor.isAvailable());
 }
 
@@ -108,7 +108,7 @@ export function hasAvailableExternalSensor(): boolean {
  * id this build does not know (a setting written by a newer build), which
  * must not crash.
  */
-export function externalSensorById(id: SensorSource): ExternalSensorDescriptor | null {
+export function boxById(id: SensorSource): BoxDescriptor | null {
   return EXTERNAL_SENSORS.find((sensor) => sensor.id === id) ?? null;
 }
 
@@ -118,7 +118,7 @@ export function externalSensorById(id: SensorSource): ExternalSensorDescriptor |
  * is "nothing has arrived yet"; a capability left false in the descriptor
  * means the row is never drawn.
  */
-export interface ExternalSensorHealth {
+export interface BoxHealth {
   /** Whole percent, or null before anything has been reported. */
   batteryPercent: number | null;
   temperatureCelsius: number | null;

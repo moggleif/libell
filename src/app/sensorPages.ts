@@ -5,14 +5,14 @@
  * without Web Bluetooth gets a page that says so and names one that works
  * (#507): never a silently broken option.
  */
-import { availableExternalSensors, hasAvailableExternalSensor } from '../sensor/externalSensors';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import { availableBoxes, hasAvailableBox } from '../sensor/boxes';
+import type { BoxDescriptor } from '../sensor/boxes';
 import { createIosSensorGuidePage } from '../ui/iosSensorGuidePage';
 import { createUnsupportedSensorPage } from '../ui/unsupportedSensorPage';
 import { isIos } from '../ui/platform';
 import {
   createSensorPage,
-  type ExternalSensorPage,
+  type BoxListPage,
   type SensorPage,
   type SensorPageOptions,
 } from '../ui/sensorPage';
@@ -22,25 +22,22 @@ export interface SensorPages {
   supported: boolean;
   showIosGuide: boolean;
   /** The box list with each box's own page. */
-  externalSensorPage: ExternalSensorPage | null;
+  boxListPage: BoxListPage | null;
   /** The box list, iOS's guide, or why no box can connect here, as one page. */
   sensorPage: SensorPage;
 }
 
 export function mountSensorPages(
-  optionsFor: (descriptor: ExternalSensorDescriptor) => SensorPageOptions,
+  optionsFor: (descriptor: BoxDescriptor) => SensorPageOptions,
 ): SensorPages {
-  const supported = hasAvailableExternalSensor();
+  const supported = hasAvailableBox();
   const showIosGuide = !supported && isIos();
-  const externalSensorPage = supported
-    ? createSensorPage(availableExternalSensors(), optionsFor)
-    : null;
+  const boxListPage = supported ? createSensorPage(availableBoxes(), optionsFor) : null;
   const sensorPage =
-    externalSensorPage ??
-    (showIosGuide ? createIosSensorGuidePage() : createUnsupportedSensorPage());
+    boxListPage ?? (showIosGuide ? createIosSensorGuidePage() : createUnsupportedSensorPage());
   document.body.append(sensorPage.element);
   // After the list: a box's own page paints on top of it when both are
   // open at once.
-  if (externalSensorPage) document.body.append(...externalSensorPage.statusElements);
-  return { supported, showIosGuide, externalSensorPage, sensorPage };
+  if (boxListPage) document.body.append(...boxListPage.statusElements);
+  return { supported, showIosGuide, boxListPage, sensorPage };
 }

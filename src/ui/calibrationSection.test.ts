@@ -313,9 +313,8 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     let active = true;
     const options = makeOptions({
       isPhoneActive: () => !active,
-      getExternalSensor: () =>
-        active ? { name: 'Xparkle RVS01', offset: null, capturedAt: null } : null,
-      calibrateExternalSensor: () => null,
+      getBox: () => (active ? { name: 'Xparkle RVS01', offset: null, capturedAt: null } : null),
+      calibrateBox: () => null,
       ...overrides,
     });
     return { options, setPhone: () => (active = false) };
@@ -353,17 +352,17 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
 
   it('waits for a box that zeroes itself, then says it is zeroed', async () => {
     let answer: (error: string | null) => void = () => {};
-    const calibrateExternalSensor = vi.fn(
+    const calibrateBox = vi.fn(
       () =>
         new Promise<string | null>((resolve) => {
           answer = resolve;
         }),
     );
-    const { options } = externalOptions({ calibrateExternalSensor });
+    const { options } = externalOptions({ calibrateBox });
     const section = createCalibrationSection(options);
     const button = buttonByText(section.element, 'Zero now');
     button.click();
-    expect(calibrateExternalSensor).toHaveBeenCalledOnce();
+    expect(calibrateBox).toHaveBeenCalledOnce();
     expect(button.disabled).toBe(true);
     expect(section.element.textContent).toContain('Zeroing');
 
@@ -375,10 +374,10 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
   });
 
   it('warns about a tilted box and zeroes it anyway on request (#425)', async () => {
-    const calibrateExternalSensor = vi.fn((anyway?: boolean) =>
+    const calibrateBox = vi.fn((anyway?: boolean) =>
       Promise.resolve(anyway ? null : { warning: 'Is the vehicle level?' }),
     );
-    const { options } = externalOptions({ calibrateExternalSensor });
+    const { options } = externalOptions({ calibrateBox });
     const section = createCalibrationSection(options);
     buttonByText(section.element, 'Zero now').click();
     await Promise.resolve();
@@ -387,7 +386,7 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     const anyway = buttonByText(section.element, t('calibration.vehicle.anyway'));
     expect(anyway.hidden).toBe(false);
     anyway.click();
-    expect(calibrateExternalSensor).toHaveBeenLastCalledWith(true);
+    expect(calibrateBox).toHaveBeenLastCalledWith(true);
     await Promise.resolve();
     await Promise.resolve();
     expect(anyway.hidden).toBe(true);
@@ -395,18 +394,18 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
   });
 
   it('links to the box’s own page for the rest of its setup (#316)', () => {
-    const openExternalSensor = vi.fn();
-    const { options } = externalOptions({ openExternalSensor });
+    const openBoxPage = vi.fn();
+    const { options } = externalOptions({ openBoxPage });
     const section = createCalibrationSection(options);
     const link = buttonByText(section.element, 'Show the box');
     expect(link.classList.contains('link-button')).toBe(true);
     link.click();
-    expect(openExternalSensor).toHaveBeenCalledOnce();
+    expect(openBoxPage).toHaveBeenCalledOnce();
   });
 
   it('shows the error, not success, when calibration fails', () => {
     const { options } = externalOptions({
-      calibrateExternalSensor: () => 'Xparkle RVS01 is not connected. Connect it and try again.',
+      calibrateBox: () => 'Xparkle RVS01 is not connected. Connect it and try again.',
     });
     const section = createCalibrationSection(options);
     buttonByText(section.element, 'Zero now').click();
@@ -533,8 +532,8 @@ describe('calibration checklist in Settings (#330)', () => {
     const section = createCalibrationSection(
       makeOptions({
         isPhoneActive: () => false,
-        getExternalSensor: () => ({ name: 'Xparkle RVS01', offset: null, capturedAt: null }),
-        calibrateExternalSensor: () => null,
+        getBox: () => ({ name: 'Xparkle RVS01', offset: null, capturedAt: null }),
+        calibrateBox: () => null,
       }),
       'checklist',
     );

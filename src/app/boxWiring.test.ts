@@ -9,7 +9,7 @@ import { SIMULATED_EASYLEVEL_DEVICE_ID } from '../sensor/easyLevelSimulator';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
 import type { XparkleSensor } from '../sensor/xparkleSensor';
 import {
-  createExternalSensor,
+  createBox,
   externalCalibrationStateFor,
   healthOf,
   isRememberedDeviceUsable,
@@ -18,8 +18,8 @@ import {
   pickEasyLevelMounting,
   withEasyLevelConnectDelay,
   type BoxWiring,
-  type LibellExternalSensor,
-} from './externalSensorWiring';
+  type LibellBox,
+} from './boxWiring';
 import type { InstallOffsets } from './installOffsets';
 
 /** An EasyLevel box with just the parts the wiring reads. */
@@ -48,7 +48,7 @@ function fakeXparkle(parts: Partial<XparkleSensor> = {}): XparkleSensor {
 
 /** Settings held in memory, with every write and refresh recorded. */
 function wiringWith(
-  sensors: Partial<Record<'easylevel' | 'xparkle', LibellExternalSensor>> = {},
+  sensors: Partial<Record<'easylevel' | 'xparkle', LibellBox>> = {},
   initial: LevelSettings = DEFAULT_SETTINGS,
 ) {
   let current = initial;
@@ -68,12 +68,12 @@ function wiringWith(
   return { wiring, saved, onMountingChanged, current: () => current };
 }
 
-describe('createExternalSensor', () => {
+describe('createBox', () => {
   it('builds an adapter for each box and none for the phone', () => {
     const settings = () => DEFAULT_SETTINGS;
-    expect(createExternalSensor('phone', settings)).toBeNull();
-    expect(createExternalSensor('xparkle', settings)?.getSource()).toBe('xparkle');
-    expect(createExternalSensor('easylevel', settings)?.getSource()).toBe('easylevel');
+    expect(createBox('phone', settings)).toBeNull();
+    expect(createBox('xparkle', settings)?.getSource()).toBe('xparkle');
+    expect(createBox('easylevel', settings)?.getSource()).toBe('easylevel');
   });
 });
 

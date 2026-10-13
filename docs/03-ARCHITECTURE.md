@@ -16,7 +16,7 @@ src/
 │                  # core.ts (settings, sensors and calibration layers), pages.ts
 │                  # (the pages over the main screen), mainScreen.ts (mute, indicators,
 │                  # level screen) — the three steps main.ts runs (#484),
-│                  # externalSensorWiring.ts (box adapters, health, learn guide, password),
+│                  # boxWiring.ts (box adapters, health, learn guide, password),
 │                  # installOffsets.ts (each box's zero), boxZero.ts (zeroing a box),
 │                  # phoneCalibration.ts (bias + vehicle zero), targets.ts (target presets),
 │                  # tiltReading.ts (sensor tilt in degrees), demoSensor.ts (?demo's tilt),
@@ -42,7 +42,7 @@ src/
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
 │                  # remembered device id, #130) — localStorage read/write
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
-│                  # externalSensors.ts (the registry), externalSensorController.ts
+│                  # boxes.ts (the registry), boxController.ts
 │                  # (connect, reconnect, fallback), easyLevel*.ts and xparkle*.ts (each
 │                  # box's adapter, protocol and simulator), sensorFallback.ts,
 │                  # silentReconnect.ts
@@ -165,14 +165,14 @@ descriptor's `capabilities` — battery, temperature, firmware, mounting picker,
 installation offset, debug bytes — so a box that reports no temperature has no
 temperature row, rather than one permanently reading "not available yet" (#228). The UI
 imports no protocol module: each adapter's own struct is mapped in
-`src/app/externalSensorWiring.ts` into the source-neutral `ExternalSensorHealth`.
+`src/app/boxWiring.ts` into the source-neutral `BoxHealth`.
 
-**The controller** (`src/sensor/externalSensorController.ts`, #265) owns the
+**The controller** (`src/sensor/boxController.ts`, #265) owns the
 external-sensor lifecycle for every source: lazy adapter construction, connect and
 disconnect, the silent auto-reconnect at app open (#130), the background auto-retry
 (#211) and the "use phone sensor" escape hatch (#134). `src/app/core.ts` holds no device-named
-closure of its own — it supplies the adapter factory (`createExternalSensor` in
-`src/app/externalSensorWiring.ts`) and three callbacks (build the
+closure of its own — it supplies the adapter factory (`createBox` in
+`src/app/boxWiring.ts`) and three callbacks (build the
 level screen, refresh the indicators, refresh the status row) and reads
 `getActiveSensor()` fresh on every use. ADR 0014's "never silently switch source" rule
 is enforced by one `adopt()`/`switchToPhone()` pair rather than by a dozen call sites,
@@ -225,12 +225,16 @@ weighed against the protocol (`docs/competitor-notes.md`):
 `boxPasswordBlock.ts` renders the message, the field and the one button, on the box's
 card and on its own page; while the box rejects its code neither says "Connected".
 
-**The registry** (`src/sensor/externalSensors.ts`, #262, ADR 0016) is what everything
+**Vocabulary** (#520): in code a Sensorbox is a _box_ (`Box`, `BoxDescriptor`,
+`boxes.ts`, `boxController.ts`, `boxWiring.ts`) and the phone's own sensor is the
+_phone_; identifiers never say "external sensor".
+
+**The registry** (`src/sensor/boxes.ts`, #262, ADR 0016) is what everything
 above the seam asks instead of naming a device: each external source publishes a
 descriptor with its `id` (the `SensorSource` member, and the key its storage and
 settings are filed under), its `displayName` (the product name — never translated), its
 `isAvailable()` and its `capabilities` (which rows its own page has something to put
-in). `hasAvailableExternalSensor()` is the single gate for "should the external-sensor
+in). `hasAvailableBox()` is the single gate for "should the external-sensor
 UI exist here at all", used by `src/app/sensorPages.ts` and the onboarding wizard. The descriptor is
 data only: connecting and reconnecting belong elsewhere, and `domain/` never sees any of
 it — it keeps just the `SensorSource` union (ADR 0002).

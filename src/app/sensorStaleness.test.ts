@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SensorSource } from '../domain/settings';
 import { STALE_TIMEOUT_PHONE_MS } from '../domain/staleness';
-import { externalSensorById } from '../sensor/externalSensors';
+import { boxById } from '../sensor/boxes';
 import { isActiveSensorStale } from './sensorStaleness';
 
 function sensor(source: SensorSource, lastSampleAt: number | null) {
@@ -15,7 +15,7 @@ describe('isActiveSensorStale (R35, #401)', () => {
   });
 
   it("judges a box by its own descriptor's timeout", () => {
-    const timeoutMs = externalSensorById('xparkle')!.staleTimeoutMs;
+    const timeoutMs = boxById('xparkle')!.staleTimeoutMs;
     expect(isActiveSensorStale(sensor('xparkle', 0), timeoutMs)).toBe(false);
     expect(isActiveSensorStale(sensor('xparkle', 0), timeoutMs + 1)).toBe(true);
   });

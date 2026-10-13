@@ -5,7 +5,7 @@ import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { OrientationSensor } from '../sensor/orientation';
 import { XPARKLE_DESCRIPTOR, type XparkleSensor } from '../sensor/xparkleSensor';
 import type { BoxZeroing } from './boxZero';
-import type { BoxWiring, LibellExternalSensor } from './externalSensorWiring';
+import type { BoxWiring, LibellBox } from './boxWiring';
 import type { InstallOffsets } from './installOffsets';
 import {
   boxConnectionOptions,
@@ -70,15 +70,15 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     add: vi.fn(() => null),
     remove: vi.fn(),
   } satisfies Targets;
-  const externalSensors = {
+  const boxes = {
     connect: vi.fn(() => Promise.resolve('granted' as const)),
     disconnect: vi.fn(),
-    getSensor: vi.fn((s) => (s === 'xparkle' ? (xparkle as LibellExternalSensor) : null)),
+    getSensor: vi.fn((s) => (s === 'xparkle' ? (xparkle as LibellBox) : null)),
   };
   const onMountingChanged = vi.fn();
   const boxWiring: BoxWiring = {
     settings: { get: () => settings, set: (next) => (settings = next) },
-    getSensor: externalSensors.getSensor,
+    getSensor: boxes.getSensor,
     onMountingChanged,
   };
   const readTilt = vi.fn(() => ({ rollDeg: 3, pitchDeg: 4 }));
@@ -89,7 +89,7 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     boxZero,
     installOffsets,
     targets,
-    externalSensors,
+    boxes,
     boxWiring,
   };
   return {
@@ -97,7 +97,7 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     phoneCalibration,
     boxZero,
     targets,
-    externalSensors,
+    boxes,
     readTilt,
     onMountingChanged,
     settings: () => settings,
@@ -133,19 +133,19 @@ describe('calibrationOptions', () => {
   it('follows the active source for the external fields', () => {
     const phone = calibrationOptions(fakeDeps('phone').deps);
     expect(phone.isPhoneActive()).toBe(true);
-    expect(phone.getExternalSensor()).toBeNull();
+    expect(phone.getBox()).toBeNull();
 
     const { deps, boxZero } = fakeDeps('xparkle');
     const box = calibrationOptions(deps);
     expect(box.isPhoneActive()).toBe(false);
-    expect(box.getExternalSensor()).toEqual({
+    expect(box.getBox()).toEqual({
       name: 'Xparkle RVS01',
       offset: { rollDeg: 0, pitchDeg: 0 },
       capturedAt: 99,
     });
-    box.calibrateExternalSensor();
+    box.calibrateBox();
     expect(boxZero.zero).toHaveBeenCalledWith('xparkle');
-    box.calibrateExternalSensor(true);
+    box.calibrateBox(true);
     expect(boxZero.zero).toHaveBeenLastCalledWith('xparkle', true);
   });
 });
@@ -175,13 +175,13 @@ describe('sensorSourceOptions', () => {
 
 describe('boxConnectionOptions', () => {
   it("wires one box's connection and zero to that box", async () => {
-    const { deps, externalSensors, boxZero } = fakeDeps();
+    const { deps, boxes, boxZero } = fakeDeps();
     const options = boxConnectionOptions(XPARKLE_DESCRIPTOR, deps);
     expect(options.sensor).toBe(XPARKLE_DESCRIPTOR);
     await options.connectSensor();
-    expect(externalSensors.connect).toHaveBeenCalledWith('xparkle');
+    expect(boxes.connect).toHaveBeenCalledWith('xparkle');
     options.disconnectSensor();
-    expect(externalSensors.disconnect).toHaveBeenCalledTimes(1);
+    expect(boxes.disconnect).toHaveBeenCalledTimes(1);
     expect(options.getInstallCalibration()).toEqual({ rollDeg: 0, pitchDeg: 0 });
     expect(options.getInstallCalibrationCapturedAt()).toBe(99);
     options.calibrateInstall();

@@ -14,14 +14,14 @@
  */
 import type { SensorSource } from '../domain/settings';
 import type { OrientationSensor, SensorState } from './orientation';
-import { isExternalSensorAutoRetryDue } from './sensorFallback';
+import { isBoxAutoRetryDue } from './sensorFallback';
 
 /**
  * What every external adapter offers beyond the plain `OrientationSensor`
  * seam: it can be connected with a user gesture, reconnected silently to a
  * device it already knows, and disconnected.
  */
-export interface ExternalSensor extends OrientationSensor {
+export interface Box extends OrientationSensor {
   /** Connect with a live user gesture (a device picker, typically). */
   start(): Promise<SensorState>;
   /** Silent reconnect to an already-authorized device — never a picker. */
@@ -31,7 +31,7 @@ export interface ExternalSensor extends OrientationSensor {
   getDeviceId(): string | null;
 }
 
-export interface ExternalSensorControllerOptions<T extends ExternalSensor> {
+export interface BoxControllerOptions<T extends Box> {
   /** The always-available fallback. Never disconnected, never remembered. */
   phoneSensor: OrientationSensor;
   /**
@@ -74,7 +74,7 @@ export interface ExternalSensorControllerOptions<T extends ExternalSensor> {
   hasPersistentDeviceAccess?(): boolean;
 }
 
-export interface ExternalSensorController<T extends ExternalSensor> {
+export interface BoxController<T extends Box> {
   /** The sensor feeding readings right now — the phone, or an external. */
   getActiveSensor(): OrientationSensor;
   /** The adapter for a source, if one has ever been constructed. */
@@ -129,8 +129,8 @@ export interface ExternalSensorController<T extends ExternalSensor> {
 }
 
 /** The controller's mutable state; the functions below work on one. */
-interface Controller<T extends ExternalSensor> {
-  readonly options: ExternalSensorControllerOptions<T>;
+interface Controller<T extends Box> {
+  readonly options: BoxControllerOptions<T>;
   readonly sensors: Map<SensorSource, T>;
   active: OrientationSensor;
   /** Which external source is active, or null while the phone is. */
@@ -141,9 +141,9 @@ interface Controller<T extends ExternalSensor> {
   readonly pickedThisSession: Set<SensorSource>;
 }
 
-export function createExternalSensorController<T extends ExternalSensor>(
-  options: ExternalSensorControllerOptions<T>,
-): ExternalSensorController<T> {
+export function createBoxController<T extends Box>(
+  options: BoxControllerOptions<T>,
+): BoxController<T> {
   const controller: Controller<T> = {
     options,
     sensors: new Map(),
@@ -166,10 +166,7 @@ export function createExternalSensorController<T extends ExternalSensor>(
   };
 }
 
-function sensorFor<T extends ExternalSensor>(
-  controller: Controller<T>,
-  source: SensorSource,
-): T | null {
+function sensorFor<T extends Box>(controller: Controller<T>, source: SensorSource): T | null {
   const existing = controller.sensors.get(source);
   if (existing) return existing;
   const created = controller.options.createSensor(source);
@@ -181,11 +178,7 @@ function sensorFor<T extends ExternalSensor>(
  * Adopt a source as the one feeding readings — the single place that
  * switch happens (ADR 0014: never silently switch source).
  */
-function adopt<T extends ExternalSensor>(
-  controller: Controller<T>,
-  source: SensorSource,
-  sensor: T,
-): void {
+function adopt<T extends Box>(controller: Controller<T>, source: SensorSource, sensor: T): void {
   if (controller.activeSource !== null && controller.activeSource !== source) {
     // Never two connected at once: the previous one keeps delivering
     // samples (and its own auto-retry loop would keep firing) otherwise.
@@ -198,7 +191,7 @@ function adopt<T extends ExternalSensor>(
 /** Both `disconnect()` and `usePhoneSensor()` start the phone: an external
  * source can take over the whole startup flow, so the phone may never have
  * been started. The tap is the gesture iOS needs; a no-op once granted. */
-function switchToPhone<T extends ExternalSensor>(controller: Controller<T>): void {
+function switchToPhone<T extends Box>(controller: Controller<T>): void {
   if (controller.activeSource !== null) {
     controller.sensors.get(controller.activeSource)?.disconnect();
   }
@@ -209,7 +202,7 @@ function switchToPhone<T extends ExternalSensor>(controller: Controller<T>): voi
   void controller.options.phoneSensor.start();
 }
 
-async function connect<T extends ExternalSensor>(
+async function connect<T extends Box>(
   controller: Controller<T>,
   source: SensorSource,
 ): Promise<SensorState> {
@@ -220,7 +213,7 @@ async function connect<T extends ExternalSensor>(
   return state;
 }
 
-function takeOverAfterPicker<T extends ExternalSensor>(
+function takeOverAfterPicker<T extends Box>(
   controller: Controller<T>,
   source: SensorSource,
   sensor: T,
@@ -236,18 +229,18 @@ function takeOverAfterPicker<T extends ExternalSensor>(
   controller.options.onIndicatorsChanged();
 }
 
-async function retry<T extends ExternalSensor>(controller: Controller<T>): Promise<void> {
+async function retry<T extends Box>(controller: Controller<T>): Promise<void> {
   const source = controller.activeSource;
   if (source === null) return;
   await connect(controller, source);
   controller.options.onStatusChanged();
 }
 
-function maybeAutoRetry<T extends ExternalSensor>(controller: Controller<T>, nowMs: number): void {
+function maybeAutoRetry<T extends Box>(controller: Controller<T>, nowMs: number): void {
   // `frame()` calls this every animation frame, so the in-flight guard is
   // what keeps one slow reconnect from stacking up behind itself.
   if (controller.autoRetryInFlight) return;
-  if (!isExternalSensorAutoRetryDue(controller.lastAutoRetryAt, nowMs)) return;
+  if (!isBoxAutoRetryDue(controller.lastAutoRetryAt, nowMs)) return;
   controller.lastAutoRetryAt = nowMs;
   controller.autoRetryInFlight = true;
   void reconnectSilently(controller).finally(() => {
@@ -257,9 +250,7 @@ function maybeAutoRetry<T extends ExternalSensor>(controller: Controller<T>, now
 
 /** The background loop has no gesture to open a picker with, so a silent
  * reconnect is all it can do. */
-async function reconnectSilently<T extends ExternalSensor>(
-  controller: Controller<T>,
-): Promise<void> {
+async function reconnectSilently<T extends Box>(controller: Controller<T>): Promise<void> {
   const source = controller.activeSource;
   const sensor = source === null ? null : (controller.sensors.get(source) ?? null);
   if (source === null || !sensor) return;
@@ -273,7 +264,7 @@ async function reconnectSilently<T extends ExternalSensor>(
   controller.options.onStatusChanged();
 }
 
-function canRetrySilently<T extends ExternalSensor>(controller: Controller<T>): boolean {
+function canRetrySilently<T extends Box>(controller: Controller<T>): boolean {
   return (
     controller.activeSource !== null &&
     (controller.pickedThisSession.has(controller.activeSource) ||
@@ -281,9 +272,7 @@ function canRetrySilently<T extends ExternalSensor>(controller: Controller<T>): 
   );
 }
 
-async function attemptAutoReconnect<T extends ExternalSensor>(
-  controller: Controller<T>,
-): Promise<boolean> {
+async function attemptAutoReconnect<T extends Box>(controller: Controller<T>): Promise<boolean> {
   const remembered = rememberedDevice(controller);
   if (!remembered) return false;
   const { source, deviceId, sensor } = remembered;
@@ -299,7 +288,7 @@ async function attemptAutoReconnect<T extends ExternalSensor>(
 }
 
 /** The box the last session left active, when there is one worth trying. */
-function rememberedDevice<T extends ExternalSensor>(
+function rememberedDevice<T extends Box>(
   controller: Controller<T>,
 ): { source: SensorSource; deviceId: string; sensor: T } | null {
   const source = controller.options.getPreferredSource();

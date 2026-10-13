@@ -4,7 +4,7 @@
  * an automatic switch could show a plausible-looking but wrong reading.
  * Reconnecting the *same* known box carries no such ambiguity, so that is
  * retried automatically (`main.ts` drives the loop through the same
- * `ExternalSensor.reconnect()` the manual Retry button uses); this module
+ * `Box.reconnect()` the manual Retry button uses); this module
  * owns only the pure "is it time yet" check.
  */
 import type { SensorState } from './orientation';
@@ -31,10 +31,7 @@ export const EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS = 5000;
  * attempted yet (`null`), else once the interval has passed. Time is a
  * parameter so this is testable without real timers.
  */
-export function isExternalSensorAutoRetryDue(
-  lastAttemptAtMs: number | null,
-  nowMs: number,
-): boolean {
+export function isBoxAutoRetryDue(lastAttemptAtMs: number | null, nowMs: number): boolean {
   return (
     lastAttemptAtMs === null || nowMs - lastAttemptAtMs >= EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS
   );

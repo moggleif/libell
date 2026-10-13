@@ -4,7 +4,7 @@
  */
 import type { GuidanceDirection } from '../domain/audioGuidance';
 import { toggleMute, type SoundPrefs } from '../domain/settings';
-import type { SettingsAccess } from './externalSensorWiring';
+import type { SettingsAccess } from './boxWiring';
 
 export interface Sound {
   /** Creates the context on first use and resumes it; call from a gesture. */

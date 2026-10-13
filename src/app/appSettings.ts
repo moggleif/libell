@@ -3,7 +3,7 @@
  * `adopt` takes settings a form has already stored.
  */
 import type { LevelSettings } from '../domain/settings';
-import type { SettingsAccess } from './externalSensorWiring';
+import type { SettingsAccess } from './boxWiring';
 
 export interface AppSettings extends SettingsAccess {
   adopt(next: LevelSettings): void;

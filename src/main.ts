@@ -65,7 +65,7 @@ function start(
   void startSensors({
     root,
     sensor: core.sensor,
-    attemptAutoReconnect: () => core.externalSensors.attemptAutoReconnect(),
+    attemptAutoReconnect: () => core.boxes.attemptAutoReconnect(),
     showLevelScreen: () => screen.levelScreen.show(),
     isSensorSupported,
     needsPermissionGesture,

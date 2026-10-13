@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  availableExternalSensors,
+  availableBoxes,
   isLowBattery,
   LOW_BATTERY_HYSTERESIS_PERCENT,
   LOW_BATTERY_PERCENT,
   EXTERNAL_SENSORS,
-  externalSensorById,
-  hasAvailableExternalSensor,
-} from './externalSensors';
+  boxById,
+  hasAvailableBox,
+} from './boxes';
 import { EASYLEVEL_DESCRIPTOR } from './easyLevelSensor';
 import { XPARKLE_DESCRIPTOR } from './xparkleSensor';
 import { SENSOR_SOURCES } from '../domain/settings';
@@ -59,14 +59,14 @@ describe('the external sensor registry (#262)', () => {
 describe('availability (#262)', () => {
   it('reports nothing available without Web Bluetooth and without a simulator', () => {
     setWebBluetooth(false);
-    expect(availableExternalSensors()).toEqual([]);
-    expect(hasAvailableExternalSensor()).toBe(false);
+    expect(availableBoxes()).toEqual([]);
+    expect(hasAvailableBox()).toBe(false);
   });
 
   it('reports both boxes available once Web Bluetooth exists', () => {
     setWebBluetooth(true);
-    expect(availableExternalSensors()).toEqual([EASYLEVEL_DESCRIPTOR, XPARKLE_DESCRIPTOR]);
-    expect(hasAvailableExternalSensor()).toBe(true);
+    expect(availableBoxes()).toEqual([EASYLEVEL_DESCRIPTOR, XPARKLE_DESCRIPTOR]);
+    expect(hasAvailableBox()).toBe(true);
   });
 
   it('asks the descriptor every time rather than caching the first answer', () => {
@@ -74,26 +74,26 @@ describe('availability (#262)', () => {
     // both read at call time — a cached answer would strand a session on
     // "unavailable" the way #223 found for the simulator flag.
     setWebBluetooth(false);
-    expect(hasAvailableExternalSensor()).toBe(false);
+    expect(hasAvailableBox()).toBe(false);
     setWebBluetooth(true);
-    expect(hasAvailableExternalSensor()).toBe(true);
+    expect(hasAvailableBox()).toBe(true);
   });
 });
 
-describe('externalSensorById (#262)', () => {
+describe('boxById (#262)', () => {
   it('finds a registered source by its stored id', () => {
-    expect(externalSensorById('easylevel')).toBe(EASYLEVEL_DESCRIPTOR);
+    expect(boxById('easylevel')).toBe(EASYLEVEL_DESCRIPTOR);
   });
 
   it('returns null for the phone, which is not an external source', () => {
-    expect(externalSensorById('phone')).toBeNull();
+    expect(boxById('phone')).toBeNull();
   });
 
   it('returns null for a source id this build does not know', () => {
     // What a settings blob written by a newer build looks like here.
     // `parseSettings` already tolerates it; this must not be the place
     // that turns it into a crash.
-    expect(externalSensorById('nothing-like-this' as never)).toBeNull();
+    expect(boxById('nothing-like-this' as never)).toBeNull();
   });
 });
 

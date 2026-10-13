@@ -43,14 +43,14 @@ import {
   isEasyLevelAvailable,
   type EasyLevelTransport,
 } from './easyLevelTransport';
-import type { ExternalSensorDescriptor } from './externalSensors';
+import type { BoxDescriptor } from './boxes';
 
 /**
  * This box as the registry (ADR 0016) sees it. Battery, temperature and
  * firmware tier come from `faf52c22-...`; mounting is R43, the installation
  * offset R34. Signal strength is absent because no browser can report it.
  */
-export const EASYLEVEL_DESCRIPTOR: ExternalSensorDescriptor = {
+export const EASYLEVEL_DESCRIPTOR: BoxDescriptor = {
   id: 'easylevel',
   displayName: 'EasyLevel',
   isAvailable: isEasyLevelAvailable,

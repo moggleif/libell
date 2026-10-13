@@ -185,9 +185,8 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
       makeOptions({
         initialSettings: classicSettings(),
         isPhoneActive: () => phone,
-        getExternalSensor: () =>
-          phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null },
-        calibrateExternalSensor: () => null,
+        getBox: () => (phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null }),
+        calibrateBox: () => null,
       } as Partial<MenuOptions>),
     );
     menu.open('calibration');

@@ -1,18 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  createExternalSensorController,
-  type ExternalSensor,
-  type ExternalSensorControllerOptions,
-} from './externalSensorController';
+import { createBoxController, type Box, type BoxControllerOptions } from './boxController';
 import { EXTERNAL_SENSOR_AUTO_RETRY_INTERVAL_MS } from './sensorFallback';
 import type { SensorSource } from '../domain/settings';
 import type { OrientationSensor, SensorState } from './orientation';
 
 /** A fake external adapter — no Web Bluetooth, no timers, no DOM. */
-function fakeExternal(source: SensorSource, overrides: Partial<ExternalSensor> = {}) {
+function fakeExternal(source: SensorSource, overrides: Partial<Box> = {}) {
   const calls = { start: 0, reconnect: [] as string[], disconnect: 0 };
   let state: SensorState = 'idle';
-  const sensor: ExternalSensor = {
+  const sensor: Box = {
     start: () => {
       calls.start += 1;
       state = 'granted';
@@ -46,8 +42,8 @@ const phoneSensor: OrientationSensor = {
 };
 
 function makeController(
-  overrides: Partial<ExternalSensorControllerOptions<ExternalSensor>> = {},
-  sensorsBySource: Record<string, ExternalSensor> = {},
+  overrides: Partial<BoxControllerOptions<Box>> = {},
+  sensorsBySource: Record<string, Box> = {},
 ) {
   const remembered: Record<string, string> = {};
   const calls = {
@@ -56,7 +52,7 @@ function makeController(
     indicators: 0,
     status: 0,
   };
-  const options: ExternalSensorControllerOptions<ExternalSensor> = {
+  const options: BoxControllerOptions<Box> = {
     phoneSensor,
     createSensor: (source) => sensorsBySource[source] ?? null,
     loadDeviceId: (source) => remembered[source] ?? null,
@@ -69,7 +65,7 @@ function makeController(
     onStatusChanged: () => void (calls.status += 1),
     ...overrides,
   };
-  return { controller: createExternalSensorController(options), calls, remembered };
+  return { controller: createBoxController(options), calls, remembered };
 }
 
 describe('connecting (#265)', () => {

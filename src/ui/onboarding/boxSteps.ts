@@ -1,5 +1,5 @@
 import { createSensorSourceSection, type SensorSourceOptions } from '../sensorSourceSection';
-import { availableExternalSensors } from '../../sensor/externalSensors';
+import { availableBoxes } from '../../sensor/boxes';
 import { t } from '../i18n';
 import type { OnboardingOptions, Step } from './types';
 import { paragraph, textClass, type WizardState } from './wizardState';
@@ -9,7 +9,7 @@ import { paragraph, textClass, type WizardState } from './wizardState';
 function sourceBags(options: OnboardingOptions): SensorSourceOptions[] {
   const perSource = options.sensorOptionsFor;
   if (!perSource) return [options];
-  return availableExternalSensors().map((sensor) => perSource(sensor));
+  return availableBoxes().map((sensor) => perSource(sensor));
 }
 
 function whileShown(anchor: Element, frame: () => void): void {

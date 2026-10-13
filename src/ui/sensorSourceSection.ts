@@ -1,7 +1,7 @@
 /**
  * Sensor source section (ADR 0014): one box's connect controls and the
  * sensor row that opens the box's own page. Only built when an external
- * box is available at all (`hasAvailableExternalSensor()`) — never a
+ * box is available at all (`hasAvailableBox()`) — never a
  * silent failure on Safari/iOS.
  *
  * **Where each half is shown.** The callers place the halves, because they
@@ -26,7 +26,7 @@
 import type { Calibration, CaptureResult } from '../domain/calibration';
 import type { SensorSource, VehicleType } from '../domain/settings';
 import type { EasyLevelMounting } from '../domain/sensorDeviceSettings';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import type { BoxDescriptor } from '../sensor/boxes';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxPasswordOptions } from './boxPasswordBlock';
 import { createBoxSetupChecklist } from './boxSetupChecklist';
@@ -42,7 +42,7 @@ export interface SensorSourceOptions {
    * brand themselves — a product name is identical in every
    * language, so it comes from here rather than from a catalogue.
    */
-  sensor: ExternalSensorDescriptor;
+  sensor: BoxDescriptor;
   /** Which source is feeding gravity readings right now. */
   getSensorSource(): SensorSource;
   /**

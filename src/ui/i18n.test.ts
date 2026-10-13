@@ -11,7 +11,7 @@ import {
   type Language,
   type MessageKey,
 } from './i18n';
-import { EXTERNAL_SENSORS } from '../sensor/externalSensors';
+import { EXTERNAL_SENSORS } from '../sensor/boxes';
 
 /** Every shipped dictionary, so adding a language (#178) automatically
  * brings it under all the checks below instead of needing a new case. */

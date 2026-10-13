@@ -5,13 +5,13 @@
  * disagree.
  */
 import { isSensorStale, STALE_TIMEOUT_PHONE_MS } from '../domain/staleness';
-import { externalSensorById } from '../sensor/externalSensors';
+import { boxById } from '../sensor/boxes';
 import type { OrientationSensor } from '../sensor/orientation';
 
 export function isActiveSensorStale(
   sensor: Pick<OrientationSensor, 'getSource' | 'getLastSampleAt'>,
   nowMs: number,
 ): boolean {
-  const timeoutMs = externalSensorById(sensor.getSource())?.staleTimeoutMs;
+  const timeoutMs = boxById(sensor.getSource())?.staleTimeoutMs;
   return isSensorStale(sensor.getLastSampleAt(), nowMs, timeoutMs ?? STALE_TIMEOUT_PHONE_MS);
 }

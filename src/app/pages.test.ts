@@ -145,7 +145,7 @@ describe('mountPages', () => {
     const screen = fakeScreen();
     mountPages(createCore(screen), screen);
     const open = vi.spyOn(screen.navigation, 'openActiveSensorPage').mockImplementation(() => {});
-    captured.menu.openExternalSensor();
+    captured.menu.openBoxPage();
     expect(open).toHaveBeenCalledOnce();
   });
 

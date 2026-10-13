@@ -1,6 +1,6 @@
 import { createElement } from '../dom';
 import type { LevelSettings, VehicleType } from '../../domain/settings';
-import { hasAvailableExternalSensor } from '../../sensor/externalSensors';
+import { hasAvailableBox } from '../../sensor/boxes';
 import type { OnboardingOptions, SensorChoice } from './types';
 
 /** Passed to every step instead of closure state. */
@@ -25,7 +25,7 @@ export function createWizardState(options: OnboardingOptions, render: () => void
   return {
     options,
     isModern: options.initialSettings.appearance === 'modern',
-    sourceChoiceAvailable: hasAvailableExternalSensor(),
+    sourceChoiceAvailable: hasAvailableBox(),
     externalActive: options.getSensorSource() !== 'phone',
     vehicleChoice: options.initialSettings.vehicleType,
     sensorChoice: 'phone',

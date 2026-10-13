@@ -48,15 +48,15 @@ export interface CalibrationOptions {
    */
   isPhoneActive?(): boolean;
   /** Null while the phone is active. Omitted = never offered. */
-  getExternalSensor?(): ExternalSensorCalibrationState | null;
+  getBox?(): BoxCalibrationState | null;
   /** The same action as on the box's own page (R34); asynchronous for a box
    * that zeroes itself. */
-  calibrateExternalSensor?(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
+  calibrateBox?(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   /** No link is shown when omitted. */
-  openExternalSensor?(): void;
+  openBoxPage?(): void;
 }
 
-export interface ExternalSensorCalibrationState {
+export interface BoxCalibrationState {
   name: string;
   offset: Calibration | null;
   capturedAt: number | null;

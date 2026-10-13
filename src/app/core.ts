@@ -9,22 +9,19 @@ import type { LevelSettings } from '../domain/settings';
 import { isBoxPending, loadSettings, saveSettings, setBoxPending } from '../data/settingsStore';
 import { loadRememberedDeviceId, saveRememberedDeviceId } from '../data/sensorDeviceStore';
 import { createOrientationSensor, type OrientationSensor } from '../sensor/orientation';
-import {
-  createExternalSensorController,
-  type ExternalSensorController,
-} from '../sensor/externalSensorController';
+import { createBoxController, type BoxController } from '../sensor/boxController';
 import type { XparkleSensor } from '../sensor/xparkleSensor';
 import { applyAppearance, applyTheme, followSystemTheme } from '../ui/theme';
 import { createAppSettings, type AppSettings } from './appSettings';
 import { createBoxZeroing } from './boxZero';
 import { createDemoSensor } from './demoSensor';
 import {
-  createExternalSensor,
+  createBox,
   hasPersistentDeviceAccess,
   isRememberedDeviceUsable,
   type BoxWiring,
-  type LibellExternalSensor,
-} from './externalSensorWiring';
+  type LibellBox,
+} from './boxWiring';
 import { createBoxPending, type BoxPending, type Refreshable } from './indicatorWiring';
 import { createInstallOffsets } from './installOffsets';
 import type { LevelScreenHost } from './levelScreen';
@@ -42,7 +39,7 @@ export interface Core {
   demo: boolean;
   sound: Sound;
   boxPending: BoxPending;
-  externalSensors: ExternalSensorController<LibellExternalSensor>;
+  boxes: BoxController<LibellBox>;
   /** The source feeding readings right now (ADR 0014); call it each time, it changes. */
   sensor: () => OrientationSensor;
   /** Calibration, zero and target, combined, for the active source. */
@@ -75,12 +72,12 @@ export function createCore(screen: Screen): Core {
   followSystemTheme(() => settings.get().theme);
   const demo = new URLSearchParams(location.search).has('demo');
   const boxPending = createBoxPending({ load: isBoxPending, save: setBoxPending });
-  const externalSensors = createSensorController(settings, demo, screen);
-  const sensor = () => externalSensors.getActiveSensor();
-  const layers = createCalibrationLayers(sensor, externalSensors, boxPending, screen);
+  const boxes = createSensorController(settings, demo, screen);
+  const sensor = () => boxes.getActiveSensor();
+  const layers = createCalibrationLayers(sensor, boxes, boxPending, screen);
   const boxWiring: BoxWiring = {
     settings,
-    getSensor: (source) => externalSensors.getSensor(source),
+    getSensor: (source) => boxes.getSensor(source),
     onMountingChanged: () => screen.lamps.refresh(),
   };
   return {
@@ -88,7 +85,7 @@ export function createCore(screen: Screen): Core {
     demo,
     sound: createSound(),
     boxPending,
-    externalSensors,
+    boxes,
     sensor,
     effectiveCalibration: () =>
       combineCalibrations(layers.zeroCalibration(), layers.targets.activeOffset()),
@@ -100,7 +97,7 @@ export function createCore(screen: Screen): Core {
       boxZero: layers.boxZero,
       installOffsets: layers.installOffsets,
       targets: layers.targets,
-      externalSensors,
+      boxes,
       boxWiring,
     },
   };
@@ -114,10 +111,10 @@ function createSensorController(
   settings: AppSettings,
   demo: boolean,
   screen: Screen,
-): ExternalSensorController<LibellExternalSensor> {
-  const controller = createExternalSensorController<LibellExternalSensor>({
+): BoxController<LibellBox> {
+  const controller = createBoxController<LibellBox>({
     phoneSensor: demo ? createDemoSensor() : createOrientationSensor(),
-    createSensor: (source) => createExternalSensor(source, settings.get),
+    createSensor: (source) => createBox(source, settings.get),
     loadDeviceId: loadRememberedDeviceId,
     saveDeviceId: saveRememberedDeviceId,
     isRememberedDeviceUsable,
@@ -141,7 +138,7 @@ function createSensorController(
  * target as a third term on top of it. */
 function createCalibrationLayers(
   sensor: () => OrientationSensor,
-  externalSensors: ExternalSensorController<LibellExternalSensor>,
+  boxes: BoxController<LibellBox>,
   boxPending: BoxPending,
   screen: Screen,
 ) {
@@ -163,7 +160,7 @@ function createCalibrationLayers(
   });
   const boxZero = createBoxZeroing({
     activeSensor: sensor,
-    getXparkle: () => externalSensors.getSensor('xparkle') as XparkleSensor | null,
+    getXparkle: () => boxes.getSensor('xparkle') as XparkleSensor | null,
     offsets: installOffsets,
     readTilt: readTiltNow,
     onChanged: () => screen.lamps.refresh(),

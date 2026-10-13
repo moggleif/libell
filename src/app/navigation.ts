@@ -6,14 +6,14 @@ import type { SensorSource } from '../domain/settings';
 import type { HelpTarget } from '../ui/infoMenu';
 import type { Menu, MenuSection } from '../ui/menu';
 import type { SettingsPage } from '../ui/settingsPage';
-import type { ExternalSensorPage, SensorPage } from '../ui/sensorPage';
+import type { BoxListPage, SensorPage } from '../ui/sensorPage';
 
 export interface NavigationDeps {
   /** Modern's tabbed Settings page, or Classic's ☰ menu. */
   settings:
     { settingsPage: Pick<SettingsPage, 'openTab' | 'openTargets'> } | { menu: Pick<Menu, 'open'> };
   /** Each box's own page; absent without Web Bluetooth. */
-  externalSensorPage: Pick<ExternalSensorPage, 'openSource'> | null;
+  boxListPage: Pick<BoxListPage, 'openSource'> | null;
   /** The box list, or iOS's guide; absent when neither applies. */
   sensorPage: Pick<SensorPage, 'open'> | null;
   activeSource: () => SensorSource;
@@ -55,10 +55,10 @@ export function createNavigation(deps: NavigationDeps): Navigation {
 }
 
 /** False when the phone is in use or there are no box pages. */
-function openActiveBox({ activeSource, externalSensorPage }: NavigationDeps): boolean {
+function openActiveBox({ activeSource, boxListPage }: NavigationDeps): boolean {
   const source = activeSource();
-  if (source === 'phone' || !externalSensorPage) return false;
-  externalSensorPage.openSource(source);
+  if (source === 'phone' || !boxListPage) return false;
+  boxListPage.openSource(source);
   return true;
 }
 

@@ -9,8 +9,8 @@ import { tiltFromGravity, type GravityVector } from '../domain/leveling';
 import { createExternalPoseDetector, createPoseDetector, type ExternalPose } from '../domain/pose';
 import type { LevelSettings, SensorSource } from '../domain/settings';
 import { createStillnessDetector } from '../domain/stillness';
-import type { ExternalSensorController } from '../sensor/externalSensorController';
-import { externalSensorById } from '../sensor/externalSensors';
+import type { BoxController } from '../sensor/boxController';
+import { boxById } from '../sensor/boxes';
 import type { OrientationSensor } from '../sensor/orientation';
 import { isSensorUnavailable } from '../sensor/sensorFallback';
 import type { MessageKey } from '../ui/i18n';
@@ -53,7 +53,7 @@ export interface LevelFrameDeps {
   isPaused: () => boolean;
   /** Indicators that follow the sensor even while a page is open. */
   refreshStatus: () => void;
-  externalSensors: Pick<ExternalSensorController<never>, 'canRetrySilently' | 'maybeAutoRetry'>;
+  boxes: Pick<BoxController<never>, 'canRetrySilently' | 'maybeAutoRetry'>;
   hasSensorPage: boolean;
   isLandscape: () => boolean;
   isVisible: () => boolean;
@@ -114,12 +114,12 @@ function drawFrame(frame: Frame, nowMs: number): void {
 /** No reading yet, or no longer: never a frozen last frame. */
 function showNoData(deps: LevelFrameDeps, nowMs: number): void {
   const unavailable = isSensorUnavailable(deps.sensor().getState());
-  deps.view.showNoData(unavailable, deps.externalSensors.canRetrySilently());
+  deps.view.showNoData(unavailable, deps.boxes.canRetrySilently());
   // Both overlays judge a reading; without one they would only hide
   // R37's card (#398).
   deps.view.hideStale();
   deps.view.hidePose();
-  if (unavailable) deps.externalSensors.maybeAutoRetry(nowMs);
+  if (unavailable) deps.boxes.maybeAutoRetry(nowMs);
 }
 
 function showReading(frame: Frame, gravity: GravityVector, nowMs: number): void {
@@ -156,7 +156,7 @@ function poseProblem(frame: Frame, gravity: GravityVector): PoseProblem | null {
   const pose = frame.detectExternalPose(gravity);
   if (pose === 'ok') return null;
   // A box built to stand is told to stand, never to lie flat.
-  const upright = externalSensorById(source)?.capabilities.upright ?? false;
+  const upright = boxById(source)?.capabilities.upright ?? false;
   return {
     message: upright ? 'pose.sensorNotUpright' : boxPoseMessage(pose),
     hint: upright ? 'pose.sensorHintUpright' : 'pose.sensorHint',

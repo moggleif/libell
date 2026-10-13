@@ -1,7 +1,7 @@
 /**
  * External sensor page, reached from the top-bar sensor-status icon. Only
  * constructed when at least one external source can work in this browser
- * (`hasAvailableExternalSensor()`, checked by the caller) — never a silently
+ * (`hasAvailableBox()`, checked by the caller) — never a silently
  * broken option on Safari/iOS.
  *
  * **A list, not a device**: one section per available source, each with its
@@ -22,7 +22,7 @@ import {
 import { createBoxStatusPage, type BoxStatusOptions, type BoxStatusPage } from './boxStatusPage';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
-import type { ExternalSensorDescriptor } from '../sensor/externalSensors';
+import type { BoxDescriptor } from '../sensor/boxes';
 import { createElement } from './dom';
 
 export interface SensorPage {
@@ -36,7 +36,7 @@ export interface SensorPage {
  * Separate from `SensorPage` so `iosSensorGuidePage.ts`'s same-shaped
  * stand-in, which has no device pages, need not fake these extras.
  */
-export interface ExternalSensorPage extends SensorPage {
+export interface BoxListPage extends SensorPage {
   /** Each source's own page element — attach right after `element` (see
    * the module doc comment for why the order matters). */
   statusElements: HTMLElement[];
@@ -60,9 +60,9 @@ interface Source {
 type ListPage = ReturnType<typeof createStandalonePage>;
 
 export function createSensorPage(
-  sensors: readonly ExternalSensorDescriptor[],
-  optionsFor: (sensor: ExternalSensorDescriptor) => SensorPageOptions,
-): ExternalSensorPage {
+  sensors: readonly BoxDescriptor[],
+  optionsFor: (sensor: BoxDescriptor) => SensorPageOptions,
+): BoxListPage {
   // Declared before the page so its `onOpen` can close over it.
   const sources: Source[] = [];
   const refreshAll = () => {
