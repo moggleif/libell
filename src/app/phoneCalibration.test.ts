@@ -182,6 +182,14 @@ describe('createPhoneCalibration', () => {
       expect(phone.checkBias()).toBe(t('calibration.check.off', { off: '1.0' }));
     });
 
+    it('speaks of zeroing, not calibrating, when the vehicle zero is off (#506)', () => {
+      const { phone, tiltTo } = setup({ rollDeg: 0, pitchDeg: 0 });
+      phone.zeroVehicle();
+      tiltTo({ rollDeg: 1, pitchDeg: 0 });
+      expect(phone.checkZero()).toBe(t('calibration.vehicle.check.off', { off: '1.0' }));
+      expect(phone.checkBias()).toBe(t('calibration.check.off', { off: '1.0' }));
+    });
+
     it('checks against level when nothing is stored', () => {
       const { phone } = setup({ rollDeg: 0.5, pitchDeg: 0 });
       expect(phone.checkBias()).toBe(t('calibration.check.off', { off: '0.5' }));

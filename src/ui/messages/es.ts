@@ -302,6 +302,7 @@ export const es: Messages = {
   'calibration.check': 'Comprobar',
   'calibration.check.good': 'Sigue bien: desviación de {off}°.',
   'calibration.check.off': 'Desviación de {off}°: conviene recalibrar.',
+  'calibration.vehicle.check.off': 'Desviación de {off}°: conviene volver a poner a cero.',
   'calibration.flip.intro':
     '¿No tienes cerca ninguna superficie nivelada? Usa la calibración por giro: pon el ' +
     'móvil en cualquier sitio razonablemente plano, captura, gíralo media vuelta (180°) en ' +

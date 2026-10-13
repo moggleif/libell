@@ -305,6 +305,7 @@ export const sv: Messages = {
   'calibration.check': 'Kontrollera',
   'calibration.check.good': 'Fortfarande bra — avviker {off}°.',
   'calibration.check.off': 'Avviker {off}° — överväg att kalibrera om.',
+  'calibration.vehicle.check.off': 'Avviker {off}° — överväg att nollställa om.',
   'calibration.flip.intro':
     'Ingen plan yta i närheten? Använd vändkalibrering: lägg telefonen på något ' +
     'någorlunda plant, fånga, vrid telefonen ett halvt varv (180°) på samma ' +

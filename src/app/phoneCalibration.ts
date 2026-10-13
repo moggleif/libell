@@ -94,8 +94,8 @@ export function createPhoneCalibration(deps: PhoneCalibrationDeps): PhoneCalibra
       clearVehicleCalibration(deps.storage);
       deps.onCleared();
     },
-    checkBias: () => checkAgainst(deps, layers.bias?.value ?? null),
-    checkZero: () => checkAgainst(deps, zero()),
+    checkBias: () => checkAgainst(deps, layers.bias?.value ?? null, 'calibration.check.off'),
+    checkZero: () => checkAgainst(deps, zero(), 'calibration.vehicle.check.off'),
   };
 }
 
@@ -131,13 +131,20 @@ function zeroVehicle(layers: PhoneLayers, anyway: boolean): CaptureResult {
   return null;
 }
 
-function checkAgainst(deps: PhoneCalibrationDeps, offset: Calibration | null): string {
+/** The message for a check that is off: recalibrate the phone, or zero the vehicle again (#506). */
+type CheckOffKey = 'calibration.check.off' | 'calibration.vehicle.check.off';
+
+function checkAgainst(
+  deps: PhoneCalibrationDeps,
+  offset: Calibration | null,
+  offKey: CheckOffKey,
+): string {
   const reading = deps.readTilt();
   if (typeof reading === 'string') return reading;
   const off = Math.max(
     Math.abs(reading.rollDeg - (offset?.rollDeg ?? 0)),
     Math.abs(reading.pitchDeg - (offset?.pitchDeg ?? 0)),
   );
-  const key = off <= CHECK_GOOD_DEG ? 'calibration.check.good' : 'calibration.check.off';
+  const key = off <= CHECK_GOOD_DEG ? 'calibration.check.good' : offKey;
   return t(key, { off: off.toFixed(1) });
 }

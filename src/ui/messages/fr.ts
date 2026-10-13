@@ -311,6 +311,7 @@ export const fr: Messages = {
   'calibration.check': 'Vérifier',
   'calibration.check.good': 'Toujours bon — écart de {off}°.',
   'calibration.check.off': 'Écart de {off}° — pensez à réétalonner.',
+  'calibration.vehicle.check.off': 'Écart de {off}° — pensez à refaire le zéro.',
   'calibration.flip.intro':
     'Pas de surface de niveau à proximité ? Utilisez l’étalonnage par retournement : posez ' +
     'le téléphone n’importe où d’assez plat, capturez, faites-lui faire un demi-tour (180°) ' +

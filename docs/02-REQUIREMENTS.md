@@ -697,7 +697,9 @@ URL and must keep working with no signal.
   vehicle verifiably level (vehicle zero)
 - **Then** the app compares the current reading against the calibration's promise of
   zero and answers plainly: "Still good — off by 0.1°." or "Off by 0.8° — consider
-  recalibrating." (threshold 0.3°), in that same step; the calibrate / zero button is
+  recalibrating." (threshold 0.3°); for the vehicle zero the advice is to zero again
+  ("…consider zeroing again.", "…överväg att nollställa om.", #506), never to
+  recalibrate. The answer shows in that same step; the calibrate / zero button is
   right there.
 - The timestamp never leaves the device.
 
