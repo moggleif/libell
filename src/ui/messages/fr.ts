@@ -84,7 +84,7 @@ export const fr: Messages = {
 
   'sensorSource.install.now': 'Mettre à zéro',
   'sensorSource.install.clear': 'Oublier le zéro',
-  'sensorSource.install.status': 'Zéro : latéral {roll}°, longitudinal {pitch}°.',
+  'sensorSource.install.status': 'Zéro : longitudinal {pitch}, latéral {roll}.',
   'sensorSource.install.status.none':
     'Pas encore mis à zéro — le boîtier mesure tel qu’il est posé.',
 
@@ -282,7 +282,7 @@ export const fr: Messages = {
   'calibration.intro':
     'Posez le téléphone sur une surface dont vous savez qu’elle est de niveau, puis ' +
     'touchez Étalonner maintenant. L’inclinaison actuelle devient le point zéro.',
-  'calibration.status': 'Étalonné : latéral {roll}°, longitudinal {pitch}°.',
+  'calibration.status': 'Étalonné : longitudinal {pitch}, latéral {roll}.',
   'calibration.status.none': 'Non étalonné — capteur brut utilisé.',
   'calibration.now': 'Étalonner maintenant',
   'calibration.step.phone.done': 'Téléphone étalonné',
@@ -305,7 +305,7 @@ export const fr: Messages = {
     'L’étalonnage concerne le téléphone, pas l’endroit où il repose. Si la table penche un peu, l’application affiche cette inclinaison. Mettez le véhicule de niveau une fois avec un niveau à bulle, posez le téléphone à sa place habituelle et mettez à zéro.',
   'calibration.vehicle.now': 'Mettre à zéro',
   'calibration.vehicle.clear': 'Oublier le zéro',
-  'calibration.vehicle.status': 'Zéro du véhicule : latéral {roll}°, longitudinal {pitch}°.',
+  'calibration.vehicle.status': 'Zéro du véhicule : longitudinal {pitch}, latéral {roll}.',
   'calibration.vehicle.status.none':
     'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
   'calibration.vehicle.warn.notFlat':

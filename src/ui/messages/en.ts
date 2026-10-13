@@ -135,7 +135,7 @@ export const en = {
   // nothing until there is a live reading to capture.
   'sensorSource.install.now': 'Zero now',
   'sensorSource.install.clear': 'Forget the zero',
-  'sensorSource.install.status': 'Zero: side/side {roll}°, front/back {pitch}°.',
+  'sensorSource.install.status': 'Zero: front/back {pitch}, side/side {roll}.',
   'sensorSource.install.status.none': 'Not zeroed yet — the box measures as it sits.',
 
   // Learn the mounting (#293): Libell watches the box while the user
@@ -382,7 +382,7 @@ export const en = {
   'calibration.intro':
     'Put the phone on a surface you know is level, then tap Calibrate now. ' +
     'The current tilt becomes the zero point.',
-  'calibration.status': 'Calibrated: side/side {roll}°, front/back {pitch}°.',
+  'calibration.status': 'Calibrated: front/back {pitch}, side/side {roll}.',
   'calibration.status.none': 'Not calibrated — using the raw sensor.',
   'calibration.now': 'Calibrate now',
   'calibration.step.phone.done': 'Phone calibrated',
@@ -410,7 +410,7 @@ export const en = {
     'Calibration is about the phone, not the spot where it lies. If the table tilts a little, the app shows that tilt. Level the vehicle once with a spirit level, put the phone in its usual place and zero.',
   'calibration.vehicle.now': 'Zero now',
   'calibration.vehicle.clear': 'Forget the zero',
-  'calibration.vehicle.status': 'Vehicle zero: side/side {roll}°, front/back {pitch}°.',
+  'calibration.vehicle.status': 'Vehicle zero: front/back {pitch}, side/side {roll}.',
   'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
   'calibration.vehicle.warn.notFlat':
     'This does not look level (over 15°). Is the vehicle really level? Zero anyway if you are sure.',

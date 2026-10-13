@@ -47,8 +47,12 @@ describe('calibration section (#83)', () => {
     const statuses = [...section.element.querySelectorAll('.menu__text--status')].map(
       (s) => s.textContent,
     );
-    expect(statuses.some((s) => s?.includes('Calibrated: side/side 1.0'))).toBe(true);
-    expect(statuses.some((s) => s?.includes('Vehicle zero: side/side 0.4'))).toBe(true);
+    expect(statuses.some((s) => s?.includes('Calibrated: front/back −0.5°, side/side +1.0°'))).toBe(
+      true,
+    );
+    expect(
+      statuses.some((s) => s?.includes('Vehicle zero: front/back +0.2°, side/side +0.4°')),
+    ).toBe(true);
   });
 
   it('sets the current position as level via the host callback', () => {
@@ -187,7 +191,7 @@ describe('calibration section — Modern two-card layout (#109)', () => {
   // but rejected — the status sentence already states the numbers, so
   // both cards now show them only there, matching the vehicle-zero
   // card's original, simpler layout.
-  it('shows the side/side and front/back numbers only in each status sentence, no separate readout box', () => {
+  it('shows the front/back and side/side numbers only in each status sentence, no separate readout box', () => {
     const section = createCalibrationSection(
       makeOptions({
         appearance: 'modern',
@@ -199,8 +203,8 @@ describe('calibration section — Modern two-card layout (#109)', () => {
     const statuses = [...section.element.querySelectorAll('.menu__text--status')].map(
       (s) => s.textContent,
     );
-    expect(statuses.some((s) => s?.includes('side/side 1.2'))).toBe(true);
-    expect(statuses.some((s) => s?.includes('side/side 0.4'))).toBe(true);
+    expect(statuses.some((s) => s?.includes('front/back −3.4°, side/side +1.2°'))).toBe(true);
+    expect(statuses.some((s) => s?.includes('front/back +0.2°, side/side +0.4°'))).toBe(true);
   });
 
   it('wires every button to the same host callbacks as Classic mode', () => {

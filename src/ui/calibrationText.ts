@@ -5,6 +5,7 @@
 import type { Calibration, CaptureResult } from '../domain/calibration';
 import { ageText } from './calibrationAge';
 import { t } from './i18n';
+import { signedDegrees } from './tiltText';
 
 export type CalibrationKind = 'phone' | 'vehicle';
 
@@ -26,8 +27,8 @@ export function calibrationStatusText(
   if (!calibration) return t(STATUS_KEYS[kind].none);
   return (
     t(STATUS_KEYS[kind].done, {
-      roll: calibration.rollDeg.toFixed(1),
-      pitch: calibration.pitchDeg.toFixed(1),
+      roll: signedDegrees(calibration.rollDeg),
+      pitch: signedDegrees(calibration.pitchDeg),
     }) + ageText(capturedAt)
   );
 }
@@ -84,8 +85,8 @@ export function externalStatusText(
   if (!offset) return t('sensorSource.install.status.none');
   return (
     t('sensorSource.install.status', {
-      roll: offset.rollDeg.toFixed(1),
-      pitch: offset.pitchDeg.toFixed(1),
+      roll: signedDegrees(offset.rollDeg),
+      pitch: signedDegrees(offset.pitchDeg),
     }) + ageText(capturedAt)
   );
 }

@@ -24,10 +24,10 @@ describe('calibrationStatusText (#416)', () => {
 
   it('gives the numbers, or says there are none', () => {
     expect(calibrationStatusText('phone', tilt, null, false)).toBe(
-      'Calibrated: side/side 1.0°, front/back -0.3°.',
+      'Calibrated: front/back −0.3°, side/side +1.0°.',
     );
     expect(calibrationStatusText('vehicle', tilt, null, false)).toBe(
-      'Vehicle zero: side/side 1.0°, front/back -0.3°.',
+      'Vehicle zero: front/back −0.3°, side/side +1.0°.',
     );
     expect(calibrationStatusText('phone', null, null, false)).toBe(t('calibration.status.none'));
     expect(calibrationStatusText('vehicle', null, null, false)).toBe(
@@ -94,7 +94,7 @@ describe('externalStatusText (#290)', () => {
   it('says a message, else the box zero or that there is none', () => {
     expect(externalStatusText(tilt, null, 'working')).toBe('working');
     expect(externalStatusText(tilt, null, '')).toBe('');
-    expect(externalStatusText(tilt, null)).toBe('Zero: side/side 1.0°, front/back -0.3°.');
+    expect(externalStatusText(tilt, null)).toBe('Zero: front/back −0.3°, side/side +1.0°.');
     expect(externalStatusText(null, null)).toBe(t('sensorSource.install.status.none'));
   });
 });

@@ -44,8 +44,8 @@ describe('tiltLineText', () => {
   const tilt = { rollDeg: 1.25, pitchDeg: -0.3 };
 
   it('joins the tilt to a position, or stands alone', () => {
-    expect(tiltLineText(tilt, true)).toBe(' · Side/side 1.3° · Front/back -0.3°');
-    expect(tiltLineText(tilt, false)).toBe('Side/side 1.3° · Front/back -0.3°');
+    expect(tiltLineText(tilt, true)).toBe(' · Front/back −0.3° · Side/side +1.3°');
+    expect(tiltLineText(tilt, false)).toBe('Front/back −0.3° · Side/side +1.3°');
   });
 
   it('is empty beside a position and a dash without one when there is no tilt', () => {
