@@ -508,7 +508,7 @@ export const en = {
     'On iPhone: tap Start each time you open the app.\n' +
     'Still wrong? Write a report under Feedback.',
   'help.open': 'Open {name}',
-  'help.open.sensor': 'Open the sensor',
+  'help.open.sensor': 'Open the sensor box',
   'help.open.feedback': 'Write a report',
 
   'main.hint': 'Lay your phone flat inside the vehicle, top edge toward the front.',

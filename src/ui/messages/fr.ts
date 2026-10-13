@@ -395,7 +395,7 @@ export const fr: Messages = {
     'Sur iPhone : touchez Démarrer à chaque ouverture de l’application.\n' +
     'Toujours un souci ? Écrivez un rapport sous Commentaires.',
   'help.open': 'Ouvrir {name}',
-  'help.open.sensor': 'Ouvrir le capteur',
+  'help.open.sensor': 'Ouvrir le boîtier capteur',
   'help.open.feedback': 'Écrire un rapport',
 
   'main.hint': 'Posez votre téléphone à plat dans le véhicule, le bord supérieur vers l’avant.',

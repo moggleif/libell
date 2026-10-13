@@ -392,7 +392,7 @@ export const sv: Messages = {
     'På iPhone: tryck Start varje gång du öppnar appen.\n' +
     'Fortfarande fel? Skriv en rapport under Feedback.',
   'help.open': 'Öppna {name}',
-  'help.open.sensor': 'Öppna sensorn',
+  'help.open.sensor': 'Öppna Sensorbox',
   'help.open.feedback': 'Skriv en rapport',
 
   'main.hint': 'Lägg telefonen plant i fordonet, med ovansidan mot fronten.',

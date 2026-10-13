@@ -17,7 +17,7 @@ export const de: Messages = {
   'update.offline': 'Keine Verbindung, Suche nach Updates nicht möglich',
   'update.unsupported': 'Updates sind hier nicht verfügbar',
   'install.hint': 'Auf Teilen tippen, dann „Zum Home-Bildschirm“.',
-  'share.vehicle.text': 'Die Konfiguration meines Fahrzeugs für Libell — Maße und Auffahrkeile.',
+  'share.vehicle.text': 'Die Konfiguration meines Fahrzeugs für Libell — Maße und Keile.',
   'settings.shareVehicle': 'An ein anderes Handy senden',
   'setup.incoming.h': 'Empfangene Fahrzeugkonfiguration',
   'setup.incoming.intro': 'Jemand aus deiner Familie hat dir diese Fahrzeugmaße geschickt:',
@@ -209,7 +209,7 @@ export const de: Messages = {
   'settings.steps': 'Stufenhöhen der Keile',
   'settings.steps.add': 'Stufe hinzufügen',
   'settings.steps.remove': '{value} entfernen',
-  'settings.ramp': 'Fertiger Auffahrkeil',
+  'settings.ramp': 'Fertiger Keil',
   'settings.ramp.custom': 'Eigener Satz',
   'settings.rampCount': 'Anzahl Keile',
   'settings.drain': 'Abflussseite',
@@ -217,7 +217,7 @@ export const de: Messages = {
   'settings.drainHint':
     'Innerhalb der Toleranz bleibt diese Seite am tiefsten, damit das Wasser abläuft.',
   'settings.section.vehicle': 'Fahrzeug und Maße',
-  'settings.section.ramps': 'Auffahrkeile',
+  'settings.section.ramps': 'Keile',
   'settings.general': 'Allgemein',
   'settings.language': 'Sprache',
   'settings.language.auto': 'Automatisch (Gerätesprache)',
@@ -388,7 +388,7 @@ export const de: Messages = {
     'Auf dem iPhone: tippe bei jedem Öffnen der App auf Start.\n' +
     'Immer noch falsch? Schreib einen Bericht unter Rückmeldung.',
   'help.open': '{name} öffnen',
-  'help.open.sensor': 'Sensor öffnen',
+  'help.open.sensor': 'Sensorbox öffnen',
   'help.open.feedback': 'Bericht schreiben',
 
   'main.hint': 'Lege dein Handy flach ins Fahrzeug, die Oberkante nach vorn.',
@@ -438,7 +438,7 @@ export const de: Messages = {
   'calibration.external.working': 'Wird genullt…',
   'calibration.external.done': '{name} ist genullt: Diese Lage gilt jetzt als waagerecht.',
   'calibration.external.err.notConnected':
-    '{name} ist nicht verbunden. Verbinden Sie ihn und versuchen Sie es erneut.',
+    '{name} ist nicht verbunden. Verbinde ihn und versuch es erneut.',
   'calibration.external.err.failed':
     '{name} konnte nicht genullt werden. Es wurde nichts geändert. Prüf die Verbindung und versuch es erneut.',
   'pose.portrait': 'Drehe das Handy hochkant (Porträt) — die Oberkante muss nach vorn zeigen',
@@ -473,7 +473,7 @@ export const de: Messages = {
   'box.password.noAnswer':
     'Die Box hat nicht geantwortet. Der Code ist gespeichert und wird beim nächsten Verbinden der Box versucht.',
   'box.state.notConnected': 'Nicht verbunden',
-  'box.state.battery': 'Akku {value}',
+  'box.state.battery': 'Batterie {value}',
   'box.connect': 'Verbinden',
   'box.step.position.upright.ok': 'Steht aufrecht',
   'box.step.position.upright.bad': 'Liegt: stelle sie aufrecht, Richtung egal',
