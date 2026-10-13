@@ -99,6 +99,11 @@ URL and must keep working with no signal.
   its figure (#459, reversing #368) because the user may still put a board or similar
   under it; its step line reads "No ramp" (screen-cleanup follow-up) rather than
   sitting blank, so it never reads as "level".
+- **Given** any of the four palettes (Classic or Modern, light or dark) (#536)
+- **Then** the gray wheel's "No ramp" text has at least 4.5:1 contrast on its card and
+  its marker glyph at least 3:1 on the gray, and form fields everywhere are outlined at
+  least 3:1 against the field and the page (WCAG 1.4.3, 1.4.11); the gray still reads
+  as gray next to the other states. `src/ui/contrast.test.ts` computes these pairs.
 
 ## R6 — Per-wheel readouts on the diagram and a clear "level" confirmation
 
