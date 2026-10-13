@@ -27,7 +27,8 @@ src/
 │                  # levelEngine.ts, levelScreenView.ts, levelFrame.ts, levelScreen.ts
 │                  # (the level screen), sound.ts (chime, guidance pulse, mute),
 │                  # topBar.ts, frameGuard.ts, startupMigrations.ts, incomingSetup.ts,
-│                  # sensorStartup.ts (start-up)
+│                  # sensorStartup.ts (start-up), appSettings.ts (the app's one copy
+│                  # of the settings), sensorStaleness.ts (when a source is stale)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable, among them:
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── caravan.ts    # the caravan's axle + jockey-wheel math (ADR 0008)
@@ -40,7 +41,8 @@ src/
 │   └── sensorDeviceSettings.ts  # typed per-box settings inside sensorDevices
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
-│                  # remembered device id, #130) — localStorage read/write
+│                  # remembered device id, #130) — localStorage read/write, on the
+│                  # shared guarded helpers in keyValueStorage.ts
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
 │                  # boxes.ts (the registry), boxController.ts
 │                  # (connect, reconnect, fallback), easyLevel*.ts and xparkle*.ts (each
@@ -71,7 +73,7 @@ RL(-Wr/2, -L/2)  RR(+Wr/2, -L/2)
 z_i    = x_i*tan(roll) + y_i*tan(pitch)
 lift_i = max(z) - z_i          # >= 0, because blocks only go under wheels
 step_i = the configured ramp step height (mm) closest to lift_i (0 = no step)
-isLevel = max(lift) <= toleranceMm                      # height-based, default 20 mm
+isLevel = max(lift) <= toleranceMm                      # height-based
 ```
 
 The highest wheel is always the reference. Calibration is two-layered (ADR 0010): the
@@ -81,7 +83,7 @@ their sum is subtracted from every reading. Output: per-wheel
 `{liftMm, stepMm}`, plus `rollDeg`, `pitchDeg`, `isLevel`. The UI renders through the
 display stabilizer in `stability.ts`, which applies the configurable hysteresis dead
 band ("Stability") to the shown mm figure and, on the motorhome screen, to which
-ramp plan is shown, each held for `dwellRestMs` (default 600) before it changes.
+ramp plan is shown, each held for `dwellRestMs` before it changes.
 Wheel color/glyph and `isLevel` are deliberately _not_ a third value with its own dead
 band and dwell: they are recomputed every frame straight from that tick's
 already-stabilized mm figure and plan, so the color can never lag or lead the numbers
@@ -89,7 +91,7 @@ it is describing (field regression, screenshot v1.0.0-CR180 — "0 mm" next to a
 ramp reaches this wheel"). A wheel's live mm figure (and the caravan jockey's signed
 mm) additionally gets an adaptive dwell (#183, `stabilizeNumber`): once a change has
 just been adopted, a further change in the _same direction_ — driving up a ramp,
-cranking the jockey — only needs the much shorter `dwellMotionMs` (default 150)
+cranking the jockey — only needs the much shorter `dwellMotionMs`
 instead of paying the full rest dwell on every intermediate reading; a fresh
 direction, or one reversing the last, still pays `dwellRestMs`, so oscillating noise
 (which never holds one direction twice) can't borrow the fast path. The ramp
@@ -147,8 +149,8 @@ getGravity()/getSource()/getLastSampleAt()` is the whole contract every gravity 
 implements — the
 phone sensor above, the fixed-tilt `?demo` stand-in in `src/app/demoSensor.ts`, and
 the two Sensorbox adapters: `src/sensor/easyLevelSensor.ts` (#116, R32) and
-`src/sensor/xparkleSensor.ts` (#270, R49), opt-in from the top bar's sensor icon or the
-menu's "Sensor box" page, only offered when `navigator.bluetooth` exists. `src/app/core.ts` selects
+`src/sensor/xparkleSensor.ts` (#270, R49), opt-in from the top bar's sensor icon (R9),
+only offered when `navigator.bluetooth` exists. `src/app/core.ts` selects
 between implementations through the external-sensor controller's active sensor; `domain/` never learns which one is
 active. `easyLevelSensor.ts` is the `OrientationSensor` face; one live link (status
 before accel, the calibration gate, the silence watch) runs in `easyLevelLink.ts`, the
@@ -303,8 +305,8 @@ page — that section returns its `connectElement`/`installElement` halves separ
 precisely so each caller can place them where they belong (the onboarding wizard puts
 them on separate steps). Visible whenever a box is the active source,
 reusing `calibrationAge.ts`'s shared `ageText()` (factored out of
-`calibrationSection.ts` by this change) and the `calibration.check.*`/`calibration.age.*`
-i18n keys for the Check/age copy rather than re-deriving that wording.
+`calibrationSection.ts` by this change) and the `calibration.age.*` i18n keys for the age
+copy rather than re-deriving that wording. A box has no Check (R34, #343).
 
 Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
 `getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone
@@ -356,10 +358,8 @@ pose, the guidance) and when the level celebration and audio guidance fire is de
 
 `localStorage`, JSON-encoded under a single key, with validation on read so a corrupt or
 outdated value falls back to defaults. The default values live in one place —
-`DEFAULT_SETTINGS` in `src/domain/settings.ts` (wheelbase 3800 mm, track width
-1810/1980 mm front/rear, the Thule Levelers steps 44/78/112 mm, two ramps, no drain
-preference, tolerance 20 mm,
-stability 3 mm); update that constant, not prose copies of it. Legacy cm values
+`DEFAULT_SETTINGS` in `src/domain/settings.ts`; update that constant, and never copy its
+values into prose. Legacy cm values
 migrate on read (×10): wheelbase, track widths (including a single `trackWidthCm` for
 both axles) and step heights.
 
@@ -370,17 +370,18 @@ pages), the form never writes those from its own snapshot: each save reads them 
 from storage first and only replaces the fields the form shows.
 
 Each tab is its own module — `settingsVehicleTab.ts`, `settingsRampsTab.ts` (with
-`rampChoice.ts` and `rampsPage.ts`), `settingsLevelTab.ts`, `settingsGeneralTab.ts`
-(Calibration embeds `calibrationSection.ts`, whose controls and layouts are
-`calibrationControls.ts` and `calibrationLayouts.ts`) — built from the shared field
+`rampChoice.ts` and `rampsPage.ts`), `settingsLevelTab.ts`, `settingsGeneralTab.ts` —
+built from the shared field
 helpers in `settingsFields.ts`. `settingsPanel.ts` owns what they share: the form state
 and its values. Saving, Undo and the message for an unusable number are
 `settingsAutoSave.ts`; the layout (Modern's tabs, Classic's ☰ pages, the wizard's
-steps) is `settingsLayout.ts`.
+steps) is `settingsLayout.ts`, which also assembles the Calibration tab around
+`calibrationSection.ts` (its controls and layouts are `calibrationControls.ts` and
+`calibrationLayouts.ts`).
 
 ## Offline
 
-Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`), so once the app
+Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`, `woff2`), so once the app
 has been opened with a connection it works with no signal at all. `registerType:
 'autoUpdate'` lets a new worker activate on its own; `src/ui/appUpdate.ts` then reloads
 an already-controlled page once on `controllerchange`, re-checks for a new worker when
@@ -392,21 +393,24 @@ demand (R50).
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
 the bubble level embedded at its center; per-wheel readouts sit directly at the wheels
 (the step name and one height, the lift in whole mm — R6), drawn on the SVG in Classic and on floating wheel cards in Modern, for the motorhome and the caravan alike (`stepAndLiftText` in `src/ui/diagramParts.ts`). Everything is inline SVG, sized in viewport units so the
-diagram stays legible on a phone lying on a table. Settings, Calibration and Help live
-in the full-width menu, opened from the bottom action bar; amber warning lamps in the top bar point to unsaved
-settings or a missing calibration. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language (sv/en/fr/es/de) in `src/ui/messages/`.
+diagram stays legible on a phone lying on a table. Settings open from the bottom action
+bar's gear: in Modern a page with one tab per section, in Classic the ☰ drawer with one page per section (`src/app/settingsSurface.ts`).
+Help is its own page behind "?", with Help, About and Feedback tabs (`src/ui/infoMenu.ts`,
+R12, R38). The Sensorbox is reached from the sensor icon in the top bar's corner (R9);
+no menu entry leads there. Amber warning lamps in the top bar point to missing
+measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language (sv/en/fr/es/de) in `src/ui/messages/`.
 
 Top bar / bottom action bar split (#161): the top bar holds only identity (logo, title,
 share) on the left and the indicators cluster (warning lamps, target badge, sensor
 status) on the right — no menu button there. A bottom action bar (`.bottombar`) holds
-three controls instead: settings (opens the same hamburger menu as before, just moved),
+three controls instead: settings (opens Settings as above),
 sound (center, visually larger — a single mute/unmute toggle for `soundOnLevel` +
 `soundGuidance` together, restoring their exact prior values on unmute rather than
-forcing either back on), and help (opens the menu directly on its Help section). The
+forcing either back on), and help (opens the Help page on its Help tab). The
 install prompt is unaffected — it still renders via the `#install-hint` banner under the
 top bar. Because mute can change the two sound settings while the menu is closed, the
 Settings page's own checkboxes resync from the live values (`SettingsFormElement.
-resyncSoundFields`) every time the menu reopens, so a stale checkbox state can never
+resyncSoundFields`) every time Settings reopens, so a stale checkbox state can never
 silently overwrite a mute on the next unrelated change.
 
 ## Build / CI notes

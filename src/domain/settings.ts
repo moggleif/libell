@@ -198,7 +198,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   sensorDevices: { easylevel: DEFAULT_EASYLEVEL_SETTINGS },
 };
 
-/** Saving a measurement change is what puts the ⚠ Setup lamp out; saving a
+/** Saving a measurement change is what puts the ⚠ Measurements lamp out; saving a
  * theme or a sound does not. */
 export function measurementsDiffer(a: LevelSettings, b: LevelSettings): boolean {
   return (
