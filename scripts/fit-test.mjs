@@ -125,17 +125,6 @@ async function auditView(page, label) {
       .flatMap((s) => [...document.querySelectorAll(s)])
       .filter((e) => !e.hidden && e.getBoundingClientRect().height > 0);
 
-    // Content inside a deliberate horizontal scroller (a tab strip) is
-    // meant to overflow — that is what makes it swipeable — so it is not
-    // a defect. Anything else wider than its container is.
-    const inScroller = (el, stopAt) => {
-      for (let p = el.parentElement; p && p !== stopAt; p = p.parentElement) {
-        const ox = getComputedStyle(p).overflowX;
-        if (ox === 'auto' || ox === 'scroll') return true;
-      }
-      return false;
-    };
-
     const containers = open.map((el) => {
       const box = el.getBoundingClientRect();
       // Scroll to the end and see whether the last thing in the view
@@ -149,15 +138,22 @@ async function auditView(page, label) {
       const wide = [...el.querySelectorAll('*')]
         .filter((n) => {
           const nb = n.getBoundingClientRect();
-          return nb.width > 0 && nb.right > box.left + el.clientWidth + 0.5 && !inScroller(n, el);
+          return nb.width > 0 && nb.right > box.left + el.clientWidth + 0.5;
         })
         .map((n) => `${n.tagName.toLowerCase()}.${(n.getAttribute('class') ?? '').split(' ')[0]}`);
+
+      // A tab bar shows every tab whole: one cut off at its edge, or
+      // scrolled out of sight, is a tab the user cannot see exists (#538).
+      const cutTabs = [...el.querySelectorAll('[role=tablist]')].some(
+        (bar) => bar.scrollWidth > bar.clientWidth + 0.5,
+      );
 
       return {
         cls: el.className.split(' ')[0],
         bottom: box.bottom,
         lastBottomAtEnd,
         wide: [...new Set(wide)].slice(0, 3),
+        cutTabs,
       };
     });
 
@@ -185,6 +181,9 @@ async function auditView(page, label) {
     }
     if (c.wide.length > 0) {
       fail(label, `${c.cls}: ${c.wide.join(', ')} overflow it horizontally`);
+    }
+    if (c.cutTabs) {
+      fail(label, `${c.cls}: its tab bar is wider than the screen, so tabs are cut off`);
     }
   }
 }

@@ -1816,19 +1816,14 @@ body {
 
 /* ---- Modern settings tabs ---- */
 
-/* The labels need ~344px; the strip scrolls within itself so the page
- * never scrolls sideways and no label is truncated. */
+/* Five labels need more than a narrow phone has in some languages; they
+ * wrap to a second row rather than scroll, so every tab stays in sight
+ * (#538). */
 .settings__tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   min-width: 0;
-  overflow-x: auto;
-  /* Self-evidently swipeable; a scrollbar would cost more than it explains. */
-  scrollbar-width: none;
-}
-
-.settings__tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .settings__tab {

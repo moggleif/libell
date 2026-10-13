@@ -1565,7 +1565,7 @@ everything above that seam is exactly the code a real box runs through.
 - **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
   the real transport is not even constructed.
 
-## R45 — Every view fits a phone screen (#239, #241, #243, #403)
+## R45 — Every view fits a phone screen (#239, #241, #243, #403, #538)
 
 R4 and R18 state this for the level view and the first-run guide. It holds for every
 other view too — settings, help, the sensor box pages, the iOS sensor guide (R39),
@@ -1574,8 +1574,8 @@ the incoming shared-setup dialog, the Classic settings drawer.
 - **Given** any view, on any phone from 320 px wide upward, in every appearance and in
   every shipped language
 - **Then** the page never scrolls sideways, and nothing is wider than the container it
-  sits in — except a deliberate horizontal scroller, which is what makes a tab strip
-  swipeable rather than a defect.
+  sits in. A tab bar shows every tab whole: tabs that don't fit one row wrap to a
+  second row rather than scroll out of sight (#538).
 - **Given** a view whose content is legitimately longer than the screen (settings, help)
 - **Then** it scrolls within itself, and scrolling it to the end brings its last content
   fully into view: no container extends past the visible viewport, and nothing is
