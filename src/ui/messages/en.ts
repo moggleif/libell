@@ -388,11 +388,12 @@ export const en = {
   // Help topics: one fact per line (R28), saying what and where.
   'help.screen.h': 'Reading the screen',
   'help.screen.t':
+    'The screen shows which wheels to raise and by how much.\n' +
     'Green ✓: done, nothing to do.\n' +
-    'Orange ↑: drive that wheel up onto the step shown next to it.\n' +
+    'Orange ↑: drive that wheel up the ramp to the step shown next to it, for example Step 2.\n' +
     'Red ✕: your ramps are not enough here. Move the vehicle.\n' +
-    'Gray –: no ramp at that wheel. The figure shows how much it lacks, if you want to put something else under it.\n' +
-    'When the bubble rests in the middle, you are level.',
+    'Gray –: no ramp at that wheel. The figure shows how much it lacks.\n' +
+    'Drive up, wait until the vehicle is still and look again. All green and the bubble in the middle: you are level.',
   'help.what.t':
     'Lay the phone flat in the vehicle, top toward the front, in the same spot every time.\n' +
     'With a sensor box it does not matter how the phone lies.',

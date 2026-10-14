@@ -357,11 +357,12 @@ export const es: Messages = {
 
   'help.screen.h': 'Cómo leer la pantalla',
   'help.screen.t':
+    'La pantalla muestra qué ruedas hay que subir y cuánto.\n' +
     'Verde ✓: hecho, nada que hacer.\n' +
-    'Naranja ↑: sube esa rueda al escalón indicado al lado.\n' +
+    'Naranja ↑: sube esa rueda a la rampa hasta el escalón indicado al lado, por ejemplo Escalón 2.\n' +
     'Rojo ✕: tus rampas no bastan aquí. Mueve el vehículo.\n' +
-    'Gris –: ninguna rampa en esa rueda. La cifra indica cuánto falta, por si quieres poner otra cosa debajo.\n' +
-    'Cuando la burbuja reposa en el centro, estás nivelado.',
+    'Gris –: ninguna rampa en esa rueda. La cifra indica cuánto falta.\n' +
+    'Sube, espera a que el vehículo esté quieto y vuelve a mirar. Todo verde y la burbuja en el centro: estás nivelado.',
   'help.what.t':
     'Coloca el móvil plano en el vehículo, con la parte de arriba hacia delante, siempre en el mismo sitio.\n' +
     'Con una caja sensora da igual cómo esté el móvil.',

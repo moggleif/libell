@@ -364,11 +364,12 @@ export const sv: Messages = {
 
   'help.screen.h': 'Så läser du skärmen',
   'help.screen.t':
+    'Skärmen visar vilka hjul som ska upp och hur mycket.\n' +
     'Grönt ✓: klart, inget att göra.\n' +
-    'Orange ↑: kör upp hjulet på steget som står bredvid.\n' +
+    'Orange ↑: kör upp hjulet på klossen till steget som står bredvid, till exempel Steg 2.\n' +
     'Rött ✕: klossarna räcker inte här. Flytta fordonet.\n' +
-    'Grått –: ingen kloss vid det hjulet. Siffran visar hur mycket som saknas, om du vill lägga något annat under.\n' +
-    'När bubblan vilar i mitten står du i våg.',
+    'Grått –: ingen kloss vid det hjulet. Siffran visar hur mycket som saknas.\n' +
+    'Kör upp, vänta tills fordonet står still och titta igen. Allt grönt och bubblan i mitten: du står i våg.',
   'help.what.t':
     'Lägg telefonen plant i fordonet med ovansidan mot fronten, på samma plats varje gång.\n' +
     'Med en sensorbox spelar det ingen roll hur telefonen ligger.',

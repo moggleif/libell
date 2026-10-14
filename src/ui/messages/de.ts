@@ -361,11 +361,12 @@ export const de: Messages = {
 
   'help.screen.h': 'Den Bildschirm lesen',
   'help.screen.t':
+    'Der Bildschirm zeigt, welche Räder hoch müssen und um wie viel.\n' +
     'Grün ✓: fertig, nichts zu tun.\n' +
-    'Orange ↑: fahr das Rad auf die daneben angezeigte Stufe.\n' +
+    'Orange ↑: fahr das Rad auf den Keil bis zur daneben angezeigten Stufe, zum Beispiel Stufe 2.\n' +
     'Rot ✕: deine Keile reichen hier nicht. Stell das Fahrzeug um.\n' +
-    'Grau –: an diesem Rad kein Keil. Die Zahl zeigt, wie viel fehlt, falls du etwas anderes unterlegen willst.\n' +
-    'Ruht die Blase in der Mitte, stehst du waagerecht.',
+    'Grau –: an diesem Rad kein Keil. Die Zahl zeigt, wie viel fehlt.\n' +
+    'Fahr auf, warte, bis das Fahrzeug still steht, und schau noch einmal. Alles grün und die Blase in der Mitte: Du stehst waagerecht.',
   'help.what.t':
     'Leg das Handy flach ins Fahrzeug, die Oberseite nach vorn, jedes Mal an dieselbe Stelle.\n' +
     'Mit einer Sensorbox ist egal, wie das Handy liegt.',
