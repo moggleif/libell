@@ -384,10 +384,12 @@ export const fr: Messages = {
   'help.settings.h': 'Les mesures',
   'help.measures.h': 'Saisir les mesures',
   'help.settings.t':
-    'Empattement et voie. Ils figurent sur les papiers du véhicule, sinon prenez un mètre ruban.\n' +
+    'Libell calcule de combien lever chaque roue à partir de l’empattement et de la voie.\n' +
+    'Ils figurent sur les papiers du véhicule, sinon prenez un mètre ruban.\n' +
     'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.',
   'help.ramps.t':
-    'Choisissez vos rampes ou saisissez les hauteurs des paliers. Libell les place là où elles servent le plus.',
+    'L’écran indique sur quel palier de votre rampe monter chaque roue : saisissez donc les rampes que vous emportez.\n' +
+    'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.',
   'help.calibration.h': 'Étalonner et mettre à zéro',
   'help.calibration.t':
     'Étalonnez le téléphone une fois : posez-le sur une surface plane et touchez Étalonner maintenant.\n' +

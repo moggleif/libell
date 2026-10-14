@@ -376,10 +376,12 @@ export const de: Messages = {
   'help.settings.h': 'Die Maße',
   'help.measures.h': 'Maße eintragen',
   'help.settings.t':
-    'Radstand und Spurweite. Sie stehen in den Fahrzeugpapieren, sonst miss mit dem Maßband.\n' +
+    'Libell berechnet aus Radstand und Spurweite, wie weit jedes Rad hoch muss.\n' +
+    'Sie stehen in den Fahrzeugpapieren, sonst miss mit dem Maßband.\n' +
     'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.',
   'help.ramps.t':
-    'Wähle deine Keile oder gib die Stufenhöhen ein. Libell legt sie dorthin, wo sie am meisten bringen.',
+    'Der Bildschirm sagt, auf welche Stufe deines Keils jedes Rad muss, also trag die Keile ein, die du dabeihast.\n' +
+    'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.',
   'help.calibration.h': 'Kalibrieren und nullen',
   'help.calibration.t':
     'Kalibriere das Handy einmal: leg es auf eine ebene Fläche und tippe auf Jetzt kalibrieren.\n' +
