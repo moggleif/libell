@@ -2615,9 +2615,9 @@ body {
 }
 
 /* The wizard step already is the card, so the embedded card sheds its
- * frame; onboarding.ts folds its heading into the step heading. The gap
- * is Modern's and Glossy's: in Classic the later `.onboarding
- * .calibration-card` rules win, in the others this list's specificity. */
+ * frame; onboarding.ts folds its heading into the step heading. No gap
+ * here: this list outranks the later `.onboarding .calibration-card` rules
+ * that tighten it on short screens, and they must hold in Modern too (#572). */
 .onboarding .calibration-card,
 :root[data-appearance='modern'] .onboarding .calibration-card,
 :root[data-appearance='glossy'] .onboarding .calibration-card {
@@ -2626,7 +2626,6 @@ body {
   border-radius: 0;
   box-shadow: none;
   padding: 0;
-  gap: 8px;
 }
 
 /* Step heading carrying the calibration status pill. */

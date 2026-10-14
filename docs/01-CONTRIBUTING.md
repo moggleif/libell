@@ -39,7 +39,8 @@ view — level, first-run guide, settings, help, external sensor, the iOS sensor
 the incoming shared-setup dialog — against small-phone viewports in every appearance,
 and fails on anything below the fold, a page that scrolls sideways, content wider than
 its container, a view whose end cannot be scrolled to, a diagram taller than the space
-it was given, or a wheel card that has drifted off its wheel.
+it was given, a wheel card that has drifted off its wheel, or a guide calibration step
+spaced differently than Classic's rules space it (#572).
 
 Languages are walked per viewport rather than everywhere (`languages` on each entry of
 `VIEWPORTS`): the language dimension catches text that runs longer than its space, and
