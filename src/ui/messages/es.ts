@@ -402,7 +402,8 @@ export const es: Messages = {
     '«Midiendo…»: el vehículo se mueve. Espera a que esté quieto.\n' +
     '«Deja el móvil plano para medir»: el móvil está demasiado inclinado para medir.\n' +
     '«Se perdió el contacto con la caja»: toca Reconectar y elige la caja en la lista.\n' +
-    'En iPhone: toca Iniciar cada vez que abras la app.\n' +
+    '«Esperando al sensor de inclinación…»: aún no hay lecturas. En iPhone, toca Iniciar cada vez que abras la app; si no, recarga.\n' +
+    '«Se ha denegado el acceso al movimiento»: permite movimiento y orientación para este sitio en los ajustes del navegador y recarga.\n' +
     '¿Sigue fallando? Escribe un informe en Comentarios.',
   'help.open': 'Abrir {name}',
   'help.open.sensor': 'Abrir la caja sensora',

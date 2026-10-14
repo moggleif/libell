@@ -433,7 +433,8 @@ export const en = {
     '“Measuring…”: the vehicle is rocking. Wait until it is still.\n' +
     '“Lay the phone flat to measure”: the phone is tilted too much to measure.\n' +
     '“Lost contact with the box”: tap Reconnect and pick the box in the list.\n' +
-    'On iPhone: tap Start each time you open the app.\n' +
+    '“Waiting for the tilt sensor…”: no readings yet. On iPhone, tap Start each time you open the app; otherwise reload.\n' +
+    '“Motion access was denied”: allow motion & orientation for this site in the browser settings and reload.\n' +
     'Still wrong? Write a report under Feedback.',
   'help.open': 'Open {name}',
   'help.open.sensor': 'Open the sensor box',

@@ -88,6 +88,15 @@ describe('i18n dictionaries', () => {
     }
   });
 
+  it('quotes the waiting and access-denied messages in the trouble help (#580)', () => {
+    for (const lang of ALL) {
+      const text = MESSAGES[lang]['help.trouble.t'];
+      expect(text, `${lang}: waiting`).toContain(MESSAGES[lang]['main.waiting']);
+      const denied = MESSAGES[lang]['main.denied'].split(',')[0]!;
+      expect(text, `${lang}: denied`).toContain(denied);
+    }
+  });
+
   it('validates a stored language override', () => {
     for (const lang of ALL) {
       expect(resolveLanguage(lang)).toBe(lang);
