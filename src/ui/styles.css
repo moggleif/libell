@@ -1318,19 +1318,6 @@ body {
   border-radius: 18px;
 }
 
-:root[data-appearance='glossy'] .calibration-card {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--surface-raised) 100%, white 8%),
-    var(--surface-raised)
-  );
-  border: 1px solid var(--outline);
-  border-radius: 18px;
-  box-shadow:
-    0 1px 3px rgb(0 0 0 / 20%),
-    inset 0 1px 0 rgb(255 255 255 / 15%);
-}
-
 .calibration-card > .menu__action {
   margin-top: 0;
 }
@@ -2619,12 +2606,10 @@ body {
  * here: this list outranks the later `.onboarding .calibration-card` rules
  * that tighten it on short screens, and they must hold in Modern too (#572). */
 .onboarding .calibration-card,
-:root[data-appearance='modern'] .onboarding .calibration-card,
-:root[data-appearance='glossy'] .onboarding .calibration-card {
+:root[data-appearance='modern'] .onboarding .calibration-card {
   background: none;
   border: 0;
   border-radius: 0;
-  box-shadow: none;
   padding: 0;
 }
 
