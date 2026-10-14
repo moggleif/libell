@@ -1608,7 +1608,7 @@ everything above that seam is exactly the code a real box runs through.
 - **Then** while the flag is active no real `navigator.bluetooth` call is ever made —
   the real transport is not even constructed.
 
-## R45 — Every view fits a phone screen (#239, #241, #243, #403, #538)
+## R45 — Every view fits a phone screen (#239, #241, #243, #403, #538, #572)
 
 R4 and R18 state this for the level view and the first-run guide. It holds for every
 other view too — settings, help, the sensor box pages, the iOS sensor guide (R39),
@@ -1639,6 +1639,9 @@ the incoming shared-setup dialog, the Classic settings drawer.
   same list Settings offers rather than a copy, and fails if any view overflows in any
   of them. Glossy shares Classic's layout but adds its own gradients, bevels and
   shadows, so passing in Classic says nothing about Glossy.
+- **Given** the first-run guide's calibration step, in any appearance, on any screen
+- **Then** it is spaced exactly as Classic's rules space it, so the tighter spacing on
+  short screens that helps the step fit applies in every appearance (#572).
 - **Given** CI (#494)
 - **Then** it runs the fit check as one parallel job per appearance
   (`FIT_APPEARANCE=<appearance> npm run fit`), over exactly the appearances Settings

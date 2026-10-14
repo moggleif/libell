@@ -30,6 +30,7 @@ import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 import { APPEARANCES } from '../src/domain/appearance.ts';
 import { selectAppearances } from './fitAppearances.ts';
+import { calibrationGapProblem, measureCalibrationGap } from './fitWizardSpacing.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4175;
@@ -306,16 +307,14 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
 }
 
 /**
- * The first-run guide: every step has to fit whole, and Back/Skip/Next are
- * never allowed to leave the screen (#239). With `external`, the
- * sensor-source step's second radio is picked as that step comes up — the
- * only way to reach the external path, since the radios do not exist until
- * that step renders.
+ * The first-run guide: every step fits whole, Back/Skip/Next never leave the
+ * screen (#239) and the calibration card is spaced as in Classic (#572). With
+ * `external`, the source step's last radio is picked as that step renders —
+ * the only way onto the external path, since the radios exist only then.
  */
 async function checkWizard(page, label, { external = false, fitsWhole = true } = {}) {
   await page.waitForSelector('.onboarding');
-  // 12 is past the longest path (11 steps with an external sensor); the
-  // loop stops on its own when the wizard closes.
+  // 12 is past the longest path (11, external sensor); the loop ends when the guide closes.
   for (let step = 0; step < 12; step += 1) {
     if (external) {
       await page.evaluate(() => {
@@ -327,9 +326,8 @@ async function checkWizard(page, label, { external = false, fitsWhole = true } =
         }
       });
     }
-    // The calibration steps fill in a live status line a tick after they
-    // render, which makes them taller — measure after that has landed,
-    // never the empty first frame.
+    // Calibration steps fill in a live status line a tick after rendering, which
+    // makes them taller: measure once it has landed, never the empty first frame.
     await page.waitForTimeout(200);
     const info = await page.evaluate(() => {
       const overlay = document.querySelector('.onboarding');
@@ -351,6 +349,8 @@ async function checkWizard(page, label, { external = false, fitsWhole = true } =
     if (info.nextOffScreen) {
       fail(label, `guide step "${info.title}": the Next button is below the fold`);
     }
+    const spacing = calibrationGapProblem(await page.evaluate(measureCalibrationGap));
+    if (spacing) fail(label, `guide step "${info.title}": ${spacing}`);
     await page.locator('.onboarding__nav > button').last().click({ force: true });
   }
 }
