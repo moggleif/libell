@@ -368,13 +368,16 @@ export const fr: Messages = {
     'Le titre et la description sont vides — vous pouvez tout de même envoyer le rapport.',
 
   'help.screen.h': 'Lire l’écran',
+  'help.screen.lead':
+    'L’écran montre quelles roues lever et de combien. Palier 2 désigne le deuxième palier de votre rampe.',
   'help.screen.t':
-    'L’écran montre quelles roues lever et de combien.\n' +
     'Vert ✓ : c’est fait, rien à faire.\n' +
-    'Orange ↑ : montez la roue sur la rampe, au palier indiqué, par ex. Palier 2.\n' +
-    'Rouge ✕ : rampes insuffisantes ici. Déplacez le véhicule.\n' +
-    'Gris – : pas de rampe à cette roue. Le chiffre indique ce qui manque.\n' +
-    'Montez, attendez qu’il ne bouge plus, puis regardez. Tout vert et la bulle au milieu : vous êtes de niveau.',
+    'Orange ↑ : montez cette roue sur le palier indiqué à côté.\n' +
+    'Rouge ✕ : vos rampes ne suffisent pas ici. Déplacez le véhicule.\n' +
+    'Gris – : pas de rampe à cette roue. Le chiffre indique ce qui manque, si vous voulez glisser autre chose dessous.\n' +
+    'Quand la bulle repose au milieu, vous êtes de niveau.',
+  'help.screen.routine':
+    'Montez, attendez que le véhicule ne bouge plus et regardez de nouveau. Recommencez jusqu’à ce que toutes les roues soient vertes.',
   'help.what.t':
     'Posez le téléphone à plat dans le véhicule, le haut vers l’avant, toujours au même endroit.\n' +
     'Avec un boîtier capteur, la position du téléphone n’a pas d’importance.',

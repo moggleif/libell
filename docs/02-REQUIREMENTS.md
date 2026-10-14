@@ -787,7 +787,8 @@ URL and must keep working with no signal.
 - **Given** a topic's text
 - **Then** its first line says what the topic is for (#531; "Reading the screen" opens with
   what the screen shows, names the step as the diagram does, "Step 2", and ends with the
-  parking routine, #576), and it is a few short lines, each fact on its own line — the
+  parking routine; those two lines are Help's own, the guide shows only the color lines,
+  #576), and it is a few short lines, each fact on its own line — the
   indicator colors in "Reading the screen" (green ✓ / orange ↑ / red ✕ / gray –, R5) are
   never one running paragraph. The breaks live in the i18n strings and render as real line breaks
   (`white-space: pre-line`, no `innerHTML`); onboarding step 1 reuses the same captions

@@ -240,6 +240,17 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       expect(t('help.screen.caravan')).not.toContain('\n');
     });
 
+    it('opens "Reading the screen" with what it shows and ends with the parking routine (#576)', () => {
+      const info = createInfoPage(makeOptions());
+      const lines = [...body(topic(info, 'screen')).querySelectorAll('p')].map(
+        (p) => p.textContent,
+      );
+      expect(lines[0]).toBe(t('help.screen.lead'));
+      // The step reads as the diagram labels it, so the number is recognisable.
+      expect(t('help.screen.lead')).toContain(t('diagram.step', { n: 2 }));
+      expect(lines.at(-1)).toBe(t('help.screen.routine'));
+    });
+
     it('lists the topics in order, each titled', () => {
       const info = createInfoPage(makeOptions());
       expect(topics(info).map((el) => el.dataset.topic)).toEqual([

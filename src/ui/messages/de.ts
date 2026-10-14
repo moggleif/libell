@@ -360,13 +360,16 @@ export const de: Messages = {
   'feedback.warn.both': 'Titel und Beschreibung sind leer — du kannst den Bericht trotzdem senden.',
 
   'help.screen.h': 'Den Bildschirm lesen',
+  'help.screen.lead':
+    'Der Bildschirm zeigt, welche Räder hoch müssen und um wie viel. Stufe 2 heißt die zweite Stufe deines Keils.',
   'help.screen.t':
-    'Der Bildschirm zeigt, welche Räder hoch müssen und um wie viel.\n' +
     'Grün ✓: fertig, nichts zu tun.\n' +
-    'Orange ↑: fahr das Rad auf den Keil bis zur daneben angezeigten Stufe, zum Beispiel Stufe 2.\n' +
+    'Orange ↑: fahr das Rad auf die daneben angezeigte Stufe.\n' +
     'Rot ✕: deine Keile reichen hier nicht. Stell das Fahrzeug um.\n' +
-    'Grau –: an diesem Rad kein Keil. Die Zahl zeigt, wie viel fehlt.\n' +
-    'Fahr auf, warte, bis das Fahrzeug still steht, und schau noch einmal. Alles grün und die Blase in der Mitte: Du stehst waagerecht.',
+    'Grau –: an diesem Rad kein Keil. Die Zahl zeigt, wie viel fehlt, falls du etwas anderes unterlegen willst.\n' +
+    'Ruht die Blase in der Mitte, stehst du waagerecht.',
+  'help.screen.routine':
+    'Fahr auf, warte, bis das Fahrzeug still steht, und schau noch einmal. Wiederhole das, bis alle Räder grün sind.',
   'help.what.t':
     'Leg das Handy flach ins Fahrzeug, die Oberseite nach vorn, jedes Mal an dieselbe Stelle.\n' +
     'Mit einer Sensorbox ist egal, wie das Handy liegt.',

@@ -80,20 +80,6 @@ describe('i18n dictionaries', () => {
     }
   });
 
-  it('opens the screen help with what it shows and names the step as the diagram does (#576)', () => {
-    const glyphs = ['✓', '↑', '✕', '–'];
-    for (const lang of ALL) {
-      const text = MESSAGES[lang]['help.screen.t'];
-      const firstLine = text.split('\n')[0]!;
-      expect(
-        glyphs.some((g) => firstLine.includes(g)),
-        `${lang}: first line says what the screen is for`,
-      ).toBe(false);
-      const stepLabel = MESSAGES[lang]['diagram.step'].replace('{n}', '2');
-      expect(text, `${lang}: the step reads as on the diagram`).toContain(stepLabel);
-    }
-  });
-
   it('validates a stored language override', () => {
     for (const lang of ALL) {
       expect(resolveLanguage(lang)).toBe(lang);
