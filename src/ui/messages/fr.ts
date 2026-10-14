@@ -414,7 +414,8 @@ export const fr: Messages = {
     '« Mesure… » : le véhicule bouge. Attendez qu’il soit immobile.\n' +
     '« Posez le téléphone à plat pour mesurer » : le téléphone est trop incliné pour mesurer.\n' +
     '« Contact perdu avec le boîtier » : touchez Reconnecter et choisissez le boîtier dans la liste.\n' +
-    'Sur iPhone : touchez Démarrer à chaque ouverture de l’application.\n' +
+    '« En attente du capteur d’inclinaison… » : pas encore de mesure. Sur iPhone, touchez Démarrer à chaque ouverture de l’application, sinon rechargez.\n' +
+    '« L’accès aux mouvements a été refusé » : autorisez mouvement et orientation pour ce site dans les réglages du navigateur, puis rechargez.\n' +
     'Toujours un souci ? Écrivez un rapport sous Commentaires.',
   'help.open': 'Ouvrir {name}',
   'help.open.sensor': 'Ouvrir le boîtier capteur',
