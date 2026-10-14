@@ -406,7 +406,8 @@ export const de: Messages = {
     '„Messen…“: das Fahrzeug schaukelt. Warte, bis es ruhig steht.\n' +
     '„Zum Messen das Handy flach hinlegen“: das Handy ist zum Messen zu stark geneigt.\n' +
     '„Verbindung zur Box verloren“: tippe auf Erneut verbinden und wähle die Box in der Liste.\n' +
-    'Auf dem iPhone: tippe bei jedem Öffnen der App auf Start.\n' +
+    '„Warten auf den Neigungssensor…“: noch keine Messwerte. Auf dem iPhone tippe bei jedem Öffnen der App auf Start, sonst lade neu.\n' +
+    '„Der Zugriff auf die Bewegungssensoren wurde verweigert“: erlaube Bewegung und Orientierung für diese Website in den Browsereinstellungen und lade neu.\n' +
     'Immer noch falsch? Schreib einen Bericht unter Rückmeldung.',
   'help.open': '{name} öffnen',
   'help.open.sensor': 'Sensorbox öffnen',

@@ -409,7 +409,8 @@ export const sv: Messages = {
     '”Mäter…”: fordonet gungar. Vänta tills det står still.\n' +
     '”Lägg telefonen plant för att mäta”: telefonen lutar för mycket för att mäta.\n' +
     '”Tappade kontakten med boxen”: tryck Återanslut och välj boxen i listan.\n' +
-    'På iPhone: tryck Start varje gång du öppnar appen.\n' +
+    '”Väntar på lutningssensorn…”: inga mätvärden än. På iPhone trycker du Start varje gång du öppnar appen, annars laddar du om.\n' +
+    '”Åtkomst till rörelsesensorerna nekades”: tillåt rörelse och orientering för webbplatsen i webbläsarens inställningar och ladda om.\n' +
     'Fortfarande fel? Skriv en rapport under Feedback.',
   'help.open': 'Öppna {name}',
   'help.open.sensor': 'Öppna Sensorbox',
