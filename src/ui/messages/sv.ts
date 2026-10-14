@@ -363,12 +363,16 @@ export const sv: Messages = {
   'feedback.warn.both': 'Rubrik och beskrivning är tomma — du kan skicka rapporten ändå.',
 
   'help.screen.h': 'Så läser du skärmen',
+  'help.screen.lead':
+    'Skärmen visar vilka hjul som ska upp och hur mycket. Steg 2 betyder klossens andra steg.',
   'help.screen.t':
     'Grönt ✓: klart, inget att göra.\n' +
     'Orange ↑: kör upp hjulet på steget som står bredvid.\n' +
     'Rött ✕: klossarna räcker inte här. Flytta fordonet.\n' +
     'Grått –: ingen kloss vid det hjulet. Siffran visar hur mycket som saknas, om du vill lägga något annat under.\n' +
     'När bubblan vilar i mitten står du i våg.',
+  'help.screen.routine':
+    'Kör upp, vänta tills fordonet står still och titta igen. Upprepa tills alla hjul är gröna.',
   'help.what.t':
     'Lägg telefonen plant i fordonet med ovansidan mot fronten, på samma plats varje gång.\n' +
     'Med en sensorbox spelar det ingen roll hur telefonen ligger.',

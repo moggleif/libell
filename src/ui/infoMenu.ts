@@ -48,9 +48,13 @@ type TopicId =
 interface Topic {
   id: TopicId;
   h: MessageKey;
+  /** A first line, above the picture, saying what the topic is for. */
+  lead?: MessageKey;
   text: MessageKey;
-  /** A last line for what only applies to a caravan. */
+  /** A line for what only applies to a caravan. */
   caravanLine?: MessageKey;
+  /** A last line, after the caravan line. */
+  closing?: MessageKey;
   picture?: (label: string) => Element;
   go?: { label: () => string; target: HelpTarget | 'feedback' };
 }
@@ -61,8 +65,10 @@ const TOPICS: Topic[] = [
   {
     id: 'screen',
     h: 'help.screen.h',
+    lead: 'help.screen.lead',
     text: 'help.screen.t',
     caravanLine: 'help.screen.caravan',
+    closing: 'help.screen.routine',
     picture: legendIllustration,
   },
   { id: 'place', h: 'onboard.step1.h', text: 'help.what.t', picture: placementIllustration },
@@ -197,8 +203,8 @@ function buildTopicToggle(topic: Topic, body: HTMLElement): HTMLButtonElement {
   return button;
 }
 
-/** The picture, the text, the caravan line and the button to the setting,
- * each only where the topic has one. */
+/** The lead, the picture, the text, the caravan line, the closing line and
+ * the button to the setting, each only where the topic has one. */
 function buildTopicBody(
   topic: Topic,
   go: (target: HelpTarget | 'feedback') => void,
@@ -206,9 +212,11 @@ function buildTopicBody(
 ): HTMLElement {
   const body = createElement('div', 'help-topic__body');
   body.id = `help-topic-${topic.id}`;
+  if (topic.lead) body.append(textLine(topic.lead));
   if (topic.picture) body.append(topic.picture(t(topic.h)));
   body.append(textLine(topic.text));
   if (topic.caravanLine) body.append(textLine(topic.caravanLine));
+  if (topic.closing) body.append(textLine(topic.closing));
   if (topic.go && hasTarget(topic.go.target)) {
     const target = topic.go.target;
     const action = document.createElement('button');
