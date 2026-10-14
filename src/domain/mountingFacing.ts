@@ -96,14 +96,10 @@ export function easyLevelMountingForPlacement(placement: EasyLevelPlacement): Ea
   return EASYLEVEL_BY_PLACEMENT[placement];
 }
 
-/** The placement to show as picked: null until the user has picked one,
- * and for a stored rotation the manual does not allow. */
-export function easyLevelPlacementOf(device: {
-  mounting: EasyLevelMounting;
-  mountingPicked: boolean;
-}): EasyLevelPlacement | null {
-  if (!device.mountingPicked) return null;
-  return EASYLEVEL_PLACEMENTS.find((p) => EASYLEVEL_BY_PLACEMENT[p] === device.mounting) ?? null;
+/** The placement to show as picked: null only for a stored rotation the
+ * manual does not allow. */
+export function easyLevelPlacementOf(mounting: EasyLevelMounting): EasyLevelPlacement | null {
+  return EASYLEVEL_PLACEMENTS.find((p) => EASYLEVEL_BY_PLACEMENT[p] === mounting) ?? null;
 }
 
 /**

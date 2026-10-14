@@ -17,7 +17,11 @@ import {
   easyLevelMountingForPlacement,
   easyLevelPlacementOf,
 } from '../domain/mountingFacing';
-import type { LevelSettings, SensorSource } from '../domain/settings';
+import {
+  DEFAULT_EASYLEVEL_SETTINGS,
+  type LevelSettings,
+  type SensorSource,
+} from '../domain/settings';
 import {
   easyLevelSettings,
   MAX_EASYLEVEL_CONNECT_DELAY_MS,
@@ -154,13 +158,12 @@ function xparkleHealth(box: XparkleSensor): BoxHealth | null {
   };
 }
 
-/** Null forgets the mounting: back to the standard placement, and the
- * box's page asks again. */
+/** Null forgets the mounting: back to the default placement, long side
+ * forward (#594). */
 export function pickEasyLevelMounting(mounting: EasyLevelMounting | null, wiring: BoxWiring): void {
   wiring.settings.set(
     withEasyLevelSettings(wiring.settings.get(), {
-      mounting: mounting ?? 'standard',
-      mountingPicked: mounting !== null,
+      mounting: mounting ?? DEFAULT_EASYLEVEL_SETTINGS.mounting,
     }),
   );
   wiring.onMountingChanged();
@@ -228,8 +231,8 @@ function learnEasyLevelPlacement(wiring: BoxWiring): LearnMountingWiring {
       return { pitchDeg: tilt.pitch * RAD_TO_DEG, rollDeg: tilt.roll * RAD_TO_DEG };
     },
     getLearnedMounting: () => {
-      const device = easyLevelSettings(wiring.settings.get());
-      return easyLevelPlacementOf(device) ? axisMappingForEasyLevelMounting(device.mounting) : null;
+      const { mounting } = easyLevelSettings(wiring.settings.get());
+      return easyLevelPlacementOf(mounting) ? axisMappingForEasyLevelMounting(mounting) : null;
     },
     check: (mapping) => {
       const mounting = easyLevelMountingForAxisMapping(mapping);

@@ -167,10 +167,9 @@ export const LENGTH_RANGES_MM = {
 /** Lives here rather than in the adapter so all defaults stay beside
  * `DEFAULT_SETTINGS`, which embeds this. */
 export const DEFAULT_EASYLEVEL_SETTINGS: EasyLevelSettings = {
-  // Matches the official app's default `sensor_Placing` — most boxes are
-  // never touched by this setting at all.
+  // Matches the official app's default `sensor_Placing` and the manual's
+  // "Långsidan framåt", shown as picked from the start (#594).
   mounting: 'standard',
-  mountingPicked: false,
   connectDelayEnabled: false,
   // The official app's "not bonded" delay (see `connectDelayMs`), not its
   // bonded 1600ms — an EasyLevel box has no reason to ever be bonded.

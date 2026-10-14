@@ -77,13 +77,12 @@ describe('the EasyLevel manual’s two placements (#359)', () => {
     expect(easyLevelMountingForPlacement('short')).toBe('rotated90');
   });
 
-  it('shows a placement only once it was picked, and only for those two', () => {
-    expect(easyLevelPlacementOf({ mounting: 'standard', mountingPicked: false })).toBeNull();
-    expect(easyLevelPlacementOf({ mounting: 'standard', mountingPicked: true })).toBe('wide');
-    expect(easyLevelPlacementOf({ mounting: 'rotated90', mountingPicked: true })).toBe('short');
+  it('shows long side forward as picked by default, and only those two (#594)', () => {
+    expect(easyLevelPlacementOf('standard')).toBe('wide');
+    expect(easyLevelPlacementOf('rotated90')).toBe('short');
     // Arrow backward or sideways: not one the manual allows, so pick again.
-    expect(easyLevelPlacementOf({ mounting: 'rotated180', mountingPicked: true })).toBeNull();
-    expect(easyLevelPlacementOf({ mounting: 'rotated270', mountingPicked: true })).toBeNull();
+    expect(easyLevelPlacementOf('rotated180')).toBeNull();
+    expect(easyLevelPlacementOf('rotated270')).toBeNull();
   });
 });
 

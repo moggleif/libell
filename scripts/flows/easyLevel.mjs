@@ -53,18 +53,20 @@ async function checkHealthAndDebug(page, box) {
 
 // The learn guide reads the box and asks for the second lift.
 async function learnAndPickPlacement(page, box) {
+  // Long side forward from the start (#594), so the step starts closed.
+  await button(box, 'Direction set: long side forward').click();
   await button(box, 'Not sure? Learn it by raising the front').click();
   await button(box, 'Learn the mounting').click();
   await button(box, 'The front is raised').click();
   await button(box, 'The right side is raised').waitFor();
   await button(box, 'Cancel').click();
 
-  // Picking a placement stores it as picked.
+  // Picking the other placement stores it.
   await button(box, 'Short side forward').click();
-  await box.getByText('Direction set', { exact: false }).waitFor();
+  await box.getByText('Direction set: short side forward').waitFor();
   const picked = (await storedSettings(page)).sensorDevices.easylevel;
   assert(
-    picked.mountingPicked === true && picked.mounting !== undefined,
+    picked.mounting === 'rotated90',
     `picking a placement should store it, got ${JSON.stringify(picked)}`,
   );
 }

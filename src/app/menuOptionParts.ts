@@ -115,7 +115,6 @@ export function boxStatusOptions(descriptor: BoxDescriptor, deps: MenuOptionDeps
 export function easyLevelMountingOptions(boxWiring: BoxWiring) {
   return {
     getMounting: () => easyLevelSettings(boxWiring.settings.get()).mounting,
-    isMountingPicked: () => easyLevelSettings(boxWiring.settings.get()).mountingPicked,
-    setMounting: (mounting: EasyLevelMounting | null) => pickEasyLevelMounting(mounting, boxWiring),
+    setMounting: (mounting: EasyLevelMounting) => pickEasyLevelMounting(mounting, boxWiring),
   };
 }
