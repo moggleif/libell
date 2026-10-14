@@ -19,13 +19,6 @@ export interface EasyLevelSettings {
    */
   mounting: EasyLevelMounting;
   /**
-   * Whether the user has picked the placement, so the box's page asks until
-   * they have. Readings use `mounting` either way. An entry without this
-   * field counts as picked when its rotation is not the default, which only
-   * a choice could have stored.
-   */
-  mountingPicked: boolean;
-  /**
    * Debug-only hardware-compatibility workaround, reached from the EasyLevel
    * status page's "Debug info". When on, the transport waits
    * `connectDelayMs` after a GATT connect and before discovering services,
@@ -93,15 +86,13 @@ function isXparklePassword(value: unknown): value is string {
 export function easyLevelSettings(settings: LevelSettings): EasyLevelSettings {
   const stored = settings.sensorDevices.easylevel;
   const raw = isRecord(stored) ? stored : {};
+  // A `mountingPicked` stored before #594 is ignored: the default placement
+  // now counts as picked.
   const mounting = EASYLEVEL_MOUNTINGS.includes(raw.mounting as EasyLevelMounting)
     ? (raw.mounting as EasyLevelMounting)
     : DEFAULT_EASYLEVEL_SETTINGS.mounting;
   return {
     mounting,
-    mountingPicked:
-      typeof raw.mountingPicked === 'boolean'
-        ? raw.mountingPicked
-        : mounting !== DEFAULT_EASYLEVEL_SETTINGS.mounting,
     // Presence check, as for soundOnLevel.
     connectDelayEnabled:
       typeof raw.connectDelayEnabled === 'boolean'

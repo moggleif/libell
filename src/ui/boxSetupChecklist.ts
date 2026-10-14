@@ -103,11 +103,7 @@ function createEasyLevelPicker(
   options: SensorSourceOptions,
   onPicked: () => void,
 ): DirectionPicker {
-  const getPlacement = () =>
-    easyLevelPlacementOf({
-      mounting: options.getMounting(),
-      mountingPicked: options.isMountingPicked(),
-    });
+  const getPlacement = () => easyLevelPlacementOf(options.getMounting());
   const picker = createPlacementPicker({
     getVehicleType: () => options.getVehicleType?.() ?? 'motorhome',
     getPlacement,
@@ -191,8 +187,7 @@ function createDirectionStep(
   const liftGuide = createLiftGuide(options, keepOpen);
   const forget = linkButton(t('box.forgetDirection'));
   forget.addEventListener('click', () => {
-    if (usesEasyLevelMounting) options.setMounting(null);
-    else options.learnMounting?.setLearnedMounting(null);
+    options.learnMounting?.setLearnedMounting(null);
     refocus({ kind: 'next' });
   });
   step.body.append(picker.element, ...(liftGuide?.elements ?? []), forget);
@@ -203,9 +198,9 @@ function createDirectionStep(
     setStepDone(step, picked !== null);
     picker.refresh();
     liftGuide?.refresh();
-    forget.hidden = usesEasyLevelMounting
-      ? !options.isMountingPicked()
-      : options.learnMounting?.getLearnedMounting() == null;
+    // An EasyLevel box always has a placement, long side forward by
+    // default (#594): nothing to forget, the other picture switches back.
+    forget.hidden = usesEasyLevelMounting || options.learnMounting?.getLearnedMounting() == null;
     return picked !== null;
   }
   return { step, refresh };

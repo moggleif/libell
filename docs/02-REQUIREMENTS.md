@@ -1514,10 +1514,12 @@ upside-down criterion below and R17 (#285).
   matching the picture, never through the official app's `"sensor_Placing"`
   terminology. The half and three-quarter turns (#222) put every arrow backward or
   sideways, which the manual does not allow, so they are no longer offered.
-- **Given** the user has never picked a placement (#359)
-- **Then** the step reads "Pick the direction", unticked, and is the open step;
-  readings use `standard` (no rotation) meanwhile. A stored setting from before #359
-  counts as picked only when it is not `standard` (the default every save wrote).
+- **Given** the user has never picked a placement
+- **Then** "Long side forward" (`standard`, no rotation) is shown as picked: the step
+  reads "Direction set: long side forward" and is ticked (#594, Morgan 2026-10-14,
+  superseding #359's unpicked start). Any "never picked" flag stored before #594 is
+  ignored, so an existing install shows the same. There is no "Forget the direction"
+  for this box: there is always a placement, and the other picture switches back.
 - **Given** a `rotated180` or `rotated270` stored before #359
 - **Then** it is still applied to every reading (nothing changes silently), and the
   step asks the user to pick one of the two placements.
@@ -1930,14 +1932,15 @@ its descriptor's capabilities (ADR 0016).
      step's title names the side ("Direction set: points to the rear"). For the
      EasyLevel box, R43's two placements instead: two pictures of the vehicle with the
      box in it, arrow forward, long side or short side facing the front ("Direction set:
-     short side forward"), unpicked until the user picks (#359). Either takes effect on
+     short side forward"), long side forward until the user picks the other (#594).
+     Either takes effect on
      the next reading. For the Xparkle box the choice is a quarter-turn axis mapping, the
      same kind the lift guide (R49, #293) learns; for both boxes "Not sure? Learn it by
      raising the front" opens that guide instead (#360). Which choice equals the Xparkle box's
      unrotated output is assumed to be "back toward the front" until checked on
-     hardware; the lift guide measures instead of assuming. Once a direction has been
-     picked or learned, a "Forget the direction" link sits in this step, for both boxes
-     (#359). Picking a side, or
+     hardware; the lift guide measures instead of assuming. Once the Xparkle box's
+     direction has been picked or learned, a "Forget the direction" link sits in this
+     step (#359); the EasyLevel box always has a placement, so it has none (#594). Picking a side, or
      finishing the lift guide, keeps the step open so the choice is seen; it closes
      only by hand (#347).
   2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and

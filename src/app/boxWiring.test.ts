@@ -128,22 +128,16 @@ describe('pickEasyLevelMounting', () => {
   it('stores a pick, saves and refreshes', () => {
     const { wiring, saved, onMountingChanged, current } = wiringWith();
     pickEasyLevelMounting('rotated90', wiring);
-    expect(easyLevelSettings(current())).toMatchObject({
-      mounting: 'rotated90',
-      mountingPicked: true,
-    });
+    expect(easyLevelSettings(current()).mounting).toBe('rotated90');
     expect(saved).toHaveLength(1);
     expect(onMountingChanged).toHaveBeenCalledTimes(1);
   });
 
-  it('forgets a pick back to the standard placement (#359)', () => {
+  it('forgets a pick back to the default, long side forward (#359, #594)', () => {
     const { wiring, current } = wiringWith();
     pickEasyLevelMounting('rotated90', wiring);
     pickEasyLevelMounting(null, wiring);
-    expect(easyLevelSettings(current())).toMatchObject({
-      mounting: 'standard',
-      mountingPicked: false,
-    });
+    expect(easyLevelSettings(current()).mounting).toBe('standard');
   });
 });
 
@@ -224,9 +218,11 @@ describe('learnMountingFor', () => {
       expect(lost.getRawReading()).toBeNull();
     });
 
-    it('shows a mounting as learned only once it was picked', () => {
+    it('shows the placement as learned, long side forward by default (#594)', () => {
       const { wiring } = wiringWith();
       const guide = learnMountingFor('easylevel', wiring)!;
+      expect(guide.getLearnedMounting()).toEqual({ swap: false, pitchSign: 1, rollSign: 1 });
+      pickEasyLevelMounting('rotated180', wiring);
       expect(guide.getLearnedMounting()).toBeNull();
       pickEasyLevelMounting('rotated90', wiring);
       expect(guide.getLearnedMounting()).toEqual({ swap: true, pitchSign: 1, rollSign: -1 });
@@ -244,19 +240,13 @@ describe('learnMountingFor', () => {
       );
     });
 
-    it('stores a learned mapping as a placement pick, and null forgets it', () => {
+    it('stores a learned mapping as a placement, and null goes back to the default', () => {
       const { wiring, current, onMountingChanged } = wiringWith();
       const guide = learnMountingFor('easylevel', wiring)!;
       guide.setLearnedMounting({ swap: true, pitchSign: 1, rollSign: -1 });
-      expect(easyLevelSettings(current())).toMatchObject({
-        mounting: 'rotated90',
-        mountingPicked: true,
-      });
+      expect(easyLevelSettings(current()).mounting).toBe('rotated90');
       guide.setLearnedMounting(null);
-      expect(easyLevelSettings(current())).toMatchObject({
-        mounting: 'standard',
-        mountingPicked: false,
-      });
+      expect(easyLevelSettings(current()).mounting).toBe('standard');
       expect(onMountingChanged).toHaveBeenCalledTimes(2);
     });
   });

@@ -90,11 +90,8 @@ export interface SensorSourceOptions {
   /** Which physical mounting orientation this box is installed in — only
    * rendered when the descriptor declares `mounting`. */
   getMounting(): EasyLevelMounting;
-  /** Whether the user has picked it; until then the step asks. */
-  isMountingPicked(): boolean;
-  /** Takes effect on the very next reading, no reconnect needed; null
-   * forgets the pick and goes back to the standard placement. */
-  setMounting(mounting: EasyLevelMounting | null): void;
+  /** Takes effect on the very next reading, no reconnect needed. */
+  setMounting(mounting: EasyLevelMounting): void;
   /** The "learn the mounting" guide — only rendered when the
    * descriptor declares `learnMounting` and this is supplied. */
   learnMounting?: Omit<LearnMountingOptions, 'name'>;

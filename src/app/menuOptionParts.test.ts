@@ -234,14 +234,9 @@ describe('easyLevelMountingOptions', () => {
     const { deps, settings, onMountingChanged } = fakeDeps();
     const options = easyLevelMountingOptions(deps.boxWiring);
     expect(options.getMounting()).toBe('standard');
-    expect(options.isMountingPicked()).toBe(false);
     options.setMounting('rotated90');
-    expect(easyLevelSettings(settings())).toMatchObject({
-      mounting: 'rotated90',
-      mountingPicked: true,
-    });
+    expect(easyLevelSettings(settings()).mounting).toBe('rotated90');
     expect(options.getMounting()).toBe('rotated90');
-    expect(options.isMountingPicked()).toBe(true);
     expect(onMountingChanged).toHaveBeenCalledTimes(1);
   });
 });
