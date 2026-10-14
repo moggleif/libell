@@ -384,8 +384,9 @@ export const de: Messages = {
     'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.',
   'help.calibration.h': 'Kalibrieren und nullen',
   'help.calibration.t':
-    'Kalibriere das Handy einmal: leg es auf eine ebene Fläche und tippe auf Jetzt kalibrieren.\n' +
-    'Nulle dann, wenn das Fahrzeug waagerecht steht, mit dem Handy an seinem gewohnten Platz.\n' +
+    'Zwei Schritte machen die Messung richtig: das Handy einmal kalibrieren und das Fahrzeug einmal nullen.\n' +
+    'Kalibrieren: leg das Handy auf eine ebene Fläche und tippe auf Jetzt kalibrieren.\n' +
+    'Nullen: stell das Fahrzeug mit einer Wasserwaage waagerecht, leg das Handy an seinen gewohnten Platz und tippe auf Jetzt nullen.\n' +
     'Mit einer Sensorbox nullst du auf der Seite der Box. Sie braucht keine Kalibrierung.\n' +
     'Die Lampe ⚠ Kalibrieren oder ⚠ Nullen leuchtet, bis es erledigt ist.',
   'help.sensor.h': 'Sensorbox',

@@ -380,8 +380,9 @@ export const es: Messages = {
     'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.',
   'help.calibration.h': 'Calibrar y poner a cero',
   'help.calibration.t':
-    'Calibra el móvil una vez: colócalo sobre una superficie plana y toca Calibrar ahora.\n' +
-    'Después pon a cero cuando el vehículo esté nivelado, con el móvil en su sitio habitual.\n' +
+    'Dos pasos hacen que la medida sea correcta: calibrar el móvil una vez y poner el vehículo a cero una vez.\n' +
+    'Calibrar: coloca el móvil sobre una superficie plana y toca Calibrar ahora.\n' +
+    'Poner a cero: nivela el vehículo con un nivel de burbuja, pon el móvil en su sitio habitual y toca Poner a cero.\n' +
     'Con una caja sensora, la puesta a cero se hace en la página de la caja. No necesita calibración.\n' +
     'La luz ⚠ Calibrar o ⚠ Poner a cero sigue encendida hasta que esté hecho.',
   'help.sensor.h': 'Caja sensora',

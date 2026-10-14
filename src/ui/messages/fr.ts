@@ -392,8 +392,9 @@ export const fr: Messages = {
     'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.',
   'help.calibration.h': 'Étalonner et mettre à zéro',
   'help.calibration.t':
-    'Étalonnez le téléphone une fois : posez-le sur une surface plane et touchez Étalonner maintenant.\n' +
-    'Mettez ensuite à zéro quand le véhicule est de niveau, le téléphone à sa place habituelle.\n' +
+    'Deux étapes rendent la mesure juste : étalonner le téléphone une fois et mettre le véhicule à zéro une fois.\n' +
+    'Étalonner : posez le téléphone sur une surface plane et touchez Étalonner maintenant.\n' +
+    'Mettre à zéro : mettez le véhicule de niveau avec un niveau à bulle, posez le téléphone à sa place habituelle et touchez Mettre à zéro.\n' +
     'Avec un boîtier capteur, la mise à zéro se fait sur la page du boîtier. Il n’a pas besoin d’étalonnage.\n' +
     'Le voyant ⚠ Étalonner ou ⚠ Mettre à zéro reste allumé tant que ce n’est pas fait.',
   'help.sensor.h': 'Boîtier capteur',

@@ -411,8 +411,9 @@ export const en = {
     'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.',
   'help.calibration.h': 'Calibrate and zero',
   'help.calibration.t':
-    'Calibrate the phone once: lay it on a flat surface and tap Calibrate now.\n' +
-    'Then zero when the vehicle is level, with the phone in its usual place.\n' +
+    'Two steps make the readings right: calibrate the phone once and zero the vehicle once.\n' +
+    'Calibrate: lay the phone on a flat surface and tap Calibrate now.\n' +
+    'Zero: level the vehicle with a spirit level, put the phone in its usual place and tap Zero now.\n' +
     'With a sensor box you zero on the box’s page. It needs no calibration.\n' +
     'The ⚠ Calibrate or ⚠ Zero lamp stays on until it is done.',
   'help.sensor.h': 'Sensor box',

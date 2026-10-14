@@ -80,6 +80,14 @@ describe('i18n dictionaries', () => {
     }
   });
 
+  it('names the calibrate and zero buttons as they read on screen (#578)', () => {
+    for (const lang of ALL) {
+      const text = MESSAGES[lang]['help.calibration.t'];
+      expect(text, `${lang}: calibrate button`).toContain(MESSAGES[lang]['calibration.now']);
+      expect(text, `${lang}: zero button`).toContain(MESSAGES[lang]['calibration.vehicle.now']);
+    }
+  });
+
   it('validates a stored language override', () => {
     for (const lang of ALL) {
       expect(resolveLanguage(lang)).toBe(lang);
