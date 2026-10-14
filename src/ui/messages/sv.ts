@@ -387,8 +387,9 @@ export const sv: Messages = {
     'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.',
   'help.calibration.h': 'Kalibrera och nollställ',
   'help.calibration.t':
-    'Kalibrera telefonen en gång: lägg den på en plan yta och tryck Kalibrera nu.\n' +
-    'Nollställ sedan när fordonet står i våg, med telefonen på sin vanliga plats.\n' +
+    'Två steg gör mätningen rätt: kalibrera telefonen en gång och nollställ fordonet en gång.\n' +
+    'Kalibrera: lägg telefonen på en plan yta och tryck Kalibrera nu.\n' +
+    'Nollställ: ställ fordonet plant med ett vattenpass, lägg telefonen på sin vanliga plats och tryck Nollställ nu.\n' +
     'Med en sensorbox nollställer du på boxens sida. Den behöver ingen kalibrering.\n' +
     'Lampan ⚠ Kalibrera eller ⚠ Nollställ lyser tills det är gjort.',
   'help.sensor.h': 'Sensorbox',
