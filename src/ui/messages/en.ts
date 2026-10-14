@@ -418,11 +418,12 @@ export const en = {
     'The ⚠ Calibrate or ⚠ Zero lamp stays on until it is done.',
   'help.sensor.h': 'Sensor box',
   'help.sensor.t':
-    'A box in the vehicle can measure instead of the phone.\n' +
-    'Tap the sensor icon at the top right to connect. The box’s page shows the rest step by step.\n' +
-    'The Xparkle must stand upright.\n' +
-    'A box with arrows lies flat, lid up, with one arrow pointing forward.\n' +
-    'On iPhone you need the Bluefy browser.',
+    'A sensor box in the vehicle can measure instead of the phone. Libell works with these:\n' +
+    '{upright}: stands upright, facing any way.\n' +
+    '{flat}: lies flat, lid up, with one arrow pointing forward.\n' +
+    'Connect with the sensor icon at the top right. The box’s page then takes you through Pick the direction and Zero the vehicle.\n' +
+    'It works in Chrome or Edge on Android or a computer. On iPhone you need the Bluefy browser.\n' +
+    'If the box rejects the code, Libell asks for the box’s four-digit code.',
   'help.targets.h': 'Targets and sound',
   'help.targets.t':
     'Save a tilt you want, for example toward the shower drain, and switch between them.\n' +

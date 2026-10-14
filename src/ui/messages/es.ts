@@ -387,11 +387,12 @@ export const es: Messages = {
     'La luz ⚠ Calibrar o ⚠ Poner a cero sigue encendida hasta que esté hecho.',
   'help.sensor.h': 'Caja sensora',
   'help.sensor.t':
-    'Una caja en el vehículo puede medir en lugar del móvil.\n' +
-    'Toca el icono del sensor arriba a la derecha para conectarla. La página de la caja muestra el resto paso a paso.\n' +
-    'El Xparkle debe ir de pie.\n' +
-    'Una caja con flechas va plana, tapa arriba, con una flecha hacia delante.\n' +
-    'En iPhone necesitas el navegador Bluefy.',
+    'Una caja sensora en el vehículo puede medir en lugar del móvil. Libell funciona con estas:\n' +
+    '{upright}: va de pie, en cualquier dirección.\n' +
+    '{flat}: va plana, tapa arriba, con una flecha hacia delante.\n' +
+    'Conéctala con el icono del sensor arriba a la derecha. La página de la caja te guía luego por Elegir la orientación y Poner el vehículo a cero.\n' +
+    'Funciona en Chrome o Edge en Android o en un ordenador. En iPhone necesitas el navegador Bluefy.\n' +
+    'Si la caja rechaza el código, Libell te pide el código de cuatro cifras de la caja.',
   'help.targets.h': 'Objetivos y sonido',
   'help.targets.t':
     'Guarda una inclinación que quieras, por ejemplo hacia el desagüe de la ducha, y cambia entre ellas.\n' +

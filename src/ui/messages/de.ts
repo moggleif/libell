@@ -391,11 +391,12 @@ export const de: Messages = {
     'Die Lampe ⚠ Kalibrieren oder ⚠ Nullen leuchtet, bis es erledigt ist.',
   'help.sensor.h': 'Sensorbox',
   'help.sensor.t':
-    'Eine Box im Fahrzeug kann statt des Handys messen.\n' +
-    'Tippe oben rechts auf das Sensorsymbol, um sie zu verbinden. Die Seite der Box zeigt den Rest Schritt für Schritt.\n' +
-    'Die Xparkle muss aufrecht stehen.\n' +
-    'Eine Box mit Pfeilen liegt flach, Deckel oben, mit einem Pfeil nach vorn.\n' +
-    'Auf dem iPhone brauchst du den Browser Bluefy.',
+    'Eine Sensorbox im Fahrzeug kann statt des Handys messen. Libell arbeitet mit diesen:\n' +
+    '{upright}: steht aufrecht, in beliebiger Richtung.\n' +
+    '{flat}: liegt flach, Deckel oben, mit einem Pfeil nach vorn.\n' +
+    'Verbinde sie über das Sensorsymbol oben rechts. Die Seite der Box führt dich dann durch Richtung wählen und Fahrzeug nullen.\n' +
+    'Das geht in Chrome oder Edge auf Android oder einem Computer. Auf dem iPhone brauchst du den Browser Bluefy.\n' +
+    'Lehnt die Box den Code ab, fragt Libell nach dem vierstelligen Code der Box.',
   'help.targets.h': 'Ziele und Ton',
   'help.targets.t':
     'Speichere eine gewünschte Neigung, etwa zum Duschablauf hin, und wechsle zwischen ihnen.\n' +

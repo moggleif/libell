@@ -16,6 +16,7 @@ import {
   placementIllustration,
 } from './helpIllustrations';
 import type { VehicleType } from '../domain/settings';
+import { EXTERNAL_SENSORS } from '../sensor/boxes';
 import { createElement } from './dom';
 
 /** `main.ts` maps each to the right Settings tab or the sensor page. */
@@ -51,6 +52,8 @@ interface Topic {
   /** A first line, above the picture, saying what the topic is for. */
   lead?: MessageKey;
   text: MessageKey;
+  /** Values for the text's placeholders, read when the topic is built. */
+  textVars?: () => Record<string, string>;
   /** A line for what only applies to a caravan. */
   caravanLine?: MessageKey;
   /** A last line, after the caravan line. */
@@ -60,6 +63,16 @@ interface Topic {
 }
 
 const openTab = (tab: MessageKey) => () => t('help.open', { name: t(tab) });
+
+/** The box names for the Sensorbox topic, grouped by how each is mounted.
+ * Brands never live in a catalogue (#267), so they are filled in here. */
+function boxNamesByMounting(): Record<string, string> {
+  const names = (upright: boolean) =>
+    EXTERNAL_SENSORS.filter((box) => box.capabilities.upright === upright)
+      .map((box) => box.displayName)
+      .join(', ');
+  return { upright: names(true), flat: names(false) };
+}
 
 const TOPICS: Topic[] = [
   {
@@ -95,6 +108,7 @@ const TOPICS: Topic[] = [
     id: 'sensor',
     h: 'help.sensor.h',
     text: 'help.sensor.t',
+    textVars: boxNamesByMounting,
     go: { label: () => t('help.open.sensor'), target: 'sensor' },
   },
   {
@@ -214,7 +228,7 @@ function buildTopicBody(
   body.id = `help-topic-${topic.id}`;
   if (topic.lead) body.append(textLine(topic.lead));
   if (topic.picture) body.append(topic.picture(t(topic.h)));
-  body.append(textLine(topic.text));
+  body.append(textLine(topic.text, topic.textVars?.()));
   if (topic.caravanLine) body.append(textLine(topic.caravanLine));
   if (topic.closing) body.append(textLine(topic.closing));
   if (topic.go && hasTarget(topic.go.target)) {
@@ -229,9 +243,9 @@ function buildTopicBody(
   return body;
 }
 
-function textLine(key: MessageKey): HTMLParagraphElement {
+function textLine(key: MessageKey, vars?: Record<string, string>): HTMLParagraphElement {
   const line = createElement('p', 'menu__text');
-  line.textContent = t(key);
+  line.textContent = t(key, vars);
   return line;
 }
 

@@ -4,6 +4,7 @@ import { createInfoPage, type InfoPageOptions } from './infoMenu';
 import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS } from '../domain/settings';
+import { EXTERNAL_SENSORS } from '../sensor/boxes';
 
 setLanguage('en');
 
@@ -251,6 +252,16 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       expect(lines.at(-1)).toBe(t('help.screen.routine'));
     });
 
+    it('names every Sensorbox Libell works with, filled in from the box list (#579)', () => {
+      const info = createInfoPage(makeOptions());
+      const text = body(topic(info, 'sensor')).textContent!;
+      for (const box of EXTERNAL_SENSORS) expect(text).toContain(box.displayName);
+      // The steps read as they do on the box's own page.
+      expect(text).toContain(t('box.step.direction.todo'));
+      expect(text).toContain(t('box.step.zero.todo'));
+      expect(text).not.toMatch(/\{\w+\}/);
+    });
+
     it('lists the topics in order, each titled', () => {
       const info = createInfoPage(makeOptions());
       expect(topics(info).map((el) => el.dataset.topic)).toEqual([
@@ -331,7 +342,8 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       const info = createInfoPage(makeOptions(vi.fn(), () => true, { openTarget: vi.fn() }));
       const sensor = topic(info, 'sensor');
       expect(sensor.querySelector('.help-topic__go')?.textContent).toBe(t('help.open.sensor'));
-      expect(body(sensor).textContent).toContain(t('help.sensor.t'));
+      // The topic's own text, whose box names are filled in (#579).
+      expect(body(sensor).textContent).toContain(t('help.sensor.t').split('\n')[0]);
     });
 
     it('"If something is wrong" ends in a button to the Feedback tab', () => {

@@ -399,11 +399,12 @@ export const fr: Messages = {
     'Le voyant ⚠ Étalonner ou ⚠ Mettre à zéro reste allumé tant que ce n’est pas fait.',
   'help.sensor.h': 'Boîtier capteur',
   'help.sensor.t':
-    'Un boîtier dans le véhicule peut mesurer à la place du téléphone.\n' +
-    'Touchez l’icône du capteur en haut à droite pour le connecter. La page du boîtier montre la suite étape par étape.\n' +
-    'Le Xparkle doit être posé debout.\n' +
-    'Un boîtier à flèches se pose à plat, couvercle en haut, une flèche vers l’avant.\n' +
-    'Sur iPhone, il faut le navigateur Bluefy.',
+    'Un boîtier capteur dans le véhicule peut mesurer à la place du téléphone. Libell fonctionne avec ceux-ci :\n' +
+    '{upright} : posé debout, dans n’importe quel sens.\n' +
+    '{flat} : posé à plat, couvercle en haut, une flèche vers l’avant.\n' +
+    'Connectez-le avec l’icône du capteur en haut à droite. La page du boîtier vous guide ensuite pour Choisir l’orientation et Mettre le véhicule à zéro.\n' +
+    'Cela fonctionne dans Chrome ou Edge sur Android ou un ordinateur. Sur iPhone, il faut le navigateur Bluefy.\n' +
+    'Si le boîtier refuse le code, Libell demande le code à quatre chiffres du boîtier.',
   'help.targets.h': 'Cibles et son',
   'help.targets.t':
     'Enregistrez une inclinaison voulue, par exemple vers l’évacuation de la douche, et passez de l’une à l’autre.\n' +

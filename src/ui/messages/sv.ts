@@ -394,11 +394,12 @@ export const sv: Messages = {
     'Lampan ⚠ Kalibrera eller ⚠ Nollställ lyser tills det är gjort.',
   'help.sensor.h': 'Sensorbox',
   'help.sensor.t':
-    'En box i fordonet kan mäta i stället för telefonen.\n' +
-    'Tryck på sensorikonen uppe till höger för att ansluta. Boxens sida visar resten steg för steg.\n' +
-    'Xparkle ska stå upprätt.\n' +
-    'En box med pilar ska ligga plant med locket upp och en pil framåt.\n' +
-    'På iPhone behövs webbläsaren Bluefy.',
+    'En sensorbox i fordonet kan mäta i stället för telefonen. Libell fungerar med de här:\n' +
+    '{upright}: står upprätt, åt vilket håll som helst.\n' +
+    '{flat}: ligger plant med locket upp och en pil framåt.\n' +
+    'Anslut med sensorikonen uppe till höger. Boxens sida guidar dig sedan genom Välj riktning och Nollställ fordonet.\n' +
+    'Det fungerar i Chrome eller Edge på Android eller en dator. På iPhone behövs webbläsaren Bluefy.\n' +
+    'Godtar boxen inte koden ber Libell om boxens fyrsiffriga kod.',
   'help.targets.h': 'Mål och ljud',
   'help.targets.t':
     'Spara en lutning du vill ha, till exempel mot duschavloppet, och växla mellan dem.\n' +
