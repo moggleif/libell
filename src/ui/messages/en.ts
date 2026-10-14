@@ -403,10 +403,12 @@ export const en = {
   'help.settings.h': 'The measurements',
   'help.measures.h': 'Enter the measurements',
   'help.settings.t':
-    'Wheelbase and track width. They are in the vehicle papers, or measure with a tape.\n' +
+    'Libell works out how much each wheel must rise from the wheelbase and track width.\n' +
+    'They are in the vehicle papers, or measure with a tape.\n' +
     'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.',
   'help.ramps.t':
-    'Pick your ramps or type in the step heights. Libell puts them where they help most.',
+    'The screen tells you which step of your ramp each wheel goes up on, so enter the ramps you carry.\n' +
+    'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.',
   'help.calibration.h': 'Calibrate and zero',
   'help.calibration.t':
     'Calibrate the phone once: lay it on a flat surface and tap Calibrate now.\n' +

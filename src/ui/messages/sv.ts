@@ -379,10 +379,12 @@ export const sv: Messages = {
   'help.settings.h': 'Måtten',
   'help.measures.h': 'Fyll i måtten',
   'help.settings.t':
-    'Hjulbas och spårvidd. De står i fordonspapperen, annars mäter du med tumstock.\n' +
+    'Libell räknar ut hur mycket varje hjul ska upp från hjulbasen och spårvidden.\n' +
+    'De står i fordonspapperen, annars mäter du med tumstock.\n' +
     'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.',
   'help.ramps.t':
-    'Välj dina klossar eller skriv in stegens höjder. Libell lägger dem där de gör mest nytta.',
+    'Skärmen säger vilket steg på klossen hjulet ska upp på, så fyll i de klossar du har med dig.\n' +
+    'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.',
   'help.calibration.h': 'Kalibrera och nollställ',
   'help.calibration.t':
     'Kalibrera telefonen en gång: lägg den på en plan yta och tryck Kalibrera nu.\n' +

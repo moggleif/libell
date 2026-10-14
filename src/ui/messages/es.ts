@@ -372,10 +372,12 @@ export const es: Messages = {
   'help.settings.h': 'Las medidas',
   'help.measures.h': 'Introduce las medidas',
   'help.settings.t':
-    'Distancia entre ejes y ancho de vía. Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
+    'Libell calcula cuánto debe subir cada rueda a partir de la distancia entre ejes y el ancho de vía.\n' +
+    'Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
     'En una caravana, la distancia entre ejes va del eje a la rueda jockey.',
   'help.ramps.t':
-    'Elige tus rampas o escribe la altura de los escalones. Libell las coloca donde más ayudan.',
+    'La pantalla te dice a qué escalón de tu rampa sube cada rueda, así que introduce las rampas que llevas.\n' +
+    'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.',
   'help.calibration.h': 'Calibrar y poner a cero',
   'help.calibration.t':
     'Calibra el móvil una vez: colócalo sobre una superficie plana y toca Calibrar ahora.\n' +
