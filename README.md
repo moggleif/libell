@@ -1,6 +1,7 @@
 # Libell
 
-**➡️ Open the app: <https://moggleif.github.io/libell/>**
+**➡️ Open the app: <https://moggleif.github.io/libell/>** · no sensor at hand?
+[Try the demo modes](#try-the-demo-modes).
 
 Libell is an installable web app (PWA) that helps you level a motorhome / RV with your
 phone. It doesn't just tell you how far off level you are — it turns that tilt into a
@@ -19,6 +20,26 @@ diagram, and a big "Your vehicle is level!" (with an optional chime) confirms wh
 done. A caravan gets a ramp for the low axle wheel and a signed correction for the
 jockey wheel; a tandem (boggie) axle is supported too. Everything works offline once
 loaded; there is no account.
+
+## Try the demo modes
+
+Each link opens the deployed app in a mode that needs no phone sensor and no Sensorbox:
+
+- [Demo](https://moggleif.github.io/libell/?demo) — a fixed synthetic tilt instead of the
+  phone's sensor.
+- [Xparkle, simulated](https://moggleif.github.io/libell/?xparkle-sim) — a simulated
+  Xparkle box.
+- [Xparkle, connection drops](https://moggleif.github.io/libell/?xparkle-sim=drop) — the
+  simulated box loses its connection now and then.
+- [Xparkle, wrong password](https://moggleif.github.io/libell/?xparkle-sim=badpassword) —
+  the box rejects the factory password; enter `1234` to get past it.
+- [EasyLevel, simulated](https://moggleif.github.io/libell/?easylevel-sim) — a simulated
+  EasyLevel box.
+- [EasyLevel, connection drops](https://moggleif.github.io/libell/?easylevel-sim=drop) —
+  the simulated box loses its connection now and then.
+- [Demo + Xparkle](https://moggleif.github.io/libell/?demo&xparkle-sim) and
+  [Demo + EasyLevel](https://moggleif.github.io/libell/?demo&easylevel-sim) — the flags
+  combine.
 
 ## Using it on your phone
 
@@ -100,8 +121,8 @@ npm install
 npm run dev           # http://localhost:5173/libell/
 ```
 
-Add `?demo` to the address for a fixed synthetic tilt, or `?easylevel-sim` /
-`?xparkle-sim` for a simulated Sensorbox, so the app runs on a machine with no sensors.
+The same query flags as in [Try the demo modes](#try-the-demo-modes) work on the dev
+server, so the app runs on a machine with no sensors.
 Every merge to `main` deploys to GitHub Pages; versions and release builds are described
 in [ADR 0007](docs/adr/0007-pages-as-qa-and-versioning.md).
 
