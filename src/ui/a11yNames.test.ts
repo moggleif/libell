@@ -56,7 +56,7 @@ describe('fields say what to type', () => {
       addTargetPreset: () => null,
       deleteTargetPreset: () => {},
     });
-    const input = section.element.querySelector('.targets__name-input');
+    const input = section.element.querySelector('.name-prompt__input');
     expect(input?.getAttribute('aria-label')).toBe(t('targets.name.label'));
     expect(t('targets.name.label')).toBe('Namn på det nya målet');
   });

@@ -483,7 +483,10 @@ export const fr: Messages = {
   'vehicles.add': 'Nouveau véhicule',
   'vehicles.rename': 'Renommer',
   'vehicles.remove': 'Supprimer',
-  'vehicles.rename.empty': 'Saisissez d’abord le nouveau nom dans le champ.',
+  'vehicles.rename.empty': 'Saisissez un nom, puis touchez Enregistrer.',
+  // The name field shown only when a name is needed (#613).
+  'namePrompt.save': 'Enregistrer',
+  'namePrompt.cancel': 'Annuler',
   'vehicles.renamed': 'Nom modifié.',
   'vehicles.remove.last':
     'Il faut au moins un véhicule. Ajoutez-en d’abord un autre avec Nouveau véhicule.',

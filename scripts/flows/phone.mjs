@@ -72,8 +72,10 @@ export async function targetsFlow(browser) {
   const settings = await openSettingsTab(page, 'targets');
 
   // Saving a target stores the tilt relative to the zero (none here).
-  await settings.locator('.targets__name-input').fill('Ferry');
+  // The name is asked for only once the button is tapped (#613).
   await button(settings, 'Save current tilt as new target').click();
+  await settings.locator('.name-prompt__input:visible').fill('Ferry');
+  await button(settings.locator('.name-prompt'), 'Save').click();
   await settings.locator('.targets__row-label').filter({ hasText: 'Ferry' }).waitFor();
   const [preset] = JSON.parse(await storage(page, 'libell.targetPresets'));
   assert(
@@ -83,8 +85,9 @@ export async function targetsFlow(browser) {
     `the preset should hold the demo tilt, got ${JSON.stringify(preset)}`,
   );
 
-  // An unnamed target gets the next free default name.
+  // The field suggests the next free default name.
   await button(settings, 'Save current tilt as new target').click();
+  await button(settings.locator('.name-prompt'), 'Save').click();
   await settings.locator('.targets__row-label').filter({ hasText: 'Target 1' }).waitFor();
 
   // Selecting it stores it and shows the badge on the main screen.

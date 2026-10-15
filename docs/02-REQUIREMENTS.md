@@ -931,12 +931,19 @@ URL and must keep working with no signal.
 - **Given** the saved targets on Settings' Level tab or page (#329; reached from Settings,
   or from the main-screen badge below once a target is active), listing "Normal" first
   and then any saved presets
-- **When** I tap "Save current tilt as new target", with or without typing a name
+- **Then** only the list and "Save current tilt as new target" show; no name field is
+  shown until a name is needed (#613).
+- **When** I tap "Save current tilt as new target"
+- **Then** a name field opens in its place, filled with "Target N", the lowest number not
+  already taken, and selected so typing replaces it, with "Save" and "Cancel" (#613).
+  "Cancel" or Escape closes it and saves nothing.
+- **When** I tap "Save" or press Enter, with the suggested name, my own, or an emptied
+  field
 - **Then** the current tilt — relative to whatever the sensor calibration and vehicle
   zero (R11, R24), or a box's own zero while one is the source (R34), already define
   as level — is captured and stored as a new preset
-  under that name — or, with no name typed, as "Target N", the lowest number not already
-  taken (#329; nothing is disabled). A capture reading more than 15° from that zero is
+  under that name — or, with the field emptied, as "Target N" (#329; nothing is
+  disabled), and the field closes. A capture reading more than 15° from that zero is
   not saved yet: a warning says it looks steeper than an intentional target, with a
   "Save anyway" button that saves it under the same name (#425); it survives a reload
   like any other preset.
@@ -2051,7 +2058,7 @@ its descriptor's capabilities (ADR 0016).
 - **Given** a single-choice list: the level targets (R31) or the ramp catalogue (R47)
 - **Then** each row says whether it is the selected one (pressed or not), since the ●/○
   beside it is hidden from screen readers.
-- **Given** the add-step field and the new target's name field
+- **Given** the add-step field and the name field for a new target or vehicle (#613)
 - **Then** each is named for what to type, in the chosen language (the add-step field
   with the display unit), not only by its placeholder.
 - **Given** a warning lamp, the name-and-version title, or the bottom action bar
@@ -2154,10 +2161,16 @@ per vehicle (Morgan, #599).
 - **Given** Settings › Vehicle
 - **Then** at the top a vehicle picker shows the active vehicle ("My vehicle" until it is
   renamed), with "New vehicle", "Rename" and "Remove".
-- **Given** "New vehicle", with or without a name typed
+- **Then** no name field is shown until a name is needed (#613): "New vehicle" and
+  "Rename" open one under the buttons, with "Save" and "Cancel" ("Cancel" or Escape
+  closes it and changes nothing).
+- **Given** "New vehicle"
+- **Then** the field is filled with "Vehicle N", the next number not in use, selected so
+  typing replaces it.
+- **When** I tap "Save" or press Enter
 - **Then** a vehicle with `DEFAULT_SETTINGS`' measurements, no zero, no targets and no
-  box (it uses the phone) is added and becomes active; with no name typed it is called
-  "Vehicle N", the next number not in use. Its measurements count as not yet saved, so
+  box (it uses the phone) is added under the name in the field and becomes active;
+  with the field emptied it is called "Vehicle N". Its measurements count as not yet saved, so
   the "⚠ Measurements" lamp (R11) lights until I set them; a vehicle added from a shared
   setup (R41) counts them as saved.
 - **Given** two vehicles
@@ -2170,9 +2183,10 @@ per vehicle (Morgan, #599).
 - **Given** the phone's own sensor calibration (R11) and the app-wide preferences
   (tolerance, unit, sound, look, language)
 - **Then** they are shared by every vehicle.
-- **Given** "Rename" with a name typed
-- **Then** the active vehicle takes that name; with nothing typed, a line says to type
-  it first.
+- **Given** "Rename"
+- **Then** the field is filled with the active vehicle's name; "Save" gives the vehicle the
+  name in the field and closes it; saved empty, the field stays open and a line says to
+  type a name (guide, don't block).
 - **Given** "Remove"
 - **Then** a line asks to confirm, naming what goes with the vehicle; "Yes, remove"
   removes it and its values, and the app starts again on another vehicle.

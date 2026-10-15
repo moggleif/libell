@@ -506,7 +506,10 @@ export const en = {
   'vehicles.add': 'New vehicle',
   'vehicles.rename': 'Rename',
   'vehicles.remove': 'Remove',
-  'vehicles.rename.empty': 'Type the new name in the field first.',
+  'vehicles.rename.empty': 'Type a name, then tap Save.',
+  // The name field shown only when a name is needed (#613).
+  'namePrompt.save': 'Save',
+  'namePrompt.cancel': 'Cancel',
   'vehicles.renamed': 'Renamed.',
   'vehicles.remove.last': 'At least one vehicle is needed. Add another with New vehicle first.',
   'vehicles.remove.confirm': 'Remove {name} with its zeros, targets and sensor box?',

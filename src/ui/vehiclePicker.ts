@@ -6,6 +6,7 @@
 import { button } from './calibrationControls';
 import { createElement } from './dom';
 import { t } from './i18n';
+import { createNamePrompt } from './namePrompt';
 
 export interface VehiclePickerOptions {
   list(): Array<{ id: string; name: string }>;
@@ -33,21 +34,16 @@ function createParts() {
   heading.textContent = t('vehicles.title');
   const select = createElement('select', 'settings__select vehicles__select');
   select.setAttribute('aria-label', t('vehicles.pick'));
-  const nameInput = createElement('input', 'vehicles__name-input');
-  nameInput.type = 'text';
-  nameInput.maxLength = 40;
-  nameInput.placeholder = t('vehicles.name.placeholder');
-  nameInput.setAttribute('aria-label', t('vehicles.name.label'));
   const hint = createElement('p', 'settings__hint');
   hint.textContent = t('vehicles.hint');
   const status = createElement('p', 'menu__text menu__text--status');
   status.setAttribute('aria-live', 'polite');
-  return { heading, select, nameInput, hint, status };
+  return { heading, select, hint, status };
 }
 
 export function createVehiclePicker(options: VehiclePickerOptions): HTMLElement {
   const parts = createParts();
-  const { select, nameInput, status } = parts;
+  const { select, status } = parts;
   const activeName = () =>
     vehicleName(options.list().find((v) => v.id === options.activeId())?.name ?? '');
   let confirming = false;
@@ -60,15 +56,19 @@ export function createVehiclePicker(options: VehiclePickerOptions): HTMLElement 
     fillSelect(select, options);
     yes.hidden = !confirming;
   }
+  const naming = createNaming(options, status, refresh);
+  const ask = (mode: 'add' | 'rename', name: string): void => {
+    confirming = false;
+    naming.open(mode, name);
+    refresh();
+  };
   select.addEventListener('change', () => options.switchTo(select.value));
   const actions = createElement('div', 'vehicles__actions');
   actions.append(
-    actionButton(t('vehicles.add'), () => options.add(nameOrNext(nameInput, options))),
-    actionButton(t('vehicles.rename'), () => {
-      status.textContent = rename(nameInput, options);
-      refresh();
-    }),
+    actionButton(t('vehicles.add'), () => ask('add', nextVehicleName(options.list()))),
+    actionButton(t('vehicles.rename'), () => ask('rename', activeName())),
     actionButton(t('vehicles.remove'), () => {
+      naming.prompt.close();
       confirming = options.list().length > 1;
       status.textContent = confirming
         ? t('vehicles.remove.confirm', { name: activeName() })
@@ -77,9 +77,30 @@ export function createVehiclePicker(options: VehiclePickerOptions): HTMLElement 
     }),
   );
   const element = createElement('div', 'vehicles');
-  element.append(parts.heading, select, nameInput, actions, status, yes, parts.hint);
+  element.append(parts.heading, select, actions, naming.prompt.element, status, yes, parts.hint);
   refresh();
   return element;
+}
+
+/** The name is asked for only once New vehicle or Rename is tapped (#613). */
+function createNaming(options: VehiclePickerOptions, status: HTMLElement, refresh: () => void) {
+  let mode: 'add' | 'rename' = 'add';
+  const prompt = createNamePrompt({
+    label: t('vehicles.name.label'),
+    placeholder: t('vehicles.name.placeholder'),
+    onSave: (typed) => {
+      if (mode === 'add') options.add(typed || nextVehicleName(options.list()));
+      else status.textContent = rename(typed, options);
+      if (mode === 'add' || typed) prompt.close();
+      refresh();
+    },
+  });
+  const open = (next: 'add' | 'rename', name: string): void => {
+    mode = next;
+    status.textContent = '';
+    prompt.open(name);
+  };
+  return { prompt, open };
 }
 
 function fillSelect(select: HTMLSelectElement, options: VehiclePickerOptions): void {
@@ -94,12 +115,6 @@ function fillSelect(select: HTMLSelectElement, options: VehiclePickerOptions): v
   select.value = options.activeId();
 }
 
-/** Nothing is disabled: a vehicle added without a name gets the lowest
- * "Vehicle N" not already taken. */
-function nameOrNext(input: HTMLInputElement, options: VehiclePickerOptions): string {
-  return input.value.trim() || nextVehicleName(options.list());
-}
-
 /** "Vehicle N", counting on from the vehicles there are, never a name in use. */
 export function nextVehicleName(vehicles: Array<{ name: string }>): string {
   const taken = new Set(vehicles.map((v) => vehicleName(v.name)));
@@ -109,10 +124,8 @@ export function nextVehicleName(vehicles: Array<{ name: string }>): string {
 }
 
 /** The status line to show: done, or what to type first. */
-function rename(input: HTMLInputElement, options: VehiclePickerOptions): string {
-  const typed = input.value.trim();
+function rename(typed: string, options: VehiclePickerOptions): string {
   if (!typed) return t('vehicles.rename.empty');
   options.rename(options.activeId(), typed);
-  input.value = '';
   return t('vehicles.renamed');
 }

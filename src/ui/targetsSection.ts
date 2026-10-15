@@ -12,6 +12,7 @@ import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
 import { createElement } from './dom';
 import { createHitchSection, type HitchOptions } from './hitchSection';
+import { createNamePrompt, type NamePrompt } from './namePrompt';
 
 export interface TargetsOptions {
   getTargetPresets(): TargetPreset[];
@@ -39,14 +40,11 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
     refreshList(options, list, refresh);
     hitch?.refresh();
   };
-  const adding = createAddControls();
-  const add = (anyway: boolean): void => addPreset(options, adding, anyway, refresh);
-  adding.addButton.addEventListener('click', () => add(false));
-  adding.anywayButton.addEventListener('click', () => add(true));
+  const adding = createAddControls(options, refresh);
 
   refresh();
   const body = document.createElement('div');
-  body.append(list, adding.addRow, adding.addStatus, adding.anywayButton);
+  body.append(list, adding.addButton, adding.prompt.element, adding.addStatus, adding.anywayButton);
   if (hitch) body.append(hitch.element);
   return { element: body, refresh };
 }
@@ -109,23 +107,39 @@ function createDeleteButton(labelText: string, onDelete: () => void): HTMLButton
   return del;
 }
 
-type AddControls = ReturnType<typeof createAddControls>;
+interface AddControls {
+  addButton: HTMLButtonElement;
+  prompt: NamePrompt;
+  addStatus: HTMLElement;
+  anywayButton: HTMLButtonElement;
+}
 
-function createAddControls() {
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.className = 'targets__name-input';
-  nameInput.maxLength = 40;
-  nameInput.placeholder = t('targets.name.placeholder');
-  nameInput.setAttribute('aria-label', t('targets.name.label'));
+/** Only the add button shows until it is tapped; then the name is asked
+ * for (#613). */
+function createAddControls(options: TargetsOptions, refresh: () => void): AddControls {
   const addButton = secondaryButton(t('targets.add'));
-  const addRow = createElement('div', 'targets__add');
-  addRow.append(nameInput, addButton);
   const addStatus = createElement('p', 'menu__text menu__text--status');
   // Warn, never block: shown only while a too-steep warning is up.
   const anywayButton = secondaryButton(t('targets.anyway'));
   anywayButton.hidden = true;
-  return { nameInput, addButton, addRow, addStatus, anywayButton };
+  const prompt = createNamePrompt({
+    label: t('targets.name.label'),
+    placeholder: t('targets.name.placeholder'),
+    onSave: () => addPreset(options, controls, false, refresh),
+    onClose: () => {
+      addButton.hidden = false;
+      anywayButton.hidden = true;
+      addStatus.textContent = '';
+      addStatus.classList.remove('menu__text--warning');
+    },
+  });
+  const controls: AddControls = { addButton, addStatus, anywayButton, prompt };
+  addButton.addEventListener('click', () => {
+    addButton.hidden = true;
+    prompt.open(nextDefaultName(options));
+  });
+  anywayButton.addEventListener('click', () => addPreset(options, controls, true, refresh));
+  return controls;
 }
 
 function secondaryButton(text: string): HTMLButtonElement {
@@ -138,11 +152,11 @@ function secondaryButton(text: string): HTMLButtonElement {
 
 function addPreset(
   options: TargetsOptions,
-  { nameInput, addStatus, anywayButton }: AddControls,
+  { prompt, addStatus, anywayButton }: AddControls,
   anyway: boolean,
   refresh: () => void,
 ): void {
-  const name = nameInput.value.trim() || nextDefaultName(options);
+  const name = prompt.value() || nextDefaultName(options);
   const result = anyway ? options.addTargetPreset(name, true) : options.addTargetPreset(name);
   const warned = typeof result === 'object' && result !== null;
   anywayButton.hidden = !warned;
@@ -151,8 +165,7 @@ function addPreset(
     addStatus.textContent = warned ? result.warning : result;
     return;
   }
-  nameInput.value = '';
-  addStatus.textContent = '';
+  prompt.close();
   refresh();
 }
 

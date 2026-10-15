@@ -20,7 +20,7 @@ export async function settingsSaveFlow(browser) {
   let { page } = app;
   assert((await lamps(page)).includes('⚠ Measurements'), 'a fresh app lacks measurements');
   const vehicle = await openSettingsTab(page, 'vehicle');
-  const wheelbase = vehicle.locator('input:visible:not(.vehicles__name-input)').first();
+  const wheelbase = vehicle.locator('input:visible').first();
   await wheelbase.fill('3600');
   await wheelbase.dispatchEvent('change');
   await closeAllPages(page);

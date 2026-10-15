@@ -27,6 +27,10 @@ function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
   return [...root.querySelectorAll('button')].find((b) => b.textContent === text)!;
 }
 
+function nameInput(section: { element: HTMLElement }): HTMLInputElement {
+  return section.element.querySelector<HTMLInputElement>('.name-prompt__input')!;
+}
+
 describe('targets section (#122, ADR 0013)', () => {
   it('always lists Normal first, marked active when no preset is selected', () => {
     const section = createTargetsSection(makeOptions({ getTargetPresets: () => [SHOWER] }));
@@ -77,23 +81,33 @@ describe('targets section (#122, ADR 0013)', () => {
     expect(deleteTargetPreset).toHaveBeenCalledWith('shower');
   });
 
-  it('captures with the typed name and clears the field', () => {
+  // #613: no name field until a target is being saved.
+  it('shows only the add button until it is tapped, then asks for the name', () => {
+    const section = createTargetsSection(makeOptions());
+    const prompt = section.element.querySelector<HTMLElement>('.name-prompt')!;
+    const addButton = buttonByText(section.element, t('targets.add'));
+    expect(prompt.hidden).toBe(true);
+    addButton.click();
+    expect(prompt.hidden).toBe(false);
+    expect(addButton.hidden).toBe(true);
+    buttonByText(section.element, t('namePrompt.cancel')).click();
+    expect(prompt.hidden).toBe(true);
+    expect(addButton.hidden).toBe(false);
+  });
+
+  it('captures with the typed name and closes the field', () => {
     const addTargetPreset = vi.fn<() => string | null>(() => null);
     const section = createTargetsSection(makeOptions({ addTargetPreset }));
-    const input = section.element.querySelector<HTMLInputElement>('.targets__name-input')!;
-    const addButton = [...section.element.querySelectorAll('button')].find(
-      (b) => b.textContent === t('targets.add'),
-    ) as HTMLButtonElement;
-    input.value = 'Grey-water drainage';
-    input.dispatchEvent(new Event('input'));
-    addButton.click();
+    buttonByText(section.element, t('targets.add')).click();
+    nameInput(section).value = 'Grey-water drainage';
+    buttonByText(section.element, t('namePrompt.save')).click();
     expect(addTargetPreset).toHaveBeenCalledWith('Grey-water drainage');
-    expect(input.value).toBe('');
+    expect(section.element.querySelector<HTMLElement>('.name-prompt')!.hidden).toBe(true);
   });
 
   // #329: nothing is disabled — an unnamed target still gets saved, under
-  // the next free "Target N".
-  it('saves an unnamed target as "Target N", the next free number', () => {
+  // the next free "Target N", which the field also suggests (#613).
+  it('suggests and saves an unnamed target as "Target N", the next free number', () => {
     const addTargetPreset = vi.fn<() => string | null>(() => null);
     const presets: TargetPreset[] = [
       { ...SHOWER, id: 'a', name: t('targets.defaultName', { n: 1 }) },
@@ -102,22 +116,21 @@ describe('targets section (#122, ADR 0013)', () => {
     const section = createTargetsSection(
       makeOptions({ addTargetPreset, getTargetPresets: () => presets }),
     );
-    const addButton = [...section.element.querySelectorAll('button')].find(
-      (b) => b.textContent === t('targets.add'),
-    ) as HTMLButtonElement;
-    expect(addButton.disabled).toBe(false);
-    addButton.click();
+    buttonByText(section.element, t('targets.add')).click();
+    expect(nameInput(section).value).toBe('Target 2');
+    nameInput(section).value = '';
+    buttonByText(section.element, t('namePrompt.save')).click();
     expect(addTargetPreset).toHaveBeenCalledWith('Target 2');
   });
 
   it('surfaces a reading error without clearing the name field', () => {
     const section = createTargetsSection(makeOptions({ addTargetPreset: () => 'no sensor' }));
-    const input = section.element.querySelector<HTMLInputElement>('.targets__name-input')!;
-    input.value = 'Drain';
     buttonByText(section.element, t('targets.add')).click();
+    nameInput(section).value = 'Drain';
+    buttonByText(section.element, t('namePrompt.save')).click();
     expect(section.element.textContent).toContain('no sensor');
     expect(buttonByText(section.element, t('targets.anyway')).hidden).toBe(true);
-    expect(input.value).toBe('Drain');
+    expect(nameInput(section).value).toBe('Drain');
   });
 
   // #425: "Varning är rätt. Aldrig stopp."
@@ -126,17 +139,17 @@ describe('targets section (#122, ADR 0013)', () => {
       anyway ? null : { warning: 'Steeper than a target' },
     );
     const section = createTargetsSection(makeOptions({ addTargetPreset }));
-    const input = section.element.querySelector<HTMLInputElement>('.targets__name-input')!;
-    input.value = 'Too steep';
     buttonByText(section.element, t('targets.add')).click();
+    nameInput(section).value = 'Too steep';
+    buttonByText(section.element, t('namePrompt.save')).click();
     expect(section.element.textContent).toContain('Steeper than a target');
-    expect(input.value).toBe('Too steep');
+    expect(nameInput(section).value).toBe('Too steep');
     const anyway = buttonByText(section.element, t('targets.anyway'));
     expect(anyway.hidden).toBe(false);
     anyway.click();
     expect(addTargetPreset).toHaveBeenLastCalledWith('Too steep', true);
     expect(anyway.hidden).toBe(true);
-    expect(input.value).toBe('');
+    expect(nameInput(section).value).toBe('');
     expect(section.element.textContent).not.toContain('Steeper than a target');
   });
 });

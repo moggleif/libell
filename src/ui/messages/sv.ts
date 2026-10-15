@@ -475,7 +475,10 @@ export const sv: Messages = {
   'vehicles.add': 'Nytt fordon',
   'vehicles.rename': 'Byt namn',
   'vehicles.remove': 'Ta bort',
-  'vehicles.rename.empty': 'Skriv det nya namnet i fältet först.',
+  'vehicles.rename.empty': 'Skriv ett namn och tryck på Spara.',
+  // The name field shown only when a name is needed (#613).
+  'namePrompt.save': 'Spara',
+  'namePrompt.cancel': 'Avbryt',
   'vehicles.renamed': 'Namnet är bytt.',
   'vehicles.remove.last': 'Minst ett fordon behövs. Lägg till ett annat med Nytt fordon först.',
   'vehicles.remove.confirm': 'Ta bort {name} med dess nollor, mål och sensorbox?',

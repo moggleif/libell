@@ -1473,18 +1473,23 @@ body {
   cursor: pointer;
 }
 
-.targets__add {
-  display: flex;
+/* The name field asked for only when a name is needed (#613): a full-width
+ * field, then Save and Cancel side by side. */
+.name-prompt {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  align-items: center;
   margin-top: 10px;
-  flex-wrap: wrap;
 }
 
-.targets__name-input,
-.vehicles__name-input {
-  flex: 1;
-  min-width: 10em;
+.name-prompt[hidden] {
+  display: none;
+}
+
+.name-prompt__input {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  width: 100%;
   font: inherit;
   padding: 8px 10px;
   color: var(--on-surface);
@@ -1493,23 +1498,19 @@ body {
   border-radius: 0;
 }
 
-:root[data-appearance='modern'] .targets__name-input,
-:root[data-appearance='modern'] .vehicles__name-input {
+:root[data-appearance='modern'] .name-prompt__input {
   border: 1px solid var(--field-border);
   border-radius: 8px;
 }
 
-:root[data-appearance='glossy'] .targets__name-input,
-:root[data-appearance='glossy'] .vehicles__name-input {
+:root[data-appearance='glossy'] .name-prompt__input {
   border: 1px solid var(--field-border);
   border-radius: 8px;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
 }
 
-.targets__add .menu__action--secondary {
+.name-prompt .menu__action {
   margin-top: 0;
-  width: auto;
-  padding: 8px 14px;
 }
 
 /* Settings › Vehicle's vehicle picker (#599). */
@@ -1517,11 +1518,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.vehicles__name-input {
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .vehicles__actions {
@@ -1533,6 +1529,10 @@ body {
 .vehicles .menu__action {
   margin-top: 0;
   padding-inline: 4px;
+}
+
+.vehicles .name-prompt {
+  margin-top: 0;
 }
 
 .vehicles .menu__action[hidden] {

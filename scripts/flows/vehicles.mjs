@@ -17,8 +17,9 @@ export async function vehiclesFlow(browser) {
   });
   const { page } = app;
   let settings = await openSettingsTab(page, 'vehicle');
-  await settings.locator('.vehicles__name-input').fill('Caravan');
-  await reloadAfter(page, () => button(settings, 'New vehicle').click());
+  await button(settings, 'New vehicle').click();
+  await settings.locator('.name-prompt__input:visible').fill('Caravan');
+  await reloadAfter(page, () => button(settings.locator('.name-prompt'), 'Save').click());
   const list = JSON.parse(await storage(page, 'libell.vehicles'));
   assert(list.vehicles.length === 2, 'the new vehicle should be listed');
   assert((await storage(page, 'libell.vehicleCalibration')) === null, 'a new vehicle has no zero');

@@ -471,7 +471,10 @@ export const es: Messages = {
   'vehicles.add': 'Nuevo vehículo',
   'vehicles.rename': 'Renombrar',
   'vehicles.remove': 'Eliminar',
-  'vehicles.rename.empty': 'Escribe primero el nuevo nombre en el campo.',
+  'vehicles.rename.empty': 'Escribe un nombre y toca Guardar.',
+  // The name field shown only when a name is needed (#613).
+  'namePrompt.save': 'Guardar',
+  'namePrompt.cancel': 'Cancelar',
   'vehicles.renamed': 'Nombre cambiado.',
   'vehicles.remove.last': 'Hace falta al menos un vehículo. Añade antes otro con Nuevo vehículo.',
   'vehicles.remove.confirm': '¿Eliminar {name} con sus ceros, objetivos y caja sensora?',

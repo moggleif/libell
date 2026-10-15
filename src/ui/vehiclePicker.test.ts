@@ -36,6 +36,7 @@ function parts(element: HTMLElement) {
   return {
     select: element.querySelector('select')!,
     input: element.querySelector('input')!,
+    prompt: element.querySelector<HTMLElement>('.name-prompt')!,
     status: () => element.querySelector('.menu__text--status')!.textContent,
     button,
   };
@@ -57,32 +58,54 @@ describe('vehicle picker (#599)', () => {
     expect(options.switchTo).toHaveBeenCalledWith('v1');
   });
 
-  it('adds a vehicle under the typed name, or the next free "Vehicle N"', () => {
+  // #613: no name field until a name is needed.
+  it('shows no name field until New vehicle or Rename is tapped', () => {
+    const { prompt, button } = parts(createVehiclePicker(fakeVehicles()));
+    expect(prompt.hidden).toBe(true);
+    button('vehicles.add').click();
+    expect(prompt.hidden).toBe(false);
+    button('namePrompt.cancel').click();
+    expect(prompt.hidden).toBe(true);
+  });
+
+  it('asks for the new name filled with the next free "Vehicle N", and adds it', () => {
     const options = fakeVehicles(['', 'Vehicle 2']);
     const { input, button } = parts(createVehiclePicker(options));
     button('vehicles.add').click();
+    expect(input.value).toBe(t('vehicles.numbered', { n: 3 }));
+    button('namePrompt.save').click();
     expect(options.add).toHaveBeenCalledWith(t('vehicles.numbered', { n: 3 }));
-    input.value = '  Caravan ';
     button('vehicles.add').click();
+    input.value = '  Caravan ';
+    button('namePrompt.save').click();
     expect(options.add).toHaveBeenLastCalledWith('Caravan');
+    button('vehicles.add').click();
+    input.value = '';
+    button('namePrompt.save').click();
+    expect(options.add).toHaveBeenLastCalledWith(t('vehicles.numbered', { n: 3 }));
   });
 
   it('skips a "Vehicle N" already in use', () => {
     expect(nextVehicleName([{ name: '' }, { name: 'Vehicle 3' }])).toBe('Vehicle 4');
   });
 
-  it('renames the active vehicle, and guides when no name is typed', () => {
-    const options = fakeVehicles();
+  it('renames the active vehicle, and guides when the name is emptied', () => {
+    const options = fakeVehicles(['Bus']);
     const element = createVehiclePicker(options);
-    const { input, button, status, select } = parts(element);
+    const { input, button, status, select, prompt } = parts(element);
     button('vehicles.rename').click();
+    expect(input.value).toBe('Bus');
+    input.value = ' ';
+    button('namePrompt.save').click();
     expect(status()).toBe(t('vehicles.rename.empty'));
     expect(options.rename).not.toHaveBeenCalled();
+    expect(prompt.hidden).toBe(false);
     input.value = 'Motorhome';
-    button('vehicles.rename').click();
+    button('namePrompt.save').click();
     expect(options.rename).toHaveBeenCalledWith('v0', 'Motorhome');
     expect(status()).toBe(t('vehicles.renamed'));
     expect(select.options[0]!.textContent).toBe('Motorhome');
+    expect(prompt.hidden).toBe(true);
   });
 
   it('explains instead of removing the only vehicle', () => {
