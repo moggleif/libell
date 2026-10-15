@@ -88,6 +88,19 @@ describe('settingsStore', () => {
     expect(loadSettings(storage)).toEqual(DEFAULT_SETTINGS);
   });
 
+  it("starts a first run in the phone region's unit (#627)", () => {
+    expect(loadSettings(memoryStorage(), 'en-US').displayUnit).toBe('in');
+    expect(loadSettings(memoryStorage(), 'sv-SE').displayUnit).toBe('mm');
+  });
+
+  it('keeps a saved unit whatever the region (#627)', () => {
+    const storage = memoryStorage();
+    saveSettings({ ...DEFAULT_SETTINGS, displayUnit: 'cm' }, storage);
+    expect(loadSettings(storage, 'en-US').displayUnit).toBe('cm');
+    saveSettings({ ...DEFAULT_SETTINGS, displayUnit: 'in' }, storage);
+    expect(loadSettings(storage, 'sv-SE').displayUnit).toBe('in');
+  });
+
   it('falls back to defaults when storage is unavailable', () => {
     expect(loadSettings(null)).toEqual(DEFAULT_SETTINGS);
     expect(() => saveSettings(DEFAULT_SETTINGS, null)).not.toThrow();

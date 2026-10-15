@@ -193,7 +193,9 @@ describe('parseSettings', () => {
 
   it('validates display unit and sound preference', () => {
     expect(parseSettings({ displayUnit: 'cm' }).displayUnit).toBe('cm');
+    expect(parseSettings({ displayUnit: 'in' }).displayUnit).toBe('in');
     expect(parseSettings({ displayUnit: 'inches' }).displayUnit).toBe('mm');
+    expect(parseSettings({}, 'in').displayUnit).toBe('in');
     expect(parseSettings({ soundOnLevel: true }).soundOnLevel).toBe(true);
     expect(parseSettings({ soundOnLevel: false }).soundOnLevel).toBe(false);
     expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(DEFAULT_SETTINGS.soundOnLevel);

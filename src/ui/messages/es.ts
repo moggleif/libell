@@ -246,6 +246,7 @@ export const es: Messages = {
   'drain.rearLeft': 'Trasero izquierdo',
   'drain.rearRight': 'Trasero derecho',
   'settings.unit': 'Mostrar las longitudes en',
+  'settings.unitInches': 'pulgadas (in)',
   'settings.theme': 'Tema',
   'theme.system': 'Seguir al móvil',
   'theme.light': 'Claro',
@@ -263,6 +264,18 @@ export const es: Messages = {
   'settings.soundSpeech.unavailable':
     'La guía por voz no funciona en este móvil: no tiene una voz en español que funcione sin conexión. Los pitidos funcionan como siempre.',
   'speech.level': 'Nivelado',
+  'speech.inches': '{n} pulgadas',
+  'speech.inchOne': 'una pulgada',
+  'speech.inchOneAnd': 'una pulgada y {fraction}',
+  'speech.inchesAnd': '{n} pulgadas y {fraction}',
+  'speech.inchFraction': '{fraction} de pulgada',
+  'speech.eighth1': 'un octavo',
+  'speech.eighth2': 'un cuarto',
+  'speech.eighth3': 'tres octavos',
+  'speech.eighth4': 'un medio',
+  'speech.eighth5': 'cinco octavos',
+  'speech.eighth6': 'tres cuartos',
+  'speech.eighth7': 'siete octavos',
   'settings.undo': 'Deshacer',
   'settings.saved': 'Guardado',
   'settings.more': 'Más',
@@ -385,6 +398,7 @@ export const es: Messages = {
   'help.settings.t':
     'Libell calcula cuánto debe subir cada rueda a partir de la distancia entre ejes y el ancho de vía.\n' +
     'Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
+    'Escríbelas en mm, cm o pulgadas, lo que elegiste en Mostrar las longitudes en.\n' +
     'En una caravana, la distancia entre ejes va del eje a la rueda jockey.\n' +
     'Con varios vehículos, cada uno guarda sus medidas, calzos, cero, objetivos y caja sensora; elígelo arriba en Vehículo.',
   'help.ramps.t':

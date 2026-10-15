@@ -385,6 +385,17 @@ describe('stepAndLiftText (#419)', () => {
     });
   });
 
+  it('writes the lift in eighths of an inch when the unit is inches (#627)', () => {
+    expect(stepAndLiftText('small', 78, 35, 'in', STEPS)).toEqual({
+      step: 'Step 2',
+      lift: '1 ⅜ in',
+    });
+    expect(stepAndLiftText('small', 37, 37, 'in', [])).toEqual({
+      step: 'Drive up',
+      lift: '1 ½ in',
+    });
+  });
+
   it('says how far to drive up a stepless wedge, which has no steps to number (#600)', () => {
     expect(stepAndLiftText('small', 37, 37, 'mm', [])).toEqual({ step: 'Drive up', lift: '37 mm' });
   });

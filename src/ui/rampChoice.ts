@@ -4,11 +4,14 @@
  * chips (also shown under "Custom set" on the Ramps page).
  */
 import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domain/ramps';
-import { formatLength, unitToMm } from '../domain/lengths';
+import { formatLength, unitToMm, type LengthUnit } from '../domain/lengths';
 import { LENGTH_RANGES_MM } from '../domain/settings';
 import { rangeProblem, type SettingsFormState } from './settingsFields';
 import { createElement } from './dom';
 import { t } from './i18n';
+
+/** A typical step height, as the empty Add field's hint. */
+const STEP_PLACEHOLDER: Record<LengthUnit, string> = { mm: '40', cm: '4', in: '1.5' };
 
 /**
  * The ramp choice both renderings share: the step heights, and whether
@@ -130,7 +133,7 @@ function createAddStepRow(
   return {
     row,
     relabel: (): void => {
-      input.placeholder = state.unit === 'cm' ? '4' : '40';
+      input.placeholder = STEP_PLACEHOLDER[state.unit];
       const label = choice.stepless ? 'settings.stepless.new' : 'settings.steps.new';
       input.setAttribute('aria-label', t(label, { unit: state.unit }));
       button.textContent = addButtonText(choice);

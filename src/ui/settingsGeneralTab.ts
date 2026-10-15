@@ -9,6 +9,7 @@ import {
   type SoundPrefs,
   type ThemeSetting,
 } from '../domain/settings';
+import { LENGTH_UNITS } from '../domain/lengths';
 import { clearLanguage, loadLanguage, saveLanguage, saveSettings } from '../data/settingsStore';
 import { markReopenSettings } from './reopenSettings';
 import { applyAppearance, applyTheme } from './theme';
@@ -100,6 +101,7 @@ interface GeneralFields {
 
 function relabel({ language, unit, theme, appearance, sound, more }: GeneralFields): void {
   unit.caption.textContent = t('settings.unit');
+  unit.relabelOptions();
   language.relabel();
   theme.caption.textContent = t('settings.theme');
   theme.relabelOptions();
@@ -134,23 +136,22 @@ function populate(
   sound.show(settings);
 }
 
-/** mm or cm: updates the form state, then lets the form convert the
- * lengths it shows. */
+/** mm, cm or inches: updates the form state, then lets the form convert
+ * the lengths it shows. */
 function createUnitField(
   initial: DisplayUnit,
   state: SettingsFormState,
   actions: GeneralTabActions,
 ) {
   const unit = createSelectField<DisplayUnit>(
-    [
-      { value: 'mm', text: 'mm' },
-      { value: 'cm', text: 'cm' },
-    ],
+    LENGTH_UNITS.map((value) =>
+      value === 'in' ? { value, label: 'settings.unitInches' } : { value, text: value },
+    ),
     initial,
   );
   unit.control.addEventListener('change', () => {
     const previous = state.unit;
-    state.unit = unit.value() === 'cm' ? 'cm' : 'mm';
+    state.unit = unit.value();
     actions.unitChanged(previous);
   });
   return unit;

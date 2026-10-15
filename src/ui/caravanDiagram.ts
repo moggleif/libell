@@ -1,7 +1,7 @@
 /** Top-down caravan diagram (ADR 0008). */
 import type { CaravanDisplayResult, JockeyDirection } from '../domain/caravan';
 import type { AppearanceSetting, AxleConfig } from '../domain/settings';
-import { formatLength } from '../domain/lengths';
+import { formatLength, type LengthUnit } from '../domain/lengths';
 import { t } from './i18n';
 import { svgEl } from './svg';
 import {
@@ -28,7 +28,7 @@ import {
 
 export interface CaravanDiagram {
   element: HTMLElement;
-  update(result: CaravanDisplayResult, unit: 'mm' | 'cm', stepHeightsMm: number[]): void;
+  update(result: CaravanDisplayResult, unit: LengthUnit, stepHeightsMm: number[]): void;
 }
 
 export function createCaravanDiagram(
@@ -113,7 +113,7 @@ function classicAxle(axleConfig: AxleConfig): Record<Side, ClassicWheel> {
 function createClassicJockey(): {
   elements: SVGElement[];
   /** Redraws the jockey wheel and returns what a screen reader should say. */
-  update(jockey: CaravanDisplayResult['jockey'], unit: 'mm' | 'cm'): string;
+  update(jockey: CaravanDisplayResult['jockey'], unit: LengthUnit): string;
 } {
   const { x, y } = CLASSIC_JOCKEY;
   const marker = rect(x - 11, y - 18, 22, 36, 9, 'rv-diagram__wheel');

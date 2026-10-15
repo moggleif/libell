@@ -242,6 +242,35 @@ describe('settings form', () => {
     expect(onSave.mock.calls[0]![0].displayUnit).toBe('cm');
   });
 
+  it('shows inches with decimals and stores the nearest whole mm (#627)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    const form = createSettingsForm({ ...classic, displayUnit: 'in' }, onSave);
+    expect(input(form, 'wheelbaseMm').value).toBe('149.61'); // 3800 mm
+    input(form, 'wheelbaseMm').value = '60.5';
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(1537);
+    expect(onSave.mock.calls[0]![0].displayUnit).toBe('in');
+  });
+
+  it('switching the unit back and forth leaves every stored length as it was (#627)', () => {
+    const onSave = vi.fn<(s: LevelSettings) => void>();
+    // 1237.5 mm is not a whole mm: an inch round trip must not round it.
+    const stored = { ...classic, wheelbaseMm: 1237.5, toleranceMm: 7 };
+    const form = createSettingsForm(stored, onSave);
+    const unit = [...form.querySelectorAll('select')].find((s) =>
+      [...s.options].some((o) => o.value === 'in'),
+    )!;
+    for (const next of ['in', 'cm', 'in', 'mm']) {
+      unit.value = next;
+      unit.dispatchEvent(new Event('change'));
+    }
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    const saved = onSave.mock.calls.at(-1)![0];
+    expect(saved.wheelbaseMm).toBe(1237.5);
+    expect(saved.toleranceMm).toBe(7);
+    expect(saved.displayUnit).toBe('mm');
+  });
+
   it('Classic mode has no tab elements (#108)', () => {
     const form = createSettingsForm(classic, vi.fn());
     expect(form.querySelector('.settings__tabs')).toBeNull();

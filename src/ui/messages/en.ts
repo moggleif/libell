@@ -272,6 +272,7 @@ export const en = {
   'drain.rearLeft': 'Rear left',
   'drain.rearRight': 'Rear right',
   'settings.unit': 'Show lengths in',
+  'settings.unitInches': 'inches (in)',
   'settings.theme': 'Theme',
   'theme.system': 'Follow the phone',
   'theme.light': 'Light',
@@ -289,6 +290,18 @@ export const en = {
   'settings.soundSpeech.unavailable':
     'Spoken guidance does not work on this phone: it has no English voice that works offline. The tones work as usual.',
   'speech.level': 'Level',
+  'speech.inches': '{n} inches',
+  'speech.inchOne': 'one inch',
+  'speech.inchOneAnd': 'one and {fraction} inches',
+  'speech.inchesAnd': '{n} and {fraction} inches',
+  'speech.inchFraction': '{fraction} of an inch',
+  'speech.eighth1': 'one eighth',
+  'speech.eighth2': 'a quarter',
+  'speech.eighth3': 'three eighths',
+  'speech.eighth4': 'a half',
+  'speech.eighth5': 'five eighths',
+  'speech.eighth6': 'three quarters',
+  'speech.eighth7': 'seven eighths',
   'settings.undo': 'Undo',
   'settings.saved': 'Saved',
   'settings.more': 'More',
@@ -416,6 +429,7 @@ export const en = {
   'help.settings.t':
     'Libell works out how much each wheel must rise from the wheelbase and track width.\n' +
     'They are in the vehicle papers, or measure with a tape.\n' +
+    'Type them in mm, cm or inches, whichever you picked under Show lengths in.\n' +
     'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.\n' +
     'With several vehicles, each keeps its own measurements, ramps, vehicle zero, targets and sensor box; pick one at the top of Vehicle.',
   'help.ramps.t':

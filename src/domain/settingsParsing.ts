@@ -1,6 +1,6 @@
 /** Reading a stored settings blob back into a valid `LevelSettings`. */
 import { isAppearance } from './appearance';
-import { unitToMm } from './lengths';
+import { isLengthUnit, unitToMm, type LengthUnit } from './lengths';
 import { rampHeights } from './ramps';
 import {
   DEFAULT_SETTINGS,
@@ -29,13 +29,16 @@ import {
  * widths — including a single `trackWidthCm` for both axles — and step
  * heights) is converted to mm.
  */
-export function parseSettings(value: unknown): LevelSettings {
+export function parseSettings(
+  value: unknown,
+  defaultUnit: LengthUnit = DEFAULT_SETTINGS.displayUnit,
+): LevelSettings {
   const raw = (typeof value === 'object' && value !== null ? value : {}) as StoredSettings;
   return {
     ...parseVehicle(raw),
     ...parseRamps(raw),
     ...parseLevelingFeel(raw),
-    ...parsePreferences(raw),
+    ...parsePreferences(raw, defaultUnit),
     // A corrupt or future-version value falls back to the phone, which
     // every install has.
     sensorSource: SENSOR_SOURCES.includes(raw.sensorSource as SensorSource)
@@ -164,9 +167,10 @@ type PreferenceFields = Pick<
   'displayUnit' | 'soundOnLevel' | 'soundGuidance' | 'soundSpeech' | 'theme' | 'appearance'
 >;
 
-function parsePreferences(raw: StoredSettings): PreferenceFields {
+/** `defaultUnit` is for a first run, from the phone's region (#627). */
+function parsePreferences(raw: StoredSettings, defaultUnit: LengthUnit): PreferenceFields {
   return {
-    displayUnit: raw.displayUnit === 'cm' ? 'cm' : 'mm',
+    displayUnit: isLengthUnit(raw.displayUnit) ? raw.displayUnit : defaultUnit,
     // Presence check, not truthiness: "never saved" falls back to the
     // default, while an explicit prior choice, true or false, is never
     // overridden.

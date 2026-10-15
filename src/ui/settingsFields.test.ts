@@ -11,13 +11,14 @@ import {
   createPlainNumberField,
   createSectionHeading,
   createSelectField,
+  rangeProblem,
   type SettingsFormState,
 } from './settingsFields';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
-function stateIn(unit: 'mm' | 'cm'): SettingsFormState {
+function stateIn(unit: SettingsFormState['unit']): SettingsFormState {
   return { unit, vehicle: 'motorhome', axle: 'single' };
 }
 
@@ -189,5 +190,20 @@ describe('hints and headings', () => {
     const heading = createSectionHeading();
     expect(heading.tagName).toBe('P');
     expect(heading.className).toBe('settings__section');
+  });
+});
+
+describe('rangeProblem (#627)', () => {
+  const range = { min: 10, max: 300 };
+
+  it('says nothing inside the range', () => {
+    expect(rangeProblem(150, range, 'in')).toBeNull();
+  });
+
+  it('gives the bounds in inches the way they are typed, as decimals', () => {
+    expect(rangeProblem(400, range, 'in')).toBe(
+      t('settings.err.range', { min: '0.39', max: '11.81' }),
+    );
+    expect(rangeProblem(400, range, 'cm')).toBe(t('settings.err.range', { min: '1', max: '30' }));
   });
 });

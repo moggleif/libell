@@ -14,6 +14,7 @@
  * Both variants share one severity→color/glyph vocabulary and the same
  * bubble-level physics; only the geometry and where the text lives differ.
  */
+import type { LengthUnit } from '../domain/lengths';
 import { WHEEL_IDS, type WheelId } from '../domain/leveling';
 import type { DisplayResult } from '../domain/stability';
 import type { AppearanceSetting, AxleConfig } from '../domain/settings';
@@ -44,7 +45,7 @@ export { SEVERITY_GLYPH, stepAndLiftText, updateBubble } from './diagramParts';
 
 export interface RvDiagram {
   element: HTMLElement;
-  update(result: DisplayResult, unit: 'mm' | 'cm', stepHeightsMm: number[]): void;
+  update(result: DisplayResult, unit: LengthUnit, stepHeightsMm: number[]): void;
 }
 
 export function createRvDiagram(

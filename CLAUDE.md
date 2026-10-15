@@ -56,7 +56,7 @@ src/
 - No UI framework, no `innerHTML` — DOM is built with `createElement`/`textContent`
   (ADR 0001; this is also the XSS guard, see `SECURITY.md`).
 - **All lengths are millimetres** — model, math, settings and storage alike (ADR 0003);
-  only the display layer formats cm.
+  only the display layer formats cm or inches.
 - The app must work fully **offline** and inside a static-host CSP (ADR 0005): no CDNs,
   no remote requests, no new external resources.
 - The repository stays **text-only** (ADR 0004): new artwork is SVG plus a generator

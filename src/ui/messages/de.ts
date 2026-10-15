@@ -248,6 +248,7 @@ export const de: Messages = {
   'drain.rearLeft': 'Hinten links',
   'drain.rearRight': 'Hinten rechts',
   'settings.unit': 'Längen anzeigen in',
+  'settings.unitInches': 'Zoll (in)',
   'settings.theme': 'Design',
   'theme.system': 'Wie das Handy',
   'theme.light': 'Hell',
@@ -266,6 +267,18 @@ export const de: Messages = {
   'settings.soundSpeech.unavailable':
     'Die Sprachansage funktioniert auf diesem Handy nicht: Es hat keine deutsche Stimme, die offline funktioniert. Die Töne funktionieren wie gewohnt.',
   'speech.level': 'Waagerecht',
+  'speech.inches': '{n} Zoll',
+  'speech.inchOne': 'ein Zoll',
+  'speech.inchOneAnd': 'ein und {fraction} Zoll',
+  'speech.inchesAnd': '{n} und {fraction} Zoll',
+  'speech.inchFraction': '{fraction} Zoll',
+  'speech.eighth1': 'ein Achtel',
+  'speech.eighth2': 'ein Viertel',
+  'speech.eighth3': 'drei Achtel',
+  'speech.eighth4': 'einhalb',
+  'speech.eighth5': 'fünf Achtel',
+  'speech.eighth6': 'drei Viertel',
+  'speech.eighth7': 'sieben Achtel',
   'settings.undo': 'Rückgängig',
   'settings.saved': 'Gespeichert',
   'settings.more': 'Mehr',
@@ -389,6 +402,7 @@ export const de: Messages = {
   'help.settings.t':
     'Libell berechnet aus Radstand und Spurweite, wie weit jedes Rad hoch muss.\n' +
     'Sie stehen in den Fahrzeugpapieren, sonst miss mit dem Maßband.\n' +
+    'Gib sie in mm, cm oder Zoll ein, je nachdem, was du unter Längen anzeigen in gewählt hast.\n' +
     'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.\n' +
     'Bei mehreren Fahrzeugen behält jedes seine Maße, Keile, Nullpunkt, Ziele und Sensorbox; wähle es oben unter Fahrzeug.',
   'help.ramps.t':

@@ -5,6 +5,7 @@
  * layers live in `calibrationStore.ts`.
  */
 import type { LevelSettings } from '../domain/settings';
+import { defaultUnitForLocale } from '../domain/lengths';
 import { parseSettings } from '../domain/settingsParsing';
 import { parseHitchPitch } from '../domain/hitchHeight';
 import {
@@ -50,8 +51,20 @@ const ACTIVE_TARGET_KEY = 'libell.activeTarget';
 // A caravan's saved hitch height, as a pitch from the zero (#598).
 const HITCH_PITCH_KEY = 'libell.hitchPitch';
 
-export function loadSettings(storage: MaybeStorage = defaultStorage()): LevelSettings {
-  return parseSettings(readJson<unknown>(storage, STORAGE_KEY, (value) => value, undefined));
+/**
+ * A first run with no saved unit starts in the phone region's unit (#627);
+ * the first save then keeps it like any other choice.
+ */
+export function loadSettings(
+  storage: MaybeStorage = defaultStorage(),
+  locale: string | undefined = phoneLocale(),
+): LevelSettings {
+  const stored = readJson<unknown>(storage, STORAGE_KEY, (value) => value, undefined);
+  return parseSettings(stored, defaultUnitForLocale(locale));
+}
+
+function phoneLocale(): string | undefined {
+  return typeof navigator !== 'undefined' ? navigator.language : undefined;
 }
 
 export function saveSettings(
