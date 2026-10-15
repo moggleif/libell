@@ -3,6 +3,7 @@
  * edit, and New vehicle, Rename and Remove. Choosing another vehicle starts
  * the app again on it, so nothing here redraws after a switch.
  */
+import { button } from './calibrationControls';
 import { createElement } from './dom';
 import { t } from './i18n';
 
@@ -16,20 +17,13 @@ export interface VehiclePickerOptions {
   remove(id: string): boolean;
 }
 
-export interface VehiclePicker {
-  element: HTMLElement;
-  refresh(): void;
-}
-
 /** A first vehicle never renamed reads "My vehicle". */
 export function vehicleName(name: string): string {
   return name === '' ? t('vehicles.defaultName') : name;
 }
 
-function button(text: string, onClick: () => void): HTMLButtonElement {
-  const element = createElement('button', 'menu__action menu__action--secondary');
-  element.type = 'button';
-  element.textContent = text;
+function actionButton(text: string, onClick: () => void): HTMLButtonElement {
+  const element = button('menu__action menu__action--secondary', text);
   element.addEventListener('click', onClick);
   return element;
 }
@@ -51,13 +45,13 @@ function createParts() {
   return { heading, select, nameInput, hint, status };
 }
 
-export function createVehiclePicker(options: VehiclePickerOptions): VehiclePicker {
+export function createVehiclePicker(options: VehiclePickerOptions): HTMLElement {
   const parts = createParts();
   const { select, nameInput, status } = parts;
   const activeName = () =>
     vehicleName(options.list().find((v) => v.id === options.activeId())?.name ?? '');
   let confirming = false;
-  const yes = button(t('vehicles.remove.yes'), () => {
+  const yes = actionButton(t('vehicles.remove.yes'), () => {
     if (!options.remove(options.activeId())) status.textContent = t('vehicles.remove.last');
     confirming = false;
     refresh();
@@ -69,12 +63,12 @@ export function createVehiclePicker(options: VehiclePickerOptions): VehiclePicke
   select.addEventListener('change', () => options.switchTo(select.value));
   const actions = createElement('div', 'vehicles__actions');
   actions.append(
-    button(t('vehicles.add'), () => options.add(nameOrNext(nameInput, options))),
-    button(t('vehicles.rename'), () => {
+    actionButton(t('vehicles.add'), () => options.add(nameOrNext(nameInput, options))),
+    actionButton(t('vehicles.rename'), () => {
       status.textContent = rename(nameInput, options);
       refresh();
     }),
-    button(t('vehicles.remove'), () => {
+    actionButton(t('vehicles.remove'), () => {
       confirming = options.list().length > 1;
       status.textContent = confirming
         ? t('vehicles.remove.confirm', { name: activeName() })
@@ -85,7 +79,7 @@ export function createVehiclePicker(options: VehiclePickerOptions): VehiclePicke
   const element = createElement('div', 'vehicles');
   element.append(parts.heading, select, nameInput, actions, status, yes, parts.hint);
   refresh();
-  return { element, refresh };
+  return element;
 }
 
 function fillSelect(select: HTMLSelectElement, options: VehiclePickerOptions): void {

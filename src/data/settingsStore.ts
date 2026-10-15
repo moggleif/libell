@@ -171,5 +171,11 @@ export function saveHitchPitch(pitchDeg: number, storage: MaybeStorage = default
 
 /** The flags that describe one vehicle (#599): its targets and hitch height. */
 export function vehicleFlagKeys(): string[] {
-  return [TARGET_PRESETS_KEY, ACTIVE_TARGET_KEY, HITCH_PITCH_KEY];
+  return [TARGET_PRESETS_KEY, ACTIVE_TARGET_KEY, HITCH_PITCH_KEY, MEASUREMENTS_SAVED_KEY];
+}
+
+/** What a vehicle added with known measurements starts with stored: its
+ * measurements count as saved, so the lamp stays off. */
+export function measuredVehicleFlags(): Record<string, string> {
+  return { [MEASUREMENTS_SAVED_KEY]: '1' };
 }

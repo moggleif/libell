@@ -43,7 +43,7 @@ function parts(element: HTMLElement) {
 
 describe('vehicle picker (#599)', () => {
   it('shows the one vehicle an existing install has as "My vehicle"', () => {
-    const { element } = createVehiclePicker(fakeVehicles());
+    const element = createVehiclePicker(fakeVehicles());
     const { select } = parts(element);
     expect([...select.options].map((o) => o.textContent)).toEqual([t('vehicles.defaultName')]);
     expect(select.value).toBe('v0');
@@ -51,7 +51,7 @@ describe('vehicle picker (#599)', () => {
 
   it('switches to the vehicle chosen', () => {
     const options = fakeVehicles(['', 'Caravan']);
-    const { select } = parts(createVehiclePicker(options).element);
+    const { select } = parts(createVehiclePicker(options));
     select.value = 'v1';
     select.dispatchEvent(new Event('change'));
     expect(options.switchTo).toHaveBeenCalledWith('v1');
@@ -59,7 +59,7 @@ describe('vehicle picker (#599)', () => {
 
   it('adds a vehicle under the typed name, or the next free "Vehicle N"', () => {
     const options = fakeVehicles(['', 'Vehicle 2']);
-    const { input, button } = parts(createVehiclePicker(options).element);
+    const { input, button } = parts(createVehiclePicker(options));
     button('vehicles.add').click();
     expect(options.add).toHaveBeenCalledWith(t('vehicles.numbered', { n: 3 }));
     input.value = '  Caravan ';
@@ -67,9 +67,13 @@ describe('vehicle picker (#599)', () => {
     expect(options.add).toHaveBeenLastCalledWith('Caravan');
   });
 
+  it('skips a "Vehicle N" already in use', () => {
+    expect(nextVehicleName([{ name: '' }, { name: 'Vehicle 3' }])).toBe('Vehicle 4');
+  });
+
   it('renames the active vehicle, and guides when no name is typed', () => {
     const options = fakeVehicles();
-    const { element } = createVehiclePicker(options);
+    const element = createVehiclePicker(options);
     const { input, button, status, select } = parts(element);
     button('vehicles.rename').click();
     expect(status()).toBe(t('vehicles.rename.empty'));
@@ -83,7 +87,7 @@ describe('vehicle picker (#599)', () => {
 
   it('explains instead of removing the only vehicle', () => {
     const options = fakeVehicles();
-    const { button, status } = parts(createVehiclePicker(options).element);
+    const { button, status } = parts(createVehiclePicker(options));
     button('vehicles.remove').click();
     expect(status()).toBe(t('vehicles.remove.last'));
     expect(button('vehicles.remove.yes').hidden).toBe(true);
@@ -92,7 +96,7 @@ describe('vehicle picker (#599)', () => {
 
   it('asks before removing, then removes the active vehicle', () => {
     const options = fakeVehicles(['Bus', 'Caravan']);
-    const { button, status } = parts(createVehiclePicker(options).element);
+    const { button, status } = parts(createVehiclePicker(options));
     button('vehicles.remove').click();
     expect(status()).toBe(t('vehicles.remove.confirm', { name: 'Bus' }));
     expect(options.remove).not.toHaveBeenCalled();
@@ -107,7 +111,7 @@ describe('vehicle picker (#599)', () => {
       expect(vehicleName('')).toBe(t('vehicles.defaultName'));
       expect(vehicleName('Bus')).toBe('Bus');
       expect(nextVehicleName([{ name: '' }])).toBe(t('vehicles.numbered', { n: 2 }));
-      const { element } = createVehiclePicker(fakeVehicles());
+      const element = createVehiclePicker(fakeVehicles());
       for (const text of [...element.querySelectorAll('p, button')].map((e) => e.textContent)) {
         expect(text).not.toMatch(/^vehicles\./);
       }

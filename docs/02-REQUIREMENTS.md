@@ -2120,7 +2120,9 @@ per vehicle (Morgan, #599).
 - **Given** "New vehicle", with or without a name typed
 - **Then** a vehicle with `DEFAULT_SETTINGS`' measurements, no zero, no targets and no
   box (it uses the phone) is added and becomes active; with no name typed it is called
-  "Vehicle N", the next number not in use.
+  "Vehicle N", the next number not in use. Its measurements count as not yet saved, so
+  the "⚠ Measurements" lamp (R11) lights until I set them; a vehicle added from a shared
+  setup (R41) counts them as saved.
 - **Given** two vehicles
 - **When** I choose the other one
 - **Then** the app starts again on it: the main screen uses its vehicle type, axle,

@@ -9,6 +9,8 @@ import {
 import { loadRememberedDeviceId, saveRememberedDeviceId } from '../data/sensorDeviceStore';
 import {
   loadSettings,
+  hasStoredMeasurements,
+  markMeasurementsSaved,
   loadTargetPresets,
   saveSettings,
   saveTargetPresets,
@@ -87,6 +89,16 @@ describe('createVehicles', () => {
     });
     expect(loadSettings(storage).vehicleType).toBe('caravan');
     expect(loadSettings(storage).wheelbaseMm).toBe(3600);
+    expect(hasStoredMeasurements(storage)).toBe(true);
+  });
+
+  it('lights the measurements lamp for a new vehicle on defaults, not for the first one', () => {
+    const { vehicles, storage } = setup();
+    markMeasurementsSaved(storage);
+    vehicles.add('Caravan');
+    expect(hasStoredMeasurements(storage)).toBe(false);
+    vehicles.switchTo('vehicle-1');
+    expect(hasStoredMeasurements(storage)).toBe(true);
   });
 
   it('switches back with its box, zero and targets, and keeps the other vehicle’s', () => {

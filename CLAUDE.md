@@ -35,7 +35,8 @@ src/
 ├── domain/        # PURE TypeScript, no browser APIs — fully unit-testable
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
-│                  # remembered device id, #130) — all localStorage, through the
+│                  # remembered device id, #130), vehicleStore.ts (the other
+│                  # vehicles, ADR 0017) — all localStorage, through the
 │                  # guarded helpers in keyValueStorage.ts
 ├── sensor/        # orientation.ts (the phone) and the Sensorbox sources: registry,
 │                  # controller, EasyLevel and Xparkle adapters, protocols, simulators

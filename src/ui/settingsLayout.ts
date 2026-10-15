@@ -30,7 +30,7 @@ export interface Hosts {
 
 /** The vehicle picker above the Vehicle fields (#599), when wired. */
 function vehicleElements(tabs: Tabs, vehicles: VehiclePickerOptions | undefined): HTMLElement[] {
-  const picker = vehicles ? [createVehiclePicker(vehicles).element] : [];
+  const picker = vehicles ? [createVehiclePicker(vehicles)] : [];
   return [...picker, ...tabs.vehicle.elements()];
 }
 

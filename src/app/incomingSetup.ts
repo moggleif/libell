@@ -41,10 +41,7 @@ export function offerIncomingSetup(code: string | null, deps: IncomingSetupDeps)
       deps.markMeasurementsSaved();
       deps.onApplied();
     },
-    onAddAsNew() {
-      deps.markMeasurementsSaved();
-      deps.addVehicle(geometry);
-    },
+    onAddAsNew: () => deps.addVehicle(geometry),
     // Nothing to do: the link is already consumed off the URL.
     onDismiss: () => {},
   });

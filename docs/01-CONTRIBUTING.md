@@ -32,7 +32,7 @@ The base path defaults to `/libell/` for GitHub Pages project hosting; override 
 The Playwright scripts need a build to serve, so they are not part of the
 pre-commit set — CI runs them after `build`. `flows` (#374, #392) drives the simulated
 boxes (`?easylevel-sim`, `?xparkle-sim`), the first-run guide, the level screen, sound,
-navigation, settings saves and start-up through the real wiring in `src/main.ts`, one
+navigation, settings saves, start-up and switching vehicles through the real wiring in `src/main.ts`, one
 file per flow in `scripts/flows/` with the shared helpers in `scripts/flows/harness.mjs`;
 extend it before you change how `main.ts` connects the `src/app/` modules. `fit` (#239, #241, #243) opens **every**
 view — level, first-run guide, settings, help, external sensor, the iOS sensor guide,

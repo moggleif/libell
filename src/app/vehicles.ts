@@ -14,6 +14,7 @@ import {
   restoreVehicle,
   saveVehicleList,
 } from '../data/vehicleStore';
+import { measuredVehicleFlags } from '../data/settingsStore';
 
 export interface VehiclesDeps {
   /** Starts the app again on the vehicle just made active. */
@@ -63,7 +64,8 @@ export function createVehicles(deps: VehiclesDeps): Vehicles {
     add(name, geometry) {
       const list = load();
       const fields = { ...vehicleFieldsOf(DEFAULT_SETTINGS), ...geometry };
-      const vehicle: Vehicle = { id: newId(), name, fields, stored: {} };
+      const stored = geometry ? measuredVehicleFlags() : {};
+      const vehicle: Vehicle = { id: newId(), name, fields, stored };
       activate(list, vehicle, [...list.vehicles, vehicle]);
     },
     rename(id, name) {

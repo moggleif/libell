@@ -65,7 +65,7 @@ describe('offerIncomingSetup', () => {
     const { deps, shown, calls, settings } = setup();
     offerIncomingSetup(shared, deps);
     shown()!.onAddAsNew();
-    expect(calls).toEqual(['marked', 'added 4321']);
+    expect(calls).toEqual(['added 4321']);
     expect(settings().wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
   });
 

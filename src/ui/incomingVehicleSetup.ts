@@ -9,6 +9,7 @@ import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
 import { createElement } from './dom';
 import { holdFocus } from './focusHold';
+import { button } from './calibrationControls';
 
 export interface IncomingVehicleSetupOptions {
   geometry: VehicleGeometry;
@@ -93,12 +94,9 @@ function paragraph(className: string, text: string): HTMLParagraphElement {
 }
 
 function actionButton(className: string, text: string, onClick: () => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = className;
-  button.textContent = text;
-  button.addEventListener('click', onClick);
-  return button;
+  const element = button(className, text);
+  element.addEventListener('click', onClick);
+  return element;
 }
 
 /** Adding it as a new vehicle is the primary choice: nothing is lost. */
