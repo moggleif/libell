@@ -79,7 +79,7 @@ export const es: Messages = {
   'sensorSource.detail.temperature': 'Temperatura: {value}',
   'sensorSource.detail.notAvailable': 'Aún no disponible',
   'sensorSource.lowBattery':
-    '⚠ Batería baja ({value}): conviene cambiar pronto la pila de la caja del sensor.',
+    '⚠ Batería baja ({value}): conviene cambiar pronto la pila de la caja sensora.',
 
   'sensorSource.install.now': 'Poner a cero',
   'sensorSource.install.clear': 'Olvidar el cero',
@@ -272,7 +272,7 @@ export const es: Messages = {
   'speech.eighth1': 'un octavo',
   'speech.eighth2': 'un cuarto',
   'speech.eighth3': 'tres octavos',
-  'speech.eighth4': 'un medio',
+  'speech.eighth4': 'media',
   'speech.eighth5': 'cinco octavos',
   'speech.eighth6': 'tres cuartos',
   'speech.eighth7': 'siete octavos',
@@ -400,11 +400,11 @@ export const es: Messages = {
     'Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
     'Escríbelas en mm, cm o pulgadas, lo que elegiste en Mostrar las longitudes en.\n' +
     'En una caravana, la distancia entre ejes va del eje a la rueda jockey.\n' +
-    'Con varios vehículos, cada uno guarda sus medidas, calzos, cero, objetivos y caja sensora; elígelo arriba en Vehículo.',
+    'Con varios vehículos, cada uno guarda sus medidas, rampas, cero, objetivos y caja sensora; elígelo arriba en Vehículo.',
   'help.ramps.t':
     'La pantalla te dice a qué escalón de tu rampa sube cada rueda, así que introduce las rampas que llevas.\n' +
     'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.\n' +
-    'Para una rampa sin escalones, elige Calzo sin escalones e introduce su altura. La pantalla dice entonces cuánto subir.',
+    'Si tienes un calzo sin escalones, elige Calzo sin escalones e introduce su altura. La pantalla dice entonces cuánto subir.',
   'help.calibration.h': 'Calibrar y poner a cero',
   'help.calibration.t':
     'Dos pasos hacen que la medida sea correcta: calibrar el móvil una vez y poner el vehículo a cero una vez.\n' +
@@ -491,7 +491,7 @@ export const es: Messages = {
   'vehicles.remove.confirm': '¿Eliminar {name} con su cero, sus objetivos y caja sensora?',
   'vehicles.remove.yes': 'Sí, eliminar',
   'vehicles.hint':
-    'Las medidas, los calzos, el cero, los objetivos y la caja sensora pertenecen al vehículo. La calibración del móvil se comparte.',
+    'Las medidas, las rampas, el cero, los objetivos y la caja sensora pertenecen al vehículo. La calibración del móvil se comparte.',
   'setup.incoming.addNew': 'Añadir como vehículo nuevo',
 
   'hitch.title': 'Altura de enganche',
@@ -503,11 +503,12 @@ export const es: Messages = {
   'hitch.savedNow': 'Altura de enganche guardada.',
   'hitch.status.none': 'Aún no hay altura de enganche guardada.',
   'hitch.status.saved': 'Hay una altura de enganche guardada.',
-  'hitch.status.active': 'La pantalla principal indica cuánto girar la rueda jockey.',
+  'hitch.status.active':
+    'La pantalla principal indica cuánto girar la manivela de la rueda jockey.',
   'hitch.badge': 'Altura de enganche',
   'hitch.badge.aria': 'Altura de enganche: toca para nivelar como siempre',
-  'hitch.crank.up': 'Subir {amount} hasta la altura de enganche',
-  'hitch.crank.down': 'Bajar {amount} hasta la altura de enganche',
+  'hitch.crank.up': 'Subir con la manivela {amount} hasta la altura de enganche',
+  'hitch.crank.down': 'Bajar con la manivela {amount} hasta la altura de enganche',
   'hitch.reached': 'En la altura de enganche',
   'hitch.offer': '¿Guardar antes la altura de enganche?',
   'hitch.offer.save': 'Guardar',

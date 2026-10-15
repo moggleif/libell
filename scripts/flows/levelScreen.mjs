@@ -17,9 +17,7 @@ const fallbackPrompt = (page) => page.locator('.sensor-fallback');
 // The level screen's frame loop: the pose guard pauses while a page is open.
 export async function landscapeFlow(browser) {
   const { context, page, errors } = await openApp(browser, 'demo', {}, { width: 844, height: 390 });
-  await poseOverlay(page)
-    .getByText('Turn the phone upright (portrait)', { exact: false })
-    .waitFor();
+  await poseOverlay(page).getByText('Turn the phone to portrait', { exact: false }).waitFor();
   await page.click('#settings-button');
   await poseOverlay(page).waitFor({ state: 'hidden' });
   await closeAllPages(page);
@@ -90,7 +88,9 @@ async function statusRowScenarios(browser) {
   app = await openApp(browser, 'demo', {
     'libell.settings': JSON.stringify({ rampStepHeightsMm: [200] }),
   });
-  await statusLine(app.page).getByText('Your ramps are way off here — move the vehicle').waitFor();
+  await statusLine(app.page)
+    .getByText('Your ramps are far from enough here — move the vehicle')
+    .waitFor();
   await closeClean(app);
 
   // A caravan: its own diagram, and nothing for the status row to say.

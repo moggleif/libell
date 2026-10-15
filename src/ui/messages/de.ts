@@ -112,7 +112,7 @@ export const de: Messages = {
   'sensorSource.learn.err.arrow':
     'Kein Pfeil zeigt nach vorn. Drehe die Box so, dass einer ihrer Pfeile nach vorn zeigt, und versuche es erneut.',
   'sensorSource.learn.err.mirrored':
-    'Die Box scheint verkehrt herum zu sitzen, oder die falsche Seite wurde angehoben. Prüfe es und versuche es erneut.',
+    'Die Box scheint kopfüber zu sitzen, oder die falsche Seite wurde angehoben. Prüfe es und versuche es erneut.',
   'sensorSource.learn.err.sameAxis':
     'Beide Anhebungen haben in dieselbe Richtung geneigt. Hebe zuerst die Front, dann die rechte Seite an und versuche es erneut.',
 
@@ -188,7 +188,7 @@ export const de: Messages = {
   'onboard.zeroLater':
     'Das Fahrzeug nullst du, wenn du das erste Mal auf ebenem Boden parkst. {lamp} erinnert dich, bis es erledigt ist.',
   'onboard.legend.ok': 'Grün ✓ — dieses Rad steht waagerecht.',
-  'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe fahren.',
+  'onboard.legend.up': 'Orange ↑ — dieses Rad auf die angezeigte Stufe auffahren.',
   'onboard.legend.no': 'Rot ✕ — keine Stufe reicht; such dir einen ebeneren Platz.',
   'onboard.legend.dim': 'Grau – — an diesem Rad kein Keil; die Zahl zeigt, wie viel fehlt.',
   'settings.wheelbase': 'Radstand',
@@ -257,7 +257,7 @@ export const de: Messages = {
   'appearance.classic': 'Klassisch',
   'appearance.modern': 'Modern',
   'appearance.glossy': 'Glänzend',
-  'settings.sound': 'Signalton bei waagerecht',
+  'settings.sound': 'Signalton, wenn waagerecht',
   'settings.soundGuidance': 'Durchgehende Tonführung',
   'settings.soundGuidance.help':
     'Der Ton wird schneller und höher, je näher du der Waagerechten kommst.',
@@ -388,7 +388,7 @@ export const de: Messages = {
     'Der Bildschirm zeigt, welche Räder hoch müssen und um wie viel. Stufe 2 heißt die zweite Stufe deines Keils.',
   'help.screen.t':
     'Grün ✓: fertig, nichts zu tun.\n' +
-    'Orange ↑: fahr das Rad auf die daneben angezeigte Stufe.\n' +
+    'Orange ↑: fahr das Rad auf die daneben angezeigte Stufe auf.\n' +
     'Rot ✕: deine Keile reichen hier nicht. Stell das Fahrzeug um.\n' +
     'Grau –: an diesem Rad kein Keil. Die Zahl zeigt, wie viel fehlt, falls du etwas anderes unterlegen willst.\n' +
     'Ruht die Blase in der Mitte, stehst du waagerecht.',
@@ -396,7 +396,7 @@ export const de: Messages = {
     'Fahr auf, warte, bis das Fahrzeug still steht, und schau noch einmal. Wiederhole das, bis alle Räder grün sind.',
   'help.what.t':
     'Leg das Handy flach ins Fahrzeug, die Oberseite nach vorn, jedes Mal an dieselbe Stelle.\n' +
-    'Mit einer Sensorbox ist egal, wie das Handy liegt.',
+    'Mit einer Sensorbox ist es egal, wie das Handy liegt.',
   'help.settings.h': 'Die Maße',
   'help.measures.h': 'Maße eintragen',
   'help.settings.t':

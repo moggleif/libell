@@ -233,7 +233,7 @@ export const en = {
   'settings.measureHint': "They're in the registration document. A few cm off doesn't matter.",
   'settings.measureHint.caravan':
     "Measure from the axle to the jockey wheel. A few cm off doesn't matter.",
-  'settings.measureHint.boggie': 'With a boggie, measure to the centre of the axle pair.',
+  'settings.measureHint.boggie': 'With a tandem axle, measure to the centre of the axle pair.',
   'settings.steps': 'Ramp step heights',
   'settings.steps.add': 'Add step',
   'settings.steps.new': 'New step height ({unit})',
@@ -244,7 +244,7 @@ export const en = {
   'settings.ramp.steplessModel': '{name} (stepless, max {max} mm)',
   'settings.stepless.max': 'Stepless wedge, max height',
   'settings.stepless.maxHeading': 'Max height',
-  'settings.stepless.set': 'Set',
+  'settings.stepless.set': 'Save',
   'settings.stepless.new': 'Max height ({unit})',
   'settings.rampCount': 'Number of ramps',
   'settings.drain': 'Drain side',
@@ -323,7 +323,7 @@ export const en = {
   'status.measuring': 'Measuring…',
   'status.almost': 'Almost level — {left} left',
   'status.cantLevel.close': 'Your ramps get close but not enough here — move the vehicle',
-  'status.cantLevel.far': 'Your ramps are way off here — move the vehicle',
+  'status.cantLevel.far': 'Your ramps are far from enough here — move the vehicle',
 
   'calibration.intro':
     'Put the phone on a surface you know is level, then tap Calibrate now. ' +
@@ -442,7 +442,7 @@ export const en = {
     'Calibrate: lay the phone on a flat surface and tap Calibrate now.\n' +
     'Zero: level the vehicle with a spirit level, put the phone in its usual place and tap Zero now.\n' +
     'With a sensor box you zero on the box’s page. It needs no calibration.\n' +
-    'Still not quite level? Fine-tune the zero with Left up, Right up, Front up or Back up under the zero.\n' +
+    'Still not quite level? Fine-tune the zero with Left up, Right up, Front up or Back up in Zero the vehicle.\n' +
     'The ⚠ Calibrate or ⚠ Zero lamp stays on until it is done.',
   'help.sensor.h': 'Sensor box',
   'help.sensor.t':
@@ -582,7 +582,7 @@ export const en = {
   'calibration.external.err.notConnected': '{name} is not connected. Connect it and try again.',
   'calibration.external.err.failed':
     'Could not zero {name}. Nothing was changed. Check the connection and try again.',
-  'pose.portrait': 'Turn the phone upright (portrait) — the top edge must point forward',
+  'pose.portrait': 'Turn the phone to portrait — the top edge must point forward',
 
   'stale.dataUnavailable': 'No new sensor data — guidance is paused until it returns',
 
