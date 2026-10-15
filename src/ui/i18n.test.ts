@@ -39,6 +39,7 @@ describe('i18n dictionaries', () => {
       'Norsk bokmål',
       'Polski',
       'Português',
+      'Suomi',
       'Svenska',
     ]);
   });
@@ -210,6 +211,7 @@ describe('i18n terminology (#366)', () => {
       pt: 'Medidas',
       da: 'Dimensioner',
       nb: 'Dimensjoner',
+      fi: 'Mitat',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -255,7 +257,7 @@ describe('i18n public interface (#377)', () => {
 
   it('types Language as the shipped languages', () => {
     expectTypeOf<Language>().toEqualTypeOf<
-      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt' | 'da' | 'nb'
+      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt' | 'da' | 'nb' | 'fi'
     >();
   });
 
