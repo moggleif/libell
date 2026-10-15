@@ -257,6 +257,12 @@ export const fr: Messages = {
   'settings.soundGuidance': 'Guidage sonore continu',
   'settings.soundGuidance.help':
     'Le bip s’accélère et monte à mesure que vous approchez du niveau.',
+  'settings.soundSpeech': 'Guidage vocal',
+  'settings.soundSpeech.help':
+    'Quand le véhicule est immobile, l’application dit quelle roue et de combien, par exemple « Arrière gauche, Palier 2 ».',
+  'settings.soundSpeech.unavailable':
+    'Le guidage vocal ne fonctionne pas sur ce téléphone : il n’a pas de voix française utilisable hors ligne. Les bips fonctionnent normalement.',
+  'speech.level': 'À niveau',
   'settings.undo': 'Annuler',
   'settings.saved': 'Enregistré',
   'settings.more': 'Plus',
@@ -408,6 +414,7 @@ export const fr: Messages = {
   'help.targets.h': 'Cibles et son',
   'help.targets.t':
     'Enregistrez une inclinaison voulue, par exemple vers l’évacuation de la douche, et passez de l’une à l’autre.\n' +
+    'Avec le guidage vocal, l’application dit quelle roue lever et de combien, pour niveler sans voir le téléphone.\n' +
     'Le bouton au milieu de la barre du bas active et coupe le son.',
   'help.trouble.h': 'En cas de souci',
   'help.trouble.t':

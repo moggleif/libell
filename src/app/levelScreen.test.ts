@@ -140,6 +140,7 @@ describe('buildLevelScreen', () => {
       usePhoneSensor: () => {},
       playChime: () => {},
       playGuidancePulse: () => {},
+      speak: () => {},
       vibrate: () => {},
     });
     expect(root.querySelector('svg')?.getAttribute('aria-label')).toContain('caravan');

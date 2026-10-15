@@ -111,6 +111,7 @@ const TAB_CAPTIONS: Record<Tab, MessageKey[]> = {
     'settings.unit',
     'settings.sound',
     'settings.soundGuidance',
+    'settings.soundSpeech',
     'settings.stability',
     'settings.dwellRest',
     'settings.dwellMotion',
@@ -216,6 +217,16 @@ const EDITS: Edit[] = [
       change(box);
     },
     expected: { soundGuidance: !DEFAULT_SETTINGS.soundGuidance },
+  },
+  {
+    name: 'Spoken guidance',
+    tab: 'general',
+    apply: (tab) => {
+      const box = control<HTMLInputElement>(tab, 'settings.soundSpeech');
+      box.checked = !box.checked;
+      change(box);
+    },
+    expected: { soundSpeech: !DEFAULT_SETTINGS.soundSpeech },
   },
   {
     name: 'Stability',
@@ -403,7 +414,7 @@ describe('settings — the wizard steps (#376)', () => {
     ['measurements', ['settings.wheelbase', 'settings.trackFront', 'settings.trackRear']],
     ['language', ['settings.language']],
     ['appearance', ['settings.theme', 'settings.appearance']],
-    ['sound', ['settings.sound', 'settings.soundGuidance']],
+    ['sound', ['settings.sound', 'settings.soundGuidance', 'settings.soundSpeech']],
     ['ramps', ['settings.steps', 'settings.rampCount']],
   ];
   for (const [compact, expected] of STEPS) {

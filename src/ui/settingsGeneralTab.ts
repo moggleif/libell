@@ -6,6 +6,7 @@ import {
   LENGTH_RANGES_MM,
   type AppearanceSetting,
   type LevelSettings,
+  type SoundPrefs,
   type ThemeSetting,
 } from '../domain/settings';
 import { clearLanguage, loadLanguage, saveLanguage, saveSettings } from '../data/settingsStore';
@@ -26,12 +27,13 @@ import {
 } from './settingsFields';
 import { isLanguage, LANGUAGE_NAMES, LANGUAGES, t } from './i18n';
 import { createElement } from './dom';
+import { offlineVoice, onVoicesChanged } from './speechSupport';
 
 export interface GeneralTab {
   languageField: HTMLElement;
   /** Theme and Appearance: the wizard's "how it looks" step. */
   lookElements(): HTMLElement[];
-  /** Chime and audio guidance: the wizard's "what it sounds like" step. */
+  /** Chime, audio and spoken guidance: the wizard's "what it sounds like" step. */
   soundElements(): HTMLElement[];
   /** The whole tab, in order. */
   elements(): HTMLElement[];
@@ -41,7 +43,7 @@ export interface GeneralTab {
   read(raw: RawSettings): void;
   populate(settings: LevelSettings): void;
   /** Takes a sound choice made outside the form as the new state. */
-  resyncSound(sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>): void;
+  resyncSound(sound: SoundPrefs): void;
 }
 
 export interface GeneralTabActions {
@@ -115,6 +117,7 @@ function read(
   raw.displayUnit = state.unit;
   raw.soundOnLevel = sound.chime.control.checked;
   raw.soundGuidance = sound.guidance.control.checked;
+  raw.soundSpeech = sound.speech.control.checked;
   raw.theme = theme.control.value;
   raw.appearance = appearance.control.value;
 }
@@ -199,27 +202,46 @@ function createAppearanceField(initial: AppearanceSetting, context: SettingsForm
 }
 
 /**
- * The level chime and, a separate opt-in, audio guidance that
- * pulses rate/pitch while approaching level — under a Sound heading.
+ * The level chime and, separate opt-ins, audio guidance that pulses
+ * rate/pitch while approaching level and spoken guidance that says which
+ * wheel and how much (#602) — under a Sound heading.
  */
 function createSoundFields(initial: LevelSettings) {
   const heading = createSectionHeading();
   const chime = createCheckboxField(initial.soundOnLevel);
   const guidance = createCheckboxField(initial.soundGuidance);
   const guidanceHint = createHint();
+  const speech = createCheckboxField(initial.soundSpeech);
+  const speechHint = createHint();
+  const relabelSpeechHint = (): void => {
+    speechHint.textContent = t(
+      offlineVoice() ? 'settings.soundSpeech.help' : 'settings.soundSpeech.unavailable',
+    );
+  };
+  onVoicesChanged(relabelSpeechHint);
   return {
     heading,
     chime,
     guidance,
-    elements: (): HTMLElement[] => [chime.element, guidance.element, guidanceHint],
-    show: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>): void => {
+    speech,
+    elements: (): HTMLElement[] => [
+      chime.element,
+      guidance.element,
+      guidanceHint,
+      speech.element,
+      speechHint,
+    ],
+    show: (sound: SoundPrefs): void => {
       chime.control.checked = sound.soundOnLevel;
       guidance.control.checked = sound.soundGuidance;
+      speech.control.checked = sound.soundSpeech;
     },
     relabel: (): void => {
       chime.caption.textContent = t('settings.sound');
       guidance.caption.textContent = t('settings.soundGuidance');
       guidanceHint.textContent = t('settings.soundGuidance.help');
+      speech.caption.textContent = t('settings.soundSpeech');
+      relabelSpeechHint();
       // Reuses the wizard's own step title: same name for the same grouping.
       heading.textContent = t('onboard.sound.h');
     },

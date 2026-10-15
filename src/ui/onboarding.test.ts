@@ -178,11 +178,11 @@ describe('onboarding wizard — language/appearance/sound steps (#189, split by 
     expect(card().querySelector('input[type="checkbox"]')).toBeNull();
   });
 
-  it('sound: Chime + Continuous audio guidance checkboxes, nothing else', () => {
+  it('sound: Chime, Continuous audio guidance and Spoken guidance checkboxes, nothing else', () => {
     open({ initialSettings: classicSettings() });
     back(); // vehicle -> sound
     expect(card().querySelector('.onboarding__title')?.textContent).toBe(t('onboard.sound.h'));
-    expect(card().querySelectorAll('input[type="checkbox"]')).toHaveLength(2);
+    expect(card().querySelectorAll('input[type="checkbox"]')).toHaveLength(3);
     expect(card().querySelector('select')).toBeNull();
   });
 

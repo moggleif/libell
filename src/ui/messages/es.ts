@@ -250,6 +250,12 @@ export const es: Messages = {
   'settings.sound': 'Sonido al quedar nivelado',
   'settings.soundGuidance': 'Guía sonora continua',
   'settings.soundGuidance.help': 'El pitido se acelera y sube a medida que te acercas al nivel.',
+  'settings.soundSpeech': 'Guía por voz',
+  'settings.soundSpeech.help':
+    'Cuando el vehículo está quieto, la app dice qué rueda y cuánto, por ejemplo «Trasera izquierda, Escalón 2».',
+  'settings.soundSpeech.unavailable':
+    'La guía por voz no funciona en este móvil: no tiene una voz en español que funcione sin conexión. Los pitidos funcionan como siempre.',
+  'speech.level': 'Nivelado',
   'settings.undo': 'Deshacer',
   'settings.saved': 'Guardado',
   'settings.more': 'Más',
@@ -396,6 +402,7 @@ export const es: Messages = {
   'help.targets.h': 'Objetivos y sonido',
   'help.targets.t':
     'Guarda una inclinación que quieras, por ejemplo hacia el desagüe de la ducha, y cambia entre ellas.\n' +
+    'Con la guía por voz, la app dice qué rueda subir y cuánto, para nivelar sin ver el móvil.\n' +
     'El botón en el centro de la barra inferior activa y quita el sonido.',
   'help.trouble.h': 'Si algo falla',
   'help.trouble.t':

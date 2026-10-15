@@ -43,7 +43,7 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
     getHealth: () => null,
-    getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false }),
+    getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false, soundSpeech: false }),
     ...overrides,
   };
 }
@@ -210,7 +210,7 @@ describe('Settings form resyncs sound fields on every reopen (#161)', () => {
     const menu = createMenu(
       makeOptions({
         initialSettings: classicSettings(),
-        getSoundPrefs: () => ({ soundOnLevel, soundGuidance }),
+        getSoundPrefs: () => ({ soundOnLevel, soundGuidance, soundSpeech: false }),
       }),
     );
     menu.open('general');

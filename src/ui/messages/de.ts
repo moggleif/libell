@@ -253,6 +253,12 @@ export const de: Messages = {
   'settings.soundGuidance': 'Durchgehende Tonführung',
   'settings.soundGuidance.help':
     'Der Ton wird schneller und höher, je näher du der Waagerechten kommst.',
+  'settings.soundSpeech': 'Sprachansage',
+  'settings.soundSpeech.help':
+    'Steht das Fahrzeug still, sagt die App, welches Rad und wie viel, etwa „Hinten links, Stufe 2“.',
+  'settings.soundSpeech.unavailable':
+    'Die Sprachansage funktioniert auf diesem Handy nicht: Es hat keine deutsche Stimme, die offline funktioniert. Die Töne funktionieren wie gewohnt.',
+  'speech.level': 'Waagerecht',
   'settings.undo': 'Rückgängig',
   'settings.saved': 'Gespeichert',
   'settings.more': 'Mehr',
@@ -400,6 +406,7 @@ export const de: Messages = {
   'help.targets.h': 'Ziele und Ton',
   'help.targets.t':
     'Speichere eine gewünschte Neigung, etwa zum Duschablauf hin, und wechsle zwischen ihnen.\n' +
+    'Mit der Sprachansage sagt die App, welches Rad du anheben musst und wie viel, damit du nivellieren kannst, ohne das Handy zu sehen.\n' +
     'Die Taste in der Mitte der unteren Leiste schaltet den Ton ein und aus.',
   'help.trouble.h': 'Wenn etwas nicht klappt',
   'help.trouble.t':

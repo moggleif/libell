@@ -887,7 +887,7 @@ describe('settings form — resyncSoundFields (#161)', () => {
     expect(chime!.checked).toBe(true);
     expect(guidance!.checked).toBe(false);
 
-    form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: true });
+    form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: true, soundSpeech: false });
     expect(chime!.checked).toBe(false);
     expect(guidance!.checked).toBe(true);
   });
@@ -896,7 +896,7 @@ describe('settings form — resyncSoundFields (#161)', () => {
     const settings: LevelSettings = { ...classic, soundOnLevel: true, soundGuidance: true };
     const onSave = vi.fn<(s: LevelSettings) => void>();
     const form = createSettingsForm(settings, onSave);
-    form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: false });
+    form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: false, soundSpeech: false });
     expect(onSave).not.toHaveBeenCalled();
 
     const [chime] = soundCheckboxes(form);

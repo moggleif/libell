@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS, type LevelSettings, type SensorSource } from '../domain/settings';
 import type { GravityVector } from '../domain/leveling';
 import { STALE_TIMEOUT_PHONE_MS } from '../domain/staleness';
+import { SPEECH_DWELL_MS, type SpokenPlan } from '../domain/spokenGuidance';
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import { createLevelFrame, type EngineTick, type LevelFrameView } from './levelFrame';
 
@@ -12,6 +13,16 @@ const ON_EDGE: GravityVector = { x: 0, y: 9.81, z: 0 };
 const UPSIDE_DOWN: GravityVector = { x: 0, y: 0, z: -9.81 };
 /** Rotated far enough between two frames to read as rocking. */
 const ROCKED: GravityVector = { x: 9.81 * Math.tan((3 * Math.PI) / 180), y: 0, z: 9.81 };
+
+const RAISE_REAR_LEFT: SpokenPlan = {
+  isLevel: false,
+  parts: [{ kind: 'wheel', wheel: 'rearLeft', step: 2, liftMm: 100, notEnough: false }],
+};
+
+/** What the engine reports: off level means "raise rear left". */
+function engineTick(isLevel: boolean, maxCorrectionMm: number): EngineTick {
+  return { isLevel, maxCorrectionMm, spoken: isLevel ? { isLevel, parts: [] } : RAISE_REAR_LEFT };
+}
 
 interface Setup {
   source?: SensorSource;
@@ -36,7 +47,7 @@ function setup(initial: Setup = {}) {
     paused: false,
     landscape: false,
     visible: true,
-    engine: { isLevel: false, maxCorrectionMm: 100 } as EngineTick,
+    engine: engineTick(false, 100),
     ...initial,
   };
   const settings: LevelSettings = { ...DEFAULT_SETTINGS, ...initial.settings };
@@ -69,6 +80,7 @@ function setup(initial: Setup = {}) {
   const refreshStatus = vi.fn();
   const boxes = { canRetrySilently: vi.fn(() => true), maybeAutoRetry: vi.fn() };
   const playGuidancePulse = vi.fn();
+  const speak = vi.fn();
   const frame = createLevelFrame({
     sensor: () => sensor,
     isPaused: () => world.paused,
@@ -79,6 +91,7 @@ function setup(initial: Setup = {}) {
     isVisible: () => world.visible,
     settings: () => settings,
     playGuidancePulse,
+    speak,
     view,
   });
   /** One frame at `now`, with the sample always fresh unless set. */
@@ -88,7 +101,7 @@ function setup(initial: Setup = {}) {
     frame(now);
     return [...calls];
   };
-  return { run, world, calls, ticked, refreshStatus, boxes, playGuidancePulse };
+  return { run, world, calls, ticked, refreshStatus, boxes, playGuidancePulse, speak };
 }
 
 describe('createLevelFrame', () => {
@@ -209,7 +222,7 @@ describe('createLevelFrame', () => {
       const frame = setup({ settings: { toleranceMm: 10 }, ...options });
       frame.run(0);
       frame.run(3000);
-      frame.world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      frame.world.engine = engineTick(true, 0);
       return { ...frame, levelCalls: frame.run(levelAt) };
     }
 
@@ -219,24 +232,24 @@ describe('createLevelFrame', () => {
 
     it('never celebrates without being armed first', () => {
       const { run, world } = setup();
-      world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      world.engine = engineTick(true, 0);
       expect(run(0)).not.toContain('celebrate');
     });
 
     it('is not armed by being only a little off, or off only briefly', () => {
       const near = setup({
         settings: { toleranceMm: 10 },
-        engine: { isLevel: false, maxCorrectionMm: 25 },
+        engine: engineTick(false, 25),
       });
       near.run(0);
       near.run(5000);
-      near.world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      near.world.engine = engineTick(true, 0);
       expect(near.run(5100)).not.toContain('celebrate');
 
       const brief = setup({ settings: { toleranceMm: 10 } });
       brief.run(0);
       brief.run(2900);
-      brief.world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      brief.world.engine = engineTick(true, 0);
       expect(brief.run(3000)).not.toContain('celebrate');
     });
 
@@ -247,25 +260,25 @@ describe('createLevelFrame', () => {
 
     it('waits out the cooldown before celebrating again', () => {
       const { run, world } = armedThenLevel();
-      world.engine = { isLevel: false, maxCorrectionMm: 100 };
+      world.engine = engineTick(false, 100);
       run(4000);
       run(7100);
-      world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      world.engine = engineTick(true, 0);
       expect(run(7200)).not.toContain('celebrate');
-      world.engine = { isLevel: false, maxCorrectionMm: 100 };
+      world.engine = engineTick(false, 100);
       run(21_000);
       run(24_100);
-      world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      world.engine = engineTick(true, 0);
       expect(run(24_200)).toContain('celebrate');
     });
 
     it('stays armed while the page is hidden', () => {
       const { run, world, levelCalls } = armedThenLevel({ visible: false });
       expect(levelCalls).not.toContain('celebrate');
-      world.engine = { isLevel: false, maxCorrectionMm: 100 };
+      world.engine = engineTick(false, 100);
       run(3200);
       world.visible = true;
-      world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      world.engine = engineTick(true, 0);
       expect(run(3300)).toContain('celebrate');
     });
 
@@ -273,7 +286,7 @@ describe('createLevelFrame', () => {
       const frame = setup({ settings: { toleranceMm: 10 } });
       frame.run(0);
       frame.run(3000);
-      frame.world.engine = { isLevel: true, maxCorrectionMm: 0 };
+      frame.world.engine = engineTick(true, 0);
       frame.world.gravity = ROCKED;
       expect(frame.run(3100)).not.toContain('celebrate');
     });
@@ -302,7 +315,7 @@ describe('createLevelFrame', () => {
     it('stays quiet while level or rocking', () => {
       const level = setup({
         settings: { soundGuidance: true },
-        engine: { isLevel: true, maxCorrectionMm: 0 },
+        engine: engineTick(true, 0),
       });
       level.run(0);
       expect(level.playGuidancePulse).not.toHaveBeenCalled();
@@ -311,6 +324,34 @@ describe('createLevelFrame', () => {
       rocking.world.gravity = ROCKED;
       rocking.run(1000);
       expect(rocking.playGuidancePulse).toHaveBeenCalledTimes(1);
+    });
+  });
+  describe('spoken guidance (#602)', () => {
+    it('says the shown plan once it has held, only with the setting on', () => {
+      const off = setup();
+      off.run(0);
+      off.run(SPEECH_DWELL_MS);
+      expect(off.speak).not.toHaveBeenCalled();
+      const on = setup({ settings: { soundSpeech: true } });
+      on.run(0);
+      on.run(SPEECH_DWELL_MS);
+      expect(on.speak).toHaveBeenCalledExactlyOnceWith('Rear left, Step 2');
+    });
+
+    it('says "level" on arrival', () => {
+      const { run, world, speak } = setup({ settings: { soundSpeech: true } });
+      world.engine = engineTick(true, 0);
+      run(0);
+      run(SPEECH_DWELL_MS);
+      expect(speak).toHaveBeenCalledExactlyOnceWith('Level');
+    });
+
+    it('stays quiet while rocking', () => {
+      const { run, world, speak } = setup({ settings: { soundSpeech: true } });
+      run(0);
+      world.gravity = ROCKED;
+      run(SPEECH_DWELL_MS);
+      expect(speak).not.toHaveBeenCalled();
     });
   });
   // #457: the Xparkle is polled twice a second, so its raw reading jumps

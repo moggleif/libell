@@ -3,7 +3,12 @@
  * toast, and reporting a number that cannot be used. The wizard's compact
  * steps save on Next instead.
  */
-import { measurementsDiffer, type LevelSettings } from '../domain/settings';
+import {
+  measurementsDiffer,
+  soundPrefsOf,
+  type LevelSettings,
+  type SoundPrefs,
+} from '../domain/settings';
 import { markMeasurementsSaved, saveSettings } from '../data/settingsStore';
 import { createElement } from './dom';
 import { t } from './i18n';
@@ -70,7 +75,7 @@ export interface AutoSave {
   /** The wizard step's Next, or Enter in a number field on the full page. */
   submit(): void;
   /** A sound preference already stored elsewhere — not a change of its own. */
-  acceptSound(sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>): void;
+  acceptSound(sound: SoundPrefs): void;
 }
 
 /**
@@ -151,7 +156,7 @@ function createSettingsStore(
       onSave(settings);
     },
     acceptSound(sound) {
-      saved = { ...saved, soundOnLevel: sound.soundOnLevel, soundGuidance: sound.soundGuidance };
+      saved = { ...saved, ...soundPrefsOf(sound) };
     },
   };
 }

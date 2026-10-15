@@ -67,7 +67,8 @@ reopens it. After that:
 - **Targets** let you save an intentional tilt, for example toward the shower drain, and
   switch between them.
 - The middle button of the bottom bar turns sound on and off, including the optional
-  audio guidance while you drive onto the ramps.
+  audio guidance while you drive onto the ramps and the optional spoken guidance that
+  says which wheel to raise and how much.
 - You can share your vehicle setup (measurements and ramps, never calibration) with a
   link, send feedback as a GitHub issue, and use the app in Swedish, English, French,
   Spanish or German.

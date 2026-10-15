@@ -5,6 +5,7 @@ import type { EngineOutput, LevelEngine } from './levelEngine';
 import { mountLevelScreenView } from './levelScreenView';
 
 const GRAVITY = { x: 0, y: 0, z: 9.81 };
+const LEVEL_TICK = { isLevel: true, maxCorrectionMm: 0, spoken: { isLevel: true, parts: [] } };
 
 function setup() {
   const root = document.createElement('div');
@@ -14,7 +15,7 @@ function setup() {
   engineElement.className = 'fake-engine';
   const engine: LevelEngine = {
     element: engineElement,
-    tick: vi.fn(() => ({ isLevel: true, maxCorrectionMm: 0 })),
+    tick: vi.fn(() => LEVEL_TICK),
   };
   const deps = {
     createEngine: vi.fn((out: EngineOutput) => {
@@ -75,7 +76,7 @@ describe('mountLevelScreenView', () => {
 
   it('ticks the engine', () => {
     const { view, engine } = setup();
-    expect(view.tick(GRAVITY, 5)).toEqual({ isLevel: true, maxCorrectionMm: 0 });
+    expect(view.tick(GRAVITY, 5)).toEqual(LEVEL_TICK);
     expect(engine.tick).toHaveBeenCalledWith(GRAVITY, 5);
   });
 

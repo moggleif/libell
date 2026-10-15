@@ -188,7 +188,7 @@ URL and must keep working with no signal.
   Track width rear, the ramp and its step heights (R47), Number of ramps (R27),
   Tolerance (how far a wheel may sit below the highest and still count as level, ADR
   0003), Drain side (R27), Theme (R15), Show lengths in (R14), Chime when level (R16),
-  Continuous audio guidance, Stability (0 turns it off), Response delay (ms) or
+  Continuous audio guidance (R30), Spoken guidance (R54), Stability (0 turns it off), Response delay (ms) or
   Response delay while adjusting (ms) (what the last three do:
   `docs/03-ARCHITECTURE.md` § Leveling math)
 - **Then** each change is stored the moment it is made (#328) — a select, switch, ramp
@@ -874,7 +874,8 @@ URL and must keep working with no signal.
 - **Given** iOS's autoplay restrictions
 - **Then** guidance audio reuses the same `unlockAudio()` gesture-unlock as the
   R16 chime — the same gesture (the first tap or key press after launch, a change in
-  Settings, or unmuting from the bottom bar, R38) unlocks both.
+  Settings, or unmuting from the bottom bar, R38) unlocks both, and spoken guidance
+  (R54) too.
 
 ## R31 — Saved level targets: switch between more than one intentional tilt
 
@@ -1286,14 +1287,15 @@ holds for every sensor box (#266), not only EasyLevel.
   as tabs, in that order — a fully independent component from the Settings
   page/menu, never routed through its drawer or sharing its back-navigation state,
   so its close (✕) can never reveal the Settings drawer underneath).
-- **Given** I tap the sound button while "Chime when level" (R16) and/or "Continuous
-  audio guidance" (R30) are on
-- **Then** both turn off together and the button shows a muted state.
+- **Given** I tap the sound button while any of "Chime when level" (R16), "Continuous
+  audio guidance" (R30) and "Spoken guidance" (R54) are on
+- **Then** all of them turn off together and the button shows a muted state.
 - **Given** I tap the sound button again while muted
-- **Then** both settings return to exactly the values they held before muting — muting
+- **Then** each setting returns to exactly the value it held before muting — muting
   never forces a setting back on that was already off before I muted.
 - **Given** I mute or unmute from the bottom bar, then later open Settings
-- **Then** the Chime/Continuous-audio-guidance checkboxes there reflect the change —
+- **Then** the Chime, Continuous audio guidance and Spoken guidance checkboxes there
+  reflect the change —
   never a stale display that could silently undo the mute on an unrelated change.
 
 ## R39 — Sensor box on iOS: a Bluefy workaround guide, not a hidden option (#119)
@@ -1995,3 +1997,39 @@ its descriptor's capabilities (ADR 0016).
   rest of the app is inert while it is open, and closing it puts focus back on the
   button that opened it. The guide and the setup link are modal dialogs named by their
   heading.
+
+## R54 — Spoken guidance: "Rear left, Step 2" (opt-in, #602)
+
+With the phone lying flat in its spot, the driver cannot see it from the seat; the
+tones of R30 only say warmer or colder. Spoken guidance says which wheel and how much.
+
+- **Given** the opt-in "Spoken guidance" setting is on (under Sound next to R30's
+  "Continuous audio guidance", also in the wizard's Sound step)
+- **When** the vehicle stands still (R25's stillness detector) and is not level
+- **Then** the app says the plan the wheel cards show, in the app's language: each wheel
+  to raise with its ramp step ("Rear left, Step 2"), or its lift in the display unit
+  (R14) when no step can be named ("Rear left, 30 mm"), plus "not enough" when even
+  the tallest step falls short. It reads the same stabilized plan as the screen (R6,
+  R27), never a raw reading, and leaves out wheels that are done or that no ramp is left
+  for (ADR 0011).
+- **Given** the plan changes, for example a wheel is done or its step changes
+- **Then** the new plan is said once it has held for a moment, so a plan that only
+  flickers past is never said. An unchanged plan is only repeated as an occasional
+  reminder (`SPEECH_REPEAT_MS` in `src/domain/spokenGuidance.ts`), and nothing is said
+  while the vehicle moves.
+- **Given** level is reached
+- **Then** it says "Level" once, alongside R16's chime, which it does not replace, and
+  not again until the vehicle has left level and come back.
+- **Given** caravan mode (R22)
+- **Then** it says the axle wheel first, then the jockey wheel as "Crank up 20 mm" /
+  "Crank down 20 mm".
+- **Given** the browser has no speech synthesis, or no voice installed on the phone for
+  the app's language
+- **Then** the setting shows one line saying spoken guidance does not work on this
+  phone, and the tones (R30) work as usual. Only voices installed on the phone are used,
+  never a network voice (`SpeechSynthesisVoice.localService`), so it works offline (ADR
+  0005).
+- **Given** iOS's audio restrictions
+- **Then** speech is unlocked by the same gesture as R16/R30 (`unlockAudio()`).
+- **Given** I mute from the bottom bar (R38)
+- **Then** spoken guidance is muted with the other sounds.

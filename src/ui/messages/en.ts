@@ -276,6 +276,12 @@ export const en = {
   'settings.sound': 'Chime when level',
   'settings.soundGuidance': 'Continuous audio guidance',
   'settings.soundGuidance.help': 'The beep gets faster and higher the closer you get to level.',
+  'settings.soundSpeech': 'Spoken guidance',
+  'settings.soundSpeech.help':
+    'When the vehicle stands still, the app says which wheel and how much, for example “Rear left, Step 2”.',
+  'settings.soundSpeech.unavailable':
+    'Spoken guidance does not work on this phone: it has no English voice that works offline. The tones work as usual.',
+  'speech.level': 'Level',
   'settings.undo': 'Undo',
   'settings.saved': 'Saved',
   'settings.more': 'More',
@@ -427,6 +433,7 @@ export const en = {
   'help.targets.h': 'Targets and sound',
   'help.targets.t':
     'Save a tilt you want, for example toward the shower drain, and switch between them.\n' +
+    'With spoken guidance on, the app says which wheel to raise and how much, so you can level without seeing the phone.\n' +
     'The button in the middle of the bottom bar turns sound on and off.',
   'help.trouble.h': 'If something is wrong',
   'help.trouble.t':

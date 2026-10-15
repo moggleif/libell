@@ -94,6 +94,19 @@ describe('createSound', () => {
     }).not.toThrow();
   });
 
+  it('unlocks speech with the audio and speaks through the speaker (#602)', () => {
+    const said: string[] = [];
+    let speechUnlocks = 0;
+    const sound = createSound(() => null, {
+      unlock: () => (speechUnlocks += 1),
+      say: (text) => said.push(text),
+    });
+    sound.unlock();
+    sound.speak('Level');
+    expect(speechUnlocks).toBe(1);
+    expect(said).toEqual(['Level']);
+  });
+
   it('chimes two tones, 880 Hz then 1174.7 Hz 0.18 s later', () => {
     const { sound, tones } = soundWith(10);
     sound.unlock();
@@ -169,6 +182,21 @@ describe('createMuteToggle', () => {
     const { access, current } = settingsAccess({ toleranceMm: 7 });
     createMuteToggle(access, () => {}).toggle();
     expect(current().toleranceMm).toBe(7);
+  });
+
+  it('mutes spoken guidance too, and unlocks it again on unmute (#602)', () => {
+    const { access, current } = settingsAccess({
+      soundOnLevel: false,
+      soundGuidance: false,
+      soundSpeech: true,
+    });
+    let unlocks = 0;
+    const mute = createMuteToggle(access, () => (unlocks += 1));
+    mute.toggle();
+    expect(current().soundSpeech).toBe(false);
+    mute.toggle();
+    expect(current().soundSpeech).toBe(true);
+    expect(unlocks).toBe(1);
   });
 
   it('does not unlock audio when unmuting leaves both sounds off', () => {
