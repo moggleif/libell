@@ -59,3 +59,16 @@ moved under the wordmark in the top bar. Nothing about this decision changes:
 release-vs-candidate, the `X.Y.0 – CR<PR>` form and the tag scheme are as above —
 only where the string is displayed. "The footer is the QA contract" now reads
 "the version line under the logo is the QA contract".
+
+## Note (2026-10-15) — patch releases
+
+The scheme had no way to publish a patch version: `VERSION` held only major.minor, so
+every deploy after `X.Y.0` was a candidate. `VERSION` may now also hold
+major.minor.patch (#611). The rule is the same with the full version in place of
+`X.Y.0`: the first deploy of `1.3.1` is the release `1.3.1`, tagged `v1.3.1` and
+published with `docs/releases/v1.3.1.md`; later merges show `1.3.1 – CR<PR>`, tagged
+`v1.3.1-CR<PR>`. A two-part `VERSION` still means `X.Y.0`. The check now looks for the
+release tag `vX.Y.Z` or a candidate tag `vX.Y.Z-*`, so the old `vX.Y.CR<PR>` tags of
+past minors no longer count — they belong to versions that are released already. The
+rules moved from shell in `deploy.yml` to `scripts/version.ts`, where they are
+unit-tested and shared with the local dev build.

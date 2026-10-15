@@ -94,9 +94,10 @@ src/
   device's transport seam (`=drop` adds periodic connection loss; `?xparkle-sim=badpassword`
   a box that rejects the factory password and accepts `1234`) — the way to exercise the external-sensor flow with no
   hardware and no Web Bluetooth.
-- **Versioning**: `VERSION` holds major.minor; first deploy of a minor is the release
-  (`vX.Y.0`), later merges deploy as QA candidates shown as `X.Y.0 – CR<PR>` and tagged
-  `vX.Y.0-CR<PR>`. Details in ADR 0007.
+- **Versioning**: `VERSION` holds major.minor, or major.minor.patch for a patch release;
+  the first deploy of a version is the release (`vX.Y.0` or `vX.Y.Z`), later merges
+  deploy as QA candidates shown as `X.Y.Z – CR<PR>` and tagged `vX.Y.Z-CR<PR>`. Details
+  in ADR 0007.
 - **Secure context**: sensors need HTTPS or `localhost`; iOS additionally needs a user
   gesture. Real-phone testing options are in `docs/01-CONTRIBUTING.md`.
 - **"granska"**: when Morgan writes it, the thread runs the `whole-repo-review` skill in
