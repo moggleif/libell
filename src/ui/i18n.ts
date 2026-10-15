@@ -14,6 +14,7 @@ import { fr } from './messages/fr';
 import { hr } from './messages/hr';
 import { hu } from './messages/hu';
 import { it } from './messages/it';
+import { lv } from './messages/lv';
 import { nb } from './messages/nb';
 import { nl } from './messages/nl';
 import { pl } from './messages/pl';
@@ -45,6 +46,7 @@ export const MESSAGES = {
   sk,
   sl,
   et,
+  lv,
 } as const;
 
 export type Language = keyof typeof MESSAGES;
@@ -73,6 +75,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   sk: 'Slovenčina',
   sl: 'Slovenščina',
   et: 'Eesti',
+  lv: 'Latviešu',
 };
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
