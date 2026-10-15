@@ -45,7 +45,8 @@ Inputs, all in `src/ui/messages/`:
      Different words with the same meaning are fine and are not reported.
 5. **Fix the deviations** in the language's dictionary. Then run
    `npm run format:check && npm run typecheck && npm run test` (the glossary test checks
-   the locked words in their anchor strings), `npm run build && npm run fit`, and look
+   the locked words in their anchor strings; `src/ui/i18n.test.ts` checks that strings
+   naming the same thing, like the Sensorbox or a tab, say it the same way), `npm run build && npm run fit`, and look
    at every screen in `?demo` in both themes: level view, Settings tabs, help, the
    introduction, the Sensorbox page (`?xparkle-sim`) and spoken guidance.
 6. **Report in the PR description**: each deviation found, as key, what the

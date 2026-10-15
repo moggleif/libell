@@ -1,6 +1,6 @@
 // Fit test (#239, #241, #243): Libell has to fit a phone screen. Every
 // view is opened against small-phone viewports, in every appearance and
-// all five languages, and checked for the ways a layout stops fitting —
+// every language, and checked for the ways a layout stops fitting —
 // content below the fold, a page that scrolls sideways, something that
 // cannot be reached at all.
 //
@@ -23,7 +23,7 @@
 //
 // Run after `npm run build`; CI runs it on every pull request. Exits non-zero
 // on anything that does not fit.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
@@ -37,10 +37,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4175;
 const BASE = `http://localhost:${PORT}/libell/`;
 
-// Every shipped language: German and French wrap to more lines, and run
-// wider on a button, than the English — a view that fits in one language
-// can overflow in another.
-const LANGUAGES = ['sv', 'en', 'fr', 'es', 'de'];
+// Every shipped language (one `xx.ts` dictionary each): a view that fits in
+// one language can overflow in another, where words run longer.
+const LANGUAGES = readdirSync(resolve(root, 'src/ui/messages'))
+  .filter((file) => /^[a-z]{2}\.ts$/.test(file))
+  .map((file) => file.slice(0, 2));
 
 // The longest of them, and the one that has caught every language-related
 // failure so far; English is the baseline to compare it against.
@@ -65,13 +66,12 @@ const LONGEST = ['de', 'en'];
 // `languages` is per viewport rather than the whole list everywhere,
 // because the language dimension is not equally informative at every
 // size: it exists to catch text that runs longer than the space it has,
-// and the space is tightest on the SE, so that is where all five are
+// and the space is tightest on the SE, so that is where all of them are
 // walked. The 320px entry is about width, where German is the worst case
 // and English the baseline. The roomiest screen is a sanity check that
 // nothing breaks when there is more room, not a place where text
 // overflows — one language is enough to notice a structural break.
-// Together this is 8 language-runs per appearance instead of 15, without
-// giving up a combination that has ever failed.
+// That is 3 language-runs per appearance plus one per shipped language.
 const VIEWPORTS = [
   { name: '320x480', width: 320, height: 480, fitsWhole: false, languages: LONGEST },
   { name: 'iPhone SE, Safari', width: 375, height: 553, fitsWhole: true, languages: LANGUAGES },

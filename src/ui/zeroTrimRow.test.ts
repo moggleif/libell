@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest';
 import { NO_TRIM, nudgeTrim, type TrimDirection } from '../domain/zeroTrim';
-import { setLanguage, t } from './i18n';
+import { LANGUAGES, setLanguage, t } from './i18n';
 import { createZeroTrimRow, zeroTrimText } from './zeroTrimRow';
 
 afterEach(() => setLanguage('en'));
@@ -68,7 +68,7 @@ describe('the fine-tune row (#596)', () => {
   });
 
   it('writes the total in every shipped language', () => {
-    for (const lang of ['sv', 'en', 'fr', 'es', 'de'] as const) {
+    for (const lang of LANGUAGES) {
       setLanguage(lang);
       const text = zeroTrimText({ rollDeg: 0.1, pitchDeg: -0.3 });
       expect(text).toBe(

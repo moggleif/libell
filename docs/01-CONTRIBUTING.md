@@ -44,11 +44,11 @@ spaced differently than Classic's rules space it (#572).
 
 Languages are walked per viewport rather than everywhere (`languages` on each entry of
 `VIEWPORTS`): the language dimension catches text that runs longer than its space, and
-the space is tightest on the iPhone SE, so all five are walked there. The 320px entry is
-about width, where German is the worst case and English the baseline; the roomiest
-screen is a structural sanity check where one language suffices. That is 8 language-runs
-per appearance instead of 15 — the sweep went from 3m40s to under 2 minutes without
-giving up a combination that has ever failed. If you widen the matrix, watch that number. `FIT_APPEARANCE=modern npm run fit` walks a single appearance; CI runs one job per
+the space is tightest on the iPhone SE, so every language is walked there (the list is
+read from the dictionaries in `src/ui/messages/`). The 320px entry is about width, where
+German is the worst case and English the baseline; the roomiest screen is a structural
+sanity check where one language suffices. That is 3 language-runs per appearance plus
+one per language. If you widen the matrix, watch the run time. `FIT_APPEARANCE=modern npm run fit` walks a single appearance; CI runs one job per
 appearance side by side (#494), and the list in `.github/workflows/ci.yml` must name
 every appearance (a unit test checks it). It exists because the unit tests cannot catch any of that: Vitest runs in
 happy-dom, which has no layout engine, so every height and width it measures is zero.
