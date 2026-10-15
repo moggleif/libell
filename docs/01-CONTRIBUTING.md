@@ -146,6 +146,17 @@ the browser test scripts included. Each failure names the file and what to do.
   raised. Raise them when coverage grows; never lower them to get green, add the
   missing tests instead.
 
+## Translations
+
+English (`src/ui/messages/en.ts`) is the source every language is translated from;
+Swedish is the original meaning. A new string needs a context entry in
+`src/ui/messages/context.ts` and a translation in every language. Every translation, new
+language or review, follows the `translate` skill in `.claude/skills/translate/`:
+context first, the locked words in `src/ui/messages/glossary.ts`, a blind
+back-translation into Swedish, and only the deviations in meaning fixed and reported. The
+unit tests check that every key has context and that each language uses its locked word
+in the glossary's anchor strings.
+
 ## Workflow
 
 - **Behavior- and issue-driven.** Every feature has a GitHub issue with Given/When/Then

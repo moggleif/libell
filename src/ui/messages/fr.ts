@@ -412,7 +412,7 @@ export const fr: Messages = {
     'Ils figurent sur les papiers du véhicule, sinon prenez un mètre ruban.\n' +
     'Saisissez-les en mm, cm ou pouces, selon votre choix dans Afficher les longueurs en.\n' +
     'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.\n' +
-    'Avec plusieurs véhicules, chacun garde ses mesures, cales, zéro, cibles et boîtier capteur ; choisissez-le en haut de Véhicule.',
+    'Avec plusieurs véhicules, chacun garde ses mesures, rampes, zéro, cibles et boîtier capteur ; choisissez-le en haut de Véhicule.',
   'help.ramps.t':
     'L’écran indique sur quel palier de votre rampe monter chaque roue : saisissez donc les rampes que vous emportez.\n' +
     'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.\n' +
@@ -503,7 +503,7 @@ export const fr: Messages = {
   'vehicles.remove.confirm': 'Supprimer {name} avec son zéro, ses cibles et son boîtier capteur ?',
   'vehicles.remove.yes': 'Oui, supprimer',
   'vehicles.hint':
-    'Les mesures, les cales, le zéro, les cibles et le boîtier capteur appartiennent au véhicule. L’étalonnage du téléphone est partagé.',
+    'Les mesures, les rampes, le zéro, les cibles et le boîtier capteur appartiennent au véhicule. L’étalonnage du téléphone est partagé.',
   'setup.incoming.addNew': 'Ajouter comme nouveau véhicule',
 
   'hitch.title': 'Hauteur d’attelage',
@@ -515,11 +515,12 @@ export const fr: Messages = {
   'hitch.savedNow': 'Hauteur d’attelage enregistrée.',
   'hitch.status.none': 'Aucune hauteur d’attelage enregistrée.',
   'hitch.status.saved': 'Une hauteur d’attelage est enregistrée.',
-  'hitch.status.active': 'L’écran principal indique de combien tourner la roue jockey.',
+  'hitch.status.active':
+    'L’écran principal indique de combien tourner la manivelle de la roue jockey.',
   'hitch.badge': 'Hauteur d’attelage',
   'hitch.badge.aria': 'Hauteur d’attelage : touchez pour niveler comme d’habitude',
-  'hitch.crank.up': 'Monter de {amount} jusqu’à la hauteur d’attelage',
-  'hitch.crank.down': 'Descendre de {amount} jusqu’à la hauteur d’attelage',
+  'hitch.crank.up': 'Monter de {amount} à la manivelle jusqu’à la hauteur d’attelage',
+  'hitch.crank.down': 'Descendre de {amount} à la manivelle jusqu’à la hauteur d’attelage',
   'hitch.reached': 'À la hauteur d’attelage',
   'hitch.offer': 'Enregistrer d’abord la hauteur d’attelage ?',
   'hitch.offer.save': 'Enregistrer',
@@ -601,7 +602,7 @@ export const fr: Messages = {
   'box.step.position.flat.ok': 'À plat',
   'box.step.position.flat.bad': 'Trop incliné : posez-le à plat, face vers le haut',
   'box.step.position.flat.upsideDown':
-    'À l’envers : retournez-le couvercle vers le haut. Le fabricant déconseille de le monter à l’envers.',
+    'À l’envers : retournez-le, couvercle vers le haut. Le fabricant déconseille de le monter à l’envers.',
   'box.step.position.waiting': 'Position : en attente d’une mesure',
   'box.step.direction.todo': 'Choisir l’orientation',
   'box.step.direction.done': 'Orientation choisie',

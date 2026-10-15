@@ -442,7 +442,7 @@ bar's gear: in Modern a page with one tab per section, in Classic the ☰ drawer
 Help is its own page behind "?", with Help, About and Feedback tabs (`src/ui/infoMenu.ts`,
 R12, R38). The Sensorbox is reached from the sensor icon in the top bar's corner (R9);
 no menu entry leads there. Amber warning lamps in the top bar point to missing
-measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language (sv/en/fr/es/de) in `src/ui/messages/`.
+measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language in `LANGUAGES` in `src/ui/messages/`, next to `context.ts` (what each string is for) and `glossary.ts` (the locked terms, #628).
 
 Top bar / bottom action bar split (#161): the top bar holds only identity (logo, title,
 share) on the left and the indicators cluster (warning lamps, sensor status) on the
