@@ -15,9 +15,9 @@ async function reloadAfter(page, action) {
 
 const ZERO = JSON.stringify({ rollDeg: 1, pitchDeg: 0.5 });
 
-// Several vehicles (#599): a new vehicle starts from the defaults with no
-// zero, and switching back brings the first one's measurements and zero
-// back, each across the reload a switch makes.
+// Several vehicles (#599): a new vehicle starts as a copy of the active
+// one's measurements with no zero (#617), and switching back brings the
+// first one's zero back, each across the reload a switch makes.
 export async function vehiclesFlow(browser) {
   const app = await openApp(browser, 'demo', {
     'libell.settings': JSON.stringify({ wheelbaseMm: 3600 }),
@@ -31,7 +31,10 @@ export async function vehiclesFlow(browser) {
   const list = JSON.parse(await storage(page, 'libell.vehicles'));
   assert(list.vehicles.length === 2, 'the new vehicle should be listed');
   assert((await storage(page, 'libell.vehicleCalibration')) === null, 'a new vehicle has no zero');
-  assert((await storedSettings(page)).wheelbaseMm !== 3600, 'a new vehicle starts from defaults');
+  assert(
+    (await storedSettings(page)).wheelbaseMm === 3600,
+    'a new vehicle copies the measurements (#617)',
+  );
 
   // Settings comes back open on Vehicle after the reload (#615).
   settings = page.locator('.menu-page.is-visible').first();

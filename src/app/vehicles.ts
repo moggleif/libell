@@ -14,7 +14,7 @@ import {
   restoreVehicle,
   saveVehicleList,
 } from '../data/vehicleStore';
-import { measuredVehicleFlags } from '../data/settingsStore';
+import { hasStoredMeasurements, loadSettings, measuredVehicleFlags } from '../data/settingsStore';
 
 export interface VehiclesDeps {
   /** Starts the app again on the vehicle just made active. */
@@ -35,8 +35,8 @@ export interface Vehicles {
   list(): VehicleSummary[];
   activeId(): string;
   switchTo(id: string): void;
-  /** A new vehicle with default measurements (or a shared setup's) and no
-   * box, made active at once. */
+  /** A new vehicle with a copy of the active one's measurements (or a
+   * shared setup's) and no box, zero or targets, made active at once. */
   add(name: string, geometry?: VehicleGeometry): void;
   rename(id: string, name: string): void;
   /** False when it is the only vehicle: one is always needed. */
@@ -65,9 +65,7 @@ export function createVehicles(deps: VehiclesDeps): Vehicles {
     },
     add(name, geometry) {
       const list = load();
-      const fields = { ...vehicleFieldsOf(DEFAULT_SETTINGS), ...geometry };
-      const stored = geometry ? measuredVehicleFlags() : {};
-      const vehicle: Vehicle = { id: newId(), name, fields, stored };
+      const vehicle: Vehicle = { id: newId(), name, ...newVehicleValues(storage, geometry) };
       activate(list, vehicle, [...list.vehicles, vehicle]);
     },
     rename(id, name) {
@@ -80,6 +78,23 @@ export function createVehicles(deps: VehiclesDeps): Vehicles {
     },
     remove: (id) => removeVehicle(deps, load(), id),
   };
+}
+
+/** A shared setup's geometry, or else a copy of the active vehicle's
+ * (#617); never its box, zero or targets, which belong to that vehicle. */
+function newVehicleValues(
+  storage: KeyValueStorage | null | undefined,
+  geometry: VehicleGeometry | undefined,
+): Pick<Vehicle, 'fields' | 'stored'> {
+  if (geometry) {
+    return {
+      fields: { ...vehicleFieldsOf(DEFAULT_SETTINGS), ...geometry },
+      stored: measuredVehicleFlags(),
+    };
+  }
+  const { sensorSource, sensorDevices } = DEFAULT_SETTINGS;
+  const fields = { ...vehicleFieldsOf(loadSettings(storage)), sensorSource, sensorDevices };
+  return { fields, stored: hasStoredMeasurements(storage) ? measuredVehicleFlags() : {} };
 }
 
 /** Keeps the active vehicle's values, then brings `next` in and starts the

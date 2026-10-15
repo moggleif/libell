@@ -2175,11 +2175,14 @@ per vehicle (Morgan, #599).
 - **Then** the field is filled with "Vehicle N", the next number not in use, selected so
   typing replaces it.
 - **When** I tap "Save" or press Enter
-- **Then** a vehicle with `DEFAULT_SETTINGS`' measurements, no zero, no targets and no
-  box (it uses the phone) is added under the name in the field and becomes active;
-  with the field emptied it is called "Vehicle N". Its measurements count as not yet saved, so
-  the "⚠ Measurements" lamp (R11) lights until I set them; a vehicle added from a shared
-  setup (R41) counts them as saved.
+- **Then** a vehicle is added under the name in the field and becomes active; with the
+  field emptied it is called "Vehicle N". It starts as a copy of the active vehicle's
+  vehicle type, axle, measurements, ramps and drain side (R41's fields), and they count
+  as saved exactly when the active vehicle's did, so the "⚠ Measurements" lamp (R11)
+  lights only if it did there (#617). It has no zero, no targets and no box (it uses the
+  phone): those belong to the vehicle and its own box. Changing either vehicle later
+  never changes the other. A vehicle added from a shared setup (R41) takes that setup's
+  values instead, and counts them as saved.
 - **Given** two vehicles
 - **When** I tap the other one
 - **Then** the app starts again on it: the main screen uses its vehicle type, axle,
