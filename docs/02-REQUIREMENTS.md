@@ -341,7 +341,7 @@ URL and must keep working with no signal.
 
 - **Given** my phone's language is one Libell ships: Swedish, English, French, Spanish,
   German, Dutch, Italian, Polish, Portuguese, Danish, Norwegian Bokmål, Finnish, Czech,
-  Hungarian, Romanian, Turkish and Croatian
+  Hungarian, Romanian, Turkish, Croatian and Slovak
 - **When** I open Libell
 - **Then** every user-facing string is in that language — the locale's language subtag
   decides, so `de-AT` is German too, and `no` and `nn` count as Norwegian Bokmål; any
