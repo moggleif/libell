@@ -960,10 +960,11 @@ URL and must keep working with no signal.
   on top of the sensor calibration + vehicle zero sum (R24) or the box's zero (R34),
   never stored in the same
   field as either and never touched by redoing or clearing them (ADR 0013). A small
-  badge under the top bar, on the left, reads "Target: {name}" — the only thing the
-  main screen ever shows about targets. While at least one preset is saved it names
-  the active target, "Normal (level)" included, so it is plain what the leveling works
-  toward (#616); it is gone once no preset is left.
+  badge under the top bar, in the right corner, reads "Target: {name}" — the only
+  thing the main screen ever shows about targets. While at least one preset is saved
+  it names the active target, "Normal (level)" included, so it is plain what the
+  leveling works toward (#616); it shows as soon as the first preset is saved (#622)
+  and is gone once no preset is left.
 - **Given** a preset I no longer want
 - **Then** its ✕ button deletes it; deleting the active one falls back to Normal
   automatically. "Normal" itself has no delete button and can never be selected away
@@ -2192,7 +2193,7 @@ per vehicle (Morgan, #599).
   (R24), its targets (R31) and its hitch height (R55). The previous box is disconnected,
   and this vehicle's box reconnects as on open (R33). The choice survives a reload.
 - **Given** two or more vehicles
-- **Then** a badge under the top bar, on the left before the target badge (R31),
+- **Then** a badge under the top bar, on the left (the target badge, R31, is right),
   reads "Vehicle: {name}" for the active one, and a tap opens Settings › Vehicle; with
   one vehicle there is no badge (#616).
 - **Given** a vehicle added, switched to, or the active one removed, each of which starts
