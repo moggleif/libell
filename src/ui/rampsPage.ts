@@ -4,7 +4,7 @@
  */
 import { formatLengthValue } from '../domain/lengths';
 import { RAMP_MODELS, type RampModel } from '../domain/ramps';
-import type { RampChoice, StepEditor } from './rampChoice';
+import type { RampChoice, RampPick, StepEditor } from './rampChoice';
 import type { SettingsFormState } from './settingsFields';
 import { t } from './i18n';
 import { createElement } from './dom';
@@ -16,7 +16,7 @@ export interface RampsPageParts {
   selectedModel(): RampModel | null;
   /** Number of ramps and its hint. */
   rampCount: HTMLElement[];
-  onPick(model: RampModel | null): void;
+  onPick(pick: RampPick): void;
 }
 
 /**
@@ -58,7 +58,7 @@ export function buildRampsPage(panel: HTMLElement, parts: RampsPageParts): () =>
 function createCatalogue(
   choice: RampChoice,
   state: SettingsFormState,
-  onPick: (model: RampModel | null) => void,
+  onPick: (pick: RampPick) => void,
 ) {
   const element = createElement('details', 'settings__advanced klossar__picker-details');
   const summary = createElement('summary', 'settings__advanced-summary');
@@ -69,39 +69,47 @@ function createCatalogue(
   element.append(summary, filter.row);
 
   const list = createElement('div', 'klossar__list');
-  const custom = createCustomRow(onPick);
+  const custom = createOwnRow('custom', onPick);
+  const stepless = createOwnRow('stepless', onPick);
   const models = createModelRows(onPick);
-  list.append(custom.row, ...models.map((entry) => entry.row));
+  list.append(custom.row, stepless.row, ...models.map((entry) => entry.row));
   element.append(list);
 
   let shownModel: RampModel | null = null;
   function render(selectedModel: RampModel | null): void {
     shownModel = selectedModel;
-    custom.select(choice.customChosen);
+    custom.select(choice.customChosen && !choice.stepless);
+    stepless.select(choice.customChosen && choice.stepless);
     for (const { row, model, mmLine, select } of models) {
       select(model === selectedModel);
       row.hidden = !filter.shows(model);
-      mmLine.textContent = `${model.stepsMm
-        .map((mm) => formatLengthValue(mm, state.unit))
-        .join('/')} ${state.unit}`;
+      mmLine.textContent = modelHeights(model, state.unit);
     }
   }
 
   return { element, render };
 }
 
-/** "Custom set" leads the list: choosing your own step heights is one of
+/** A model's heights: "44/78/112 mm", or a stepless wedge's "max 101 mm". */
+function modelHeights(model: RampModel, unit: SettingsFormState['unit']): string {
+  const heights = `${model.stepsMm.map((mm) => formatLengthValue(mm, unit)).join('/')} ${unit}`;
+  return model.stepless ? `${t('settings.stepless.maxHeading')} ${heights}` : heights;
+}
+
+/** "Custom set" and "Stepless wedge" lead the list: your own ramp is one of
  * the options, and the one relevant whatever brand you own. Never hidden by
  * the brand filter. */
-function createCustomRow(onPick: (model: RampModel | null) => void) {
-  const custom = catalogueRow(t('settings.ramp.custom'));
-  custom.row.classList.add('klossar__row--custom');
-  custom.row.addEventListener('click', () => onPick(null));
-  return custom;
+function createOwnRow(pick: 'custom' | 'stepless', onPick: (pick: RampPick) => void) {
+  const own = catalogueRow(
+    t(pick === 'custom' ? 'settings.ramp.custom' : 'settings.ramp.stepless'),
+  );
+  own.row.classList.add('klossar__row--custom');
+  own.row.addEventListener('click', () => onPick(pick));
+  return own;
 }
 
 /** One row per ready-made ramp, with a line for its step heights. */
-function createModelRows(onPick: (model: RampModel | null) => void) {
+function createModelRows(onPick: (pick: RampPick) => void) {
   return RAMP_MODELS.map((model) => {
     const mmLine = createElement('span', 'klossar__row-mm');
     const entry = catalogueRow(model.name, mmLine);
@@ -188,23 +196,37 @@ function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {
     element,
     render: (selectedModel: RampModel | null): void => {
       const sortedSteps = [...choice.steps].sort((a, b) => a - b);
-      heading.textContent = `${t('settings.klossar.stepsHeading')} (${state.unit})`;
-      modelName.textContent = selectedModel ? selectedModel.name : t('settings.ramp.custom');
+      const headingKey = choice.stepless
+        ? 'settings.stepless.maxHeading'
+        : 'settings.klossar.stepsHeading';
+      heading.textContent = `${t(headingKey)} (${state.unit})`;
+      modelName.textContent = selectedModel ? selectedModel.name : ownName(choice);
       grid.style.gridTemplateColumns = `repeat(${sortedSteps.length || 1}, 1fr)`;
       grid.replaceChildren(
-        ...sortedSteps.map((mm, i) => stepCell(i + 1, formatLengthValue(mm, state.unit))),
+        ...sortedSteps.map((mm, i) =>
+          stepCell(cellLabel(choice, i + 1), formatLengthValue(mm, state.unit)),
+        ),
       );
     },
   };
 }
 
-/** "Step n" over its height, one cell of the selection grid. */
-function stepCell(n: number, value: string): HTMLElement {
+const ownName = (choice: RampChoice): string =>
+  t(choice.stepless ? 'settings.ramp.stepless' : 'settings.ramp.custom');
+
+/** "Step n"; a stepless wedge's one height needs no label under its
+ * "Max height" heading. */
+const cellLabel = (choice: RampChoice, n: number): string =>
+  choice.stepless ? '' : t('diagram.step', { n });
+
+/** A label, if any, over its height: one cell of the selection grid. */
+function stepCell(label: string, value: string): HTMLElement {
   const element = createElement('div', 'klossar__grid-cell');
   const stepLabel = createElement('span', 'klossar__grid-label');
-  stepLabel.textContent = t('diagram.step', { n });
+  stepLabel.textContent = label;
   const valueEl = createElement('span', 'klossar__grid-value');
   valueEl.textContent = value;
-  element.append(stepLabel, valueEl);
+  if (label) element.append(stepLabel);
+  element.append(valueEl);
   return element;
 }

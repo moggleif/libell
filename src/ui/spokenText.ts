@@ -28,7 +28,9 @@ function partText(part: SpokenPart, unit: 'mm' | 'cm'): string {
   }
   const said = [
     t(SPOKEN_WHEEL_LABEL[part.wheel]),
-    part.step !== null ? t('diagram.step', { n: part.step }) : spokenLength(part.liftMm, unit),
+    part.step !== null
+      ? t('diagram.step', { n: part.step })
+      : `${t('diagram.driveUp')} ${spokenLength(part.liftMm, unit)}`,
   ];
   if (part.notEnough) said.push(t('diagram.notEnough'));
   return said.join(', ');

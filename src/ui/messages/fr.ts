@@ -223,6 +223,12 @@ export const fr: Messages = {
   'settings.steps.remove': 'Supprimer {value}',
   'settings.ramp': 'Rampe toute faite',
   'settings.ramp.custom': 'Jeu personnalisé',
+  'settings.ramp.stepless': 'Cale sans paliers',
+  'settings.ramp.steplessModel': '{name} (sans paliers, max {max} mm)',
+  'settings.stepless.max': 'Cale sans paliers, hauteur max',
+  'settings.stepless.maxHeading': 'Hauteur max',
+  'settings.stepless.set': 'Enregistrer',
+  'settings.stepless.new': 'Hauteur max ({unit})',
   'settings.rampCount': 'Nombre de rampes',
   'settings.drain': 'Côté de l’évacuation',
   'settings.rampHint': 'L’application choisit où vos rampes sont le plus utiles.',
@@ -397,7 +403,8 @@ export const fr: Messages = {
     'Avec plusieurs véhicules, chacun garde ses mesures, cales, zéros, cibles et boîtier capteur ; choisissez-le en haut de Véhicule.',
   'help.ramps.t':
     'L’écran indique sur quel palier de votre rampe monter chaque roue : saisissez donc les rampes que vous emportez.\n' +
-    'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.',
+    'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.\n' +
+    'Pour une cale sans paliers, choisissez Cale sans paliers et saisissez sa hauteur. L’écran indique alors de combien monter.',
   'help.calibration.h': 'Étalonner et mettre à zéro',
   'help.calibration.t':
     'Deux étapes rendent la mesure juste : étalonner le téléphone une fois et mettre le véhicule à zéro une fois.\n' +
@@ -450,6 +457,7 @@ export const fr: Messages = {
     'Vue de dessus de votre caravane montrant les roues d’essieu et la roue jockey',
   'diagram.front': 'Avant',
   'diagram.step': 'Palier {n}',
+  'diagram.driveUp': 'Monter',
   'diagram.done': 'Terminé',
   'diagram.noRamp': 'Aucune rampe',
   'diagram.wheel.frontLeft': 'Avant gauche',

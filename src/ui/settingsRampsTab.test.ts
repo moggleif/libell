@@ -99,13 +99,18 @@ describe('the compact form', () => {
     expect(addRow!.querySelector('button')!.textContent).toBe(`+ ${t('settings.steps.add')}`);
   });
 
-  it('offers Custom set first, then every catalog model with its mm figures', () => {
+  it('offers Custom set and Stepless wedge first, then every catalog model with its mm figures', () => {
     const { tab } = build();
     const options = [...rampSelect(tab).options];
     expect(options[0]!.value).toBe('');
     expect(options[0]!.textContent).toBe(t('settings.ramp.custom'));
-    expect(options.slice(1).map((o) => o.value)).toEqual(RAMP_MODELS.map((m) => m.name));
-    expect(options[1]!.textContent).toBe('Thule Levelers (44/78/112 mm)');
+    expect(options[1]!.value).toBe('stepless');
+    expect(options[1]!.textContent).toBe(t('settings.ramp.stepless'));
+    expect(options.slice(2).map((o) => o.value)).toEqual(RAMP_MODELS.map((m) => m.name));
+    expect(options[2]!.textContent).toBe('Thule Levelers (44/78/112 mm)');
+    expect(options.find((o) => o.value === 'Andersen Camper Leveler')!.textContent).toBe(
+      t('settings.ramp.steplessModel', { name: 'Andersen Camper Leveler', max: 101 }),
+    );
   });
 
   it('shows the stored steps as sorted chips in the display unit, and the matching model', () => {
@@ -254,13 +259,17 @@ describe('populate and showSteps', () => {
     tab.populate({ ...DEFAULT_SETTINGS, rampStepHeightsMm: [40, 80, 120], rampCount: 1 });
     tab.render();
     expect(rampSelect(tab).value).toBe('Milenco Triple Level');
-    expect(read(tab)).toEqual({ rampStepHeightsMm: [40, 80, 120], rampCount: 1 });
+    expect(read(tab)).toEqual({
+      rampStepHeightsMm: [40, 80, 120],
+      rampStepless: false,
+      rampCount: 1,
+    });
   });
 
   it('showSteps redraws the given steps and keeps an explicit Custom set', () => {
     const { tab } = build();
     choose(rampSelect(tab), '');
-    tab.showSteps([40, 70, 100]);
+    tab.showSteps([40, 70, 100], false);
     expect(chips(tab.stepsField)).toEqual(['40 mm', '70 mm', '100 mm']);
     expect(rampSelect(tab).value).toBe('');
   });
@@ -350,6 +359,7 @@ describe('the Ramps page', () => {
     const { rows, selectedRows, row } = page();
     expect(rows.map((r) => r.querySelector('.klossar__row-name')!.textContent)).toEqual([
       t('settings.ramp.custom'),
+      t('settings.ramp.stepless'),
       ...RAMP_MODELS.map((m) => m.name),
     ]);
     expect(rows[0]!.classList.contains('klossar__row--custom')).toBe(true);
@@ -393,6 +403,7 @@ describe('the Ramps page', () => {
       .map((r) => r.querySelector('.klossar__row-name')!.textContent);
     expect(shown).toEqual([
       t('settings.ramp.custom'),
+      t('settings.ramp.stepless'),
       ...RAMP_MODELS.filter((m) => m.name.startsWith('Milenco')).map((m) => m.name),
     ]);
     expect(brand('Milenco').getAttribute('aria-pressed')).toBe('true');
@@ -410,6 +421,7 @@ describe('the Ramps page', () => {
       'Milenco',
       'Froli',
       'Biltema',
+      'Andersen',
     ]);
   });
 
@@ -429,5 +441,73 @@ describe('the Ramps page', () => {
     expect(selected.querySelector<HTMLElement>('.klossar__grid')!.style.gridTemplateColumns).toBe(
       'repeat(2, 1fr)',
     );
+  });
+});
+
+describe('a stepless wedge (#600)', () => {
+  const cells = (panel: HTMLElement): string[] =>
+    [...panel.querySelectorAll('.klossar__grid-cell')].map((c) => c.textContent ?? '');
+
+  it('picking Stepless wedge keeps the tallest step as its maximum and is stored', () => {
+    const { tab, changed } = build();
+    choose(rampSelect(tab), 'stepless');
+    expect(rampSelect(tab).value).toBe('stepless');
+    expect(chips(tab.stepsField)).toEqual(['112 mm']);
+    expect(read(tab)).toMatchObject({ rampStepHeightsMm: [112], rampStepless: true });
+    expect(changed).toHaveBeenCalled();
+  });
+
+  it('sets the maximum rather than adding a step, and offers no remove button', () => {
+    const { tab } = build({ rampStepHeightsMm: [90], rampStepless: true });
+    const button = addStep(tab.stepsField, '120');
+    expect(button.textContent).toBe(t('settings.stepless.set'));
+    button.click();
+    expect(chips(tab.stepsField)).toEqual(['120 mm']);
+    expect(tab.stepsField.querySelector('.steps__chip-remove')).toBeNull();
+    expect(read(tab)).toMatchObject({ rampStepHeightsMm: [120], rampStepless: true });
+  });
+
+  it('picking a stepless model selects it with its maximum', () => {
+    const { tab } = build();
+    choose(rampSelect(tab), 'Andersen Camper Leveler');
+    expect(rampSelect(tab).value).toBe('Andersen Camper Leveler');
+    expect(read(tab)).toMatchObject({ rampStepHeightsMm: [101], rampStepless: true });
+  });
+
+  it('going back to Custom set turns the wedge into one step', () => {
+    const { tab } = build({ rampStepHeightsMm: [90], rampStepless: true });
+    choose(rampSelect(tab), '');
+    expect(read(tab)).toMatchObject({ rampStepHeightsMm: [90], rampStepless: false });
+    expect(addStep(tab.stepsField, '40').textContent).toBe(`+ ${t('settings.steps.add')}`);
+  });
+
+  it('shows the Ramps page selection as its Max height alone', () => {
+    const { tab } = build({ rampStepHeightsMm: [90], rampStepless: true });
+    const panel = document.createElement('div');
+    tab.buildPage(panel);
+    tab.render();
+    expect(panel.querySelector('.klossar__footer-model')!.textContent).toBe(
+      t('settings.ramp.stepless'),
+    );
+    expect(panel.querySelector('.klossar__footer-heading')!.textContent).toBe(
+      `${t('settings.stepless.maxHeading')} (mm)`,
+    );
+    expect(cells(panel)).toEqual(['90']);
+  });
+
+  it('turns an emptied custom set into a wedge still waiting for its height', () => {
+    const { tab } = build({ rampStepHeightsMm: [55] });
+    choose(rampSelect(tab), '');
+    removeChip(tab.stepsField, '55 mm');
+    choose(rampSelect(tab), 'stepless');
+    expect(read(tab)).toMatchObject({ rampStepHeightsMm: [], rampStepless: true });
+    expect(addStep(tab.stepsField, '90').textContent).toBe(t('settings.stepless.set'));
+  });
+
+  it('showSteps redraws a stored wedge', () => {
+    const { tab } = build();
+    tab.showSteps([75], true);
+    expect(rampSelect(tab).value).toBe('stepless');
+    expect(chips(tab.stepsField)).toEqual(['75 mm']);
   });
 });

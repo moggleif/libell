@@ -9,12 +9,13 @@
  * separator syntax to learn).
  */
 import { MAX_RAMP_COUNT, type LevelSettings } from '../domain/settings';
-import type { RampModel } from '../domain/ramps';
+import { rampHeights } from '../domain/ramps';
 import {
   choiceOf,
   createRampSelect,
   createStepEditor,
   type RampChoice,
+  type RampPick,
   type StepEditor,
 } from './rampChoice';
 import { buildRampsPage } from './rampsPage';
@@ -37,8 +38,8 @@ export interface RampsTab {
   buildPage(panel: HTMLElement): void;
   /** Redraws the chips, the `<select>` and the Ramps page from the state. */
   render(): void;
-  /** Shows the step heights as stored, keeping the custom/model choice. */
-  showSteps(stepsMm: number[]): void;
+  /** Shows the ramp as stored, keeping the custom/model choice. */
+  showSteps(stepsMm: number[], stepless: boolean): void;
   relabel(): void;
   read(raw: RawSettings): void;
   populate(settings: LevelSettings): void;
@@ -60,7 +61,7 @@ interface RampsTabParts {
 }
 
 export function createRampsTab(initial: LevelSettings, context: SettingsFormContext): RampsTab {
-  const choice = choiceOf(initial.rampStepHeightsMm);
+  const choice = choiceOf(initial.rampStepHeightsMm, initial.rampStepless);
   const parts: RampsTabParts = {
     context,
     choice,
@@ -77,17 +78,19 @@ export function createRampsTab(initial: LevelSettings, context: SettingsFormCont
     rampHint: parts.rampHint,
     buildPage: (panel) => buildPage(parts, panel),
     render: () => render(parts),
-    showSteps: (stepsMm) => {
+    showSteps: (stepsMm, stepless) => {
       choice.steps = [...stepsMm];
+      choice.stepless = stepless;
       render(parts);
     },
     relabel: () => relabel(parts),
     read: (raw) => {
       raw.rampStepHeightsMm = [...choice.steps];
+      raw.rampStepless = choice.stepless;
       raw.rampCount = Number(parts.rampCount.control.value);
     },
     populate: (settings) => {
-      Object.assign(choice, choiceOf(settings.rampStepHeightsMm));
+      Object.assign(choice, choiceOf(settings.rampStepHeightsMm, settings.rampStepless));
       parts.rampCount.control.value = String(settings.rampCount);
     },
   };
@@ -100,12 +103,21 @@ function createStepsField({ editor, rampPicker }: RampsTabParts): HTMLElement {
   return stepsField;
 }
 
-/** Apply a catalog model (or null for "custom") — shared by the `<select>`
- * and the Ramps page's catalogue. */
-function applyRampChoice(parts: RampsTabParts, model: RampModel | null): void {
-  parts.choice.customChosen = !model;
-  parts.rampPicker.select.value = model ? model.name : '';
-  if (model) parts.choice.steps = [...model.stepsMm];
+/** Apply a pick — shared by the `<select>` and the Ramps page's catalogue.
+ * Turning your own steps into a stepless wedge keeps the tallest as its
+ * maximum. */
+function applyRampChoice(parts: RampsTabParts, pick: RampPick): void {
+  const { choice } = parts;
+  if (typeof pick === 'string') {
+    if (pick === 'stepless') choice.steps = rampHeights(choice.steps, true);
+    choice.customChosen = true;
+    choice.stepless = pick === 'stepless';
+  } else {
+    choice.customChosen = false;
+    choice.stepless = pick.stepless ?? false;
+    choice.steps = [...pick.stepsMm];
+  }
+  parts.rampPicker.select.value = typeof pick === 'string' ? '' : pick.name;
   stepsEdited(parts);
 }
 

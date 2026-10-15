@@ -86,7 +86,7 @@ export function computeLeveling(
   for (const { id, z } of heights) {
     const liftMm = highest - z;
     maxLiftMm = Math.max(maxLiftMm, liftMm);
-    wheels[id] = { liftMm, stepMm: recommendStep(liftMm, settings.rampStepHeightsMm) };
+    wheels[id] = { liftMm, stepMm: rampHeightFor(liftMm, settings) };
   }
 
   return {
@@ -113,6 +113,17 @@ export function recommendStep(liftMm: number, stepsMm: number[]): number {
   return best;
 }
 
+/** How high to drive a wheel that needs `liftMm`: the nearest step of a
+ * staircase, or exactly the lift on a stepless wedge, up to its maximum
+ * (#600). */
+export function rampHeightFor(
+  liftMm: number,
+  ramp: Pick<LevelSettings, 'rampStepHeightsMm' | 'rampStepless'>,
+): number {
+  if (!ramp.rampStepless) return recommendStep(liftMm, ramp.rampStepHeightsMm);
+  return Math.min(Math.max(liftMm, 0), Math.max(0, ...ramp.rampStepHeightsMm));
+}
+
 /**
  * Wheel display states. 'unserved' — low, but the ramp plan has no ramp
  * left for it (ADR 0011) — is produced only by `plannedSeverity` in
@@ -129,6 +140,6 @@ export type LiftSeverity = 'none' | 'small' | 'large' | 'unserved';
  */
 export function liftSeverity(liftMm: number, settings: LevelSettings): LiftSeverity {
   if (liftMm <= settings.toleranceMm) return 'none';
-  const best = recommendStep(liftMm, settings.rampStepHeightsMm);
+  const best = rampHeightFor(liftMm, settings);
   return Math.abs(liftMm - best) <= settings.toleranceMm ? 'small' : 'large';
 }

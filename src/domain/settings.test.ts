@@ -30,6 +30,7 @@ describe('parseSettings', () => {
       trackWidthFrontMm: 2000,
       trackWidthRearMm: 1700,
       rampStepHeightsMm: [20, 50, 80],
+      rampStepless: false,
       rampCount: 4,
       drainPosition: 'left' as const,
       toleranceMm: 15,
@@ -90,6 +91,19 @@ describe('parseSettings', () => {
     );
   });
 
+  it('reads a ramp stored before stepless wedges existed as stepped, unchanged (#600)', () => {
+    const before = parseSettings({ rampStepHeightsMm: [44, 78, 112] });
+    expect(before.rampStepless).toBe(false);
+    expect(before.rampStepHeightsMm).toEqual([44, 78, 112]);
+    expect(parseSettings({ rampStepless: 'yes' }).rampStepless).toBe(false);
+  });
+
+  it('keeps one height, the tallest, as a stepless wedge’s maximum (#600)', () => {
+    const wedge = parseSettings({ rampStepless: true, rampStepHeightsMm: [60, 110] });
+    expect(wedge.rampStepless).toBe(true);
+    expect(wedge.rampStepHeightsMm).toEqual([110]);
+  });
+
   it('keeps the stored field order, so a saved blob reads the same as before (#480)', () => {
     expect(Object.keys(parseSettings({}))).toEqual(Object.keys(DEFAULT_SETTINGS));
   });
@@ -120,6 +134,7 @@ describe('parseSettings', () => {
       trackWidthFrontMm: DEFAULT_SETTINGS.trackWidthFrontMm,
       trackWidthRearMm: 1700,
       rampStepHeightsMm: [60],
+      rampStepless: false,
       rampCount: DEFAULT_SETTINGS.rampCount,
       drainPosition: DEFAULT_SETTINGS.drainPosition,
       toleranceMm: DEFAULT_SETTINGS.toleranceMm,

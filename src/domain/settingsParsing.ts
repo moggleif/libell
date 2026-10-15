@@ -1,6 +1,7 @@
 /** Reading a stored settings blob back into a valid `LevelSettings`. */
 import { isAppearance } from './appearance';
 import { unitToMm } from './lengths';
+import { rampHeights } from './ramps';
 import {
   DEFAULT_SETTINGS,
   DRAIN_POSITIONS,
@@ -91,11 +92,18 @@ function parseVehicle(raw: StoredSettings): VehicleFields {
   };
 }
 
-type RampFields = Pick<LevelSettings, 'rampStepHeightsMm' | 'rampCount' | 'drainPosition'>;
+type RampFields = Pick<
+  LevelSettings,
+  'rampStepHeightsMm' | 'rampStepless' | 'rampCount' | 'drainPosition'
+>;
 
 function parseRamps(raw: StoredSettings): RampFields {
+  // Anything stored before stepless wedges (#600) is a staircase.
+  const rampStepless = raw.rampStepless === true;
+  const steps = parseStepHeights(raw);
   return {
-    rampStepHeightsMm: parseStepHeights(raw),
+    rampStepHeightsMm: rampHeights(steps, rampStepless),
+    rampStepless,
     rampCount:
       typeof raw.rampCount === 'number' && Number.isFinite(raw.rampCount) && raw.rampCount >= 1
         ? Math.min(MAX_RAMP_COUNT, Math.round(raw.rampCount))

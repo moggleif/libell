@@ -20,10 +20,30 @@ import { t } from './i18n';
 export interface RampChoice {
   steps: number[];
   customChosen: boolean;
+  /** A stepless wedge (#600): `steps` holds its maximum height alone. */
+  stepless: boolean;
 }
 
-export function choiceOf(stepsMm: number[]): RampChoice {
-  return { steps: [...stepsMm], customChosen: matchRampModel(stepsMm) === null };
+export function choiceOf(stepsMm: number[], stepless = false): RampChoice {
+  return {
+    steps: [...stepsMm],
+    customChosen: matchRampModel(stepsMm, undefined, stepless) === null,
+    stepless,
+  };
+}
+
+/** What can be picked: a ready-made model, your own steps, or your own
+ * stepless wedge. */
+export type RampPick = RampModel | 'custom' | 'stepless';
+
+/** The `<select>` value of a stepless wedge of your own; a model's is its
+ * name and a custom set's is empty. */
+const STEPLESS_VALUE = 'stepless';
+
+/** A model's catalogue label: its steps, or a stepless wedge's maximum. */
+function modelLabel(model: RampModel): string {
+  if (!model.stepless) return rampLabel(model);
+  return t('settings.ramp.steplessModel', { name: model.name, max: model.stepsMm[0] ?? 0 });
 }
 
 export type StepEditor = ReturnType<typeof createStepEditor>;
@@ -36,35 +56,44 @@ export type StepEditor = ReturnType<typeof createStepEditor>;
 export function createStepEditor(choice: RampChoice, state: SettingsFormState, edited: () => void) {
   const caption = document.createElement('span');
   const chips = createElement('div', 'steps__chips');
-  const add = createAddStepRow(state, (mm) => {
-    if (!choice.steps.includes(mm)) choice.steps = [...choice.steps, mm].sort((a, b) => a - b);
+  // A stepless wedge has one height, its maximum: the field sets it.
+  const add = createAddStepRow(state, choice, (mm) => {
+    if (choice.stepless) choice.steps = [mm];
+    else if (!choice.steps.includes(mm)) choice.steps = [...choice.steps, mm].sort((a, b) => a - b);
     edited();
   });
 
   const chip = (mm: number): HTMLElement =>
-    createStepChip(formatLength(mm, state.unit), () => {
+    createStepChip(formatLength(mm, state.unit), choice.stepless, () => {
       choice.steps = choice.steps.filter((s) => s !== mm);
       edited();
     });
 
+  const relabel = (): void => {
+    const heading = choice.stepless ? 'settings.stepless.maxHeading' : 'settings.steps';
+    caption.textContent = `${t(heading)} (${state.unit})`;
+    add.relabel();
+  };
   return {
     caption,
     chips,
     addRow: add.row,
     renderChips: (): void => {
       chips.replaceChildren(...[...choice.steps].sort((a, b) => a - b).map(chip));
+      relabel();
     },
-    relabel: (): void => {
-      caption.textContent = `${t('settings.steps')} (${state.unit})`;
-      add.relabel();
-    },
+    relabel,
   };
 }
 
 /** A number field and an Add button, which hands a positive typed height
  * within the plausible range over in mm. Any other value is left in the
  * field with the same text the other number fields show (#514, #541). */
-function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void) {
+function createAddStepRow(
+  state: SettingsFormState,
+  choice: RampChoice,
+  onAdd: (mm: number) => void,
+) {
   const row = createElement('div', 'steps__add');
   const input = document.createElement('input');
   input.type = 'number';
@@ -102,15 +131,21 @@ function createAddStepRow(state: SettingsFormState, onAdd: (mm: number) => void)
     row,
     relabel: (): void => {
       input.placeholder = state.unit === 'cm' ? '4' : '40';
-      input.setAttribute('aria-label', t('settings.steps.new', { unit: state.unit }));
-      button.textContent = `+ ${t('settings.steps.add')}`;
+      const label = choice.stepless ? 'settings.stepless.new' : 'settings.steps.new';
+      input.setAttribute('aria-label', t(label, { unit: state.unit }));
+      button.textContent = addButtonText(choice);
       if (!error.hidden) error.textContent = problem() ?? '';
     },
   };
 }
 
-/** One step height as a chip, with a button that removes it. */
-function createStepChip(label: string, onRemove: () => void): HTMLElement {
+/** "+ Add" a step, or "Save" a stepless wedge's maximum. */
+const addButtonText = (choice: RampChoice): string =>
+  choice.stepless ? t('settings.stepless.set') : `+ ${t('settings.steps.add')}`;
+
+/** One step height as a chip, with a button that removes it; a stepless
+ * wedge's maximum is replaced, never removed. */
+function createStepChip(label: string, fixed: boolean, onRemove: () => void): HTMLElement {
   const element = createElement('span', 'steps__chip');
   const text = document.createElement('span');
   text.textContent = label;
@@ -120,7 +155,8 @@ function createStepChip(label: string, onRemove: () => void): HTMLElement {
   remove.textContent = '−';
   remove.setAttribute('aria-label', t('settings.steps.remove', { value: label }));
   remove.addEventListener('click', onRemove);
-  element.append(text, remove);
+  element.append(text);
+  if (!fixed) element.append(remove);
   return element;
 }
 
@@ -134,36 +170,47 @@ function createStepChip(label: string, onRemove: () => void): HTMLElement {
  * model matches the current steps", including the explicit-custom
  * tie-break, shared by both UIs.
  */
-export function createRampSelect(choice: RampChoice, onPick: (model: RampModel | null) => void) {
+export function createRampSelect(choice: RampChoice, onPick: (pick: RampPick) => void) {
   const row = createElement('div', 'steps__ramp');
   const caption = createElement('span', 'menu__text');
   const select = createElement('select', 'settings__select');
-  const customOption = document.createElement('option');
-  customOption.value = '';
-  select.append(customOption);
-  for (const model of RAMP_MODELS) {
-    const option = document.createElement('option');
-    option.value = model.name;
-    option.textContent = rampLabel(model);
-    select.append(option);
-  }
-  select.addEventListener('change', () => {
-    onPick(RAMP_MODELS.find((m) => m.name === select.value) ?? null);
-  });
+  const customOption = option('');
+  const steplessOption = option(STEPLESS_VALUE);
+  select.append(customOption, steplessOption);
+  for (const model of RAMP_MODELS) select.append(option(model.name, modelLabel(model)));
+  select.addEventListener('change', () => onPick(pickOf(select.value)));
   row.append(caption, select);
   return {
     row,
     select,
     sync: (): void => {
-      select.value = choice.customChosen
-        ? ''
-        : (matchRampModel(choice.steps, select.value)?.name ?? '');
+      select.value = (choice.customChosen ? null : matchedName(choice, select)) ?? ownValue(choice);
     },
     selectedModel: (): RampModel | null =>
       choice.customChosen ? null : (RAMP_MODELS.find((m) => m.name === select.value) ?? null),
     relabel: (): void => {
       caption.textContent = t('settings.ramp');
       customOption.textContent = t('settings.ramp.custom');
+      steplessOption.textContent = t('settings.ramp.stepless');
     },
   };
+}
+
+function option(value: string, text = ''): HTMLOptionElement {
+  const element = document.createElement('option');
+  element.value = value;
+  element.textContent = text;
+  return element;
+}
+
+function pickOf(value: string): RampPick {
+  if (value === STEPLESS_VALUE) return 'stepless';
+  return RAMP_MODELS.find((m) => m.name === value) ?? 'custom';
+}
+
+/** The `<select>` value of a set of your own. */
+const ownValue = (choice: RampChoice): string => (choice.stepless ? STEPLESS_VALUE : '');
+
+function matchedName(choice: RampChoice, select: HTMLSelectElement): string | null {
+  return matchRampModel(choice.steps, select.value, choice.stepless)?.name ?? null;
 }

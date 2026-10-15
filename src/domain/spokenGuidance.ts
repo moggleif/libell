@@ -19,10 +19,12 @@ export type SpokenPart =
   | {
       kind: 'wheel';
       wheel: SpokenWheel;
-      /** The ramp step to drive up (1-based), or null to say the lift in mm. */
+      /** The ramp step to drive up (1-based), or null to say how far to
+       * drive up instead (a stepless wedge, #600). */
       step: number | null;
+      /** With a step, the lift; without, how far to drive up. */
       liftMm: number;
-      /** Red: even the tallest step leaves it short. */
+      /** Red: even the tallest step, or the whole wedge, leaves it short. */
       notEnough: boolean;
     }
   | { kind: 'crank'; direction: 'up' | 'down'; mm: number };
@@ -68,8 +70,9 @@ function wheelPart(wheel: SpokenWheel, shown: DisplayWheel, stepHeightsMm: numbe
       kind: 'wheel',
       wheel,
       step: stepNumber > 0 ? stepNumber : null,
-      liftMm: shown.displayMm,
-      notEnough: stepNumber > 0 && shown.severity === 'large',
+      // As the wheel card: never more than a stepless wedge's height.
+      liftMm: stepNumber === 0 ? Math.min(shown.displayMm, shown.stepMm) : shown.displayMm,
+      notEnough: shown.severity === 'large',
     },
   ];
 }

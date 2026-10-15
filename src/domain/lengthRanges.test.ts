@@ -99,6 +99,7 @@ describe('a shared vehicle setup with out-of-range lengths', () => {
     trackWidthFrontMm: 1750,
     trackWidthRearMm: 1900,
     rampStepHeightsMm: [30, 60, 90],
+    rampStepless: false,
     rampCount: 2,
     drainPosition: 'none',
   };

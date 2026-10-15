@@ -217,6 +217,12 @@ export const es: Messages = {
   'settings.steps.remove': 'Quitar {value}',
   'settings.ramp': 'Rampa prefabricada',
   'settings.ramp.custom': 'Juego personalizado',
+  'settings.ramp.stepless': 'Calzo sin escalones',
+  'settings.ramp.steplessModel': '{name} (sin escalones, máx. {max} mm)',
+  'settings.stepless.max': 'Calzo sin escalones, altura máx.',
+  'settings.stepless.maxHeading': 'Altura máx.',
+  'settings.stepless.set': 'Guardar',
+  'settings.stepless.new': 'Altura máx. ({unit})',
   'settings.rampCount': 'Número de rampas',
   'settings.drain': 'Lado del desagüe',
   'settings.rampHint': 'La app elige dónde tus rampas hacen más falta.',
@@ -385,7 +391,8 @@ export const es: Messages = {
     'Con varios vehículos, cada uno guarda sus medidas, calzos, ceros, objetivos y caja sensora; elígelo arriba en Vehículo.',
   'help.ramps.t':
     'La pantalla te dice a qué escalón de tu rampa sube cada rueda, así que introduce las rampas que llevas.\n' +
-    'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.',
+    'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.\n' +
+    'Para una rampa sin escalones, elige Calzo sin escalones e introduce su altura. La pantalla dice entonces cuánto subir.',
   'help.calibration.h': 'Calibrar y poner a cero',
   'help.calibration.t':
     'Dos pasos hacen que la medida sea correcta: calibrar el móvil una vez y poner el vehículo a cero una vez.\n' +
@@ -438,6 +445,7 @@ export const es: Messages = {
     'Vista desde arriba de tu caravana con las ruedas del eje y la rueda jockey',
   'diagram.front': 'Delante',
   'diagram.step': 'Escalón {n}',
+  'diagram.driveUp': 'Subir',
   'diagram.done': 'Hecho',
   'diagram.noRamp': 'Sin rampa',
   'diagram.wheel.frontLeft': 'Delantera izquierda',

@@ -384,6 +384,24 @@ describe('stepAndLiftText (#419)', () => {
       lift: formatLength(50, 'cm'),
     });
   });
+
+  it('says how far to drive up a stepless wedge, which has no steps to number (#600)', () => {
+    expect(stepAndLiftText('small', 37, 37, 'mm', [])).toEqual({ step: 'Drive up', lift: '37 mm' });
+  });
+
+  it('never asks for more than the wedge has, even when within the tolerance (#600)', () => {
+    expect(stepAndLiftText('small', 110, 130, 'mm', [])).toEqual({
+      step: 'Drive up',
+      lift: '110 mm',
+    });
+  });
+
+  it('gives a stepless wedge its full height when even that is not enough (#600)', () => {
+    expect(stepAndLiftText('large', 101, 140, 'mm', [])).toEqual({
+      step: 'Drive up',
+      lift: '101 mm',
+    });
+  });
 });
 
 describe('updateBubble (#419)', () => {

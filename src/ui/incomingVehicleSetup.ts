@@ -78,10 +78,14 @@ function geometryList({ geometry, displayUnit }: IncomingVehicleSetupOptions): H
   row(isCaravan ? 'settings.axleToJockey' : 'settings.wheelbase', unit(geometry.wheelbaseMm));
   if (!isCaravan) row('settings.trackFront', unit(geometry.trackWidthFrontMm));
   row('settings.trackRear', unit(geometry.trackWidthRearMm));
-  row(
-    'settings.steps',
-    geometry.rampStepHeightsMm.length > 0 ? geometry.rampStepHeightsMm.map(unit).join(', ') : '—',
-  );
+  if (geometry.rampStepless) {
+    row('settings.stepless.max', unit(Math.max(...geometry.rampStepHeightsMm)));
+  } else {
+    row(
+      'settings.steps',
+      geometry.rampStepHeightsMm.length > 0 ? geometry.rampStepHeightsMm.map(unit).join(', ') : '—',
+    );
+  }
   if (!isCaravan) row('settings.rampCount', String(geometry.rampCount));
   row('settings.drain', t(`drain.${geometry.drainPosition}` as MessageKey));
   return list;

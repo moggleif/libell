@@ -11,6 +11,7 @@ import {
 import { hitchDisplay } from '../domain/hitchHeight';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from '../domain/leveling';
 import { deficitMagnitude } from '../domain/rampPlan';
+import { numberedSteps } from '../domain/ramps';
 import type { LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
 import type { Calibration } from '../domain/calibration';
@@ -94,13 +95,13 @@ function createMotorhomeEngine(
     tick(gravity, nowMs) {
       const current = settings();
       const result = stabilize(computeLeveling(gravity, current, calibration()), current, nowMs);
-      diagram.update(result, current.displayUnit, current.rampStepHeightsMm);
+      diagram.update(result, current.displayUnit, numberedSteps(current));
       output.showStatus(motorhomeStatusText(result, current), result.isLevel);
       output.showTilt(result);
       return {
         isLevel: result.isLevel,
         maxCorrectionMm: largestLift(result),
-        spoken: motorhomeSpokenPlan(result, current.rampStepHeightsMm),
+        spoken: motorhomeSpokenPlan(result, numberedSteps(current)),
       };
     },
   };
@@ -132,7 +133,7 @@ function createCaravanEngine(
       );
       const toHitch = hitching();
       const result = toHitch ? hitchDisplay(shown) : shown;
-      diagram.update(result, current.displayUnit, current.rampStepHeightsMm);
+      diagram.update(result, current.displayUnit, numberedSteps(current));
       const status = toHitch ? hitchStatusText(result.jockey, current.displayUnit) : '';
       output.showStatus(status, result.isLevel);
       output.showTilt(result);
@@ -141,7 +142,7 @@ function createCaravanEngine(
       return {
         isLevel: result.isLevel,
         maxCorrectionMm: Math.max(maxAxleMm, jockeyMm),
-        spoken: caravanSpokenPlan(result, current.rampStepHeightsMm),
+        spoken: caravanSpokenPlan(result, numberedSteps(current)),
       };
     },
   };

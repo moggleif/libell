@@ -56,6 +56,20 @@ describe('the spoken plan follows the stabilized wheel cards (#602)', () => {
     ]);
   });
 
+  it('says how far to drive up a stepless wedge, its full height when short (#600)', () => {
+    const plan = motorhomeSpokenPlan(
+      motorhome({
+        frontLeft: { displayMm: 37, stepMm: 37, severity: 'small' },
+        rearRight: { displayMm: 140, stepMm: 101, severity: 'large' },
+      }),
+      [],
+    );
+    expect(plan.parts).toEqual([
+      { kind: 'wheel', wheel: 'frontLeft', step: null, liftMm: 37, notEnough: false },
+      { kind: 'wheel', wheel: 'rearRight', step: null, liftMm: 101, notEnough: true },
+    ]);
+  });
+
   it('leaves out level wheels and gray wheels no ramp is left for', () => {
     const plan = motorhomeSpokenPlan(
       motorhome({

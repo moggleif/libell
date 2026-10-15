@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchRampModel, rampLabel, RAMP_MODELS } from './ramps';
+import { matchRampModel, numberedSteps, rampHeights, rampLabel, RAMP_MODELS } from './ramps';
 import { DEFAULT_SETTINGS } from './settings';
 
 describe('ramp catalog', () => {
@@ -7,6 +7,8 @@ describe('ramp catalog', () => {
     for (const model of RAMP_MODELS) {
       expect(model.name.length).toBeGreaterThan(0);
       expect(model.stepsMm.length).toBeGreaterThan(0);
+      // A stepless wedge is listed by its maximum height alone.
+      if (model.stepless) expect(model.stepsMm).toHaveLength(1);
       for (const [i, mm] of model.stepsMm.entries()) {
         expect(mm).toBeGreaterThan(0);
         expect(Number.isInteger(mm)).toBe(true);
@@ -36,9 +38,29 @@ describe('ramp catalog', () => {
     expect(matchRampModel([])).toBeNull();
   });
 
+  it('matches a stepless wedge only as stepless, by its maximum (#600)', () => {
+    const wedge = RAMP_MODELS.find((m) => m.stepless)!;
+    expect(matchRampModel(wedge.stepsMm, undefined, true)?.name).toBe(wedge.name);
+    expect(matchRampModel(wedge.stepsMm)).toBeNull();
+    expect(matchRampModel([44, 78, 112], undefined, true)).toBeNull();
+  });
+
+  it('numbers the steps of a staircase, and none of a stepless wedge (#600)', () => {
+    expect(numberedSteps({ rampStepHeightsMm: [40, 80], rampStepless: false })).toEqual([40, 80]);
+    expect(numberedSteps({ rampStepHeightsMm: [110], rampStepless: true })).toEqual([]);
+  });
+
   it('prefers the already-selected model when two share the same steps', () => {
     // Fiamma Level Up and Biltema nivåkloss are both 40/70/100 mm.
     expect(matchRampModel([40, 70, 100])?.name).toBe('Fiamma Level Up');
     expect(matchRampModel([40, 70, 100], 'Biltema nivåkloss')?.name).toBe('Biltema nivåkloss');
+  });
+});
+
+describe('rampHeights (#600)', () => {
+  it('keeps every step of a staircase and only the tallest of a wedge', () => {
+    expect(rampHeights([40, 80, 120], false)).toEqual([40, 80, 120]);
+    expect(rampHeights([40, 120, 80], true)).toEqual([120]);
+    expect(rampHeights([], true)).toEqual([]);
   });
 });

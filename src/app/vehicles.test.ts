@@ -84,6 +84,7 @@ describe('createVehicles', () => {
       trackWidthFrontMm: 1900,
       trackWidthRearMm: 1900,
       rampStepHeightsMm: [30, 60],
+      rampStepless: false,
       rampCount: 2,
       drainPosition: 'none',
     });

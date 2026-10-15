@@ -22,6 +22,7 @@ export function levelScreenKey(s: LevelSettings): string {
     s.trackWidthFrontMm,
     s.trackWidthRearMm,
     s.rampStepHeightsMm,
+    s.rampStepless,
     s.rampCount,
     s.drainPosition,
     s.toleranceMm,

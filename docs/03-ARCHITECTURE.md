@@ -77,7 +77,8 @@ RL(-Wr/2, -L/2)  RR(+Wr/2, -L/2)
 
 z_i    = x_i*tan(roll) + y_i*tan(pitch)
 lift_i = max(z) - z_i          # >= 0, because blocks only go under wheels
-step_i = the configured ramp step height (mm) closest to lift_i (0 = no step)
+step_i = rampHeightFor(lift_i): the configured step (mm) closest to lift_i (0 = no step),
+         or on a stepless wedge lift_i itself up to its maximum (ADR 0018)
 isLevel = max(lift) <= toleranceMm                      # height-based
 ```
 
@@ -110,7 +111,9 @@ wheels so the vehicle ends as close to level as the set allows, preferring — i
 order — reaching the tolerance, fewer ramps, the waste-water drain side lowest
 (`drainPosition`), levelness, lowest climb. The stabilizer adopts a differing fresh
 plan only when it is clearly better under the current lifts, and wheel colors follow
-the plan: red means the owned ramps cannot bring that wheel within tolerance.
+the plan: red means the owned ramps cannot bring that wheel within tolerance. A
+stepless wedge (`rampStepless`, ADR 0018) gives each wheel one candidate height, its
+lift up to the wedge's maximum, and its cards name no step (`numberedSteps` is empty).
 
 Caravan mode (`vehicleType: 'caravan'`, ADR 0008) uses `src/domain/caravan.ts`
 instead: the single axle (track = `trackWidthRearMm`) is the reference plane, roll

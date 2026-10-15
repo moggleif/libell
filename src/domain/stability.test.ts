@@ -384,3 +384,27 @@ describe('two-ramp plan display (#93)', () => {
     expect(level.maxDeficitMm).toBeLessThanOrEqual(planSettings.toleranceMm);
   });
 });
+
+describe('a stepless wedge (#600)', () => {
+  const wedge = { ...settings, rampStepHeightsMm: [100], rampStepless: true };
+
+  it('lets the wheels climb without a stale height turning any of them red or gray', () => {
+    const stabilize = createDisplayStabilizer();
+    let now = 0;
+    for (let liftMm = 60; liftMm >= 0; liftMm -= 2, now += 50) {
+      const result = computeLeveling(gravityFor(rollForLift(liftMm, 1800), 0), wedge);
+      const shown = stabilize(result, wedge, now);
+      for (const id of WHEEL_IDS) {
+        const wheel = shown.wheels[id];
+        expect(['none', 'small']).toContain(wheel.severity);
+        expect(wheel.stepMm).toBeLessThanOrEqual(wheel.displayMm);
+      }
+    }
+  });
+
+  it('caps a wheel at the wedge height when it needs more', () => {
+    const result = computeLeveling(gravityFor(rollForLift(140, 1800), 0), wedge);
+    const shown = createDisplayStabilizer()(result, wedge, 0);
+    expect(shown.wheels.frontRight).toMatchObject({ stepMm: 100, severity: 'large' });
+  });
+});

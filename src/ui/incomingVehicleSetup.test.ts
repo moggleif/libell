@@ -20,6 +20,7 @@ const MOTORHOME: VehicleGeometry = {
   trackWidthFrontMm: 1800,
   trackWidthRearMm: 1900,
   rampStepHeightsMm: [40, 80],
+  rampStepless: false,
   rampCount: 2,
   drainPosition: 'left',
 };
@@ -79,6 +80,11 @@ describe('the incoming vehicle setup confirmation (#483)', () => {
       [t('settings.steps'), '—'],
       [t('settings.drain'), t('drain.left')],
     ]);
+  });
+
+  it("names a stepless wedge's maximum height instead of steps (#600)", () => {
+    const { overlay } = show({ ...MOTORHOME, rampStepHeightsMm: [101], rampStepless: true });
+    expect(rows(overlay)[5]).toEqual([t('settings.stepless.max'), '101 mm']);
   });
 
   it('shows lengths in the unit chosen on this phone', () => {

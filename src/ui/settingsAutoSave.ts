@@ -28,7 +28,7 @@ export interface FormValues {
   current(): LevelSettings;
   /** Fill every field from the given settings, with live theme preview. */
   populate(settings: LevelSettings): void;
-  showRampSteps(stepsMm: number[]): void;
+  showRampSteps(stepsMm: number[], stepless: boolean): void;
 }
 
 /**
@@ -128,7 +128,7 @@ export function createAutoSave(
         return;
       }
       const settings = values.current();
-      values.showRampSteps(settings.rampStepHeightsMm);
+      values.showRampSteps(settings.rampStepHeightsMm, settings.rampStepless);
       showAndPersist(settings);
     },
     acceptSound: store.acceptSound,

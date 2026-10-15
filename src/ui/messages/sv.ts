@@ -223,6 +223,12 @@ export const sv: Messages = {
   'settings.steps.remove': 'Ta bort {value}',
   'settings.ramp': 'Färdiga klossar',
   'settings.ramp.custom': 'Egen uppsättning',
+  'settings.ramp.stepless': 'Steglös kil',
+  'settings.ramp.steplessModel': '{name} (steglös, max {max} mm)',
+  'settings.stepless.max': 'Steglös kil, maxhöjd',
+  'settings.stepless.maxHeading': 'Maxhöjd',
+  'settings.stepless.set': 'Spara',
+  'settings.stepless.new': 'Maxhöjd ({unit})',
   'settings.rampCount': 'Antal klossar',
   'settings.drain': 'Avloppssida',
   'settings.rampHint': 'Appen väljer var klossarna gör mest nytta.',
@@ -392,7 +398,8 @@ export const sv: Messages = {
     'Har du flera fordon har vart och ett egna mått, klossar, nollor, mål och sensorbox. Välj fordon överst under Fordon.',
   'help.ramps.t':
     'Skärmen säger vilket steg på klossen hjulet ska upp på, så fyll i de klossar du har med dig.\n' +
-    'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.',
+    'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.\n' +
+    'Har du en steglös kil, välj Steglös kil och fyll i hur hög den är. Skärmen säger då hur långt du ska köra upp.',
   'help.calibration.h': 'Kalibrera och nollställ',
   'help.calibration.t':
     'Två steg gör mätningen rätt: kalibrera telefonen en gång och nollställ fordonet en gång.\n' +
@@ -443,6 +450,7 @@ export const sv: Messages = {
   'diagram.caravan.aria': 'Din husvagn ovanifrån, med axelhjulen och stödhjulet',
   'diagram.front': 'Fram',
   'diagram.step': 'Steg {n}',
+  'diagram.driveUp': 'Kör upp',
   'diagram.done': 'Klart',
   'diagram.noRamp': 'Ingen kloss',
   'diagram.wheel.frontLeft': 'Vänster fram',

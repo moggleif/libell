@@ -36,3 +36,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0015 | [A shared "vehicle setup" link carries geometry only, never calibration](0015-vehicle-setup-link-excludes-calibration.md)     |
 | 0016 | [External sensors are a registry of described sources](0016-external-sensors-are-a-registry.md)                               |
 | 0017 | [Several vehicles: only the active one lives in the app's keys](0017-several-vehicles-swap-the-active-one.md)                 |
+| 0018 | [A stepless wedge is a ramp with one height per wheel: the lift itself](0018-stepless-wedge-is-one-height-per-wheel.md)       |

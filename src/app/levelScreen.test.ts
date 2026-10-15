@@ -15,6 +15,7 @@ describe('levelScreenKey', () => {
     { trackWidthRearMm: DEFAULT_SETTINGS.trackWidthRearMm + 1 },
     { rampStepHeightsMm: [10, 20] },
     { rampCount: DEFAULT_SETTINGS.rampCount + 1 },
+    { rampStepless: true },
     { drainPosition: DEFAULT_SETTINGS.drainPosition === 'none' ? 'left' : 'none' },
     { toleranceMm: DEFAULT_SETTINGS.toleranceMm + 1 },
     { appearance: DEFAULT_SETTINGS.appearance === 'modern' ? 'classic' : 'modern' },

@@ -35,7 +35,7 @@
  * caravan reuses the per-wheel `stabilizeLift` core.
  */
 import type { LevelingResult, LiftSeverity, WheelId } from './leveling';
-import { recommendStep, WHEEL_IDS } from './leveling';
+import { rampHeightFor, WHEEL_IDS } from './leveling';
 import { evaluateSteps, plannedSeverity, planRamps, type RampPlan } from './rampPlan';
 import type { LevelSettings } from './settings';
 
@@ -127,7 +127,7 @@ export function stabilizeLift(
   nowMs: number,
 ): DisplayWheel {
   const deadbandMm = settings.stabilityMm;
-  const freshStepMm = recommendStep(liftMm, settings.rampStepHeightsMm);
+  const freshStepMm = rampHeightFor(liftMm, settings);
 
   const displayMm = stabilizeNumber(
     prev.displayMm,
@@ -143,7 +143,11 @@ export function stabilizeLift(
   // (0 = "no step" competes too), sustained for the (fixed) rest dwell.
   const wantsStep = Math.abs(liftMm - freshStepMm) + deadbandMm < Math.abs(liftMm - prev.stepMm);
   let stepMm = prev.stepMm;
-  if (!wantsStep) {
+  // A stepless wedge has no step to hold: it follows the shown figure, so a
+  // wheel climbing it never shows a stale height (#600).
+  if (settings.rampStepless) {
+    stepMm = rampHeightFor(displayMm, settings);
+  } else if (!wantsStep) {
     pend.stepSince = null;
   } else {
     pend.stepSince ??= nowMs;
@@ -255,7 +259,7 @@ function settlePlan(
   nowMs: number,
 ): void {
   const fresh = planRamps(lifts, settings);
-  const current = evaluateSteps(shown.steps, lifts, settings);
+  const current = evaluateSteps(fitWedge(shown.steps, lifts, settings), lifts, settings);
   if (!isClearlyBetterPlan(fresh, current, settings)) {
     shown.planSince = null;
     return;
@@ -288,11 +292,12 @@ function displayResult(
   shown: ShownDisplay,
   settings: LevelSettings,
 ): DisplayResult {
-  const plan = evaluateSteps(shown.steps, shown.displayMm, settings);
+  const steps = fitWedge(shown.steps, shown.displayMm, settings);
+  const plan = evaluateSteps(steps, shown.displayMm, settings);
   const wheels = {} as Record<WheelId, DisplayWheel>;
   for (const id of WHEEL_IDS) {
     const displayMm = shown.displayMm[id];
-    const stepMm = shown.steps[id];
+    const stepMm = steps[id];
     const severity = plannedSeverity(stepMm, plan.deficits[id], displayMm, settings);
     wheels[id] = { displayMm, stepMm, severity };
   }
@@ -304,4 +309,20 @@ function displayResult(
     wheels,
     maxDeficitMm: plan.maxDeficitMm,
   };
+}
+
+/**
+ * On a stepless wedge (#600) the plan keeps only which wheels get a ramp:
+ * each one's height follows its lift as it climbs, so a held plan never
+ * asks for the height a wheel needed before it started up.
+ */
+function fitWedge(
+  steps: Record<WheelId, number>,
+  lifts: Record<WheelId, number>,
+  settings: LevelSettings,
+): Record<WheelId, number> {
+  if (!settings.rampStepless) return steps;
+  const fitted = {} as Record<WheelId, number>;
+  for (const id of WHEEL_IDS) fitted[id] = steps[id] > 0 ? rampHeightFor(lifts[id], settings) : 0;
+  return fitted;
 }
