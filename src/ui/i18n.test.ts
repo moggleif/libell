@@ -32,6 +32,7 @@ describe('i18n dictionaries', () => {
       'Čeština',
       'Dansk',
       'Deutsch',
+      'Eesti',
       'English',
       'Español',
       'Français',
@@ -226,6 +227,7 @@ describe('i18n terminology (#366)', () => {
       hr: 'Mjere',
       sk: 'Rozmery',
       sl: 'Mere',
+      et: 'Mõõdud',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -290,6 +292,7 @@ describe('i18n public interface (#377)', () => {
       | 'hr'
       | 'sk'
       | 'sl'
+      | 'et'
     >();
   });
 
