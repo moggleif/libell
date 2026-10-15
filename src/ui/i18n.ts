@@ -18,8 +18,9 @@ import { pl } from './messages/pl';
 import { pt } from './messages/pt';
 import { ro } from './messages/ro';
 import { sv } from './messages/sv';
+import { tr } from './messages/tr';
 
-export const MESSAGES = { en, sv, fr, es, de, nl, it, pl, pt, da, nb, fi, cs, hu, ro } as const;
+export const MESSAGES = { en, sv, fr, es, de, nl, it, pl, pt, da, nb, fi, cs, hu, ro, tr } as const;
 
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
@@ -42,6 +43,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   cs: 'Čeština',
   hu: 'Magyar',
   ro: 'Română',
+  tr: 'Türkçe',
 };
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
