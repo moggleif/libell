@@ -648,3 +648,30 @@ describe('flip captures that disagree (#425)', () => {
     expect(visibleAnyway).toHaveLength(0);
   });
 });
+
+describe('fine-tuning the vehicle zero (#596)', () => {
+  const trim = (hasZero: boolean) => ({
+    hasZero: () => hasZero,
+    getTrim: () => ({ rollDeg: 0, pitchDeg: 0 }),
+    nudge: () => {},
+    reset: () => {},
+  });
+
+  it('sits with the vehicle zero, shown once there is a zero', () => {
+    for (const layout of ['cards', 'checklist'] as const) {
+      const zeroed = createCalibrationSection(makeOptions({ vehicleZeroTrim: trim(true) }), layout);
+      const row = zeroed.vehicleElement.querySelector<HTMLElement>('.zero-trim');
+      expect(row?.hidden).toBe(false);
+      const none = createCalibrationSection(makeOptions({ vehicleZeroTrim: trim(false) }), layout);
+      expect(none.vehicleElement.querySelector<HTMLElement>('.zero-trim')?.hidden).toBe(true);
+    }
+  });
+
+  it('is left out of the first-run wizard, which has no zero yet', () => {
+    const section = createCalibrationSection(
+      makeOptions({ vehicleZeroTrim: trim(true) }),
+      'wizard',
+    );
+    expect(section.element.querySelector('.zero-trim')).toBeNull();
+  });
+});

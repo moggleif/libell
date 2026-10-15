@@ -19,6 +19,7 @@ import {
 } from './menuOptionParts';
 import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
+import { createZeroTrims } from './zeroTrims';
 
 /** Every dependency as a spy, so each field can be checked for what it calls. */
 function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
@@ -82,18 +83,21 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     onMountingChanged,
   };
   const readTilt = vi.fn(() => ({ rollDeg: 3, pitchDeg: 4 }));
+  const zeroTrims = createZeroTrims(null);
   const deps: MenuOptionDeps = {
     activeSensor: () => active,
     readTilt,
     phoneCalibration,
     boxZero,
     installOffsets,
+    zeroTrims,
     targets,
     boxes,
     boxWiring,
   };
   return {
     deps,
+    zeroTrims,
     phoneCalibration,
     boxZero,
     targets,
@@ -128,6 +132,15 @@ describe('calibrationOptions', () => {
     expect(phoneCalibration.clearBias).toHaveBeenCalledTimes(1);
     options.clearVehicleCalibration();
     expect(phoneCalibration.clearVehicleZero).toHaveBeenCalledTimes(1);
+  });
+
+  it("fine-adjusts the phone's own vehicle zero (#596)", () => {
+    const { deps, zeroTrims } = fakeDeps();
+    const trim = calibrationOptions(deps).vehicleZeroTrim;
+    expect(trim.hasZero()).toBe(true);
+    trim.nudge('front');
+    expect(zeroTrims.valueOf('phone')).toEqual({ rollDeg: 0, pitchDeg: 0.1 });
+    expect(zeroTrims.valueOf('xparkle')).toEqual({ rollDeg: 0, pitchDeg: 0 });
   });
 
   it('follows the active source for the external fields', () => {
@@ -190,6 +203,20 @@ describe('boxConnectionOptions', () => {
     expect(boxZero.zero).toHaveBeenLastCalledWith('xparkle', true);
     options.clearInstallCalibration();
     expect(boxZero.clear).toHaveBeenCalledWith('xparkle');
+  });
+
+  it("fine-adjusts that box's zero, and only that box's (#596)", () => {
+    const { deps, zeroTrims } = fakeDeps();
+    const xparkle = boxConnectionOptions(XPARKLE_DESCRIPTOR, deps).installZeroTrim;
+    const easyLevel = boxConnectionOptions(EASYLEVEL_DESCRIPTOR, deps).installZeroTrim;
+    expect(xparkle.hasZero()).toBe(true);
+    expect(easyLevel.hasZero()).toBe(false);
+    xparkle.nudge('left');
+    expect(xparkle.getTrim()).toEqual({ rollDeg: -0.1, pitchDeg: 0 });
+    expect(zeroTrims.valueOf('xparkle')).toEqual({ rollDeg: -0.1, pitchDeg: 0 });
+    expect(easyLevel.getTrim()).toEqual({ rollDeg: 0, pitchDeg: 0 });
+    xparkle.reset();
+    expect(zeroTrims.valueOf('xparkle')).toEqual({ rollDeg: 0, pitchDeg: 0 });
   });
 
   it('has no setup extras', () => {

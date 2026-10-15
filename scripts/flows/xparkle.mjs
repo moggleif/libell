@@ -18,6 +18,7 @@ export async function xparkleFlow(browser) {
 
   await checkConnectedAndPickDirection(page, box);
   await zeroAndReconnect(page, box);
+  await fineTuneTheZero(page);
 
   assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
   await context.close();
@@ -74,6 +75,28 @@ async function zeroAndReconnect(page, box) {
   await page.locator('.rv-diagram svg').waitFor();
   await page.click('.sensor-status');
   await boxPage(page).getByText('Connected · battery 62 %').waitFor();
+}
+
+// #596: the zero is fine-tuned in Libell, per source, and a new zero clears it.
+// The box's page is still open from the reconnect.
+async function fineTuneTheZero(page) {
+  const box = boxPage(page);
+  await button(box, 'Zeroed (today)').click();
+  await button(box, 'Left up').click();
+  await box.getByText('Fine-tuned: Left +0.1°').waitFor();
+  const trim = JSON.parse(await storage(page, 'libell.zeroTrim.xparkle'));
+  assert(
+    trim.rollDeg === -0.1 && trim.pitchDeg === 0,
+    `"Left up" should store a −0.1° roll trim, got ${JSON.stringify(trim)}`,
+  );
+  assert((await storage(page, 'libell.zeroTrim.phone')) === null, 'the phone keeps no trim');
+  await button(box, 'Zero again').click();
+  await box.getByText('Not fine-tuned').waitFor();
+  assert(
+    (await storage(page, 'libell.zeroTrim.xparkle')) === null,
+    'zeroing again should clear the fine adjustment',
+  );
+  await closeAllPages(page);
 }
 
 export async function xparklePasswordFlow(browser) {

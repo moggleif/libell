@@ -308,6 +308,15 @@ reusing `calibrationAge.ts`'s shared `ageText()` (factored out of
 `calibrationSection.ts` by this change) and the `calibration.age.*` i18n keys for the age
 copy rather than re-deriving that wording. A box has no Check (R34, #343).
 
+Each source's fine adjustment of its zero (#596, R24) is a fourth, small term on top
+of that source's zero: `libell.zeroTrim.<source>` (the phone included), loaded by
+`src/app/zeroTrims.ts` and added by `trimmedZero` (`src/domain/zeroTrim.ts`) inside
+`zeroCalibration()`, so the targets and the leveling math see the adjusted zero.
+Taking or forgetting a zero resets its trim (`onVehicleZeroReplaced` in
+`phoneCalibration.ts`, `onZeroReplaced` in `boxZero.ts`). The row itself is
+`src/ui/zeroTrimRow.ts`, placed under the zero by `calibrationSection.ts` and
+`boxSetupChecklist.ts`.
+
 Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
 `getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone
 sensor's `accept()`, the EasyLevel sensor's accel-notification handler, the Xparkle

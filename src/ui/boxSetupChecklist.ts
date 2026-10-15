@@ -34,6 +34,7 @@ import {
   type MountingPicker,
 } from './mountingPicker';
 import type { SensorSourceOptions } from './sensorSourceSection';
+import { createZeroTrimRow } from './zeroTrimRow';
 
 export interface BoxSetupChecklist {
   element: HTMLElement;
@@ -206,7 +207,7 @@ function createDirectionStep(
   return { step, refresh };
 }
 
-function createZeroStepParts() {
+function createZeroStepParts(options: SensorSourceOptions) {
   const step = createChecklistStep<SetupStep>('zero', 2);
   const hint = createElement('p', 'menu__text');
   hint.textContent = t('box.step.zero.hint');
@@ -223,8 +224,10 @@ function createZeroStepParts() {
   const links = createElement('div', 'box-step__links');
   const clear = linkButton(t('sensorSource.install.clear'));
   links.append(clear);
-  step.body.append(hint, zeroButton, links, status, anyway);
-  return { step, hint, zeroButton, status, anyway, links, clear };
+  // Under the zero it adjusts; hidden while there is none (#596).
+  const trim = options.installZeroTrim ? createZeroTrimRow(options.installZeroTrim) : null;
+  step.body.append(hint, zeroButton, links, status, anyway, ...(trim ? [trim.element] : []));
+  return { step, hint, zeroButton, status, anyway, links, clear, trim };
 }
 
 /** Returns whether the box is zeroed. */
@@ -245,6 +248,7 @@ function drawZeroStep(
   parts.status.classList.toggle('menu__text--warning', message.warned);
   parts.anyway.hidden = !message.warned;
   parts.clear.disabled = !zeroed;
+  parts.trim?.refresh();
   return zeroed;
 }
 
@@ -255,7 +259,7 @@ function createZeroStep(
   redraw: () => void,
 ): StepPart | null {
   if (!options.sensor.capabilities.installCalibration) return null;
-  const parts = createZeroStepParts();
+  const parts = createZeroStepParts(options);
   const { step, zeroButton, anyway, clear } = parts;
   let message: ZeroMessage = { text: null, warned: false };
   function zero(goAhead: boolean): void {

@@ -34,6 +34,7 @@ import { createElement } from './dom';
 import { t } from './i18n';
 import type { LearnMountingOptions } from './learnMountingSection';
 import { createSensorCard } from './sensorCard';
+import type { ZeroTrimOptions } from './zeroTrimRow';
 
 export interface SensorSourceOptions {
   /**
@@ -76,6 +77,8 @@ export interface SensorSourceOptions {
    * independently: this is never the phone's own vehicle zero.
    */
   getInstallCalibration(): Calibration | null;
+  /** Fine adjustment of that zero (#596); no row when omitted. */
+  installZeroTrim?: ZeroTrimOptions;
   /**
    * "Set vehicle level": capture the current reading as this box's
    * installation offset — or, for a box that zeroes itself, have the box do

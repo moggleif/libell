@@ -25,6 +25,9 @@ export interface Parts {
 export interface LayoutResult {
   sensorElement: HTMLElement;
   vehicleElement: HTMLElement;
+  /** Where more vehicle-zero content goes: inside the step's body in the
+   * checklist, so it folds with it. */
+  vehicleBody: HTMLElement;
   phoneElements: HTMLElement[];
   renderSteps: (() => void) | null;
 }
@@ -123,6 +126,7 @@ function layoutChecklist(
   return {
     sensorElement: phoneStep.element,
     vehicleElement: vehicleStep.element,
+    vehicleBody: vehicleStep.body,
     phoneElements: [container],
     renderSteps,
   };
@@ -174,6 +178,7 @@ function layoutModernCards(
   return {
     sensorElement: sensorCard,
     vehicleElement: vehicleCard,
+    vehicleBody: vehicleCard,
     phoneElements: [sensorCard, vehicleCard],
     renderSteps: null,
   };
@@ -214,6 +219,7 @@ function layoutClassic(
   return {
     sensorElement: sensorSection,
     vehicleElement: vehicleSection,
+    vehicleBody: vehicleSection,
     phoneElements: [sensorSection, vehicleSection],
     renderSteps: null,
   };

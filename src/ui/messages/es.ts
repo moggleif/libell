@@ -390,6 +390,7 @@ export const es: Messages = {
     'Calibrar: coloca el móvil sobre una superficie plana y toca Calibrar ahora.\n' +
     'Poner a cero: nivela el vehículo con un nivel de burbuja, pon el móvil en su sitio habitual y toca Poner a cero.\n' +
     'Con una caja sensora, la puesta a cero se hace en la página de la caja. No necesita calibración.\n' +
+    '¿Aún no está del todo nivelado? Haz un ajuste fino del cero con Izquierda, Derecha, Delante o Detrás más alto, bajo la puesta a cero.\n' +
     'La luz ⚠ Calibrar o ⚠ Poner a cero sigue encendida hasta que esté hecho.',
   'help.sensor.h': 'Caja sensora',
   'help.sensor.t':
@@ -450,6 +451,20 @@ export const es: Messages = {
   'help.screen.caravan':
     'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
 
+  'zeroTrim.title': 'Ajuste fino del cero',
+  'zeroTrim.hint':
+    '¿Aún no está del todo nivelado? Cada toque mueve el cero 0,1°, para que la app quiera ese lado más alto.',
+  'zeroTrim.left': 'Izquierda más alta',
+  'zeroTrim.right': 'Derecha más alta',
+  'zeroTrim.front': 'Delante más alto',
+  'zeroTrim.back': 'Detrás más alto',
+  'zeroTrim.side.left': 'Izquierda',
+  'zeroTrim.side.right': 'Derecha',
+  'zeroTrim.side.front': 'Delante',
+  'zeroTrim.side.back': 'Detrás',
+  'zeroTrim.total': 'Ajustado: {trim}',
+  'zeroTrim.none': 'Sin ajuste fino',
+  'zeroTrim.reset': 'Quitar el ajuste fino',
   'tilt.frontBack': 'Delante/detrás',
   'tilt.sideSide': 'Lado/lado',
 

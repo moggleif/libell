@@ -5,7 +5,8 @@
  * screen, and only called once start-up is over.
  */
 import { combineCalibrations } from '../domain/calibration';
-import type { LevelSettings } from '../domain/settings';
+import type { LevelSettings, SensorSource } from '../domain/settings';
+import { trimmedZero } from '../domain/zeroTrim';
 import { isBoxPending, loadSettings, saveSettings, setBoxPending } from '../data/settingsStore';
 import { loadRememberedDeviceId, saveRememberedDeviceId } from '../data/sensorDeviceStore';
 import { createOrientationSensor, type OrientationSensor } from '../sensor/orientation';
@@ -23,15 +24,16 @@ import {
   type LibellBox,
 } from './boxWiring';
 import { createBoxPending, type BoxPending, type Refreshable } from './indicatorWiring';
-import { createInstallOffsets } from './installOffsets';
+import { createInstallOffsets, type InstallOffsets } from './installOffsets';
 import type { LevelScreenHost } from './levelScreen';
 import type { MenuOptionDeps } from './menuOptionParts';
 import type { Navigation } from './navigation';
-import { createPhoneCalibration } from './phoneCalibration';
+import { createPhoneCalibration, type PhoneCalibration } from './phoneCalibration';
 import type { SettingsSurface } from './settingsSurface';
 import { createSound, type Sound } from './sound';
 import { createTargets } from './targets';
 import { readTilt } from './tiltReading';
+import { createZeroTrims, type ZeroTrims } from './zeroTrims';
 
 export interface Core {
   settings: AppSettings;
@@ -96,6 +98,7 @@ export function createCore(screen: Screen): Core {
       phoneCalibration: layers.phoneCalibration,
       boxZero: layers.boxZero,
       installOffsets: layers.installOffsets,
+      zeroTrims: layers.zeroTrims,
       targets: layers.targets,
       boxes,
       boxWiring,
@@ -134,6 +137,39 @@ function createSensorController(
   return controller;
 }
 
+/** The active source's zero, fine adjustment included (#596). */
+function activeZero(
+  source: SensorSource,
+  phone: PhoneCalibration,
+  installOffsets: InstallOffsets,
+  zeroTrims: ZeroTrims,
+) {
+  const zero = source === 'phone' ? phone.zero() : installOffsets.valueOf(source);
+  return trimmedZero(zero, zeroTrims.valueOf(source));
+}
+
+/**
+ * The phone's sensor bias and vehicle zero (ADR 0010). Taking either means
+ * the phone is in use after all, so a box chosen in the wizard is no longer
+ * awaited.
+ */
+function createPhoneLayers(
+  readTiltNow: () => ReturnType<typeof readTilt>,
+  boxPending: BoxPending,
+  screen: Screen,
+  zeroTrims: ZeroTrims,
+): PhoneCalibration {
+  return createPhoneCalibration({
+    readTilt: readTiltNow,
+    onCaptured() {
+      boxPending.settle(false);
+      screen.lamps.refresh();
+    },
+    onCleared: () => screen.lamps.refresh(),
+    onVehicleZeroReplaced: () => zeroTrims.reset('phone'),
+  });
+}
+
 /** What "level" means for the active source (ADR 0013/0014), and the active
  * target as a third term on top of it. */
 function createCalibrationLayers(
@@ -147,26 +183,19 @@ function createCalibrationLayers(
   // never combined with the phone's.
   const installOffsets = createInstallOffsets();
   const activeInstallOffset = () => installOffsets.valueOf(sensor().getSource());
-  // The phone's sensor bias and vehicle zero (ADR 0010). Taking either means
-  // the phone is in use after all, so a box chosen in the wizard is no longer
-  // awaited.
-  const phoneCalibration = createPhoneCalibration({
-    readTilt: readTiltNow,
-    onCaptured() {
-      boxPending.settle(false);
-      screen.lamps.refresh();
-    },
-    onCleared: () => screen.lamps.refresh(),
-  });
+  // Each source's fine adjustment (#596), dropped with the zero it adjusts.
+  const zeroTrims = createZeroTrims();
+  const phoneCalibration = createPhoneLayers(readTiltNow, boxPending, screen, zeroTrims);
   const boxZero = createBoxZeroing({
     activeSensor: sensor,
     getXparkle: () => boxes.getSensor('xparkle') as XparkleSensor | null,
     offsets: installOffsets,
     readTilt: readTiltNow,
     onChanged: () => screen.lamps.refresh(),
+    onZeroReplaced: (source) => zeroTrims.reset(source),
   });
   const zeroCalibration = () =>
-    sensor().getSource() === 'phone' ? phoneCalibration.zero() : activeInstallOffset();
+    activeZero(sensor().getSource(), phoneCalibration, installOffsets, zeroTrims);
   const targets = createTargets({
     readTilt: readTiltNow,
     zeroCalibration,
@@ -178,6 +207,7 @@ function createCalibrationLayers(
     activeInstallOffset,
     phoneCalibration,
     boxZero,
+    zeroTrims,
     zeroCalibration,
     targets,
   };

@@ -4,6 +4,8 @@
  * that needs it, so the same field can never be wired two ways.
  */
 import type { Calibration } from '../domain/calibration';
+import type { SensorSource } from '../domain/settings';
+import type { TrimDirection } from '../domain/zeroTrim';
 import { type EasyLevelMounting, easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { BoxController } from '../sensor/boxController';
 import type { BoxDescriptor } from '../sensor/boxes';
@@ -21,6 +23,7 @@ import {
 import type { InstallOffsets } from './installOffsets';
 import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
+import type { ZeroTrims } from './zeroTrims';
 
 export interface MenuOptionDeps {
   /** Read fresh on every use: the active source changes. */
@@ -29,6 +32,7 @@ export interface MenuOptionDeps {
   phoneCalibration: PhoneCalibration;
   boxZero: BoxZeroing;
   installOffsets: InstallOffsets;
+  zeroTrims: ZeroTrims;
   targets: Targets;
   boxes: Pick<BoxController<LibellBox>, 'connect' | 'disconnect' | 'getSensor'>;
   boxWiring: BoxWiring;
@@ -49,6 +53,7 @@ export function calibrationOptions(deps: MenuOptionDeps) {
     calibrateVehicle: (anyway?: boolean) => phone.zeroVehicle(anyway),
     clearVehicleCalibration: () => phone.clearVehicleZero(),
     checkVehicleCalibration: () => phone.checkZero(),
+    vehicleZeroTrim: zeroTrimOptions('phone', deps.zeroTrims, () => phone.vehicleZero() !== null),
     readTilt: deps.readTilt,
     isPhoneActive: () => activeSensor().getSource() === 'phone',
     getBox: () => externalCalibrationStateFor(activeSensor().getSource(), deps.installOffsets),
@@ -90,6 +95,21 @@ export function boxConnectionOptions(descriptor: BoxDescriptor, deps: MenuOption
     calibrateInstall: (anyway?: boolean) =>
       anyway ? deps.boxZero.zero(id, true) : deps.boxZero.zero(id),
     clearInstallCalibration: () => deps.boxZero.clear(id),
+    installZeroTrim: zeroTrimOptions(
+      id,
+      deps.zeroTrims,
+      () => deps.installOffsets.valueOf(id) !== null,
+    ),
+  };
+}
+
+/** One source's fine adjustment of its zero (#596). */
+function zeroTrimOptions(source: SensorSource, trims: ZeroTrims, hasZero: () => boolean) {
+  return {
+    hasZero,
+    getTrim: () => trims.valueOf(source),
+    nudge: (direction: TrimDirection) => trims.nudge(source, direction),
+    reset: () => trims.reset(source),
   };
 }
 
