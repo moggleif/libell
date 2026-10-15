@@ -30,8 +30,12 @@ export interface BoxCapabilities {
   mounting: boolean;
   /** Supports an installation offset captured in Libell (R34). */
   installCalibration: boolean;
-  /** Has raw protocol bytes worth exposing behind the debug disclosure. */
+  /** Has raw accelerometer and status bytes worth exposing behind the
+   * debug disclosure, with the connect-delay workaround beside them. */
   debugBytes: boolean;
+  /** Reads its serial number and firmware version, shown behind the debug
+   * disclosure. */
+  versionBytes: boolean;
   /** Reports the mounting orientation it stores itself, shown read-only
    * (R49) — as opposed to `mounting`, which the user picks here. */
   reportedOrientation: boolean;

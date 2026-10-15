@@ -14,6 +14,19 @@ import { setLanguage, t } from './i18n';
 
 setLanguage('en');
 
+const EASYLEVEL_ROWS = {
+  temperature: true,
+  firmwareVersion: true,
+  debugBytes: true,
+  versionBytes: false,
+};
+const XPARKLE_ROWS = {
+  temperature: false,
+  firmwareVersion: false,
+  debugBytes: false,
+  versionBytes: true,
+};
+
 describe('headerText', () => {
   it('adds the rounded battery to Connected only', () => {
     expect(headerText('connected', 49.5)).toBe('Connected · battery 50 %');
@@ -83,6 +96,8 @@ describe('the debug values', () => {
       rawAccel: { x: 1, y: 2, z: 3 },
       firmwareLabel: '3',
       statusBytes: new Uint8Array([255]),
+      versionBytes: null,
+      capabilities: EASYLEVEL_ROWS,
     });
     expect(text.split('\n')).toEqual([
       'Libell EasyLevel · Debug info',
@@ -106,11 +121,13 @@ describe('the debug values', () => {
         deviceId: 'dev-1',
         lastSampleAge: '—',
         rawAccel: null,
-        firmwareLabel: '2',
+        firmwareLabel: null,
         statusBytes: null,
+        versionBytes: new Uint8Array([0x53, 0x01]),
+        capabilities: XPARKLE_ROWS,
       }).split('\n');
       expect(lines).toContain(t('sensorStatus.debug.deviceId', { value: 'dev-1' }));
-      expect(lines).toContain(t('sensorStatus.debug.firmwareTier', { value: '2' }));
+      expect(lines).toContain(t('sensorStatus.debug.versionBytes', { value: '53 01' }));
       expect(lines).toContain(t('sensorStatus.debug.state', { value: 'granted' }));
       expect(lines[0]).toBe(`Libell Xparkle · ${t('sensorStatus.debug')}`);
     } finally {
@@ -128,7 +145,31 @@ describe('the debug values', () => {
       rawAccel: null,
       firmwareLabel: null,
       statusBytes: null,
+      versionBytes: null,
+      capabilities: EASYLEVEL_ROWS,
     });
     expect(text.split('\n')).toContain('Temperature: Not available yet');
+  });
+
+  it('copies only the rows the box has: the Xparkle’s serial number, no accelerometer (#597)', () => {
+    const text = debugSummaryText({
+      name: 'Xparkle RVS01',
+      state: 'granted',
+      temperatureCelsius: null,
+      deviceId: 'dev-1',
+      lastSampleAge: '—',
+      rawAccel: { x: 0, y: 0, z: 9.81 },
+      firmwareLabel: null,
+      statusBytes: null,
+      versionBytes: null,
+      capabilities: XPARKLE_ROWS,
+    });
+    expect(text.split('\n')).toEqual([
+      'Libell Xparkle RVS01 · Debug info',
+      'Connection state: granted',
+      'Device ID: dev-1',
+      'Last sample: —',
+      'Serial number and firmware (raw): Not available yet',
+    ]);
   });
 });

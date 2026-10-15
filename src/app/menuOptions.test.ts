@@ -26,8 +26,10 @@ function setup(overrides: Partial<MenuOptionsDeps> = {}, easyLevel: unknown = nu
     installOffsets: {},
     targets: { activeName: () => 'Ferry', presets: () => [] },
     boxes: {
+      // The one fake box answers for either source; each option checks
+      // getSource() itself.
       getSensor: (source: string) =>
-        source === 'easylevel' ? (easyLevel as LibellBox | null) : null,
+        source === 'easylevel' || source === 'xparkle' ? (easyLevel as LibellBox | null) : null,
     },
     boxWiring: {
       settings: { get: () => settings, set: (next: LevelSettings) => (settings = next) },
@@ -119,6 +121,14 @@ describe('buildMenuOptions', () => {
     expect(setup({}, box).options.getEasyLevelStatusBytes()).toEqual([0x66, 0x08]);
     const other = { getSource: () => 'phone', getStatusBytes: () => [1] };
     expect(setup({}, other).options.getEasyLevelStatusBytes()).toBeNull();
+  });
+
+  it("shows the Xparkle's serial number and firmware bytes only while it is an Xparkle (#597)", () => {
+    expect(setup().options.getXparkleVersionBytes()).toBeNull();
+    const box = { getSource: () => 'xparkle', getVersionBytes: () => [0x53, 0x01] };
+    expect(setup({}, box).options.getXparkleVersionBytes()).toEqual([0x53, 0x01]);
+    const other = { getSource: () => 'phone', getVersionBytes: () => [1] };
+    expect(setup({}, other).options.getXparkleVersionBytes()).toBeNull();
   });
 
   it('has no EasyLevel health before the box exists', () => {

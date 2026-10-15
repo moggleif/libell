@@ -28,7 +28,13 @@ export interface BoxDebugDisclosure {
 const textRow = (className = 'menu__text') => createElement('p', className);
 
 type DebugRows = Record<
-  'temperature' | 'deviceId' | 'lastSample' | 'rawAccel' | 'firmwareTier' | 'rawStatusBytes',
+  | 'temperature'
+  | 'deviceId'
+  | 'lastSample'
+  | 'rawAccel'
+  | 'firmwareTier'
+  | 'rawStatusBytes'
+  | 'versionBytes',
   HTMLElement
 >;
 
@@ -97,6 +103,8 @@ function createCopyButton(options: BoxStatusOptions): HTMLButtonElement {
       rawAccel: options.getRawAccel(),
       firmwareLabel: health?.firmwareLabel ?? null,
       statusBytes: options.getEasyLevelStatusBytes(),
+      versionBytes: options.getXparkleVersionBytes(),
+      capabilities: options.sensor.capabilities,
     });
     void navigator.clipboard.writeText(text).then(
       () => showToast(t('sensorStatus.debug.copied')),
@@ -127,6 +135,9 @@ function refreshDebugRows(
   rows.rawStatusBytes.textContent = t('sensorStatus.debug.rawStatusBytes', {
     value: hexBytes(options.getEasyLevelStatusBytes()) ?? notAvailable,
   });
+  rows.versionBytes.textContent = t('sensorStatus.debug.versionBytes', {
+    value: hexBytes(options.getXparkleVersionBytes()) ?? notAvailable,
+  });
 }
 
 export function createBoxDebugDisclosure(options: BoxStatusOptions): BoxDebugDisclosure {
@@ -143,16 +154,21 @@ export function createBoxDebugDisclosure(options: BoxStatusOptions): BoxDebugDis
     rawAccel: textRow(),
     firmwareTier: textRow(),
     rawStatusBytes: textRow(),
+    versionBytes: textRow(),
   };
   const connectDelay = createConnectDelayControls(options);
 
   element.append(summary, intro);
   // Only the rows this device can actually fill (ADR 0016).
   if (capabilities.temperature) element.append(rows.temperature);
-  element.append(rows.deviceId, rows.lastSample, rows.rawAccel);
+  element.append(rows.deviceId, rows.lastSample);
+  if (capabilities.debugBytes) element.append(rows.rawAccel);
   if (capabilities.firmwareVersion) element.append(rows.firmwareTier);
   if (capabilities.debugBytes) element.append(rows.rawStatusBytes);
-  element.append(createCopyButton(options), ...connectDelay.elements);
+  if (capabilities.versionBytes) element.append(rows.versionBytes);
+  element.append(createCopyButton(options));
+  // The connect delay is the EasyLevel's own workaround (R42).
+  if (capabilities.debugBytes) element.append(...connectDelay.elements);
 
   function refresh(isActive: boolean, health: BoxHealth | null): void {
     rows.temperature.textContent = temperatureText(health?.temperatureCelsius);

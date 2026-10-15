@@ -17,6 +17,7 @@ export async function xparkleFlow(browser) {
   const box = boxPage(page);
 
   await checkConnectedAndPickDirection(page, box);
+  await checkSerialNumber(box);
   await zeroAndReconnect(page, box);
   await fineTuneTheZero(page);
 
@@ -51,6 +52,14 @@ async function checkConnectedAndPickDirection(page, box) {
     JSON.stringify(mapping) === JSON.stringify({ swap: true, pitchSign: -1, rollSign: 1 }),
     `picking "right" should store its axis mapping, got ${JSON.stringify(mapping)}`,
   );
+}
+
+// Debug info reads the box's serial number and firmware off fff1 (#597).
+async function checkSerialNumber(box) {
+  await box.locator('.sensor-status__debug summary').click();
+  await box
+    .getByText('Serial number and firmware (raw): 53 49 4d 30 31 01 04 06', { exact: true })
+    .waitFor();
 }
 
 // Zero: the box zeroes itself and Libell stores a zero offset.

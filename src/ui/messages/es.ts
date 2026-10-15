@@ -125,6 +125,7 @@ export const es: Messages = {
   'sensorStatus.debug.rawAccel': 'Acelerómetro en bruto (x/y/z): {value}',
   'sensorStatus.debug.firmwareTier': 'Nivel de firmware: {value}',
   'sensorStatus.debug.rawStatusBytes': 'Bytes de estado en bruto: {value}',
+  'sensorStatus.debug.versionBytes': 'Número de serie y firmware (en bruto): {value}',
   'sensorStatus.debug.copy': 'Copiar la información de depuración',
   'sensorStatus.debug.copied': '¡Información de depuración copiada!',
   'sensorStatus.debug.copy.failed': 'No se ha podido copiar automáticamente.',

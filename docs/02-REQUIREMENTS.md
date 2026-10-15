@@ -1359,7 +1359,7 @@ see `docs/ios-easylevel-bluefy-guide.md` for the long-form version of the same g
 - **Then** the ordinary Sensor box page (R32) shows instead, with no code
   difference from Android — Bluefy's polyfill is all that changes.
 
-## R40 — The sensor's own page: live values, its settings, and an EasyLevel debug disclosure
+## R40 — The sensor's own page: live values, its settings, and a debug disclosure
 
 The Sensor box page (R32) lists every sensor box Libell supports that can work in this
 browser — one card each, EasyLevel and Xparkle RVS01 today (#268, R49); tapping the
@@ -1433,7 +1433,15 @@ about one specific box. It is titled for that box ("EasyLevel sensor") rather th
   "Copy debug info" button producing a plain-text block of all of the above, the
   temperature included (#402), ready to paste into a bug report. Its lines carry the
   same translated labels as the rows on screen, plus the raw connection state (#524).
-- **Given** the box is not the active source (the phone is)
+- **Given** Xparkle is the active source (R49)
+- **When** I expand its "Debug info" disclosure
+- **Then** it shows the box's device id, time since its last accepted reading, and its
+  serial number and firmware as read from `fff1`, as raw hex (#597): their byte layout
+  is not established (`docs/competitor-notes.md`), so they are shown undecoded rather
+  than guessed at. It has no temperature, accelerometer, status-byte or connect-delay
+  rows, since the box reports none of them (R42 is the EasyLevel's own). "Copy debug
+  info" copies the same rows as the screen, the serial number and firmware included.
+- **Given** the box is not the active source (the phone is), for either box
 - **Then** the "Debug info" disclosure is hidden entirely — it has no raw box data to
   show — as is the box's setup checklist, while the state and reading lines above
   them still work, reading "Not connected" and "Tilt now: —".
@@ -1812,6 +1820,11 @@ present this source as more proven than it is.
   vendor app itself matches on) or its `0000fff0-...` service, runs the vendor app's own
   connect handshake — password, then a parameter query — and the wheel/bubble UI updates
   from the box's polled readings (rate: docs/03-ARCHITECTURE.md §Sensor).
+- **Given** the box's first reading has arrived (#597)
+- **Then** Libell reads its serial number and firmware from `fff1` once, for the debug
+  disclosure (R40). The vendor app reads it before the password; Libell reads it after
+  the first reading instead, so connecting and leveling never wait on it, and a read
+  that fails or never answers only leaves those rows reading "Not available yet".
 - **Given** the box reports its tilt as two finished angles rather than accelerometer
   axes
 - **Then** Libell synthesizes the gravity vector its own leveling math takes, so the

@@ -40,6 +40,8 @@ export interface BoxStatusOptions {
   getRawAccel(): GravityVector | null;
   /** The EasyLevel's raw `faf52c22-...` status bytes, or null. */
   getEasyLevelStatusBytes(): Uint8Array | null;
+  /** The Xparkle's `fff1` serial number and firmware bytes, or null. */
+  getXparkleVersionBytes(): Uint8Array | null;
   /**
    * Hardware-compatibility workaround: an extra fixed delay between GATT
    * connect and service discovery, applied only while `enabled`. Read once
@@ -222,7 +224,7 @@ function appendInOrder(
   body.append(slots.settingsSlot, slots.footerSlot);
   // A source without raw bytes would show a disclosure full of dashes and
   // a control that does nothing.
-  if (capabilities.debugBytes) body.append(parts.debug.element);
+  if (capabilities.debugBytes || capabilities.versionBytes) body.append(parts.debug.element);
   if ((options.offersSilentReconnectTip ?? offersSilentReconnectTip)()) {
     body.append(createSilentReconnectTip());
   }
