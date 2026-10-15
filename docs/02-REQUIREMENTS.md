@@ -340,10 +340,11 @@ URL and must keep working with no signal.
 ## R13 — The app speaks the phone's language
 
 - **Given** my phone's language is one Libell ships: Swedish, English, French, Spanish,
-  German, Dutch, Italian, Polish, Portuguese and Danish
+  German, Dutch, Italian, Polish, Portuguese, Danish and Norwegian Bokmål
 - **When** I open Libell
 - **Then** every user-facing string is in that language — the locale's language subtag
-  decides, so `de-AT` is German too; any other locale gets English. A stored override
+  decides, so `de-AT` is German too, and `no` and `nn` count as Norwegian Bokmål; any
+  other locale gets English. A stored override
   (from settings) wins over auto-detection; an invalid stored value falls back to
   auto-detection. Every language is translated with the `translate` skill (#628).
 - **Given** the Language field in Settings → General ("Automatic (device language)"
