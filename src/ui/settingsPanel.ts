@@ -182,7 +182,7 @@ function createFormValues(
       for (const tab of eachTab) tab.populate(settings);
       showNumbers((field) => settings[field.key]);
     },
-    showRampSteps: (stepsMm) => tabs.ramps.showSteps(stepsMm),
+    showRampSteps: (stepsMm, stepless) => tabs.ramps.showSteps(stepsMm, stepless),
   };
 }
 

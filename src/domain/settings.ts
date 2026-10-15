@@ -25,10 +25,17 @@ export interface LevelSettings {
   /** May differ from the front. */
   trackWidthRearMm: number;
   /**
-   * Sorted ascending. A ramp is a staircase — the wheel rests on one of these
-   * heights, so the app recommends the step closest to the required lift.
+   * Sorted ascending. On a staircase the wheel rests on one of these
+   * heights, so the app recommends the step closest to the required lift;
+   * a stepless wedge keeps only its maximum here (`rampStepless`).
    */
   rampStepHeightsMm: number[];
+  /**
+   * A stepless wedge rather than a staircase (#600): each wheel is driven up
+   * exactly as far as it needs, up to the wedge's maximum — then the one
+   * height in `rampStepHeightsMm`.
+   */
+  rampStepless: boolean;
   /**
    * How many ramps the user owns (1–MAX_RAMP_COUNT). The ramp plan (ADR 0011)
    * never asks for more than this; a boggie pair consumes two ramps. Ramps
@@ -194,6 +201,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   trackWidthRearMm: 1980,
   // Thule Levelers — the most common ready-made ramp in the catalog.
   rampStepHeightsMm: [44, 78, 112],
+  rampStepless: false,
   rampCount: 2,
   drainPosition: 'none',
   toleranceMm: 20,

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeLeveling,
   liftSeverity,
+  rampHeightFor,
   recommendStep,
   WHEEL_IDS,
   type GravityVector,
@@ -132,6 +133,20 @@ describe('recommendStep', () => {
   });
 });
 
+describe('rampHeightFor (#600)', () => {
+  it('is the nearest step of a staircase', () => {
+    const steps = { rampStepHeightsMm: [20, 40, 60, 90], rampStepless: false };
+    expect(rampHeightFor(48, steps)).toBe(40);
+  });
+
+  it('is the lift itself on a stepless wedge, up to its maximum', () => {
+    const wedge = { rampStepHeightsMm: [110], rampStepless: true };
+    expect(rampHeightFor(46, wedge)).toBe(46);
+    expect(rampHeightFor(150, wedge)).toBe(110);
+    expect(rampHeightFor(-3, wedge)).toBe(0);
+  });
+});
+
 describe('liftSeverity', () => {
   it('answers "is it worth driving up?" against tolerance and steps', () => {
     const settings = { ...SETTINGS, rampStepHeightsMm: [20, 40, 60], toleranceMm: 20 };
@@ -144,5 +159,12 @@ describe('liftSeverity', () => {
     // Even the best step leaves it outside tolerance → red: not worth it.
     expect(liftSeverity(90, settings)).toBe('large'); // 60 leaves 30
     expect(liftSeverity(200, settings)).toBe('large');
+  });
+
+  it('on a stepless wedge, is red only past its maximum by more than the tolerance (#600)', () => {
+    const wedge = { ...SETTINGS, rampStepless: true, rampStepHeightsMm: [110], toleranceMm: 20 };
+    expect(liftSeverity(90, wedge)).toBe('small');
+    expect(liftSeverity(130, wedge)).toBe('small');
+    expect(liftSeverity(131, wedge)).toBe('large');
   });
 });

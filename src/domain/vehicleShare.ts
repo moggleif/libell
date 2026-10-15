@@ -29,6 +29,7 @@ import {
   type VehicleType,
 } from './settings';
 import { heightsWithin, numberWithin } from './untrustedValues';
+import { rampHeights } from './ramps';
 
 export type VehicleGeometry = Pick<
   LevelSettings,
@@ -38,6 +39,7 @@ export type VehicleGeometry = Pick<
   | 'trackWidthFrontMm'
   | 'trackWidthRearMm'
   | 'rampStepHeightsMm'
+  | 'rampStepless'
   | 'rampCount'
   | 'drainPosition'
 >;
@@ -55,6 +57,7 @@ export function pickVehicleGeometry(settings: LevelSettings): VehicleGeometry {
     trackWidthFrontMm: settings.trackWidthFrontMm,
     trackWidthRearMm: settings.trackWidthRearMm,
     rampStepHeightsMm: settings.rampStepHeightsMm,
+    rampStepless: settings.rampStepless,
     rampCount: settings.rampCount,
     drainPosition: settings.drainPosition,
   };
@@ -123,6 +126,9 @@ export function decodeVehicleGeometry(text: string): VehicleGeometry | null {
 function parseVehicleGeometry(raw: Record<string, unknown>): VehicleGeometry {
   const { wheelbase, trackWidth, rampStep } = LENGTH_RANGES_MM;
   const heights = heightsWithin(raw.rampStepHeightsMm, rampStep);
+  const steps = heights.length > 0 ? heights : DEFAULT_SETTINGS.rampStepHeightsMm;
+  // A link from before stepless wedges (#600) carries a staircase.
+  const rampStepless = raw.rampStepless === true;
   return {
     vehicleType: raw.vehicleType === 'caravan' ? 'caravan' : ('motorhome' as VehicleType),
     rearAxle: raw.rearAxle === 'boggie' ? 'boggie' : ('single' as AxleConfig),
@@ -137,7 +143,8 @@ function parseVehicleGeometry(raw: Record<string, unknown>): VehicleGeometry {
       trackWidth,
       DEFAULT_SETTINGS.trackWidthRearMm,
     ),
-    rampStepHeightsMm: heights.length > 0 ? heights : DEFAULT_SETTINGS.rampStepHeightsMm,
+    rampStepHeightsMm: rampHeights(steps, rampStepless),
+    rampStepless,
     rampCount:
       typeof raw.rampCount === 'number' && Number.isFinite(raw.rampCount) && raw.rampCount >= 1
         ? Math.min(MAX_RAMP_COUNT, Math.round(raw.rampCount))

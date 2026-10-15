@@ -203,3 +203,34 @@ describe('plannedSeverity', () => {
     expect(plannedSeverity(40, 23, 63, SETTINGS)).toBe('small');
   });
 });
+
+describe('a stepless wedge (#600)', () => {
+  // A wedge driven up to any height up to 110 mm.
+  const WEDGE = { ...SETTINGS, rampStepless: true, rampStepHeightsMm: [110] };
+
+  it('drives a wheel up exactly as far as it needs, leaving no residual', () => {
+    const plan = planRamps(lifts(0, 46, 0, 46), WEDGE);
+    expect(stepsOf(plan)).toEqual([0, 46, 0, 46]);
+    expect(plan.maxDeficitMm).toBe(0);
+    expect(plan.achievesLevel).toBe(true);
+    expect(plannedSeverity(46, 0, 46, WEDGE)).toBe('small');
+  });
+
+  it('stops at the wedge’s maximum, and the shortfall is the rest of the lift', () => {
+    const plan = planRamps(lifts(0, 0, 0, 150), WEDGE);
+    expect(stepsOf(plan)).toEqual([0, 0, 0, 110]);
+    expect(plan.deficits.rearRight).toBe(40);
+    expect(plan.achievesLevel).toBe(false);
+    expect(plannedSeverity(110, 40, 150, WEDGE)).toBe('large');
+    expect(deficitMagnitude(plan.maxDeficitMm, WEDGE.toleranceMm)).toBe('close');
+  });
+
+  it('never plans more wedges than there are, and counts a boggie pair as two', () => {
+    expect(planRamps(lifts(0, 30, 50, 80), WEDGE).rampsUsed).toBe(2);
+    const boggie = { ...WEDGE, rearAxle: 'boggie' as const };
+    expect(planRamps(lifts(0, 0, 60, 60), boggie).rampsUsed).toBe(0);
+    const plan = planRamps(lifts(0, 0, 60, 60), { ...boggie, rampCount: 4 });
+    expect(stepsOf(plan)).toEqual([0, 0, 60, 60]);
+    expect(plan.rampsUsed).toBe(4);
+  });
+});

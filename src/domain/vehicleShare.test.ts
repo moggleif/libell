@@ -15,6 +15,7 @@ const geometry: VehicleGeometry = {
   trackWidthFrontMm: 1750,
   trackWidthRearMm: 1900,
   rampStepHeightsMm: [30, 60, 90],
+  rampStepless: false,
   rampCount: 3,
   drainPosition: 'rearLeft',
 };
@@ -31,6 +32,7 @@ describe('pickVehicleGeometry', () => {
         'trackWidthFrontMm',
         'trackWidthRearMm',
         'rampStepHeightsMm',
+        'rampStepless',
         'rampCount',
         'drainPosition',
       ].sort(),
@@ -72,6 +74,15 @@ describe('encodeVehicleGeometry / decodeVehicleGeometry', () => {
   it('round-trips exactly', () => {
     const encoded = encodeVehicleGeometry(geometry);
     expect(decodeVehicleGeometry(encoded)).toEqual(geometry);
+  });
+
+  it('carries a stepless wedge, and reads a link from before them as stepped (#600)', () => {
+    const wedge = { ...geometry, rampStepless: true, rampStepHeightsMm: [101] };
+    expect(decodeVehicleGeometry(encodeVehicleGeometry(wedge))).toEqual(wedge);
+    const { rampStepless: _, ...before } = geometry;
+    const old = decodeVehicleGeometry(encodeEnvelope({ v: 1, g: before }));
+    expect(old?.rampStepless).toBe(false);
+    expect(old?.rampStepHeightsMm).toEqual([30, 60, 90]);
   });
 
   it('produces a URL-fragment-safe string (no +, /, or =)', () => {

@@ -16,7 +16,7 @@ describe('spokenText (#602)', () => {
     expect(spokenText(plan, 'mm')).toBe('Vänster bak, Steg 2');
   });
 
-  it('says the lift when there is no step to name', () => {
+  it('says how far to drive up when there is no step to name (#600)', () => {
     setLanguage('sv');
     const plan = raise({
       kind: 'wheel',
@@ -25,7 +25,7 @@ describe('spokenText (#602)', () => {
       liftMm: 30,
       notEnough: false,
     });
-    expect(spokenText(plan, 'mm')).toBe('Vänster bak, 30 mm');
+    expect(spokenText(plan, 'mm')).toBe('Vänster bak, Kör upp 30 mm');
   });
 
   it('adds "not enough" when the tallest step falls short', () => {

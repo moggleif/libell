@@ -57,6 +57,7 @@ describe('settingsStore', () => {
       trackWidthFrontMm: 1900,
       trackWidthRearMm: 1650,
       rampStepHeightsMm: [30, 60],
+      rampStepless: false,
       rampCount: 3,
       drainPosition: 'right' as const,
       toleranceMm: 25,

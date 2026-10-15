@@ -115,6 +115,19 @@ describe('createLevelEngine', () => {
     },
   );
 
+  it.each(['motorhome', 'caravan'] as const)(
+    'names no step on a stepless wedge, on the cards or aloud, for a %s (#600)',
+    (vehicleType) => {
+      const { engine } = engineFor({ vehicleType, rampStepHeightsMm: [150], rampStepless: true });
+      const { spoken } = engine.tick(TILTED, 0);
+      const wheels = spoken.parts.filter((part) => part.kind === 'wheel');
+      expect(wheels.length).toBeGreaterThan(0);
+      expect(wheels.every((part) => part.step === null)).toBe(true);
+      expect(engine.element.textContent).toContain(t('diagram.driveUp'));
+      expect(engine.element.textContent).not.toContain(t('diagram.step', { n: 1 }));
+    },
+  );
+
   it('keeps the caravan status row empty: the drawing says it all', () => {
     const { engine, statuses } = engineFor({ vehicleType: 'caravan' });
     engine.tick(TILTED, 0);

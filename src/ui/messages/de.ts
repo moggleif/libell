@@ -219,6 +219,12 @@ export const de: Messages = {
   'settings.steps.remove': '{value} entfernen',
   'settings.ramp': 'Fertiger Keil',
   'settings.ramp.custom': 'Eigener Satz',
+  'settings.ramp.stepless': 'Stufenloser Keil',
+  'settings.ramp.steplessModel': '{name} (stufenlos, max. {max} mm)',
+  'settings.stepless.max': 'Stufenloser Keil, max. Höhe',
+  'settings.stepless.maxHeading': 'Max. Höhe',
+  'settings.stepless.set': 'Speichern',
+  'settings.stepless.new': 'Max. Höhe ({unit})',
   'settings.rampCount': 'Anzahl Keile',
   'settings.drain': 'Abflussseite',
   'settings.rampHint': 'Die App wählt, wo deine Keile am meisten bringen.',
@@ -389,7 +395,8 @@ export const de: Messages = {
     'Bei mehreren Fahrzeugen behält jedes seine Maße, Keile, Nullpunkte, Ziele und Sensorbox; wähle es oben unter Fahrzeug.',
   'help.ramps.t':
     'Der Bildschirm sagt, auf welche Stufe deines Keils jedes Rad muss, also trag die Keile ein, die du dabeihast.\n' +
-    'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.',
+    'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.\n' +
+    'Für einen Keil ohne Stufen wähle Stufenloser Keil und trag seine Höhe ein. Der Bildschirm sagt dann, wie weit du auffahren sollst.',
   'help.calibration.h': 'Kalibrieren und nullen',
   'help.calibration.t':
     'Zwei Schritte machen die Messung richtig: das Handy einmal kalibrieren und das Fahrzeug einmal nullen.\n' +
@@ -441,6 +448,7 @@ export const de: Messages = {
   'diagram.caravan.aria': 'Dein Wohnwagen von oben, mit den Achsrädern und dem Stützrad',
   'diagram.front': 'Vorn',
   'diagram.step': 'Stufe {n}',
+  'diagram.driveUp': 'Auffahren',
   'diagram.done': 'Fertig',
   'diagram.noRamp': 'Kein Keil',
   'diagram.wheel.frontLeft': 'Vorne links',

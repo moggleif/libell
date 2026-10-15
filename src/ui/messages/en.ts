@@ -240,6 +240,12 @@ export const en = {
   'settings.steps.remove': 'Remove {value}',
   'settings.ramp': 'Ready-made ramp',
   'settings.ramp.custom': 'Custom set',
+  'settings.ramp.stepless': 'Stepless wedge',
+  'settings.ramp.steplessModel': '{name} (stepless, max {max} mm)',
+  'settings.stepless.max': 'Stepless wedge, max height',
+  'settings.stepless.maxHeading': 'Max height',
+  'settings.stepless.set': 'Set',
+  'settings.stepless.new': 'Max height ({unit})',
   'settings.rampCount': 'Number of ramps',
   'settings.drain': 'Drain side',
   'settings.rampHint': 'The app picks where your ramps do the most good.',
@@ -416,7 +422,8 @@ export const en = {
     'With several vehicles, each keeps its own measurements, ramps, zeros, targets and sensor box; pick one at the top of Vehicle.',
   'help.ramps.t':
     'The screen tells you which step of your ramp each wheel goes up on, so enter the ramps you carry.\n' +
-    'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.',
+    'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.\n' +
+    'For a ramp with no steps, pick Stepless wedge and enter its height. The screen then says how far to drive up.',
   'help.calibration.h': 'Calibrate and zero',
   'help.calibration.t':
     'Two steps make the readings right: calibrate the phone once and zero the vehicle once.\n' +
@@ -468,6 +475,7 @@ export const en = {
     'Top-down view of your caravan showing the axle wheels and the jockey wheel',
   'diagram.front': 'Front',
   'diagram.step': 'Step {n}',
+  'diagram.driveUp': 'Drive up',
   'diagram.done': 'Done',
   // A low wheel no ramp reaches (R5): says why nothing happens there.
   'diagram.noRamp': 'No ramp',

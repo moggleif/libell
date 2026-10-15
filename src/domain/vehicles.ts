@@ -17,6 +17,7 @@ const VEHICLE_FIELDS = [
   'trackWidthFrontMm',
   'trackWidthRearMm',
   'rampStepHeightsMm',
+  'rampStepless',
   'rampCount',
   'drainPosition',
   'sensorSource',

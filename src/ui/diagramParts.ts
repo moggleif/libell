@@ -195,7 +195,8 @@ export function createBubbleLevel(center: Point, size: BubbleSize): BubbleLevel 
 /** Shared by every diagram so all read the plan the same way. The step's own
  * height is not repeated next to its name: two millimetre figures side by
  * side read as two answers. A gray wheel gets no figure: a height on a wheel
- * to leave alone only begs the question of what to do with it. */
+ * to leave alone only begs the question of what to do with it.
+ * `stepHeightsMm` are the steps the cards number (`numberedSteps`). */
 export function stepAndLiftText(
   severity: Severity,
   stepMm: number,
@@ -207,10 +208,16 @@ export function stepAndLiftText(
   // Unserved (gray, ADR 0011): low, but no ramp reaches this wheel.
   if (stepMm <= 0) return { step: t('diagram.noRamp'), lift: formatLength(displayMm, unit) };
   const stepNumber = stepHeightsMm.indexOf(stepMm) + 1;
-  return {
-    step: stepNumber > 0 ? t('diagram.step', { n: stepNumber }) : `↑ ${formatLength(stepMm, unit)}`,
-    lift: formatLength(displayMm, unit),
-  };
+  if (stepNumber > 0) {
+    return { step: t('diagram.step', { n: stepNumber }), lift: formatLength(displayMm, unit) };
+  }
+  if (stepHeightsMm.length > 0) {
+    return { step: `↑ ${formatLength(stepMm, unit)}`, lift: formatLength(displayMm, unit) };
+  }
+  // No steps to number, as on a stepless wedge (#600): how high to drive
+  // up, never more than the wedge's height, which is all a red wheel gets.
+  const driveUpMm = Math.min(displayMm, stepMm);
+  return { step: t('diagram.driveUp'), lift: formatLength(driveUpMm, unit) };
 }
 
 // ============================================================

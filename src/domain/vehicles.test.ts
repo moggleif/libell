@@ -28,6 +28,7 @@ describe('vehicleFieldsOf', () => {
       'trackWidthFrontMm',
       'trackWidthRearMm',
       'rampStepHeightsMm',
+      'rampStepless',
       'rampCount',
       'drainPosition',
       'sensorSource',

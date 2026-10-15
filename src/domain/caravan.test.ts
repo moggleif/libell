@@ -45,6 +45,13 @@ describe('computeCaravanLeveling', () => {
     expect(result.jockeyMm).toBeCloseTo(0);
   });
 
+  it('a stepless wedge takes the axle wheel exactly its lift, up to its height (#600)', () => {
+    const wedge = { ...SETTINGS, rampStepHeightsMm: [110], rampStepless: true };
+    const lift = SETTINGS.trackWidthRearMm * tan(1);
+    expect(computeCaravanLeveling(gravityFor(-1, 0), wedge).axle.right.stepMm).toBeCloseTo(lift);
+    expect(computeCaravanLeveling(gravityFor(-6, 0), wedge).axle.right.stepMm).toBe(110);
+  });
+
   it('front low: crank the jockey wheel up — no ramps involved', () => {
     const result = computeCaravanLeveling(gravityFor(0, -1), SETTINGS);
     expect(result.isLevel).toBe(false);
@@ -97,6 +104,22 @@ describe('createCaravanStabilizer', () => {
     expect(shown.jockey.direction).toBe('up');
     expect(shown.jockey.displayMm).toBeCloseTo(SETTINGS.wheelbaseMm * tan(1), 0);
     expect(shown.isLevel).toBe(false);
+  });
+
+  it('never shows a stale height while an axle wheel climbs a stepless wedge (#600)', () => {
+    const wedge = { ...SETTINGS, rampStepHeightsMm: [110], rampStepless: true };
+    const rollFor = (liftMm: number) => -(Math.atan(liftMm / 1800) * 180) / Math.PI;
+    const stabilize = createCaravanStabilizer();
+    let now = 0;
+    for (let liftMm = 80; liftMm >= 0; liftMm -= 2, now += 50) {
+      const { right } = stabilize(
+        computeCaravanLeveling(gravityFor(rollFor(liftMm), 0), wedge),
+        wedge,
+        now,
+      ).axle;
+      expect(right.severity).not.toBe('large');
+      expect(right.stepMm).toBeLessThanOrEqual(right.displayMm);
+    }
   });
 
   it('judges each axle wheel on the first reading against its own step (#485)', () => {

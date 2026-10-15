@@ -12,7 +12,7 @@
 import type { LevelSettings } from './settings';
 import type { Calibration } from './calibration';
 import {
-  recommendStep,
+  rampHeightFor,
   tiltFromGravity,
   type GravityVector,
   type LiftSeverity,
@@ -58,7 +58,7 @@ export function computeCaravanLeveling(
   const high = Math.max(zLeft, zRight);
   const lift = (z: number): WheelLift => ({
     liftMm: high - z,
-    stepMm: recommendStep(high - z, settings.rampStepHeightsMm),
+    stepMm: rampHeightFor(high - z, settings),
   });
 
   // Jockey wheel forward of the axle: front low (negative pitch) means

@@ -635,6 +635,17 @@ URL and must keep working with no signal.
 - **Then** the button is never greyed out: nothing is added, the typed value stays, and
   the same line as the other number fields ("Enter a number above 0…") says what to fix
   until I type again; a positive number is added and the field cleared (#514).
+- **Given** a stepless wedge (#600): a ramp with no steps, driven up as far as needed
+  up to its maximum height
+- **When** I choose "Stepless wedge" (catalogue second, after "Custom set", and in the
+  compact picker), or a stepless catalog model (marked `stepless` in `RAMP_MODELS`,
+  shown with "max" and its height)
+- **Then** the ramp has one height, its maximum: "Custom set" heights turn into a wedge
+  as high as their tallest step, the editor's field sets that maximum instead of adding
+  a step (no remove button, the button reads "Save"), and the "Selected" block reads
+  "Max height" over that one figure, with no step label. Choosing "Custom set" again
+  keeps that height as one step. A shared setup (R41) carries whether the ramp is stepless, and an older link without it reads
+  as a staircase.
 
 ## R22 — Caravan mode: single axle + jockey wheel
 
@@ -791,6 +802,15 @@ URL and must keep working with no signal.
   drains keep working — sink and shower water runs toward the outlet instead of
   pooling — never choosing a worse-than-tolerance solution or extra ramps just for
   drainage.
+- **Given** a stepless wedge (R21, #600)
+- **Then** each wheel's lift is driven up exactly, up to the wedge's maximum, so the plan
+  weighs only one height per wheel; the wheel card reads "Drive up" ("Kör upp") with how
+  far, not a step number, and spoken guidance (R54) says the same. A wheel the wedge
+  cannot reach is red and reads "Drive up" with the wedge's full height — the whole
+  wedge, still not enough — rather than the remaining shortfall, so the one figure on the
+  card is always how far to drive, never more than the wedge has. While a wheel climbs
+  the wedge, the plan keeps which wheels get a ramp and each height follows the shown
+  lift, so no wheel flashes red or gray on the way up.
 - The per-wheel required lifts (R3) are unchanged — the plan only decides which steps
   are recommended. Caravan mode is unaffected (one axle wheel is ever ramped, R22);
   its form hides both fields. Display hysteresis (R25's calm-display rules and the
@@ -1734,7 +1754,8 @@ the footer, with the card and the footer both spelling out the same step heights
   whatever brand you own, so it leads rather than trailing every ready-made model
   (`RAMP_MODELS` in `src/domain/ramps.ts`) you may already have ruled out. The brand
   filter never hides it — narrowing to a brand says which ready-made models to show,
-  it does not withdraw the option of entering your own.
+  it does not withdraw the option of entering your own. "Stepless wedge" (R21, #600)
+  follows it on the same terms.
 - **Given** the setting that depends on the chosen ramp (number of ramps)
 - **Then** it sits below the block naming that choice, not above the answer it belongs
   to.
@@ -2060,9 +2081,10 @@ tones of R30 only say warmer or colder. Spoken guidance says which wheel and how
   "Continuous audio guidance", also in the wizard's Sound step)
 - **When** the vehicle stands still (R25's stillness detector) and is not level
 - **Then** the app says the plan the wheel cards show, in the app's language: each wheel
-  to raise with its ramp step ("Rear left, Step 2"), or its lift in the display unit
-  (R14) when no step can be named ("Rear left, 30 mm"), plus "not enough" when even
-  the tallest step falls short. It reads the same stabilized plan as the screen (R6,
+  to raise with its ramp step ("Rear left, Step 2"), or how far to drive up in the
+  display unit (R14) when no step can be named, as on a stepless wedge ("Rear left,
+  Drive up 30 mm", R27), plus "not enough" when even the tallest step, or the whole
+  wedge, falls short. It reads the same stabilized plan as the screen (R6,
   R27), never a raw reading, and leaves out wheels that are done or that no ramp is left
   for (ADR 0011).
 - **Given** the plan changes, for example a wheel is done or its step changes

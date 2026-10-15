@@ -11,7 +11,13 @@
  * sink and shower water keeps running toward the outlet), then be as
  * level as possible, then climb as little as possible.
  */
-import { liftSeverity, WHEEL_IDS, type LiftSeverity, type WheelId } from './leveling';
+import {
+  liftSeverity,
+  rampHeightFor,
+  WHEEL_IDS,
+  type LiftSeverity,
+  type WheelId,
+} from './leveling';
 import type { DrainPosition, LevelSettings } from './settings';
 
 export interface RampPlan {
@@ -113,7 +119,7 @@ export function planRamps(lifts: Record<WheelId, number>, settings: LevelSetting
   const overshootLimitMm = settings.toleranceMm + settings.stabilityMm;
   const candidates = WHEEL_IDS.map((id) => [
     0,
-    ...settings.rampStepHeightsMm.filter((s) => s <= lifts[id] + overshootLimitMm),
+    ...heightsToTry(lifts[id], settings, overshootLimitMm),
   ]);
 
   let best: RampPlan | null = null;
@@ -135,6 +141,14 @@ export function planRamps(lifts: Record<WheelId, number>, settings: LevelSetting
   tryWheel(0, 0);
   // The all-zero assignment is always a candidate, so best is never null.
   return best!;
+}
+
+/** A staircase's steps that do not hoist the wheel clearly above the
+ * plane; on a stepless wedge, only driving it up exactly as far as it
+ * needs (or the whole wedge): no other height can do better. */
+function heightsToTry(liftMm: number, settings: LevelSettings, overshootLimitMm: number): number[] {
+  if (settings.rampStepless) return liftMm > 0 ? [rampHeightFor(liftMm, settings)] : [];
+  return settings.rampStepHeightsMm.filter((s) => s <= liftMm + overshootLimitMm);
 }
 
 export type DeficitMagnitude = 'close' | 'far';
