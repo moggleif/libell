@@ -24,7 +24,7 @@ export const fr: Messages = {
   'setup.incoming.intro': 'Un proche a partagé ces mesures de véhicule avec vous :',
   'setup.incoming.reminder':
     'Cela ne comprend aucun étalonnage — vous devrez tout de même étalonner sur ce téléphone.',
-  'setup.incoming.apply': 'Utiliser ces valeurs',
+  'setup.incoming.apply': 'Remplacer le véhicule actuel',
   'setup.incoming.dismiss': 'Pas maintenant',
   'setup.incoming.invalid': 'Ce lien de configuration n’a pas pu être lu — rien n’a été modifié.',
 
@@ -392,7 +392,8 @@ export const fr: Messages = {
   'help.settings.t':
     'Libell calcule de combien lever chaque roue à partir de l’empattement et de la voie.\n' +
     'Ils figurent sur les papiers du véhicule, sinon prenez un mètre ruban.\n' +
-    'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.',
+    'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.\n' +
+    'Avec plusieurs véhicules, chacun garde ses mesures, cales, zéros, cibles et boîtier capteur ; choisissez-le en haut de Véhicule.',
   'help.ramps.t':
     'L’écran indique sur quel palier de votre rampe monter chaque roue : saisissez donc les rampes que vous emportez.\n' +
     'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.',
@@ -463,6 +464,25 @@ export const fr: Messages = {
   'caravan.jockeyWheel': 'Roue jockey',
   'help.screen.caravan':
     'Caravane : la roue jockey indique Monter ou Descendre à la manivelle, et de combien.',
+
+  'vehicles.title': 'Véhicules',
+  'vehicles.pick': 'Choisir le véhicule',
+  'vehicles.defaultName': 'Mon véhicule',
+  'vehicles.numbered': 'Véhicule {n}',
+  'vehicles.name.placeholder': 'Nom (par ex. « Caravane »)',
+  'vehicles.name.label': 'Nom du véhicule',
+  'vehicles.add': 'Nouveau véhicule',
+  'vehicles.rename': 'Renommer',
+  'vehicles.remove': 'Supprimer',
+  'vehicles.rename.empty': 'Saisissez d’abord le nouveau nom dans le champ.',
+  'vehicles.renamed': 'Nom modifié.',
+  'vehicles.remove.last':
+    'Il faut au moins un véhicule. Ajoutez-en d’abord un autre avec Nouveau véhicule.',
+  'vehicles.remove.confirm': 'Supprimer {name} avec ses zéros, ses cibles et son boîtier capteur ?',
+  'vehicles.remove.yes': 'Oui, supprimer',
+  'vehicles.hint':
+    'Les mesures, les cales, les zéros, les cibles et le boîtier capteur appartiennent au véhicule. L’étalonnage du téléphone est partagé.',
+  'setup.incoming.addNew': 'Ajouter comme nouveau véhicule',
 
   'hitch.title': 'Hauteur d’attelage',
   'hitch.hint':

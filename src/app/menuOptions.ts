@@ -88,6 +88,7 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
       settingsAccess.set(withEasyLevelConnectDelay(settings(), enabled, ms)),
     getSoundPrefs: () => soundPrefsOf(settings()),
     onShareVehicleSetup: (current: LevelSettings) => deps.shareVehicleSetup(current),
+    vehicles: parts.vehicles,
   };
 }
 

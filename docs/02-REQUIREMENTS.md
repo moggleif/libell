@@ -167,8 +167,9 @@ URL and must keep working with no signal.
 - **Given** the five tabs or pages (#329)
 - **Then** each holds one subject, with at most one sentence of hint per field and no
   "Advanced" section:
-  - **Vehicle**: type, axle, the measurements (three; two for a caravan), one hint,
-    and a quiet "Share to another phone" link (R41). No unit field.
+  - **Vehicle**: the vehicle picker (R56), type, axle, the measurements (three; two
+    for a caravan), one hint, and a quiet "Share to another phone" link (R41). No unit
+    field.
   - **Ramps**: the ramp, its step heights and Number of ramps (R27, R47).
   - **Calibration**: R11/R24.
   - **Level**: Tolerance, Drain side (R27, hidden for a caravan) and the saved targets
@@ -720,6 +721,9 @@ URL and must keep working with no signal.
   the zero back exactly as captured. An active target (R31) is measured from the
   adjusted zero. Without a stored zero the row is not shown: the zero step above it is
   what guides the user. The first-run guide has no row, since it has no zero yet.
+- **Given** several vehicles (R56)
+- **Then** each has its own vehicle zero and fine adjustment; the phone's own sensor
+  calibration (R11) is shared, since it describes the phone.
 
 ## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
 
@@ -939,6 +943,8 @@ URL and must keep working with no signal.
   chooses between placements already within tolerance and never deliberately
   overshoots it; a target preset here can deliberately aim for a non-level position.
   Everything is stored in `localStorage` only — no account, no backend.
+- **Given** several vehicles (R56)
+- **Then** each has its own saved targets and active target.
 
 ## R32 — EasyLevel BLE box as an alternative measurement source (opt-in)
 
@@ -1102,6 +1108,9 @@ cross-platform goal — they are not this app's code and are not covered here.
   says "Lost contact", Reconnect is offered and R37's background retry starts, exactly as
   for an outright drop. Only a live link is watched: connecting itself, which the
   manufacturer's manual says can take up to 60 seconds, has no limit of Libell's own.
+- **Given** several vehicles (R56)
+- **Then** each remembers its own box and source; switching vehicle reconnects as on
+  open.
 
 ## R34 — EasyLevel box: installation zero ("Zero the vehicle")
 
@@ -1173,6 +1182,8 @@ cross-platform goal — they are not this app's code and are not covered here.
   onto the page for the device it configures), since it only makes sense once an
   external source exists to zero; the Calibration section only repeats its action
   while that source is active (above).
+- **Given** several vehicles (R56)
+- **Then** each box zero belongs to the vehicle it was taken in.
 
 ## R35 — Stale sensor data is never shown as live (#132)
 
@@ -1457,7 +1468,8 @@ dwell, unit, sound, theme, appearance, sensor source) are deliberately excluded.
 - **When** it is applied
 - **Then** only the fields listed above are written to their settings; their own
   calibration, EasyLevel pairing, and every UI/behavior preference are left
-  untouched.
+  untouched. "Add as a new vehicle" (the primary choice) puts them on a new vehicle
+  of their own (R56); "Replace the current vehicle" writes them over the active one.
 - **Given** a field inside a valid link is unusable, such as a length outside its
   plausible range (R9's ranges)
 - **Then** that field falls back to its default and the rest of the link is kept.
@@ -2095,3 +2107,42 @@ the jockey wheel lead back to it when it is time to leave.
   is gone once saved, or until the next session once dismissed.
 - **Given** vehicle type Motorhome
 - **Then** none of this is shown.
+
+## R56 — Several vehicles: one set of measurements, zeros and box per vehicle (#599)
+
+Someone with a motorhome and a caravan, or who borrows a family member's vehicle, keeps
+each one's setup instead of retyping it. The sensor box belongs to its vehicle: one box
+per vehicle (Morgan, #599).
+
+- **Given** Settings › Vehicle
+- **Then** at the top a vehicle picker shows the active vehicle ("My vehicle" until it is
+  renamed), with "New vehicle", "Rename" and "Remove".
+- **Given** "New vehicle", with or without a name typed
+- **Then** a vehicle with `DEFAULT_SETTINGS`' measurements, no zero, no targets and no
+  box (it uses the phone) is added and becomes active; with no name typed it is called
+  "Vehicle N", the next number not in use.
+- **Given** two vehicles
+- **When** I choose the other one
+- **Then** the app starts again on it: the main screen uses its vehicle type, axle,
+  measurements, ramps and drain side (R41's fields), its sensor source and box with the
+  box's direction and password, its zeros (R24, R34/R49) and their fine adjustment
+  (R24), its targets (R31) and its hitch height (R55). The previous box is disconnected,
+  and this vehicle's box reconnects as on open (R33). The choice survives a reload.
+- **Given** the phone's own sensor calibration (R11) and the app-wide preferences
+  (tolerance, unit, sound, look, language)
+- **Then** they are shared by every vehicle.
+- **Given** "Rename" with a name typed
+- **Then** the active vehicle takes that name; with nothing typed, a line says to type
+  it first.
+- **Given** "Remove"
+- **Then** a line asks to confirm, naming what goes with the vehicle; "Yes, remove"
+  removes it and its values, and the app starts again on another vehicle.
+- **Given** "Remove" on the only vehicle
+- **Then** nothing is removed: a line says at least one vehicle is needed and that "New
+  vehicle" adds another (guide, don't block).
+- **Given** an install from before this change
+- **Then** its current settings, box and zeros are its one vehicle, "My vehicle", with
+  nothing lost.
+- **Given** one vehicle or several
+- **Then** the main screen shows nothing new; the picker in Settings is where the
+  active vehicle is seen and changed.

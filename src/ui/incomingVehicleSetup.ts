@@ -13,7 +13,10 @@ import { holdFocus } from './focusHold';
 export interface IncomingVehicleSetupOptions {
   geometry: VehicleGeometry;
   displayUnit: LevelSettings['displayUnit'];
+  /** Replaces the current vehicle's measurements. */
   onApply: () => void;
+  /** Adds the setup as a new vehicle (#599): the default choice. */
+  onAddAsNew: () => void;
   onDismiss: () => void;
 }
 
@@ -35,16 +38,15 @@ export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): 
     overlay.remove();
     hold.release();
   };
-  const actions = createActions(
-    () => {
-      close();
-      options.onDismiss();
-    },
-    () => {
-      close();
-      options.onApply();
-    },
-  );
+  const closing = (action: () => void) => () => {
+    close();
+    action();
+  };
+  const actions = createActions({
+    dismiss: closing(options.onDismiss),
+    replace: closing(options.onApply),
+    addNew: closing(options.onAddAsNew),
+  });
 
   const card = createElement('div', 'incoming-setup__card');
   card.append(heading, intro, geometryList(options), reminder, actions);
@@ -90,18 +92,23 @@ function paragraph(className: string, text: string): HTMLParagraphElement {
   return element;
 }
 
-function createActions(onDismiss: () => void, onApply: () => void): HTMLElement {
+function actionButton(className: string, text: string, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = className;
+  button.textContent = text;
+  button.addEventListener('click', onClick);
+  return button;
+}
+
+/** Adding it as a new vehicle is the primary choice: nothing is lost. */
+function createActions(on: { dismiss(): void; replace(): void; addNew(): void }): HTMLElement {
   const actions = createElement('div', 'incoming-setup__actions');
-  const dismissButton = document.createElement('button');
-  dismissButton.type = 'button';
-  dismissButton.className = 'menu__action menu__action--secondary';
-  dismissButton.textContent = t('setup.incoming.dismiss');
-  dismissButton.addEventListener('click', onDismiss);
-  const applyButton = document.createElement('button');
-  applyButton.type = 'button';
-  applyButton.className = 'menu__action';
-  applyButton.textContent = t('setup.incoming.apply');
-  applyButton.addEventListener('click', onApply);
-  actions.append(dismissButton, applyButton);
+  const secondary = 'menu__action menu__action--secondary';
+  actions.append(
+    actionButton(secondary, t('setup.incoming.dismiss'), on.dismiss),
+    actionButton(secondary, t('setup.incoming.apply'), on.replace),
+    actionButton('menu__action', t('setup.incoming.addNew'), on.addNew),
+  );
   return actions;
 }

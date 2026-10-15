@@ -17,6 +17,7 @@ import { createAppSettings, type AppSettings } from './appSettings';
 import { createBoxZeroing } from './boxZero';
 import { createDemoSensor } from './demoSensor';
 import { createHitchHeight } from './hitchHeight';
+import { createVehicles } from './vehicles';
 import {
   createBox,
   hasPersistentDeviceAccess,
@@ -111,6 +112,8 @@ export function createCore(screen: Screen): Core {
       zeroTrims: layers.zeroTrims,
       targets: layers.targets,
       hitch,
+      // A switch starts the app again on that vehicle (ADR 0017).
+      vehicles: createVehicles({ reload: () => location.reload() }),
       boxes,
       boxWiring,
     },

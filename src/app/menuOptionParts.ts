@@ -24,6 +24,7 @@ import {
 import type { InstallOffsets } from './installOffsets';
 import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
+import type { Vehicles } from './vehicles';
 import type { ZeroTrims } from './zeroTrims';
 
 export interface MenuOptionDeps {
@@ -36,6 +37,7 @@ export interface MenuOptionDeps {
   zeroTrims: ZeroTrims;
   targets: Targets;
   hitch: HitchHeight;
+  vehicles: Vehicles;
   boxes: Pick<BoxController<LibellBox>, 'connect' | 'disconnect' | 'getSensor'>;
   boxWiring: BoxWiring;
 }

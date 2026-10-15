@@ -12,7 +12,7 @@
  * Keyed by `SensorSource` (ADR 0016): two boxes are two devices, and
  * reconnecting to the wrong one is not a recoverable mistake.
  */
-import type { SensorSource } from '../domain/settings';
+import { SENSOR_SOURCES, type SensorSource } from '../domain/settings';
 import {
   defaultStorage,
   guarded,
@@ -79,4 +79,9 @@ export function migrateLegacyRememberedDeviceId(
       store.setItem(target, legacy);
     }
   });
+}
+
+/** Each box's remembered device (#599): the box belongs to its vehicle. */
+export function rememberedDeviceKeys(): string[] {
+  return SENSOR_SOURCES.map(deviceKey);
 }

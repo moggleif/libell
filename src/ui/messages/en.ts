@@ -26,7 +26,7 @@ export const en = {
   'setup.incoming.intro': 'A family member shared these vehicle measurements with you:',
   'setup.incoming.reminder':
     "This does not include any calibration — you'll still need to calibrate on this phone.",
-  'setup.incoming.apply': 'Use these values',
+  'setup.incoming.apply': 'Replace the current vehicle',
   'setup.incoming.dismiss': 'Not now',
   'setup.incoming.invalid': "That vehicle-setup link couldn't be read — nothing was changed.",
 
@@ -411,7 +411,8 @@ export const en = {
   'help.settings.t':
     'Libell works out how much each wheel must rise from the wheelbase and track width.\n' +
     'They are in the vehicle papers, or measure with a tape.\n' +
-    'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.',
+    'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.\n' +
+    'With several vehicles, each keeps its own measurements, ramps, zeros, targets and sensor box; pick one at the top of Vehicle.',
   'help.ramps.t':
     'The screen tells you which step of your ramp each wheel goes up on, so enter the ramps you carry.\n' +
     'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.',
@@ -485,6 +486,25 @@ export const en = {
   'caravan.jockeyWheel': 'Jockey wheel',
   // Help → Reading the screen, for a caravan's jockey wheel (#368).
   'help.screen.caravan': 'Caravan: the jockey wheel says Crank up or Crank down, and by how much.',
+
+  // Several vehicles (#599).
+  'vehicles.title': 'Vehicles',
+  'vehicles.pick': 'Choose vehicle',
+  'vehicles.defaultName': 'My vehicle',
+  'vehicles.numbered': 'Vehicle {n}',
+  'vehicles.name.placeholder': 'Name (e.g. "Caravan")',
+  'vehicles.name.label': 'Vehicle name',
+  'vehicles.add': 'New vehicle',
+  'vehicles.rename': 'Rename',
+  'vehicles.remove': 'Remove',
+  'vehicles.rename.empty': 'Type the new name in the field first.',
+  'vehicles.renamed': 'Renamed.',
+  'vehicles.remove.last': 'At least one vehicle is needed. Add another with New vehicle first.',
+  'vehicles.remove.confirm': 'Remove {name} with its zeros, targets and sensor box?',
+  'vehicles.remove.yes': 'Yes, remove',
+  'vehicles.hint':
+    'Measurements, ramps, zeros, targets and the sensor box belong to the vehicle. The phone’s calibration is shared.',
+  'setup.incoming.addNew': 'Add as a new vehicle',
 
   // A caravan's hitch height (#598).
   'hitch.title': 'Hitch height',

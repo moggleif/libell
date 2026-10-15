@@ -168,3 +168,8 @@ export function loadHitchPitch(storage: MaybeStorage = defaultStorage()): number
 export function saveHitchPitch(pitchDeg: number, storage: MaybeStorage = defaultStorage()): void {
   writeJson(storage, HITCH_PITCH_KEY, pitchDeg);
 }
+
+/** The flags that describe one vehicle (#599): its targets and hitch height. */
+export function vehicleFlagKeys(): string[] {
+  return [TARGET_PRESETS_KEY, ACTIVE_TARGET_KEY, HITCH_PITCH_KEY];
+}

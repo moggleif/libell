@@ -13,16 +13,25 @@ import type { LevelTab } from './settingsLevelTab';
 import type { RampsTab } from './settingsRampsTab';
 import type { VehicleTab } from './settingsVehicleTab';
 import { createTargetsSection, type TargetsOptions } from './targetsSection';
+import { createVehiclePicker, type VehiclePickerOptions } from './vehiclePicker';
 
 /** The wizard's reduced single-topic steps; see `SettingsFormOptions`. */
 export type CompactStep = 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps';
 
 export type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
 
-/** The hosts behind the embedded calibration and targets sections. */
+/** The hosts behind the embedded calibration, targets and vehicle
+ * picker sections. */
 export interface Hosts {
   calibration?: CalibrationOptions;
   targets?: TargetsOptions;
+  vehicles?: VehiclePickerOptions;
+}
+
+/** The vehicle picker above the Vehicle fields (#599), when wired. */
+function vehicleElements(tabs: Tabs, vehicles: VehiclePickerOptions | undefined): HTMLElement[] {
+  const picker = vehicles ? [createVehiclePicker(vehicles).element] : [];
+  return [...picker, ...tabs.vehicle.elements()];
 }
 
 export interface Tabs {
@@ -128,7 +137,7 @@ export function layOut(
   }
   if (appearance === 'modern') return layOutModernTabs(form, tabs, hosts);
   if (formOptions?.splitPages) {
-    layOutClassicPages(form, tabs, hosts.targets);
+    layOutClassicPages(form, tabs, hosts);
     return () => {};
   }
   return layOutFlatPage(form, tabs);
@@ -175,7 +184,7 @@ function layOutModernTabs(form: SettingsFormElement, tabs: Tabs, hosts: Hosts): 
   const targets = createTargetsSection(hosts.targets ?? inertTargetsOptions());
   let openTab: TabId = 'vehicle';
   const bar = createTabBar(selectTab);
-  fillModernTabs(bar, tabs, calibration.element, targets.element);
+  fillModernTabs(bar, tabs, calibration.element, targets.element, hosts.vehicles);
 
   function selectTab(id: TabId): void {
     openTab = id;
@@ -251,8 +260,9 @@ function fillModernTabs(
   tabs: Tabs,
   calibration: HTMLElement,
   targets: HTMLElement,
+  vehicles: VehiclePickerOptions | undefined,
 ): void {
-  bar.addTab('vehicle').append(...tabs.vehicle.elements());
+  bar.addTab('vehicle').append(...vehicleElements(tabs, vehicles));
   // The same page Classic's ☰ → Ramps shows.
   tabs.ramps.buildPage(bar.addTab('ramps', 'settings__tabpanel settings__tabpanel--klossar'));
   bar.addTab('calibration').append(calibration);
@@ -267,11 +277,7 @@ function fillModernTabs(
  * `<form>`/state; the menu mounts whichever body it shows. Calibration
  * stays its own page outside this form.
  */
-function layOutClassicPages(
-  form: SettingsFormElement,
-  tabs: Tabs,
-  targetsOptions: TargetsOptions | undefined,
-): void {
+function layOutClassicPages(form: SettingsFormElement, tabs: Tabs, hosts: Hosts): void {
   const page = (...children: HTMLElement[]): HTMLElement => {
     const body = document.createElement('div');
     body.append(...children);
@@ -283,12 +289,12 @@ function layOutClassicPages(
 
   // One real `createTargetsSection` component, not a copy, below
   // Tolerance and Drain side.
-  const targets = createTargetsSection(targetsOptions ?? inertTargetsOptions());
+  const targets = createTargetsSection(hosts.targets ?? inertTargetsOptions());
   form.refreshTargetsPage = targets.refresh;
 
   form.classicPages = {
     general: page(...tabs.general.elements()),
-    vehicle: page(...tabs.vehicle.elements()),
+    vehicle: page(...vehicleElements(tabs, hosts.vehicles)),
     ramps,
     targets: page(...tabs.level.elements(targets.element)),
   };

@@ -3,7 +3,7 @@
  * vehicle zero, and each external source's installation offset. Corrupt or
  * missing values read as null, so they can never break startup.
  */
-import type { SensorSource } from '../domain/settings';
+import { SENSOR_SOURCES, type SensorSource } from '../domain/settings';
 import { MAX_TILT_DEG, parseCalibration, type Calibration } from '../domain/calibration';
 import {
   defaultStorage,
@@ -208,4 +208,17 @@ export function clearZeroTrim(
   storage: KeyValueStorage | null = defaultStorage(),
 ): void {
   removeItem(storage, zeroTrimKey(source));
+}
+
+/**
+ * The keys that describe one vehicle rather than the phone (#599): the
+ * phone's vehicle zero, each box's zero and every fine adjustment. The
+ * phone's own calibration (`libell.calibration`) is not among them.
+ */
+export function vehicleCalibrationKeys(): string[] {
+  return [
+    VEHICLE_CALIBRATION_KEY,
+    ...SENSOR_SOURCES.map(installCalibrationKey),
+    ...SENSOR_SOURCES.map(zeroTrimKey),
+  ];
 }

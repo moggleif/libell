@@ -23,6 +23,7 @@ import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
 import { holdFocus, type FocusHold } from './focusHold';
 import { setVisible } from './motion';
+import type { VehiclePickerOptions } from './vehiclePicker';
 
 export type MenuSection = 'general' | 'calibration' | 'vehicle' | 'ramps' | 'targets';
 
@@ -92,6 +93,8 @@ export interface MenuOptions {
    * so option fixtures (tests, `infoMenu.ts`'s reused shape) need not
    * provide it. */
   onShareVehicleSetup?(settings: LevelSettings): void;
+  /** Several vehicles (#599); no picker when omitted. */
+  vehicles?: VehiclePickerOptions;
 }
 
 export interface Menu {
@@ -233,7 +236,11 @@ function createMenuSettingsForm(options: MenuOptions): SettingsFormElement {
     options.initialSettings,
     (settings) => options.onSettingsSaved(settings),
     options,
-    { splitPages: true, onShareVehicleSetup: options.onShareVehicleSetup },
+    {
+      splitPages: true,
+      onShareVehicleSetup: options.onShareVehicleSetup,
+      vehicles: options.vehicles,
+    },
     options,
   );
 }
