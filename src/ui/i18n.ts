@@ -3,6 +3,7 @@
  * plain data so a unit test can assert every language covers the same keys.
  */
 
+import { ca } from './messages/ca';
 import { cs } from './messages/cs';
 import { da } from './messages/da';
 import { de } from './messages/de';
@@ -49,6 +50,7 @@ export const MESSAGES = {
   et,
   lv,
   lt,
+  ca,
 } as const;
 
 export type Language = keyof typeof MESSAGES;
@@ -79,6 +81,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   et: 'Eesti',
   lv: 'Latviešu',
   lt: 'Lietuvių',
+  ca: 'Català',
 };
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
