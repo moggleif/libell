@@ -4,6 +4,7 @@ import { isSensorSupported, needsPermissionGesture } from './sensor/orientation'
 import { resolveLanguage, setLanguage } from './ui/i18n';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
+import { nextVehicleName } from './ui/vehiclePicker';
 import { takePendingVehicleSetupCode } from './ui/vehicleShare';
 import { keepScreenAwake } from './ui/wakeLock';
 import { createCore, type Core, type Screen } from './app/core';
@@ -53,6 +54,8 @@ function start(
       screen.lamps.refresh();
       screen.levelScreen.rebuildIfChanged();
     },
+    addVehicle: (geometry) =>
+      core.optionDeps.vehicles.add(nextVehicleName(core.optionDeps.vehicles.list()), geometry),
     show: showIncomingVehicleSetup,
     toast: (text) => void showToast(text),
   });

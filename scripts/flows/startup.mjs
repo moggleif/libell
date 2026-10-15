@@ -144,7 +144,7 @@ async function incomingSetupScenario(browser, url) {
   await incoming.waitFor();
   assert((await wizard(page).count()) === 0, 'the link should show instead of the wizard');
   assert(!(await page.evaluate(() => location.hash)), 'the link should be taken off the URL');
-  await button(incoming, 'Use these values').click();
+  await button(incoming, 'Replace the current vehicle').click();
   await eventually(
     async () => (await storedSettings(page)).wheelbaseMm === 4321,
     'the shared wheelbase should be applied',

@@ -1151,3 +1151,39 @@ describe('settings form — layouts and what they expose (#420)', () => {
     });
   }
 });
+
+describe('the vehicle picker in Settings (#599)', () => {
+  const vehicles = {
+    list: () => [{ id: 'v1', name: '' }],
+    activeId: () => 'v1',
+    switchTo: vi.fn(),
+    add: vi.fn(),
+    rename: vi.fn(),
+    remove: () => false,
+  };
+
+  it('opens the Vehicle tab, above its fields, in Modern', () => {
+    const modern = { ...DEFAULT_SETTINGS, appearance: 'modern' as const };
+    const form = createSettingsForm(modern, vi.fn(), undefined, { vehicles });
+    const panel = form.querySelector<HTMLElement>(
+      '[role=tabpanel][data-tab=vehicle], .settings__tabpanel[data-tab=vehicle]',
+    )!;
+    expect(panel.firstElementChild?.classList.contains('vehicles')).toBe(true);
+  });
+
+  it('opens Classic’s Vehicle page', () => {
+    const classicSplit = { ...DEFAULT_SETTINGS, appearance: 'classic' as const };
+    const form = createSettingsForm(classicSplit, vi.fn(), undefined, {
+      splitPages: true,
+      vehicles,
+    });
+    expect(form.classicPages!.vehicle.firstElementChild?.classList.contains('vehicles')).toBe(true);
+  });
+
+  it('is left out where it is not wired, such as the wizard', () => {
+    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn(), undefined, {
+      compact: 'measurements',
+    });
+    expect(form.querySelector('.vehicles')).toBeNull();
+  });
+});

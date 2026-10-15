@@ -35,3 +35,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0014 | [Sensor source is an abstract seam; calibration split three ways](0014-sensor-source-seam-and-three-way-calibration-split.md) |
 | 0015 | [A shared "vehicle setup" link carries geometry only, never calibration](0015-vehicle-setup-link-excludes-calibration.md)     |
 | 0016 | [External sensors are a registry of described sources](0016-external-sensors-are-a-registry.md)                               |
+| 0017 | [Several vehicles: only the active one lives in the app's keys](0017-several-vehicles-swap-the-active-one.md)                 |

@@ -21,6 +21,7 @@ import {
 import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
 import { createHitchHeight } from './hitchHeight';
+import { createVehicles } from './vehicles';
 import { createZeroTrims } from './zeroTrims';
 
 /** Every dependency as a spy, so each field can be checked for what it calls. */
@@ -102,6 +103,7 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     zeroTrims,
     targets,
     hitch,
+    vehicles: createVehicles({ reload: vi.fn(), storage: null }),
     boxes,
     boxWiring,
   };

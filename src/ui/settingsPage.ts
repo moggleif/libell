@@ -46,7 +46,7 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
       options.onSettingsSaved(settings);
     },
     options,
-    { onShareVehicleSetup: options.onShareVehicleSetup },
+    { onShareVehicleSetup: options.onShareVehicleSetup, vehicles: options.vehicles },
     options,
   );
   page.body.append(settingsForm);

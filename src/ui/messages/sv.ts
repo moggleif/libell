@@ -24,7 +24,7 @@ export const sv: Messages = {
   'setup.incoming.intro': 'En familjemedlem har delat de här fordonsmåtten med dig:',
   'setup.incoming.reminder':
     'Ingen kalibrering följer med — du behöver fortfarande kalibrera den här telefonen.',
-  'setup.incoming.apply': 'Använd dessa värden',
+  'setup.incoming.apply': 'Ersätt nuvarande fordon',
   'setup.incoming.dismiss': 'Inte nu',
   'setup.incoming.invalid': 'Länken för fordonsinställning gick inte att läsa – inget ändrades.',
 
@@ -387,7 +387,8 @@ export const sv: Messages = {
   'help.settings.t':
     'Libell räknar ut hur mycket varje hjul ska upp från hjulbasen och spårvidden.\n' +
     'De står i fordonspapperen, annars mäter du med tumstock.\n' +
-    'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.',
+    'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.\n' +
+    'Har du flera fordon har vart och ett egna mått, klossar, nollor, mål och sensorbox. Välj fordon överst under Fordon.',
   'help.ramps.t':
     'Skärmen säger vilket steg på klossen hjulet ska upp på, så fyll i de klossar du har med dig.\n' +
     'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.',
@@ -455,6 +456,24 @@ export const sv: Messages = {
   'caravan.axleRight': 'Höger axelhjul',
   'caravan.jockeyWheel': 'Stödhjul',
   'help.screen.caravan': 'Husvagn: stödhjulet visar Veva upp eller Veva ner, och hur mycket.',
+
+  'vehicles.title': 'Fordon',
+  'vehicles.pick': 'Välj fordon',
+  'vehicles.defaultName': 'Mitt fordon',
+  'vehicles.numbered': 'Fordon {n}',
+  'vehicles.name.placeholder': 'Namn (t.ex. "Husvagnen")',
+  'vehicles.name.label': 'Fordonets namn',
+  'vehicles.add': 'Nytt fordon',
+  'vehicles.rename': 'Byt namn',
+  'vehicles.remove': 'Ta bort',
+  'vehicles.rename.empty': 'Skriv det nya namnet i fältet först.',
+  'vehicles.renamed': 'Namnet är bytt.',
+  'vehicles.remove.last': 'Minst ett fordon behövs. Lägg till ett annat med Nytt fordon först.',
+  'vehicles.remove.confirm': 'Ta bort {name} med dess nollor, mål och sensorbox?',
+  'vehicles.remove.yes': 'Ja, ta bort',
+  'vehicles.hint':
+    'Mått, klossar, nollor, mål och sensorbox hör till fordonet. Telefonens kalibrering delas.',
+  'setup.incoming.addNew': 'Lägg till som nytt fordon',
 
   'hitch.title': 'Kopplingshöjd',
   'hitch.hint':

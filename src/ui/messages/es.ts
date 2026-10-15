@@ -24,7 +24,7 @@ export const es: Messages = {
   'setup.incoming.intro': 'Alguien de tu familia ha compartido contigo estas medidas del vehículo:',
   'setup.incoming.reminder':
     'Esto no incluye ninguna calibración: tendrás que calibrar igualmente en este móvil.',
-  'setup.incoming.apply': 'Usar estos valores',
+  'setup.incoming.apply': 'Reemplazar el vehículo actual',
   'setup.incoming.dismiss': 'Ahora no',
   'setup.incoming.invalid':
     'No se ha podido leer ese enlace de configuración: no se ha cambiado nada.',
@@ -380,7 +380,8 @@ export const es: Messages = {
   'help.settings.t':
     'Libell calcula cuánto debe subir cada rueda a partir de la distancia entre ejes y el ancho de vía.\n' +
     'Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
-    'En una caravana, la distancia entre ejes va del eje a la rueda jockey.',
+    'En una caravana, la distancia entre ejes va del eje a la rueda jockey.\n' +
+    'Con varios vehículos, cada uno guarda sus medidas, calzos, ceros, objetivos y caja sensora; elígelo arriba en Vehículo.',
   'help.ramps.t':
     'La pantalla te dice a qué escalón de tu rampa sube cada rueda, así que introduce las rampas que llevas.\n' +
     'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.',
@@ -451,6 +452,24 @@ export const es: Messages = {
   'caravan.jockeyWheel': 'Rueda jockey',
   'help.screen.caravan':
     'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
+
+  'vehicles.title': 'Vehículos',
+  'vehicles.pick': 'Elegir vehículo',
+  'vehicles.defaultName': 'Mi vehículo',
+  'vehicles.numbered': 'Vehículo {n}',
+  'vehicles.name.placeholder': 'Nombre (p. ej. «Caravana»)',
+  'vehicles.name.label': 'Nombre del vehículo',
+  'vehicles.add': 'Nuevo vehículo',
+  'vehicles.rename': 'Renombrar',
+  'vehicles.remove': 'Eliminar',
+  'vehicles.rename.empty': 'Escribe primero el nuevo nombre en el campo.',
+  'vehicles.renamed': 'Nombre cambiado.',
+  'vehicles.remove.last': 'Hace falta al menos un vehículo. Añade antes otro con Nuevo vehículo.',
+  'vehicles.remove.confirm': '¿Eliminar {name} con sus ceros, objetivos y caja sensora?',
+  'vehicles.remove.yes': 'Sí, eliminar',
+  'vehicles.hint':
+    'Las medidas, los calzos, los ceros, los objetivos y la caja sensora pertenecen al vehículo. La calibración del móvil se comparte.',
+  'setup.incoming.addNew': 'Añadir como vehículo nuevo',
 
   'hitch.title': 'Altura de enganche',
   'hitch.hint':

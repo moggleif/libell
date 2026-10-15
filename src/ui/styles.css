@@ -1481,7 +1481,8 @@ body {
   flex-wrap: wrap;
 }
 
-.targets__name-input {
+.targets__name-input,
+.vehicles__name-input {
   flex: 1;
   min-width: 10em;
   font: inherit;
@@ -1492,12 +1493,14 @@ body {
   border-radius: 0;
 }
 
-:root[data-appearance='modern'] .targets__name-input {
+:root[data-appearance='modern'] .targets__name-input,
+:root[data-appearance='modern'] .vehicles__name-input {
   border: 1px solid var(--field-border);
   border-radius: 8px;
 }
 
-:root[data-appearance='glossy'] .targets__name-input {
+:root[data-appearance='glossy'] .targets__name-input,
+:root[data-appearance='glossy'] .vehicles__name-input {
   border: 1px solid var(--field-border);
   border-radius: 8px;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 18%);
@@ -1507,6 +1510,33 @@ body {
   margin-top: 0;
   width: auto;
   padding: 8px 14px;
+}
+
+/* Settings › Vehicle's vehicle picker (#599). */
+.vehicles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vehicles__name-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.vehicles__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.vehicles .menu__action {
+  margin-top: 0;
+  padding-inline: 4px;
+}
+
+.vehicles .menu__action[hidden] {
+  display: none;
 }
 
 /* ---- Settings form ---- */

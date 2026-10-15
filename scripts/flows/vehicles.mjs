@@ -1,0 +1,36 @@
+import { assert, button, openApp, openSettingsTab, storage, storedSettings } from './harness.mjs';
+
+/** Adding or switching a vehicle starts the app again on it. */
+async function reloadAfter(page, action) {
+  await Promise.all([page.waitForEvent('load'), action()]);
+}
+
+const ZERO = JSON.stringify({ rollDeg: 1, pitchDeg: 0.5 });
+
+// Several vehicles (#599): a new vehicle starts from the defaults with no
+// zero, and switching back brings the first one's measurements and zero
+// back, each across the reload a switch makes.
+export async function vehiclesFlow(browser) {
+  const app = await openApp(browser, 'demo', {
+    'libell.settings': JSON.stringify({ wheelbaseMm: 3600 }),
+    'libell.vehicleCalibration': ZERO,
+  });
+  const { page } = app;
+  let settings = await openSettingsTab(page, 'vehicle');
+  await settings.locator('.vehicles__name-input').fill('Caravan');
+  await reloadAfter(page, () => button(settings, 'New vehicle').click());
+  const list = JSON.parse(await storage(page, 'libell.vehicles'));
+  assert(list.vehicles.length === 2, 'the new vehicle should be listed');
+  assert((await storage(page, 'libell.vehicleCalibration')) === null, 'a new vehicle has no zero');
+  assert((await storedSettings(page)).wheelbaseMm !== 3600, 'a new vehicle starts from defaults');
+
+  settings = await openSettingsTab(page, 'vehicle');
+  const picker = settings.locator('.vehicles__select');
+  assert((await picker.locator('option:checked').textContent()) === 'Caravan', 'Caravan is active');
+  await reloadAfter(page, () => picker.selectOption({ label: 'My vehicle' }));
+  const { wheelbaseMm } = await storedSettings(page);
+  assert(wheelbaseMm === 3600, 'switching back should bring the first vehicle back');
+  assert((await storage(page, 'libell.vehicleCalibration')) === ZERO, 'and its zero');
+  assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
+  await app.context.close();
+}

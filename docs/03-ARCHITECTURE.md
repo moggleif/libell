@@ -20,6 +20,7 @@ src/
 │                  # installOffsets.ts (each box's zero), boxZero.ts (zeroing a box),
 │                  # phoneCalibration.ts (bias + vehicle zero), targets.ts (target presets),
 │                  # hitchHeight.ts (a caravan's saved hitch height, #598),
+│                  # vehicles.ts (several vehicles: add, rename, remove, switch, #599),
 │                  # tiltReading.ts (sensor tilt in degrees), demoSensor.ts (?demo's tilt),
 │                  # menuOptionParts.ts + menuOptions.ts (the options bags),
 │                  # onboardingLauncher.ts, settingsAdoption.ts (what a save reaches),
@@ -34,6 +35,7 @@ src/
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── caravan.ts    # the caravan's axle + jockey-wheel math (ADR 0008)
 │   ├── hitchHeight.ts  # going back to a saved hitch height on that same math (#598)
+│   ├── vehicles.ts   # which settings and stored values belong to one vehicle (#599)
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
 │   ├── calibration.ts, targetPresets.ts  # the three calibration terms (ADR 0010/0013/0014)
@@ -43,7 +45,8 @@ src/
 │   └── sensorDeviceSettings.ts  # typed per-box settings inside sensorDevices
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
-│                  # remembered device id, #130) — localStorage read/write, on the
+│                  # remembered device id, #130), vehicleStore.ts (the waiting
+│                  # vehicles, #599) — localStorage read/write, on the
 │                  # shared guarded helpers in keyValueStorage.ts
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
 │                  # boxes.ts (the registry), boxController.ts
@@ -329,6 +332,15 @@ it; `levelEngine.ts` then shows the result through `hitchDisplay` (the axle has 
 to do) and says the crank in the status row. The main-screen badge
 (`src/ui/hitchBadge.ts`, mounted with the target badge) ends the mode, and
 `src/ui/hitchOffer.ts` asks "Save the hitch height first?" while none is saved.
+
+Several vehicles (#599, R56, ADR 0017): only the active vehicle lives in the ordinary
+keys. The others wait as snapshots under `libell.vehicles` (`src/data/vehicleStore.ts`):
+their `VEHICLE_FIELDS` (`src/domain/vehicles.ts`) and the raw values of the keys each
+store lists as per-vehicle (`vehicleCalibrationKeys`, `vehicleFlagKeys`,
+`rememberedDeviceKeys`). `src/app/vehicles.ts` swaps them and reloads the app, so a switch
+starts every module, the box connection included, from the new vehicle as on open. The
+picker is `src/ui/vehiclePicker.ts`, placed above the Vehicle fields by
+`settingsLayout.ts`.
 
 Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
 `getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone

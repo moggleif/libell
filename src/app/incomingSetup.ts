@@ -2,8 +2,14 @@
  * An incoming "share vehicle setup" link (R41), shown instead of the
  * first-run wizard on this launch. Malformed, truncated or future-version
  * links fail closed: a toast, and nothing applied (`decodeVehicleGeometry`).
+ * The setup is added as a new vehicle by default, or replaces the current
+ * one's measurements (#599); its box and calibration never come with it.
  */
-import { applyVehicleGeometry, decodeVehicleGeometry } from '../domain/vehicleShare';
+import {
+  applyVehicleGeometry,
+  decodeVehicleGeometry,
+  type VehicleGeometry,
+} from '../domain/vehicleShare';
 import { t } from '../ui/i18n';
 import type { IncomingVehicleSetupOptions } from '../ui/incomingVehicleSetup';
 import type { SettingsAccess } from './boxWiring';
@@ -13,6 +19,8 @@ export interface IncomingSetupDeps {
   markMeasurementsSaved(): void;
   /** Redraw what follows the measurements once they are applied. */
   onApplied(): void;
+  /** Adds the setup as a new vehicle (#599) and makes it active. */
+  addVehicle(geometry: VehicleGeometry): void;
   show(options: IncomingVehicleSetupOptions): void;
   toast(text: string): void;
 }
@@ -33,6 +41,7 @@ export function offerIncomingSetup(code: string | null, deps: IncomingSetupDeps)
       deps.markMeasurementsSaved();
       deps.onApplied();
     },
+    onAddAsNew: () => deps.addVehicle(geometry),
     // Nothing to do: the link is already consumed off the URL.
     onDismiss: () => {},
   });

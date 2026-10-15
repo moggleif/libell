@@ -22,6 +22,7 @@ import { parseSettings } from '../domain/settingsParsing';
 import { loadSettings } from '../data/settingsStore';
 import type { CalibrationOptions } from './calibrationSection';
 import type { TargetsOptions } from './targetsSection';
+import type { VehiclePickerOptions } from './vehiclePicker';
 import { createElement } from './dom';
 import { createAutoSave, type AutoSave, type FormValues } from './settingsAutoSave';
 import {
@@ -68,6 +69,9 @@ interface SettingsFormOptions {
    * Omitted for the onboarding `compact` steps, with nothing yet to share.
    */
   onShareVehicleSetup?: (settings: LevelSettings) => void;
+  /** Several vehicles (#599): the picker at the top of Vehicle. Omitted
+   * for the onboarding `compact` steps. */
+  vehicles?: VehiclePickerOptions;
 }
 
 export function createSettingsForm(
@@ -104,7 +108,11 @@ export function createSettingsForm(
   });
 
   // Decided once, at construction — see the file header comment.
-  const hosts = { calibration: calibrationOptions, targets: targetsOptions };
+  const hosts = {
+    calibration: calibrationOptions,
+    targets: targetsOptions,
+    vehicles: formOptions?.vehicles,
+  };
   const relabelLayout = layOut(form, tabs, initial.appearance, formOptions, hosts);
   values = createFormValues(tabs, state, relabelLayout);
   values.showNumbers((field) => initial[field.key]);

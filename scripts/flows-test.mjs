@@ -47,6 +47,7 @@ import { soundFlow } from './flows/sound.mjs';
 import { navigationFlow } from './flows/navigation.mjs';
 import { settingsSaveFlow } from './flows/settingsSave.mjs';
 import { startupFlow } from './flows/startup.mjs';
+import { vehiclesFlow } from './flows/vehicles.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -89,8 +90,9 @@ try {
   await navigationFlow(browser);
   await settingsSaveFlow(browser);
   await startupFlow(browser);
+  await vehiclesFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up, vehicles',
   );
 } finally {
   await browser?.close();

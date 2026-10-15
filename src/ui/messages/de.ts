@@ -24,7 +24,7 @@ export const de: Messages = {
   'setup.incoming.intro': 'Jemand aus deiner Familie hat dir diese Fahrzeugmaße geschickt:',
   'setup.incoming.reminder':
     'Eine Kalibrierung ist nicht dabei — auf diesem Handy musst du trotzdem kalibrieren.',
-  'setup.incoming.apply': 'Diese Werte übernehmen',
+  'setup.incoming.apply': 'Aktuelles Fahrzeug ersetzen',
   'setup.incoming.dismiss': 'Jetzt nicht',
   'setup.incoming.invalid':
     'Dieser Konfigurationslink konnte nicht gelesen werden — es wurde nichts geändert.',
@@ -384,7 +384,8 @@ export const de: Messages = {
   'help.settings.t':
     'Libell berechnet aus Radstand und Spurweite, wie weit jedes Rad hoch muss.\n' +
     'Sie stehen in den Fahrzeugpapieren, sonst miss mit dem Maßband.\n' +
-    'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.',
+    'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.\n' +
+    'Bei mehreren Fahrzeugen behält jedes seine Maße, Keile, Nullpunkte, Ziele und Sensorbox; wähle es oben unter Fahrzeug.',
   'help.ramps.t':
     'Der Bildschirm sagt, auf welche Stufe deines Keils jedes Rad muss, also trag die Keile ein, die du dabeihast.\n' +
     'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.',
@@ -454,6 +455,25 @@ export const de: Messages = {
   'caravan.jockeyWheel': 'Stützrad',
   'help.screen.caravan':
     'Wohnwagen: Das Stützrad zeigt Hochkurbeln oder Herunterkurbeln und um wie viel.',
+
+  'vehicles.title': 'Fahrzeuge',
+  'vehicles.pick': 'Fahrzeug wählen',
+  'vehicles.defaultName': 'Mein Fahrzeug',
+  'vehicles.numbered': 'Fahrzeug {n}',
+  'vehicles.name.placeholder': 'Name (z. B. „Wohnwagen“)',
+  'vehicles.name.label': 'Name des Fahrzeugs',
+  'vehicles.add': 'Neues Fahrzeug',
+  'vehicles.rename': 'Name ändern',
+  'vehicles.remove': 'Entfernen',
+  'vehicles.rename.empty': 'Gib zuerst den neuen Namen ins Feld ein.',
+  'vehicles.renamed': 'Umbenannt.',
+  'vehicles.remove.last':
+    'Mindestens ein Fahrzeug wird gebraucht. Füge zuerst mit Neues Fahrzeug ein weiteres hinzu.',
+  'vehicles.remove.confirm': '{name} mit seinen Nullpunkten, Zielen und der Sensorbox entfernen?',
+  'vehicles.remove.yes': 'Ja, entfernen',
+  'vehicles.hint':
+    'Maße, Keile, Nullpunkte, Ziele und die Sensorbox gehören zum Fahrzeug. Die Kalibrierung des Handys gilt für alle.',
+  'setup.incoming.addNew': 'Als neues Fahrzeug hinzufügen',
 
   'hitch.title': 'Kupplungshöhe',
   'hitch.hint':

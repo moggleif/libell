@@ -19,6 +19,7 @@ function setup() {
     },
     markMeasurementsSaved: () => void calls.push('marked'),
     onApplied: () => void calls.push('applied'),
+    addVehicle: (geometry) => void calls.push(`added ${geometry.wheelbaseMm}`),
     show: (options) => void (shown = options),
     toast: vi.fn(),
   };
@@ -58,6 +59,14 @@ describe('offerIncomingSetup', () => {
     expect(settings().wheelbaseMm).toBe(4321);
     expect(settings().displayUnit).toBe('cm');
     expect(calls).toEqual(['saved', 'marked', 'applied']);
+  });
+
+  it('adds it as a new vehicle, leaving the current one as it is (#599)', () => {
+    const { deps, shown, calls, settings } = setup();
+    offerIncomingSetup(shared, deps);
+    shown()!.onAddAsNew();
+    expect(calls).toEqual(['added 4321']);
+    expect(settings().wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
   });
 
   it('changes nothing when dismissed', () => {

@@ -26,10 +26,11 @@ const MOTORHOME: VehicleGeometry = {
 
 function show(geometry: VehicleGeometry, displayUnit: 'mm' | 'cm' = 'mm') {
   const onApply = vi.fn();
+  const onAddAsNew = vi.fn();
   const onDismiss = vi.fn();
-  showIncomingVehicleSetup({ geometry, displayUnit, onApply, onDismiss });
+  showIncomingVehicleSetup({ geometry, displayUnit, onApply, onAddAsNew, onDismiss });
   const overlay = document.querySelector<HTMLElement>('.incoming-setup')!;
-  return { overlay, onApply, onDismiss };
+  return { overlay, onApply, onAddAsNew, onDismiss };
 }
 
 function rows(overlay: HTMLElement): [string, string][] {
@@ -93,6 +94,18 @@ describe('the incoming vehicle setup confirmation (#483)', () => {
     apply!.click();
     expect(onApply).toHaveBeenCalledTimes(1);
     expect(onDismiss).not.toHaveBeenCalled();
+    expect(overlay.isConnected).toBe(false);
+  });
+
+  it('adds it as a new vehicle on the primary button, and closes (#599)', () => {
+    const { overlay, onApply, onAddAsNew } = show(MOTORHOME);
+    const addNew = overlay.querySelector<HTMLButtonElement>(
+      'button:not(.menu__action--secondary)',
+    )!;
+    expect(addNew.textContent).toBe(t('setup.incoming.addNew'));
+    addNew.click();
+    expect(onAddAsNew).toHaveBeenCalledTimes(1);
+    expect(onApply).not.toHaveBeenCalled();
     expect(overlay.isConnected).toBe(false);
   });
 
