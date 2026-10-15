@@ -4,12 +4,13 @@
  * never stored in the same field. "Normal" (no active target) leaves the
  * effective calibration identical to the zero.
  */
-import type { Calibration, CaptureResult } from '../domain/calibration';
+import type { Calibration } from '../domain/calibration';
 import {
   offsetTooSteep,
   presetOffsetFromReading,
   targetOffsetFor,
   type TargetPreset,
+  type TargetSaveResult,
 } from '../domain/targetPresets';
 import {
   loadActiveTargetId,
@@ -42,7 +43,7 @@ export interface Targets {
   /** Save the current tilt as a new target: null when saved, an error
    * message when nothing was saved, or a warning when it was saved but
    * looks steeper than 15° (#621: one Save button, the warning informs). */
-  add(name: string): CaptureResult;
+  add(name: string): TargetSaveResult;
   remove(id: string): void;
   rename(id: string, name: string): void;
 }

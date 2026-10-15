@@ -82,11 +82,12 @@ describe('expandedStep', () => {
   });
 });
 
-describe('captureMessage (#411)', () => {
-  it('offers "anyway" only for a tilt warning', () => {
-    expect(captureMessage({ warning: 'tilted' })).toEqual({ text: 'tilted', warned: true });
-    expect(captureMessage('no sensor')).toEqual({ text: 'no sensor', warned: false });
-    expect(captureMessage(null)).toEqual({ text: null, warned: false });
+describe('captureMessage (#624)', () => {
+  it('offers an undo only for a tilt warning', () => {
+    const undo = () => {};
+    expect(captureMessage({ warning: 'tilted', undo })).toEqual({ text: 'tilted', undo });
+    expect(captureMessage('no sensor')).toEqual({ text: 'no sensor', undo: null });
+    expect(captureMessage(null)).toEqual({ text: null, undo: null });
   });
 });
 

@@ -2,7 +2,7 @@
  * What a box's card and setup checklist show, as pure functions: no DOM, so
  * every decision is tested on its own.
  */
-import type { Calibration, CaptureResult } from '../domain/calibration';
+import type { Calibration } from '../domain/calibration';
 import { isMountedRight } from '../domain/uprightMount';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxConnection } from './boxConnection';
@@ -59,17 +59,6 @@ export function directionTitle(picked: string | null): string {
 
 export function zeroTitle(zeroed: boolean, capturedAt: number | null): string {
   return zeroed ? t('box.step.zero.done') + ageText(capturedAt) : t('box.step.zero.todo');
-}
-
-/** Only a tilt warning (`warned`) offers "Zero anyway". */
-export interface ZeroMessage {
-  text: string | null;
-  warned: boolean;
-}
-
-export function zeroMessage(result: CaptureResult): ZeroMessage {
-  if (result !== null && typeof result === 'object') return { text: result.warning, warned: true };
-  return { text: result, warned: false };
 }
 
 export type SetupStep = 'direction' | 'zero';

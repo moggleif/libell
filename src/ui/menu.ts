@@ -13,7 +13,7 @@
  */
 import type { Calibration, CaptureResult } from '../domain/calibration';
 import type { LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
-import type { TargetPreset } from '../domain/targetPresets';
+import type { TargetPreset, TargetSaveResult } from '../domain/targetPresets';
 import type { BoxHealth } from '../sensor/boxes';
 import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm } from './settingsPanel';
@@ -36,14 +36,15 @@ export interface MenuOptions {
   appearance: LevelSettings['appearance'];
   getCalibration(): Calibration | null;
   /** Capture the current tilt as the phone's zero point — see CalibrationOptions. */
-  calibrate(anyway?: boolean): CaptureResult;
+  calibrate(): CaptureResult;
   /** Raw (uncalibrated) tilt reading for the flip flow, or an error text. */
   readTilt(): Calibration | string;
-  applyCalibration(calibration: Calibration): void;
+  /** Returns how to put the previous calibration back (#624). */
+  applyCalibration(calibration: Calibration): () => void;
   clearCalibration(): void;
   /** The vehicle zero — see CalibrationOptions. */
   getVehicleCalibration(): Calibration | null;
-  calibrateVehicle(anyway?: boolean): CaptureResult;
+  calibrateVehicle(): CaptureResult;
   /** When each calibration was captured — null when unknown. */
   getCalibrationCapturedAt(): number | null;
   getVehicleCalibrationCapturedAt(): number | null;
@@ -61,7 +62,7 @@ export interface MenuOptions {
   getTargetPresets(): TargetPreset[];
   getActiveTargetId(): string | null;
   selectTarget(id: string | null): void;
-  addTargetPreset(name: string): CaptureResult;
+  addTargetPreset(name: string): TargetSaveResult;
   deleteTargetPreset(id: string): void;
   renameTargetPreset?(id: string, name: string): void;
   /**
@@ -76,7 +77,7 @@ export interface MenuOptions {
   getHealth(): BoxHealth | null;
   /** The box's installation offset (ADR 0014). Unused by this menu. */
   getInstallCalibration(): Calibration | null;
-  calibrateInstall(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
+  calibrateInstall(): CaptureResult | Promise<CaptureResult>;
   getInstallCalibrationCapturedAt(): number | null;
   clearInstallCalibration(): void;
   /**

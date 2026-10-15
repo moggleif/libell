@@ -28,8 +28,8 @@ const MAX_CALIBRATION_DEG = 15;
 
 /**
  * The widest a tilt can read (`atan2`'s range). The phone's calibration and
- * vehicle zero may be stored beyond 15° when the user goes ahead despite the
- * warning, so reading them back only rejects what no sensor could produce.
+ * vehicle zero are stored beyond 15° too, with a warning (#624), so reading
+ * them back only rejects what no sensor could produce.
  */
 export const MAX_TILT_DEG = 180;
 
@@ -61,11 +61,11 @@ const MAX_BIAS_DEG = 15;
 
 /**
  * What capturing a calibration or zero answered: null when it was stored, an
- * error text when nothing could be read, or a warning when the reading looks
- * too tilted to be level — then nothing is stored until the user chooses to
- * go ahead anyway (warn, never block).
+ * error text when nothing could be read (nothing stored), or a warning when it
+ * was stored but looks too tilted to be level. The warning only informs, and
+ * `undo` puts back exactly what was there before (#624: warn, never block).
  */
-export type CaptureResult = null | string | { warning: string };
+export type CaptureResult = null | string | { warning: string; undo: () => void };
 
 export interface FlipResult {
   /** The phone's own bias — what gets stored as the calibration. */

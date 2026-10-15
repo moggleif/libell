@@ -56,25 +56,30 @@ function makeHost(appearance: 'classic' | 'modern', withBox: boolean): Host {
     nextBox: null,
     options: undefined as unknown as CalibrationOptions,
   };
-  const capture = (result: CaptureResult, anyway: boolean | undefined): CaptureResult =>
-    anyway || result === null ? null : result;
+  // A capture is stored unless it errs; a warning carries the undo (#624).
+  const capture = (
+    result: CaptureResult,
+    layer: 'phone' | 'vehicle',
+    value: Calibration,
+  ): CaptureResult => {
+    if (typeof result === 'string') return result;
+    const before = host[layer];
+    host[layer] = value;
+    return result && { warning: result.warning, undo: () => (host[layer] = before) };
+  };
   host.options = {
     appearance,
     getCalibration: () => host.phone,
-    calibrate: (anyway) => {
-      const result = capture(host.nextCapture, anyway);
-      if (result === null) host.phone = { rollDeg: 0.5, pitchDeg: -0.25 };
-      return result;
-    },
+    calibrate: () => capture(host.nextCapture, 'phone', { rollDeg: 0.5, pitchDeg: -0.25 }),
     readTilt: () => host.tilt,
-    applyCalibration: (calibration) => (host.phone = calibration),
+    applyCalibration: (calibration) => {
+      const before = host.phone;
+      host.phone = calibration;
+      return () => (host.phone = before);
+    },
     clearCalibration: () => (host.phone = null),
     getVehicleCalibration: () => host.vehicle,
-    calibrateVehicle: (anyway) => {
-      const result = capture(host.nextVehicle, anyway);
-      if (result === null) host.vehicle = { rollDeg: 1.5, pitchDeg: 0.75 };
-      return result;
-    },
+    calibrateVehicle: () => capture(host.nextVehicle, 'vehicle', { rollDeg: 1.5, pitchDeg: 0.75 }),
     getCalibrationCapturedAt: () => null,
     getVehicleCalibrationCapturedAt: () => null,
     checkCalibration: () => 'phone checked',
@@ -84,12 +89,13 @@ function makeHost(appearance: 'classic' | 'modern', withBox: boolean): Host {
       ? {
           isPhoneActive: () => host.phoneActive,
           getBox: () => host.box,
-          calibrateBox: (anyway?: boolean) => {
+          calibrateBox: () => {
             const result = host.nextBox;
-            if (result instanceof Promise) return result;
-            const answer = capture(result, anyway);
-            if (answer === null && host.box) host.box.offset = { rollDeg: 0.1, pitchDeg: 0.2 };
-            return answer;
+            if (result instanceof Promise || typeof result === 'string' || !host.box) return result;
+            const box = host.box;
+            const before = box.offset;
+            box.offset = { rollDeg: 0.1, pitchDeg: 0.2 };
+            return result && { warning: result.warning, undo: () => (box.offset = before) };
           },
           openBoxPage: () => {},
         }
@@ -105,6 +111,15 @@ function click(section: CalibrationSection, text: string, nth = 0): void {
   const button = matches[nth];
   if (!button) throw new Error(`no button "${text}" #${nth}`);
   button.click();
+}
+
+/** The one Undo on screen: each warning has its own, the rest hidden. */
+function clickUndo(section: CalibrationSection): void {
+  const shown = [...section.element.querySelectorAll('button')].filter(
+    (button) => button.textContent === 'Undo' && button.closest('[hidden]') === null,
+  );
+  if (shown.length !== 1) throw new Error(`${shown.length} Undo buttons shown`);
+  shown[0]!.click();
 }
 
 function clickStep(section: CalibrationSection, nth: number): void {
@@ -123,15 +138,18 @@ describe('calibration section, pinned before the #416 split', () => {
         const frames: string[] = [];
         const frame = (label: string) => frames.push(`# ${label}\n${describeDom(section.element)}`);
         frame('fresh');
-        host.nextCapture = { warning: 'tilted' };
+        host.nextCapture = { warning: 'tilted', undo: () => {} };
         click(section, 'Calibrate now');
         frame('phone warning');
-        click(section, 'Calibrate anyway');
-        frame('phone calibrated anyway');
+        clickUndo(section);
+        frame('phone calibration undone');
+        host.nextCapture = null;
+        click(section, 'Calibrate now');
+        frame('phone calibrated');
         host.nextVehicle = 'no sensor';
         click(section, layout === 'checklist' ? 'Zero now' : 'Zero now');
         frame('vehicle error');
-        host.nextVehicle = { warning: 'not level' };
+        host.nextVehicle = { warning: 'not level', undo: () => {} };
         click(section, 'Zero now');
         frame('vehicle warning');
         host.nextVehicle = null;
@@ -149,13 +167,13 @@ describe('calibration section, pinned before the #416 split', () => {
         host.tilt = { rollDeg: -0.5, pitchDeg: -1.5 };
         click(section, 'Capture');
         frame('flip done');
-        host.tilt = { rollDeg: 9, pitchDeg: 9 };
+        host.tilt = { rollDeg: 20, pitchDeg: 20 };
         click(section, 'Calibrate by flipping');
-        host.tilt = { rollDeg: 9, pitchDeg: 9 };
+        host.tilt = { rollDeg: 20, pitchDeg: 20 };
         click(section, 'Capture');
         frame('flip disagrees');
-        click(section, 'Calibrate anyway', 1);
-        frame('flip anyway');
+        clickUndo(section);
+        frame('flip undone');
         host.tilt = 'no reading';
         click(section, 'Calibrate by flipping');
         frame('flip no reading');
@@ -193,11 +211,14 @@ describe('calibration section, pinned before the #416 split', () => {
         host.box = { name: 'Xparkle', offset: null, capturedAt: null };
         section.refresh();
         frame('box active');
-        host.nextBox = { warning: 'box tilted' };
+        host.nextBox = { warning: 'box tilted', undo: () => {} };
         click(section, 'Zero now', 0);
         frame('box warning');
-        click(section, 'Zero anyway', 0);
-        frame('box zeroed anyway');
+        clickUndo(section);
+        frame('box zero undone');
+        host.nextBox = null;
+        click(section, 'Zero now', 0);
+        frame('box zeroed');
         let answer: (result: CaptureResult) => void = () => {};
         host.nextBox = new Promise((resolve) => (answer = resolve));
         click(section, 'Zero now', 0);

@@ -13,7 +13,12 @@
 import type { AppearanceSetting } from '../domain/settings';
 import type { Calibration, CaptureResult } from '../domain/calibration';
 import { createCalibrationFlip } from './calibrationFlip';
-import { createControls, drawControls, showWarning } from './calibrationControls';
+import {
+  type CalibrationControls,
+  createControls,
+  drawControls,
+  showWarning,
+} from './calibrationControls';
 import { buildLayout, type Layout, type LayoutResult, type Parts } from './calibrationLayouts';
 import { captureMessage, type CalibrationKind, type OpenStep } from './calibrationText';
 import { createExternalCalibration } from './externalCalibration';
@@ -24,17 +29,18 @@ export interface CalibrationOptions {
   /** Read once at construction; see the module doc comment. */
   appearance: AppearanceSetting;
   getCalibration(): Calibration | null;
-  /** Null on success, an error text, or a warning that offers "Calibrate
-   * anyway"; `anyway` is set when the user chose it. */
-  calibrate(anyway?: boolean): CaptureResult;
+  /** Null on success, an error text, or — stored but steep — a warning
+   * with an undo (#624). */
+  calibrate(): CaptureResult;
   /** Raw (uncalibrated) tilt reading for the flip flow, or an error text. */
   readTilt(): Calibration | string;
-  applyCalibration(calibration: Calibration): void;
+  /** Returns how to put the previous calibration back (#624). */
+  applyCalibration(calibration: Calibration): () => void;
   clearCalibration(): void;
   /** The phone spot's own tilt, captured with the vehicle verified level. */
   getVehicleCalibration(): Calibration | null;
-  /** Answers like `calibrate`, with "Zero anyway" for its warning. */
-  calibrateVehicle(anyway?: boolean): CaptureResult;
+  /** Answers like `calibrate`. */
+  calibrateVehicle(): CaptureResult;
   /** Null when unknown. */
   getCalibrationCapturedAt(): number | null;
   getVehicleCalibrationCapturedAt(): number | null;
@@ -52,7 +58,7 @@ export interface CalibrationOptions {
   getBox?(): BoxCalibrationState | null;
   /** The same action as on the box's own page (R34); asynchronous for a box
    * that zeroes itself. */
-  calibrateBox?(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
+  calibrateBox?(): CaptureResult | Promise<CaptureResult>;
   /** No link is shown when omitted. */
   openBoxPage?(): void;
   /** Fine adjustment of the phone's vehicle zero (#596); no row when omitted. */
@@ -89,11 +95,11 @@ function applyPhoneGate(options: CalibrationOptions, parts: Parts, phoneElements
   const { phone, vehicle, flip } = parts;
   const captures = [
     phone.capture,
-    phone.anyway,
+    phone.undo,
     flip.button,
-    flip.anyway,
+    flip.undo,
     vehicle.capture,
-    vehicle.anyway,
+    vehicle.undo,
   ];
   // Clear/Check are re-derived by the refreshes; the capture actions are
   // only ever disabled by this gate, so lift it here.
@@ -186,6 +192,34 @@ function createRefreshers(
   return { phone, vehicle };
 }
 
+/** One button stores the capture (#624); a steep one warns, and Undo puts
+ * back what was there before, keeping the step open. */
+function wireCapture(
+  kind: CalibrationKind,
+  capture: () => CaptureResult,
+  view: {
+    controls: CalibrationControls;
+    focus: { set(step: OpenStep): void };
+    refresh: (message?: string) => void;
+  },
+): void {
+  const { controls, focus, refresh } = view;
+  let undo: (() => void) | null = null;
+  controls.capture.addEventListener('click', () => {
+    const message = captureMessage(capture());
+    undo = message.undo;
+    focus.set(message.text ? kind : null);
+    refresh(message.text ?? undefined);
+    showWarning(controls, undo !== null);
+  });
+  controls.undo.addEventListener('click', () => {
+    undo?.();
+    undo = null;
+    focus.set(kind);
+    refresh();
+  });
+}
+
 /**
  * A step showing a message stays open in the checklist; a success or a
  * clear hands over to the next undone step.
@@ -196,10 +230,6 @@ function wireActions(
   focus: { set(step: OpenStep): void },
   refresh: Record<CalibrationKind, (message?: string) => void>,
 ): void {
-  const captures = {
-    phone: (anyway: boolean) => options.calibrate(anyway),
-    vehicle: (anyway: boolean) => options.calibrateVehicle(anyway),
-  };
   // Nothing stored: Check stays tappable and says how to get a value (#517).
   const checks = {
     phone: () =>
@@ -217,14 +247,8 @@ function wireActions(
   };
   for (const kind of ['phone', 'vehicle'] as const) {
     const controls = parts[kind];
-    const capture = (anyway: boolean) => {
-      const { text, warned } = captureMessage(captures[kind](anyway));
-      focus.set(text ? kind : null);
-      refresh[kind](text ?? undefined);
-      showWarning(controls, warned);
-    };
-    controls.capture.addEventListener('click', () => capture(false));
-    controls.anyway.addEventListener('click', () => capture(true));
+    const capture = kind === 'phone' ? () => options.calibrate() : () => options.calibrateVehicle();
+    wireCapture(kind, capture, { controls, focus, refresh: refresh[kind] });
     controls.check.addEventListener('click', () => {
       focus.set(kind);
       refresh[kind](checks[kind]());

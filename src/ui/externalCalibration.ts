@@ -25,16 +25,17 @@ function createParts(options: CalibrationOptions, modern: boolean) {
   zeroButton.type = 'button';
   zeroButton.textContent = t('sensorSource.install.now');
   const status = createElement('p', 'menu__text menu__text--status');
-  const anyway = createElement('button', 'menu__action menu__action--secondary');
-  anyway.type = 'button';
-  anyway.textContent = t('calibration.vehicle.anyway');
-  anyway.hidden = true;
+  // Shown only while a steep zero's warning is up (#624).
+  const undo = createElement('button', 'menu__action menu__action--secondary');
+  undo.type = 'button';
+  undo.textContent = t('calibration.undo');
+  undo.hidden = true;
   // #515: the phone cards are hidden meanwhile; say why and how back.
   const phoneHidden = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
   phoneHidden.textContent = t('calibration.external.phoneHidden', {
     disconnect: t('sensorSource.disconnect'),
   });
-  element.append(heading, intro, zeroButton, status, anyway, phoneHidden);
+  element.append(heading, intro, zeroButton, status, undo, phoneHidden);
   if (options.openBoxPage) {
     const openBox = createElement('button', 'link-button');
     openBox.type = 'button';
@@ -42,19 +43,20 @@ function createParts(options: CalibrationOptions, modern: boolean) {
     openBox.addEventListener('click', () => options.openBoxPage?.());
     element.append(openBox);
   }
-  return { element, heading, zeroButton, status, anyway };
+  return { element, heading, zeroButton, status, undo };
 }
 
 export function createExternalCalibration(
   options: CalibrationOptions,
   modern: boolean,
 ): ExternalCalibration {
-  const { element, heading, zeroButton, status, anyway } = createParts(options, modern);
+  const { element, heading, zeroButton, status, undo } = createParts(options, modern);
+  let restore: (() => void) | null = null;
 
   function refresh(message?: string): void {
     const external = options.getBox?.() ?? null;
     element.hidden = external === null;
-    anyway.hidden = true;
+    undo.hidden = true;
     status.classList.remove('menu__text--warning');
     if (!external) return;
     heading.textContent = t('calibration.external.h');
@@ -62,16 +64,17 @@ export function createExternalCalibration(
   }
 
   function show(result: CaptureResult, name: string): void {
-    const { text, warned } = captureMessage(result);
-    refresh(text ?? t('calibration.external.done', { name }));
-    if (!warned) return;
+    const message = captureMessage(result);
+    restore = message.undo;
+    refresh(message.text ?? t('calibration.external.done', { name }));
+    if (!restore) return;
     status.classList.add('menu__text--warning');
-    anyway.hidden = false;
+    undo.hidden = false;
   }
 
-  function zero(goAhead: boolean): void {
+  function zero(): void {
     const name = options.getBox?.()?.name ?? '';
-    const result = options.calibrateBox?.(goAhead) ?? null;
+    const result = options.calibrateBox?.() ?? null;
     if (!(result instanceof Promise)) return show(result, name);
     zeroButton.disabled = true;
     refresh(t('calibration.external.working'));
@@ -80,8 +83,12 @@ export function createExternalCalibration(
       show(answer, name);
     });
   }
-  zeroButton.addEventListener('click', () => zero(false));
-  anyway.addEventListener('click', () => zero(true));
+  zeroButton.addEventListener('click', zero);
+  undo.addEventListener('click', () => {
+    restore?.();
+    restore = null;
+    refresh();
+  });
 
   return { element, refresh, isWaiting: () => zeroButton.disabled };
 }

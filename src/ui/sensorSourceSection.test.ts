@@ -237,20 +237,22 @@ describe('createSensorSourceSection (#116)', () => {
     expect(section.element.textContent).toContain('Could not calibrate the sensor.');
   });
 
-  it('warns about a tilted box and zeroes it anyway on request (#425)', () => {
-    const calibrateInstall = vi.fn((anyway?: boolean) =>
-      anyway ? null : { warning: 'Is the vehicle level?' },
-    );
+  it('zeroes a tilted box at once, warns, and undoes on request (#624)', () => {
+    const undo = vi.fn();
+    const calibrateInstall = vi.fn(() => ({ warning: 'Is the vehicle level?', undo }));
     const section = createSensorSourceSection(
       makeOptions({ getSensorSource: () => 'easylevel', calibrateInstall }),
     );
     findButton(section.element, 'Zero now').click();
+    expect(calibrateInstall).toHaveBeenCalledTimes(1);
     expect(section.element.textContent).toContain('Is the vehicle level?');
-    const anyway = findButton(section.element, 'Zero anyway');
-    expect(anyway.hidden).toBe(false);
-    anyway.click();
-    expect(calibrateInstall).toHaveBeenLastCalledWith(true);
-    expect(anyway.hidden).toBe(true);
+    const texts = [...section.element.querySelectorAll('button')].map((b) => b.textContent);
+    expect(texts).not.toContain('Zero anyway');
+    const undoButton = findButton(section.element, 'Undo');
+    expect(undoButton.hidden).toBe(false);
+    undoButton.click();
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(undoButton.hidden).toBe(true);
     expect(section.element.textContent).not.toContain('Is the vehicle level?');
   });
 

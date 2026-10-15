@@ -250,9 +250,13 @@ URL and must keep working with no signal.
   from every reading; "Clear calibration" returns to the raw sensor.
 - **Given** the reading does not look flat (>15° on either axis)
 - **When** I tap "Calibrate now"
-- **Then** nothing is stored yet: a warning says the surface does not look flat and the
-  calibration would be wrong, with a "Calibrate anyway" button beside it; tapping that
-  stores the reading, and it is still there after a reload (#411, never block — warn).
+- **Then** the reading is stored at once, as with any capture (one button, no
+  "… anyway"), and a warning, information only, says it was saved but the surface does
+  not look flat, so the calibration is probably wrong, with an **Undo** button; the
+  calibration is still there after a reload (#411, #624, never block — warn).
+- **When** I tap Undo
+- **Then** the previous calibration is restored exactly, with its age, or none if there
+  was none, and the warning goes away (#624).
 - **Given** the vehicle measurements have never been saved, or a calibration step is
   missing
 - **Then** an amber warning lamp per item is shown in the top bar (like a car dashboard);
@@ -281,8 +285,9 @@ URL and must keep working with no signal.
   result) stays open.
   - Step 1 says to lay the phone on something flat, with **Calibrate now**, and a quiet
     link "No flat surface? Flip the phone" that reveals the flip calibration. When the
-    flip's two captures differ by more than 15° (the phone moved), nothing is stored
-    yet: a warning says so, with "Calibrate anyway" to store that result (#425).
+    flip's two captures differ by more than 15° (the phone moved), the result is
+    stored at once and a warning says so, with **Undo** to put back the previous
+    calibration (#425, #624).
   - Step 2 says to level the vehicle with a spirit level and put the phone in its usual
     spot, with **Zero now**.
   - Check and Clear sit under a collapsed **More** in each step. There is no "Two
@@ -706,9 +711,10 @@ URL and must keep working with no signal.
   **sum** of the sensor offset and the vehicle zero — back in its spot, the phone
   shows level even on a tilting table.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** nothing is stored yet: a warning asks whether the vehicle really is level,
-  with a "Zero anyway" button beside it; tapping that stores the zero, like the sensor
-  calibration (R11, #411).
+- **Then** the zero is stored at once, and a warning, information only, says it was
+  saved but asks whether the vehicle really was level, with an **Undo** button that
+  restores the previous zero exactly (its age and fine adjustment too, or none), like
+  the sensor calibration (R11, #411, #624).
 - **Given** a later sensor recalibration or clear
 - **Then** the vehicle zero stays valid: it is stored sensor-corrected — pure
   placement tilt (ADR 0010).
@@ -1173,9 +1179,10 @@ cross-platform goal — they are not this app's code and are not covered here.
   (`EASYLEVEL_ZERO_SAMPLE_MS`), showing "Zeroing…" meanwhile; if the box drops while
   sampling, nothing is stored and the page says the box is not connected.
 - **Given** the capture looks like more than placement tilt (>15°)
-- **Then** nothing is stored yet: a warning asks whether the vehicle really is level,
-  with a "Zero anyway" button that zeroes it regardless — the same warning R24 gives the
-  phone (#425); the zero is kept after a reload.
+- **Then** the zero is stored at once and kept after a reload, and a warning,
+  information only, asks whether the vehicle really was level, with an **Undo** button
+  that restores the previous zero exactly (or none) — the same warning R24 gives the
+  phone (#425, #624).
 - **Given** a stored installation offset
 - **Then** the step reads "Zeroed" with its age, reusing R26's "(14 days ago)" age
   display, and offers "Zero again" and "Forget the zero" (R51; no separate Check,

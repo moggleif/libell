@@ -132,10 +132,6 @@ describe('calibrationOptions', () => {
     expect(options.getVehicleCalibrationCapturedAt()).toBe(20);
     expect(options.calibrate()).toBeNull();
     expect(options.calibrateVehicle()).toBe('too steep');
-    options.calibrate(true);
-    expect(phoneCalibration.calibrate).toHaveBeenLastCalledWith(true);
-    options.calibrateVehicle(true);
-    expect(phoneCalibration.zeroVehicle).toHaveBeenLastCalledWith(true);
     expect(options.checkCalibration()).toBe('bias ok');
     expect(options.checkVehicleCalibration()).toBe('zero ok');
     expect(options.readTilt()).toEqual({ rollDeg: 3, pitchDeg: 4 });
@@ -172,8 +168,6 @@ describe('calibrationOptions', () => {
     });
     box.calibrateBox();
     expect(boxZero.zero).toHaveBeenCalledWith('xparkle');
-    box.calibrateBox(true);
-    expect(boxZero.zero).toHaveBeenLastCalledWith('xparkle', true);
   });
 });
 
@@ -233,8 +227,6 @@ describe('boxConnectionOptions', () => {
     expect(options.getInstallCalibrationCapturedAt()).toBe(99);
     options.calibrateInstall();
     expect(boxZero.zero).toHaveBeenCalledWith('xparkle');
-    options.calibrateInstall(true);
-    expect(boxZero.zero).toHaveBeenLastCalledWith('xparkle', true);
     options.clearInstallCalibration();
     expect(boxZero.clear).toHaveBeenCalledWith('xparkle');
   });

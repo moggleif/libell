@@ -52,7 +52,7 @@ function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
   const flipBlock = document.createElement('div');
   flipBlock.hidden = true;
   const { flip, phone } = parts;
-  flipBlock.append(flip.intro, flip.button, flip.status, flip.anyway);
+  flipBlock.append(flip.intro, flip.button, flip.status, flip.undo);
   flipLink.addEventListener('click', () => {
     flipBlock.hidden = !flipBlock.hidden;
     if (flipBlock.hidden) flip.reset();
@@ -61,7 +61,7 @@ function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
     hint('calibration.step.phone.hint'),
     phone.capture,
     phone.status,
-    phone.anyway,
+    phone.undo,
     flipLink,
     flipBlock,
     createMore(phone.check, phone.clear),
@@ -76,7 +76,7 @@ function createVehicleStep(vehicle: CalibrationControls): ChecklistStep<Calibrat
     hint('calibration.step.vehicle.hint'),
     vehicle.capture,
     vehicle.status,
-    vehicle.anyway,
+    vehicle.undo,
     createMore(vehicle.check, vehicle.clear),
   );
   return step;
@@ -159,10 +159,10 @@ function layoutModernCards(
     flip.intro,
     flip.button,
     flip.status,
-    flip.anyway,
+    flip.undo,
     ...(maintenance ? [createRow(phone)] : []),
     phone.status,
-    phone.anyway,
+    phone.undo,
   );
   const vehicleCard = createCard(
     [vehicle.heading, vehicle.pill],
@@ -170,7 +170,7 @@ function layoutModernCards(
     vehicle.capture,
     ...(maintenance ? [createRow(vehicle)] : []),
     vehicle.status,
-    vehicle.anyway,
+    vehicle.undo,
   );
   body.className = 'calibration-cards';
   if (offersExternal(options)) body.append(external.element);
@@ -197,12 +197,12 @@ function layoutClassic(
     phone.heading,
     phone.intro,
     phone.status,
-    phone.anyway,
+    phone.undo,
     phone.capture,
     flip.intro,
     flip.button,
     flip.status,
-    flip.anyway,
+    flip.undo,
     ...(maintenance ? [phone.check, phone.clear] : []),
   );
   const vehicleSection = document.createElement('div');
@@ -210,7 +210,7 @@ function layoutClassic(
     vehicle.heading,
     vehicle.intro,
     vehicle.status,
-    vehicle.anyway,
+    vehicle.undo,
     vehicle.capture,
     ...(maintenance ? [vehicle.check, vehicle.clear] : []),
   );

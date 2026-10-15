@@ -48,23 +48,20 @@ export function calibrationOptions(deps: MenuOptionDeps) {
   return {
     getCalibration: () => phone.bias(),
     getCalibrationCapturedAt: () => phone.biasCapturedAt(),
-    calibrate: (anyway?: boolean) => phone.calibrate(anyway),
+    calibrate: () => phone.calibrate(),
     applyCalibration: (next: Calibration) => phone.applyBias(next),
     clearCalibration: () => phone.clearBias(),
     checkCalibration: () => phone.checkBias(),
     getVehicleCalibration: () => phone.vehicleZero(),
     getVehicleCalibrationCapturedAt: () => phone.vehicleZeroCapturedAt(),
-    calibrateVehicle: (anyway?: boolean) => phone.zeroVehicle(anyway),
+    calibrateVehicle: () => phone.zeroVehicle(),
     clearVehicleCalibration: () => phone.clearVehicleZero(),
     checkVehicleCalibration: () => phone.checkZero(),
     vehicleZeroTrim: zeroTrimOptions('phone', deps.zeroTrims, () => phone.vehicleZero() !== null),
     readTilt: deps.readTilt,
     isPhoneActive: () => activeSensor().getSource() === 'phone',
     getBox: () => externalCalibrationStateFor(activeSensor().getSource(), deps.installOffsets),
-    calibrateBox: (anyway?: boolean) =>
-      anyway
-        ? deps.boxZero.zero(activeSensor().getSource(), true)
-        : deps.boxZero.zero(activeSensor().getSource()),
+    calibrateBox: () => deps.boxZero.zero(activeSensor().getSource()),
   };
 }
 
@@ -111,8 +108,7 @@ export function boxConnectionOptions(descriptor: BoxDescriptor, deps: MenuOption
     disconnectSensor: () => deps.boxes.disconnect(),
     getInstallCalibration: () => deps.installOffsets.valueOf(id),
     getInstallCalibrationCapturedAt: () => deps.installOffsets.capturedAtOf(id),
-    calibrateInstall: (anyway?: boolean) =>
-      anyway ? deps.boxZero.zero(id, true) : deps.boxZero.zero(id),
+    calibrateInstall: () => deps.boxZero.zero(id),
     clearInstallCalibration: () => deps.boxZero.clear(id),
     installZeroTrim: zeroTrimOptions(
       id,
