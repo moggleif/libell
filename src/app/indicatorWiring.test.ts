@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { SensorSource } from '../domain/settings';
 import type { Calibration } from '../domain/calibration';
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
+import { t } from '../ui/i18n';
 import {
   createBoxPending,
   mountLamps,
@@ -105,6 +106,29 @@ describe('mountTargetBadge', () => {
     expect(element.hidden).toBe(true);
     element.click();
     expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the hitch height badge instead while going back to it, and ends it on tap', () => {
+    const slot = document.createElement('div');
+    let hitching = true;
+    const stopHitch = vi.fn(() => void (hitching = false));
+    const badges = mountTargetBadge(slot, {
+      activeName: () => 'Ferry',
+      open: vi.fn(),
+      hitchActive: () => hitching,
+      stopHitch,
+    });
+    const target = slot.querySelector<HTMLButtonElement>('.target-badge');
+    const hitch = slot.querySelector<HTMLButtonElement>('.hitch-badge');
+    expect(target!.hidden).toBe(true);
+    expect(hitch!.hidden).toBe(false);
+    expect(hitch!.textContent).toBe(t('hitch.badge'));
+    expect(hitch!.getAttribute('aria-label')).toBe(t('hitch.badge.aria'));
+    hitch!.click();
+    expect(stopHitch).toHaveBeenCalledOnce();
+    badges.refresh();
+    expect(hitch!.hidden).toBe(true);
+    expect(target!.hidden).toBe(false);
   });
 });
 

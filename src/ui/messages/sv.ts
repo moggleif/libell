@@ -410,6 +410,7 @@ export const sv: Messages = {
   'help.targets.h': 'Mål och ljud',
   'help.targets.t':
     'Spara en lutning du vill ha, till exempel mot duschavloppet, och växla mellan dem.\n' +
+    'Husvagn: spara kopplingshöjden innan du kopplar loss, så leder Till kopplingshöjd stödhjulet tillbaka dit.\n' +
     'Med uppläst vägledning säger appen vilket hjul du ska höja och hur mycket, så du kan nivellera utan att se telefonen.\n' +
     'Knappen mitt i nederkanten slår av och på ljudet.',
   'help.trouble.h': 'Om något krånglar',
@@ -454,6 +455,25 @@ export const sv: Messages = {
   'caravan.axleRight': 'Höger axelhjul',
   'caravan.jockeyWheel': 'Stödhjul',
   'help.screen.caravan': 'Husvagn: stödhjulet visar Veva upp eller Veva ner, och hur mycket.',
+
+  'hitch.title': 'Kopplingshöjd',
+  'hitch.hint':
+    'Spara medan husvagnen sitter på dragkroken. Innan du kopplar på igen visar stödhjulet hur mycket du ska veva för att kopplingen ska möta kulan.',
+  'hitch.save': 'Spara kopplingshöjd',
+  'hitch.go': 'Till kopplingshöjd',
+  'hitch.done': 'Klar',
+  'hitch.savedNow': 'Kopplingshöjden är sparad.',
+  'hitch.status.none': 'Ingen kopplingshöjd sparad än.',
+  'hitch.status.saved': 'En kopplingshöjd är sparad.',
+  'hitch.status.active': 'Huvudskärmen visar hur mycket du ska veva stödhjulet.',
+  'hitch.badge': 'Kopplingshöjd',
+  'hitch.badge.aria': 'Kopplingshöjd: tryck för att nivellera som vanligt igen',
+  'hitch.crank.up': 'Veva upp {amount} till kopplingshöjd',
+  'hitch.crank.down': 'Veva ner {amount} till kopplingshöjd',
+  'hitch.reached': 'Vid kopplingshöjd',
+  'hitch.offer': 'Spara kopplingshöjd först?',
+  'hitch.offer.save': 'Spara',
+  'hitch.offer.dismiss': 'Inte nu',
 
   'zeroTrim.title': 'Finjustera nolläget',
   'zeroTrim.hint':

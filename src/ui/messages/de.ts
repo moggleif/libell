@@ -407,6 +407,7 @@ export const de: Messages = {
   'help.targets.h': 'Ziele und Ton',
   'help.targets.t':
     'Speichere eine gewünschte Neigung, etwa zum Duschablauf hin, und wechsle zwischen ihnen.\n' +
+    'Wohnwagen: speichere die Kupplungshöhe vor dem Abkuppeln, dann führt „Zur Kupplungshöhe“ das Stützrad dorthin zurück.\n' +
     'Mit der Sprachansage sagt die App, welches Rad du anheben musst und wie viel, damit du nivellieren kannst, ohne das Handy zu sehen.\n' +
     'Die Taste in der Mitte der unteren Leiste schaltet den Ton ein und aus.',
   'help.trouble.h': 'Wenn etwas nicht klappt',
@@ -453,6 +454,25 @@ export const de: Messages = {
   'caravan.jockeyWheel': 'Stützrad',
   'help.screen.caravan':
     'Wohnwagen: Das Stützrad zeigt Hochkurbeln oder Herunterkurbeln und um wie viel.',
+
+  'hitch.title': 'Kupplungshöhe',
+  'hitch.hint':
+    'Speichere sie, solange der Wohnwagen noch auf der Kugel sitzt. Vor dem Ankuppeln zeigt das Stützrad, wie weit du kurbeln musst, damit die Kupplung die Kugel trifft.',
+  'hitch.save': 'Kupplungshöhe speichern',
+  'hitch.go': 'Zur Kupplungshöhe',
+  'hitch.done': 'Fertig',
+  'hitch.savedNow': 'Kupplungshöhe gespeichert.',
+  'hitch.status.none': 'Noch keine Kupplungshöhe gespeichert.',
+  'hitch.status.saved': 'Eine Kupplungshöhe ist gespeichert.',
+  'hitch.status.active': 'Der Hauptbildschirm zeigt, wie weit du das Stützrad kurbeln musst.',
+  'hitch.badge': 'Kupplungshöhe',
+  'hitch.badge.aria': 'Kupplungshöhe: tippen, um wieder normal zu nivellieren',
+  'hitch.crank.up': '{amount} hochkurbeln bis zur Kupplungshöhe',
+  'hitch.crank.down': '{amount} herunterkurbeln bis zur Kupplungshöhe',
+  'hitch.reached': 'Auf Kupplungshöhe',
+  'hitch.offer': 'Erst die Kupplungshöhe speichern?',
+  'hitch.offer.save': 'Speichern',
+  'hitch.offer.dismiss': 'Nicht jetzt',
 
   'zeroTrim.title': 'Nullpunkt feinjustieren',
   'zeroTrim.hint':

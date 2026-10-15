@@ -660,6 +660,8 @@ URL and must keep working with no signal.
 - **Then** they apply to both corrections: level when the axle lift and the jockey
   correction are both within tolerance, with the same hysteresis behavior as the
   motorhome display. Decision record: ADR 0008.
+- **Given** a saved hitch height
+- **Then** the jockey wheel can lead back to it instead of to level (R55).
 
 ## R23 — Boggie (tandem) axles
 
@@ -930,6 +932,9 @@ URL and must keep working with no signal.
 - **Then** the saved presets and whichever one was active both survive, independent
   of sensor calibration and the vehicle zero — either of those can be redone or
   cleared without affecting a saved preset or which one is active.
+- **Given** a caravan going back to its hitch height (R55)
+- **Then** that saved pitch is what the screen measures against instead of the active
+  target, and the target badge gives way to the hitch height badge until it ends.
 - This is unrelated to the drain-side ramp tie-break (#93, R27, ADR 0011), which only
   chooses between placements already within tolerance and never deliberately
   overshoots it; a target preset here can deliberately aim for a non-level position.
@@ -2056,3 +2061,37 @@ tones of R30 only say warmer or colder. Spoken guidance says which wheel and how
 - **Then** speech is unlocked by the same gesture as R16/R30 (`unlockAudio()`).
 - **Given** I mute from the bottom bar (R38)
 - **Then** spoken guidance is muted with the other sounds.
+
+## R55 — Caravan: save the hitch height and crank back to it (#598)
+
+Before unhitching, the caravan's nose sits at the tow ball's height. Saving that lets
+the jockey wheel lead back to it when it is time to leave.
+
+- **Given** vehicle type Caravan (R22)
+- **When** the caravan is still on the tow ball and I tap "Save hitch height" ("Spara
+  kopplingshöjd") on Settings' Level tab or page, under the saved targets (R31)
+- **Then** the current pitch is saved as the hitch height, relative to the active zero
+  (R24 for the phone, R34/R49 for a box). It survives a reload, saving again replaces
+  it, and redoing or clearing the zero keeps it, as for a target (ADR 0013). Side tilt
+  is not saved: it does not matter for hitching.
+- **Given** a saved hitch height
+- **When** I tap "Back to hitch height" ("Till kopplingshöjd")
+- **Then** the main screen guides only the jockey wheel back to the saved pitch, with
+  the same jockey correction as R22 measured from that pitch. The status row says
+  "Crank up 34 mm to hitch height" (or down) and "At hitch height" within tolerance,
+  when the screen also turns level. The axle wheels have nothing to do and no ramp is
+  asked for, and spoken guidance (R54) says only the crank.
+- **Given** that mode
+- **Then** a "Hitch height" badge shows on the main screen in place of the target badge
+  (R31); tapping it, or "Done" ("Klar") where the mode was started, returns to normal
+  leveling. A reload also returns to normal leveling.
+- **Given** no hitch height is saved
+- **Then** "Back to hitch height" is not offered, only the save button. This is not a
+  block.
+- **Given** a caravan with no hitch height saved
+- **When** the main screen shows
+- **Then** one quiet line under the status row asks "Save the hitch height first?" with
+  "Save", which saves it there and then, and "Not now". It never blocks leveling, and
+  is gone once saved, or until the next session once dismissed.
+- **Given** vehicle type Motorhome
+- **Then** none of this is shown.

@@ -19,6 +19,7 @@ src/
 │                  # boxWiring.ts (box adapters, health, learn guide, password),
 │                  # installOffsets.ts (each box's zero), boxZero.ts (zeroing a box),
 │                  # phoneCalibration.ts (bias + vehicle zero), targets.ts (target presets),
+│                  # hitchHeight.ts (a caravan's saved hitch height, #598),
 │                  # tiltReading.ts (sensor tilt in degrees), demoSensor.ts (?demo's tilt),
 │                  # menuOptionParts.ts + menuOptions.ts (the options bags),
 │                  # onboardingLauncher.ts, settingsAdoption.ts (what a save reaches),
@@ -32,6 +33,7 @@ src/
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable, among them:
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── caravan.ts    # the caravan's axle + jockey-wheel math (ADR 0008)
+│   ├── hitchHeight.ts  # going back to a saved hitch height on that same math (#598)
 │   ├── rampPlan.ts   # planRamps(lifts, settings) -> which wheels get the owned ramps
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
 │   ├── calibration.ts, targetPresets.ts  # the three calibration terms (ADR 0010/0013/0014)
@@ -316,6 +318,17 @@ Taking or forgetting a zero resets its trim (`onVehicleZeroReplaced` in
 `phoneCalibration.ts`, `onZeroReplaced` in `boxZero.ts`). The row itself is
 `src/ui/zeroTrimRow.ts`, placed under the zero by `calibrationSection.ts` and
 `boxSetupChecklist.ts`.
+
+A caravan's hitch height (#598, R55) is a pitch saved relative to the zero, like a
+target, under its own key `libell.hitchPitch` (`settingsStore.ts`), so redoing or
+clearing the zero never moves it. Going back to it is a session-only mode in
+`src/app/hitchHeight.ts`: while it is on, `core.ts`'s `effectiveCalibration()` is the
+zero plus the saved pitch (`hitchCalibration` in `src/domain/hitchHeight.ts`) in place
+of the target, so the ordinary `computeCaravanLeveling` jockey correction leads back to
+it; `levelEngine.ts` then shows the result through `hitchDisplay` (the axle has nothing
+to do) and says the crank in the status row. The main-screen badge
+(`src/ui/hitchBadge.ts`, mounted with the target badge) ends the mode, and
+`src/ui/hitchOffer.ts` asks "Save the hitch height first?" while none is saved.
 
 Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
 `getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone

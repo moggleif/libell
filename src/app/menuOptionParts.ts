@@ -11,6 +11,7 @@ import type { BoxController } from '../sensor/boxController';
 import type { BoxDescriptor } from '../sensor/boxes';
 import type { OrientationSensor } from '../sensor/orientation';
 import type { BoxZeroing } from './boxZero';
+import type { HitchHeight } from './hitchHeight';
 import {
   externalCalibrationStateFor,
   healthOf,
@@ -34,6 +35,7 @@ export interface MenuOptionDeps {
   installOffsets: InstallOffsets;
   zeroTrims: ZeroTrims;
   targets: Targets;
+  hitch: HitchHeight;
   boxes: Pick<BoxController<LibellBox>, 'connect' | 'disconnect' | 'getSensor'>;
   boxWiring: BoxWiring;
 }
@@ -72,6 +74,21 @@ export function targetOptions(targets: Targets) {
     addTargetPreset: (name: string, anyway?: boolean) =>
       anyway ? targets.add(name, true) : targets.add(name),
     deleteTargetPreset: (id: string) => targets.remove(id),
+  };
+}
+
+/** A caravan's hitch height (#598), shown with the targets. */
+export function hitchOptions(deps: MenuOptionDeps) {
+  const { hitch } = deps;
+  return {
+    hitch: {
+      isCaravan: () => deps.boxWiring.settings.get().vehicleType === 'caravan',
+      savedPitch: () => hitch.savedPitch(),
+      save: () => hitch.save(),
+      isActive: () => hitch.isActive(),
+      start: () => hitch.start(),
+      stop: () => hitch.stop(),
+    },
   };
 }
 

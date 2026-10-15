@@ -76,6 +76,31 @@ describe('createCore', () => {
   });
 });
 
+describe('createCore going back to the hitch height (#598)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    history.replaceState(null, '', '/?demo');
+  });
+
+  it('measures against the saved pitch instead of a target, then levels as usual again', () => {
+    const screen = fakeScreen();
+    const core = createCore(screen);
+    core.settings.set({ ...core.settings.get(), vehicleType: 'caravan' });
+    const { hitch, targets } = core.optionDeps;
+    expect(targets.add('Slope')).toBeNull();
+    targets.select(targets.presets()[0]!.id);
+    const asUsual = core.effectiveCalibration();
+    expect(hitch.save()).toBeNull();
+    hitch.start();
+    expect(screen.targetBadge.refresh).toHaveBeenCalled();
+    // The demo tilt is the saved pitch, with no side tilt of its own.
+    const reading = core.optionDeps.readTilt() as { rollDeg: number; pitchDeg: number };
+    expect(core.effectiveCalibration()).toEqual({ rollDeg: 0, pitchDeg: reading.pitchDeg });
+    hitch.stop();
+    expect(core.effectiveCalibration()).toEqual(asUsual);
+  });
+});
+
 describe('createCore wiring a box in and out (#513)', () => {
   beforeEach(() => {
     localStorage.clear();

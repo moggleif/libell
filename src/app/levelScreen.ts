@@ -4,6 +4,7 @@
  */
 import type { LevelSettings } from '../domain/settings';
 import type { Calibration } from '../domain/calibration';
+import type { HitchOfferOptions } from '../ui/hitchOffer';
 import { createLevelEngine } from './levelEngine';
 import { createLevelFrame, type LevelFrameDeps } from './levelFrame';
 import { mountLevelScreenView } from './levelScreenView';
@@ -82,6 +83,9 @@ export interface LevelScreenDeps extends Omit<LevelFrameDeps, 'view' | 'playGuid
   playChime(): void;
   playGuidancePulse: LevelFrameDeps['playGuidancePulse'];
   vibrate(pattern: number[]): void;
+  /** A caravan going back to its hitch height (#598); never when omitted. */
+  hitching?: () => boolean;
+  hitchOffer?: HitchOfferOptions;
 }
 
 export function buildLevelScreen(
@@ -89,10 +93,12 @@ export function buildLevelScreen(
   deps: LevelScreenDeps,
 ): (nowMs: number) => void {
   const view = mountLevelScreenView(root, {
-    createEngine: (output) => createLevelEngine(deps.settings, deps.calibration, output),
+    createEngine: (output) =>
+      createLevelEngine(deps.settings, deps.calibration, output, deps.hitching),
     openActiveSensorPage: deps.openActiveSensorPage,
     retry: deps.retry,
     usePhoneSensor: deps.usePhoneSensor,
+    hitchOffer: deps.hitchOffer,
     onCelebrate() {
       deps.vibrate([200, 100, 200]);
       if (deps.settings().soundOnLevel) deps.playChime();

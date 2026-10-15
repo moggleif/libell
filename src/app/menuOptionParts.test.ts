@@ -13,12 +13,14 @@ import {
   boxStatusOptions,
   calibrationOptions,
   easyLevelMountingOptions,
+  hitchOptions,
   sensorSourceOptions,
   targetOptions,
   type MenuOptionDeps,
 } from './menuOptionParts';
 import type { PhoneCalibration } from './phoneCalibration';
 import type { Targets } from './targets';
+import { createHitchHeight } from './hitchHeight';
 import { createZeroTrims } from './zeroTrims';
 
 /** Every dependency as a spy, so each field can be checked for what it calls. */
@@ -84,6 +86,13 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
   };
   const readTilt = vi.fn(() => ({ rollDeg: 3, pitchDeg: 4 }));
   const zeroTrims = createZeroTrims(null);
+  const hitch = createHitchHeight({
+    readTilt,
+    zeroCalibration: () => null,
+    isCaravan: () => settings.vehicleType === 'caravan',
+    onChanged: vi.fn(),
+    storage: null,
+  });
   const deps: MenuOptionDeps = {
     activeSensor: () => active,
     readTilt,
@@ -92,11 +101,13 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     installOffsets,
     zeroTrims,
     targets,
+    hitch,
     boxes,
     boxWiring,
   };
   return {
     deps,
+    hitch,
     zeroTrims,
     phoneCalibration,
     boxZero,
@@ -175,6 +186,24 @@ describe('targetOptions', () => {
     expect(targets.add).toHaveBeenCalledWith('Ferry');
     options.deleteTargetPreset('a');
     expect(targets.remove).toHaveBeenCalledWith('a');
+  });
+});
+
+describe('hitchOptions', () => {
+  it('is offered for a caravan only and hands every action to the hitch height', () => {
+    const { deps, hitch } = fakeDeps();
+    const { hitch: options } = hitchOptions(deps);
+    expect(options.isCaravan()).toBe(false);
+    deps.boxWiring.settings.set({ ...DEFAULT_SETTINGS, vehicleType: 'caravan' });
+    expect(options.isCaravan()).toBe(true);
+    expect(options.savedPitch()).toBeNull();
+    expect(options.save()).toBeNull();
+    expect(options.savedPitch()).toBe(4);
+    options.start();
+    expect(options.isActive()).toBe(true);
+    expect(hitch.isActive()).toBe(true);
+    options.stop();
+    expect(options.isActive()).toBe(false);
   });
 });
 

@@ -3,7 +3,12 @@
  * chosen vehicle type. Settings are read afresh on every tick; only what
  * the diagram is built from is fixed at creation.
  */
-import { computeCaravanLeveling, createCaravanStabilizer } from '../domain/caravan';
+import {
+  computeCaravanLeveling,
+  createCaravanStabilizer,
+  type CaravanDisplayResult,
+} from '../domain/caravan';
+import { hitchDisplay } from '../domain/hitchHeight';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from '../domain/leveling';
 import { deficitMagnitude } from '../domain/rampPlan';
 import type { LevelSettings } from '../domain/settings';
@@ -49,17 +54,30 @@ export function motorhomeStatusText(result: DisplayResult, settings: LevelSettin
   return t(magnitude === 'close' ? 'status.cantLevel.close' : 'status.cantLevel.far');
 }
 
+/** Going back to the hitch height (#598): the jockey wheel's crank, said
+ * in full, since the axle has nothing to do. */
+export function hitchStatusText(
+  jockey: CaravanDisplayResult['jockey'],
+  unit: LevelSettings['displayUnit'],
+): string {
+  if (jockey.direction === 'ok') return t('hitch.reached');
+  const amount = formatLength(jockey.displayMm, unit);
+  return t(jockey.direction === 'up' ? 'hitch.crank.up' : 'hitch.crank.down', { amount });
+}
+
 function largestLift(result: DisplayResult): number {
   return Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
 }
 
+/** `hitching` says whether a caravan is going back to its hitch height. */
 export function createLevelEngine(
   settings: () => LevelSettings,
   calibration: () => Calibration | null,
   output: EngineOutput,
+  hitching: () => boolean = () => false,
 ): LevelEngine {
   return settings().vehicleType === 'caravan'
-    ? createCaravanEngine(settings, calibration, output)
+    ? createCaravanEngine(settings, calibration, output, hitching)
     : createMotorhomeEngine(settings, calibration, output);
 }
 
@@ -91,12 +109,14 @@ function createMotorhomeEngine(
 /**
  * The caravan diagram draws the jockey wheel's direction, action and
  * amount, and the axle wheels their severity, so its status row has
- * nothing to add.
+ * nothing to add, except where the crank leads while going back to the
+ * hitch height.
  */
 function createCaravanEngine(
   settings: () => LevelSettings,
   calibration: () => Calibration | null,
   output: EngineOutput,
+  hitching: () => boolean,
 ): LevelEngine {
   const { rearAxle, appearance } = settings();
   const diagram = createCaravanDiagram(rearAxle, appearance);
@@ -105,13 +125,16 @@ function createCaravanEngine(
     element: diagram.element,
     tick(gravity, nowMs) {
       const current = settings();
-      const result = stabilize(
+      const shown = stabilize(
         computeCaravanLeveling(gravity, current, calibration()),
         current,
         nowMs,
       );
+      const toHitch = hitching();
+      const result = toHitch ? hitchDisplay(shown) : shown;
       diagram.update(result, current.displayUnit, current.rampStepHeightsMm);
-      output.showStatus('', result.isLevel);
+      const status = toHitch ? hitchStatusText(result.jockey, current.displayUnit) : '';
+      output.showStatus(status, result.isLevel);
       output.showTilt(result);
       const maxAxleMm = Math.max(result.axle.left.displayMm, result.axle.right.displayMm);
       const jockeyMm = result.jockey.direction === 'ok' ? 0 : result.jockey.displayMm;

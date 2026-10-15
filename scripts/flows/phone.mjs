@@ -114,3 +114,37 @@ export async function targetsFlow(browser) {
   assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
   await context.close();
 }
+
+// A caravan's hitch height (#598): offered on the main screen while none is
+// saved, saved relative to the zero (none here), then the jockey wheel leads
+// back to it with its own badge until that badge ends it.
+export async function hitchHeightFlow(browser) {
+  const { context, page, errors } = await openApp(browser, 'demo', {
+    'libell.settings': JSON.stringify({ vehicleType: 'caravan' }),
+  });
+  const offer = page.locator('.hitch-offer');
+  await offer.getByText('Save the hitch height first?').waitFor();
+  await button(offer, 'Save').click();
+  await offer.waitFor({ state: 'hidden' });
+  const pitch = JSON.parse(await storage(page, 'libell.hitchPitch'));
+  assert(near(pitch, DEMO_PITCH), `the hitch height should be the demo pitch, got ${pitch}`);
+
+  const settings = await openSettingsTab(page, 'targets');
+  await settings.getByText('A hitch height is saved.').waitFor();
+  await button(settings, 'Back to hitch height').click();
+  await settings.getByText('The main screen shows how far to crank the jockey wheel.').waitFor();
+  await closeAllPages(page);
+  // The demo still stands at the saved pitch, side tilt and all.
+  await page.locator('.status-line').getByText('At hitch height').waitFor();
+  assert(
+    await page.locator('.target-badge').isHidden(),
+    'the target badge should give way to the hitch height badge',
+  );
+
+  await page.locator('.hitch-badge').click();
+  await page.locator('.hitch-badge').waitFor({ state: 'hidden' });
+  await page.locator('.status-line').waitFor({ state: 'hidden' });
+
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}

@@ -11,6 +11,7 @@ import type { CaptureResult } from '../domain/calibration';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
 import { createElement } from './dom';
+import { createHitchSection, type HitchOptions } from './hitchSection';
 
 export interface TargetsOptions {
   getTargetPresets(): TargetPreset[];
@@ -22,6 +23,8 @@ export interface TargetsOptions {
    * anyway" — `anyway` is set when the user chose it. */
   addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
+  /** A caravan's hitch height (#598), under the targets; none when omitted. */
+  hitch?: HitchOptions;
 }
 
 export interface TargetsSection {
@@ -31,7 +34,11 @@ export interface TargetsSection {
 
 export function createTargetsSection(options: TargetsOptions): TargetsSection {
   const list = createElement('div', 'targets__list');
-  const refresh = (): void => refreshList(options, list, refresh);
+  const hitch = options.hitch ? createHitchSection(options.hitch) : null;
+  const refresh = (): void => {
+    refreshList(options, list, refresh);
+    hitch?.refresh();
+  };
   const adding = createAddControls();
   const add = (anyway: boolean): void => addPreset(options, adding, anyway, refresh);
   adding.addButton.addEventListener('click', () => add(false));
@@ -40,6 +47,7 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
   refresh();
   const body = document.createElement('div');
   body.append(list, adding.addRow, adding.addStatus, adding.anywayButton);
+  if (hitch) body.append(hitch.element);
   return { element: body, refresh };
 }
 

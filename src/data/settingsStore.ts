@@ -6,6 +6,7 @@
  */
 import type { LevelSettings } from '../domain/settings';
 import { parseSettings } from '../domain/settingsParsing';
+import { parseHitchPitch } from '../domain/hitchHeight';
 import {
   parseActiveTargetId,
   parseTargetPresets,
@@ -46,6 +47,8 @@ const BOX_PENDING_KEY = 'libell.boxPending';
 // the same field as either calibration layer.
 const TARGET_PRESETS_KEY = 'libell.targetPresets';
 const ACTIVE_TARGET_KEY = 'libell.activeTarget';
+// A caravan's saved hitch height, as a pitch from the zero (#598).
+const HITCH_PITCH_KEY = 'libell.hitchPitch';
 
 export function loadSettings(storage: MaybeStorage = defaultStorage()): LevelSettings {
   return parseSettings(readJson<unknown>(storage, STORAGE_KEY, (value) => value, undefined));
@@ -155,4 +158,13 @@ export function saveActiveTargetId(
 ): void {
   if (id === null) removeItem(storage, ACTIVE_TARGET_KEY);
   else writeJson(storage, ACTIVE_TARGET_KEY, id);
+}
+
+/** Null when none is saved or the stored value is corrupt. */
+export function loadHitchPitch(storage: MaybeStorage = defaultStorage()): number | null {
+  return readJson(storage, HITCH_PITCH_KEY, parseHitchPitch, null);
+}
+
+export function saveHitchPitch(pitchDeg: number, storage: MaybeStorage = defaultStorage()): void {
+  writeJson(storage, HITCH_PITCH_KEY, pitchDeg);
 }
