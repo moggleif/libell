@@ -1,6 +1,6 @@
 ---
 name: docs-sync
-description: Check that a Libell change keeps the documentation true, in the same change: requirements, in-app help in all five languages, architecture, ADRs and CLAUDE.md. Use on every change before it is committed or merged, and whenever the steward skill asks for it.
+description: Check that a Libell change keeps the documentation true, in the same change: requirements, in-app help in every language, architecture, ADRs and CLAUDE.md. Use on every change before it is committed or merged, and whenever the steward skill asks for it.
 ---
 
 # Docs in sync

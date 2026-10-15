@@ -446,8 +446,8 @@ describe('settings form — Modern tabs (#108)', () => {
     // #329: no "the app reloads" hint under Appearance.
     expect(generalPanel.textContent).not.toContain('reload');
     // Language names are literal, never translated (a language name names
-    // itself regardless of the current UI language) — all five of them (#178).
-    for (const name of ['Svenska', 'English', 'Français', 'Español', 'Deutsch']) {
+    // itself regardless of the current UI language) — every one of them (#178).
+    for (const name of Object.values(LANGUAGE_NAMES)) {
       expect(generalPanel.textContent, name).toContain(name);
     }
   });

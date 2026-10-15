@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import { attachUpdateCheck } from './appUpdate';
-import { setLanguage, t, type Language } from './i18n';
+import { LANGUAGES, setLanguage, t } from './i18n';
 import { createIndicators } from './indicators';
 import { createRampsTab } from './settingsRampsTab';
 import type { SettingsFormContext, SettingsFormState } from './settingsFields';
@@ -14,7 +14,7 @@ afterEach(() => setLanguage('en'));
 
 describe('the page language', () => {
   it('follows the app language, so a reader uses the right voice', () => {
-    for (const lang of ['sv', 'en', 'fr', 'es', 'de'] as Language[]) {
+    for (const lang of LANGUAGES) {
       setLanguage(lang);
       expect(document.documentElement.lang).toBe(lang);
     }

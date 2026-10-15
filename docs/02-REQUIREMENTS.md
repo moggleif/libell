@@ -337,19 +337,19 @@ URL and must keep working with no signal.
 - Modeled on sbsommar's feedback feature (its 02-§73), adapted to a static site: no
   server, so no GitHub token ever ships in the client (ADR 0006).
 
-## R13 — The app speaks Swedish, English, French, Spanish and German
+## R13 — The app speaks the phone's language
 
-- **Given** my phone's language is any `sv*`, `fr*`, `es*` or `de*` locale
+- **Given** my phone's language is one Libell ships: Swedish, English, French, Spanish
+  and German
 - **When** I open Libell
-- **Then** every user-facing string is Swedish, French, Spanish or German respectively —
-  the locale's language subtag decides, so `de-AT` is German too; any other locale gets
-  English. A stored override (from settings) wins over auto-detection; an invalid stored
-  value falls back to auto-detection.
+- **Then** every user-facing string is in that language — the locale's language subtag
+  decides, so `de-AT` is German too; any other locale gets English. A stored override
+  (from settings) wins over auto-detection; an invalid stored value falls back to
+  auto-detection. Every language is translated with the `translate` skill (#628).
 - **Given** the Language field in Settings → General ("Automatic (device language)"
-  first and the default, then Deutsch / English / Español / Français / Svenska — each
-  language named in itself rather than translated, and listed alphabetically by that
-  name, so the order is the same whichever language is in effect and Automatic is
-  always on top)
+  first and the default, then every shipped language named in itself rather than
+  translated (Deutsch, English, Español, …), listed alphabetically by that name, so
+  the order is the same whichever language is in effect and Automatic is always on top)
 - **When** I pick a language other than the one currently in effect
 - **Then** the choice is saved and the app reloads immediately — `t()` resolves its
   dictionary once at startup (not reactively), so a reload is the only way every

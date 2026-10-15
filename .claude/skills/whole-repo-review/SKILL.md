@@ -49,7 +49,7 @@ skill's checklist to the **whole tree**, not to a diff, and ignore the "diff aga
   implements it; a requirement with no implementation, or behaviour with no
   requirement, is a finding.
 - In-app help (`help.*` keys in `src/ui/messages/`) and `README.md` against what the
-  app does today, in all five languages.
+  app does today, in every shipped language.
 - `docs/03-ARCHITECTURE.md` and the ADRs in `docs/adr/` against the code: modules,
   layer seams, sensor paths, storage keys, formulas, CI jobs.
 - The canonical-sources table at the top of `CLAUDE.md`: every owner it names still
@@ -73,7 +73,7 @@ skill's checklist to the **whole tree**, not to a diff, and ignore the "diff aga
 - Terminology: _Kalibrera_ only for the phone's own sensor, _Nollställ_ for the
   vehicle's zero, always _kloss_ (never "ramp"), _Sensorbox_. Check every language in
   `src/ui/messages/` and the help pages, not only Swedish.
-- Consistent wording across all five languages: the same key says the same thing in
+- Consistent wording across every shipped language: the same key says the same thing in
   each language, at the same level of detail.
 - No feature that needs a step in the Xparkle app (changing the box password is the
   one agreed exception, #367).
