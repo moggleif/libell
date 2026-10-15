@@ -29,6 +29,7 @@ describe('i18n dictionaries', () => {
     const names = LANGUAGES.map((lang) => LANGUAGE_NAMES[lang]);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
     expect(names).toEqual([
+      'Dansk',
       'Deutsch',
       'English',
       'Español',
@@ -206,6 +207,7 @@ describe('i18n terminology (#366)', () => {
       it: 'Misure',
       pl: 'Wymiary',
       pt: 'Medidas',
+      da: 'Dimensioner',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -251,7 +253,7 @@ describe('i18n public interface (#377)', () => {
 
   it('types Language as the shipped languages', () => {
     expectTypeOf<Language>().toEqualTypeOf<
-      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt'
+      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt' | 'da'
     >();
   });
 
