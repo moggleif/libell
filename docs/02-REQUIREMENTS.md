@@ -620,7 +620,9 @@ URL and must keep working with no signal.
 - **Given** Settings → Ramps' "Change ramp" catalogue (filterable by brand, #246), or
   the wizard's compact "Ready-made ramp" picker (R18)
 - **When** I choose a model sold in camping shops (the catalog is `RAMP_MODELS` in
-  `src/domain/ramps.ts`)
+  `src/domain/ramps.ts`; a model is listed only with step heights taken from the maker's
+  or a shop's product page, or measured, never guessed, with the source next to it,
+  #601)
 - **Then** its step heights fill in and it shows as "Selected"; in the compact picker,
   editing the heights afterwards switches it to "Custom set" (the Ramps page offers the
   step editor only under "Custom set"). A set matching a catalog model shows the

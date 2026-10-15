@@ -1,7 +1,8 @@
 /**
- * Catalog of ready-made leveling ramps sold by Swedish camping shops
- * (Camping4u, Campingvaruhuset, GetCamping, Kama Fritid, Biltema …),
- * with their step heights in mm. Picking one in Settings fills the ramp
+ * Catalog of ready-made leveling ramps sold by camping shops and DIY
+ * stores (Camping4u, Campingvaruhuset, GetCamping, Kama Fritid, Biltema,
+ * Jula …), with their step heights in mm. New models are added only with
+ * step heights from a product page, noted beside the entry (#601). Picking one in Settings fills the ramp
  * step list; the chips still allow fine-tuning afterwards. Pure data —
  * product names are proper nouns and are not translated.
  */
@@ -28,6 +29,17 @@ export const RAMP_MODELS: RampModel[] = [
   { name: 'Froli kompaktkil', stepsMm: [50, 100, 150] },
   { name: 'Biltema nivåkloss', stepsMm: [40, 70, 100] },
   { name: 'Biltema byggbar nivåkloss', stepsMm: [25, 50, 75, 100, 125] },
+  // #601: each step list below is quoted from a shop's product page.
+  // "3 niveaux : H 4,5 cm - H 8 cm - H 11 cm" (camping-car-plus.com, art. 11640).
+  { name: 'Brunner Equalizer XL', stepsMm: [45, 80, 110] },
+  // "3 Levels at: 4cm, 7cm, 10cm" (jacksonsleisure.com, Fiamma Jumbo Levelling Ramps).
+  { name: 'Fiamma Jumbo', stepsMm: [40, 70, 100] },
+  // "tre höjdnivåer: 4 cm, 7 cm och 10 cm" (jula.se, art. 001691).
+  { name: 'Hamron nivåklossar', stepsMm: [40, 70, 100] },
+  // "Användbar i tre olika höjder (40, 70 och 100mm)" (bygghemma.se, bauhaus.se).
+  { name: 'Briv nivåklossar', stepsMm: [40, 70, 100] },
+  // "3 verschiedene Höhen in einer Rampe: 10 / 7 / 4 cm" (kaufland.at, product 539657967).
+  { name: 'TrutzHolm Auffahrkeil 5 t', stepsMm: [40, 70, 100] },
   // "Precise leveling at any increment between 1/2” and 4”"
   // (andersenhitches.com/products/camper-leveler): 4″ is 101.6 mm, rounded
   // down so the plan never counts on height the wedge lacks.
