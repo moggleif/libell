@@ -2186,6 +2186,11 @@ per vehicle (Morgan, #599).
   box's direction and password, its zeros (R24, R34/R49) and their fine adjustment
   (R24), its targets (R31) and its hitch height (R55). The previous box is disconnected,
   and this vehicle's box reconnects as on open (R33). The choice survives a reload.
+- **Given** a vehicle added, switched to, or the active one removed, each of which starts
+  the app again
+- **Then** Settings opens straight back on Vehicle, now showing the vehicle that is
+  active, as after a language change (R9, #345): Settings never
+  closes by itself (#615).
 - **Given** the phone's own sensor calibration (R11) and the app-wide preferences
   (tolerance, unit, sound, look, language)
 - **Then** they are shared by every vehicle.

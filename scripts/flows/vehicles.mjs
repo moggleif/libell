@@ -25,7 +25,9 @@ export async function vehiclesFlow(browser) {
   assert((await storage(page, 'libell.vehicleCalibration')) === null, 'a new vehicle has no zero');
   assert((await storedSettings(page)).wheelbaseMm !== 3600, 'a new vehicle starts from defaults');
 
-  settings = await openSettingsTab(page, 'vehicle');
+  // Settings comes back open on Vehicle after the reload (#615).
+  settings = page.locator('.menu-page.is-visible').first();
+  await settings.locator('.vehicles').waitFor();
   const rows = settings.locator('.vehicles .choice__row-select');
   assert(
     (
@@ -47,6 +49,7 @@ export async function vehiclesFlow(browser) {
   const { wheelbaseMm } = await storedSettings(page);
   assert(wheelbaseMm === 3600, 'switching back should bring the first vehicle back');
   assert((await storage(page, 'libell.vehicleCalibration')) === ZERO, 'and its zero');
+  await page.locator('.menu-page.is-visible .vehicles').waitFor();
   assert(app.errors.length === 0, `page errors: ${app.errors.join('; ')}`);
   await app.context.close();
 }

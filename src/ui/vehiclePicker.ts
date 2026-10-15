@@ -2,13 +2,15 @@
  * Settings › Vehicle's vehicles (#599), listed like the targets (#613): tap
  * one to switch to it, tap the chosen one again to rename it, ✕ to remove
  * one while there is another, and New vehicle to add one. Choosing another
- * vehicle starts the app again on it, so nothing here redraws after a switch.
+ * vehicle starts the app again on it, so nothing here redraws after a switch;
+ * each reload is marked so Settings reopens on Vehicle (#615).
  */
 import { button } from './calibrationControls';
 import { createChoiceRow } from './choiceList';
 import { createElement } from './dom';
 import { t } from './i18n';
 import { createNamePrompt } from './namePrompt';
+import { markReopenSettings } from './reopenSettings';
 
 export interface VehiclePickerOptions {
   list(): Array<{ id: string; name: string }>;
@@ -48,6 +50,8 @@ export function createVehiclePicker(options: VehiclePickerOptions): HTMLElement 
   // The vehicle a ✕ asks to remove, until "Yes, remove" or another tap.
   let removing: string | null = null;
   const yes = actionButton(t('vehicles.remove.yes'), () => {
+    // Removing the active vehicle starts the app again on another.
+    if (removing === options.activeId()) markReopenSettings('vehicle');
     if (removing) options.remove(removing);
     removing = null;
     refresh();
@@ -79,6 +83,7 @@ function createAdding(options: VehiclePickerOptions): HTMLElement[] {
     label: t('vehicles.name.label'),
     placeholder: t('vehicles.name.placeholder'),
     onSave: (typed) => {
+      markReopenSettings('vehicle');
       options.add(typed || nextVehicleName(options.list()));
       prompt.close();
     },
@@ -102,7 +107,10 @@ function fillList(
       return createChoiceRow({
         label,
         active: id === options.activeId(),
-        onSelect: () => options.switchTo(id),
+        onSelect: () => {
+          markReopenSettings('vehicle');
+          options.switchTo(id);
+        },
         onRename: (typed) => {
           options.rename(id, typed);
           refresh();

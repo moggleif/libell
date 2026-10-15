@@ -160,7 +160,7 @@ describe('Language', () => {
     const { tab } = build();
     choose(tab.languageField.querySelector('select')!, 'fr');
     expect(localStorage.getItem('libell.language')).toBe('fr');
-    expect(takeReopenSettings()).toBe(true);
+    expect(takeReopenSettings()).toBe('general');
     expect(reload).toHaveBeenCalledOnce();
   });
 
@@ -175,7 +175,7 @@ describe('Language', () => {
   it('in a wizard step reloads without reopening Settings', () => {
     const { tab } = build({}, true);
     choose(tab.languageField.querySelector('select')!, 'sv');
-    expect(takeReopenSettings()).toBe(false);
+    expect(takeReopenSettings()).toBeNull();
     expect(reload).toHaveBeenCalledOnce();
   });
 });
@@ -194,7 +194,7 @@ describe('Theme, Appearance and Unit', () => {
     choose(selectIn(tab.elements(), t('settings.appearance')), 'glossy');
     expect(document.documentElement.dataset.appearance).toBe('glossy');
     expect(loadSettings().soundGuidance).toBe(true);
-    expect(takeReopenSettings()).toBe(true);
+    expect(takeReopenSettings()).toBe('general');
     expect(reload).toHaveBeenCalledOnce();
     expect(changed).not.toHaveBeenCalled();
   });

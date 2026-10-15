@@ -4,7 +4,7 @@
  * other appearance-branching component; a later appearance change reloads.
  */
 import type { SensorSource } from '../domain/settings';
-import { createMenu, type MenuOptions } from '../ui/menu';
+import { createMenu, type MenuOptions, type MenuSection } from '../ui/menu';
 import { takeReopenSettings } from '../ui/reopenSettings';
 import { createSettingsPage } from '../ui/settingsPage';
 import type { NavigationDeps } from './navigation';
@@ -28,9 +28,10 @@ export function mountSettingsSurface(options: MenuOptions): SettingsSurface {
     options.initialSettings.appearance === 'modern'
       ? mountSettingsPage(options, button)
       : mountMenu(options, button);
-  // Just reloaded for a new appearance or language from Settings:
-  // back on General, where the choice was made.
-  if (takeReopenSettings()) surface.openGeneral();
+  // Just reloaded from Settings (a new appearance or language, another
+  // vehicle): back on the section where the choice was made (#615).
+  const reopen = takeReopenSettings();
+  if (reopen) surface.openSection(reopen);
   let lastSource: SensorSource = 'phone';
   return {
     isOpen: surface.isOpen,
@@ -50,7 +51,7 @@ function mountSettingsPage(options: MenuOptions, button: HTMLButtonElement | nul
   return {
     isOpen: () => settingsPage.isOpen(),
     route: { settingsPage },
-    openGeneral: () => settingsPage.openTab('general'),
+    openSection: (section: MenuSection) => settingsPage.openTab(section),
     redraw: () => settingsPage.refreshOpenTab(),
   };
 }
@@ -62,7 +63,7 @@ function mountMenu(options: MenuOptions, button: HTMLButtonElement | null) {
   return {
     isOpen: () => menu.isOpen(),
     route: { menu },
-    openGeneral: () => menu.open('general'),
+    openSection: (section: MenuSection) => menu.open(section),
     redraw: () => menu.refresh(),
   };
 }
