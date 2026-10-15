@@ -388,7 +388,7 @@ export const es: Messages = {
     'Libell calcula cuánto debe subir cada rueda a partir de la distancia entre ejes y el ancho de vía.\n' +
     'Vienen en la documentación del vehículo; si no, mide con una cinta métrica.\n' +
     'En una caravana, la distancia entre ejes va del eje a la rueda jockey.\n' +
-    'Con varios vehículos, cada uno guarda sus medidas, calzos, ceros, objetivos y caja sensora; elígelo arriba en Vehículo.',
+    'Con varios vehículos, cada uno guarda sus medidas, calzos, cero, objetivos y caja sensora; elígelo arriba en Vehículo.',
   'help.ramps.t':
     'La pantalla te dice a qué escalón de tu rampa sube cada rueda, así que introduce las rampas que llevas.\n' +
     'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.\n' +
@@ -463,21 +463,21 @@ export const es: Messages = {
     'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
 
   'vehicles.title': 'Vehículos',
-  'vehicles.pick': 'Elegir vehículo',
   'vehicles.defaultName': 'Mi vehículo',
   'vehicles.numbered': 'Vehículo {n}',
   'vehicles.name.placeholder': 'Nombre (p. ej. «Caravana»)',
   'vehicles.name.label': 'Nombre del vehículo',
   'vehicles.add': 'Nuevo vehículo',
-  'vehicles.rename': 'Renombrar',
-  'vehicles.remove': 'Eliminar',
-  'vehicles.rename.empty': 'Escribe primero el nuevo nombre en el campo.',
-  'vehicles.renamed': 'Nombre cambiado.',
-  'vehicles.remove.last': 'Hace falta al menos un vehículo. Añade antes otro con Nuevo vehículo.',
-  'vehicles.remove.confirm': '¿Eliminar {name} con sus ceros, objetivos y caja sensora?',
+  // The name field shown only when a name is needed (#613).
+  'namePrompt.save': 'Guardar',
+  'namePrompt.cancel': 'Cancelar',
+  // Tapping the chosen target or vehicle again edits its name (#613).
+  'choice.rename': 'Cambiar el nombre de {name}',
+  'vehicles.delete': 'Eliminar {name}',
+  'vehicles.remove.confirm': '¿Eliminar {name} con su cero, sus objetivos y caja sensora?',
   'vehicles.remove.yes': 'Sí, eliminar',
   'vehicles.hint':
-    'Las medidas, los calzos, los ceros, los objetivos y la caja sensora pertenecen al vehículo. La calibración del móvil se comparte.',
+    'Las medidas, los calzos, el cero, los objetivos y la caja sensora pertenecen al vehículo. La calibración del móvil se comparte.',
   'setup.incoming.addNew': 'Añadir como vehículo nuevo',
 
   'hitch.title': 'Altura de enganche',

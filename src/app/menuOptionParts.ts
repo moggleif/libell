@@ -76,6 +76,7 @@ export function targetOptions(targets: Targets) {
     addTargetPreset: (name: string, anyway?: boolean) =>
       anyway ? targets.add(name, true) : targets.add(name),
     deleteTargetPreset: (id: string) => targets.remove(id),
+    renameTargetPreset: (id: string, name: string) => targets.rename(id, name),
   };
 }
 

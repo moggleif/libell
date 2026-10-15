@@ -128,7 +128,7 @@ async function rebuildScenario(browser) {
 
   // Switching the vehicle type rebuilds it for the caravan.
   const vehicle = await openSettingsTab(page, 'vehicle');
-  await vehicle.locator('select:visible:not(.vehicles__select)').first().selectOption('caravan');
+  await vehicle.locator('select:visible').first().selectOption('caravan');
   await closeAllPages(page);
   await eventually(
     async () => (await diagramLabel(page)).includes('caravan'),

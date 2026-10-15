@@ -30,7 +30,7 @@ describe('single-choice lists say which row is selected', () => {
       addTargetPreset: () => null,
       deleteTargetPreset: () => {},
     });
-    const rows = [...section.element.querySelectorAll('.targets__row-select')];
+    const rows = [...section.element.querySelectorAll('.choice__row-select')];
     expect(rows.map((row) => row.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
   });
 
@@ -56,7 +56,7 @@ describe('fields say what to type', () => {
       addTargetPreset: () => null,
       deleteTargetPreset: () => {},
     });
-    const input = section.element.querySelector('.targets__name-input');
+    const input = section.element.querySelector('.name-prompt__input');
     expect(input?.getAttribute('aria-label')).toBe(t('targets.name.label'));
     expect(t('targets.name.label')).toBe('Namn på det nya målet');
   });

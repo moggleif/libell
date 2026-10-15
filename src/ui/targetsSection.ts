@@ -10,8 +10,10 @@
 import type { CaptureResult } from '../domain/calibration';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
+import { createChoiceRow } from './choiceList';
 import { createElement } from './dom';
 import { createHitchSection, type HitchOptions } from './hitchSection';
+import { createNamePrompt, type NamePrompt } from './namePrompt';
 
 export interface TargetsOptions {
   getTargetPresets(): TargetPreset[];
@@ -23,6 +25,8 @@ export interface TargetsOptions {
    * anyway" — `anyway` is set when the user chose it. */
   addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
+  /** Rename a preset (#613); its row cannot be renamed when omitted. */
+  renameTargetPreset?(id: string, name: string): void;
   /** A caravan's hitch height (#598), under the targets; none when omitted. */
   hitch?: HitchOptions;
 }
@@ -33,99 +37,87 @@ export interface TargetsSection {
 }
 
 export function createTargetsSection(options: TargetsOptions): TargetsSection {
-  const list = createElement('div', 'targets__list');
+  const list = createElement('div', 'choice__list');
   const hitch = options.hitch ? createHitchSection(options.hitch) : null;
   const refresh = (): void => {
     refreshList(options, list, refresh);
     hitch?.refresh();
   };
-  const adding = createAddControls();
-  const add = (anyway: boolean): void => addPreset(options, adding, anyway, refresh);
-  adding.addButton.addEventListener('click', () => add(false));
-  adding.anywayButton.addEventListener('click', () => add(true));
+  const adding = createAddControls(options, refresh);
 
   refresh();
   const body = document.createElement('div');
-  body.append(list, adding.addRow, adding.addStatus, adding.anywayButton);
+  body.append(list, adding.addButton, adding.prompt.element, adding.addStatus, adding.anywayButton);
   if (hitch) body.append(hitch.element);
   return { element: body, refresh };
 }
 
-/** "Normal" first, then the saved presets; every choice redraws the list. */
+/** "Normal" first, then the saved presets; every choice redraws the list.
+ * Tapping the chosen preset again renames it (#613). */
 function refreshList(options: TargetsOptions, list: HTMLElement, refresh: () => void): void {
   const activeId = options.getActiveTargetId();
-  const select = (id: string | null) => () => {
-    options.selectTarget(id);
+  const after = (action: () => void) => () => {
+    action();
     refresh();
   };
+  const rename = options.renameTargetPreset;
   list.replaceChildren(
-    makeRow(t('targets.normal'), activeId === null, select(null)),
+    createChoiceRow({
+      label: t('targets.normal'),
+      active: activeId === null,
+      onSelect: after(() => options.selectTarget(null)),
+    }),
     ...options.getTargetPresets().map((preset) =>
-      makeRow(preset.name, activeId === preset.id, select(preset.id), () => {
-        options.deleteTargetPreset(preset.id);
-        refresh();
+      createChoiceRow({
+        label: preset.name,
+        active: activeId === preset.id,
+        onSelect: after(() => options.selectTarget(preset.id)),
+        onRename:
+          rename &&
+          ((name) => {
+            rename(preset.id, name);
+            refresh();
+          }),
+        onDelete: after(() => options.deleteTargetPreset(preset.id)),
+        deleteLabel: t('targets.delete', { name: preset.name }),
       }),
     ),
   );
 }
 
-function makeRow(
-  labelText: string,
-  active: boolean,
-  onSelect: () => void,
-  onDelete?: () => void,
-): HTMLElement {
-  const row = createElement('div', 'targets__row');
-  row.append(createSelectButton(labelText, active, onSelect));
-  if (onDelete) row.append(createDeleteButton(labelText, onDelete));
-  return row;
+interface AddControls {
+  addButton: HTMLButtonElement;
+  prompt: NamePrompt;
+  addStatus: HTMLElement;
+  anywayButton: HTMLButtonElement;
 }
 
-function createSelectButton(labelText: string, active: boolean, onSelect: () => void) {
-  const select = document.createElement('button');
-  select.type = 'button';
-  select.className = active
-    ? 'targets__row-select targets__row-select--active'
-    : 'targets__row-select';
-  // The ●/○ is hidden from screen readers; this says it instead (#535).
-  select.setAttribute('aria-pressed', String(active));
-  const radio = createElement('span', 'targets__row-radio');
-  radio.setAttribute('aria-hidden', 'true');
-  radio.textContent = active ? '●' : '○';
-  const label = createElement('span', 'targets__row-label');
-  label.textContent = labelText;
-  select.append(radio, label);
-  select.addEventListener('click', onSelect);
-  return select;
-}
-
-function createDeleteButton(labelText: string, onDelete: () => void): HTMLButtonElement {
-  const del = document.createElement('button');
-  del.type = 'button';
-  del.className = 'targets__row-delete';
-  del.setAttribute('aria-label', t('targets.delete', { name: labelText }));
-  del.textContent = '✕';
-  del.addEventListener('click', onDelete);
-  return del;
-}
-
-type AddControls = ReturnType<typeof createAddControls>;
-
-function createAddControls() {
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.className = 'targets__name-input';
-  nameInput.maxLength = 40;
-  nameInput.placeholder = t('targets.name.placeholder');
-  nameInput.setAttribute('aria-label', t('targets.name.label'));
+/** Only the add button shows until it is tapped; then the name is asked
+ * for (#613). */
+function createAddControls(options: TargetsOptions, refresh: () => void): AddControls {
   const addButton = secondaryButton(t('targets.add'));
-  const addRow = createElement('div', 'targets__add');
-  addRow.append(nameInput, addButton);
   const addStatus = createElement('p', 'menu__text menu__text--status');
   // Warn, never block: shown only while a too-steep warning is up.
   const anywayButton = secondaryButton(t('targets.anyway'));
   anywayButton.hidden = true;
-  return { nameInput, addButton, addRow, addStatus, anywayButton };
+  const prompt = createNamePrompt({
+    label: t('targets.name.label'),
+    placeholder: t('targets.name.placeholder'),
+    onSave: () => addPreset(options, controls, false, refresh),
+    onClose: () => {
+      addButton.hidden = false;
+      anywayButton.hidden = true;
+      addStatus.textContent = '';
+      addStatus.classList.remove('menu__text--warning');
+    },
+  });
+  const controls: AddControls = { addButton, addStatus, anywayButton, prompt };
+  addButton.addEventListener('click', () => {
+    addButton.hidden = true;
+    prompt.open(nextDefaultName(options));
+  });
+  anywayButton.addEventListener('click', () => addPreset(options, controls, true, refresh));
+  return controls;
 }
 
 function secondaryButton(text: string): HTMLButtonElement {
@@ -138,11 +130,11 @@ function secondaryButton(text: string): HTMLButtonElement {
 
 function addPreset(
   options: TargetsOptions,
-  { nameInput, addStatus, anywayButton }: AddControls,
+  { prompt, addStatus, anywayButton }: AddControls,
   anyway: boolean,
   refresh: () => void,
 ): void {
-  const name = nameInput.value.trim() || nextDefaultName(options);
+  const name = prompt.value() || nextDefaultName(options);
   const result = anyway ? options.addTargetPreset(name, true) : options.addTargetPreset(name);
   const warned = typeof result === 'object' && result !== null;
   anywayButton.hidden = !warned;
@@ -151,8 +143,7 @@ function addPreset(
     addStatus.textContent = warned ? result.warning : result;
     return;
   }
-  nameInput.value = '';
-  addStatus.textContent = '';
+  prompt.close();
   refresh();
 }
 

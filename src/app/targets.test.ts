@@ -131,4 +131,22 @@ describe('createTargets', () => {
       expect(onActiveChanged).toHaveBeenCalledTimes(2);
     });
   });
+
+  // #613: tapping the chosen target again edits its name.
+  describe('rename', () => {
+    it('renames the target, keeps its tilt, and redraws the badge', () => {
+      const { targets, storage, onActiveChanged } = setup({});
+      targets.add('Ferry');
+      targets.select('id-1');
+      const before = targets.presets()[0]!.offset;
+      targets.rename('id-1', 'Ferry deck');
+      expect(targets.activeName()).toBe('Ferry deck');
+      expect(loadTargetPresets(storage)[0]).toEqual({
+        id: 'id-1',
+        name: 'Ferry deck',
+        offset: before,
+      });
+      expect(onActiveChanged).toHaveBeenCalledTimes(2);
+    });
+  });
 });

@@ -17,17 +17,33 @@ export async function vehiclesFlow(browser) {
   });
   const { page } = app;
   let settings = await openSettingsTab(page, 'vehicle');
-  await settings.locator('.vehicles__name-input').fill('Caravan');
-  await reloadAfter(page, () => button(settings, 'New vehicle').click());
+  await button(settings, 'New vehicle').click();
+  await settings.locator('.name-prompt__input:visible').fill('Caravan');
+  await reloadAfter(page, () => button(settings.locator('.name-prompt'), 'Save').click());
   const list = JSON.parse(await storage(page, 'libell.vehicles'));
   assert(list.vehicles.length === 2, 'the new vehicle should be listed');
   assert((await storage(page, 'libell.vehicleCalibration')) === null, 'a new vehicle has no zero');
   assert((await storedSettings(page)).wheelbaseMm !== 3600, 'a new vehicle starts from defaults');
 
   settings = await openSettingsTab(page, 'vehicle');
-  const picker = settings.locator('.vehicles__select');
-  assert((await picker.locator('option:checked').textContent()) === 'Caravan', 'Caravan is active');
-  await reloadAfter(page, () => picker.selectOption({ label: 'My vehicle' }));
+  const rows = settings.locator('.vehicles .choice__row-select');
+  assert(
+    (
+      await settings.locator('.vehicles .choice__row-select[aria-pressed=true]').textContent()
+    ).endsWith('Caravan'),
+    'Caravan is active',
+  );
+  // Tapping the chosen vehicle again renames it in place (#613).
+  await rows.filter({ hasText: 'Caravan' }).click();
+  await settings.locator('.choice__row-input').fill('Camper');
+  await settings.locator('.choice__row-input').press('Enter');
+  await rows.filter({ hasText: 'Camper' }).waitFor();
+  const renamed = JSON.parse(await storage(page, 'libell.vehicles'));
+  assert(
+    renamed.vehicles.some((v) => v.name === 'Camper'),
+    'the rename should be stored',
+  );
+  await reloadAfter(page, () => rows.filter({ hasText: 'My vehicle' }).click());
   const { wheelbaseMm } = await storedSettings(page);
   assert(wheelbaseMm === 3600, 'switching back should bring the first vehicle back');
   assert((await storage(page, 'libell.vehicleCalibration')) === ZERO, 'and its zero');
