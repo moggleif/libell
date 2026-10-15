@@ -59,7 +59,7 @@ export interface Core {
  */
 export interface Screen {
   lamps: Refreshable;
-  targetBadge: Refreshable;
+  choiceBadges: Refreshable;
   sensorStatus: Refreshable;
   levelScreen: LevelScreenHost;
   settingsSurface: SettingsSurface;
@@ -84,7 +84,7 @@ export function createCore(screen: Screen): Core {
     readTilt: layers.readTiltNow,
     zeroCalibration: layers.zeroCalibration,
     isCaravan: () => settings.get().vehicleType === 'caravan',
-    onChanged: () => screen.targetBadge.refresh(),
+    onChanged: () => screen.choiceBadges.refresh(),
   });
   const boxWiring: BoxWiring = {
     settings,
@@ -112,12 +112,20 @@ export function createCore(screen: Screen): Core {
       zeroTrims: layers.zeroTrims,
       targets: layers.targets,
       hitch,
-      // A switch starts the app again on that vehicle (ADR 0017).
-      vehicles: createVehicles({ reload: () => location.reload() }),
+      vehicles: createAppVehicles(screen),
       boxes,
       boxWiring,
     },
   };
+}
+
+/** A switch starts the app again on that vehicle (ADR 0017); a rename
+ * redraws the main-screen badge (#616). */
+function createAppVehicles(screen: Screen) {
+  return createVehicles({
+    reload: () => location.reload(),
+    onRenamed: () => screen.choiceBadges.refresh(),
+  });
 }
 
 /**
@@ -213,7 +221,7 @@ function createCalibrationLayers(
   const targets = createTargets({
     readTilt: readTiltNow,
     zeroCalibration,
-    onActiveChanged: () => screen.targetBadge.refresh(),
+    onActiveChanged: () => screen.choiceBadges.refresh(),
   });
   return {
     readTiltNow,

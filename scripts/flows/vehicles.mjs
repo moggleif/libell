@@ -1,4 +1,12 @@
-import { assert, button, openApp, openSettingsTab, storage, storedSettings } from './harness.mjs';
+import {
+  assert,
+  button,
+  closeAllPages,
+  openApp,
+  openSettingsTab,
+  storage,
+  storedSettings,
+} from './harness.mjs';
 
 /** Adding or switching a vehicle starts the app again on it. */
 async function reloadAfter(page, action) {
@@ -45,6 +53,10 @@ export async function vehiclesFlow(browser) {
     renamed.vehicles.some((v) => v.name === 'Camper'),
     'the rename should be stored',
   );
+  // With two vehicles the main screen names the active one (#616).
+  await closeAllPages(page);
+  await page.locator('.vehicle-badge:visible').filter({ hasText: 'Vehicle: Camper' }).waitFor();
+  settings = await openSettingsTab(page, 'vehicle');
   await reloadAfter(page, () => rows.filter({ hasText: 'My vehicle' }).click());
   const { wheelbaseMm } = await storedSettings(page);
   assert(wheelbaseMm === 3600, 'switching back should bring the first vehicle back');

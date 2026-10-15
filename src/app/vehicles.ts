@@ -19,6 +19,8 @@ import { measuredVehicleFlags } from '../data/settingsStore';
 export interface VehiclesDeps {
   /** Starts the app again on the vehicle just made active. */
   reload(): void;
+  /** A rename, which reloads nothing: the main-screen badge redraws (#616). */
+  onRenamed?(): void;
   storage?: KeyValueStorage | null;
   newId?: () => string;
 }
@@ -74,6 +76,7 @@ export function createVehicles(deps: VehiclesDeps): Vehicles {
         vehicle.id === id ? { ...vehicle, name } : vehicle,
       );
       saveVehicleList({ ...list, vehicles }, storage);
+      deps.onRenamed?.();
     },
     remove: (id) => removeVehicle(deps, load(), id),
   };

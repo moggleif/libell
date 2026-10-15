@@ -9,7 +9,7 @@ import { createIndicators } from '../ui/indicators';
 import type { MenuSection } from '../ui/menu';
 import { createSensorStatusIndicator } from '../ui/sensorStatusIndicator';
 import { createHitchBadge } from '../ui/hitchBadge';
-import { createTargetBadge } from '../ui/targetBadge';
+import { createTargetBadge, createVehicleBadge } from '../ui/targetBadge';
 import { indicatorState } from './indicatorState';
 import { isActiveSensorStale } from './sensorStaleness';
 
@@ -77,28 +77,38 @@ export function mountLamps(slot: Element | null, deps: LampDeps): Refreshable {
 }
 
 /**
- * The only main-screen trace of a target preset (ADR 0013): hidden
- * while Normal is active; a tap opens the targets. Going back to a
- * caravan's hitch height (#598) shows its own badge instead, since the
- * target does not apply then; a tap on that one ends the mode.
+ * What the leveling works toward, under the top bar (#616): the active
+ * vehicle while there are several, and the active target while there is
+ * more than Normal (ADR 0013); a tap opens each one's Settings. Going back
+ * to a caravan's hitch height (#598) shows its own badge instead of the
+ * target, since the target does not apply then; a tap on that one ends
+ * the mode. The slot hides while it has nothing to show.
  */
-export function mountTargetBadge(
-  slot: Element | null,
+export function mountChoiceBadges(
+  slot: HTMLElement | null,
   deps: {
-    activeName: () => string | null;
-    open: () => void;
+    /** Null while there is only one vehicle. */
+    vehicleName?: () => string | null;
+    openVehicle?: () => void;
+    /** Null while Normal is the only target. */
+    targetName: () => string | null;
+    openTargets: () => void;
     hitchActive?: () => boolean;
     stopHitch?: () => void;
   },
 ): Refreshable {
-  const badge = createTargetBadge(deps.open);
+  const vehicle = createVehicleBadge(() => deps.openVehicle?.());
+  const target = createTargetBadge(deps.openTargets);
   const hitch = createHitchBadge(() => deps.stopHitch?.());
+  const badges = [vehicle.element, target.element, hitch.element];
   const refresh = () => {
     const hitching = deps.hitchActive?.() ?? false;
-    badge.update(hitching ? null : deps.activeName());
+    vehicle.update(deps.vehicleName?.() ?? null);
+    target.update(hitching ? null : deps.targetName());
     hitch.update(hitching);
+    if (slot) slot.hidden = badges.every((badge) => badge.hidden);
   };
-  slot?.append(badge.element, hitch.element);
+  slot?.append(...badges);
   refresh();
   return { refresh };
 }

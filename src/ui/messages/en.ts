@@ -508,6 +508,8 @@ export const en = {
   'namePrompt.cancel': 'Cancel',
   // Tapping the chosen target or vehicle again edits its name (#613).
   'choice.rename': 'Rename {name}',
+  // The active vehicle on the main screen while there are several (#616).
+  'vehicles.badge': 'Vehicle: {name}',
   'vehicles.delete': 'Remove {name}',
   'vehicles.remove.confirm': 'Remove {name} with its vehicle zero, targets and sensor box?',
   'vehicles.remove.yes': 'Yes, remove',

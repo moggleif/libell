@@ -477,6 +477,8 @@ export const sv: Messages = {
   'namePrompt.cancel': 'Avbryt',
   // Tapping the chosen target or vehicle again edits its name (#613).
   'choice.rename': 'Byt namn på {name}',
+  // The active vehicle on the main screen while there are several (#616).
+  'vehicles.badge': 'Fordon: {name}',
   'vehicles.delete': 'Ta bort {name}',
   'vehicles.remove.confirm': 'Ta bort {name} med dess nolläge, mål och sensorbox?',
   'vehicles.remove.yes': 'Ja, ta bort',

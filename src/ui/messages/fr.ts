@@ -485,6 +485,8 @@ export const fr: Messages = {
   'namePrompt.cancel': 'Annuler',
   // Tapping the chosen target or vehicle again edits its name (#613).
   'choice.rename': 'Renommer {name}',
+  // The active vehicle on the main screen while there are several (#616).
+  'vehicles.badge': 'Véhicule : {name}',
   'vehicles.delete': 'Supprimer {name}',
   'vehicles.remove.confirm': 'Supprimer {name} avec son zéro, ses cibles et son boîtier capteur ?',
   'vehicles.remove.yes': 'Oui, supprimer',

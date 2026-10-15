@@ -8,7 +8,7 @@ import {
   createBoxPending,
   mountLamps,
   mountSensorStatus,
-  mountTargetBadge,
+  mountChoiceBadges,
   type LampDeps,
 } from './indicatorWiring';
 
@@ -92,29 +92,51 @@ describe('mountLamps', () => {
   });
 });
 
-describe('mountTargetBadge', () => {
-  it('shows the active target, hides Normal, and opens on tap', () => {
+describe('mountChoiceBadges (#616)', () => {
+  it('shows the active target, hides it while Normal is the only one, and opens on tap', () => {
     const slot = document.createElement('div');
     let name: string | null = 'Ferry';
-    const open = vi.fn();
-    const badge = mountTargetBadge(slot, { activeName: () => name, open });
+    const openTargets = vi.fn();
+    const badge = mountChoiceBadges(slot, { targetName: () => name, openTargets });
     const element = slot.querySelector<HTMLElement>('.target-badge')!;
     expect(element.hidden).toBe(false);
     expect(element.textContent).toContain('Ferry');
     name = null;
     badge.refresh();
     expect(element.hidden).toBe(true);
+    expect(slot.hidden).toBe(true);
     element.click();
-    expect(open).toHaveBeenCalledTimes(1);
+    expect(openTargets).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the active vehicle while there are several, and opens Vehicle on tap', () => {
+    const slot = document.createElement('div');
+    let vehicle: string | null = 'Caravan';
+    const openVehicle = vi.fn();
+    const badges = mountChoiceBadges(slot, {
+      vehicleName: () => vehicle,
+      openVehicle,
+      targetName: () => null,
+      openTargets: vi.fn(),
+    });
+    const element = slot.querySelector<HTMLElement>('.vehicle-badge')!;
+    expect(element.textContent).toBe(t('vehicles.badge', { name: 'Caravan' }));
+    expect(slot.hidden).toBe(false);
+    element.click();
+    expect(openVehicle).toHaveBeenCalledOnce();
+    vehicle = null;
+    badges.refresh();
+    expect(element.hidden).toBe(true);
+    expect(slot.hidden).toBe(true);
   });
 
   it('shows the hitch height badge instead while going back to it, and ends it on tap', () => {
     const slot = document.createElement('div');
     let hitching = true;
     const stopHitch = vi.fn(() => void (hitching = false));
-    const badges = mountTargetBadge(slot, {
-      activeName: () => 'Ferry',
-      open: vi.fn(),
+    const badges = mountChoiceBadges(slot, {
+      targetName: () => 'Ferry',
+      openTargets: vi.fn(),
       hitchActive: () => hitching,
       stopHitch,
     });
