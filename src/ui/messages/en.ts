@@ -498,20 +498,17 @@ export const en = {
 
   // Several vehicles (#599).
   'vehicles.title': 'Vehicles',
-  'vehicles.pick': 'Choose vehicle',
   'vehicles.defaultName': 'My vehicle',
   'vehicles.numbered': 'Vehicle {n}',
   'vehicles.name.placeholder': 'Name (e.g. "Caravan")',
   'vehicles.name.label': 'Vehicle name',
   'vehicles.add': 'New vehicle',
-  'vehicles.rename': 'Rename',
-  'vehicles.remove': 'Remove',
-  'vehicles.rename.empty': 'Type a name, then tap Save.',
   // The name field shown only when a name is needed (#613).
   'namePrompt.save': 'Save',
   'namePrompt.cancel': 'Cancel',
-  'vehicles.renamed': 'Renamed.',
-  'vehicles.remove.last': 'At least one vehicle is needed. Add another with New vehicle first.',
+  // Tapping the chosen target or vehicle again edits its name (#613).
+  'choice.rename': 'Rename {name}',
+  'vehicles.delete': 'Remove {name}',
   'vehicles.remove.confirm': 'Remove {name} with its zeros, targets and sensor box?',
   'vehicles.remove.yes': 'Yes, remove',
   'vehicles.hint':

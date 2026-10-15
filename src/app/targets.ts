@@ -42,6 +42,7 @@ export interface Targets {
    * message, or a warning above 15° unless `anyway`. */
   add(name: string, anyway?: boolean): CaptureResult;
   remove(id: string): void;
+  rename(id: string, name: string): void;
 }
 
 function randomId(): string {
@@ -81,6 +82,10 @@ export function createTargets(deps: TargetsDeps): Targets {
       if (!anyway && offsetTooSteep(offset)) return { warning: t('targets.warn.tooSteep') };
       savePresets([...presets, { id: newId(), name, offset }]);
       return null;
+    },
+    rename(id, name) {
+      savePresets(presets.map((preset) => (preset.id === id ? { ...preset, name } : preset)));
+      deps.onActiveChanged();
     },
     remove(id) {
       savePresets(presets.filter((preset) => preset.id !== id));

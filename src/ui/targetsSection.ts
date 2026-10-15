@@ -10,6 +10,7 @@
 import type { CaptureResult } from '../domain/calibration';
 import type { TargetPreset } from '../domain/targetPresets';
 import { t } from './i18n';
+import { createChoiceRow } from './choiceList';
 import { createElement } from './dom';
 import { createHitchSection, type HitchOptions } from './hitchSection';
 import { createNamePrompt, type NamePrompt } from './namePrompt';
@@ -24,6 +25,8 @@ export interface TargetsOptions {
    * anyway" — `anyway` is set when the user chose it. */
   addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
+  /** Rename a preset (#613); its row cannot be renamed when omitted. */
+  renameTargetPreset?(id: string, name: string): void;
   /** A caravan's hitch height (#598), under the targets; none when omitted. */
   hitch?: HitchOptions;
 }
@@ -34,7 +37,7 @@ export interface TargetsSection {
 }
 
 export function createTargetsSection(options: TargetsOptions): TargetsSection {
-  const list = createElement('div', 'targets__list');
+  const list = createElement('div', 'choice__list');
   const hitch = options.hitch ? createHitchSection(options.hitch) : null;
   const refresh = (): void => {
     refreshList(options, list, refresh);
@@ -49,62 +52,37 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
   return { element: body, refresh };
 }
 
-/** "Normal" first, then the saved presets; every choice redraws the list. */
+/** "Normal" first, then the saved presets; every choice redraws the list.
+ * Tapping the chosen preset again renames it (#613). */
 function refreshList(options: TargetsOptions, list: HTMLElement, refresh: () => void): void {
   const activeId = options.getActiveTargetId();
-  const select = (id: string | null) => () => {
-    options.selectTarget(id);
+  const after = (action: () => void) => () => {
+    action();
     refresh();
   };
+  const rename = options.renameTargetPreset;
   list.replaceChildren(
-    makeRow(t('targets.normal'), activeId === null, select(null)),
+    createChoiceRow({
+      label: t('targets.normal'),
+      active: activeId === null,
+      onSelect: after(() => options.selectTarget(null)),
+    }),
     ...options.getTargetPresets().map((preset) =>
-      makeRow(preset.name, activeId === preset.id, select(preset.id), () => {
-        options.deleteTargetPreset(preset.id);
-        refresh();
+      createChoiceRow({
+        label: preset.name,
+        active: activeId === preset.id,
+        onSelect: after(() => options.selectTarget(preset.id)),
+        onRename:
+          rename &&
+          ((name) => {
+            rename(preset.id, name);
+            refresh();
+          }),
+        onDelete: after(() => options.deleteTargetPreset(preset.id)),
+        deleteLabel: t('targets.delete', { name: preset.name }),
       }),
     ),
   );
-}
-
-function makeRow(
-  labelText: string,
-  active: boolean,
-  onSelect: () => void,
-  onDelete?: () => void,
-): HTMLElement {
-  const row = createElement('div', 'targets__row');
-  row.append(createSelectButton(labelText, active, onSelect));
-  if (onDelete) row.append(createDeleteButton(labelText, onDelete));
-  return row;
-}
-
-function createSelectButton(labelText: string, active: boolean, onSelect: () => void) {
-  const select = document.createElement('button');
-  select.type = 'button';
-  select.className = active
-    ? 'targets__row-select targets__row-select--active'
-    : 'targets__row-select';
-  // The ●/○ is hidden from screen readers; this says it instead (#535).
-  select.setAttribute('aria-pressed', String(active));
-  const radio = createElement('span', 'targets__row-radio');
-  radio.setAttribute('aria-hidden', 'true');
-  radio.textContent = active ? '●' : '○';
-  const label = createElement('span', 'targets__row-label');
-  label.textContent = labelText;
-  select.append(radio, label);
-  select.addEventListener('click', onSelect);
-  return select;
-}
-
-function createDeleteButton(labelText: string, onDelete: () => void): HTMLButtonElement {
-  const del = document.createElement('button');
-  del.type = 'button';
-  del.className = 'targets__row-delete';
-  del.setAttribute('aria-label', t('targets.delete', { name: labelText }));
-  del.textContent = '✕';
-  del.addEventListener('click', onDelete);
-  return del;
 }
 
 interface AddControls {

@@ -73,6 +73,7 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
     select: vi.fn(),
     add: vi.fn(() => null),
     remove: vi.fn(),
+    rename: vi.fn(),
   } satisfies Targets;
   const boxes = {
     connect: vi.fn(() => Promise.resolve('granted' as const)),
@@ -188,6 +189,8 @@ describe('targetOptions', () => {
     expect(targets.add).toHaveBeenCalledWith('Ferry');
     options.deleteTargetPreset('a');
     expect(targets.remove).toHaveBeenCalledWith('a');
+    options.renameTargetPreset('a', 'Ferry deck');
+    expect(targets.rename).toHaveBeenCalledWith('a', 'Ferry deck');
   });
 });
 

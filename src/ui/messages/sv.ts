@@ -467,20 +467,17 @@ export const sv: Messages = {
   'help.screen.caravan': 'Husvagn: stödhjulet visar Veva upp eller Veva ner, och hur mycket.',
 
   'vehicles.title': 'Fordon',
-  'vehicles.pick': 'Välj fordon',
   'vehicles.defaultName': 'Mitt fordon',
   'vehicles.numbered': 'Fordon {n}',
   'vehicles.name.placeholder': 'Namn (t.ex. "Husvagnen")',
   'vehicles.name.label': 'Fordonets namn',
   'vehicles.add': 'Nytt fordon',
-  'vehicles.rename': 'Byt namn',
-  'vehicles.remove': 'Ta bort',
-  'vehicles.rename.empty': 'Skriv ett namn och tryck på Spara.',
   // The name field shown only when a name is needed (#613).
   'namePrompt.save': 'Spara',
   'namePrompt.cancel': 'Avbryt',
-  'vehicles.renamed': 'Namnet är bytt.',
-  'vehicles.remove.last': 'Minst ett fordon behövs. Lägg till ett annat med Nytt fordon först.',
+  // Tapping the chosen target or vehicle again edits its name (#613).
+  'choice.rename': 'Byt namn på {name}',
+  'vehicles.delete': 'Ta bort {name}',
   'vehicles.remove.confirm': 'Ta bort {name} med dess nollor, mål och sensorbox?',
   'vehicles.remove.yes': 'Ja, ta bort',
   'vehicles.hint':

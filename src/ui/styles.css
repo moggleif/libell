@@ -1405,20 +1405,20 @@ body {
 /* ---- Target presets (ADR 0013) ----
  * Neutral, not amber: a preset is a choice, never something left undone. */
 
-.targets__list {
+.choice__list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin: 8px 0;
 }
 
-.targets__row {
+.choice__row {
   display: flex;
   align-items: stretch;
   gap: 6px;
 }
 
-.targets__row-select {
+.choice__row-select {
   flex: 1;
   display: flex;
   align-items: center;
@@ -1433,36 +1433,54 @@ body {
   cursor: pointer;
 }
 
-:root[data-appearance='modern'] .targets__row-select {
+:root[data-appearance='modern'] .choice__row-select {
   border: 1px solid var(--outline);
   border-radius: 12px;
 }
 
-:root[data-appearance='glossy'] .targets__row-select {
+:root[data-appearance='glossy'] .choice__row-select {
   border: 1px solid var(--outline);
   border-radius: 12px;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 15%);
 }
 
-.targets__row-select--active {
+.choice__row-select--active {
   border-color: var(--on-surface);
 }
 
-.targets__row-radio {
+.choice__row-radio {
   flex: none;
   color: var(--on-surface-muted);
 }
 
-.targets__row-select--active .targets__row-radio {
+.choice__row-select--active .choice__row-radio {
   color: var(--on-surface);
 }
 
-.targets__row-label {
+.choice__row-label {
   flex: 1;
   overflow-wrap: anywhere;
 }
 
-.targets__row-delete {
+/* A chosen row's name being edited in place (#613). */
+.choice__row-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 10px 14px;
+  color: var(--on-surface);
+  background: var(--surface);
+  border: 2px inset var(--field-border);
+  border-radius: 0;
+}
+
+:root[data-appearance='modern'] .choice__row-input,
+:root[data-appearance='glossy'] .choice__row-input {
+  border: 1px solid var(--field-border);
+  border-radius: 12px;
+}
+
+.choice__row-delete {
   flex: none;
   font: inherit;
   color: var(--on-surface-muted);
@@ -1520,19 +1538,14 @@ body {
   gap: 8px;
 }
 
-.vehicles__actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
 .vehicles .menu__action {
   margin-top: 0;
   padding-inline: 4px;
 }
 
-.vehicles .name-prompt {
-  margin-top: 0;
+.vehicles .name-prompt,
+.vehicles .choice__list {
+  margin: 0;
 }
 
 .vehicles .menu__action[hidden] {

@@ -466,21 +466,17 @@ export const de: Messages = {
     'Wohnwagen: Das Stützrad zeigt Hochkurbeln oder Herunterkurbeln und um wie viel.',
 
   'vehicles.title': 'Fahrzeuge',
-  'vehicles.pick': 'Fahrzeug wählen',
   'vehicles.defaultName': 'Mein Fahrzeug',
   'vehicles.numbered': 'Fahrzeug {n}',
   'vehicles.name.placeholder': 'Name (z. B. „Wohnwagen“)',
   'vehicles.name.label': 'Name des Fahrzeugs',
   'vehicles.add': 'Neues Fahrzeug',
-  'vehicles.rename': 'Name ändern',
-  'vehicles.remove': 'Entfernen',
-  'vehicles.rename.empty': 'Gib einen Namen ein und tippe auf Speichern.',
   // The name field shown only when a name is needed (#613).
   'namePrompt.save': 'Speichern',
   'namePrompt.cancel': 'Abbrechen',
-  'vehicles.renamed': 'Umbenannt.',
-  'vehicles.remove.last':
-    'Mindestens ein Fahrzeug wird gebraucht. Füge zuerst mit Neues Fahrzeug ein weiteres hinzu.',
+  // Tapping the chosen target or vehicle again edits its name (#613).
+  'choice.rename': '{name} umbenennen',
+  'vehicles.delete': '{name} entfernen',
   'vehicles.remove.confirm': '{name} mit seinen Nullpunkten, Zielen und der Sensorbox entfernen?',
   'vehicles.remove.yes': 'Ja, entfernen',
   'vehicles.hint':

@@ -63,6 +63,7 @@ export interface MenuOptions {
   selectTarget(id: string | null): void;
   addTargetPreset(name: string, anyway?: boolean): CaptureResult;
   deleteTargetPreset(id: string): void;
+  renameTargetPreset?(id: string, name: string): void;
   /**
    * An external sensor source (ADR 0014) — an opt-in alternative to the
    * phone's own sensor. Unused by this menu; the options bag is shared

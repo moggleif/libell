@@ -463,20 +463,17 @@ export const es: Messages = {
     'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
 
   'vehicles.title': 'Vehículos',
-  'vehicles.pick': 'Elegir vehículo',
   'vehicles.defaultName': 'Mi vehículo',
   'vehicles.numbered': 'Vehículo {n}',
   'vehicles.name.placeholder': 'Nombre (p. ej. «Caravana»)',
   'vehicles.name.label': 'Nombre del vehículo',
   'vehicles.add': 'Nuevo vehículo',
-  'vehicles.rename': 'Renombrar',
-  'vehicles.remove': 'Eliminar',
-  'vehicles.rename.empty': 'Escribe un nombre y toca Guardar.',
   // The name field shown only when a name is needed (#613).
   'namePrompt.save': 'Guardar',
   'namePrompt.cancel': 'Cancelar',
-  'vehicles.renamed': 'Nombre cambiado.',
-  'vehicles.remove.last': 'Hace falta al menos un vehículo. Añade antes otro con Nuevo vehículo.',
+  // Tapping the chosen target or vehicle again edits its name (#613).
+  'choice.rename': 'Cambiar el nombre de {name}',
+  'vehicles.delete': 'Eliminar {name}',
   'vehicles.remove.confirm': '¿Eliminar {name} con sus ceros, objetivos y caja sensora?',
   'vehicles.remove.yes': 'Sí, eliminar',
   'vehicles.hint':

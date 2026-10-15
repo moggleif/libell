@@ -947,6 +947,11 @@ URL and must keep working with no signal.
   not saved yet: a warning says it looks steeper than an intentional target, with a
   "Save anyway" button that saves it under the same name (#425); it survives a reload
   like any other preset.
+- **Given** the active saved preset
+- **When** I tap it again
+- **Then** its name becomes editable in place; leaving the field or pressing Enter saves
+  it, and an emptied or unchanged field, or Escape, keeps the previous name. "Normal"
+  cannot be renamed (#613).
 - **Given** a saved preset
 - **When** I tap it in that list
 - **Then** it becomes the active target: every reading on the main screen is now
@@ -2055,10 +2060,12 @@ its descriptor's capabilities (ADR 0016).
 - **When** the app starts (a language change reloads it)
 - **Then** the page's `lang` is that language's code, so a screen reader reads it in that
   language's voice.
-- **Given** a single-choice list: the level targets (R31) or the ramp catalogue (R47)
+- **Given** a single-choice list: the level targets (R31), the vehicles (R56) or the ramp
+  catalogue (R47)
 - **Then** each row says whether it is the selected one (pressed or not), since the ●/○
   beside it is hidden from screen readers.
-- **Given** the add-step field and the name field for a new target or vehicle (#613)
+- **Given** the add-step field, the name field for a new target or vehicle, and a target's
+  or vehicle's name while it is edited in place (#613)
 - **Then** each is named for what to type, in the chosen language (the add-step field
   with the display unit), not only by its placeholder.
 - **Given** a warning lamp, the name-and-version title, or the bottom action bar
@@ -2159,11 +2166,10 @@ each one's setup instead of retyping it. The sensor box belongs to its vehicle: 
 per vehicle (Morgan, #599).
 
 - **Given** Settings › Vehicle
-- **Then** at the top a vehicle picker shows the active vehicle ("My vehicle" until it is
-  renamed), with "New vehicle", "Rename" and "Remove".
-- **Then** no name field is shown until a name is needed (#613): "New vehicle" and
-  "Rename" open one under the buttons, with "Save" and "Cancel" ("Cancel" or Escape
-  closes it and changes nothing).
+- **Then** at the top the vehicles are listed like the targets (R31, #613), the active one
+  marked ("My vehicle" until it is renamed), with "New vehicle" under them. No name
+  field is shown until "New vehicle" is tapped; it then opens with "Save" and "Cancel"
+  ("Cancel" or Escape closes it and adds nothing).
 - **Given** "New vehicle"
 - **Then** the field is filled with "Vehicle N", the next number not in use, selected so
   typing replaces it.
@@ -2174,7 +2180,7 @@ per vehicle (Morgan, #599).
   the "⚠ Measurements" lamp (R11) lights until I set them; a vehicle added from a shared
   setup (R41) counts them as saved.
 - **Given** two vehicles
-- **When** I choose the other one
+- **When** I tap the other one
 - **Then** the app starts again on it: the main screen uses its vehicle type, axle,
   measurements, ramps and drain side (R41's fields), its sensor source and box with the
   box's direction and password, its zeros (R24, R34/R49) and their fine adjustment
@@ -2183,16 +2189,16 @@ per vehicle (Morgan, #599).
 - **Given** the phone's own sensor calibration (R11) and the app-wide preferences
   (tolerance, unit, sound, look, language)
 - **Then** they are shared by every vehicle.
-- **Given** "Rename"
-- **Then** the field is filled with the active vehicle's name; "Save" gives the vehicle the
-  name in the field and closes it; saved empty, the field stays open and a line says to
-  type a name (guide, don't block).
-- **Given** "Remove"
-- **Then** a line asks to confirm, naming what goes with the vehicle; "Yes, remove"
-  removes it and its values, and the app starts again on another vehicle.
-- **Given** "Remove" on the only vehicle
-- **Then** nothing is removed: a line says at least one vehicle is needed and that "New
-  vehicle" adds another (guide, don't block).
+- **Given** the active vehicle
+- **When** I tap it again
+- **Then** its name becomes editable in place; leaving the field or pressing Enter saves
+  it, and an emptied or unchanged field, or Escape, keeps the previous name (#613).
+- **Given** two or more vehicles
+- **Then** each has a ✕; tapping one asks to confirm, naming what goes with that
+  vehicle, and "Yes, remove" removes it and its values. Removing the active one starts
+  the app again on another vehicle.
+- **Given** only one vehicle
+- **Then** it has no ✕: one vehicle is always needed (#613).
 - **Given** an install from before this change
 - **Then** its current settings, box and zeros are its one vehicle, "My vehicle", with
   nothing lost.

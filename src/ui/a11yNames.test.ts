@@ -30,7 +30,7 @@ describe('single-choice lists say which row is selected', () => {
       addTargetPreset: () => null,
       deleteTargetPreset: () => {},
     });
-    const rows = [...section.element.querySelectorAll('.targets__row-select')];
+    const rows = [...section.element.querySelectorAll('.choice__row-select')];
     expect(rows.map((row) => row.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
   });
 

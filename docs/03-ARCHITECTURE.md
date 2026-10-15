@@ -345,7 +345,8 @@ store lists as per-vehicle (`vehicleCalibrationKeys`, `vehicleFlagKeys`,
 `rememberedDeviceKeys`). `src/app/vehicles.ts` swaps them and reloads the app, so a switch
 starts every module, the box connection included, from the new vehicle as on open. The
 picker is `src/ui/vehiclePicker.ts`, placed above the Vehicle fields by
-`settingsLayout.ts`.
+`settingsLayout.ts`; its rows are `src/ui/choiceList.ts`, shared with the targets list
+(#613).
 
 Stale-data safety state (#132, R35): every `OrientationSensor` implementation stamps
 `getLastSampleAt()` (`performance.now()`) on each _real_ accepted sample — the phone
