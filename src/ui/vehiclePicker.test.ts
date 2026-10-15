@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LANGUAGES, setLanguage, t } from './i18n';
+import { takeReopenSettings } from './reopenSettings';
 import {
   createVehiclePicker,
   nextVehicleName,
@@ -139,6 +140,27 @@ describe('vehicle picker (#599, #613)', () => {
       t('vehicles.delete', { name: t('vehicles.defaultName') }),
       t('vehicles.delete', { name: 'Caravan' }),
     ]);
+  });
+
+  // #615: each of these starts the app again, which must not close Settings.
+  it('marks Settings to reopen on Vehicle before a switch, an add or removing the active one', () => {
+    sessionStorage.clear();
+    const options = fakeVehicles(['Bus', 'Caravan', 'Van']);
+    const { rows, button, input, deletes } = parts(createVehiclePicker(options));
+    rows()[1]!.select.click();
+    expect(takeReopenSettings()).toBe('vehicle');
+    button('vehicles.add').click();
+    input().value = 'Camper';
+    button('namePrompt.save').click();
+    expect(takeReopenSettings()).toBe('vehicle');
+    // Bus is no longer the active one: removing it reloads nothing.
+    deletes()[0]!.click();
+    button('vehicles.remove.yes').click();
+    expect(takeReopenSettings()).toBeNull();
+    deletes()[0]!.click();
+    button('vehicles.remove.yes').click();
+    expect(options.remove).toHaveBeenLastCalledWith('v1');
+    expect(takeReopenSettings()).toBe('vehicle');
   });
 
   it('names vehicles in every language', () => {

@@ -199,7 +199,7 @@ describe('settings form', () => {
       select.value = pick === 'appearance' ? 'modern' : 'sv';
       select.dispatchEvent(new Event('change'));
       expect(reload).toHaveBeenCalledOnce();
-      expect(takeReopenSettings()).toBe(true);
+      expect(takeReopenSettings()).toBe('general');
       reload.mockRestore();
       localStorage.removeItem('libell.language');
     });
@@ -212,7 +212,7 @@ describe('settings form', () => {
     const select = form.querySelector('select')!;
     select.value = 'sv';
     select.dispatchEvent(new Event('change'));
-    expect(takeReopenSettings()).toBe(false);
+    expect(takeReopenSettings()).toBeNull();
     reload.mockRestore();
     localStorage.removeItem('libell.language');
   });

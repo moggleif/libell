@@ -18,7 +18,7 @@ const fakes = vi.hoisted(() => {
     open: vi.fn(),
     refresh: vi.fn(),
   };
-  return { page, menu, reopen: { value: false } };
+  return { page, menu, reopen: { value: null as string | null } };
 });
 vi.mock('../ui/settingsPage', () => ({ createSettingsPage: () => fakes.page }));
 vi.mock('../ui/menu', () => ({ createMenu: () => fakes.menu }));
@@ -34,7 +34,7 @@ describe('mountSettingsSurface', () => {
   let button: HTMLButtonElement;
   beforeEach(() => {
     vi.clearAllMocks();
-    fakes.reopen.value = false;
+    fakes.reopen.value = null;
     fakes.page.element = document.createElement('section');
     fakes.menu.element = document.createElement('nav');
     document.body.replaceChildren();
@@ -59,12 +59,17 @@ describe('mountSettingsSurface', () => {
     expect(surface.route).toEqual({ menu: fakes.menu });
   });
 
-  it('reopens General after a reload from Settings', () => {
-    fakes.reopen.value = true;
+  it('reopens the marked section after a reload from Settings', () => {
+    fakes.reopen.value = 'general';
     mountSettingsSurface(options('modern'));
     mountSettingsSurface(options('classic'));
     expect(fakes.page.openTab).toHaveBeenCalledWith('general');
     expect(fakes.menu.open).toHaveBeenCalledWith('general');
+    fakes.reopen.value = 'vehicle';
+    mountSettingsSurface(options('modern'));
+    mountSettingsSurface(options('classic'));
+    expect(fakes.page.openTab).toHaveBeenLastCalledWith('vehicle');
+    expect(fakes.menu.open).toHaveBeenLastCalledWith('vehicle');
   });
 
   it('opens nothing on an ordinary start', () => {
