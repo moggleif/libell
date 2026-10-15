@@ -28,7 +28,15 @@ describe('i18n dictionaries', () => {
   it('lists the languages alphabetically by the name each is shown under', () => {
     const names = LANGUAGES.map((lang) => LANGUAGE_NAMES[lang]);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
-    expect(names).toEqual(['Deutsch', 'English', 'Español', 'Français', 'Nederlands', 'Svenska']);
+    expect(names).toEqual([
+      'Deutsch',
+      'English',
+      'Español',
+      'Français',
+      'Italiano',
+      'Nederlands',
+      'Svenska',
+    ]);
   });
 
   it('every language covers exactly the same keys', () => {
@@ -193,6 +201,7 @@ describe('i18n terminology (#366)', () => {
       es: 'Medidas',
       de: 'Maße',
       nl: 'Maten',
+      it: 'Misure',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -237,7 +246,7 @@ describe('i18n public interface (#377)', () => {
   });
 
   it('types Language as the shipped languages', () => {
-    expectTypeOf<Language>().toEqualTypeOf<'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl'>();
+    expectTypeOf<Language>().toEqualTypeOf<'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it'>();
   });
 
   it('types MessageKey as exactly the English keys', () => {
