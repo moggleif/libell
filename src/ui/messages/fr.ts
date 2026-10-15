@@ -314,8 +314,8 @@ export const fr: Messages = {
     'Le capteur d’inclinaison n’est pas encore actif — touchez d’abord Démarrer sur ' +
     'l’écran principal.',
   'calibration.warn.notFlat':
-    'Cela ne semble pas plat (plus de 15°), l’étalonnage sera donc faux. Posez le téléphone sur une surface plane, ou étalonnez quand même.',
-  'calibration.anyway': 'Étalonner quand même',
+    'Étalonnage enregistré, mais cela ne semble pas plat (plus de 15°), il est donc probablement faux. Ce n’était pas voulu ? Touchez Annuler, posez le téléphone sur une surface plane et étalonnez à nouveau.',
+  'calibration.undo': 'Annuler',
   'calibration.sensor.h': 'Étalonner le téléphone',
   'calibration.vehicle.h': 'Mettre le véhicule à zéro',
   'calibration.vehicle.intro':
@@ -326,8 +326,7 @@ export const fr: Messages = {
   'calibration.vehicle.status.none':
     'Aucun zéro du véhicule — l’emplacement du téléphone compte comme plat.',
   'calibration.vehicle.warn.notFlat':
-    'Cela ne semble pas de niveau (plus de 15°). Le véhicule est-il vraiment de niveau ? Mettez à zéro quand même si vous en êtes sûr.',
-  'calibration.vehicle.anyway': 'Mettre à zéro quand même',
+    'Zéro enregistré, mais cela ne semble pas de niveau (plus de 15°). Le véhicule n’était pas de niveau ? Touchez Annuler, mettez le véhicule de niveau et remettez à zéro.',
   'calibration.age.today': '(aujourd’hui)',
   'calibration.age.days': '(il y a {n} jours)',
   'calibration.check': 'Vérifier',
@@ -348,7 +347,7 @@ export const fr: Messages = {
   'calibration.flip.capture': 'Capturer',
   'calibration.flip.done': 'Terminé ! Votre surface penche de {surface}° — compensé.',
   'calibration.flip.warn.moved':
-    'Les deux captures diffèrent de plus de 15° — le téléphone a-t-il bougé ? Recommencez, ou étalonnez quand même.',
+    'Étalonnage enregistré, mais les deux captures diffèrent de plus de 15°. Le téléphone a-t-il bougé ? Touchez Annuler et recommencez.',
   'calibration.pill.notDone': 'NON FAIT',
   'calibration.pill.done': 'FAIT',
   'calibration.pill.none': 'AUCUN',

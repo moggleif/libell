@@ -53,7 +53,7 @@ function inertCalibrationOptions(): CalibrationOptions {
     getCalibration: () => null,
     calibrate: () => t('calibration.err.notRunning'),
     readTilt: () => t('calibration.err.notRunning'),
-    applyCalibration: () => {},
+    applyCalibration: () => () => {},
     clearCalibration: () => {},
     getVehicleCalibration: () => null,
     calibrateVehicle: () => t('calibration.err.notRunning'),

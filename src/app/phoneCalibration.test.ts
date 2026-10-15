@@ -6,7 +6,7 @@ import {
   saveVehicleCalibration,
 } from '../data/calibrationStore';
 import type { KeyValueStorage } from '../data/keyValueStorage';
-import type { Calibration } from '../domain/calibration';
+import type { Calibration, CaptureResult } from '../domain/calibration';
 import { t } from '../ui/i18n';
 import { createPhoneCalibration } from './phoneCalibration';
 
@@ -43,6 +43,12 @@ function setup(tilt: Calibration | string, storage = memoryStorage()) {
   };
 }
 
+/** The undo a tilt warning carries; fails the test when there is none. */
+function undoOf(result: CaptureResult): () => void {
+  if (result === null || typeof result !== 'object') throw new Error('expected a warning');
+  return result.undo;
+}
+
 describe('createPhoneCalibration', () => {
   it('starts from what is stored', () => {
     const storage = memoryStorage();
@@ -76,24 +82,40 @@ describe('createPhoneCalibration', () => {
       expect(onCaptured).toHaveBeenCalledTimes(1);
     });
 
-    // #411: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
-    it('warns, without storing, when the phone does not look flat', () => {
-      const { phone, onCaptured } = setup({ rollDeg: 16, pitchDeg: 0 });
-      expect(phone.calibrate()).toEqual({ warning: t('calibration.warn.notFlat') });
-      expect(phone.bias()).toBeNull();
-      expect(onCaptured).not.toHaveBeenCalled();
-    });
-
-    it('calibrates anyway when the user goes ahead (#411)', () => {
+    // #624: one button — a tilted reading is stored at once, and the warning
+    // only informs, with an undo.
+    it('stores a reading that does not look flat, and warns with an undo', () => {
       const { phone, storage, onCaptured } = setup({ rollDeg: 16, pitchDeg: 0 });
-      expect(phone.calibrate(true)).toBeNull();
+      const result = phone.calibrate();
+      expect(result).toEqual({
+        warning: t('calibration.warn.notFlat'),
+        undo: expect.any(Function),
+      });
       expect(phone.bias()).toEqual({ rollDeg: 16, pitchDeg: 0 });
       expect(loadCalibrationInfo(storage)?.value).toEqual({ rollDeg: 16, pitchDeg: 0 });
       expect(onCaptured).toHaveBeenCalledTimes(1);
     });
 
-    it('still passes on a reading error when told to go ahead', () => {
-      expect(setup('no sensor').phone.calibrate(true)).toBe('no sensor');
+    it('undo restores the previous bias exactly, with its time (#624)', () => {
+      const storage = memoryStorage();
+      saveCalibration({ rollDeg: 1, pitchDeg: 2 }, storage, 100);
+      const { phone, onCaptured } = setup({ rollDeg: 16, pitchDeg: 0 }, storage);
+      undoOf(phone.calibrate())();
+      expect(phone.bias()).toEqual({ rollDeg: 1, pitchDeg: 2 });
+      expect(phone.biasCapturedAt()).toBe(100);
+      expect(loadCalibrationInfo(storage)).toEqual({
+        value: { rollDeg: 1, pitchDeg: 2 },
+        capturedAt: 100,
+      });
+      expect(onCaptured).toHaveBeenCalledTimes(2);
+    });
+
+    it('undo restores "none" when there was no bias before (#624)', () => {
+      const { phone, storage } = setup({ rollDeg: 16, pitchDeg: 0 });
+      undoOf(phone.calibrate())();
+      expect(phone.bias()).toBeNull();
+      expect(phone.biasCapturedAt()).toBeNull();
+      expect(loadCalibrationInfo(storage)).toBeNull();
     });
 
     it('passes on a reading error', () => {
@@ -110,6 +132,19 @@ describe('createPhoneCalibration', () => {
     expect(phone.biasCapturedAt()).toBe(5000);
     expect(loadCalibrationInfo(storage)?.value).toEqual({ rollDeg: 0.3, pitchDeg: 0.1 });
     expect(onCaptured).toHaveBeenCalledTimes(1);
+  });
+
+  it('can undo a bias computed elsewhere, back to the one before (#624)', () => {
+    const storage = memoryStorage();
+    saveCalibration({ rollDeg: 1, pitchDeg: 2 }, storage, 100);
+    const { phone } = setup('x', storage);
+    const undo = phone.applyBias({ rollDeg: 0.3, pitchDeg: 0.1 });
+    undo();
+    expect(phone.bias()).toEqual({ rollDeg: 1, pitchDeg: 2 });
+    expect(loadCalibrationInfo(storage)).toEqual({
+      value: { rollDeg: 1, pitchDeg: 2 },
+      capturedAt: 100,
+    });
   });
 
   it('clears the bias in memory and in storage', () => {
@@ -137,18 +172,39 @@ describe('createPhoneCalibration', () => {
       expect(onCaptured).toHaveBeenCalledTimes(2);
     });
 
-    it('warns, without storing, when the vehicle looks too steep to be level (#411)', () => {
-      const { phone, onCaptured } = setup({ rollDeg: 0, pitchDeg: -20 });
-      expect(phone.zeroVehicle()).toEqual({ warning: t('calibration.vehicle.warn.notFlat') });
-      expect(phone.vehicleZero()).toBeNull();
-      expect(onCaptured).not.toHaveBeenCalled();
-    });
-
-    it('zeroes anyway when the user goes ahead (#411)', () => {
-      const { phone, storage } = setup({ rollDeg: 0, pitchDeg: -20 });
-      expect(phone.zeroVehicle(true)).toBeNull();
+    it('stores a zero that looks too steep to be level, and warns with an undo (#624)', () => {
+      const { phone, storage, onCaptured } = setup({ rollDeg: 0, pitchDeg: -20 });
+      const result = phone.zeroVehicle();
+      expect(result).toEqual({
+        warning: t('calibration.vehicle.warn.notFlat'),
+        undo: expect.any(Function),
+      });
       expect(phone.vehicleZero()).toEqual({ rollDeg: 0, pitchDeg: -20 });
       expect(loadVehicleCalibrationInfo(storage)?.value).toEqual({ rollDeg: 0, pitchDeg: -20 });
+      expect(onCaptured).toHaveBeenCalledTimes(1);
+    });
+
+    it('undo restores the previous zero and its fine adjustment (#624)', () => {
+      const storage = memoryStorage();
+      saveVehicleCalibration({ rollDeg: 0.5, pitchDeg: -0.5 }, storage, 200);
+      const restoreTrim = vi.fn();
+      const { phone, onVehicleZeroReplaced } = setup({ rollDeg: 0, pitchDeg: -20 }, storage);
+      onVehicleZeroReplaced.mockReturnValue(restoreTrim);
+      undoOf(phone.zeroVehicle())();
+      expect(phone.vehicleZero()).toEqual({ rollDeg: 0.5, pitchDeg: -0.5 });
+      expect(phone.vehicleZeroCapturedAt()).toBe(200);
+      expect(loadVehicleCalibrationInfo(storage)).toEqual({
+        value: { rollDeg: 0.5, pitchDeg: -0.5 },
+        capturedAt: 200,
+      });
+      expect(restoreTrim).toHaveBeenCalledTimes(1);
+    });
+
+    it('undo restores "none" when there was no zero before (#624)', () => {
+      const { phone, storage } = setup({ rollDeg: 0, pitchDeg: -20 });
+      undoOf(phone.zeroVehicle())();
+      expect(phone.vehicleZero()).toBeNull();
+      expect(loadVehicleCalibrationInfo(storage)).toBeNull();
     });
 
     it('passes on a reading error', () => {
@@ -161,11 +217,11 @@ describe('createPhoneCalibration', () => {
       expect(taken.onVehicleZeroReplaced).not.toHaveBeenCalled();
       taken.phone.zeroVehicle();
       expect(taken.onVehicleZeroReplaced).toHaveBeenCalledTimes(1);
-      const warned = setup({ rollDeg: 0, pitchDeg: -20 });
-      warned.phone.zeroVehicle();
-      expect(warned.onVehicleZeroReplaced).not.toHaveBeenCalled();
-      warned.phone.clearVehicleZero();
-      expect(warned.onVehicleZeroReplaced).toHaveBeenCalledTimes(1);
+      const failed = setup('no sensor');
+      failed.phone.zeroVehicle();
+      expect(failed.onVehicleZeroReplaced).not.toHaveBeenCalled();
+      failed.phone.clearVehicleZero();
+      expect(failed.onVehicleZeroReplaced).toHaveBeenCalledTimes(1);
     });
   });
 

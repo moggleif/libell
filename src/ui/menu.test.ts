@@ -18,7 +18,7 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     getCalibration: () => null,
     calibrate: () => null,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
-    applyCalibration: () => {},
+    applyCalibration: () => () => {},
     clearCalibration: () => {},
     getVehicleCalibration: () => null,
     calibrateVehicle: () => null,

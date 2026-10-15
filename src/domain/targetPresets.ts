@@ -13,6 +13,11 @@
  */
 import { MAX_TILT_DEG, type Calibration } from './calibration';
 
+/** What saving a target answered: null when saved, an error text when
+ * nothing was saved, or a warning when it was saved but looks steeper than
+ * 15° (#621). There is no undo: the target is deleted with its cross. */
+export type TargetSaveResult = null | string | { warning: string };
+
 export interface TargetPreset {
   id: string;
   /** User-entered name (e.g. "Shower drain") — shown verbatim, never

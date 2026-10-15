@@ -303,8 +303,8 @@ export const es: Messages = {
   'calibration.err.notRunning':
     'El sensor de inclinación aún no está en marcha: toca primero Iniciar en la pantalla principal.',
   'calibration.warn.notFlat':
-    'Esto no parece plano (más de 15°), así que la calibración será incorrecta. Pon el móvil sobre una superficie plana, o calibra de todos modos.',
-  'calibration.anyway': 'Calibrar de todos modos',
+    'Calibración guardada, pero esto no parece plano (más de 15°), así que probablemente es incorrecta. ¿No era lo que querías? Toca Deshacer, pon el móvil sobre una superficie plana y calibra de nuevo.',
+  'calibration.undo': 'Deshacer',
   'calibration.sensor.h': 'Calibrar el móvil',
   'calibration.vehicle.h': 'Poner el vehículo a cero',
   'calibration.vehicle.intro':
@@ -314,8 +314,7 @@ export const es: Messages = {
   'calibration.vehicle.status': 'Cero del vehículo: delante/detrás {pitch}, lado/lado {roll}.',
   'calibration.vehicle.status.none': 'Sin cero del vehículo: el sitio del móvil cuenta como plano.',
   'calibration.vehicle.warn.notFlat':
-    'Esto no parece nivelado (más de 15°). ¿Está el vehículo realmente nivelado? Pon a cero de todos modos si estás seguro.',
-  'calibration.vehicle.anyway': 'Poner a cero de todos modos',
+    'Cero guardado, pero esto no parece nivelado (más de 15°). ¿No estaba nivelado el vehículo? Toca Deshacer, nivela el vehículo y vuelve a poner a cero.',
   'calibration.age.today': '(hoy)',
   'calibration.age.days': '(hace {n} días)',
   'calibration.check': 'Comprobar',
@@ -336,7 +335,7 @@ export const es: Messages = {
   'calibration.flip.capture': 'Capturar',
   'calibration.flip.done': '¡Listo! Tu superficie se inclina {surface}°: compensado.',
   'calibration.flip.warn.moved':
-    'Las dos capturas difieren más de 15°: ¿se ha movido el móvil? Empieza de nuevo, o calibra de todos modos.',
+    'Calibración guardada, pero las dos capturas difieren más de 15°. ¿Se ha movido el móvil? Toca Deshacer y empieza de nuevo.',
   'calibration.pill.notDone': 'SIN HACER',
   'calibration.pill.done': 'HECHO',
   'calibration.pill.none': 'NINGUNO',

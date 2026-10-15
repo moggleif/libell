@@ -307,8 +307,8 @@ export const sv: Messages = {
   'calibration.err.notRunning':
     'Lutningssensorn är inte igång ännu — tryck på Start på huvudskärmen först.',
   'calibration.warn.notFlat':
-    'Det här ser inte plant ut (över 15°), så kalibreringen blir fel. Lägg telefonen på en plan yta, eller kalibrera ändå.',
-  'calibration.anyway': 'Kalibrera ändå',
+    'Kalibreringen sparades, men det här ser inte plant ut (över 15°), så den blir troligen fel. Var det inte meningen? Tryck Ångra, lägg telefonen på en plan yta och kalibrera igen.',
+  'calibration.undo': 'Ångra',
   'calibration.sensor.h': 'Kalibrera telefonen',
   'calibration.vehicle.h': 'Nollställ fordonet',
   'calibration.vehicle.intro':
@@ -318,8 +318,7 @@ export const sv: Messages = {
   'calibration.vehicle.status': 'Fordonets nolläge: längsled {pitch}, sidled {roll}.',
   'calibration.vehicle.status.none': 'Inget nolläge — telefonens plats räknas som plan.',
   'calibration.vehicle.warn.notFlat':
-    'Det här ser inte plant ut (över 15°). Står fordonet verkligen plant? Nollställ ändå om du är säker.',
-  'calibration.vehicle.anyway': 'Nollställ ändå',
+    'Nolläget sparades, men det här ser inte plant ut (över 15°). Stod fordonet inte plant? Tryck Ångra, ställ fordonet plant och nollställ igen.',
   'calibration.age.today': '(idag)',
   'calibration.age.days': '(för {n} dagar sedan)',
   'calibration.check': 'Kontrollera',
@@ -340,7 +339,7 @@ export const sv: Messages = {
   'calibration.flip.capture': 'Fånga',
   'calibration.flip.done': 'Klart! Din yta lutar {surface}° — borträknat.',
   'calibration.flip.warn.moved':
-    'De två mätningarna skiljer sig mer än 15° — flyttades telefonen? Börja om, eller kalibrera ändå.',
+    'Kalibreringen sparades, men de två mätningarna skiljer sig mer än 15°. Flyttades telefonen? Tryck Ångra och börja om.',
   // Korta statusetiketter för Modern-kalibreringens kort (#109).
   'calibration.pill.notDone': 'EJ GJORD',
   'calibration.pill.done': 'GJORD',

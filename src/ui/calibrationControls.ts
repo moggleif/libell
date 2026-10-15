@@ -13,8 +13,9 @@ export interface CalibrationControls {
   intro: HTMLElement;
   status: HTMLElement;
   capture: HTMLButtonElement;
-  /** Shown only while a capture's tilt warning is up. */
-  anyway: HTMLButtonElement;
+  /** Shown only while a capture's tilt warning is up: puts back what the
+   * capture replaced (#624). */
+  undo: HTMLButtonElement;
   check: HTMLButtonElement;
   clear: HTMLButtonElement;
   /** Modern only: the numbers live in the status sentence alone. */
@@ -26,14 +27,12 @@ const CONTROL_KEYS = {
     heading: 'calibration.sensor.h',
     intro: 'calibration.intro',
     capture: 'calibration.now',
-    anyway: 'calibration.anyway',
     clear: 'calibration.clear',
   },
   vehicle: {
     heading: 'calibration.vehicle.h',
     intro: 'calibration.vehicle.intro',
     capture: 'calibration.vehicle.now',
-    anyway: 'calibration.vehicle.anyway',
     clear: 'calibration.vehicle.clear',
   },
 } as const;
@@ -52,8 +51,8 @@ export function createControls(kind: CalibrationKind, modern: boolean): Calibrat
   const intro = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
   intro.textContent = t(keys.intro);
   const secondary = 'menu__action menu__action--secondary';
-  const anyway = button(secondary, t(keys.anyway));
-  anyway.hidden = true;
+  const undo = button(secondary, t('calibration.undo'));
+  undo.hidden = true;
   const pill = document.createElement('span');
   if (modern) pill.className = 'calibration-card__pill';
   return {
@@ -62,7 +61,7 @@ export function createControls(kind: CalibrationKind, modern: boolean): Calibrat
     status: createElement('p', 'menu__text menu__text--status'),
     // Every calibrate action is primary: a user only ever does one of them.
     capture: button('menu__action', t(keys.capture)),
-    anyway,
+    undo,
     check: button(secondary, t('calibration.check')),
     clear: button(secondary, t(keys.clear)),
     pill,
@@ -77,7 +76,7 @@ export function drawControls(
   message?: string,
 ): void {
   const { calibration, capturedAt } = stored;
-  controls.anyway.hidden = true;
+  controls.undo.hidden = true;
   controls.status.classList.remove('menu__text--warning');
   controls.status.textContent = calibrationStatusText(
     kind,
@@ -99,5 +98,5 @@ export function drawControls(
 export function showWarning(controls: CalibrationControls, warned: boolean): void {
   if (!warned) return;
   controls.status.classList.add('menu__text--warning');
-  controls.anyway.hidden = false;
+  controls.undo.hidden = false;
 }

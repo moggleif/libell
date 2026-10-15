@@ -22,7 +22,8 @@ export interface InstallOffsets {
   valueOf(source: SensorSource): Calibration | null;
   /** When that zero was taken, or null when unknown or none. */
   capturedAtOf(source: SensorSource): number | null;
-  store(source: SensorSource, value: Calibration, capturedAt: number): void;
+  /** `capturedAt` is null only when restoring a zero whose time is unknown. */
+  store(source: SensorSource, value: Calibration, capturedAt: number | null): void;
   clear(source: SensorSource): void;
 }
 

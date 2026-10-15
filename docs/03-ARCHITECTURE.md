@@ -299,7 +299,7 @@ concrete storage shape ADR 0014 deferred, keyed per source by #263 (ADR 0016):
 `libell.installCalibration.<source>` — the same shape as `libell.vehicleCalibration`,
 just never the same key, so no two sources (and never a source and the phone) can be
 conflated. All three read back up to `MAX_TILT_DEG` rather than the 15° capture limit,
-since the user may calibrate or zero anyway above 15° (#411, #425). `sensorDeviceStore.ts` keys the
+since a capture above 15° is stored with a warning and an undo (#411, #425, #624). `sensorDeviceStore.ts` keys the
 remembered device id the same way (`libell.sensorDevice.<source>`). Both carry a
 one-shot migration from the device-named keys #130/#131 used, which copies rather than
 moves, so a rolled-back build still finds the user's pairing and offset. `src/app/core.ts`'s `zeroCalibration()` picks which

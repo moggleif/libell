@@ -12,7 +12,7 @@ function makeOptions(overrides: Partial<CalibrationOptions> = {}): CalibrationOp
     getCalibration: () => null,
     calibrate: () => null,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
-    applyCalibration: () => {},
+    applyCalibration: () => () => {},
     clearCalibration: () => {},
     getVehicleCalibration: () => null,
     calibrateVehicle: () => null,
@@ -29,8 +29,8 @@ function buttonByText(root: HTMLElement, text: string): HTMLButtonElement {
   return [...root.querySelectorAll('button')].find((b) => b.textContent === text)!;
 }
 
-/** The one shown button with this text — "Calibrate anyway" exists for
- * both the one-shot and the flip calibration (#425). */
+/** The one shown button with this text — "Undo" exists for the one-shot
+ * and the flip calibration, and for the vehicle zero (#624). */
 function visibleButton(root: HTMLElement, text: string): HTMLButtonElement | undefined {
   return [...root.querySelectorAll('button')].find((b) => b.textContent === text && !b.hidden);
 }
@@ -175,6 +175,7 @@ describe('calibration section — Modern two-card layout (#109)', () => {
         calibrate,
         applyCalibration: (c) => {
           calibrated = c;
+          return () => {};
         },
         getCalibration: () => calibrated,
       }),
@@ -373,24 +374,21 @@ describe('calibrating the active external sensor from this tab (#290)', () => {
     expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
   });
 
-  it('warns about a tilted box and zeroes it anyway on request (#425)', async () => {
-    const calibrateBox = vi.fn((anyway?: boolean) =>
-      Promise.resolve(anyway ? null : { warning: 'Is the vehicle level?' }),
-    );
+  it('zeroes a tilted box at once, warns, and undoes on request (#624)', async () => {
+    const undo = vi.fn();
+    const calibrateBox = vi.fn(() => Promise.resolve({ warning: 'Looks tilted', undo }));
     const { options } = externalOptions({ calibrateBox });
     const section = createCalibrationSection(options);
     buttonByText(section.element, 'Zero now').click();
     await Promise.resolve();
     await Promise.resolve();
-    expect(section.element.textContent).toContain('Is the vehicle level?');
-    const anyway = buttonByText(section.element, t('calibration.vehicle.anyway'));
-    expect(anyway.hidden).toBe(false);
-    anyway.click();
-    expect(calibrateBox).toHaveBeenLastCalledWith(true);
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(anyway.hidden).toBe(true);
-    expect(section.element.textContent).toContain('Xparkle RVS01 is zeroed');
+    expect(calibrateBox).toHaveBeenCalledOnce();
+    expect(section.element.textContent).toContain('Looks tilted');
+    const undoButton = visibleButton(section.element, t('calibration.undo'))!;
+    undoButton.click();
+    expect(undo).toHaveBeenCalledOnce();
+    expect(undoButton.hidden).toBe(true);
+    expect(section.element.textContent).not.toContain('Looks tilted');
   });
 
   it('links to the box’s own page for the rest of its setup (#316)', () => {
@@ -542,9 +540,9 @@ describe('calibration checklist in Settings (#330)', () => {
   });
 });
 
-// #411: "Varning är rätt. Aldrig stopp." Above 15° the capture comes back as
-// a warning with a "… anyway" action, in every layout.
-describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
+// #624: "Varning är rätt. Aldrig stopp." Above 15° the one button still
+// stores the capture; the warning only informs, with an Undo, in every layout.
+describe('a tilted capture is stored, with a warning and an undo (#624)', () => {
   const layouts = [
     ['classic', 'cards'],
     ['modern', 'cards'],
@@ -552,26 +550,25 @@ describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
   ] as const;
 
   for (const [appearance, layout] of layouts) {
-    it(`calibrates the phone anyway (${appearance} ${layout})`, () => {
-      const calibrate = vi.fn((anyway?: boolean) =>
-        anyway ? null : { warning: 'Does not look flat' },
-      );
+    it(`undoes a tilted phone calibration (${appearance} ${layout})`, () => {
+      const undo = vi.fn();
+      const calibrate = vi.fn(() => ({ warning: 'Does not look flat', undo }));
       const section = createCalibrationSection(makeOptions({ appearance, calibrate }), layout);
-      expect(visibleButton(section.element, t('calibration.anyway'))).toBeUndefined();
+      expect(visibleButton(section.element, t('calibration.undo'))).toBeUndefined();
       buttonByText(section.element, t('calibration.now')).click();
+      expect(calibrate).toHaveBeenCalledTimes(1);
       expect(section.element.textContent).toContain('Does not look flat');
-      const anyway = visibleButton(section.element, t('calibration.anyway'))!;
-      expect(anyway.hidden).toBe(false);
-      anyway.click();
-      expect(calibrate).toHaveBeenLastCalledWith(true);
-      expect(anyway.hidden).toBe(true);
+      const undoButton = visibleButton(section.element, t('calibration.undo'))!;
+      undoButton.click();
+      expect(undo).toHaveBeenCalledTimes(1);
+      expect(calibrate).toHaveBeenCalledTimes(1);
+      expect(undoButton.hidden).toBe(true);
       expect(section.element.textContent).not.toContain('Does not look flat');
     });
 
-    it(`zeroes the vehicle anyway (${appearance} ${layout})`, () => {
-      const calibrateVehicle = vi.fn((anyway?: boolean) =>
-        anyway ? null : { warning: 'Is the vehicle level?' },
-      );
+    it(`undoes a tilted vehicle zero (${appearance} ${layout})`, () => {
+      const undo = vi.fn();
+      const calibrateVehicle = vi.fn(() => ({ warning: 'Is the vehicle level?', undo }));
       const section = createCalibrationSection(
         makeOptions({ appearance, calibrateVehicle }),
         layout,
@@ -580,24 +577,33 @@ describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
         layout === 'checklist' ? 'calibration.step.vehicle.now' : 'calibration.vehicle.now';
       buttonByText(section.element, t(zeroNow)).click();
       expect(section.element.textContent).toContain('Is the vehicle level?');
-      const anyway = buttonByText(section.element, t('calibration.vehicle.anyway'));
-      expect(anyway.hidden).toBe(false);
-      anyway.click();
-      expect(calibrateVehicle).toHaveBeenLastCalledWith(true);
-      expect(anyway.hidden).toBe(true);
+      const undoButton = visibleButton(section.element, t('calibration.undo'))!;
+      undoButton.click();
+      expect(undo).toHaveBeenCalledTimes(1);
+      expect(undoButton.hidden).toBe(true);
+      expect(section.element.textContent).not.toContain('Is the vehicle level?');
     });
   }
 
-  it('offers no "anyway" for a plain error, which going ahead cannot fix', () => {
+  it('has no "… anyway" button anywhere', () => {
+    const section = createCalibrationSection(
+      makeOptions({ calibrate: () => ({ warning: 'Does not look flat', undo: () => {} }) }),
+    );
+    buttonByText(section.element, t('calibration.now')).click();
+    const texts = [...section.element.querySelectorAll('button')].map((b) => b.textContent);
+    expect(texts.filter((text) => /anyway/i.test(text ?? ''))).toEqual([]);
+  });
+
+  it('offers no undo for a plain error, which stored nothing', () => {
     const section = createCalibrationSection(makeOptions({ calibrate: () => 'no sensor' }));
     buttonByText(section.element, t('calibration.now')).click();
     expect(section.element.textContent).toContain('no sensor');
-    expect(visibleButton(section.element, t('calibration.anyway'))).toBeUndefined();
+    expect(visibleButton(section.element, t('calibration.undo'))).toBeUndefined();
   });
 
   it('keeps the checklist step open while the warning shows', () => {
     const section = createCalibrationSection(
-      makeOptions({ calibrate: () => ({ warning: 'Does not look flat' }) }),
+      makeOptions({ calibrate: () => ({ warning: 'Does not look flat', undo: () => {} }) }),
       'checklist',
     );
     buttonByText(section.element, t('calibration.now')).click();
@@ -606,46 +612,47 @@ describe('a tilted capture warns and offers to go ahead anyway (#411)', () => {
   });
 });
 
-// #425: two flip captures that disagree (the phone moved) warn, and the
-// user may keep the result anyway.
-describe('flip captures that disagree (#425)', () => {
-  it('warns, stores nothing, and calibrates anyway on request', () => {
+// #624: two flip captures that disagree (the phone moved) are stored at once,
+// with a warning and an undo.
+describe('flip captures that disagree (#624)', () => {
+  function flipTwice(section: { element: HTMLElement }): void {
+    buttonByText(section.element, t('calibration.flip.start')).click();
+    buttonByText(section.element, t('calibration.flip.capture')).click();
+  }
+
+  it('stores the result, warns, and undoes on request', () => {
     const readings = [
       { rollDeg: 20, pitchDeg: 0 },
       { rollDeg: 20, pitchDeg: 0 },
     ];
-    const applyCalibration = vi.fn();
+    const undo = vi.fn();
+    const applyCalibration = vi.fn(() => undo);
     const section = createCalibrationSection(
       makeOptions({ readTilt: () => readings.shift()!, applyCalibration }),
     );
-    buttonByText(section.element, t('calibration.flip.start')).click();
-    buttonByText(section.element, t('calibration.flip.capture')).click();
-    expect(applyCalibration).not.toHaveBeenCalled();
-    expect(section.element.textContent).toContain(t('calibration.flip.warn.moved'));
-    const anyway = [...section.element.querySelectorAll('button')].filter(
-      (b) => b.textContent === t('calibration.anyway') && !b.hidden,
-    );
-    expect(anyway).toHaveLength(1);
-    anyway[0]!.click();
+    flipTwice(section);
     expect(applyCalibration).toHaveBeenCalledWith({ rollDeg: 20, pitchDeg: 0 });
-    expect(anyway[0]!.hidden).toBe(true);
+    expect(section.element.textContent).toContain(t('calibration.flip.warn.moved'));
+    const undoButtons = [...section.element.querySelectorAll('button')].filter(
+      (b) => b.textContent === t('calibration.undo') && !b.hidden,
+    );
+    expect(undoButtons).toHaveLength(1);
+    undoButtons[0]!.click();
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(undoButtons[0]!.hidden).toBe(true);
     expect(section.element.textContent).not.toContain(t('calibration.flip.warn.moved'));
   });
 
-  it('drops the pending result when the flip starts over', () => {
+  it('drops the undo when the flip starts over', () => {
     const readings = [
       { rollDeg: 20, pitchDeg: 0 },
       { rollDeg: 20, pitchDeg: 0 },
       { rollDeg: 1, pitchDeg: 0 },
     ];
     const section = createCalibrationSection(makeOptions({ readTilt: () => readings.shift()! }));
+    flipTwice(section);
     buttonByText(section.element, t('calibration.flip.start')).click();
-    buttonByText(section.element, t('calibration.flip.capture')).click();
-    buttonByText(section.element, t('calibration.flip.start')).click();
-    const visibleAnyway = [...section.element.querySelectorAll('button')].filter(
-      (b) => b.textContent === t('calibration.anyway') && !b.hidden,
-    );
-    expect(visibleAnyway).toHaveLength(0);
+    expect(visibleButton(section.element, t('calibration.undo'))).toBeUndefined();
   });
 });
 

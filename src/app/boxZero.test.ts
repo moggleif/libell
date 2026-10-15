@@ -7,8 +7,10 @@ import { t } from '../ui/i18n';
 import { createBoxZeroing, EASYLEVEL_ZERO_SAMPLE_MS } from './boxZero';
 import type { InstallOffsets } from './installOffsets';
 
-function memoryOffsets(): InstallOffsets & { stored: Map<SensorSource, [Calibration, number]> } {
-  const stored = new Map<SensorSource, [Calibration, number]>();
+function memoryOffsets(): InstallOffsets & {
+  stored: Map<SensorSource, [Calibration, number | null]>;
+} {
+  const stored = new Map<SensorSource, [Calibration, number | null]>();
   return {
     stored,
     valueOf: (source) => stored.get(source)?.[0] ?? null,
@@ -120,19 +122,39 @@ describe('createBoxZeroing', () => {
       expect(onChanged).not.toHaveBeenCalled();
     });
 
-    // #425: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
-    it('warns, without storing, when the box looks too steep to be level', async () => {
-      const { zeroing, offsets } = setup({ readings: [{ rollDeg: 20, pitchDeg: 0 }] });
+    // #624: one button — a steep zero is stored at once, and the warning
+    // only informs, with an undo.
+    it('stores a zero that looks too steep to be level, and warns with an undo', async () => {
+      const { zeroing, offsets, onChanged } = setup({ readings: [{ rollDeg: 20, pitchDeg: 0 }] });
       await expect(zeroing.zero('easylevel')).resolves.toEqual({
         warning: t('calibration.vehicle.warn.notFlat'),
+        undo: expect.any(Function),
       });
-      expect(offsets.valueOf('easylevel')).toBeNull();
+      expect(offsets.valueOf('easylevel')).toEqual({ rollDeg: 20, pitchDeg: 0 });
+      expect(onChanged).toHaveBeenCalledTimes(1);
     });
 
-    it('zeroes anyway when the user goes ahead (#425)', async () => {
+    it('undo restores the previous zero, its time and its fine adjustment', async () => {
+      const { zeroing, offsets, onChanged, onZeroReplaced } = setup({
+        readings: [{ rollDeg: 20, pitchDeg: 0 }],
+      });
+      offsets.store('easylevel', { rollDeg: 1, pitchDeg: -1 }, 400);
+      const restoreTrim = vi.fn();
+      onZeroReplaced.mockReturnValue(restoreTrim);
+      const result = await zeroing.zero('easylevel');
+      if (result === null || typeof result !== 'object') throw new Error('expected a warning');
+      result.undo();
+      expect(offsets.stored.get('easylevel')).toEqual([{ rollDeg: 1, pitchDeg: -1 }, 400]);
+      expect(restoreTrim).toHaveBeenCalledTimes(1);
+      expect(onChanged).toHaveBeenCalledTimes(2);
+    });
+
+    it('undo restores "none" when the box had no zero before', async () => {
       const { zeroing, offsets } = setup({ readings: [{ rollDeg: 20, pitchDeg: 0 }] });
-      await expect(zeroing.zero('easylevel', true)).resolves.toBeNull();
-      expect(offsets.valueOf('easylevel')).toEqual({ rollDeg: 20, pitchDeg: 0 });
+      const result = await zeroing.zero('easylevel');
+      if (result === null || typeof result !== 'object') throw new Error('expected a warning');
+      result.undo();
+      expect(offsets.valueOf('easylevel')).toBeNull();
     });
   });
 

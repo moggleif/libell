@@ -7,7 +7,6 @@ import {
   expandedStep,
   positionMark,
   positionReport,
-  zeroMessage,
   zeroTitle,
 } from './boxSetupState';
 import { setLanguage, t } from './i18n';
@@ -84,14 +83,6 @@ describe('the step titles', () => {
   it('says zeroed, or asks for the zero', () => {
     expect(zeroTitle(true, null)).toBe(t('box.step.zero.done'));
     expect(zeroTitle(false, 123)).toBe(t('box.step.zero.todo'));
-  });
-});
-
-describe('zeroMessage (#425)', () => {
-  it('offers Zero anyway only after a tilt warning', () => {
-    expect(zeroMessage({ warning: 'Level?' })).toEqual({ text: 'Level?', warned: true });
-    expect(zeroMessage('Failed')).toEqual({ text: 'Failed', warned: false });
-    expect(zeroMessage(null)).toEqual({ text: null, warned: false });
   });
 });
 

@@ -7,8 +7,7 @@
  * Deliberately NOT part of `calibrationSection.ts`: a preset is a
  * *target*, not a calibration (see `../domain/targetPresets.ts`).
  */
-import type { CaptureResult } from '../domain/calibration';
-import type { TargetPreset } from '../domain/targetPresets';
+import type { TargetPreset, TargetSaveResult } from '../domain/targetPresets';
 import { t } from './i18n';
 import { createChoiceRow } from './choiceList';
 import { createElement } from './dom';
@@ -23,7 +22,7 @@ export interface TargetsOptions {
   /** Capture the current tilt as a new preset named `name`: null when
    * saved, an error text when not, or a warning when it was saved but
    * looks steeper than 15° (#621). */
-  addTargetPreset(name: string): CaptureResult;
+  addTargetPreset(name: string): TargetSaveResult;
   deleteTargetPreset(id: string): void;
   /** Rename a preset (#613); its row cannot be renamed when omitted. */
   renameTargetPreset?(id: string, name: string): void;

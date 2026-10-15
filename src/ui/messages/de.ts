@@ -307,8 +307,8 @@ export const de: Messages = {
   'calibration.err.notRunning':
     'Der Neigungssensor läuft noch nicht — tippe zuerst auf dem Hauptbildschirm auf Start.',
   'calibration.warn.notFlat':
-    'Das sieht nicht flach aus (über 15°), die Kalibrierung wird also falsch. Lege das Handy auf eine flache Fläche oder kalibriere trotzdem.',
-  'calibration.anyway': 'Trotzdem kalibrieren',
+    'Kalibrierung gespeichert, aber das sieht nicht flach aus (über 15°), sie ist also wahrscheinlich falsch. Nicht gewollt? Tippe auf Rückgängig, lege das Handy auf eine flache Fläche und kalibriere neu.',
+  'calibration.undo': 'Rückgängig',
   'calibration.sensor.h': 'Handy kalibrieren',
   'calibration.vehicle.h': 'Fahrzeug nullen',
   'calibration.vehicle.intro':
@@ -319,8 +319,7 @@ export const de: Messages = {
   'calibration.vehicle.status.none':
     'Kein Fahrzeug-Nullpunkt — der Platz des Handys gilt als eben.',
   'calibration.vehicle.warn.notFlat':
-    'Das sieht nicht waagerecht aus (über 15°). Steht das Fahrzeug wirklich waagerecht? Nulle trotzdem, wenn du sicher bist.',
-  'calibration.vehicle.anyway': 'Trotzdem nullen',
+    'Nullpunkt gespeichert, aber das sieht nicht waagerecht aus (über 15°). Stand das Fahrzeug nicht waagerecht? Tippe auf Rückgängig, stelle das Fahrzeug waagerecht und nulle neu.',
   'calibration.age.today': '(heute)',
   'calibration.age.days': '(vor {n} Tagen)',
   'calibration.check': 'Prüfen',
@@ -341,7 +340,7 @@ export const de: Messages = {
   'calibration.flip.capture': 'Erfassen',
   'calibration.flip.done': 'Fertig! Deine Fläche neigt sich um {surface}° — herausgerechnet.',
   'calibration.flip.warn.moved':
-    'Die beiden Erfassungen weichen um mehr als 15° ab — hat sich das Handy bewegt? Fang von vorn an oder kalibriere trotzdem.',
+    'Kalibrierung gespeichert, aber die beiden Erfassungen weichen um mehr als 15° ab. Hat sich das Handy bewegt? Tippe auf Rückgängig und fang von vorn an.',
   'calibration.pill.notDone': 'OFFEN',
   'calibration.pill.done': 'ERLEDIGT',
   'calibration.pill.none': 'KEINER',

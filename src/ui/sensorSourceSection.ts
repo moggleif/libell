@@ -83,10 +83,10 @@ export interface SensorSourceOptions {
    * "Set vehicle level": capture the current reading as this box's
    * installation offset — or, for a box that zeroes itself, have the box do
    * it. Returns an error text, or null on success; a box that must be
-   * written to answers asynchronously. Above 15° it answers with a warning
-   * instead, offering "Zero anyway" (`anyway`).
+   * written to answers asynchronously. Above 15° the zero is still stored,
+   * and it answers with a warning that can undo it (#624).
    */
-  calibrateInstall(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
+  calibrateInstall(): CaptureResult | Promise<CaptureResult>;
   /** When the installation offset was captured — null when unknown. */
   getInstallCalibrationCapturedAt(): number | null;
   clearInstallCalibration(): void;

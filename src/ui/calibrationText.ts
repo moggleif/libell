@@ -70,10 +70,17 @@ export function expandedStep(
   return vehicleDone ? 'none' : 'vehicle';
 }
 
-/** Only a tilt warning (`warned`) offers "… anyway". */
-export function captureMessage(result: CaptureResult): { text: string | null; warned: boolean } {
-  if (result !== null && typeof result === 'object') return { text: result.warning, warned: true };
-  return { text: result, warned: false };
+/** Only a tilt warning offers an undo (#624): an error stored nothing. */
+export interface CaptureMessage {
+  text: string | null;
+  undo: (() => void) | null;
+}
+
+export function captureMessage(result: CaptureResult): CaptureMessage {
+  if (result !== null && typeof result === 'object') {
+    return { text: result.warning, undo: result.undo };
+  }
+  return { text: result, undo: null };
 }
 
 export function externalStatusText(

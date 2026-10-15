@@ -17,12 +17,11 @@ import {
   expandedStep,
   positionMark,
   positionReport,
-  zeroMessage,
   zeroTitle,
   type SetupStep,
   type StepFocus,
-  type ZeroMessage,
 } from './boxSetupState';
+import { captureMessage, type CaptureMessage } from './calibrationText';
 import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
 import { createElement } from './dom';
 import { t } from './i18n';
@@ -215,26 +214,26 @@ function createZeroStepParts(options: SensorSourceOptions) {
   zeroButton.type = 'button';
   const status = createElement('p', 'menu__text menu__text--status');
   status.hidden = true;
-  // Shown only while the last zero came back with a tilt warning: warn,
-  // never block.
-  const anyway = createElement('button', 'menu__action menu__action--secondary');
-  anyway.type = 'button';
-  anyway.textContent = t('calibration.vehicle.anyway');
-  anyway.hidden = true;
+  // Shown only while the last zero came back with a tilt warning: it was
+  // stored, and this puts back the one before (#624).
+  const undo = createElement('button', 'menu__action menu__action--secondary');
+  undo.type = 'button';
+  undo.textContent = t('calibration.undo');
+  undo.hidden = true;
   const links = createElement('div', 'box-step__links');
   const clear = linkButton(t('sensorSource.install.clear'));
   links.append(clear);
   // Under the zero it adjusts; hidden while there is none (#596).
   const trim = options.installZeroTrim ? createZeroTrimRow(options.installZeroTrim) : null;
-  step.body.append(hint, zeroButton, links, status, anyway, ...(trim ? [trim.element] : []));
-  return { step, hint, zeroButton, status, anyway, links, clear, trim };
+  step.body.append(hint, zeroButton, links, status, undo, ...(trim ? [trim.element] : []));
+  return { step, hint, zeroButton, status, undo, links, clear, trim };
 }
 
 /** Returns whether the box is zeroed. */
 function drawZeroStep(
   options: SensorSourceOptions,
   parts: ReturnType<typeof createZeroStepParts>,
-  message: ZeroMessage,
+  message: CaptureMessage,
 ): boolean {
   const zeroed = options.getInstallCalibration() !== null;
   parts.step.title.textContent = zeroTitle(zeroed, options.getInstallCalibrationCapturedAt());
@@ -245,8 +244,8 @@ function drawZeroStep(
   parts.zeroButton.textContent = t(zeroed ? 'box.step.zero.again' : 'sensorSource.install.now');
   parts.status.hidden = message.text === null;
   parts.status.textContent = message.text ?? '';
-  parts.status.classList.toggle('menu__text--warning', message.warned);
-  parts.anyway.hidden = !message.warned;
+  parts.status.classList.toggle('menu__text--warning', message.undo !== null);
+  parts.undo.hidden = message.undo === null;
   parts.clear.disabled = !zeroed;
   parts.trim?.refresh();
   return zeroed;
@@ -260,27 +259,31 @@ function createZeroStep(
 ): StepPart | null {
   if (!options.sensor.capabilities.installCalibration) return null;
   const parts = createZeroStepParts(options);
-  const { step, zeroButton, anyway, clear } = parts;
-  let message: ZeroMessage = { text: null, warned: false };
-  function zero(goAhead: boolean): void {
-    const result = options.calibrateInstall(goAhead);
+  const { step, zeroButton, undo, clear } = parts;
+  let message: CaptureMessage = { text: null, undo: null };
+  function zero(): void {
+    const result = options.calibrateInstall();
     const answered = !(result instanceof Promise);
-    message = answered ? zeroMessage(result) : zeroMessage(t('calibration.external.working'));
+    message = captureMessage(answered ? result : t('calibration.external.working'));
     // No second tap while the first is still on its way.
     zeroButton.disabled = !answered;
     refocus({ kind: 'opened', step: 'zero' });
     if (answered) return;
     void result.then((answer) => {
       zeroButton.disabled = false;
-      message = zeroMessage(answer);
+      message = captureMessage(answer);
       redraw();
     });
   }
-  zeroButton.addEventListener('click', () => zero(false));
-  anyway.addEventListener('click', () => zero(true));
+  zeroButton.addEventListener('click', zero);
+  undo.addEventListener('click', () => {
+    message.undo?.();
+    message = { text: null, undo: null };
+    refocus({ kind: 'opened', step: 'zero' });
+  });
   clear.addEventListener('click', () => {
     options.clearInstallCalibration();
-    message = { text: null, warned: false };
+    message = { text: null, undo: null };
     refocus({ kind: 'next' });
   });
 

@@ -329,8 +329,8 @@ export const en = {
   'calibration.err.notRunning':
     'The tilt sensor is not running yet — tap Start on the main screen first.',
   'calibration.warn.notFlat':
-    'This does not look flat (over 15°), so the calibration will be wrong. Lay the phone on a flat surface, or calibrate anyway.',
-  'calibration.anyway': 'Calibrate anyway',
+    'Calibration saved, but this does not look flat (over 15°), so it is probably wrong. Not what you meant? Tap Undo, lay the phone on a flat surface and calibrate again.',
+  'calibration.undo': 'Undo',
   // Card headings lead with the verb (Kalibrera / Nollställ).
   'calibration.sensor.h': 'Calibrate the phone',
   'calibration.vehicle.h': 'Zero the vehicle',
@@ -342,8 +342,7 @@ export const en = {
   'calibration.vehicle.status': 'Vehicle zero: front/back {pitch}, side/side {roll}.',
   'calibration.vehicle.status.none': 'No vehicle zero — the phone spot counts as flat.',
   'calibration.vehicle.warn.notFlat':
-    'This does not look level (over 15°). Is the vehicle really level? Zero anyway if you are sure.',
-  'calibration.vehicle.anyway': 'Zero anyway',
+    'Zero saved, but this does not look level (over 15°). Was the vehicle not level? Tap Undo, level the vehicle and zero again.',
   'calibration.age.today': '(today)',
   'calibration.age.days': '({n} days ago)',
   'calibration.check': 'Check',
@@ -364,7 +363,7 @@ export const en = {
   'calibration.flip.capture': 'Capture',
   'calibration.flip.done': 'Done! Your surface leans {surface}° — cancelled out.',
   'calibration.flip.warn.moved':
-    'The two captures differ by more than 15° — did the phone move? Start over, or calibrate anyway.',
+    'Calibration saved, but the two captures differ by more than 15°. Did the phone move? Tap Undo and start over.',
   // Short status-pill labels for the Modern calibration cards (#109).
   'calibration.pill.notDone': 'NOT DONE',
   'calibration.pill.done': 'DONE',

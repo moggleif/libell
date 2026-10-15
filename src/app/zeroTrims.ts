@@ -14,7 +14,8 @@ export interface ZeroTrims {
   /** `NO_TRIM` when the source has none. */
   valueOf(source: SensorSource): Calibration;
   nudge(source: SensorSource, direction: TrimDirection): void;
-  reset(source: SensorSource): void;
+  /** Returns how to put the trim back, for an undo of the new zero (#624). */
+  reset(source: SensorSource): () => void;
 }
 
 /** Loads every source's trim once; `storage` defaults to localStorage. */
@@ -23,17 +24,18 @@ export function createZeroTrims(storage?: KeyValueStorage | null): ZeroTrims {
     SENSOR_SOURCES.map((source) => [source, loadZeroTrim(source, storage) ?? NO_TRIM]),
   );
   const valueOf = (source: SensorSource) => trims.get(source) ?? NO_TRIM;
+  const set = (source: SensorSource, next: Calibration) => {
+    trims.set(source, next);
+    if (isTrimmed(next)) saveZeroTrim(source, next, storage);
+    else clearZeroTrim(source, storage);
+  };
   return {
     valueOf,
-    nudge(source, direction) {
-      const next = nudgeTrim(valueOf(source), direction);
-      trims.set(source, next);
-      if (isTrimmed(next)) saveZeroTrim(source, next, storage);
-      else clearZeroTrim(source, storage);
-    },
+    nudge: (source, direction) => set(source, nudgeTrim(valueOf(source), direction)),
     reset(source) {
-      trims.set(source, NO_TRIM);
-      clearZeroTrim(source, storage);
+      const before = valueOf(source);
+      set(source, NO_TRIM);
+      return () => set(source, before);
     },
   };
 }

@@ -62,7 +62,7 @@ function storedCalibration(parsed: unknown, maxDeg?: number): StoredCalibration 
 function writeCalibration(
   key: string,
   calibration: Calibration,
-  capturedAt: number,
+  capturedAt: number | null,
   storage: KeyValueStorage | null,
 ): void {
   writeJson(storage, key, { ...calibration, capturedAt });
@@ -83,13 +83,13 @@ export function loadCalibrationInfo(
 export function saveCalibration(
   calibration: Calibration,
   storage: KeyValueStorage | null = defaultStorage(),
-  capturedAt: number = Date.now(),
+  capturedAt: number | null = Date.now(),
 ): void {
   writeCalibration(CALIBRATION_KEY, calibration, capturedAt, storage);
 }
 
 /** The vehicle zero: the phone's normal spot. Corrupt values read as null;
- * beyond 15° stays, since the user may zero anyway. */
+ * beyond 15° stays, since a steep zero is kept with a warning (#624). */
 export function loadVehicleCalibration(
   storage: KeyValueStorage | null = defaultStorage(),
 ): Calibration | null {
@@ -105,7 +105,7 @@ export function loadVehicleCalibrationInfo(
 export function saveVehicleCalibration(
   calibration: Calibration,
   storage: KeyValueStorage | null = defaultStorage(),
-  capturedAt: number = Date.now(),
+  capturedAt: number | null = Date.now(),
 ): void {
   writeCalibration(VEHICLE_CALIBRATION_KEY, calibration, capturedAt, storage);
 }
@@ -138,7 +138,7 @@ export function saveInstallCalibration(
   source: SensorSource,
   calibration: Calibration,
   storage: KeyValueStorage | null = defaultStorage(),
-  capturedAt: number = Date.now(),
+  capturedAt: number | null = Date.now(),
 ): void {
   writeCalibration(installCalibrationKey(source), calibration, capturedAt, storage);
 }

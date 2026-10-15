@@ -1,7 +1,7 @@
 /**
  * Flip calibration: two captures with a 180° turn in between, so no
  * known-level surface is needed. Captures that disagree are never refused:
- * the step warns and offers "Calibrate anyway".
+ * the result is stored, and the step warns with an Undo (#624).
  */
 import { type Calibration, flipCalibration, type FlipResult } from '../domain/calibration';
 import type { CalibrationOptions } from './calibrationSection';
@@ -12,7 +12,7 @@ export interface CalibrationFlip {
   intro: HTMLElement;
   button: HTMLButtonElement;
   status: HTMLElement;
-  anyway: HTMLButtonElement;
+  undo: HTMLButtonElement;
   reset(): void;
 }
 
@@ -29,11 +29,11 @@ function createParts(modern: boolean) {
   // Primary like the other calibrate actions: a user only ever does one.
   const button = createElement('button', 'menu__action');
   button.type = 'button';
-  const anyway = createElement('button', 'menu__action menu__action--secondary');
-  anyway.type = 'button';
-  anyway.textContent = t('calibration.anyway');
-  anyway.hidden = true;
-  return { intro, button, status, anyway };
+  const undo = createElement('button', 'menu__action menu__action--secondary');
+  undo.type = 'button';
+  undo.textContent = t('calibration.undo');
+  undo.hidden = true;
+  return { intro, button, status, undo };
 }
 
 interface FlipState {
@@ -41,34 +41,35 @@ interface FlipState {
   options: CalibrationOptions;
   hooks: FlipHooks;
   first: Calibration | null;
-  /** Kept while the warning offers "Calibrate anyway". */
-  pending: FlipResult | null;
+  /** Kept while the warning offers Undo. */
+  restore: (() => void) | null;
 }
 
 function reset(state: FlipState): void {
-  const { button, status, anyway } = state.parts;
+  const { button, status, undo } = state.parts;
   state.first = null;
-  state.pending = null;
-  anyway.hidden = true;
+  state.restore = null;
+  undo.hidden = true;
   status.classList.remove('menu__text--warning');
   button.textContent = t('calibration.flip.start');
   status.textContent = '';
 }
 
-function apply(state: FlipState, { bias, surface }: FlipResult): void {
-  state.options.applyCalibration(bias);
+/** Stored either way (#624); captures that disagree warn, with an Undo. */
+function apply(state: FlipState, { bias, surface, consistent }: FlipResult): void {
+  const restore = state.options.applyCalibration(bias);
   reset(state);
+  state.hooks.onApplied();
+  if (!consistent) return warn(state, restore);
   const surfaceMax = Math.max(Math.abs(surface.rollDeg), Math.abs(surface.pitchDeg));
   state.parts.status.textContent = t('calibration.flip.done', { surface: surfaceMax.toFixed(1) });
-  state.hooks.onApplied();
 }
 
-function warn(state: FlipState, result: FlipResult): void {
-  reset(state);
-  state.pending = result;
+function warn(state: FlipState, restore: () => void): void {
+  state.restore = restore;
   state.parts.status.textContent = t('calibration.flip.warn.moved');
   state.parts.status.classList.add('menu__text--warning');
-  state.parts.anyway.hidden = false;
+  state.parts.undo.hidden = false;
 }
 
 function capture(state: FlipState, reading: Calibration): void {
@@ -79,9 +80,7 @@ function capture(state: FlipState, reading: Calibration): void {
     state.parts.status.textContent = t('calibration.flip.rotate');
     return;
   }
-  const result = flipCalibration(state.first, reading);
-  if (result.consistent) apply(state, result);
-  else warn(state, result);
+  apply(state, flipCalibration(state.first, reading));
 }
 
 export function createCalibrationFlip(
@@ -90,16 +89,18 @@ export function createCalibrationFlip(
   hooks: FlipHooks,
 ): CalibrationFlip {
   const parts = createParts(modern);
-  const state: FlipState = { parts, options, hooks, first: null, pending: null };
+  const state: FlipState = { parts, options, hooks, first: null, restore: null };
   parts.button.addEventListener('click', () => {
     hooks.onUsed();
     const reading = options.readTilt();
     if (typeof reading === 'string') parts.status.textContent = reading;
     else capture(state, reading);
   });
-  parts.anyway.addEventListener('click', () => {
+  parts.undo.addEventListener('click', () => {
     hooks.onUsed();
-    if (state.pending) apply(state, state.pending);
+    state.restore?.();
+    reset(state);
+    hooks.onApplied();
   });
   reset(state);
   return { ...parts, reset: () => reset(state) };

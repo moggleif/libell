@@ -704,7 +704,7 @@ describe('settings form — Modern tabs (#108)', () => {
       getCalibration: () => null,
       calibrate,
       readTilt: () => 'no sensor',
-      applyCalibration: () => {},
+      applyCalibration: () => () => {},
       clearCalibration: () => {},
       getVehicleCalibration: () => null,
       calibrateVehicle: () => null,

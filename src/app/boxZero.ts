@@ -29,8 +29,9 @@ export interface BoxZeroDeps {
   readTilt(): Calibration | string;
   onChanged(): void;
   /** A box's zero was retaken or forgotten: its fine adjustment no longer
-   * applies (#596). */
-  onZeroReplaced?(source: SensorSource): void;
+   * applies (#596). May hand back how to put that adjustment back, for an
+   * undo (#624). */
+  onZeroReplaced?(source: SensorSource): (() => void) | undefined;
   /** Wall time for the stored timestamp; defaults to `Date.now`. */
   now?: () => number;
   /** Monotonic time for the sampling window; defaults to `performance.now`. */
@@ -39,10 +40,10 @@ export interface BoxZeroDeps {
 }
 
 export interface BoxZeroing {
-  /** Zero a box: null when stored, an error message, or a tilt warning
-   * above 15° unless `anyway` says the user chose to go ahead.
-   * Async for the boxes that need it. */
-  zero(source: SensorSource, anyway?: boolean): CaptureResult | Promise<CaptureResult>;
+  /** Zero a box: null when stored, an error message, or — above 15° — a
+   * warning that it was stored, with an undo (#624). Async for the boxes
+   * that need it. */
+  zero(source: SensorSource): CaptureResult | Promise<CaptureResult>;
   clear(source: SensorSource): void;
 }
 
@@ -57,12 +58,12 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
     wait: deps.wait ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))),
   };
   return {
-    zero(source, anyway = false) {
+    zero(source) {
       if (source === 'xparkle') return zeroXparkle(zeroer);
-      if (source === 'easylevel') return zeroEasyLevel(zeroer, anyway);
+      if (source === 'easylevel') return zeroEasyLevel(zeroer);
       const reading = zeroer.readTilt();
       if (typeof reading === 'string') return reading;
-      return storeReading(zeroer, source, reading, anyway);
+      return storeReading(zeroer, source, reading);
     },
     clear(source) {
       zeroer.offsets.clear(source);
@@ -72,25 +73,29 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
   };
 }
 
-function store(zeroer: Zeroer, source: SensorSource, value: Calibration): void {
-  zeroer.offsets.store(source, value, zeroer.now());
-  zeroer.onZeroReplaced?.(source);
+/** Returns how to put back the zero, and its fine adjustment, it replaced. */
+function store(zeroer: Zeroer, source: SensorSource, value: Calibration): () => void {
+  const { offsets } = zeroer;
+  const before = offsets.valueOf(source);
+  const beforeAt = offsets.capturedAtOf(source);
+  offsets.store(source, value, zeroer.now());
+  const restoreTrim = zeroer.onZeroReplaced?.(source);
   zeroer.onChanged();
+  return () => {
+    if (before) offsets.store(source, before, beforeAt);
+    else offsets.clear(source);
+    restoreTrim?.();
+    zeroer.onChanged();
+  };
 }
 
 /** There is no box hardware-bias layer to subtract (unlike the phone's), so
- * `null` here means "none". */
-function storeReading(
-  zeroer: Zeroer,
-  source: SensorSource,
-  reading: Calibration,
-  anyway: boolean,
-): CaptureResult {
-  if (!anyway && exceedsCalibrationLimit(reading)) {
-    return { warning: t('calibration.vehicle.warn.notFlat') };
-  }
-  store(zeroer, source, vehicleZeroFromReading(reading, null));
-  return null;
+ * `null` here means "none". A steep zero stays stored; the warning only
+ * informs, with its undo (#624). */
+function storeReading(zeroer: Zeroer, source: SensorSource, reading: Calibration): CaptureResult {
+  const undo = store(zeroer, source, vehicleZeroFromReading(reading, null));
+  if (!exceedsCalibrationLimit(reading)) return null;
+  return { warning: t('calibration.vehicle.warn.notFlat'), undo };
 }
 
 /**
@@ -100,12 +105,12 @@ function storeReading(
  * that settling in one tap. If the box drops while sampling, nothing is
  * stored and the user is told why.
  */
-async function zeroEasyLevel(zeroer: Zeroer, anyway: boolean): Promise<CaptureResult> {
+async function zeroEasyLevel(zeroer: Zeroer): Promise<CaptureResult> {
   const first = zeroer.readTilt();
   if (typeof first === 'string') return first;
   const readings = await sampleEasyLevel(zeroer, first);
   if (typeof readings === 'string') return readings;
-  return storeReading(zeroer, 'easylevel', averageReadings(readings) ?? first, anyway);
+  return storeReading(zeroer, 'easylevel', averageReadings(readings) ?? first);
 }
 
 /** Every new sample over the window, or why sampling stopped. */

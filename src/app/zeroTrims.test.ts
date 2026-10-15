@@ -47,6 +47,16 @@ describe('createZeroTrims (#596)', () => {
     expect(createZeroTrims(storage).valueOf('phone')).toEqual(NO_TRIM);
   });
 
+  it('a reset hands back how to put the trim back, also after a reload (#624)', () => {
+    const storage = memoryStorage();
+    const trims = createZeroTrims(storage);
+    trims.nudge('phone', 'back');
+    const restore = trims.reset('phone');
+    restore();
+    expect(trims.valueOf('phone')).toEqual({ rollDeg: 0, pitchDeg: -0.1 });
+    expect(createZeroTrims(storage).valueOf('phone')).toEqual({ rollDeg: 0, pitchDeg: -0.1 });
+  });
+
   it('reads a corrupt stored trim as none', () => {
     const trims = createZeroTrims(memoryStorage({ 'libell.zeroTrim.phone': '{"rollDeg":"x"}' }));
     expect(trims.valueOf('phone')).toEqual(NO_TRIM);
