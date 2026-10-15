@@ -9,9 +9,10 @@ import { es } from './messages/es';
 import { fr } from './messages/fr';
 import { it } from './messages/it';
 import { nl } from './messages/nl';
+import { pl } from './messages/pl';
 import { sv } from './messages/sv';
 
-export const MESSAGES = { en, sv, fr, es, de, nl, it } as const;
+export const MESSAGES = { en, sv, fr, es, de, nl, it, pl } as const;
 
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
@@ -26,6 +27,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   de: 'Deutsch',
   nl: 'Nederlands',
   it: 'Italiano',
+  pl: 'Polski',
 };
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
