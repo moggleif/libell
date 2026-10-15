@@ -156,28 +156,36 @@ describe('targets section (#122, ADR 0013)', () => {
     nameInput(section).value = 'Drain';
     buttonByText(section.element, t('namePrompt.save')).click();
     expect(section.element.textContent).toContain('no sensor');
-    expect(buttonByText(section.element, t('targets.anyway')).hidden).toBe(true);
     expect(nameInput(section).value).toBe('Drain');
   });
 
-  // #425: "Varning är rätt. Aldrig stopp."
-  it('warns about a too-steep capture and saves it anyway, under the same name', () => {
-    const addTargetPreset = vi.fn((_name: string, anyway?: boolean) =>
-      anyway ? null : { warning: 'Steeper than a target' },
-    );
+  // #621: "Bara en knapp tack!" — Save saves; the warning only informs.
+  it('saves a too-steep capture with one Save and shows the warning after', () => {
+    const addTargetPreset = vi.fn(() => ({ warning: 'Saved, but steep' }));
     const section = createTargetsSection(makeOptions({ addTargetPreset }));
     buttonByText(section.element, t('targets.add')).click();
     nameInput(section).value = 'Too steep';
     buttonByText(section.element, t('namePrompt.save')).click();
-    expect(section.element.textContent).toContain('Steeper than a target');
-    expect(nameInput(section).value).toBe('Too steep');
-    const anyway = buttonByText(section.element, t('targets.anyway'));
-    expect(anyway.hidden).toBe(false);
-    anyway.click();
-    expect(addTargetPreset).toHaveBeenLastCalledWith('Too steep', true);
-    expect(anyway.hidden).toBe(true);
+    expect(addTargetPreset).toHaveBeenCalledTimes(1);
+    expect(addTargetPreset).toHaveBeenCalledWith('Too steep');
     expect(nameInput(section).value).toBe('');
-    expect(section.element.textContent).not.toContain('Steeper than a target');
+    expect(buttonByText(section.element, t('targets.add')).hidden).toBe(false);
+    expect(section.element.textContent).toContain('Saved, but steep');
+    expect(section.element.querySelector<HTMLElement>('.name-prompt')!.hidden).toBe(true);
+    const extra = [...section.element.querySelectorAll('button')].filter(
+      (b) => !b.hidden && !b.closest('.choice__list, .name-prompt'),
+    );
+    expect(extra.map((b) => b.textContent)).toEqual([t('targets.add')]);
+  });
+
+  it('clears the warning when another target is started (#621)', () => {
+    const section = createTargetsSection(
+      makeOptions({ addTargetPreset: () => ({ warning: 'Saved, but steep' }) }),
+    );
+    buttonByText(section.element, t('targets.add')).click();
+    buttonByText(section.element, t('namePrompt.save')).click();
+    buttonByText(section.element, t('targets.add')).click();
+    expect(section.element.textContent).not.toContain('Saved, but steep');
   });
 });
 

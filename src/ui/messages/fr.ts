@@ -360,8 +360,7 @@ export const fr: Messages = {
   'targets.add': 'Enregistrer l’inclinaison actuelle comme nouvelle cible',
   'targets.delete': 'Supprimer {name}',
   'targets.warn.tooSteep':
-    'Cela semble plus raide qu’une cible volontaire (plus de 15°). Réessayez, ou enregistrez quand même.',
-  'targets.anyway': 'Enregistrer quand même',
+    'Cible enregistrée, mais elle est plus raide qu’une cible habituelle (plus de 15°). Ce n’était pas voulu ? Supprimez-la avec la croix et enregistrez à nouveau.',
   'targets.badge': 'Cible : {name}',
 
   'feedback.intro':
