@@ -397,6 +397,7 @@ export const sv: Messages = {
     'Kalibrera: lägg telefonen på en plan yta och tryck Kalibrera nu.\n' +
     'Nollställ: ställ fordonet plant med ett vattenpass, lägg telefonen på sin vanliga plats och tryck Nollställ nu.\n' +
     'Med en sensorbox nollställer du på boxens sida. Den behöver ingen kalibrering.\n' +
+    'Står det ändå inte riktigt plant? Finjustera nolläget med Vänster upp, Höger upp, Fram upp eller Bak upp under nollställningen.\n' +
     'Lampan ⚠ Kalibrera eller ⚠ Nollställ lyser tills det är gjort.',
   'help.sensor.h': 'Sensorbox',
   'help.sensor.t':
@@ -454,6 +455,20 @@ export const sv: Messages = {
   'caravan.jockeyWheel': 'Stödhjul',
   'help.screen.caravan': 'Husvagn: stödhjulet visar Veva upp eller Veva ner, och hur mycket.',
 
+  'zeroTrim.title': 'Finjustera nolläget',
+  'zeroTrim.hint':
+    'Står det ändå inte riktigt plant? Varje tryck flyttar nolläget 0,1° så att appen vill ha den sidan högre.',
+  'zeroTrim.left': 'Vänster upp',
+  'zeroTrim.right': 'Höger upp',
+  'zeroTrim.front': 'Fram upp',
+  'zeroTrim.back': 'Bak upp',
+  'zeroTrim.side.left': 'Vänster',
+  'zeroTrim.side.right': 'Höger',
+  'zeroTrim.side.front': 'Fram',
+  'zeroTrim.side.back': 'Bak',
+  'zeroTrim.total': 'Finjusterat: {trim}',
+  'zeroTrim.none': 'Inte finjusterat',
+  'zeroTrim.reset': 'Återställ finjustering',
   'tilt.frontBack': 'Längsled',
   'tilt.sideSide': 'Sidled',
 

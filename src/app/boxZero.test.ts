@@ -38,6 +38,7 @@ function setup(options: {
   } as unknown as OrientationSensor;
   const offsets = memoryOffsets();
   const onChanged = vi.fn();
+  const onZeroReplaced = vi.fn();
   const zeroing = createBoxZeroing({
     activeSensor: () => active,
     getXparkle: () =>
@@ -51,6 +52,7 @@ function setup(options: {
     offsets,
     readTilt: () => current,
     onChanged,
+    onZeroReplaced,
     now: () => 9000,
     clock: () => clock,
     wait: (ms) => {
@@ -67,7 +69,7 @@ function setup(options: {
       return Promise.resolve();
     },
   });
-  return { zeroing, offsets, onChanged };
+  return { zeroing, offsets, onChanged, onZeroReplaced };
 }
 
 describe('createBoxZeroing', () => {
@@ -164,6 +166,17 @@ describe('createBoxZeroing', () => {
     const { zeroing, offsets } = setup({ readings: [{ rollDeg: 2, pitchDeg: 1 }] });
     expect(zeroing.zero('phone')).toBeNull();
     expect(offsets.stored.get('phone')).toEqual([{ rollDeg: 2, pitchDeg: 1 }, 9000]);
+  });
+
+  it('says which box got a new or no zero, so its fine adjustment is dropped (#596)', async () => {
+    const { zeroing, onZeroReplaced } = setup({ source: 'xparkle' });
+    await zeroing.zero('xparkle');
+    expect(onZeroReplaced).toHaveBeenLastCalledWith('xparkle');
+    zeroing.clear('easylevel');
+    expect(onZeroReplaced).toHaveBeenLastCalledWith('easylevel');
+    const refused = setup({ xparkle: { zeroBox: () => Promise.resolve(false) } });
+    await refused.zeroing.zero('xparkle');
+    expect(refused.onZeroReplaced).not.toHaveBeenCalled();
   });
 
   it('clears a box zero and refreshes', () => {

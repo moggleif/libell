@@ -28,6 +28,9 @@ export interface BoxZeroDeps {
   /** The active sensor's tilt now, or the message to show instead. */
   readTilt(): Calibration | string;
   onChanged(): void;
+  /** A box's zero was retaken or forgotten: its fine adjustment no longer
+   * applies (#596). */
+  onZeroReplaced?(source: SensorSource): void;
   /** Wall time for the stored timestamp; defaults to `Date.now`. */
   now?: () => number;
   /** Monotonic time for the sampling window; defaults to `performance.now`. */
@@ -44,7 +47,7 @@ export interface BoxZeroing {
 }
 
 /** The deps with every default filled in. */
-type Zeroer = Required<BoxZeroDeps>;
+type Zeroer = Required<Omit<BoxZeroDeps, 'onZeroReplaced'>> & Pick<BoxZeroDeps, 'onZeroReplaced'>;
 
 export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
   const zeroer: Zeroer = {
@@ -63,6 +66,7 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
     },
     clear(source) {
       zeroer.offsets.clear(source);
+      zeroer.onZeroReplaced?.(source);
       zeroer.onChanged();
     },
   };
@@ -70,6 +74,7 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
 
 function store(zeroer: Zeroer, source: SensorSource, value: Calibration): void {
   zeroer.offsets.store(source, value, zeroer.now());
+  zeroer.onZeroReplaced?.(source);
   zeroer.onChanged();
 }
 

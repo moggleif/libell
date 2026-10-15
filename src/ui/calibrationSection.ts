@@ -18,6 +18,7 @@ import { buildLayout, type Layout, type LayoutResult, type Parts } from './calib
 import { captureMessage, type CalibrationKind, type OpenStep } from './calibrationText';
 import { createExternalCalibration } from './externalCalibration';
 import { t } from './i18n';
+import { createZeroTrimRow, type ZeroTrimOptions, type ZeroTrimRow } from './zeroTrimRow';
 
 export interface CalibrationOptions {
   /** Read once at construction; see the module doc comment. */
@@ -54,6 +55,8 @@ export interface CalibrationOptions {
   calibrateBox?(anyway?: boolean): CaptureResult | Promise<CaptureResult>;
   /** No link is shown when omitted. */
   openBoxPage?(): void;
+  /** Fine adjustment of the phone's vehicle zero (#596); no row when omitted. */
+  vehicleZeroTrim?: ZeroTrimOptions;
 }
 
 export interface BoxCalibrationState {
@@ -120,8 +123,9 @@ export function createCalibrationSection(
   };
   const body = document.createElement('div');
   const built = buildLayout(layout, options, parts, body, focus);
+  const trim = createTrimRow(options, layout, built);
 
-  const refresh = createRefreshers(options, parts, built, look);
+  const refresh = createRefreshers(options, parts, built, look, trim);
   wireActions(options, parts, focus, refresh);
   refresh.phone();
   return {
@@ -136,15 +140,29 @@ export function createCalibrationSection(
   };
 }
 
+/** Under the vehicle zero it adjusts. A first run has no zero to adjust
+ * yet, so the wizard has no row. */
+function createTrimRow(
+  options: CalibrationOptions,
+  layout: Layout,
+  built: LayoutResult,
+): ZeroTrimRow | null {
+  if (!options.vehicleZeroTrim || layout === 'wizard') return null;
+  const row = createZeroTrimRow(options.vehicleZeroTrim);
+  built.vehicleBody.append(row.element);
+  return row;
+}
+
 /**
  * The phone's refresh also redraws the vehicle zero (clearing a message
- * shown there); both end with the phone gate.
+ * shown there) and its fine adjustment; both end with the phone gate.
  */
 function createRefreshers(
   options: CalibrationOptions,
   parts: Parts,
   built: LayoutResult,
   look: { modern: boolean; checklist: boolean },
+  trim: ZeroTrimRow | null,
 ): Record<CalibrationKind, (message?: string) => void> {
   function vehicle(message?: string): void {
     const stored = {
@@ -152,6 +170,7 @@ function createRefreshers(
       capturedAt: options.getVehicleCalibrationCapturedAt(),
     };
     drawControls('vehicle', parts.vehicle, stored, look, message);
+    trim?.refresh();
     built.renderSteps?.();
     applyPhoneGate(options, parts, built.phoneElements);
   }

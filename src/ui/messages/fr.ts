@@ -402,6 +402,7 @@ export const fr: Messages = {
     'Étalonner : posez le téléphone sur une surface plane et touchez Étalonner maintenant.\n' +
     'Mettre à zéro : mettez le véhicule de niveau avec un niveau à bulle, posez le téléphone à sa place habituelle et touchez Mettre à zéro.\n' +
     'Avec un boîtier capteur, la mise à zéro se fait sur la page du boîtier. Il n’a pas besoin d’étalonnage.\n' +
+    'Toujours pas tout à fait de niveau ? Affinez le zéro avec Gauche, Droite, Avant ou Arrière plus haut, sous la mise à zéro.\n' +
     'Le voyant ⚠ Étalonner ou ⚠ Mettre à zéro reste allumé tant que ce n’est pas fait.',
   'help.sensor.h': 'Boîtier capteur',
   'help.sensor.t':
@@ -462,6 +463,20 @@ export const fr: Messages = {
   'help.screen.caravan':
     'Caravane : la roue jockey indique Monter ou Descendre à la manivelle, et de combien.',
 
+  'zeroTrim.title': 'Affiner le zéro',
+  'zeroTrim.hint':
+    'Toujours pas tout à fait de niveau ? Chaque appui déplace le zéro de 0,1°, pour que l’application veuille ce côté plus haut.',
+  'zeroTrim.left': 'Gauche plus haut',
+  'zeroTrim.right': 'Droite plus haut',
+  'zeroTrim.front': 'Avant plus haut',
+  'zeroTrim.back': 'Arrière plus haut',
+  'zeroTrim.side.left': 'Gauche',
+  'zeroTrim.side.right': 'Droite',
+  'zeroTrim.side.front': 'Avant',
+  'zeroTrim.side.back': 'Arrière',
+  'zeroTrim.total': 'Affiné : {trim}',
+  'zeroTrim.none': 'Non affiné',
+  'zeroTrim.reset': 'Annuler l’affinage',
   'tilt.frontBack': 'Longitudinal',
   'tilt.sideSide': 'Latéral',
 

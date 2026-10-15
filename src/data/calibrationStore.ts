@@ -23,6 +23,8 @@ const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
  */
 const INSTALL_CALIBRATION_KEY_PREFIX = 'libell.installCalibration.';
 
+const ZERO_TRIM_KEY_PREFIX = 'libell.zeroTrim.';
+
 /** The EasyLevel offset's pre-per-source key; read only by the migration. */
 const LEGACY_EASYLEVEL_CALIBRATION_KEY = 'libell.easyLevelInstallCalibration';
 
@@ -170,4 +172,40 @@ export function migrateLegacyInstallCalibration(
 
 export function clearCalibration(storage: KeyValueStorage | null = defaultStorage()): void {
   removeItem(storage, CALIBRATION_KEY);
+}
+
+/**
+ * A source's fine adjustment of its zero (#596), next to that zero and
+ * keyed per source like the installation offsets, so one source's trim is
+ * never read as another's. Null when none or corrupt.
+ */
+function zeroTrimKey(source: SensorSource): string {
+  return `${ZERO_TRIM_KEY_PREFIX}${source}`;
+}
+
+export function loadZeroTrim(
+  source: SensorSource,
+  storage: KeyValueStorage | null = defaultStorage(),
+): Calibration | null {
+  return readJson(
+    storage,
+    zeroTrimKey(source),
+    (parsed) => parseCalibration(parsed, MAX_TILT_DEG),
+    null,
+  );
+}
+
+export function saveZeroTrim(
+  source: SensorSource,
+  trim: Calibration,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  writeJson(storage, zeroTrimKey(source), trim);
+}
+
+export function clearZeroTrim(
+  source: SensorSource,
+  storage: KeyValueStorage | null = defaultStorage(),
+): void {
+  removeItem(storage, zeroTrimKey(source));
 }

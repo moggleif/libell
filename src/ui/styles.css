@@ -3121,6 +3121,31 @@ button.box-step__header {
   display: none;
 }
 
+/* Fine-tuning the zero (#596): four nudges two by two, as on the vehicle. */
+.zero-trim {
+  margin-top: 16px;
+}
+
+.zero-trim__title {
+  font-weight: 600;
+}
+
+.zero-trim__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.zero-trim__buttons .menu__action {
+  margin-top: 0;
+}
+
+.zero-trim .link-button {
+  display: block;
+  margin: 4px auto 0;
+}
+
 /* Disconnect sits at least a button's height away from the steps. */
 .box-footer {
   margin-top: 56px;

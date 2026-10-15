@@ -32,6 +32,9 @@ export interface PhoneCalibrationDeps {
   /** A bias or zero was just taken: the user is calibrating the phone. */
   onCaptured(): void;
   onCleared(): void;
+  /** The vehicle zero was retaken or forgotten: its fine adjustment no
+   * longer applies (#596). */
+  onVehicleZeroReplaced?(): void;
   storage?: KeyValueStorage | null;
   now?: () => number;
 }
@@ -92,6 +95,7 @@ export function createPhoneCalibration(deps: PhoneCalibrationDeps): PhoneCalibra
     clearVehicleZero() {
       layers.vehicleZero = null;
       clearVehicleCalibration(deps.storage);
+      deps.onVehicleZeroReplaced?.();
       deps.onCleared();
     },
     checkBias: () => checkAgainst(deps, layers.bias?.value ?? null, 'calibration.check.off'),
@@ -127,6 +131,7 @@ function zeroVehicle(layers: PhoneLayers, anyway: boolean): CaptureResult {
   const capturedAt = layers.now();
   layers.vehicleZero = { value, capturedAt };
   saveVehicleCalibration(value, deps.storage, capturedAt);
+  deps.onVehicleZeroReplaced?.();
   deps.onCaptured();
   return null;
 }

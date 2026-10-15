@@ -996,6 +996,34 @@ describe('pinned before the #416 split', () => {
     expect(findButton(section.installElement, t('box.step.zero.again'))).toBeDefined();
   });
 
+  it('offers fine-tuning under the box zero only once there is one (#596)', () => {
+    let offset: { rollDeg: number; pitchDeg: number } | null = null;
+    const nudges: string[] = [];
+    const section = createSensorSourceSection(
+      makeOptions({
+        getSensorSource: () => 'easylevel',
+        getSensorState: () => 'granted',
+        getInstallCalibration: () => offset,
+        calibrateInstall: () => {
+          offset = { rollDeg: 0, pitchDeg: 0 };
+          return null;
+        },
+        installZeroTrim: {
+          hasZero: () => offset !== null,
+          getTrim: () => ({ rollDeg: 0, pitchDeg: 0 }),
+          nudge: (direction) => void nudges.push(direction),
+          reset: () => {},
+        },
+      }),
+    );
+    const row = section.installElement.querySelector<HTMLElement>('.zero-trim')!;
+    expect(row.hidden).toBe(true);
+    findButton(section.installElement, 'Zero now').click();
+    expect(row.hidden).toBe(false);
+    findButton(row, t('zeroTrim.right')).click();
+    expect(nudges).toEqual(['right']);
+  });
+
   it('forgets a learned Xparkle direction by passing null', () => {
     const setLearnedMounting = vi.fn();
     const section = createSensorSourceSection(

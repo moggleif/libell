@@ -394,6 +394,7 @@ export const de: Messages = {
     'Kalibrieren: leg das Handy auf eine ebene Fläche und tippe auf Jetzt kalibrieren.\n' +
     'Nullen: stell das Fahrzeug mit einer Wasserwaage waagerecht, leg das Handy an seinen gewohnten Platz und tippe auf Jetzt nullen.\n' +
     'Mit einer Sensorbox nullst du auf der Seite der Box. Sie braucht keine Kalibrierung.\n' +
+    'Noch nicht ganz waagerecht? Justiere den Nullpunkt unter dem Nullen fein: Links, Rechts, Vorne oder Hinten höher.\n' +
     'Die Lampe ⚠ Kalibrieren oder ⚠ Nullen leuchtet, bis es erledigt ist.',
   'help.sensor.h': 'Sensorbox',
   'help.sensor.t':
@@ -453,6 +454,20 @@ export const de: Messages = {
   'help.screen.caravan':
     'Wohnwagen: Das Stützrad zeigt Hochkurbeln oder Herunterkurbeln und um wie viel.',
 
+  'zeroTrim.title': 'Nullpunkt feinjustieren',
+  'zeroTrim.hint':
+    'Noch nicht ganz waagerecht? Jeder Tipp verschiebt den Nullpunkt um 0,1°, sodass die App diese Seite höher haben will.',
+  'zeroTrim.left': 'Links höher',
+  'zeroTrim.right': 'Rechts höher',
+  'zeroTrim.front': 'Vorne höher',
+  'zeroTrim.back': 'Hinten höher',
+  'zeroTrim.side.left': 'Links',
+  'zeroTrim.side.right': 'Rechts',
+  'zeroTrim.side.front': 'Vorne',
+  'zeroTrim.side.back': 'Hinten',
+  'zeroTrim.total': 'Feinjustiert: {trim}',
+  'zeroTrim.none': 'Nicht feinjustiert',
+  'zeroTrim.reset': 'Feinjustierung zurücksetzen',
   'tilt.frontBack': 'Längs',
   'tilt.sideSide': 'Quer',
 

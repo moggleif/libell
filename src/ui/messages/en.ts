@@ -421,6 +421,7 @@ export const en = {
     'Calibrate: lay the phone on a flat surface and tap Calibrate now.\n' +
     'Zero: level the vehicle with a spirit level, put the phone in its usual place and tap Zero now.\n' +
     'With a sensor box you zero on the box’s page. It needs no calibration.\n' +
+    'Still not quite level? Fine-tune the zero with Left up, Right up, Front up or Back up under the zero.\n' +
     'The ⚠ Calibrate or ⚠ Zero lamp stays on until it is done.',
   'help.sensor.h': 'Sensor box',
   'help.sensor.t':
@@ -484,6 +485,20 @@ export const en = {
   // Help → Reading the screen, for a caravan's jockey wheel (#368).
   'help.screen.caravan': 'Caravan: the jockey wheel says Crank up or Crank down, and by how much.',
 
+  'zeroTrim.title': 'Fine-tune the zero',
+  'zeroTrim.hint':
+    'Still not quite level? Each tap moves the zero by 0.1°, so the app wants that side higher.',
+  'zeroTrim.left': 'Left up',
+  'zeroTrim.right': 'Right up',
+  'zeroTrim.front': 'Front up',
+  'zeroTrim.back': 'Back up',
+  'zeroTrim.side.left': 'Left',
+  'zeroTrim.side.right': 'Right',
+  'zeroTrim.side.front': 'Front',
+  'zeroTrim.side.back': 'Back',
+  'zeroTrim.total': 'Fine-tuned: {trim}',
+  'zeroTrim.none': 'Not fine-tuned',
+  'zeroTrim.reset': 'Reset fine-tuning',
   'tilt.frontBack': 'Front/back',
   'tilt.sideSide': 'Side/side',
 

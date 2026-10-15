@@ -700,6 +700,24 @@ URL and must keep working with no signal.
   ⚠ Calibrate, then ⚠ Zero (#364); the Calibration section shows each one as a
   checklist step, done or not, with its own clear button ("Clear calibration" /
   "Forget the zero") under "More" (#330).
+- **Given** a stored zero for the source in use (this vehicle zero, an EasyLevel box's
+  installation zero R34, or the Xparkle box's zero R49), and "level" by the app is
+  still not quite level in reality (the shower drains to one side)
+- **Then** under that zero (the "Zero the vehicle" step here, or the box's zero step
+  on its own page, R51) a "Fine-tune the zero" ("Finjustera nolläget") row offers Left
+  up, Right up, Front up and Back up, plus "Reset fine-tuning" (#596). Each tap moves
+  that source's zero one step (`ZERO_TRIM_STEP_DEG` in `src/domain/zeroTrim.ts`) so the
+  app then wants that side higher; the wheel advice follows at once. Opposite taps
+  cancel, since each axis is one signed sum, and the row shows the total in R8's degree
+  format ("Fine-tuned: Front +0.1° · Left +0.2°"). There is no cap: a re-zero clears it.
+- **Given** a fine adjustment
+- **Then** it survives a reload and is stored per source next to that source's zero
+  (ADR 0014's split), so switching source never mixes one source's adjustment into
+  another's. Taking the zero again, or forgetting it, clears that source's adjustment,
+  since the new zero already captures how the vehicle stands; "Reset fine-tuning" puts
+  the zero back exactly as captured. An active target (R31) is measured from the
+  adjusted zero. Without a stored zero the row is not shown: the zero step above it is
+  what guides the user. The first-run guide has no row, since it has no zero yet.
 
 ## R25 — A rocking vehicle shows "Measuring…" instead of flickering advice
 
@@ -1096,6 +1114,8 @@ cross-platform goal — they are not this app's code and are not covered here.
   every subsequent reading from the box is corrected by it — the same "capture the
   current tilt as zero" mechanism R24 already gives the phone's vehicle zero, applied
   to this source instead.
+- **Given** a stored installation zero
+- **Then** it can be fine-tuned under its zero step, as R24 describes (#596).
 - **Given** the box streams raw, unsmoothed samples, and its own app says to press OK
   a few times until the value settles
 - **Then** one tap zeroes from the average of the box's samples over a short window
@@ -1850,6 +1870,9 @@ present this source as more proven than it is.
   offset, which drives the "⚠ Zero" lamp and the age text, and replaces any older
   Libell-side offset so two zeros are never stacked. If no box is connected, or
   the command cannot be written, it says so and nothing is changed.
+- **Given** a zeroed Xparkle box
+- **Then** its zero can be fine-tuned in Libell under its zero step, as R24 describes
+  (#596): the box keeps its own zero, and Libell adds the adjustment on top.
 - **Given** the box must stand upright to measure right (#273, #304): verified on
   hardware, a box lying on its back changes both angles whenever it turns about its own
   axis, so no zero taken there holds
@@ -1948,7 +1971,7 @@ its descriptor's capabilities (ADR 0016).
   2. **Zero on level ground**: "Level the vehicle with a spirit level, then zero." and
      **Zero now** (R34; the Xparkle box zeroes itself, #290), then "Zeroed" with its age.
      A done zero drops the first-time instruction and offers **Zero again**, with
-     a **Forget the zero** link under it (#332), named like "Forget the direction" so it never reads as a second zeroing; forgetting returns the box to its own factory readings. A box that zeroes itself (the Xparkle box) keeps that zero, so it has no such link (#343). There is no separate check here (#343): the live line above already shows the tilt from the zero, so on the ground where it was zeroed it reads 0.0° while the zero still holds.
+     a **Forget the zero** link under it (#332), named like "Forget the direction" so it never reads as a second zeroing; forgetting returns the box to its own factory readings. A box that zeroes itself (the Xparkle box) keeps that zero, so it has no such link (#343). There is no separate check here (#343): the live line above already shows the tilt from the zero, so on the ground where it was zeroed it reads 0.0° while the zero still holds. Under a done zero, the fine-tuning row of R24 (#596) adjusts it in small steps.
 - **Given** the order of the steps
 - **Then** the direction comes before the zero: the direction is learned from
   differences and works anywhere, while the zero needs level ground — and leveling with

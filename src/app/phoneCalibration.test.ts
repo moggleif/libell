@@ -24,14 +24,23 @@ function setup(tilt: Calibration | string, storage = memoryStorage()) {
   let reading = tilt;
   const onCaptured = vi.fn();
   const onCleared = vi.fn();
+  const onVehicleZeroReplaced = vi.fn();
   const phone = createPhoneCalibration({
     readTilt: () => reading,
     onCaptured,
     onCleared,
+    onVehicleZeroReplaced,
     storage,
     now: () => 5000,
   });
-  return { phone, storage, onCaptured, onCleared, tiltTo: (next: Calibration) => (reading = next) };
+  return {
+    phone,
+    storage,
+    onCaptured,
+    onCleared,
+    onVehicleZeroReplaced,
+    tiltTo: (next: Calibration) => (reading = next),
+  };
 }
 
 describe('createPhoneCalibration', () => {
@@ -144,6 +153,19 @@ describe('createPhoneCalibration', () => {
 
     it('passes on a reading error', () => {
       expect(setup('no sensor').phone.zeroVehicle()).toBe('no sensor');
+    });
+
+    it('says the zero was replaced, so its fine adjustment is dropped (#596)', () => {
+      const taken = setup({ rollDeg: 1, pitchDeg: 1 });
+      taken.phone.calibrate();
+      expect(taken.onVehicleZeroReplaced).not.toHaveBeenCalled();
+      taken.phone.zeroVehicle();
+      expect(taken.onVehicleZeroReplaced).toHaveBeenCalledTimes(1);
+      const warned = setup({ rollDeg: 0, pitchDeg: -20 });
+      warned.phone.zeroVehicle();
+      expect(warned.onVehicleZeroReplaced).not.toHaveBeenCalled();
+      warned.phone.clearVehicleZero();
+      expect(warned.onVehicleZeroReplaced).toHaveBeenCalledTimes(1);
     });
   });
 
