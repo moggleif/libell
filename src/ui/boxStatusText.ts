@@ -4,6 +4,7 @@
  */
 import type { Calibration } from '../domain/calibration';
 import type { GravityVector } from '../domain/leveling';
+import type { BoxCapabilities } from '../sensor/boxes';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxConnection } from './boxConnection';
 import { t } from './i18n';
@@ -69,22 +70,37 @@ export interface DebugSnapshot {
   rawAccel: GravityVector | null;
   firmwareLabel: string | null;
   statusBytes: Uint8Array | null;
+  versionBytes: Uint8Array | null;
+  /** Which rows this box has: the copy holds the same rows as the screen. */
+  capabilities: Pick<
+    BoxCapabilities,
+    'temperature' | 'firmwareVersion' | 'debugBytes' | 'versionBytes'
+  >;
 }
 
 /** The copied debug text, with the same translated labels as the rows on
  * screen (#524); the values stay raw, as a bug report needs them. */
 export function debugSummaryText(snapshot: DebugSnapshot): string {
   const notAvailable = t('sensorSource.detail.notAvailable');
-  return [
+  const has = snapshot.capabilities;
+  const lines: Array<string | false> = [
     `Libell ${snapshot.name} · ${t('sensorStatus.debug')}`,
     t('sensorStatus.debug.state', { value: snapshot.state }),
-    temperatureText(snapshot.temperatureCelsius),
+    has.temperature && temperatureText(snapshot.temperatureCelsius),
     t('sensorStatus.debug.deviceId', { value: snapshot.deviceId ?? notAvailable }),
     t('sensorStatus.debug.lastSample', { value: snapshot.lastSampleAge }),
-    t('sensorStatus.debug.rawAccel', { value: rawAccelText(snapshot.rawAccel) ?? notAvailable }),
-    t('sensorStatus.debug.firmwareTier', { value: snapshot.firmwareLabel ?? notAvailable }),
-    t('sensorStatus.debug.rawStatusBytes', {
-      value: hexBytes(snapshot.statusBytes) ?? notAvailable,
-    }),
-  ].join('\n');
+    has.debugBytes &&
+      t('sensorStatus.debug.rawAccel', { value: rawAccelText(snapshot.rawAccel) ?? notAvailable }),
+    has.firmwareVersion &&
+      t('sensorStatus.debug.firmwareTier', { value: snapshot.firmwareLabel ?? notAvailable }),
+    has.debugBytes &&
+      t('sensorStatus.debug.rawStatusBytes', {
+        value: hexBytes(snapshot.statusBytes) ?? notAvailable,
+      }),
+    has.versionBytes &&
+      t('sensorStatus.debug.versionBytes', {
+        value: hexBytes(snapshot.versionBytes) ?? notAvailable,
+      }),
+  ];
+  return lines.filter((line) => line !== false).join('\n');
 }

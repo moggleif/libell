@@ -202,7 +202,9 @@ and it is **written to** (a password and a parameter query on connect, where Eas
 never writes at all). It reports finished angles rather than accelerometer axes, so the
 adapter synthesizes the `GravityVector` the seam takes; it applies its own stored mounting
 orientation, so Libell applies none. The adapter is the `OrientationSensor` face only:
-`xparkleLink.ts` runs one live link (handshake, poll loop, command replies) and
+`xparkleLink.ts` runs one live link (handshake, poll loop, command replies, and one
+best-effort `fff1` serial-number read after the first reading, inside the poll's
+in-flight guard so it never overlaps another GATT operation, #597) and
 `xparkleTransport.ts` is the transport seam with its Web Bluetooth link, where
 `xparkleSimulator.ts` (#271, R48) plugs in a simulated box behind `?xparkle-sim`.
 

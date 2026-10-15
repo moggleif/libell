@@ -128,6 +128,7 @@ export const fr: Messages = {
   'sensorStatus.debug.rawAccel': 'Accéléromètre brut (x/y/z) : {value}',
   'sensorStatus.debug.firmwareTier': 'Niveau de micrologiciel : {value}',
   'sensorStatus.debug.rawStatusBytes': 'Octets d’état bruts : {value}',
+  'sensorStatus.debug.versionBytes': 'Numéro de série et micrologiciel (bruts) : {value}',
   'sensorStatus.debug.copy': 'Copier les infos de débogage',
   'sensorStatus.debug.copied': 'Infos de débogage copiées !',
   'sensorStatus.debug.copy.failed': 'La copie automatique a échoué.',

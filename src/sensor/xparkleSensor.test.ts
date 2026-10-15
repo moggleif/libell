@@ -31,6 +31,7 @@ function fakeBox(overrides: Partial<XparkleConnection> = {}) {
   const writes: Uint8Array[] = [];
   let notify: ((view: DataView) => void) | null = null;
   let reads = 0;
+  let versionReads = 0;
   const connection: XparkleConnection = {
     deviceId: 'xparkle-1',
     subscribeNotify: (onData) => {
@@ -40,6 +41,10 @@ function fakeBox(overrides: Partial<XparkleConnection> = {}) {
     readLive: () => {
       reads += 1;
       return Promise.resolve(livePayload(325, 150));
+    },
+    readVersion: () => {
+      versionReads += 1;
+      return Promise.resolve(new DataView(Uint8Array.from([0xab, 0x01, 0x02]).buffer));
     },
     write: (frame) => {
       writes.push(frame);
@@ -52,6 +57,7 @@ function fakeBox(overrides: Partial<XparkleConnection> = {}) {
     connection,
     writes,
     reads: () => reads,
+    versionReads: () => versionReads,
     /** Deliver a command reply, as the box would on `fff4`. */
     reply: (frame: Uint8Array) => notify?.(new DataView(frame.buffer.slice(0))),
   };
@@ -90,6 +96,88 @@ function makeTransport(box = fakeBox()): { transport: XparkleTransport; box: typ
     },
   };
 }
+
+/** Lets every pending promise chain run out. */
+const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+describe('serial number and firmware (#597)', () => {
+  it('reads fff1 once, after the first reading, and keeps its bytes', async () => {
+    const timers = fakeTimers();
+    const { transport, box } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+
+    await sensor.start();
+    await settle();
+    await timers.flush();
+    await settle();
+    await timers.flush();
+    await settle();
+
+    expect(box.reads()).toBe(3);
+    expect(box.versionReads()).toBe(1);
+    expect([...sensor.getVersionBytes()!]).toEqual([0xab, 0x01, 0x02]);
+  });
+
+  it('keeps leveling when the read fails, and does not retry it on that link', async () => {
+    const timers = fakeTimers();
+    let versionReads = 0;
+    const box = fakeBox({
+      readVersion: () => {
+        versionReads += 1;
+        return Promise.reject(new Error('not permitted'));
+      },
+    });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+
+    await sensor.start();
+    await timers.flush();
+    await timers.flush();
+    await timers.flush();
+
+    expect(versionReads).toBe(1);
+    expect(sensor.getVersionBytes()).toBeNull();
+    expect(sensor.getState()).toBe('granted');
+    expect(box.reads()).toBe(3);
+  });
+
+  it('waits for a reading before asking', async () => {
+    const timers = fakeTimers();
+    const box = fakeBox({
+      readLive: () => Promise.resolve(new DataView(Uint8Array.from([1, 2]).buffer)),
+    });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+
+    await sensor.start();
+    await timers.flush();
+    await timers.flush();
+
+    expect(box.versionReads()).toBe(0);
+    expect(sensor.getVersionBytes()).toBeNull();
+  });
+
+  it('asks again on a new connection, which may be another box', async () => {
+    const timers = fakeTimers();
+    let versionReads = 0;
+    const box = fakeBox({
+      readVersion: () => {
+        versionReads += 1;
+        return versionReads === 1
+          ? Promise.resolve(new DataView(Uint8Array.from([1]).buffer))
+          : Promise.reject(new Error('no answer'));
+      },
+    });
+    const sensor = createXparkleSensor(makeTransport(box).transport, timers);
+    await sensor.start();
+    await settle();
+    expect([...sensor.getVersionBytes()!]).toEqual([1]);
+
+    sensor.disconnect();
+    await sensor.start();
+    await settle();
+    expect(versionReads).toBe(2);
+    expect(sensor.getVersionBytes()).toBeNull();
+  });
+});
 
 describe('connecting (#270)', () => {
   it('reaches granted and starts reporting gravity from the first poll', async () => {
@@ -535,6 +623,7 @@ describe('the Xparkle descriptor (#270)', () => {
       learnMounting: true,
       upright: true,
       zeroesItself: true,
+      versionBytes: true,
     });
   });
 

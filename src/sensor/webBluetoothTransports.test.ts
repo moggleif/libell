@@ -11,6 +11,7 @@ import {
   XPARKLE_LIVE_CHARACTERISTIC_UUID,
   XPARKLE_NOTIFY_CHARACTERISTIC_UUID,
   XPARKLE_SERVICE_UUID,
+  XPARKLE_VERSION_CHARACTERISTIC_UUID,
   XPARKLE_WRITE_CHARACTERISTIC_UUID,
 } from './xparkleProtocol';
 
@@ -291,6 +292,17 @@ describe('the Xparkle transport’s own GATT wiring (#418 regression)', () => {
     expect(characteristics.get(XPARKLE_WRITE_CHARACTERISTIC_UUID)!.writeValue).toHaveBeenCalledWith(
       frame,
     );
+  });
+
+  it('reads the serial number and firmware from fff1 only when asked (#597)', async () => {
+    const { connection, characteristics } = await connectXparkle();
+    expect(characteristics.has(XPARKLE_VERSION_CHARACTERISTIC_UUID)).toBe(false);
+    const version = new DataView(new ArrayBuffer(3));
+    const fff1 = fakeCharacteristic();
+    fff1.readValue.mockResolvedValue(version);
+    characteristics.set(XPARKLE_VERSION_CHARACTERISTIC_UUID, fff1);
+
+    expect(await connection.readVersion()).toBe(version);
   });
 
   it('subscribes to the notify characteristic and passes on every value it carries', async () => {

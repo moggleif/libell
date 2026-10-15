@@ -11,6 +11,7 @@ import {
   XPARKLE_LIVE_CHARACTERISTIC_UUID,
   XPARKLE_NOTIFY_CHARACTERISTIC_UUID,
   XPARKLE_SERVICE_UUID,
+  XPARKLE_VERSION_CHARACTERISTIC_UUID,
   XPARKLE_WRITE_CHARACTERISTIC_UUID,
 } from './xparkleProtocol';
 
@@ -24,6 +25,9 @@ export interface XparkleConnection {
   subscribeNotify(onData: (view: DataView) => void): Promise<void>;
   /** One read of `fff2`. Rejects or resolves null when it cannot be read. */
   readLive(): Promise<DataView | null>;
+  /** One read of `fff1`: the serial number and firmware. Rejects or
+   * resolves null when it cannot be read. */
+  readVersion(): Promise<DataView | null>;
   /** Write one framed command to `fff3`. */
   write(frame: Uint8Array): Promise<void>;
   disconnect(): void;
@@ -80,6 +84,10 @@ async function wireXparkle(
       await notify.startNotifications();
     },
     readLive: () => live.readValue(),
+    async readVersion() {
+      const version = await service.getCharacteristic(XPARKLE_VERSION_CHARACTERISTIC_UUID);
+      return version.readValue();
+    },
     write: (frame) => write.writeValue(frame),
   };
 }

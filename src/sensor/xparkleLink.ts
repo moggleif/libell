@@ -63,6 +63,10 @@ export interface XparkleLink {
   state: SensorState;
   deviceId: string | null;
   pollInFlight: boolean;
+  /** `fff1`'s bytes, once read on this link. */
+  versionBytes: Uint8Array | null;
+  /** The `fff1` read is tried once per link, after its first reading. */
+  versionAsked: boolean;
   readonly options: LinkOptions;
   readonly readings: ReturnType<typeof createReadings>;
   readonly replies: ReturnType<typeof createReplyListener>;
@@ -75,6 +79,8 @@ export function createXparkleLink(options: LinkOptions): XparkleLink {
     state: 'idle',
     deviceId: null,
     pollInFlight: false,
+    versionBytes: null,
+    versionAsked: false,
     options,
     readings: createReadings(options),
     replies: createReplyListener(options.timers),
@@ -129,6 +135,8 @@ export function disconnectByUser(link: XparkleLink): void {
 async function adopt(link: XparkleLink, live: XparkleConnection): Promise<SensorState> {
   link.connection = live;
   link.deviceId = live.deviceId;
+  link.versionBytes = null;
+  link.versionAsked = false;
   link.state = 'granted';
   link.replies.restart();
   await sendHandshake(live, link.replies.handle, link.options.getPassword());
@@ -168,12 +176,39 @@ async function pollOnce(link: XparkleLink): Promise<void> {
     // An unparseable payload is a bad packet, not a lost link;
     // `staleTimeoutMs` hides the guidance if they keep coming.
     if (parsed) link.readings.accept(parsed);
+    if (parsed && !link.versionAsked && link.connection === live) {
+      await readVersionOnce(link, live);
+    }
   } catch {
     // A failed or timed-out read is the link going — but only this read's
     // link: a newer one adopted meanwhile has not failed.
     if (link.connection === live) dropFailedLink(link, live);
   } finally {
     link.pollInFlight = false;
+  }
+}
+
+/**
+ * The serial number and firmware, for the debug disclosure only. Read after
+ * the first reading, inside the poll's in-flight guard so it never overlaps
+ * another GATT operation; a failure is not the link going, and is not
+ * retried on this link.
+ */
+async function readVersionOnce(link: XparkleLink, live: XparkleConnection): Promise<void> {
+  link.versionAsked = true;
+  try {
+    const view = await withTimeout(
+      live.readVersion(),
+      XPARKLE_READ_TIMEOUT_MS,
+      link.options.timers,
+    );
+    if (view && link.connection === live) {
+      link.versionBytes = new Uint8Array(
+        view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength),
+      );
+    }
+  } catch {
+    // Best-effort: the rows read "Not available yet".
   }
 }
 

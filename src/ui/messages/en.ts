@@ -140,6 +140,7 @@ export const en = {
   'sensorStatus.debug.rawAccel': 'Raw accelerometer (x/y/z): {value}',
   'sensorStatus.debug.firmwareTier': 'Firmware tier: {value}',
   'sensorStatus.debug.rawStatusBytes': 'Raw status bytes: {value}',
+  'sensorStatus.debug.versionBytes': 'Serial number and firmware (raw): {value}',
   'sensorStatus.debug.copy': 'Copy debug info',
   'sensorStatus.debug.copied': 'Debug info copied!',
   'sensorStatus.debug.copy.failed': 'Could not copy automatically.',

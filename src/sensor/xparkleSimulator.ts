@@ -93,6 +93,10 @@ const SIM_BATTERY_PERCENT = 62;
 /** Stored parameters, as the box would report them: cm, a motorhome,
  * 230 × 600, mounted front-facing, 0.5-unit display resolution. */
 const SIM_PARAMETERS = [1, 0, 0, 230, 2, 88, 0, 1];
+/** What `fff1` answers. A real box's layout is not established
+ * (`docs/competitor-notes.md`), so these are plainly simulated: "SIM01"
+ * then three bytes, shown as hex like any other. */
+export const SIMULATED_XPARKLE_VERSION_BYTES = [0x53, 0x49, 0x4d, 0x30, 0x31, 0x01, 0x04, 0x06];
 
 /** Magnitudes in 1/100° plus a direction flag each, per `parseLivePayload`.
  * The deterministic ±0.02° wobble keeps the live UI visibly updating while
@@ -150,31 +154,45 @@ function openSimulatedXparkle(
       if (!session.isLive()) return Promise.reject(new Error('simulated box: link lost'));
       return Promise.resolve(livePayload(sampleIndex++, zero));
     },
+    readVersion: () => {
+      if (!session.isLive()) return Promise.reject(new Error('simulated box: link lost'));
+      return Promise.resolve(new DataView(Uint8Array.from(SIMULATED_XPARKLE_VERSION_BYTES).buffer));
+    },
     write: (frame) => {
       if (!session.isLive()) return Promise.reject(new Error('simulated box: link lost'));
       if (frame.length < 3 || frame[0] !== XPARKLE_FRAME_HEADER) {
         return Promise.reject(new Error('simulated box: not a command frame'));
       }
-      if (frame[2] === XPARKLE_COMMAND.password) {
-        // Reply byte 4 is the verdict: 0 accepted, anything else rejected
-        // (the app's `setPwd(bArr[4] == 0)`). The code offered is the
-        // frame's "new" field, bytes 5–8.
-        const offered = [...frame.subarray(5, 9)].join('');
-        const accepted = offered === simulatedXparklePassword(mode);
-        answer(buildCommandFrame(XPARKLE_COMMAND.password, [accepted ? 0 : 1]));
-      } else if (frame[2] === XPARKLE_COMMAND.queryParameters) {
-        answer(buildCommandFrame(XPARKLE_COMMAND.queryParameters, SIM_PARAMETERS));
-      } else if (frame[2] === XPARKLE_COMMAND.resetZero) {
-        // No reply modelled: whether a real box answers is unknown, and
-        // Libell does not wait for one.
-        zero.rollDeg = SIM_ROLL_DEG;
-        zero.pitchDeg = SIM_PITCH_DEG;
-      }
-      // Other commands are accepted silently: Libell sends none, and
-      // invented replies would only test the simulator itself.
+      runCommand(frame, mode, zero, answer);
       return Promise.resolve();
     },
   };
+}
+
+/** What the box does with one command frame. Other commands are accepted
+ * silently: Libell sends none, and invented replies would only test the
+ * simulator itself. */
+function runCommand(
+  frame: Uint8Array,
+  mode: Exclude<XparkleSimulationMode, 'off'>,
+  zero: { rollDeg: number; pitchDeg: number },
+  answer: (frame: Uint8Array) => void,
+): void {
+  if (frame[2] === XPARKLE_COMMAND.password) {
+    // Reply byte 4 is the verdict: 0 accepted, anything else rejected
+    // (the app's `setPwd(bArr[4] == 0)`). The code offered is the
+    // frame's "new" field, bytes 5–8.
+    const offered = [...frame.subarray(5, 9)].join('');
+    const accepted = offered === simulatedXparklePassword(mode);
+    answer(buildCommandFrame(XPARKLE_COMMAND.password, [accepted ? 0 : 1]));
+  } else if (frame[2] === XPARKLE_COMMAND.queryParameters) {
+    answer(buildCommandFrame(XPARKLE_COMMAND.queryParameters, SIM_PARAMETERS));
+  } else if (frame[2] === XPARKLE_COMMAND.resetZero) {
+    // No reply modelled: whether a real box answers is unknown, and
+    // Libell does not wait for one.
+    zero.rollDeg = SIM_ROLL_DEG;
+    zero.pitchDeg = SIM_PITCH_DEG;
+  }
 }
 
 /** The parameter reply this simulator sends, parsed, so tests need not

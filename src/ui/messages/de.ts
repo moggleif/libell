@@ -128,6 +128,7 @@ export const de: Messages = {
   'sensorStatus.debug.rawAccel': 'Rohes Beschleunigungssignal (x/y/z): {value}',
   'sensorStatus.debug.firmwareTier': 'Firmware-Stufe: {value}',
   'sensorStatus.debug.rawStatusBytes': 'Rohe Status-Bytes: {value}',
+  'sensorStatus.debug.versionBytes': 'Seriennummer und Firmware (roh): {value}',
   'sensorStatus.debug.copy': 'Debug-Infos kopieren',
   'sensorStatus.debug.copied': 'Debug-Infos kopiert!',
   'sensorStatus.debug.copy.failed': 'Automatisches Kopieren nicht möglich.',

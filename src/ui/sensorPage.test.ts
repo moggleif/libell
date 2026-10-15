@@ -28,6 +28,7 @@ function makeOptions(overrides: Partial<Options> = {}): Options {
     getLastSampleAt: () => null,
     getRawAccel: () => null,
     getEasyLevelStatusBytes: () => null,
+    getXparkleVersionBytes: () => null,
     getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
     setEasyLevelConnectDelay: () => {},
     getMounting: () => 'standard',
@@ -203,6 +204,7 @@ const SECOND_BOX: BoxDescriptor = {
     learnMounting: false,
     upright: false,
     zeroesItself: false,
+    versionBytes: false,
   },
   staleTimeoutMs: 4000,
 };

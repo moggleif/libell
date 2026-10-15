@@ -18,6 +18,7 @@ function makeOptions(overrides: Partial<BoxStatusOptions> = {}): BoxStatusOption
     getLastSampleAt: () => null,
     getRawAccel: () => null,
     getEasyLevelStatusBytes: () => null,
+    getXparkleVersionBytes: () => null,
     getEasyLevelConnectDelay: () => ({ enabled: false, ms: 300 }),
     setEasyLevelConnectDelay: () => {},
     ...overrides,
@@ -599,18 +600,39 @@ describe('the same page for every box (#375)', () => {
     expect(debug!.querySelector('input[type="number"]')).not.toBeNull();
   });
 
-  it('gives the Xparkle no debug disclosure, temperature or connect delay — it has none', () => {
+  it('gives the Xparkle a debug disclosure with its serial number and firmware, without temperature, accelerometer or connect delay (#597)', () => {
     const page = createBoxStatusPage(
       makeOptions({
         sensor: XPARKLE_DESCRIPTOR,
         getSensorSource: () => 'xparkle',
         getHealth: () => health,
+        getDeviceId: () => 'xparkle-1',
+        getXparkleVersionBytes: () => new Uint8Array([0x53, 0x01, 0xff]),
       }),
     );
-    expect(page.element.querySelector('.sensor-status__debug')).toBeNull();
+    const debug = page.element.querySelector('.sensor-status__debug')!;
+    expect(debug.textContent).toContain(
+      t('sensorStatus.debug.versionBytes', { value: '53 01 ff' }),
+    );
+    expect(debug.textContent).toContain('xparkle-1');
+    expect(debug.textContent).toContain(t('sensorStatus.debug.copy'));
     expect(page.element.textContent).not.toContain('Temperature');
-    expect(page.element.textContent).not.toContain(t('sensorStatus.debug.copy'));
+    expect(debug.textContent).not.toContain(t('sensorStatus.debug.rawAccel', { value: '' }).trim());
     expect(page.element.querySelector('input[type="number"]')).toBeNull();
+  });
+
+  it('reads "not available yet" for the Xparkle’s serial number before fff1 has answered', () => {
+    const page = createBoxStatusPage(
+      makeOptions({ sensor: XPARKLE_DESCRIPTOR, getSensorSource: () => 'xparkle' }),
+    );
+    expect(page.element.querySelector('.sensor-status__debug')!.textContent).toContain(
+      t('sensorStatus.debug.versionBytes', { value: t('sensorSource.detail.notAvailable') }),
+    );
+  });
+
+  it('hides the Xparkle’s disclosure while the phone is the source', () => {
+    const page = createBoxStatusPage(makeOptions({ sensor: XPARKLE_DESCRIPTOR }));
+    expect(page.element.querySelector<HTMLElement>('.sensor-status__debug')!.hidden).toBe(true);
   });
 });
 

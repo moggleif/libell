@@ -66,6 +66,7 @@ export const EASYLEVEL_DESCRIPTOR: BoxDescriptor = {
     learnMounting: true,
     upright: false,
     zeroesItself: false,
+    versionBytes: false,
   },
   // Notifications are event-driven, so BLE connection-interval jitter can
   // create larger gaps than the phone's 2s allows for.

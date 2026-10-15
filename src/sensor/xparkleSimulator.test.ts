@@ -7,6 +7,7 @@ import {
   SIMULATED_XPARKLE_DEVICE_ID,
   SIMULATED_XPARKLE_DROP_AFTER_MS,
   SIMULATED_XPARKLE_OUTAGE_MS,
+  SIMULATED_XPARKLE_VERSION_BYTES,
   xparkleSimulationMode,
 } from './xparkleSimulator';
 import { createXparkleSensor } from './xparkleSensor';
@@ -78,6 +79,12 @@ describe('the simulated box (#271)', () => {
     const again = await transport.connect(() => {});
     const later = parseLivePayload((await again.readLive())!);
     expect(Math.abs(later!.rollDeg)).toBeLessThan(0.05);
+  });
+
+  it('answers the fff1 read with its simulated serial number and firmware (#597)', async () => {
+    const connection = await createSimulatedXparkleTransport('steady').connect(() => {});
+    const view = (await connection.readVersion())!;
+    expect([...new Uint8Array(view.buffer)]).toEqual(SIMULATED_XPARKLE_VERSION_BYTES);
   });
 
   it('moves a little between reads, so a live screen visibly updates', async () => {

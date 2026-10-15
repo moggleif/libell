@@ -9,6 +9,7 @@ import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { BoxDescriptor } from '../sensor/boxes';
+import type { XparkleSensor } from '../sensor/xparkleSensor';
 import { healthOf, withEasyLevelConnectDelay } from './boxWiring';
 import {
   boxConnectionOptions,
@@ -71,13 +72,7 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
     getVehicleType: () => settings().vehicleType,
     getActiveTargetName: () => parts.targets.activeName(),
     getHealth: () => healthOf('easylevel', parts.boxes.getSensor('easylevel')),
-    // Raw status bytes are EasyLevel's own debug surface.
-    getEasyLevelStatusBytes: () => {
-      const sensor = parts.boxes.getSensor('easylevel');
-      return sensor && sensor.getSource() === 'easylevel'
-        ? (sensor as EasyLevelSensor).getStatusBytes()
-        : null;
-    },
+    ...debugByteOptions(parts),
     getEasyLevelConnectDelay: () => ({
       enabled: easyLevelSettings(settings()).connectDelayEnabled,
       ms: easyLevelSettings(settings()).connectDelayMs,
@@ -118,5 +113,24 @@ export function wizardBoxOptions(
     ...menu,
     ...boxConnectionOptions(descriptor, parts),
     ...boxSetupOptions(descriptor, parts),
+  };
+}
+
+/** Each box's own raw bytes for its debug disclosure: the EasyLevel's status
+ * bytes, the Xparkle's serial number and firmware (#597). */
+function debugByteOptions(parts: MenuOptionDeps) {
+  return {
+    getEasyLevelStatusBytes: () => {
+      const sensor = parts.boxes.getSensor('easylevel');
+      return sensor && sensor.getSource() === 'easylevel'
+        ? (sensor as EasyLevelSensor).getStatusBytes()
+        : null;
+    },
+    getXparkleVersionBytes: () => {
+      const sensor = parts.boxes.getSensor('xparkle');
+      return sensor && sensor.getSource() === 'xparkle'
+        ? (sensor as XparkleSensor).getVersionBytes()
+        : null;
+    },
   };
 }

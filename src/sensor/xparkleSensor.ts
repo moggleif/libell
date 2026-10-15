@@ -12,7 +12,8 @@
  * **2. It expects to be written to.** The app's connect sequence: enable
  * notifications on `fff4`, read the serial number, send the password
  * (command `4`, default `"0000"`), query the stored parameters (command
- * `2`), then poll.
+ * `2`), then poll. Libell reads the serial number after the first reading
+ * instead, so leveling never waits on it (#597).
  *
  * **Mounting orientation: the box's own, never Libell's.** Unlike EasyLevel's
  * raw axes, the box applies its stored installation orientation
@@ -83,6 +84,10 @@ export interface XparkleSensor extends Box {
    * changes the box's stored state, and only from an explicit user action.
    */
   zeroBox(): Promise<boolean>;
+  /** The box's `fff1` serial number and firmware bytes, read once per
+   * connection after its first reading; null until then or when the read
+   * failed. Only for the debug disclosure: leveling never waits on it. */
+  getVersionBytes(): Uint8Array | null;
 }
 
 export interface XparkleSensorOptions {
@@ -119,6 +124,7 @@ export function createXparkleSensor(
     isPasswordRejected: replies.isPasswordRejected,
     verifyPassword: () => verifyPassword(link),
     zeroBox: () => zeroBox(link.connection),
+    getVersionBytes: () => link.versionBytes,
   };
 }
 
@@ -166,7 +172,8 @@ async function zeroBox(live: XparkleConnection | null): Promise<boolean> {
  * This box as the registry sees it (ADR 0016). `mounting: false`: the box
  * applies its own stored orientation, so Libell's picker would
  * double-correct (see the top of this file). The protocol carries no
- * temperature or debug bytes, so those rows are not drawn.
+ * temperature or raw accelerometer, so those rows are not drawn; its serial
+ * number and firmware are (`versionBytes`).
  */
 export const XPARKLE_DESCRIPTOR: BoxDescriptor = {
   id: 'xparkle',
@@ -183,6 +190,7 @@ export const XPARKLE_DESCRIPTOR: BoxDescriptor = {
     learnMounting: true,
     upright: true,
     zeroesItself: true,
+    versionBytes: true,
   },
   // Not tightened below EasyLevel's 4 s despite 500 ms polling: a busy
   // connection interval can delay a BLE read, and R35's overlay hiding

@@ -131,6 +131,7 @@ export const sv: Messages = {
   'sensorStatus.debug.rawAccel': 'Rå accelerometer (x/y/z): {value}',
   'sensorStatus.debug.firmwareTier': 'Firmware-nivå: {value}',
   'sensorStatus.debug.rawStatusBytes': 'Råa statusbytes: {value}',
+  'sensorStatus.debug.versionBytes': 'Serienummer och firmware (rå): {value}',
   'sensorStatus.debug.copy': 'Kopiera felsökningsinfo',
   'sensorStatus.debug.copied': 'Felsökningsinfo kopierad!',
   'sensorStatus.debug.copy.failed': 'Kunde inte kopiera automatiskt.',
