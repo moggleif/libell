@@ -56,8 +56,14 @@ describe('createVehicles', () => {
     expect(loadVehicleCalibration(storage)).toEqual(ZERO);
   });
 
-  it('adds a new vehicle with default measurements, no box, no zero, and makes it active', () => {
+  // #617: a new vehicle starts as a copy of the active one's vehicle, but
+  // never with its box, zero or targets (one box per vehicle).
+  it('adds a new vehicle copying the active one’s measurements, with no box, zero or targets', () => {
     const { vehicles, storage, reload } = setup();
+    saveSettings(
+      { ...loadSettings(storage), vehicleType: 'caravan', rampStepHeightsMm: [40, 80] },
+      storage,
+    );
     vehicles.add('Caravan');
     expect(vehicles.list()).toEqual([
       { id: 'vehicle-1', name: '' },
@@ -66,8 +72,11 @@ describe('createVehicles', () => {
     expect(vehicles.activeId()).toBe('v1');
     expect(reload).toHaveBeenCalledOnce();
     const settings = loadSettings(storage);
-    expect(settings.wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
+    expect(settings.wheelbaseMm).toBe(4000);
+    expect(settings.vehicleType).toBe('caravan');
+    expect(settings.rampStepHeightsMm).toEqual([40, 80]);
     expect(settings.sensorSource).toBe('phone');
+    expect(settings.sensorDevices).toEqual(DEFAULT_SETTINGS.sensorDevices);
     expect(settings.theme).toBe('dark');
     expect(loadVehicleCalibration(storage)).toBeNull();
     expect(loadRememberedDeviceId('xparkle', storage)).toBeNull();
@@ -93,11 +102,14 @@ describe('createVehicles', () => {
     expect(hasStoredMeasurements(storage)).toBe(true);
   });
 
-  it('lights the measurements lamp for a new vehicle on defaults, not for the first one', () => {
+  it('carries over whether the measurements were saved, since they are copied (#617)', () => {
     const { vehicles, storage } = setup();
-    markMeasurementsSaved(storage);
-    vehicles.add('Caravan');
+    vehicles.add('Unmeasured copy');
     expect(hasStoredMeasurements(storage)).toBe(false);
+    vehicles.switchTo('vehicle-1');
+    markMeasurementsSaved(storage);
+    vehicles.add('Measured copy');
+    expect(hasStoredMeasurements(storage)).toBe(true);
     vehicles.switchTo('vehicle-1');
     expect(hasStoredMeasurements(storage)).toBe(true);
   });
