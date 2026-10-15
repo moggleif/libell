@@ -340,7 +340,7 @@ URL and must keep working with no signal.
 ## R13 — The app speaks the phone's language
 
 - **Given** my phone's language is one Libell ships: Swedish, English, French, Spanish,
-  German, Dutch, Italian, Polish, Portuguese, Danish and Norwegian Bokmål
+  German, Dutch, Italian, Polish, Portuguese, Danish, Norwegian Bokmål and Finnish
 - **When** I open Libell
 - **Then** every user-facing string is in that language — the locale's language subtag
   decides, so `de-AT` is German too, and `no` and `nn` count as Norwegian Bokmål; any
