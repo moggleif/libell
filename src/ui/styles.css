@@ -474,6 +474,13 @@ body {
   display: none;
 }
 
+/* The vehicle on the left, the target (or hitch height) in the right corner
+ * (#622), so neither is read as part of the other. */
+.target-badge,
+.hitch-badge {
+  margin-left: auto;
+}
+
 /* Neutral, not amber: an active target (ADR 0013) is a choice, never a
  * fault. The vehicle (#616) and hitch height (#598) badges are the same
  * kind of choice. */
