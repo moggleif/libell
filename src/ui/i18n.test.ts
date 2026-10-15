@@ -41,6 +41,7 @@ describe('i18n dictionaries', () => {
       'Norsk bokmål',
       'Polski',
       'Português',
+      'Română',
       'Suomi',
       'Svenska',
     ]);
@@ -216,6 +217,7 @@ describe('i18n terminology (#366)', () => {
       fi: 'Mitat',
       cs: 'Rozměry',
       hu: 'Méretek',
+      ro: 'Dimensiuni',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -275,6 +277,7 @@ describe('i18n public interface (#377)', () => {
       | 'fi'
       | 'cs'
       | 'hu'
+      | 'ro'
     >();
   });
 
