@@ -9,12 +9,13 @@ import { en } from './messages/en';
 import { es } from './messages/es';
 import { fr } from './messages/fr';
 import { it } from './messages/it';
+import { nb } from './messages/nb';
 import { nl } from './messages/nl';
 import { pl } from './messages/pl';
 import { pt } from './messages/pt';
 import { sv } from './messages/sv';
 
-export const MESSAGES = { en, sv, fr, es, de, nl, it, pl, pt, da } as const;
+export const MESSAGES = { en, sv, fr, es, de, nl, it, pl, pt, da, nb } as const;
 
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
@@ -32,6 +33,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   pl: 'Polski',
   pt: 'Português',
   da: 'Dansk',
+  nb: 'Norsk bokmål',
 };
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
@@ -44,10 +46,15 @@ export function isLanguage(value: unknown): value is Language {
   return typeof value === 'string' && (LANGUAGES as readonly string[]).includes(value);
 }
 
+/** Locale subtags that mean a shipped language under another code:
+ * phones report Norwegian as `no` or `nn` as well as `nb`. */
+const SUBTAG_ALIASES: Record<string, Language> = { no: 'nb', nn: 'nb' };
+
 /** The locale's language subtag decides; anything unshipped → English. */
 function detectLanguage(): Language {
   const locale = typeof navigator !== 'undefined' ? navigator.language?.toLowerCase() : undefined;
-  const subtag = locale?.split('-')[0];
+  const raw = locale?.split('-')[0];
+  const subtag = (raw && SUBTAG_ALIASES[raw]) ?? raw;
   return isLanguage(subtag) ? subtag : 'en';
 }
 

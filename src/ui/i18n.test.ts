@@ -36,6 +36,7 @@ describe('i18n dictionaries', () => {
       'Français',
       'Italiano',
       'Nederlands',
+      'Norsk bokmål',
       'Polski',
       'Português',
       'Svenska',
@@ -208,6 +209,7 @@ describe('i18n terminology (#366)', () => {
       pl: 'Wymiary',
       pt: 'Medidas',
       da: 'Dimensioner',
+      nb: 'Dimensjoner',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -253,7 +255,7 @@ describe('i18n public interface (#377)', () => {
 
   it('types Language as the shipped languages', () => {
     expectTypeOf<Language>().toEqualTypeOf<
-      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt' | 'da'
+      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt' | 'da' | 'nb'
     >();
   });
 
@@ -301,8 +303,18 @@ describe('i18n public interface (#377)', () => {
     expect(detect('fr')).toBe('fr');
     expect(detect('es-MX')).toBe('es');
     expect(detect('en-GB')).toBe('en');
-    expect(detect('nb-NO')).toBe('en');
+    expect(detect('ja-JP')).toBe('en');
     expect(detect(undefined)).toBe('en');
+  });
+
+  it('reads the other Norwegian tags as Norwegian Bokmål', () => {
+    const detect = (language: string) => {
+      vi.stubGlobal('navigator', { language });
+      return resolveLanguage(null);
+    };
+    expect(detect('nb-NO')).toBe('nb');
+    expect(detect('no-NO')).toBe('nb');
+    expect(detect('nn-NO')).toBe('nb');
   });
 
   it('prefers a valid stored language over the detected one', () => {
