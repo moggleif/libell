@@ -80,21 +80,15 @@ describe('createTargets', () => {
     });
 
     it('leaves the badge alone when nothing is saved', () => {
-      const { targets, onChanged } = setup({ tilt: { rollDeg: 16, pitchDeg: 0 } });
-      targets.add('Steep');
+      const { targets, onChanged } = setup({ tilt: 'no sensor' });
+      targets.add('X');
       expect(onChanged).not.toHaveBeenCalled();
     });
 
-    // #425: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
-    it('warns, without saving, about more than an intentional target', () => {
-      const { targets } = setup({ tilt: { rollDeg: 16, pitchDeg: 0 } });
-      expect(targets.add('Steep')).toEqual({ warning: t('targets.warn.tooSteep') });
-      expect(targets.presets()).toEqual([]);
-    });
-
-    it('saves a steep target anyway when the user goes ahead (#425)', () => {
+    // #621: one Save button — a steep target is saved, the warning only informs.
+    it('saves a steep target and warns about it (#621)', () => {
       const { targets, storage } = setup({ tilt: { rollDeg: 16, pitchDeg: 0 } });
-      expect(targets.add('Steep', true)).toBeNull();
+      expect(targets.add('Steep')).toEqual({ warning: t('targets.warn.tooSteep') });
       const saved = { id: 'id-1', name: 'Steep', offset: { rollDeg: 16, pitchDeg: 0 } };
       expect(targets.presets()).toEqual([saved]);
       expect(loadTargetPresets(storage)).toEqual([saved]);

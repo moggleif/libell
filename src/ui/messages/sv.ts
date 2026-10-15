@@ -356,8 +356,7 @@ export const sv: Messages = {
   'targets.add': 'Spara aktuell lutning som nytt mål',
   'targets.delete': 'Ta bort {name}',
   'targets.warn.tooSteep':
-    'Det här ser brantare ut än ett avsiktligt mål (över 15°). Försök igen, eller spara ändå.',
-  'targets.anyway': 'Spara ändå',
+    'Målet sparades, men det är brantare än ett vanligt mål (över 15°). Var det inte meningen? Ta bort det med krysset och spara igen.',
   'targets.badge': 'Mål: {name}',
 
   'feedback.intro':

@@ -20,10 +20,10 @@ export interface TargetsOptions {
   getActiveTargetId(): string | null;
   /** Switch the active target; `null` selects "Normal" (true level). */
   selectTarget(id: string | null): void;
-  /** Capture the current tilt as a new preset named `name`: null on
-   * success, an error text, or a warning above 15° that offers "Save
-   * anyway" — `anyway` is set when the user chose it. */
-  addTargetPreset(name: string, anyway?: boolean): CaptureResult;
+  /** Capture the current tilt as a new preset named `name`: null when
+   * saved, an error text when not, or a warning when it was saved but
+   * looks steeper than 15° (#621). */
+  addTargetPreset(name: string): CaptureResult;
   deleteTargetPreset(id: string): void;
   /** Rename a preset (#613); its row cannot be renamed when omitted. */
   renameTargetPreset?(id: string, name: string): void;
@@ -47,7 +47,7 @@ export function createTargetsSection(options: TargetsOptions): TargetsSection {
 
   refresh();
   const body = document.createElement('div');
-  body.append(list, adding.addButton, adding.prompt.element, adding.addStatus, adding.anywayButton);
+  body.append(list, adding.addButton, adding.prompt.element, adding.addStatus);
   if (hitch) body.append(hitch.element);
   return { element: body, refresh };
 }
@@ -89,7 +89,6 @@ interface AddControls {
   addButton: HTMLButtonElement;
   prompt: NamePrompt;
   addStatus: HTMLElement;
-  anywayButton: HTMLButtonElement;
 }
 
 /** Only the add button shows until it is tapped; then the name is asked
@@ -97,26 +96,21 @@ interface AddControls {
 function createAddControls(options: TargetsOptions, refresh: () => void): AddControls {
   const addButton = secondaryButton(t('targets.add'));
   const addStatus = createElement('p', 'menu__text menu__text--status');
-  // Warn, never block: shown only while a too-steep warning is up.
-  const anywayButton = secondaryButton(t('targets.anyway'));
-  anywayButton.hidden = true;
   const prompt = createNamePrompt({
     label: t('targets.name.label'),
     placeholder: t('targets.name.placeholder'),
-    onSave: () => addPreset(options, controls, false, refresh),
+    onSave: () => addPreset(options, controls, refresh),
     onClose: () => {
       addButton.hidden = false;
-      anywayButton.hidden = true;
-      addStatus.textContent = '';
-      addStatus.classList.remove('menu__text--warning');
+      showStatus(addStatus, '', false);
     },
   });
-  const controls: AddControls = { addButton, addStatus, anywayButton, prompt };
+  const controls: AddControls = { addButton, addStatus, prompt };
   addButton.addEventListener('click', () => {
     addButton.hidden = true;
+    showStatus(addStatus, '', false);
     prompt.open(nextDefaultName(options));
   });
-  anywayButton.addEventListener('click', () => addPreset(options, controls, true, refresh));
   return controls;
 }
 
@@ -128,23 +122,27 @@ function secondaryButton(text: string): HTMLButtonElement {
   return button;
 }
 
+/** One Save (#621): an error keeps the field open; a warning means the
+ * target was saved and is shown under the closed field, never a gate. */
 function addPreset(
   options: TargetsOptions,
-  { prompt, addStatus, anywayButton }: AddControls,
-  anyway: boolean,
+  { prompt, addStatus }: AddControls,
   refresh: () => void,
 ): void {
   const name = prompt.value() || nextDefaultName(options);
-  const result = anyway ? options.addTargetPreset(name, true) : options.addTargetPreset(name);
-  const warned = typeof result === 'object' && result !== null;
-  anywayButton.hidden = !warned;
-  addStatus.classList.toggle('menu__text--warning', warned);
-  if (result !== null) {
-    addStatus.textContent = warned ? result.warning : result;
+  const result = options.addTargetPreset(name);
+  if (typeof result === 'string') {
+    showStatus(addStatus, result, false);
     return;
   }
   prompt.close();
   refresh();
+  showStatus(addStatus, result?.warning ?? '', result !== null);
+}
+
+function showStatus(status: HTMLElement, text: string, warning: boolean): void {
+  status.textContent = text;
+  status.classList.toggle('menu__text--warning', warning);
 }
 
 /** Nothing is disabled: a target saved without a name gets the lowest

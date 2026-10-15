@@ -348,8 +348,7 @@ export const es: Messages = {
   'targets.add': 'Guardar la inclinación actual como nuevo objetivo',
   'targets.delete': 'Eliminar {name}',
   'targets.warn.tooSteep':
-    'Esto parece más inclinado que un objetivo intencionado (más de 15°). Inténtalo de nuevo, o guárdalo de todos modos.',
-  'targets.anyway': 'Guardar de todos modos',
+    'Objetivo guardado, pero es más inclinado que un objetivo habitual (más de 15°). ¿No era lo que querías? Bórralo con la cruz y guárdalo de nuevo.',
   'targets.badge': 'Objetivo: {name}',
 
   'feedback.intro':

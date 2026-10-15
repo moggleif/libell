@@ -353,8 +353,7 @@ export const de: Messages = {
   'targets.add': 'Aktuelle Neigung als neues Ziel speichern',
   'targets.delete': '{name} löschen',
   'targets.warn.tooSteep':
-    'Das sieht steiler aus als ein gewolltes Ziel (über 15°). Versuche es erneut oder speichere trotzdem.',
-  'targets.anyway': 'Trotzdem speichern',
+    'Ziel gespeichert, aber es ist steiler als ein übliches Ziel (über 15°). War das nicht gewollt? Lösche es mit dem Kreuz und speichere erneut.',
   'targets.badge': 'Ziel: {name}',
 
   'feedback.intro':

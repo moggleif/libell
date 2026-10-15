@@ -40,8 +40,9 @@ export interface Targets {
   activeOffset(): Calibration | null;
   select(id: string | null): void;
   /** Save the current tilt as a new target: null when saved, an error
-   * message, or a warning above 15° unless `anyway`. */
-  add(name: string, anyway?: boolean): CaptureResult;
+   * message when nothing was saved, or a warning when it was saved but
+   * looks steeper than 15° (#621: one Save button, the warning informs). */
+  add(name: string): CaptureResult;
   remove(id: string): void;
   rename(id: string, name: string): void;
 }
@@ -75,15 +76,14 @@ export function createTargets(deps: TargetsDeps): Targets {
     activeName: () => presets.find((preset) => preset.id === activeId)?.name ?? null,
     activeOffset: () => targetOffsetFor(presets, activeId),
     select,
-    add(name, anyway = false) {
+    add(name) {
       const reading = deps.readTilt();
       if (typeof reading === 'string') return reading;
       // Relative to the zero, never to any currently active target.
       const offset = presetOffsetFromReading(reading, deps.zeroCalibration());
-      if (!anyway && offsetTooSteep(offset)) return { warning: t('targets.warn.tooSteep') };
       savePresets([...presets, { id: newId(), name, offset }]);
       deps.onChanged();
-      return null;
+      return offsetTooSteep(offset) ? { warning: t('targets.warn.tooSteep') } : null;
     },
     rename(id, name) {
       savePresets(presets.map((preset) => (preset.id === id ? { ...preset, name } : preset)));

@@ -61,7 +61,7 @@ export interface MenuOptions {
   getTargetPresets(): TargetPreset[];
   getActiveTargetId(): string | null;
   selectTarget(id: string | null): void;
-  addTargetPreset(name: string, anyway?: boolean): CaptureResult;
+  addTargetPreset(name: string): CaptureResult;
   deleteTargetPreset(id: string): void;
   renameTargetPreset?(id: string, name: string): void;
   /**
