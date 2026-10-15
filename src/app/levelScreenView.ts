@@ -1,5 +1,6 @@
 /** The level screen's elements, driven by the frame through `LevelFrameView`. */
 import { createAnnouncer } from '../ui/announcer';
+import { createHitchOffer, type HitchOfferOptions } from '../ui/hitchOffer';
 import { t } from '../ui/i18n';
 import { createLevelOverlay } from '../ui/levelOverlay';
 import { createSensorFallbackPrompt } from '../ui/sensorFallbackPrompt';
@@ -16,6 +17,8 @@ export interface LevelScreenViewDeps {
   usePhoneSensor(): void;
   /** What celebrating does besides the overlay: vibrate, chime. */
   onCelebrate(): void;
+  /** A caravan's "Save the hitch height first?" (#598); none when omitted. */
+  hitchOffer?: HitchOfferOptions;
 }
 
 /** Replaces `root`'s content with a fresh level screen. */
@@ -27,6 +30,7 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
     parts.levelOverlay.element,
     parts.engine.element,
     parts.status.element,
+    ...(parts.hitchOffer ? [parts.hitchOffer.element] : []),
     parts.tilt.element,
     parts.waiting,
     parts.fallbackPrompt.element,
@@ -61,6 +65,7 @@ function createParts(deps: LevelScreenViewDeps) {
       },
       showTilt: (reading) => tilt.update(reading),
     }),
+    hitchOffer: deps.hitchOffer ? createHitchOffer(deps.hitchOffer) : null,
     pose: createPoseOverlay(deps.openActiveSensorPage, announcer.say),
     stale: createStaleOverlay(deps.openActiveSensorPage, alarm.say),
   };
@@ -68,6 +73,7 @@ function createParts(deps: LevelScreenViewDeps) {
 
 function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
   const { status, waiting, fallbackPrompt, levelOverlay, engine, pose, stale, announcer } = parts;
+  const { hitchOffer } = parts;
   return {
     pause() {
       pose.element.hidden = true;
@@ -91,7 +97,10 @@ function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
     hideStale: () => (stale.element.hidden = true),
     showPose: pose.show,
     hidePose: () => (pose.element.hidden = true),
-    tick: (gravity, nowMs) => engine.tick(gravity, nowMs),
+    tick(gravity, nowMs) {
+      hitchOffer?.refresh();
+      return engine.tick(gravity, nowMs);
+    },
     showMeasuring() {
       status.show(t('status.measuring'));
       status.markLevel(false);

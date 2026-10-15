@@ -39,8 +39,9 @@ describe('mountMainScreen', () => {
     const { screen, root } = mount();
     const indicators = document.querySelector('#indicators')!;
     const slot = document.querySelector('#sensor-slot')!;
-    // The lamps and the target badge, side by side; the sensor icon in its slot.
-    expect(indicators.childElementCount).toBe(2);
+    // The lamps, the target badge and the hitch height badge (#598), side
+    // by side; the sensor icon in its slot.
+    expect(indicators.childElementCount).toBe(3);
     expect(indicators.querySelector('.target-badge')).not.toBeNull();
     expect(slot.childElementCount).toBe(1);
     const indicatorsBefore = indicators.innerHTML;
@@ -50,6 +51,22 @@ describe('mountMainScreen', () => {
     expect(indicators.innerHTML).toBe(indicatorsBefore);
     screen.levelScreen.show();
     expect(root.childElementCount).toBeGreaterThan(0);
+  });
+
+  it('shows the hitch height badge while a caravan goes back to it, and ends it on tap (#598)', () => {
+    const { screen, core } = mount();
+    core.settings.set({ ...core.settings.get(), vehicleType: 'caravan' });
+    const { hitch } = core.optionDeps;
+    expect(hitch.save()).toBeNull();
+    hitch.start();
+    const target = document.querySelector<HTMLButtonElement>('#indicators .target-badge');
+    const badge = document.querySelector<HTMLButtonElement>('#indicators .hitch-badge');
+    expect(target!.hidden).toBe(true);
+    expect(badge!.hidden).toBe(false);
+    badge!.click();
+    expect(hitch.isActive()).toBe(false);
+    screen.targetBadge.refresh();
+    expect(badge!.hidden).toBe(true);
   });
 
   it('forwards a vibration only where the browser can vibrate (#526)', () => {

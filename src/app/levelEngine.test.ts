@@ -5,7 +5,12 @@ import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
 import { t } from '../ui/i18n';
-import { createLevelEngine, motorhomeStatusText, type EngineOutput } from './levelEngine';
+import {
+  createLevelEngine,
+  hitchStatusText,
+  motorhomeStatusText,
+  type EngineOutput,
+} from './levelEngine';
 
 const FLAT: GravityVector = { x: 0, y: 0, z: 9.81 };
 const deg = (d: number) => (d * Math.PI) / 180;
@@ -59,7 +64,7 @@ describe('motorhomeStatusText', () => {
   });
 });
 
-function engineFor(overrides: Partial<LevelSettings>) {
+function engineFor(overrides: Partial<LevelSettings>, hitching = () => false) {
   const current: LevelSettings = { ...DEFAULT_SETTINGS, ...overrides };
   const statuses: [string, boolean][] = [];
   const tilts: { rollDeg: number; pitchDeg: number }[] = [];
@@ -71,6 +76,7 @@ function engineFor(overrides: Partial<LevelSettings>) {
     () => current,
     () => null,
     output,
+    hitching,
   );
   return { engine, statuses, tilts };
 }
@@ -134,5 +140,61 @@ describe('createLevelEngine', () => {
       { showStatus: () => {}, showTilt: () => {} },
     );
     expect(engine.tick(TILTED, 0).isLevel).toBe(true);
+  });
+});
+
+describe('hitchStatusText', () => {
+  it('says which way to crank and how far, to the hitch height', () => {
+    expect(hitchStatusText({ direction: 'up', displayMm: 34 }, 'mm')).toBe(
+      t('hitch.crank.up', { amount: formatLength(34, 'mm') }),
+    );
+    expect(hitchStatusText({ direction: 'down', displayMm: 12 }, 'cm')).toBe(
+      t('hitch.crank.down', { amount: formatLength(12, 'cm') }),
+    );
+  });
+
+  it('says the hitch height is reached', () => {
+    expect(hitchStatusText({ direction: 'ok', displayMm: 3 }, 'mm')).toBe(t('hitch.reached'));
+  });
+});
+
+describe('createLevelEngine going back to the hitch height (#598)', () => {
+  const ROLLED_ONLY: GravityVector = { x: 9.81 * Math.tan(deg(2)), y: 0, z: 9.81 };
+
+  it('ignores the side tilt: only the jockey wheel guides', () => {
+    const { engine, statuses } = engineFor({ vehicleType: 'caravan' }, () => true);
+    const tick = engine.tick(ROLLED_ONLY, 0);
+    expect(tick.isLevel).toBe(true);
+    expect(tick.spoken.parts).toEqual([]);
+    expect(statuses[0]).toEqual([t('hitch.reached'), true]);
+  });
+
+  it('says the crank in the status row while the jockey is off', () => {
+    const { engine, statuses } = engineFor(
+      { vehicleType: 'caravan', displayUnit: 'mm' },
+      () => true,
+    );
+    const tick = engine.tick(TILTED, 0);
+    expect(tick.isLevel).toBe(false);
+    expect(tick.spoken.parts).toEqual([
+      expect.objectContaining({ kind: 'crank', direction: 'down' }),
+    ]);
+    // Nose 1° high: crank the coupling down by axle-to-jockey × tan 1°.
+    const mm = Math.round(DEFAULT_SETTINGS.wheelbaseMm * Math.tan(deg(1)));
+    expect(statuses[0]?.[0]).toBe(t('hitch.crank.down', { amount: formatLength(mm, 'mm') }));
+  });
+
+  it('levels as usual again when the mode ends', () => {
+    let hitching = true;
+    const { engine } = engineFor({ vehicleType: 'caravan' }, () => hitching);
+    expect(engine.tick(ROLLED_ONLY, 0).isLevel).toBe(true);
+    hitching = false;
+    expect(engine.tick(ROLLED_ONLY, 1).isLevel).toBe(false);
+  });
+
+  it('never applies to a motorhome', () => {
+    const { engine, statuses } = engineFor({ vehicleType: 'motorhome' }, () => true);
+    expect(engine.tick(ROLLED_ONLY, 0).isLevel).toBe(false);
+    expect(statuses[0]?.[0]).not.toBe(t('hitch.reached'));
   });
 });

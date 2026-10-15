@@ -415,6 +415,7 @@ export const fr: Messages = {
   'help.targets.h': 'Cibles et son',
   'help.targets.t':
     'Enregistrez une inclinaison voulue, par exemple vers l’évacuation de la douche, et passez de l’une à l’autre.\n' +
+    'Caravane : enregistrez la hauteur d’attelage avant de dételer, et « Revenir à la hauteur d’attelage » y ramène la roue jockey.\n' +
     'Avec le guidage vocal, l’application dit quelle roue lever et de combien, pour niveler sans voir le téléphone.\n' +
     'Le bouton au milieu de la barre du bas active et coupe le son.',
   'help.trouble.h': 'En cas de souci',
@@ -462,6 +463,25 @@ export const fr: Messages = {
   'caravan.jockeyWheel': 'Roue jockey',
   'help.screen.caravan':
     'Caravane : la roue jockey indique Monter ou Descendre à la manivelle, et de combien.',
+
+  'hitch.title': 'Hauteur d’attelage',
+  'hitch.hint':
+    'Enregistrez-la tant que la caravane est encore sur la boule. Avant de la ré-atteler, la roue jockey indique de combien tourner la manivelle pour que le coupleur retrouve la boule.',
+  'hitch.save': 'Enregistrer la hauteur d’attelage',
+  'hitch.go': 'Revenir à la hauteur d’attelage',
+  'hitch.done': 'Terminé',
+  'hitch.savedNow': 'Hauteur d’attelage enregistrée.',
+  'hitch.status.none': 'Aucune hauteur d’attelage enregistrée.',
+  'hitch.status.saved': 'Une hauteur d’attelage est enregistrée.',
+  'hitch.status.active': 'L’écran principal indique de combien tourner la roue jockey.',
+  'hitch.badge': 'Hauteur d’attelage',
+  'hitch.badge.aria': 'Hauteur d’attelage : touchez pour niveler comme d’habitude',
+  'hitch.crank.up': 'Monter de {amount} jusqu’à la hauteur d’attelage',
+  'hitch.crank.down': 'Descendre de {amount} jusqu’à la hauteur d’attelage',
+  'hitch.reached': 'À la hauteur d’attelage',
+  'hitch.offer': 'Enregistrer d’abord la hauteur d’attelage ?',
+  'hitch.offer.save': 'Enregistrer',
+  'hitch.offer.dismiss': 'Pas maintenant',
 
   'zeroTrim.title': 'Affiner le zéro',
   'zeroTrim.hint':

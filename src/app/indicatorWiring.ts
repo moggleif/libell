@@ -8,6 +8,7 @@ import type { OrientationSensor } from '../sensor/orientation';
 import { createIndicators } from '../ui/indicators';
 import type { MenuSection } from '../ui/menu';
 import { createSensorStatusIndicator } from '../ui/sensorStatusIndicator';
+import { createHitchBadge } from '../ui/hitchBadge';
 import { createTargetBadge } from '../ui/targetBadge';
 import { indicatorState } from './indicatorState';
 import { isActiveSensorStale } from './sensorStaleness';
@@ -77,15 +78,27 @@ export function mountLamps(slot: Element | null, deps: LampDeps): Refreshable {
 
 /**
  * The only main-screen trace of a target preset (ADR 0013): hidden
- * while Normal is active; a tap opens the targets.
+ * while Normal is active; a tap opens the targets. Going back to a
+ * caravan's hitch height (#598) shows its own badge instead, since the
+ * target does not apply then; a tap on that one ends the mode.
  */
 export function mountTargetBadge(
   slot: Element | null,
-  deps: { activeName: () => string | null; open: () => void },
+  deps: {
+    activeName: () => string | null;
+    open: () => void;
+    hitchActive?: () => boolean;
+    stopHitch?: () => void;
+  },
 ): Refreshable {
   const badge = createTargetBadge(deps.open);
-  const refresh = () => badge.update(deps.activeName());
-  slot?.append(badge.element);
+  const hitch = createHitchBadge(() => deps.stopHitch?.());
+  const refresh = () => {
+    const hitching = deps.hitchActive?.() ?? false;
+    badge.update(hitching ? null : deps.activeName());
+    hitch.update(hitching);
+  };
+  slot?.append(badge.element, hitch.element);
   refresh();
   return { refresh };
 }

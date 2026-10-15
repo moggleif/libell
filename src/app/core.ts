@@ -16,6 +16,7 @@ import { applyAppearance, applyTheme, followSystemTheme } from '../ui/theme';
 import { createAppSettings, type AppSettings } from './appSettings';
 import { createBoxZeroing } from './boxZero';
 import { createDemoSensor } from './demoSensor';
+import { createHitchHeight } from './hitchHeight';
 import {
   createBox,
   hasPersistentDeviceAccess,
@@ -44,7 +45,8 @@ export interface Core {
   boxes: BoxController<LibellBox>;
   /** The source feeding readings right now (ADR 0014); call it each time, it changes. */
   sensor: () => OrientationSensor;
-  /** Calibration, zero and target, combined, for the active source. */
+  /** Calibration, zero and target (or the hitch height), combined, for the
+   * active source. */
   effectiveCalibration: () => ReturnType<typeof combineCalibrations>;
   activeInstallOffset: () => ReturnType<ReturnType<typeof createInstallOffsets>['valueOf']>;
   optionDeps: MenuOptionDeps;
@@ -77,6 +79,12 @@ export function createCore(screen: Screen): Core {
   const boxes = createSensorController(settings, demo, screen);
   const sensor = () => boxes.getActiveSensor();
   const layers = createCalibrationLayers(sensor, boxes, boxPending, screen);
+  const hitch = createHitchHeight({
+    readTilt: layers.readTiltNow,
+    zeroCalibration: layers.zeroCalibration,
+    isCaravan: () => settings.get().vehicleType === 'caravan',
+    onChanged: () => screen.targetBadge.refresh(),
+  });
   const boxWiring: BoxWiring = {
     settings,
     getSensor: (source) => boxes.getSensor(source),
@@ -89,7 +97,9 @@ export function createCore(screen: Screen): Core {
     boxPending,
     boxes,
     sensor,
+    // Going back to the hitch height measures against it, not a target.
     effectiveCalibration: () =>
+      hitch.activeCalibration() ??
       combineCalibrations(layers.zeroCalibration(), layers.targets.activeOffset()),
     activeInstallOffset: layers.activeInstallOffset,
     optionDeps: {
@@ -100,6 +110,7 @@ export function createCore(screen: Screen): Core {
       installOffsets: layers.installOffsets,
       zeroTrims: layers.zeroTrims,
       targets: layers.targets,
+      hitch,
       boxes,
       boxWiring,
     },

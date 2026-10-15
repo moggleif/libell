@@ -3,7 +3,8 @@
 // health and live rows, picking or learning its direction, zeroing it,
 // its password, its debug knob, and the silent reconnect after a reload,
 // against the simulated boxes (`?xparkle-sim`, `?easylevel-sim`). For the
-// phone: calibrating, zeroing and checking it, and target presets, against
+// phone: calibrating, zeroing and checking it, target presets and a
+// caravan's hitch height, against
 // `?demo`'s fixed tilt. Settings' Calibration tab while a box is in use. For the first-run wizard: its phone calibration
 // and its box path, connected or not. For the level screen: the pose
 // guard, the level celebration, a lost box coming back, the status row
@@ -28,7 +29,12 @@ import { chromium } from 'playwright';
 import { BASE, PORT } from './flows/harness.mjs';
 import { xparkleFlow, xparklePasswordFlow } from './flows/xparkle.mjs';
 import { easyLevelFlow } from './flows/easyLevel.mjs';
-import { phoneCalibrationFlow, phoneCheckOffFlow, targetsFlow } from './flows/phone.mjs';
+import {
+  hitchHeightFlow,
+  phoneCalibrationFlow,
+  phoneCheckOffFlow,
+  targetsFlow,
+} from './flows/phone.mjs';
 import { settingsBoxFlow } from './flows/settingsBox.mjs';
 import { wizardPhoneFlow, wizardBoxFlow, wizardPasswordFlow } from './flows/wizard.mjs';
 import {
@@ -69,6 +75,7 @@ try {
   await phoneCalibrationFlow(browser);
   await phoneCheckOffFlow(browser);
   await targetsFlow(browser);
+  await hitchHeightFlow(browser);
   await settingsBoxFlow(browser);
   await wizardPhoneFlow(browser);
   await wizardBoxFlow(browser, true);
@@ -83,7 +90,7 @@ try {
   await settingsSaveFlow(browser);
   await startupFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up',
   );
 } finally {
   await browser?.close();

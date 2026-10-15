@@ -37,6 +37,8 @@ export function mountMainScreen(
   screen.targetBadge = mountTargetBadge(document.querySelector('#indicators'), {
     activeName: () => core.optionDeps.targets.activeName(),
     open: navigation.openTargets,
+    hitchActive: core.optionDeps.hitch.isActive,
+    stopHitch: core.optionDeps.hitch.stop,
   });
   // Into the pinned top-bar corner, beside Install.
   screen.sensorStatus = mountSensorStatus(document.querySelector('#sensor-slot'), {
@@ -54,6 +56,7 @@ export function mountMainScreen(
 
 function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen: Screen) {
   const { boxes, sound } = core;
+  const { hitch } = core.optionDeps;
   const { boxListPage, sensorPage } = pages.sensorPages;
   const landscape = window.matchMedia('(orientation: landscape)');
   return buildLevelScreen(root, {
@@ -82,6 +85,8 @@ function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen
     playGuidancePulse: sound.playGuidancePulse,
     speak: sound.speak,
     vibrate: vibrateIfSupported,
+    hitching: hitch.isActive,
+    hitchOffer: { isDue: hitch.isOfferDue, save: hitch.save, dismiss: hitch.dismissOffer },
   });
 }
 

@@ -403,6 +403,7 @@ export const es: Messages = {
   'help.targets.h': 'Objetivos y sonido',
   'help.targets.t':
     'Guarda una inclinación que quieras, por ejemplo hacia el desagüe de la ducha, y cambia entre ellas.\n' +
+    'Caravana: guarda la altura de enganche antes de desengancharla, y «Volver a la altura de enganche» lleva allí la rueda jockey.\n' +
     'Con la guía por voz, la app dice qué rueda subir y cuánto, para nivelar sin ver el móvil.\n' +
     'El botón en el centro de la barra inferior activa y quita el sonido.',
   'help.trouble.h': 'Si algo falla',
@@ -450,6 +451,25 @@ export const es: Messages = {
   'caravan.jockeyWheel': 'Rueda jockey',
   'help.screen.caravan':
     'Caravana: la rueda jockey indica Subir o Bajar con la manivela, y cuánto.',
+
+  'hitch.title': 'Altura de enganche',
+  'hitch.hint':
+    'Guárdala mientras la caravana sigue en la bola. Antes de volver a engancharla, la rueda jockey indica cuánto girar la manivela para que el acoplamiento llegue a la bola.',
+  'hitch.save': 'Guardar altura de enganche',
+  'hitch.go': 'Volver a la altura de enganche',
+  'hitch.done': 'Listo',
+  'hitch.savedNow': 'Altura de enganche guardada.',
+  'hitch.status.none': 'Aún no hay altura de enganche guardada.',
+  'hitch.status.saved': 'Hay una altura de enganche guardada.',
+  'hitch.status.active': 'La pantalla principal indica cuánto girar la rueda jockey.',
+  'hitch.badge': 'Altura de enganche',
+  'hitch.badge.aria': 'Altura de enganche: toca para nivelar como siempre',
+  'hitch.crank.up': 'Subir {amount} hasta la altura de enganche',
+  'hitch.crank.down': 'Bajar {amount} hasta la altura de enganche',
+  'hitch.reached': 'En la altura de enganche',
+  'hitch.offer': '¿Guardar antes la altura de enganche?',
+  'hitch.offer.save': 'Guardar',
+  'hitch.offer.dismiss': 'Ahora no',
 
   'zeroTrim.title': 'Ajuste fino del cero',
   'zeroTrim.hint':

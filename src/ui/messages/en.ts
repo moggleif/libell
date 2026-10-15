@@ -434,6 +434,7 @@ export const en = {
   'help.targets.h': 'Targets and sound',
   'help.targets.t':
     'Save a tilt you want, for example toward the shower drain, and switch between them.\n' +
+    'Caravan: save the hitch height before you unhitch, and Back to hitch height leads the jockey wheel back to it.\n' +
     'With spoken guidance on, the app says which wheel to raise and how much, so you can level without seeing the phone.\n' +
     'The button in the middle of the bottom bar turns sound on and off.',
   'help.trouble.h': 'If something is wrong',
@@ -484,6 +485,26 @@ export const en = {
   'caravan.jockeyWheel': 'Jockey wheel',
   // Help → Reading the screen, for a caravan's jockey wheel (#368).
   'help.screen.caravan': 'Caravan: the jockey wheel says Crank up or Crank down, and by how much.',
+
+  // A caravan's hitch height (#598).
+  'hitch.title': 'Hitch height',
+  'hitch.hint':
+    'Save it while the caravan is still on the tow ball. Before you hitch up again, the jockey wheel shows how far to crank so the coupling meets the ball.',
+  'hitch.save': 'Save hitch height',
+  'hitch.go': 'Back to hitch height',
+  'hitch.done': 'Done',
+  'hitch.savedNow': 'Hitch height saved.',
+  'hitch.status.none': 'No hitch height saved yet.',
+  'hitch.status.saved': 'A hitch height is saved.',
+  'hitch.status.active': 'The main screen shows how far to crank the jockey wheel.',
+  'hitch.badge': 'Hitch height',
+  'hitch.badge.aria': 'Hitch height: tap to level as usual again',
+  'hitch.crank.up': 'Crank up {amount} to hitch height',
+  'hitch.crank.down': 'Crank down {amount} to hitch height',
+  'hitch.reached': 'At hitch height',
+  'hitch.offer': 'Save the hitch height first?',
+  'hitch.offer.save': 'Save',
+  'hitch.offer.dismiss': 'Not now',
 
   'zeroTrim.title': 'Fine-tune the zero',
   'zeroTrim.hint':
