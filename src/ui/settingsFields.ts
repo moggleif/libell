@@ -118,6 +118,8 @@ export interface NumberField extends Field<HTMLInputElement> {
   show(stored: number): void;
   /** The typed value in storage units; NaN when empty. */
   read(): number;
+  /** The same, for a field still showing `unit` (the unit just left). */
+  readAs(unit: DisplayUnit): number;
   /** Whether the typed value can be stored. */
   isUsable(): boolean;
   /** Why the typed value cannot be stored, or null when it can. */
@@ -187,8 +189,14 @@ function createNumberField(
   input.inputMode = 'decimal';
   input.name = key;
   const field = captioned(input);
-  const read = (): number =>
-    inUnit ? unitToMm(input.valueAsNumber, state.unit) : input.valueAsNumber;
+  // What `show` last wrote: an untouched field reads back the exact stored
+  // value, so showing it in inches and back never moves it (#627).
+  let shown = { text: '', stored: Number.NaN };
+  const readAs = (unit: DisplayUnit): number => {
+    if (input.value !== '' && input.value === shown.text) return shown.stored;
+    return inUnit ? unitToMm(input.valueAsNumber, unit) : input.valueAsNumber;
+  };
+  const read = (): number => readAs(state.unit);
   const problem = (): string | null => {
     const value = read();
     if (!(Number.isFinite(value) && (allowZero ? value >= 0 : value > 0))) {
@@ -203,8 +211,10 @@ function createNumberField(
     allowZero,
     show: (stored) => {
       input.value = String(inUnit ? mmToUnit(stored, state.unit) : stored);
+      shown = { text: input.value, stored };
     },
     read,
+    readAs,
     isUsable: () => problem() === null,
     problem,
     relabel: () => relabel(field),
@@ -215,8 +225,16 @@ function createNumberField(
  * it; the step-height Add row shares it. */
 export function rangeProblem(mm: number, range: Range, unit: DisplayUnit): string | null {
   if (mm >= range.min && mm <= range.max) return null;
-  const min = formatLengthValue(range.min, unit);
-  return t('settings.err.range', { min, max: formatLengthValue(range.max, unit) });
+  return t('settings.err.range', {
+    min: typeable(range.min, unit),
+    max: typeable(range.max, unit),
+  });
+}
+
+/** A bound the way it is typed: inches as decimals ("11.81"), since a
+ * number field takes no "11 ¾" (#627). */
+function typeable(mm: number, unit: DisplayUnit): string {
+  return unit === 'in' ? String(mmToUnit(mm, unit)) : formatLengthValue(mm, unit);
 }
 
 export function createHint(): HTMLParagraphElement {

@@ -17,7 +17,6 @@
  * restructuring the open form (see `settingsGeneralTab.ts`).
  */
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
-import { unitToMm } from '../domain/lengths';
 import { parseSettings } from '../domain/settingsParsing';
 import { loadSettings } from '../data/settingsStore';
 import type { CalibrationOptions } from './calibrationSection';
@@ -171,7 +170,7 @@ function createFormValues(
     showInNewUnit(previous) {
       const lengths = new Map<NumberField, number>();
       for (const field of numberFields.filter((f) => f.inUnit)) {
-        const mm = unitToMm(field.control.valueAsNumber, previous);
+        const mm = field.readAs(previous);
         if (Number.isFinite(mm)) lengths.set(field, mm);
       }
       showNumbers((field) => lengths.get(field));

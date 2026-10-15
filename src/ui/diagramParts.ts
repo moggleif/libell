@@ -3,7 +3,7 @@
  * diagram only says where its parts go.
  */
 import type { DisplayResult, DisplayWheel } from '../domain/stability';
-import { formatLength } from '../domain/lengths';
+import { formatLength, type LengthUnit } from '../domain/lengths';
 import { clamp } from '../domain/numbers';
 import { createElement } from './dom';
 import { t } from './i18n';
@@ -19,7 +19,7 @@ export interface ViewBox {
   height: number;
 }
 
-type Unit = 'mm' | 'cm';
+type Unit = LengthUnit;
 type Severity = DisplayWheel['severity'];
 
 /** Shape per state so color is never the only signal (WCAG 1.4.1). */

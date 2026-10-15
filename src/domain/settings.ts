@@ -3,6 +3,7 @@
  * stored blob back is `settingsParsing.ts`.
  */
 import type { AppearanceSetting } from './appearance';
+import type { LengthUnit } from './lengths';
 import type { EasyLevelSettings, XparkleSettings } from './sensorDeviceSettings';
 
 export interface LevelSettings {
@@ -73,7 +74,7 @@ export interface LevelSettings {
    */
   dwellMotionMs: number;
   /** Unit used for displayed lengths; storage and math stay mm. */
-  displayUnit: 'mm' | 'cm';
+  displayUnit: LengthUnit;
   /** Play a chime when the vehicle reaches level. */
   soundOnLevel: boolean;
   /**

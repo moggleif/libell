@@ -19,7 +19,9 @@ export async function openApp(
   viewport = { width: 390, height: 844 },
   initScript = null,
 ) {
-  const context = await browser.newContext({ viewport });
+  // A metric region, so a first run starts in mm whatever the runner's own
+  // locale is (#627: en-US would start every flow in inches).
+  const context = await browser.newContext({ viewport, locale: 'en-GB' });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));

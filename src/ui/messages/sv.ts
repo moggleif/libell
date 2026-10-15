@@ -250,6 +250,7 @@ export const sv: Messages = {
   'drain.rearLeft': 'Vänster bak',
   'drain.rearRight': 'Höger bak',
   'settings.unit': 'Visa längder i',
+  'settings.unitInches': 'tum (in)',
   'settings.theme': 'Tema',
   'theme.system': 'Följ telefonen',
   'theme.light': 'Ljust',
@@ -267,6 +268,18 @@ export const sv: Messages = {
   'settings.soundSpeech.unavailable':
     'Uppläst vägledning fungerar inte på den här telefonen: den saknar en svensk röst som fungerar utan nät. Tonerna fungerar som vanligt.',
   'speech.level': 'Plant',
+  'speech.inches': '{n} tum',
+  'speech.inchOne': 'en tum',
+  'speech.inchOneAnd': 'en och {fraction} tum',
+  'speech.inchesAnd': '{n} och {fraction} tum',
+  'speech.inchFraction': '{fraction} tum',
+  'speech.eighth1': 'en åttondels',
+  'speech.eighth2': 'en kvarts',
+  'speech.eighth3': 'tre åttondels',
+  'speech.eighth4': 'en halv',
+  'speech.eighth5': 'fem åttondels',
+  'speech.eighth6': 'tre kvarts',
+  'speech.eighth7': 'sju åttondels',
   'settings.undo': 'Ångra',
   'settings.saved': 'Sparat',
   'settings.more': 'Mer',
@@ -392,6 +405,7 @@ export const sv: Messages = {
   'help.settings.t':
     'Libell räknar ut hur mycket varje hjul ska upp från hjulbasen och spårvidden.\n' +
     'De står i fordonspapperen, annars mäter du med tumstock.\n' +
+    'Skriv dem i mm, cm eller tum, det du valt under Visa längder i.\n' +
     'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.\n' +
     'Har du flera fordon har vart och ett egna mått, klossar, nolläge, mål och sensorbox. Välj fordon överst under Fordon.',
   'help.ramps.t':

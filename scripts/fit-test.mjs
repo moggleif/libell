@@ -31,6 +31,7 @@ import { chromium } from 'playwright';
 import { APPEARANCES } from '../src/domain/appearance.ts';
 import { selectAppearances } from './fitAppearances.ts';
 import { calibrationGapProblem, measureCalibrationGap } from './fitWizardSpacing.ts';
+import { openWithSettings } from './fitOpen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4175;
@@ -88,15 +89,6 @@ const TIGHTEST = VIEWPORTS[1];
 // three of them in parallel take well under half the time of one after
 // the other (#494).
 const WALKED_APPEARANCES = selectAppearances(APPEARANCES, process.env.FIT_APPEARANCE);
-
-// The real keys settingsStore.ts reads — settings as one JSON object,
-// language and the onboarding flag on their own. Writing anything else
-// (a made-up ".v1" suffix, say) silently leaves every run on the
-// defaults, which would quietly reduce this whole sweep to one
-// combination tested many times over.
-const SETTINGS_KEY = 'libell.settings';
-const LANGUAGE_KEY = 'libell.language';
-const ONBOARDED_KEY = 'libell.onboarded';
 
 const IOS_UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -356,27 +348,8 @@ async function checkWizard(page, label, { external = false, fitsWhole = true } =
 }
 
 /** Opens the app with the given preferences already stored. */
-async function open(
-  context,
-  appearance,
-  language,
-  { query = '', onboarded = true, vehicleType = 'motorhome' } = {},
-) {
-  const page = await context.newPage();
-  await page.goto(BASE + query);
-  await page.evaluate(
-    ([settingsKey, languageKey, onboardedKey, appearance, language, onboarded, vehicleType]) => {
-      localStorage.clear();
-      localStorage.setItem(settingsKey, JSON.stringify({ appearance, vehicleType }));
-      localStorage.setItem(languageKey, language);
-      // Without this the first-run guide auto-opens over whatever view is
-      // under test.
-      if (onboarded) localStorage.setItem(onboardedKey, '1');
-    },
-    [SETTINGS_KEY, LANGUAGE_KEY, ONBOARDED_KEY, appearance, language, onboarded, vehicleType],
-  );
-  await page.reload();
-  return page;
+function open(context, appearance, language, options) {
+  return openWithSettings(context, BASE, { appearance, language, ...options });
 }
 
 const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
@@ -428,6 +401,21 @@ try {
         await checkLevelScreen(caravan, at('caravan level'), { fitsWhole: viewport.fitsWhole });
         await auditView(caravan, at('caravan level'));
         await caravan.close();
+
+        // --- Inches (#627): "1 ⅜ in" is the widest a wheel card's lift
+        // gets, so both drawings are walked once more in that unit.
+        for (const vehicleType of ['motorhome', 'caravan']) {
+          const inches = await open(context, appearance, language, {
+            query: '?demo=1',
+            vehicleType,
+            displayUnit: 'in',
+          });
+          await inches.waitForSelector('.rv-diagram svg');
+          const view = at(`${vehicleType} level, inches`);
+          await checkLevelScreen(inches, view, { fitsWhole: viewport.fitsWhole });
+          await auditView(inches, view);
+          await inches.close();
+        }
 
         // --- Settings: a page in Modern, a drawer in Classic.
         await level.locator('#settings-button').click();

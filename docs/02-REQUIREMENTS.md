@@ -358,11 +358,25 @@ URL and must keep working with no signal.
 - All strings go through `t()` in `src/ui/i18n.ts`; every dictionary covers the same keys
   with the same `{placeholders}` (both enforced by a unit test).
 
-## R14 — Lengths display in mm or cm
+## R14 — Lengths display in mm, cm or inches
 
-- **Given** I switch "Show lengths in" between mm and cm in Settings
-- **Then** every displayed length (wheel lifts, step heights, settings chips) uses that
-  unit — whole mm, or cm with at most one decimal — while storage and math stay mm.
+- **Given** I switch "Show lengths in" between mm, cm and inches in Settings
+- **Then** every displayed length (wheel lifts, step heights, settings chips, the jockey
+  wheel, the ramp catalogue) uses that unit — whole mm, cm with at most one decimal, or
+  inches in reduced eighths ("1 ⅜ in", "⅛ in", "0 in", rounded to the nearest ⅛″) —
+  while storage and math stay mm (ADR 0003). Degrees never change.
+- **Given** inches
+- **When** I type a length in a settings field
+- **Then** the field takes decimals ("60.5") and stores the nearest whole mm; its range
+  message gives the bounds as decimal inches. A field I did not touch keeps its stored
+  value exactly, so switching the unit back and forth never moves a length (#627).
+- **Given** spoken guidance (R54) in inches
+- **Then** it says the length in words ("one and three eighths inches"), in the app's
+  language.
+- **Given** a first run with nothing saved
+- **Then** the unit follows the phone's region: inches where they are the measure (US,
+  Liberia, Myanmar), mm everywhere else; the first save keeps it like any other choice.
+  A shared vehicle link (R41) always carries mm.
 
 ## R15 — Theme follows the phone, or is forced
 

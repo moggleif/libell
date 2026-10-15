@@ -32,7 +32,7 @@ try {
   const browser = await chromium.launch(
     process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
   );
-  const page = await browser.newPage({ viewport: { width: 540, height: 960 } });
+  const page = await browser.newPage({ viewport: { width: 540, height: 960 }, locale: 'en-GB' });
   await page.goto(url);
   await page.waitForSelector('.rv-diagram svg');
   await page.waitForTimeout(600); // let the bubble settle

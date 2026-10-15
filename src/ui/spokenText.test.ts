@@ -53,6 +53,17 @@ describe('spokenText (#602)', () => {
     );
   });
 
+  it("says inches in words, not the card's glyphs (#627)", () => {
+    const crank = (mm: number) => spokenText(raise({ kind: 'crank', direction: 'up', mm }), 'in');
+    expect(crank(35)).toBe('Crank up one and three eighths inches');
+    expect(crank(25)).toBe('Crank up one inch');
+    expect(crank(13)).toBe('Crank up a half of an inch');
+    expect(crank(57)).toBe('Crank up 2 and a quarter inches');
+    expect(crank(76)).toBe('Crank up 3 inches');
+    setLanguage('sv');
+    expect(crank(35)).toBe('Veva upp en och tre åttondels tum');
+  });
+
   it('says several wheels one after the other', () => {
     const plan: SpokenPlan = {
       isLevel: false,

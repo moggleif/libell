@@ -11,8 +11,9 @@ users act in the physical unit of their ramps: millimetres.
 ## Decision
 
 The vehicle is level when **no wheel sits more than the tolerance (mm, default 20)
-below the highest wheel**. All model, settings and display values are millimetres;
-degrees appear only in the small tilt readout.
+below the highest wheel**. All model, settings and stored values are millimetres; only
+the display converts, to cm or inches when the user picks them (R14, #627). Degrees
+appear only in the small tilt readout.
 
 ## Alternatives considered
 
@@ -26,5 +27,5 @@ degrees appear only in the small tilt readout.
 
 - Wheelbase and track width are inherently accounted for; the tolerance means the same
   thing on every vehicle.
-- The user must enter measurements in mm (mitigated by defaults and the cm display
-  option).
+- The user types measurements in the display unit (mm, cm or inches); the form turns
+  them into mm on entry, inches to the nearest whole mm.

@@ -132,10 +132,10 @@ describe('layout', () => {
     expect(
       [...selectIn(elements, t('settings.appearance')).options].map((o) => o.textContent),
     ).toEqual([t('appearance.classic'), t('appearance.modern'), t('appearance.glossy')]);
-    expect([...selectIn(elements, t('settings.unit')).options].map((o) => o.value)).toEqual([
-      'mm',
-      'cm',
-    ]);
+    const units = [...selectIn(elements, t('settings.unit')).options];
+    expect(units.map((o) => o.value)).toEqual(['mm', 'cm', 'in']);
+    // Inches are named in the language (#627); mm and cm read the same everywhere.
+    expect(units.map((o) => o.textContent)).toEqual(['mm', 'cm', t('settings.unitInches')]);
   });
 });
 

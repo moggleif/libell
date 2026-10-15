@@ -252,6 +252,7 @@ export const fr: Messages = {
   'drain.rearLeft': 'Arrière gauche',
   'drain.rearRight': 'Arrière droite',
   'settings.unit': 'Afficher les longueurs en',
+  'settings.unitInches': 'pouces (in)',
   'settings.theme': 'Thème',
   'theme.system': 'Suivre le téléphone',
   'theme.light': 'Clair',
@@ -270,6 +271,18 @@ export const fr: Messages = {
   'settings.soundSpeech.unavailable':
     'Le guidage vocal ne fonctionne pas sur ce téléphone : il n’a pas de voix française utilisable hors ligne. Les bips fonctionnent normalement.',
   'speech.level': 'À niveau',
+  'speech.inches': '{n} pouces',
+  'speech.inchOne': 'un pouce',
+  'speech.inchOneAnd': 'un pouce et {fraction}',
+  'speech.inchesAnd': '{n} pouces et {fraction}',
+  'speech.inchFraction': '{fraction} de pouce',
+  'speech.eighth1': 'un huitième',
+  'speech.eighth2': 'un quart',
+  'speech.eighth3': 'trois huitièmes',
+  'speech.eighth4': 'un demi',
+  'speech.eighth5': 'cinq huitièmes',
+  'speech.eighth6': 'trois quarts',
+  'speech.eighth7': 'sept huitièmes',
   'settings.undo': 'Annuler',
   'settings.saved': 'Enregistré',
   'settings.more': 'Plus',
@@ -397,6 +410,7 @@ export const fr: Messages = {
   'help.settings.t':
     'Libell calcule de combien lever chaque roue à partir de l’empattement et de la voie.\n' +
     'Ils figurent sur les papiers du véhicule, sinon prenez un mètre ruban.\n' +
+    'Saisissez-les en mm, cm ou pouces, selon votre choix dans Afficher les longueurs en.\n' +
     'Sur une caravane, l’empattement est la distance entre l’essieu et la roue jockey.\n' +
     'Avec plusieurs véhicules, chacun garde ses mesures, cales, zéro, cibles et boîtier capteur ; choisissez-le en haut de Véhicule.',
   'help.ramps.t':
