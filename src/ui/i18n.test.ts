@@ -35,6 +35,7 @@ describe('i18n dictionaries', () => {
       'English',
       'Español',
       'Français',
+      'Hrvatski',
       'Italiano',
       'Magyar',
       'Nederlands',
@@ -220,6 +221,7 @@ describe('i18n terminology (#366)', () => {
       hu: 'Méretek',
       ro: 'Dimensiuni',
       tr: 'Ölçüler',
+      hr: 'Mjere',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -281,6 +283,7 @@ describe('i18n public interface (#377)', () => {
       | 'hu'
       | 'ro'
       | 'tr'
+      | 'hr'
     >();
   });
 
