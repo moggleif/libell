@@ -31,6 +31,7 @@ describe('createSettingsAdoption', () => {
   it.each([
     { soundOnLevel: true, soundGuidance: false },
     { soundOnLevel: false, soundGuidance: true },
+    { soundOnLevel: false, soundGuidance: false, soundSpeech: true },
   ])('unlocks audio from Settings when a sound is on (%o)', (sound) => {
     const { adoption, calls } = setup();
     adoption.fromSettings({ ...quiet, ...sound });

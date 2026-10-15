@@ -39,6 +39,7 @@ describe('parseSettings', () => {
       displayUnit: 'cm' as const,
       soundOnLevel: true,
       soundGuidance: true,
+      soundSpeech: true,
       theme: 'light' as const,
       appearance: 'modern' as const,
       sensorSource: 'phone' as const,
@@ -128,6 +129,7 @@ describe('parseSettings', () => {
       displayUnit: 'mm',
       soundOnLevel: DEFAULT_SETTINGS.soundOnLevel,
       soundGuidance: false,
+      soundSpeech: false,
       theme: 'system',
       appearance: DEFAULT_SETTINGS.appearance,
       sensorSource: DEFAULT_SETTINGS.sensorSource,
@@ -182,6 +184,9 @@ describe('parseSettings', () => {
     expect(parseSettings({ soundOnLevel: 'yes' }).soundOnLevel).toBe(DEFAULT_SETTINGS.soundOnLevel);
     expect(parseSettings({ soundGuidance: true }).soundGuidance).toBe(true);
     expect(parseSettings({ soundGuidance: 'yes' }).soundGuidance).toBe(false);
+    expect(parseSettings({ soundSpeech: true }).soundSpeech).toBe(true);
+    expect(parseSettings({ soundSpeech: 'yes' }).soundSpeech).toBe(false);
+    expect(parseSettings({}).soundSpeech).toBe(false);
   });
 
   it('defaults soundOnLevel to on for a never-saved value, without overriding an explicit choice (#153)', () => {
@@ -408,30 +413,66 @@ describe('parseStepHeightsList', () => {
 
 describe('toggleMute (#161)', () => {
   it('muting both on turns both off and remembers the prior values', () => {
-    const result = toggleMute({ soundOnLevel: true, soundGuidance: true }, null);
-    expect(result.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
-    expect(result.preMute).toEqual({ soundOnLevel: true, soundGuidance: true });
+    const result = toggleMute(
+      { soundOnLevel: true, soundGuidance: true, soundSpeech: false },
+      null,
+    );
+    expect(result.settings).toEqual({
+      soundOnLevel: false,
+      soundGuidance: false,
+      soundSpeech: false,
+    });
+    expect(result.preMute).toEqual({ soundOnLevel: true, soundGuidance: true, soundSpeech: false });
   });
 
   it('unmuting restores exactly the remembered prior values', () => {
-    const muted = toggleMute({ soundOnLevel: true, soundGuidance: true }, null);
+    const muted = toggleMute({ soundOnLevel: true, soundGuidance: true, soundSpeech: false }, null);
     const unmuted = toggleMute(muted.settings, muted.preMute);
-    expect(unmuted.settings).toEqual({ soundOnLevel: true, soundGuidance: true });
+    expect(unmuted.settings).toEqual({
+      soundOnLevel: true,
+      soundGuidance: true,
+      soundSpeech: false,
+    });
     expect(unmuted.preMute).toBeNull();
   });
 
   it('never forces a setting back on that was already off before muting', () => {
-    const muted = toggleMute({ soundOnLevel: false, soundGuidance: true }, null);
-    expect(muted.preMute).toEqual({ soundOnLevel: false, soundGuidance: true });
+    const muted = toggleMute(
+      { soundOnLevel: false, soundGuidance: true, soundSpeech: false },
+      null,
+    );
+    expect(muted.preMute).toEqual({ soundOnLevel: false, soundGuidance: true, soundSpeech: false });
     const unmuted = toggleMute(muted.settings, muted.preMute);
-    expect(unmuted.settings).toEqual({ soundOnLevel: false, soundGuidance: true });
+    expect(unmuted.settings).toEqual({
+      soundOnLevel: false,
+      soundGuidance: true,
+      soundSpeech: false,
+    });
   });
 
   it('muting when both are already off is a harmless no-op restore', () => {
-    const muted = toggleMute({ soundOnLevel: false, soundGuidance: false }, null);
-    expect(muted.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
+    const muted = toggleMute(
+      { soundOnLevel: false, soundGuidance: false, soundSpeech: false },
+      null,
+    );
+    expect(muted.settings).toEqual({
+      soundOnLevel: false,
+      soundGuidance: false,
+      soundSpeech: false,
+    });
     const unmuted = toggleMute(muted.settings, muted.preMute);
-    expect(unmuted.settings).toEqual({ soundOnLevel: false, soundGuidance: false });
+    expect(unmuted.settings).toEqual({
+      soundOnLevel: false,
+      soundGuidance: false,
+      soundSpeech: false,
+    });
+  });
+
+  it('mutes and restores spoken guidance with the others (#602)', () => {
+    const on = { soundOnLevel: false, soundGuidance: false, soundSpeech: true };
+    const muted = toggleMute(on, null);
+    expect(muted.settings.soundSpeech).toBe(false);
+    expect(toggleMute(muted.settings, muted.preMute).settings).toEqual(on);
   });
 });
 

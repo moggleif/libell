@@ -67,9 +67,13 @@ describe('buildMenuOptions', () => {
 
   it('reads the vehicle type and sound live', () => {
     const { options, change } = setup();
-    change({ vehicleType: 'caravan', soundOnLevel: false, soundGuidance: true });
+    change({ vehicleType: 'caravan', soundOnLevel: false, soundGuidance: true, soundSpeech: true });
     expect(options.getVehicleType()).toBe('caravan');
-    expect(options.getSoundPrefs()).toEqual({ soundOnLevel: false, soundGuidance: true });
+    expect(options.getSoundPrefs()).toEqual({
+      soundOnLevel: false,
+      soundGuidance: true,
+      soundSpeech: true,
+    });
   });
 
   it('counts demo mode as saved settings', () => {

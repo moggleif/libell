@@ -254,6 +254,12 @@ export const sv: Messages = {
   'settings.sound': 'Ljudsignal när det är i våg',
   'settings.soundGuidance': 'Kontinuerlig ljudvägledning',
   'settings.soundGuidance.help': 'Pipet går snabbare och ljusare ju närmare våg du kommer.',
+  'settings.soundSpeech': 'Uppläst vägledning',
+  'settings.soundSpeech.help':
+    'När fordonet står still säger appen vilket hjul och hur mycket, till exempel ”Vänster bak, Steg 2”.',
+  'settings.soundSpeech.unavailable':
+    'Uppläst vägledning fungerar inte på den här telefonen: den saknar en svensk röst som fungerar utan nät. Tonerna fungerar som vanligt.',
+  'speech.level': 'Plant',
   'settings.undo': 'Ångra',
   'settings.saved': 'Sparat',
   'settings.more': 'Mer',
@@ -403,6 +409,7 @@ export const sv: Messages = {
   'help.targets.h': 'Mål och ljud',
   'help.targets.t':
     'Spara en lutning du vill ha, till exempel mot duschavloppet, och växla mellan dem.\n' +
+    'Med uppläst vägledning säger appen vilket hjul du ska höja och hur mycket, så du kan nivellera utan att se telefonen.\n' +
     'Knappen mitt i nederkanten slår av och på ljudet.',
   'help.trouble.h': 'Om något krånglar',
   'help.trouble.t':

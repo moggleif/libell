@@ -10,6 +10,7 @@ import type { LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
 import type { Calibration } from '../domain/calibration';
 import { createDisplayStabilizer, type DisplayResult } from '../domain/stability';
+import { caravanSpokenPlan, motorhomeSpokenPlan } from '../domain/spokenGuidance';
 import { createCaravanDiagram } from '../ui/caravanDiagram';
 import { t } from '../ui/i18n';
 import { createRvDiagram } from '../ui/rvDiagram';
@@ -78,7 +79,11 @@ function createMotorhomeEngine(
       diagram.update(result, current.displayUnit, current.rampStepHeightsMm);
       output.showStatus(motorhomeStatusText(result, current), result.isLevel);
       output.showTilt(result);
-      return { isLevel: result.isLevel, maxCorrectionMm: largestLift(result) };
+      return {
+        isLevel: result.isLevel,
+        maxCorrectionMm: largestLift(result),
+        spoken: motorhomeSpokenPlan(result, current.rampStepHeightsMm),
+      };
     },
   };
 }
@@ -110,7 +115,11 @@ function createCaravanEngine(
       output.showTilt(result);
       const maxAxleMm = Math.max(result.axle.left.displayMm, result.axle.right.displayMm);
       const jockeyMm = result.jockey.direction === 'ok' ? 0 : result.jockey.displayMm;
-      return { isLevel: result.isLevel, maxCorrectionMm: Math.max(maxAxleMm, jockeyMm) };
+      return {
+        isLevel: result.isLevel,
+        maxCorrectionMm: Math.max(maxAxleMm, jockeyMm),
+        spoken: caravanSpokenPlan(result, current.rampStepHeightsMm),
+      };
     },
   };
 }

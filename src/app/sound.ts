@@ -3,15 +3,19 @@
  * gesture (`unlock`), which also satisfies autoplay policies.
  */
 import type { GuidanceDirection } from '../domain/audioGuidance';
-import { toggleMute, type SoundPrefs } from '../domain/settings';
+import { anySoundOn, toggleMute, type SoundPrefs } from '../domain/settings';
 import type { SettingsAccess } from './boxWiring';
+import { createSpeaker, type Speaker } from './speech';
 
 export interface Sound {
-  /** Creates the context on first use and resumes it; call from a gesture. */
+  /** Creates the context on first use and resumes it, and unlocks speech;
+   * call from a gesture. */
   unlock(): void;
   playChime(): void;
   /** One guidance pulse at `pitchHz`, gliding with `direction`. */
   playGuidancePulse(pitchHz: number, direction: GuidanceDirection): void;
+  /** Spoken guidance (#602), in the phone's own offline voice. */
+  speak(text: string): void;
 }
 
 const CHIME_TONES = [
@@ -26,12 +30,16 @@ function browserAudioContext(): AudioContext | null {
   return typeof AudioContext !== 'undefined' ? new AudioContext() : null;
 }
 
-export function createSound(createContext: () => AudioContext | null = browserAudioContext): Sound {
+export function createSound(
+  createContext: () => AudioContext | null = browserAudioContext,
+  speaker: Speaker = createSpeaker(),
+): Sound {
   let audioCtx: AudioContext | null = null;
   return {
     unlock() {
       if (!audioCtx) audioCtx = createContext();
       void audioCtx?.resume();
+      speaker.unlock();
     },
     playChime() {
       if (audioCtx) playChime(audioCtx);
@@ -39,6 +47,7 @@ export function createSound(createContext: () => AudioContext | null = browserAu
     playGuidancePulse(pitchHz, direction) {
       if (audioCtx) playGuidancePulse(audioCtx, pitchHz, direction);
     },
+    speak: (text) => speaker.say(text),
   };
 }
 
@@ -105,7 +114,7 @@ export interface MuteToggle {
 }
 
 /**
- * One switch for both sounds. Muting remembers the exact earlier
+ * One switch for every sound. Muting remembers the exact earlier
  * values so unmuting restores them (`toggleMute`); unmuting is itself a
  * user gesture, so it unlocks audio when sound ends up on.
  */
@@ -117,7 +126,7 @@ export function createMuteToggle(settings: SettingsAccess, unlock: () => void): 
       preMute = result.preMute;
       const next = { ...settings.get(), ...result.settings };
       settings.set(next);
-      if (next.soundOnLevel || next.soundGuidance) unlock();
+      if (anySoundOn(next)) unlock();
       return preMute !== null;
     },
     isMuted: () => preMute !== null,

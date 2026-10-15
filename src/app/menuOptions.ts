@@ -3,7 +3,7 @@
  * and the wizard's box step, assembled from the shared groups in
  * `menuOptionParts.ts`.
  */
-import type { LevelSettings } from '../domain/settings';
+import { soundPrefsOf, type LevelSettings } from '../domain/settings';
 import type { Calibration } from '../domain/calibration';
 import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
@@ -84,10 +84,7 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
     // the next connect.
     setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
       settingsAccess.set(withEasyLevelConnectDelay(settings(), enabled, ms)),
-    getSoundPrefs: () => ({
-      soundOnLevel: settings().soundOnLevel,
-      soundGuidance: settings().soundGuidance,
-    }),
+    getSoundPrefs: () => soundPrefsOf(settings()),
     onShareVehicleSetup: (current: LevelSettings) => deps.shareVehicleSetup(current),
   };
 }

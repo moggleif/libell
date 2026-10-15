@@ -129,7 +129,7 @@ const MODERN_WHEEL_Y: Record<WheelId, number> = {
   rearRight: 318,
 };
 
-const WHEEL_LABEL: Record<WheelId, MessageKey> = {
+export const WHEEL_LABEL: Record<WheelId, MessageKey> = {
   frontLeft: 'diagram.wheel.frontLeft',
   frontRight: 'diagram.wheel.frontRight',
   rearLeft: 'diagram.wheel.rearLeft',

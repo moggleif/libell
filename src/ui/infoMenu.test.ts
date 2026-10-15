@@ -43,7 +43,7 @@ function makeMenuOptions(): MenuOptions {
     getCalibratedTilt: () => null,
     getActiveTargetName: () => null,
     getHealth: () => null,
-    getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false }),
+    getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false, soundSpeech: false }),
   };
 }
 

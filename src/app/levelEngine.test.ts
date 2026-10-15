@@ -88,7 +88,11 @@ describe('createLevelEngine', () => {
 
   it.each(['motorhome', 'caravan'] as const)('reports a flat %s as level', (vehicleType) => {
     const { engine, statuses, tilts } = engineFor({ vehicleType });
-    expect(engine.tick(FLAT, 0)).toEqual({ isLevel: true, maxCorrectionMm: 0 });
+    expect(engine.tick(FLAT, 0)).toEqual({
+      isLevel: true,
+      maxCorrectionMm: 0,
+      spoken: { isLevel: true, parts: [] },
+    });
     expect(statuses).toEqual([['', true]]);
     expect(tilts).toHaveLength(1);
   });

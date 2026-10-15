@@ -80,6 +80,7 @@ function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen
     usePhoneSensor: () => boxes.usePhoneSensor(),
     playChime: sound.playChime,
     playGuidancePulse: sound.playGuidancePulse,
+    speak: sound.speak,
     vibrate: vibrateIfSupported,
   });
 }

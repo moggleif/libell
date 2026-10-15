@@ -8,17 +8,21 @@ import { BOX_SMOOTHING_TIME_CONSTANT_MS, createGravityLowPass } from '../domain/
 import { tiltFromGravity, type GravityVector } from '../domain/leveling';
 import { createExternalPoseDetector, createPoseDetector, type ExternalPose } from '../domain/pose';
 import type { LevelSettings, SensorSource } from '../domain/settings';
+import { createSpokenGuidance, type SpokenPlan } from '../domain/spokenGuidance';
 import { createStillnessDetector } from '../domain/stillness';
 import type { BoxController } from '../sensor/boxController';
 import { boxById } from '../sensor/boxes';
 import type { OrientationSensor } from '../sensor/orientation';
 import { isSensorUnavailable } from '../sensor/sensorFallback';
 import type { MessageKey } from '../ui/i18n';
+import { spokenText } from '../ui/spokenText';
 import { isActiveSensorStale } from './sensorStaleness';
 
 export interface EngineTick {
   isLevel: boolean;
   maxCorrectionMm: number;
+  /** The shown plan, for spoken guidance (#602). */
+  spoken: SpokenPlan;
 }
 
 /** Why the pose guard pauses the guidance, and what it says. */
@@ -59,6 +63,8 @@ export interface LevelFrameDeps {
   isVisible: () => boolean;
   settings: () => LevelSettings;
   playGuidancePulse: (pitchHz: number, direction: GuidanceDirection) => void;
+  /** Says a spoken-guidance phrase (#602). */
+  speak: (text: string) => void;
   view: LevelFrameView;
 }
 
@@ -79,6 +85,7 @@ interface Frame {
   readonly isStill: ReturnType<typeof createStillnessDetector>;
   readonly celebration: ReturnType<typeof createCelebration>;
   readonly guidance: ReturnType<typeof createGuidancePulses>;
+  readonly speech: ReturnType<typeof createSpokenCallouts>;
   readonly smoothBox: ReturnType<typeof createBoxSmoothing>;
 }
 
@@ -90,6 +97,7 @@ export function createLevelFrame(deps: LevelFrameDeps): (nowMs: number) => void 
     isStill: createStillnessDetector(),
     celebration: createCelebration(deps),
     guidance: createGuidancePulses(deps),
+    speech: createSpokenCallouts(deps),
     smoothBox: createBoxSmoothing(),
   };
   return (nowMs) => drawFrame(frame, nowMs);
@@ -174,6 +182,7 @@ function guide(frame: Frame, gravity: GravityVector, nowMs: number): void {
   frame.celebration.onReading(engine, still, nowMs);
   if (!engine.isLevel) view.hideCelebration();
   frame.guidance.onReading(engine, still, nowMs);
+  frame.speech.onReading(engine, still, nowMs);
   frame.celebration.rearm(engine, nowMs);
 }
 
@@ -255,6 +264,19 @@ function createGuidancePulses(deps: LevelFrameDeps) {
         deps.playGuidancePulse(guidance.pitchHz, guidance.direction);
         lastPulseAt = nowMs;
       }
+    },
+  };
+}
+
+/** Fed every frame while on; says the plan only while still (#602). */
+function createSpokenCallouts(deps: LevelFrameDeps) {
+  const decide = createSpokenGuidance();
+  return {
+    onReading({ spoken }: EngineTick, still: boolean, nowMs: number): void {
+      const settings = deps.settings();
+      if (!settings.soundSpeech) return;
+      const plan = decide(spoken, still, nowMs);
+      if (plan) deps.speak(spokenText(plan, settings.displayUnit));
     },
   };
 }

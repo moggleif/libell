@@ -105,6 +105,8 @@ describe('layout', () => {
       t('settings.sound'),
       t('settings.soundGuidance'),
       'settings__hint',
+      t('settings.soundSpeech'),
+      'settings__hint',
       'settings__advanced settings__more',
     ]);
     expect(elements[4]!.textContent).toBe(t('onboard.sound.h'));
@@ -116,7 +118,7 @@ describe('layout', () => {
     const elements = tab.elements();
     expect(tab.languageField).toBe(elements[0]);
     expect(tab.lookElements()).toEqual(elements.slice(1, 3));
-    expect(tab.soundElements()).toEqual(elements.slice(5, 8));
+    expect(tab.soundElements()).toEqual(elements.slice(5, 10));
   });
 
   it('translates the theme and appearance options', () => {
@@ -222,9 +224,16 @@ describe('read, populate and resyncSound', () => {
       displayUnit: 'mm',
       soundOnLevel: false,
       soundGuidance: false,
+      soundSpeech: false,
       theme: 'light',
       appearance: 'classic',
     });
+  });
+
+  it('says on the phone whether spoken guidance can speak (#602)', () => {
+    const { tab } = build();
+    // The test browser has no speech synthesis, so no offline voice.
+    expect(tab.elements()[9]!.textContent).toBe(t('settings.soundSpeech.unavailable'));
   });
 
   it('populate shows and applies the given settings', () => {
@@ -251,10 +260,11 @@ describe('read, populate and resyncSound', () => {
 
   it('resyncSound takes a sound choice made outside the form', () => {
     const { tab } = build();
-    tab.resyncSound({ soundOnLevel: false, soundGuidance: true });
+    tab.resyncSound({ soundOnLevel: false, soundGuidance: true, soundSpeech: true });
     const elements = tab.elements();
     expect(checkboxIn(elements, t('settings.sound')).checked).toBe(false);
     expect(checkboxIn(elements, t('settings.soundGuidance')).checked).toBe(true);
+    expect(checkboxIn(elements, t('settings.soundSpeech')).checked).toBe(true);
   });
 });
 

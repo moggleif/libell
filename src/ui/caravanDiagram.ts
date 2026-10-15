@@ -43,7 +43,7 @@ type Side = (typeof SIDES)[number];
 
 const JOCKEY_GLYPH = { ok: '✓', up: '↑', down: '↓' } as const;
 
-const AXLE_LABEL = { left: 'caravan.axleLeft', right: 'caravan.axleRight' } as const;
+export const AXLE_LABEL = { left: 'caravan.axleLeft', right: 'caravan.axleRight' } as const;
 
 function crankText(direction: JockeyDirection): string {
   if (direction === 'ok') return '';

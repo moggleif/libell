@@ -3,7 +3,7 @@
  * wizard has just saved: take them, restyle, and redraw
  * what depends on them.
  */
-import type { LevelSettings } from '../domain/settings';
+import { anySoundOn, type LevelSettings } from '../domain/settings';
 
 export interface SettingsAdoptionDeps {
   /** Make `next` the app's settings (the form has stored them already). */
@@ -26,7 +26,7 @@ export function createSettingsAdoption(deps: SettingsAdoptionDeps): SettingsAdop
       deps.applyLook(next);
       // A change in Settings comes from a tap, a user gesture: the moment
       // to unlock audio for the level chime or the guidance.
-      if (next.soundOnLevel || next.soundGuidance) deps.unlockAudio();
+      if (anySoundOn(next)) deps.unlockAudio();
       deps.refresh();
     },
     fromWizard(next) {

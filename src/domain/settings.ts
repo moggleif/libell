@@ -74,6 +74,9 @@ export interface LevelSettings {
    * Independent of `soundOnLevel`, which only covers the "reached" chime.
    */
   soundGuidance: boolean;
+  /** Spoken guidance (`spokenGuidance.ts`, #602): says which wheel and how
+   * much, with the phone's own offline voice. */
+  soundSpeech: boolean;
   theme: ThemeSetting;
   /**
    * Visual preset, independent of light/dark (`theme`). 'glossy' reuses
@@ -203,6 +206,7 @@ export const DEFAULT_SETTINGS: LevelSettings = {
   // choice — see parseSettings' presence check.
   soundOnLevel: true,
   soundGuidance: false,
+  soundSpeech: false,
   theme: 'system',
   // Modern is the default preset; Classic remains a full, permanently
   // supported choice.
@@ -221,12 +225,22 @@ export function measurementsDiffer(a: LevelSettings, b: LevelSettings): boolean 
   );
 }
 
-export type SoundPrefs = Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>;
+export type SoundPrefs = Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance' | 'soundSpeech'>;
+
+export function soundPrefsOf(settings: SoundPrefs): SoundPrefs {
+  const { soundOnLevel, soundGuidance, soundSpeech } = settings;
+  return { soundOnLevel, soundGuidance, soundSpeech };
+}
+
+/** Whether anything makes a sound, so audio is worth unlocking. */
+export function anySoundOn(settings: SoundPrefs): boolean {
+  return settings.soundOnLevel || settings.soundGuidance || settings.soundSpeech;
+}
 
 /**
- * One toggle for both sound preferences. Muting remembers their exact prior
+ * One toggle for every sound preference. Muting remembers their exact prior
  * values in `preMute` (`null` when not muted); unmuting restores exactly
- * those, never forcing either back on.
+ * those, never forcing any back on.
  */
 export function toggleMute(
   settings: SoundPrefs,
@@ -236,7 +250,7 @@ export function toggleMute(
     return { settings: preMute, preMute: null };
   }
   return {
-    settings: { soundOnLevel: false, soundGuidance: false },
-    preMute: { soundOnLevel: settings.soundOnLevel, soundGuidance: settings.soundGuidance },
+    settings: { soundOnLevel: false, soundGuidance: false, soundSpeech: false },
+    preMute: soundPrefsOf(settings),
   };
 }

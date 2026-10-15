@@ -3,7 +3,7 @@
  * pages, the wizard's single-topic steps, or one flat page. Decided once,
  * at construction (see `settingsPanel.ts`).
  */
-import type { LevelSettings } from '../domain/settings';
+import type { LevelSettings, SoundPrefs } from '../domain/settings';
 import { createCalibrationSection, type CalibrationOptions } from './calibrationSection';
 import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
@@ -84,7 +84,7 @@ export type SettingsFormElement = HTMLFormElement & {
    * toggle. Not a change of its own: the value is already stored, so
    * nothing is saved and no toast shows.
    */
-  resyncSoundFields?: (sound: Pick<LevelSettings, 'soundOnLevel' | 'soundGuidance'>) => void;
+  resyncSoundFields?: (sound: SoundPrefs) => void;
   /**
    * The four bodies the Classic ☰ drawer navigates between, sharing this
    * one form's state; the menu mounts one as this form's child right before

@@ -350,8 +350,10 @@ reads the active sensor, runs `computeLeveling` (or the caravan's) in
 `src/app/levelEngine.ts`, and hands the result to the render functions in `ui/`.
 Rendering is driven by `requestAnimationFrame` (`src/app/levelScreen.ts`) so sensor
 events do not force a layout on every tick. What each frame shows (no data, stale, wrong
-pose, the guidance) and when the level celebration and audio guidance fire is decided in
-`src/app/levelFrame.ts`; the screen's elements live behind its view in
+pose, the guidance) and when the level celebration, audio guidance and spoken guidance
+fire is decided in `src/app/levelFrame.ts` (what to say and when: the pure
+`src/domain/spokenGuidance.ts`; the words: `src/ui/spokenText.ts`; the phone's offline
+voice: `src/app/speech.ts`); the screen's elements live behind its view in
 `src/app/levelScreenView.ts`.
 
 ## Settings (`src/data/settingsStore.ts`)

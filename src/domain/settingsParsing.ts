@@ -153,7 +153,7 @@ function parseLevelingFeel(raw: StoredSettings): LevelingFeelFields {
 
 type PreferenceFields = Pick<
   LevelSettings,
-  'displayUnit' | 'soundOnLevel' | 'soundGuidance' | 'theme' | 'appearance'
+  'displayUnit' | 'soundOnLevel' | 'soundGuidance' | 'soundSpeech' | 'theme' | 'appearance'
 >;
 
 function parsePreferences(raw: StoredSettings): PreferenceFields {
@@ -165,6 +165,7 @@ function parsePreferences(raw: StoredSettings): PreferenceFields {
     soundOnLevel:
       typeof raw.soundOnLevel === 'boolean' ? raw.soundOnLevel : DEFAULT_SETTINGS.soundOnLevel,
     soundGuidance: raw.soundGuidance === true,
+    soundSpeech: raw.soundSpeech === true,
     theme: raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : 'system',
     appearance: isAppearance(raw.appearance) ? raw.appearance : DEFAULT_SETTINGS.appearance,
   };
