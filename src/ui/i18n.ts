@@ -3,6 +3,7 @@
  * plain data so a unit test can assert every language covers the same keys.
  */
 
+import { cs } from './messages/cs';
 import { da } from './messages/da';
 import { de } from './messages/de';
 import { en } from './messages/en';
@@ -16,7 +17,7 @@ import { pl } from './messages/pl';
 import { pt } from './messages/pt';
 import { sv } from './messages/sv';
 
-export const MESSAGES = { en, sv, fr, es, de, nl, it, pl, pt, da, nb, fi } as const;
+export const MESSAGES = { en, sv, fr, es, de, nl, it, pl, pt, da, nb, fi, cs } as const;
 
 export type Language = keyof typeof MESSAGES;
 export type MessageKey = keyof (typeof MESSAGES)['en'];
@@ -36,6 +37,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   da: 'Dansk',
   nb: 'Norsk bokmål',
   fi: 'Suomi',
+  cs: 'Čeština',
 };
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
