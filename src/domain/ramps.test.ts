@@ -28,6 +28,7 @@ describe('ramp catalog', () => {
   it('lists the models added with a sourced step list (#601)', () => {
     const steps = (name: string) => RAMP_MODELS.find((m) => m.name === name)?.stepsMm;
     expect(steps('Brunner Equalizer XL')).toEqual([45, 80, 110]);
+    expect(steps('Fiamma Level Up Premium')).toEqual([70, 130, 170]);
     expect(steps('Fiamma Jumbo')).toEqual([40, 70, 100]);
     expect(steps('Hamron nivåklossar')).toEqual([40, 70, 100]);
     expect(steps('Briv nivåklossar')).toEqual([40, 70, 100]);

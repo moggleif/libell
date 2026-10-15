@@ -20,7 +20,9 @@ export interface RampModel {
 export const RAMP_MODELS: RampModel[] = [
   { name: 'Thule Levelers', stepsMm: [44, 78, 112] },
   { name: 'Fiamma Level Up', stepsMm: [40, 70, 100] },
-  { name: 'Fiamma Level Up Premium', stepsMm: [60, 120, 170] },
+  // "drei Stufen auf 7, 13, und 17 cm Höhe" (reimo.com, art. 912397, "Fiamma
+  // Level Up Premium"); was 60/120/170 with no source (#601).
+  { name: 'Fiamma Level Up Premium', stepsMm: [70, 130, 170] },
   { name: 'Milenco Triple Level', stepsMm: [40, 80, 120] },
   { name: 'Milenco Trident Level', stepsMm: [40, 110, 170] },
   { name: 'Milenco Quattro Level', stepsMm: [40, 80, 120, 160] },
