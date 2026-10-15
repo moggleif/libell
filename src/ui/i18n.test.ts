@@ -39,6 +39,7 @@ describe('i18n dictionaries', () => {
       'Hrvatski',
       'Italiano',
       'Latviešu',
+      'Lietuvių',
       'Magyar',
       'Nederlands',
       'Norsk bokmål',
@@ -230,6 +231,7 @@ describe('i18n terminology (#366)', () => {
       sl: 'Mere',
       et: 'Mõõdud',
       lv: 'Izmēri',
+      lt: 'Matmenys',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -296,6 +298,7 @@ describe('i18n public interface (#377)', () => {
       | 'sl'
       | 'et'
       | 'lv'
+      | 'lt'
     >();
   });
 
