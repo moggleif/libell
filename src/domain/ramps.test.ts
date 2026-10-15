@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { matchRampModel, numberedSteps, rampHeights, rampLabel, RAMP_MODELS } from './ramps';
-import { DEFAULT_SETTINGS } from './settings';
+import { DEFAULT_SETTINGS, LENGTH_RANGES_MM } from './settings';
 
 describe('ramp catalog', () => {
   it('lists every model with positive, ascending, whole-mm steps', () => {
@@ -15,6 +15,23 @@ describe('ramp catalog', () => {
         if (i > 0) expect(mm).toBeGreaterThan(model.stepsMm[i - 1] ?? Infinity);
       }
     }
+  });
+
+  it('keeps every step within the plausible ramp-step range (#601)', () => {
+    const { min, max } = LENGTH_RANGES_MM.rampStep;
+    for (const mm of RAMP_MODELS.flatMap((model) => model.stepsMm)) {
+      expect(mm).toBeGreaterThanOrEqual(min);
+      expect(mm).toBeLessThanOrEqual(max);
+    }
+  });
+
+  it('lists the models added with a sourced step list (#601)', () => {
+    const steps = (name: string) => RAMP_MODELS.find((m) => m.name === name)?.stepsMm;
+    expect(steps('Brunner Equalizer XL')).toEqual([45, 80, 110]);
+    expect(steps('Fiamma Jumbo')).toEqual([40, 70, 100]);
+    expect(steps('Hamron nivåklossar')).toEqual([40, 70, 100]);
+    expect(steps('Briv nivåklossar')).toEqual([40, 70, 100]);
+    expect(steps('TrutzHolm Auffahrkeil 5 t')).toEqual([40, 70, 100]);
   });
 
   it('has unique names', () => {
@@ -54,6 +71,7 @@ describe('ramp catalog', () => {
     // Fiamma Level Up and Biltema nivåkloss are both 40/70/100 mm.
     expect(matchRampModel([40, 70, 100])?.name).toBe('Fiamma Level Up');
     expect(matchRampModel([40, 70, 100], 'Biltema nivåkloss')?.name).toBe('Biltema nivåkloss');
+    expect(matchRampModel([40, 70, 100], 'Hamron nivåklossar')?.name).toBe('Hamron nivåklossar');
   });
 });
 

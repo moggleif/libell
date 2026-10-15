@@ -421,6 +421,10 @@ describe('the Ramps page', () => {
       'Milenco',
       'Froli',
       'Biltema',
+      'Brunner',
+      'Hamron',
+      'Briv',
+      'TrutzHolm',
       'Andersen',
     ]);
   });
