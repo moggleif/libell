@@ -460,8 +460,24 @@ body {
   stroke: var(--warning);
 }
 
+/* Under the top bar, left: the active vehicle and target (#616), so it is
+ * plain what the leveling works toward. */
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 4px;
+}
+
+.choices[hidden],
+.choices > [hidden] {
+  display: none;
+}
+
 /* Neutral, not amber: an active target (ADR 0013) is a choice, never a
- * fault. The hitch height badge (#598) is the same kind of choice. */
+ * fault. The vehicle (#616) and hitch height (#598) badges are the same
+ * kind of choice. */
+.vehicle-badge,
 .target-badge,
 .hitch-badge {
   font: inherit;
@@ -476,14 +492,19 @@ body {
   padding: 4px 10px;
   cursor: pointer;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+:root[data-appearance='modern'] .vehicle-badge,
 :root[data-appearance='modern'] .target-badge,
 :root[data-appearance='modern'] .hitch-badge {
   border: 1.5px solid var(--outline);
   border-radius: 8px;
 }
 
+:root[data-appearance='glossy'] .vehicle-badge,
 :root[data-appearance='glossy'] .target-badge,
 :root[data-appearance='glossy'] .hitch-badge {
   border: 1.5px solid var(--outline);

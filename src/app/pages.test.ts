@@ -55,7 +55,7 @@ function fakeScreen(): Screen {
   const refreshable = () => ({ refresh: vi.fn() });
   return {
     lamps: refreshable(),
-    targetBadge: refreshable(),
+    choiceBadges: refreshable(),
     sensorStatus: refreshable(),
     levelScreen: { show: vi.fn(), rebuildIfChanged: vi.fn() },
   } as unknown as Screen;

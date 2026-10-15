@@ -25,7 +25,7 @@ src/
 │                  # menuOptionParts.ts + menuOptions.ts (the options bags),
 │                  # onboardingLauncher.ts, settingsAdoption.ts (what a save reaches),
 │                  # settingsSurface.ts, sensorPages.ts, navigation.ts (where shortcuts lead),
-│                  # indicatorState.ts + indicatorWiring.ts (lamps, badge, sensor icon),
+│                  # indicatorState.ts + indicatorWiring.ts (lamps, badges, sensor icon),
 │                  # levelEngine.ts, levelScreenView.ts, levelFrame.ts, levelScreen.ts
 │                  # (the level screen), sound.ts (chime, guidance pulse, mute),
 │                  # topBar.ts, frameGuard.ts, startupMigrations.ts, incomingSetup.ts,
@@ -335,7 +335,7 @@ zero plus the saved pitch (`hitchCalibration` in `src/domain/hitchHeight.ts`) in
 of the target, so the ordinary `computeCaravanLeveling` jockey correction leads back to
 it; `levelEngine.ts` then shows the result through `hitchDisplay` (the axle has nothing
 to do) and says the crank in the status row. The main-screen badge
-(`src/ui/hitchBadge.ts`, mounted with the target badge) ends the mode, and
+(`src/ui/hitchBadge.ts`, mounted with the vehicle and target badges) ends the mode, and
 `src/ui/hitchOffer.ts` asks "Save the hitch height first?" while none is saved.
 
 Several vehicles (#599, R56, ADR 0017): only the active vehicle lives in the ordinary
@@ -445,8 +445,8 @@ no menu entry leads there. Amber warning lamps in the top bar point to missing
 measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language (sv/en/fr/es/de) in `src/ui/messages/`.
 
 Top bar / bottom action bar split (#161): the top bar holds only identity (logo, title,
-share) on the left and the indicators cluster (warning lamps, target badge, sensor
-status) on the right — no menu button there. A bottom action bar (`.bottombar`) holds
+share) on the left and the indicators cluster (warning lamps, sensor status) on the
+right; the vehicle, target and hitch height badges sit under it in `#choices` (#616) — no menu button there. A bottom action bar (`.bottombar`) holds
 three controls instead: settings (opens Settings as above),
 sound (center, visually larger — a single mute/unmute toggle for `soundOnLevel` +
 `soundGuidance` together, restoring their exact prior values on unmute rather than

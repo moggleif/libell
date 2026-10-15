@@ -10,7 +10,7 @@ function fakeScreen(): Screen {
   const refreshable = () => ({ refresh: vi.fn() });
   return {
     lamps: refreshable(),
-    targetBadge: refreshable(),
+    choiceBadges: refreshable(),
     sensorStatus: refreshable(),
     levelScreen: { show: vi.fn(), rebuildIfChanged: vi.fn() },
     settingsSurface: { followSource: vi.fn() },
@@ -70,7 +70,7 @@ describe('createCore', () => {
     const { targets } = core.optionDeps;
     expect(targets.add('Sluttning')).toBeNull();
     targets.select(targets.presets()[0]!.id);
-    expect(screen.targetBadge.refresh).toHaveBeenCalled();
+    expect(screen.choiceBadges.refresh).toHaveBeenCalled();
     expect(targets.activeName()).toBe('Sluttning');
     expect(core.effectiveCalibration()).not.toBeNull();
   });
@@ -92,7 +92,7 @@ describe('createCore going back to the hitch height (#598)', () => {
     const asUsual = core.effectiveCalibration();
     expect(hitch.save()).toBeNull();
     hitch.start();
-    expect(screen.targetBadge.refresh).toHaveBeenCalled();
+    expect(screen.choiceBadges.refresh).toHaveBeenCalled();
     // The demo tilt is the saved pitch, with no side tilt of its own.
     const reading = core.optionDeps.readTilt() as { rollDeg: number; pitchDeg: number };
     expect(core.effectiveCalibration()).toEqual({ rollDeg: 0, pitchDeg: reading.pitchDeg });
@@ -144,7 +144,7 @@ describe('createCore wiring a box in and out (#513)', () => {
     const core = createCore(screen);
     expect(core.optionDeps.targets.add('Ferry')).toBeNull();
     const [ferry] = core.optionDeps.targets.presets();
-    const refresh = screen.targetBadge.refresh as ReturnType<typeof vi.fn>;
+    const refresh = screen.choiceBadges.refresh as ReturnType<typeof vi.fn>;
     refresh.mockClear();
     core.optionDeps.targets.select(ferry?.id ?? null);
     expect(refresh).toHaveBeenCalledOnce();

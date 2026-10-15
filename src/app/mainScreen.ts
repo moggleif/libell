@@ -1,8 +1,10 @@
 /** The main screen: the bottom bar's mute, the indicators, and the level screen. */
 import { hasStoredMeasurements } from '../data/settingsStore';
 import { attachMuteButton } from '../ui/muteButton';
+import { t } from '../ui/i18n';
+import { vehicleName } from '../ui/vehiclePicker';
 import type { Core, Screen } from './core';
-import { mountLamps, mountSensorStatus, mountTargetBadge } from './indicatorWiring';
+import { mountChoiceBadges, mountLamps, mountSensorStatus } from './indicatorWiring';
 import { buildLevelScreen, createLevelScreenHost } from './levelScreen';
 import type { Pages } from './pages';
 import { createMuteToggle, unlockOnFirstGesture } from './sound';
@@ -34,9 +36,10 @@ export function mountMainScreen(
     measurementsSaved: hasStoredMeasurements,
     open: navigation.openLamp,
   });
-  screen.targetBadge = mountTargetBadge(document.querySelector('#indicators'), {
-    activeName: () => core.optionDeps.targets.activeName(),
-    open: navigation.openTargets,
+  screen.choiceBadges = mountChoiceBadges(document.querySelector<HTMLElement>('#choices'), {
+    ...choiceNames(core),
+    openVehicle: () => navigation.openSettingsSection('vehicle'),
+    openTargets: navigation.openTargets,
     hitchActive: core.optionDeps.hitch.isActive,
     stopHitch: core.optionDeps.hitch.stop,
   });
@@ -93,4 +96,17 @@ function buildAppLevelScreen(root: HTMLElement, core: Core, pages: Pages, screen
 /** Haptics where the browser has them (not iOS Safari); a no-op elsewhere. */
 export function vibrateIfSupported(pattern: VibratePattern): void {
   if ('vibrate' in navigator) navigator.vibrate(pattern);
+}
+
+/** What the badges name (#616): each only while there is a choice to make. */
+function choiceNames({ optionDeps: { vehicles, targets } }: Core) {
+  return {
+    vehicleName: () => {
+      const list = vehicles.list();
+      const active = list.find((vehicle) => vehicle.id === vehicles.activeId());
+      return list.length > 1 && active ? vehicleName(active.name) : null;
+    },
+    targetName: () =>
+      targets.presets().length > 0 ? (targets.activeName() ?? t('targets.normal')) : null,
+  };
 }

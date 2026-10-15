@@ -99,10 +99,17 @@ export async function targetsFlow(browser) {
   await closeAllPages(page);
   await page.locator('.target-badge:visible').filter({ hasText: 'Ferry' }).waitFor();
 
-  // Deleting the active target falls back to Normal and hides the badge.
+  await deleteActiveTarget(page, 'Ferry');
+  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
+  await context.close();
+}
+
+/** Deleting the active target falls back to Normal, which the badge names
+ * while another target is left to choose (#616). */
+async function deleteActiveTarget(page, name) {
   await page.locator('.target-badge').click();
   const targets = page.locator('.menu-page.is-visible').first();
-  await targets.locator('.choice__row-delete[aria-label*="Ferry"]').click();
+  await targets.locator(`.choice__row-delete[aria-label*="${name}"]`).click();
   await eventually(
     async () => JSON.parse(await storage(page, 'libell.targetPresets')).length === 1,
     'deleting a target should remove it from storage',
@@ -112,10 +119,7 @@ export async function targetsFlow(browser) {
     'deleting the active target should fall back to Normal',
   );
   await closeAllPages(page);
-  await page.locator('.target-badge').waitFor({ state: 'hidden' });
-
-  assert(errors.length === 0, `page errors: ${errors.join('; ')}`);
-  await context.close();
+  await page.locator('.target-badge:visible').filter({ hasText: 'Normal (level)' }).waitFor();
 }
 
 // A caravan's hitch height (#598): offered on the main screen while none is

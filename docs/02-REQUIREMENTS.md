@@ -925,11 +925,11 @@ URL and must keep working with no signal.
 
 ## R31 — Saved level targets: switch between more than one intentional tilt
 
-- **Given** no target preset has ever been selected ("Normal (level)")
+- **Given** no target preset has ever been saved ("Normal (level)" is the only target)
 - **Then** the app behaves exactly as it does today: leveling targets true level, and
   the main screen shows nothing about targets at all (regression guard; ADR 0013).
 - **Given** the saved targets on Settings' Level tab or page (#329; reached from Settings,
-  or from the main-screen badge below once a target is active), listing "Normal" first
+  or from the main-screen badge below once a target is saved), listing "Normal" first
   and then any saved presets
 - **Then** only the list and "Save current tilt as new target" show; no name field is
   shown until a name is needed (#613).
@@ -959,9 +959,10 @@ URL and must keep working with no signal.
   on top of the sensor calibration + vehicle zero sum (R24) or the box's zero (R34),
   never stored in the same
   field as either and never touched by redoing or clearing them (ADR 0013). A small
-  badge appears on the main screen reading "Target: {name}" — the only thing the
-  main screen ever shows about targets, and gone the instant "Normal" is picked
-  again.
+  badge under the top bar, on the left, reads "Target: {name}" — the only thing the
+  main screen ever shows about targets. While at least one preset is saved it names
+  the active target, "Normal (level)" included, so it is plain what the leveling works
+  toward (#616); it is gone once no preset is left.
 - **Given** a preset I no longer want
 - **Then** its ✕ button deletes it; deleting the active one falls back to Normal
   automatically. "Normal" itself has no delete button and can never be selected away
@@ -1334,7 +1335,7 @@ holds for every sensor box (#266), not only EasyLevel.
   under it — R50 — and share) and the
   actions cluster on the right — no menu button there. The Install button (R20) and the
   sensor-status icon keep the top-right corner together, Install immediately to the icon's
-  left (#244), and neither ever moves; the warning lamps and target badge sit to their
+  left (#244), and neither ever moves; the warning lamps sit to their
   left and are the ones that move when space runs out, wrapping onto further
   right-aligned rows below — never pushing the corner pair out of place and never
   overlapping the identity group. The bar reserves the corner's own measured width, so
@@ -2186,6 +2187,10 @@ per vehicle (Morgan, #599).
   box's direction and password, its zeros (R24, R34/R49) and their fine adjustment
   (R24), its targets (R31) and its hitch height (R55). The previous box is disconnected,
   and this vehicle's box reconnects as on open (R33). The choice survives a reload.
+- **Given** two or more vehicles
+- **Then** a badge under the top bar, on the left before the target badge (R31),
+  reads "Vehicle: {name}" for the active one, and a tap opens Settings › Vehicle; with
+  one vehicle there is no badge (#616).
 - **Given** a vehicle added, switched to, or the active one removed, each of which starts
   the app again
 - **Then** Settings opens straight back on Vehicle, now showing the vehicle that is

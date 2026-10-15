@@ -133,6 +133,13 @@ describe('createVehicles', () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
+  it('tells the main screen about a rename (#616)', () => {
+    const onRenamed = vi.fn();
+    const vehicles = createVehicles({ reload: vi.fn(), onRenamed, storage: memoryStorage() });
+    vehicles.rename(vehicles.activeId(), 'Motorhome');
+    expect(onRenamed).toHaveBeenCalledOnce();
+  });
+
   it('never removes the only vehicle', () => {
     const { vehicles } = setup();
     expect(vehicles.remove('vehicle-1')).toBe(false);

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
-import { createTargetBadge } from './targetBadge';
+import { createTargetBadge, createVehicleBadge } from './targetBadge';
 import { setLanguage, t } from './i18n';
 
 setLanguage('en');
@@ -34,5 +34,20 @@ describe('target badge (#122, ADR 0013)', () => {
     badge.update('Shower drain');
     badge.element.click();
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('vehicle badge (#616)', () => {
+  it('starts hidden, shows the active vehicle, and opens on tap', () => {
+    const onClick = vi.fn();
+    const badge = createVehicleBadge(onClick);
+    expect(badge.element.hidden).toBe(true);
+    badge.update('Caravan');
+    expect(badge.element.hidden).toBe(false);
+    expect(badge.element.textContent).toBe(t('vehicles.badge', { name: 'Caravan' }));
+    badge.element.click();
+    expect(onClick).toHaveBeenCalledOnce();
+    badge.update(null);
+    expect(badge.element.hidden).toBe(true);
   });
 });
