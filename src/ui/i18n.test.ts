@@ -43,6 +43,7 @@ describe('i18n dictionaries', () => {
       'Polski',
       'Português',
       'Română',
+      'Slovenčina',
       'Suomi',
       'Svenska',
       'Türkçe',
@@ -222,6 +223,7 @@ describe('i18n terminology (#366)', () => {
       ro: 'Dimensiuni',
       tr: 'Ölçüler',
       hr: 'Mjere',
+      sk: 'Rozmery',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -284,6 +286,7 @@ describe('i18n public interface (#377)', () => {
       | 'ro'
       | 'tr'
       | 'hr'
+      | 'sk'
     >();
   });
 
