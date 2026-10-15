@@ -378,8 +378,7 @@ export const en = {
   'targets.add': 'Save current tilt as new target',
   'targets.delete': 'Delete {name}',
   'targets.warn.tooSteep':
-    'That looks steeper than an intentional target (over 15°). Try again, or save anyway.',
-  'targets.anyway': 'Save anyway',
+    'Target saved, but it is steeper than a usual target (over 15°). Not what you meant? Delete it with the cross and save again.',
   'targets.badge': 'Target: {name}',
   // Read-only, in the menu only, never on the main screen (R31).
 

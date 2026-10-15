@@ -944,9 +944,10 @@ URL and must keep working with no signal.
   as level — is captured and stored as a new preset
   under that name — or, with the field emptied, as "Target N" (#329; nothing is
   disabled), and the field closes. A capture reading more than 15° from that zero is
-  not saved yet: a warning says it looks steeper than an intentional target, with a
-  "Save anyway" button that saves it under the same name (#425); it survives a reload
-  like any other preset.
+  saved the same way, with the one "Save" button; a warning then says, as information
+  only, that it was saved but is steeper than a usual target and can be deleted with
+  the cross if it was a mistake (#425, #621). The warning goes when the next target is
+  started.
 - **Given** the active saved preset
 - **When** I tap it again
 - **Then** its name becomes editable in place; leaving the field or pressing Enter saves
