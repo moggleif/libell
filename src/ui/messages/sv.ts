@@ -395,7 +395,7 @@ export const sv: Messages = {
     'Libell räknar ut hur mycket varje hjul ska upp från hjulbasen och spårvidden.\n' +
     'De står i fordonspapperen, annars mäter du med tumstock.\n' +
     'På en husvagn är hjulbasen avståndet från axeln till stödhjulet.\n' +
-    'Har du flera fordon har vart och ett egna mått, klossar, nollor, mål och sensorbox. Välj fordon överst under Fordon.',
+    'Har du flera fordon har vart och ett egna mått, klossar, nolläge, mål och sensorbox. Välj fordon överst under Fordon.',
   'help.ramps.t':
     'Skärmen säger vilket steg på klossen hjulet ska upp på, så fyll i de klossar du har med dig.\n' +
     'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.\n' +
@@ -478,10 +478,10 @@ export const sv: Messages = {
   // Tapping the chosen target or vehicle again edits its name (#613).
   'choice.rename': 'Byt namn på {name}',
   'vehicles.delete': 'Ta bort {name}',
-  'vehicles.remove.confirm': 'Ta bort {name} med dess nollor, mål och sensorbox?',
+  'vehicles.remove.confirm': 'Ta bort {name} med dess nolläge, mål och sensorbox?',
   'vehicles.remove.yes': 'Ja, ta bort',
   'vehicles.hint':
-    'Mått, klossar, nollor, mål och sensorbox hör till fordonet. Telefonens kalibrering delas.',
+    'Mått, klossar, nolläge, mål och sensorbox hör till fordonet. Telefonens kalibrering delas.',
   'setup.incoming.addNew': 'Lägg till som nytt fordon',
 
   'hitch.title': 'Kopplingshöjd',

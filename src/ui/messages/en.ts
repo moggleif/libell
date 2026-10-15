@@ -419,7 +419,7 @@ export const en = {
     'Libell works out how much each wheel must rise from the wheelbase and track width.\n' +
     'They are in the vehicle papers, or measure with a tape.\n' +
     'On a caravan, the wheelbase is the distance from the axle to the jockey wheel.\n' +
-    'With several vehicles, each keeps its own measurements, ramps, zeros, targets and sensor box; pick one at the top of Vehicle.',
+    'With several vehicles, each keeps its own measurements, ramps, vehicle zero, targets and sensor box; pick one at the top of Vehicle.',
   'help.ramps.t':
     'The screen tells you which step of your ramp each wheel goes up on, so enter the ramps you carry.\n' +
     'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.\n' +
@@ -509,10 +509,10 @@ export const en = {
   // Tapping the chosen target or vehicle again edits its name (#613).
   'choice.rename': 'Rename {name}',
   'vehicles.delete': 'Remove {name}',
-  'vehicles.remove.confirm': 'Remove {name} with its zeros, targets and sensor box?',
+  'vehicles.remove.confirm': 'Remove {name} with its vehicle zero, targets and sensor box?',
   'vehicles.remove.yes': 'Yes, remove',
   'vehicles.hint':
-    'Measurements, ramps, zeros, targets and the sensor box belong to the vehicle. The phone’s calibration is shared.',
+    'Measurements, ramps, the vehicle zero, targets and the sensor box belong to the vehicle. The phone’s calibration is shared.',
   'setup.incoming.addNew': 'Add as a new vehicle',
 
   // A caravan's hitch height (#598).

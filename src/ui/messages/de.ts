@@ -392,7 +392,7 @@ export const de: Messages = {
     'Libell berechnet aus Radstand und Spurweite, wie weit jedes Rad hoch muss.\n' +
     'Sie stehen in den Fahrzeugpapieren, sonst miss mit dem Maßband.\n' +
     'Beim Wohnwagen ist der Radstand der Abstand von der Achse zum Stützrad.\n' +
-    'Bei mehreren Fahrzeugen behält jedes seine Maße, Keile, Nullpunkte, Ziele und Sensorbox; wähle es oben unter Fahrzeug.',
+    'Bei mehreren Fahrzeugen behält jedes seine Maße, Keile, Nullpunkt, Ziele und Sensorbox; wähle es oben unter Fahrzeug.',
   'help.ramps.t':
     'Der Bildschirm sagt, auf welche Stufe deines Keils jedes Rad muss, also trag die Keile ein, die du dabeihast.\n' +
     'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.\n' +
@@ -477,10 +477,11 @@ export const de: Messages = {
   // Tapping the chosen target or vehicle again edits its name (#613).
   'choice.rename': '{name} umbenennen',
   'vehicles.delete': '{name} entfernen',
-  'vehicles.remove.confirm': '{name} mit seinen Nullpunkten, Zielen und der Sensorbox entfernen?',
+  'vehicles.remove.confirm':
+    '{name} mit seinem Nullpunkt, seinen Zielen und der Sensorbox entfernen?',
   'vehicles.remove.yes': 'Ja, entfernen',
   'vehicles.hint':
-    'Maße, Keile, Nullpunkte, Ziele und die Sensorbox gehören zum Fahrzeug. Die Kalibrierung des Handys gilt für alle.',
+    'Maße, Keile, Nullpunkt, Ziele und die Sensorbox gehören zum Fahrzeug. Die Kalibrierung des Handys gilt für alle.',
   'setup.incoming.addNew': 'Als neues Fahrzeug hinzufügen',
 
   'hitch.title': 'Kupplungshöhe',
