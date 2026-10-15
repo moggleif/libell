@@ -4,7 +4,7 @@
  * a zero to adjust; the step above it is what guides the user to one.
  */
 import type { Calibration } from '../domain/calibration';
-import { trimSummary, type TrimDirection } from '../domain/zeroTrim';
+import { isTrimmed, trimSummary, type TrimDirection } from '../domain/zeroTrim';
 import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
 import { signedDegrees } from './tiltText';
@@ -58,7 +58,7 @@ export function createZeroTrimRow(options: ZeroTrimOptions): ZeroTrimRow {
     element.hidden = !options.hasZero();
     const trim = options.getTrim();
     total.textContent = zeroTrimText(trim);
-    reset.disabled = trimSummary(trim).length === 0;
+    reset.disabled = !isTrimmed(trim);
   }
   for (const [direction, key] of BUTTONS) {
     const button = createElement('button', 'menu__action menu__action--secondary');
