@@ -36,6 +36,7 @@ describe('i18n dictionaries', () => {
       'Italiano',
       'Nederlands',
       'Polski',
+      'Português',
       'Svenska',
     ]);
   });
@@ -204,6 +205,7 @@ describe('i18n terminology (#366)', () => {
       nl: 'Maten',
       it: 'Misure',
       pl: 'Wymiary',
+      pt: 'Medidas',
     };
     for (const lang of ALL) {
       expect(MESSAGES[lang]['lamp.setup'], lang).toBe(`⚠ ${word[lang]}`);
@@ -248,7 +250,9 @@ describe('i18n public interface (#377)', () => {
   });
 
   it('types Language as the shipped languages', () => {
-    expectTypeOf<Language>().toEqualTypeOf<'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl'>();
+    expectTypeOf<Language>().toEqualTypeOf<
+      'sv' | 'en' | 'fr' | 'es' | 'de' | 'nl' | 'it' | 'pl' | 'pt'
+    >();
   });
 
   it('types MessageKey as exactly the English keys', () => {
