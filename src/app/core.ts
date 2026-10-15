@@ -221,7 +221,7 @@ function createCalibrationLayers(
   const targets = createTargets({
     readTilt: readTiltNow,
     zeroCalibration,
-    onActiveChanged: () => screen.choiceBadges.refresh(),
+    onChanged: () => screen.choiceBadges.refresh(),
   });
   return {
     readTiltNow,

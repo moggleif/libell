@@ -84,6 +84,8 @@ export async function targetsFlow(browser) {
       near(preset.offset.pitchDeg, DEMO_PITCH),
     `the preset should hold the demo tilt, got ${JSON.stringify(preset)}`,
   );
+  // The first target shows the badge at once, Normal still active (#622).
+  await page.locator('.target-badge:visible').filter({ hasText: 'Normal (level)' }).waitFor();
 
   // The field suggests the next free default name.
   await button(settings, 'Save current tilt as new target').click();

@@ -25,8 +25,9 @@ export interface TargetsDeps {
   readTilt(): Calibration | string;
   /** What "level" means now, which a new target is measured from. */
   zeroCalibration(): Calibration | null;
-  /** The active target changed or may have. */
-  onActiveChanged(): void;
+  /** The targets or the active one changed, or may have: what the
+   * main-screen badge names (#616, #622). */
+  onChanged(): void;
   storage?: KeyValueStorage | null;
   newId?: () => string;
 }
@@ -65,7 +66,7 @@ export function createTargets(deps: TargetsDeps): Targets {
   function select(id: string | null): void {
     activeId = id;
     saveActiveTargetId(id, storage);
-    deps.onActiveChanged();
+    deps.onChanged();
   }
 
   return {
@@ -81,16 +82,17 @@ export function createTargets(deps: TargetsDeps): Targets {
       const offset = presetOffsetFromReading(reading, deps.zeroCalibration());
       if (!anyway && offsetTooSteep(offset)) return { warning: t('targets.warn.tooSteep') };
       savePresets([...presets, { id: newId(), name, offset }]);
+      deps.onChanged();
       return null;
     },
     rename(id, name) {
       savePresets(presets.map((preset) => (preset.id === id ? { ...preset, name } : preset)));
-      deps.onActiveChanged();
+      deps.onChanged();
     },
     remove(id) {
       savePresets(presets.filter((preset) => preset.id !== id));
       if (activeId === id) select(null);
-      else deps.onActiveChanged();
+      else deps.onChanged();
     },
   };
 }

@@ -25,16 +25,16 @@ function setup(options: {
   storage?: KeyValueStorage;
 }) {
   const storage = options.storage ?? memoryStorage();
-  const onActiveChanged = vi.fn();
+  const onChanged = vi.fn();
   let nextId = 0;
   const targets = createTargets({
     readTilt: () => options.tilt ?? { rollDeg: 0, pitchDeg: 0 },
     zeroCalibration: () => options.zero ?? null,
-    onActiveChanged,
+    onChanged,
     storage,
     newId: () => `id-${++nextId}`,
   });
-  return { targets, storage, onActiveChanged };
+  return { targets, storage, onChanged };
 }
 
 describe('createTargets', () => {
@@ -60,7 +60,7 @@ describe('createTargets', () => {
 
   describe('add', () => {
     it('saves the tilt relative to the zero, never to the active target', () => {
-      const { targets, storage, onActiveChanged } = setup({
+      const { targets, storage } = setup({
         tilt: { rollDeg: 3, pitchDeg: -1 },
         zero: { rollDeg: 1, pitchDeg: 1 },
       });
@@ -69,7 +69,20 @@ describe('createTargets', () => {
       expect(targets.presets()).toEqual([saved]);
       expect(loadTargetPresets(storage)).toEqual([saved]);
       expect(targets.activeId()).toBeNull();
-      expect(onActiveChanged).not.toHaveBeenCalled();
+    });
+
+    // #622: the badge shows once a target exists (#616), so a new one
+    // redraws it even though Normal stays active.
+    it('redraws the badge, since there is now a target to name', () => {
+      const { targets, onChanged } = setup({});
+      targets.add('Ferry');
+      expect(onChanged).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the badge alone when nothing is saved', () => {
+      const { targets, onChanged } = setup({ tilt: { rollDeg: 16, pitchDeg: 0 } });
+      targets.add('Steep');
+      expect(onChanged).not.toHaveBeenCalled();
     });
 
     // #425: "Varning är rätt. Aldrig stopp." — a warning, then the user's call.
@@ -95,7 +108,7 @@ describe('createTargets', () => {
   });
 
   it('selects a target and back to Normal, storing each choice', () => {
-    const { targets, storage, onActiveChanged } = setup({ tilt: { rollDeg: 2, pitchDeg: 0 } });
+    const { targets, storage, onChanged } = setup({ tilt: { rollDeg: 2, pitchDeg: 0 } });
     targets.add('Ferry');
     targets.select('id-1');
     expect(targets.activeId()).toBe('id-1');
@@ -105,37 +118,37 @@ describe('createTargets', () => {
     targets.select(null);
     expect(targets.activeId()).toBeNull();
     expect(loadActiveTargetId(targets.presets(), storage)).toBeNull();
-    expect(onActiveChanged).toHaveBeenCalledTimes(2);
+    expect(onChanged).toHaveBeenCalledTimes(3);
   });
 
   describe('remove', () => {
     it('falls back to Normal when the active target goes', () => {
-      const { targets, storage, onActiveChanged } = setup({});
+      const { targets, storage, onChanged } = setup({});
       targets.add('Ferry');
       targets.select('id-1');
       targets.remove('id-1');
       expect(targets.presets()).toEqual([]);
       expect(loadTargetPresets(storage)).toEqual([]);
       expect(targets.activeId()).toBeNull();
-      expect(onActiveChanged).toHaveBeenCalledTimes(2);
+      expect(onChanged).toHaveBeenCalledTimes(3);
     });
 
     it('keeps the active target when another goes', () => {
-      const { targets, onActiveChanged } = setup({});
+      const { targets, onChanged } = setup({});
       targets.add('Ferry');
       targets.add('Drain');
       targets.select('id-1');
       targets.remove('id-2');
       expect(targets.presets().map((p) => p.name)).toEqual(['Ferry']);
       expect(targets.activeId()).toBe('id-1');
-      expect(onActiveChanged).toHaveBeenCalledTimes(2);
+      expect(onChanged).toHaveBeenCalledTimes(4);
     });
   });
 
   // #613: tapping the chosen target again edits its name.
   describe('rename', () => {
     it('renames the target, keeps its tilt, and redraws the badge', () => {
-      const { targets, storage, onActiveChanged } = setup({});
+      const { targets, storage, onChanged } = setup({});
       targets.add('Ferry');
       targets.select('id-1');
       const before = targets.presets()[0]!.offset;
@@ -146,7 +159,7 @@ describe('createTargets', () => {
         name: 'Ferry deck',
         offset: before,
       });
-      expect(onActiveChanged).toHaveBeenCalledTimes(2);
+      expect(onChanged).toHaveBeenCalledTimes(3);
     });
   });
 });
