@@ -17,56 +17,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Release handling: the VERSION file holds major.minor. The first
-  # deploy of a new major.minor is the release — version X.Y.0, tagged
-  # and published as a GitHub Release. Every later merge on the same
-  # minor is a QA build (Pages doubles as the QA server): the release it
-  # builds on, plus the merged PR number — shown as "X.Y.0 – CR<PR>" and
-  # tagged "vX.Y.0-CR<PR>" (tag names take no spaces), so the version
-  # tells at a glance whether the build is the release or a candidate,
-  # and which release it came from (ADR 0007).
+  # Release handling (ADR 0007): the VERSION file holds major.minor, or
+  # major.minor.patch for a patch release (#611). The first deploy of a
+  # version is its release — X.Y.0 or X.Y.Z, tagged and published as a
+  # GitHub Release. Every later merge on it is a QA build (Pages doubles
+  # as the QA server): the release it builds on plus the merged PR number,
+  # shown as "X.Y.Z – CR<PR>" and tagged "vX.Y.Z-CR<PR>". The rules live
+  # in scripts/version.ts, where they are unit-tested.
   compute-version:
     name: Compute version
     runs-on: ubuntu-latest
     outputs:
       version_string: ${{ steps.version.outputs.version_string }}
       tag_name: ${{ steps.version.outputs.tag_name }}
-      is_new_minor: ${{ steps.version.outputs.is_new_minor }}
+      is_release: ${{ steps.version.outputs.is_release }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - name: Compute version from VERSION file and PR number
+      # Node 22 runs the TypeScript script directly; no install needed.
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      - name: Compute version from VERSION file, tags and PR number
         id: version
-        run: |
-          BASE=$(cat VERSION | tr -d '[:space:]')
-          # Merge and squash commits both carry "#<PR>" in the subject.
-          # Direct pushes and manual dispatches have none — fall back to
-          # the workflow run number so the tag stays unique.
-          MSG=$(git log -1 --pretty=%s)
-          PATCH=$(echo "$MSG" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
-          if [ -z "$PATCH" ]; then
-            PATCH="${GITHUB_RUN_NUMBER}"
-            echo "No PR number in '$MSG' — falling back to run number ${PATCH}"
-          fi
-          if [ -z "$(git tag --list "v${BASE}.*")" ]; then
-            # First deploy of this major.minor: the release, X.Y.0.
-            IS_NEW_MINOR=true
-            VERSION_STRING="${BASE}.0"
-            TAG="v${VERSION_STRING}"
-          else
-            # Already released: a QA/candidate build on top of that
-            # release. The version line shows "X.Y.0 – CR<PR>"; the tag drops
-            # the spaces to stay a valid ref.
-            IS_NEW_MINOR=false
-            VERSION_STRING="${BASE}.0 – CR${PATCH}"
-            TAG="v${BASE}.0-CR${PATCH}"
-          fi
-          echo "version_string=${VERSION_STRING}" >> $GITHUB_OUTPUT
-          echo "tag_name=${TAG}" >> $GITHUB_OUTPUT
-          echo "is_new_minor=${IS_NEW_MINOR}" >> $GITHUB_OUTPUT
-          echo "Computed version: ${TAG} (is_new_minor=${IS_NEW_MINOR})"
+        run: node scripts/compute-version.ts
 
   deploy:
     name: Build & Deploy
@@ -145,8 +123,8 @@ jobs:
             echo "Created and pushed tag ${TAG}"
           fi
 
-      - name: Create GitHub Release (new major.minor only)
-        if: needs.compute-version.outputs.is_new_minor == 'true'
+      - name: Create GitHub Release (the release itself, not candidates)
+        if: needs.compute-version.outputs.is_release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.compute-version.outputs.tag_name }}

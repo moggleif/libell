@@ -3,27 +3,28 @@ import { defineConfig } from 'vitest/config';
 import { VitePWA } from 'vite-plugin-pwa';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { localVersion } from './scripts/version.ts';
 
 // GitHub Pages serves a project site from /<repo>/. Override with BASE_PATH
 // (e.g. BASE_PATH=/ for a custom domain or local static hosting).
 const base = process.env.BASE_PATH ?? '/libell/';
 
 // ── Version string for the footer ──────────────────────────────────────────
-// The VERSION file holds major.minor; the deploy workflow decides release vs
-// candidate and passes the finished display string as BUILD_VERSION (ADR 0007).
-// - BUILD_VERSION set (deploy workflow): use it verbatim ("X.Y.0" or
-//   "X.Y.0 – CR<PR>").
+// The VERSION file holds major.minor (or major.minor.patch); the deploy
+// workflow decides release vs candidate and passes the finished display
+// string as BUILD_VERSION (ADR 0007, scripts/version.ts).
+// - BUILD_VERSION set (deploy workflow): use it verbatim ("X.Y.Z" or
+//   "X.Y.Z – CR<PR>").
 // - CI without BUILD_VERSION: no version — better none than a wrong one.
-// - Local dev: the release of this minor plus a local timestamp. A working
-//   tree is not a candidate build, so it never carries a CR number — and
-//   the string always keeps the full X.Y.Z shape.
+// - Local dev: the release of this VERSION plus a local timestamp, never a
+//   CR number, always in the full X.Y.Z shape.
 function resolveVersionString(): string | null {
   if (process.env.BUILD_VERSION) return process.env.BUILD_VERSION;
   if (process.env.GITHUB_ACTIONS) return null;
   const versionPath = join(import.meta.dirname, 'VERSION');
-  const baseVersion = existsSync(versionPath) ? readFileSync(versionPath, 'utf8').trim() : '0.0';
+  const versionFile = existsSync(versionPath) ? readFileSync(versionPath, 'utf8') : '0.0';
   const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
-  return `${baseVersion}.0 – local ${stamp}`;
+  return localVersion(versionFile, stamp);
 }
 
 // GitHub Pages cannot set response headers, so the strictest available
