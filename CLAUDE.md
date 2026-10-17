@@ -18,6 +18,7 @@ and this guide has a bug — fix the guide in the same change. Clarity over clev
 | Why it is built that way (decisions)        | `docs/adr/`                                       |
 | How to set up, build, test, contribute      | `docs/01-CONTRIBUTING.md`                         |
 | How to review a change before merge         | `.claude/skills/` (steward and the review skills) |
+| When to plan before acting                  | `.claude/skills/think-before-doing/`              |
 | Security model and reporting                | `SECURITY.md`                                     |
 | Default setting values                      | `DEFAULT_SETTINGS` in `src/domain/settings.ts`    |
 | User-facing strings                         | `src/ui/messages/<lang>.ts`, one per `LANGUAGES`  |
@@ -66,6 +67,9 @@ src/
   change, never a committed binary.
 
 ## Definition of done — walk this list for every increment
+
+Before the first step, when the ask is a discussion or not yet an explicit go, follow the
+`think-before-doing` skill in `.claude/skills/` (#679): plan and agree first, act after.
 
 1. **Anchor it.** The change traces to a GitHub issue with Given/When/Then acceptance
    criteria; behavior changes update `docs/02-REQUIREMENTS.md` **in the same change**,
