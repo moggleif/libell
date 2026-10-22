@@ -35,6 +35,12 @@ describe('ramp catalog', () => {
     expect(steps('TrutzHolm Auffahrkeil 5 t')).toEqual([40, 70, 100]);
   });
 
+  it('lists Lippert LEVEL9 with 9 steps of 2 cm (#686)', () => {
+    const level9 = RAMP_MODELS.find((m) => m.name === 'Lippert LEVEL9');
+    expect(level9?.stepsMm).toEqual([20, 40, 60, 80, 100, 120, 140, 160, 180]);
+    expect(level9?.stepless).toBeUndefined();
+  });
+
   it('has unique names', () => {
     const names = RAMP_MODELS.map((m) => m.name);
     expect(new Set(names).size).toBe(names.length);

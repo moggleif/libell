@@ -2,7 +2,8 @@
  * Catalog of ready-made leveling ramps sold by camping shops and DIY
  * stores (Camping4u, Campingvaruhuset, GetCamping, Kama Fritid, Biltema,
  * Jula …), with their step heights in mm. New models are added only with
- * step heights from a product page, noted beside the entry (#601). Picking one in Settings fills the ramp
+ * step heights from a product page, noted beside the entry (#601), or
+ * by Morgan's explicit decision, noted the same way (#686). Picking one in Settings fills the ramp
  * step list; the chips still allow fine-tuning afterwards. Pure data —
  * product names are proper nouns and are not translated.
  */
@@ -42,6 +43,10 @@ export const RAMP_MODELS: RampModel[] = [
   { name: 'Briv nivåklossar', stepsMm: [40, 70, 100] },
   // "3 verschiedene Höhen in einer Rampe: 10 / 7 / 4 cm" (kaufland.at, product 539657967).
   { name: 'TrutzHolm Auffahrkeil 5 t', stepsMm: [40, 70, 100] },
+  // "9 nivåer, upp till 18 cm höjd" (fortaltsbutiken.se, art. C16-47); no
+  // source gives each position's height, so 2 cm per step is Morgan's
+  // decision (2026-10-22, #686), not a quote.
+  { name: 'Lippert LEVEL9', stepsMm: [20, 40, 60, 80, 100, 120, 140, 160, 180] },
   // "Precise leveling at any increment between 1/2” and 4”"
   // (andersenhitches.com/products/camper-leveler): 4″ is 101.6 mm, rounded
   // down so the plan never counts on height the wedge lacks.

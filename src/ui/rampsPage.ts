@@ -201,7 +201,7 @@ function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {
         : 'settings.klossar.stepsHeading';
       heading.textContent = `${t(headingKey)} (${state.unit})`;
       modelName.textContent = selectedModel ? selectedModel.name : ownName(choice);
-      grid.style.gridTemplateColumns = `repeat(${sortedSteps.length || 1}, 1fr)`;
+      grid.style.gridTemplateColumns = `repeat(${gridColumns(sortedSteps.length)}, 1fr)`;
       grid.replaceChildren(
         ...sortedSteps.map((mm, i) =>
           stepCell(cellLabel(choice, i + 1), formatLengthValue(mm, state.unit)),
@@ -209,6 +209,16 @@ function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {
       );
     },
   };
+}
+
+/** More steps than this to a row stop fitting a 320 px phone (#686). */
+const MAX_GRID_COLUMNS = 5;
+
+/** Columns for `count` cells: one row up to MAX_GRID_COLUMNS, else rows as
+ * even as they go (9 steps: 5 + 4, 6 steps: 3 + 3). */
+function gridColumns(count: number): number {
+  const rows = Math.ceil(Math.max(count, 1) / MAX_GRID_COLUMNS);
+  return Math.ceil(Math.max(count, 1) / rows);
 }
 
 const ownName = (choice: RampChoice): string =>

@@ -644,7 +644,8 @@ URL and must keep working with no signal.
 - **When** I choose a model sold in camping shops (the catalog is `RAMP_MODELS` in
   `src/domain/ramps.ts`; a model is listed only with step heights taken from the maker's
   or a shop's product page, or measured, never guessed, with the source next to it,
-  #601)
+  #601; the one exception is Lippert LEVEL9, whose 9 positions no source gives, set to
+  2 cm per step by Morgan's decision, #686)
 - **Then** its step heights fill in and it shows as "Selected"; in the compact picker,
   editing the heights afterwards switches it to "Custom set" (the Ramps page offers the
   step editor only under "Custom set"). A set matching a catalog model shows the
@@ -1781,6 +1782,8 @@ the footer, with the card and the footer both spelling out the same step heights
   chosen: a block reading top-down as a statement — "Selected", the model's name,
   "Step heights" with the display unit, then the heights themselves. The same numbers
   are never printed twice, and no second card repeats them next to the list.
+  Up to five heights share one row; more wrap into rows as even as they go (nine steps
+  read 5 + 4), so a nine-step ramp such as Lippert LEVEL9 fits a 320 px phone (#686).
 - **Given** the tab's running order
 - **Then** the answer comes first and the means of changing it below: what is set (the
   model and its step heights), the settings that follow from it (number of ramps), the
