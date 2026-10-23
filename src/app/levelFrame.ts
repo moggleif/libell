@@ -44,7 +44,7 @@ export interface LevelFrameView {
   hideStale(): void;
   showPose(problem: PoseProblem): void;
   hidePose(): void;
-  tick(gravity: GravityVector, nowMs: number): EngineTick;
+  tick(gravity: GravityVector, nowMs: number, still: boolean): EngineTick;
   showMeasuring(): void;
   celebrate(): void;
   hideCelebration(): void;
@@ -176,7 +176,7 @@ function guide(frame: Frame, gravity: GravityVector, nowMs: number): void {
   const { view } = frame.deps;
   const tilt = tiltFromGravity(gravity, null);
   const still = frame.isStill((tilt.roll * 180) / Math.PI, (tilt.pitch * 180) / Math.PI, nowMs);
-  const engine = view.tick(gravity, nowMs);
+  const engine = view.tick(gravity, nowMs, still);
   // Momentary readings mean nothing while the vehicle rocks.
   if (!still) view.showMeasuring();
   frame.celebration.onReading(engine, still, nowMs);

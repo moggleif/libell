@@ -294,6 +294,8 @@ export const hr: Messages = {
   'status.almost': 'Gotovo vodoravno — preostaje {left}',
   'status.cantLevel.close': 'Vaše rampe ovdje gotovo dosežu, ali nedovoljno — premjestite vozilo',
   'status.cantLevel.far': 'Vaše rampe ovdje nisu ni približno dovoljne — premjestite vozilo',
+  'adjustable.before': 'Namjesti rampe na prikazanu stepenicu, zatim se navezi na njih.',
+  'adjustable.after': 'Još nije vodoravno. Odvezi se s rampi i aplikacija će ponovno izmjeriti.',
 
   'calibration.intro':
     'Položite telefon na površinu za koju znate da je vodoravna, zatim dodirnite „Kalibriraj sada”. ' +

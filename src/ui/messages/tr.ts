@@ -281,6 +281,8 @@ export const tr: Messages = {
   'status.almost': 'Neredeyse düz — {left} kaldı',
   'status.cantLevel.close': 'Takozlarınız burada az farkla yetmiyor — aracın yerini değiştirin',
   'status.cantLevel.far': 'Takozlarınız burada çok yetersiz — aracın yerini değiştirin',
+  'adjustable.before': 'Takozları gösterilen basamağa ayarlayın, sonra yukarı sürün.',
+  'adjustable.after': 'Henüz düz değil. Aracı takozlardan indirin, uygulama yeniden ölçer.',
 
   'calibration.intro':
     'Telefonu düz olduğunu bildiğiniz bir yüzeye koyun, sonra “Kalibre et”e dokunun. Mevcut eğim referans noktası olur.',

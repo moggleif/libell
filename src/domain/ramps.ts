@@ -16,6 +16,8 @@ export interface RampModel {
   stepsMm: number[];
   /** Driven up to any height up to its maximum (#600). */
   stepless?: boolean;
+  /** One movable step, set on the kloss before driving up (#687, R57). */
+  adjustable?: boolean;
 }
 
 export const RAMP_MODELS: RampModel[] = [
@@ -46,7 +48,11 @@ export const RAMP_MODELS: RampModel[] = [
   // "9 nivåer, upp till 18 cm höjd" (fortaltsbutiken.se, art. C16-47); no
   // source gives each position's height, so 2 cm per step is Morgan's
   // decision (2026-10-22, #686), not a quote.
-  { name: 'Lippert LEVEL9', stepsMm: [20, 40, 60, 80, 100, 120, 140, 160, 180] },
+  {
+    name: 'Lippert LEVEL9',
+    stepsMm: [20, 40, 60, 80, 100, 120, 140, 160, 180],
+    adjustable: true,
+  },
   // "Precise leveling at any increment between 1/2” and 4”"
   // (andersenhitches.com/products/camper-leveler): 4″ is 101.6 mm, rounded
   // down so the plan never counts on height the wedge lacks.
@@ -89,4 +95,18 @@ export function matchRampModel(
       model.stepsMm.every((mm, i) => mm === sorted[i]),
   );
   return matches.find((model) => model.name === preferName) ?? matches[0] ?? null;
+}
+
+/** Klossar set before driving up (#687): a catalog model marked
+ * adjustable, or a set with its exact steps, which shows its name too. */
+export function isAdjustableRamp(
+  ramp: Pick<LevelSettings, 'rampStepHeightsMm' | 'rampStepless'>,
+): boolean {
+  return matchRampModel(ramp.rampStepHeightsMm, undefined, ramp.rampStepless)?.adjustable ?? false;
+}
+
+/** How far the largest lift must fall for the vehicle to have driven up
+ * onto the klossar: half the smallest step (#687). */
+export function driveUpDropMm(ramp: Pick<LevelSettings, 'rampStepHeightsMm'>): number {
+  return Math.min(...ramp.rampStepHeightsMm) / 2;
 }

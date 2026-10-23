@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
+import type { AdjustablePhase } from '../domain/adjustableGuide';
 import { WHEEL_IDS, type GravityVector, type WheelId } from '../domain/leveling';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
@@ -68,9 +69,11 @@ function engineFor(overrides: Partial<LevelSettings>, hitching = () => false) {
   const current: LevelSettings = { ...DEFAULT_SETTINGS, ...overrides };
   const statuses: [string, boolean][] = [];
   const tilts: { rollDeg: number; pitchDeg: number }[] = [];
+  const adjustable: AdjustablePhase[] = [];
   const output: EngineOutput = {
     showStatus: (text, isLevel) => void statuses.push([text, isLevel]),
     showTilt: (tilt) => void tilts.push(tilt),
+    showAdjustable: (phase) => void adjustable.push(phase),
   };
   const engine = createLevelEngine(
     () => current,
@@ -78,7 +81,7 @@ function engineFor(overrides: Partial<LevelSettings>, hitching = () => false) {
     output,
     hitching,
   );
-  return { engine, statuses, tilts };
+  return { engine, statuses, tilts, adjustable };
 }
 
 describe('createLevelEngine', () => {
@@ -134,12 +137,41 @@ describe('createLevelEngine', () => {
     expect(statuses[0]?.[0]).toBe('');
   });
 
+  it('shows the adjustable line for LEVEL9, and through a drive-up (#687)', () => {
+    const level9 = [20, 40, 60, 80, 100, 120, 140, 160, 180];
+    const { engine, adjustable } = engineFor({ rampStepHeightsMm: level9, rampCount: 4 });
+    engine.tick(TILTED, 0);
+    engine.tick(TILTED, 100, false);
+    // Driven up: the same vehicle now leans half as much.
+    const HALF: GravityVector = { x: TILTED.x / 2, y: TILTED.y / 2, z: 9.81 };
+    for (let ms = 200; ms <= 5000; ms += 100) engine.tick(HALF, ms, ms >= 300);
+    for (let ms = 5100; ms <= 9000; ms += 100) engine.tick(FLAT, ms);
+    expect(adjustable[0]).toBe('before');
+    expect(adjustable).toContain('after');
+    expect(adjustable.at(-1)).toBe('hidden');
+  });
+
+  it.each([
+    ['other klossar', { vehicleType: 'motorhome' as const }],
+    [
+      'a caravan',
+      {
+        vehicleType: 'caravan' as const,
+        rampStepHeightsMm: [20, 40, 60, 80, 100, 120, 140, 160, 180],
+      },
+    ],
+  ])('never shows the adjustable line for %s (#687)', (_name, overrides) => {
+    const { engine, adjustable } = engineFor(overrides);
+    engine.tick(TILTED, 0);
+    expect(adjustable).toEqual(['hidden']);
+  });
+
   it('reads the settings when it ticks, not when it was built', () => {
     const current: LevelSettings = { ...DEFAULT_SETTINGS, toleranceMm: 20 };
     const engine = createLevelEngine(
       () => current,
       () => null,
-      { showStatus: () => {}, showTilt: () => {} },
+      { showStatus: () => {}, showTilt: () => {}, showAdjustable: () => {} },
     );
     current.toleranceMm = 1000;
     expect(engine.tick(TILTED, 0).isLevel).toBe(true);
@@ -150,7 +182,7 @@ describe('createLevelEngine', () => {
     const engine = createLevelEngine(
       () => DEFAULT_SETTINGS,
       () => tilt,
-      { showStatus: () => {}, showTilt: () => {} },
+      { showStatus: () => {}, showTilt: () => {}, showAdjustable: () => {} },
     );
     expect(engine.tick(TILTED, 0).isLevel).toBe(true);
   });

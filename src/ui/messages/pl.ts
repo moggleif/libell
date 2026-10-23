@@ -288,6 +288,8 @@ export const pl: Messages = {
   'status.almost': 'Prawie poziomo — zostało {left}',
   'status.cantLevel.close': 'Najazdy są tu trochę za niskie — przestaw pojazd',
   'status.cantLevel.far': 'Najazdy są tu zdecydowanie za niskie — przestaw pojazd',
+  'adjustable.before': 'Ustaw najazdy na pokazany stopień, potem na nie wjedź.',
+  'adjustable.after': 'Jeszcze nie w poziomie. Zjedź z najazdów, a aplikacja zmierzy ponownie.',
 
   'calibration.intro':
     'Połóż telefon na powierzchni, o której wiesz, że jest pozioma, i dotknij „Skalibruj”. Obecny przechył stanie się punktem zerowym.',

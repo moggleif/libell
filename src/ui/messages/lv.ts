@@ -287,6 +287,8 @@ export const lv: Messages = {
   'status.cantLevel.close':
     'Jūsu rampas te gandrīz pietiek, bet ne pilnībā — pārvietojiet transportlīdzekli',
   'status.cantLevel.far': 'Jūsu rampas te ne tuvu nepietiek — pārvietojiet transportlīdzekli',
+  'adjustable.before': 'Iestatiet rampas uz parādīto pakāpi un tad uzbrauciet.',
+  'adjustable.after': 'Vēl nav līmenī. Nobrauciet no rampām, un lietotne nomērīs vēlreiz.',
   'calibration.intro':
     'Novietojiet tālruni uz virsmas, kas noteikti ir līmenī, tad pieskarieties „Kalibrēt”. Pašreizējais slīpums kļūst par nulles punktu.',
   'calibration.status': 'Kalibrēts: gareniski {pitch}, šķērsām {roll}.',

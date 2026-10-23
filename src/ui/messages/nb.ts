@@ -287,6 +287,8 @@ export const nb: Messages = {
   'status.almost': 'Nesten i vater — {left} igjen',
   'status.cantLevel.close': 'Kilene dine er nesten nok, men ikke helt her — flytt kjøretøyet',
   'status.cantLevel.far': 'Kilene dine er langt fra nok her — flytt kjøretøyet',
+  'adjustable.before': 'Still inn kilene på trinnet som vises, og kjør opp etterpå.',
+  'adjustable.after': 'Ikke i vater ennå. Kjør ned fra kilene, så måler appen på nytt.',
 
   'calibration.intro':
     'Legg telefonen på en flate du vet er i vater, og trykk på Kalibrer nå. Den nåværende helningen blir nullpunktet.',

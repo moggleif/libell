@@ -287,6 +287,8 @@ export const pt: Messages = {
   'status.cantLevel.close':
     'As suas rampas quase chegam, mas aqui não bastam — mude o veículo de sítio',
   'status.cantLevel.far': 'As suas rampas aqui ficam muito aquém — mude o veículo de sítio',
+  'adjustable.before': 'Ajuste as rampas ao degrau indicado antes de subir para elas.',
+  'adjustable.after': 'Ainda não está nivelado. Desça das rampas e a app volta a medir.',
 
   'calibration.intro':
     'Coloque o telemóvel numa superfície que sabe estar nivelada e toque em Calibrar agora. A inclinação atual passa a ser o ponto zero.',

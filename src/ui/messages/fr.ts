@@ -308,6 +308,9 @@ export const fr: Messages = {
   'status.cantLevel.close':
     'Vos rampes approchent mais ne suffisent pas ici — déplacez le véhicule',
   'status.cantLevel.far': 'Vos rampes sont loin du compte ici — déplacez le véhicule',
+  'adjustable.before': 'Réglez les rampes sur le palier indiqué avant de monter dessus.',
+  'adjustable.after':
+    'Pas encore à niveau. Descendez des rampes et l’application mesure à nouveau.',
 
   'calibration.intro':
     'Posez le téléphone sur une surface dont vous savez qu’elle est de niveau, puis ' +

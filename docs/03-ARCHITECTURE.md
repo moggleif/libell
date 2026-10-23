@@ -114,6 +114,10 @@ plan only when it is clearly better under the current lifts, and wheel colors fo
 the plan: red means the owned ramps cannot bring that wheel within tolerance. A
 stepless wedge (`rampStepless`, ADR 0018) gives each wheel one candidate height, its
 lift up to the wedge's maximum, and its cards name no step (`numberedSteps` is empty).
+An adjustable kloss (`adjustable` in `RAMP_MODELS`, ADR 0019) keeps the same plan; the
+motorhome engine adds one line above the vehicle from `src/domain/adjustableGuide.ts`,
+which tells "set the kloss, then drive up" from "driven up, still not level: drive off"
+by how far the largest lift falls after the vehicle has moved and stopped.
 
 Caravan mode (`vehicleType: 'caravan'`, ADR 0008) uses `src/domain/caravan.ts`
 instead: the single axle (track = `trackWidthRearMm`) is the reference plane, roll

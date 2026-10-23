@@ -78,6 +78,7 @@ const VIEWPORTS = [
   { name: 'iPhone 15, Safari', width: 393, height: 745, fitsWhole: true, languages: ['de'] },
 ];
 const TIGHTEST = VIEWPORTS[1];
+const LEVEL9 = { rampStepHeightsMm: [20, 40, 60, 80, 100, 120, 140, 160, 180] };
 
 // Every appearance the app offers, read from the domain rather than
 // copied (#403). Classic and Modern build different DOM for the same
@@ -383,38 +384,36 @@ try {
       for (const language of viewport.languages) {
         const at = (view) => `${viewport.name} / ${appearance} / ${language} / ${view}`;
 
+        // A level view with these settings, opened and checked.
+        const variant = async (view, options) => {
+          const page = await open(context, appearance, language, { query: '?demo=1', ...options });
+          await page.waitForSelector('.rv-diagram svg');
+          await checkLevelScreen(page, at(view), { fitsWhole: viewport.fitsWhole });
+          await auditView(page, at(view));
+          return page;
+        };
+
         // --- Level view. `?demo` replaces the sensor with a fixed tilt and
         // presents the app as configured, which is the only way to reach
         // this view on a machine with no motion sensor.
-        const level = await open(context, appearance, language, { query: '?demo=1' });
-        await level.waitForSelector('.rv-diagram svg');
-        await checkLevelScreen(level, at('level'), { fitsWhole: viewport.fitsWhole });
-        await auditView(level, at('level'));
+        const level = await variant('level', {});
 
         // --- The caravan's level view (#368): its own drawing, and in
         // Modern its own wheel cards, jockey card included.
-        const caravan = await open(context, appearance, language, {
-          query: '?demo=1',
-          vehicleType: 'caravan',
-        });
-        await caravan.waitForSelector('.rv-diagram svg');
-        await checkLevelScreen(caravan, at('caravan level'), { fitsWhole: viewport.fitsWhole });
-        await auditView(caravan, at('caravan level'));
-        await caravan.close();
+        await (await variant('caravan level', { vehicleType: 'caravan' })).close();
+
+        // --- An adjustable kloss (#687): its line above the vehicle takes
+        // height from the drawing, in every language's longest sentence.
+        const adjustable = await variant('adjustable kloss level', { ramp: LEVEL9 });
+        const line = adjustable.locator('.adjustable-line');
+        if (await line.isHidden()) fail(at('adjustable kloss level'), 'no line above the vehicle');
+        await adjustable.close();
 
         // --- Inches (#627): "1 ⅜ in" is the widest a wheel card's lift
         // gets, so both drawings are walked once more in that unit.
         for (const vehicleType of ['motorhome', 'caravan']) {
-          const inches = await open(context, appearance, language, {
-            query: '?demo=1',
-            vehicleType,
-            displayUnit: 'in',
-          });
-          await inches.waitForSelector('.rv-diagram svg');
-          const view = at(`${vehicleType} level, inches`);
-          await checkLevelScreen(inches, view, { fitsWhole: viewport.fitsWhole });
-          await auditView(inches, view);
-          await inches.close();
+          const view = `${vehicleType} level, inches`;
+          await (await variant(view, { vehicleType, displayUnit: 'in' })).close();
         }
 
         // --- Settings: a page in Modern, a drawer in Classic.

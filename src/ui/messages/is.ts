@@ -281,6 +281,8 @@ export const is: Messages = {
   'status.almost': 'Næstum lárétt — {left} eftir',
   'status.cantLevel.close': 'Kubbarnir ná næstum en ekki alveg hér — færðu ökutækið',
   'status.cantLevel.far': 'Kubbarnir duga hvergi nærri hér — færðu ökutækið',
+  'adjustable.before': 'Stilltu kubbana á þrepið sem sést og keyrðu svo upp.',
+  'adjustable.after': 'Ekki enn lárétt. Keyrðu af kubbunum og appið mælir aftur.',
   'calibration.intro':
     'Leggðu símann á flöt sem þú veist að er láréttur og ýttu á Kvarða núna. Núverandi halli telst þá láréttur.',
   'calibration.status': 'Kvarðaður: fram/aftur {pitch}, hlið/hlið {roll}.',

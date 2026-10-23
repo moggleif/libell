@@ -302,6 +302,9 @@ export const de: Messages = {
   'status.cantLevel.close':
     'Deine Keile kommen nah heran, reichen hier aber nicht — stell das Fahrzeug um',
   'status.cantLevel.far': 'Deine Keile reichen hier bei Weitem nicht — stell das Fahrzeug um',
+  'adjustable.before': 'Keile auf die angezeigte Stufe einstellen, dann auffahren.',
+  'adjustable.after':
+    'Noch nicht waagerecht. Von den Keilen herunterfahren, dann misst die App neu.',
 
   'calibration.intro':
     'Lege das Handy auf eine Fläche, von der du weißt, dass sie waagerecht ist, und tippe ' +

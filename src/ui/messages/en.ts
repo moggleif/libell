@@ -324,6 +324,8 @@ export const en = {
   'status.almost': 'Almost level — {left} left',
   'status.cantLevel.close': 'Your ramps get close but not enough here — move the vehicle',
   'status.cantLevel.far': 'Your ramps are far from enough here — move the vehicle',
+  'adjustable.before': 'Set the ramps to the step shown, then drive up.',
+  'adjustable.after': 'Not level yet. Drive off the ramps and the app measures again.',
 
   'calibration.intro':
     'Put the phone on a surface you know is level, then tap Calibrate now. ' +

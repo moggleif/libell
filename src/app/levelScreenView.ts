@@ -1,4 +1,5 @@
 /** The level screen's elements, driven by the frame through `LevelFrameView`. */
+import type { AdjustablePhase } from '../domain/adjustableGuide';
 import { createAnnouncer } from '../ui/announcer';
 import { createHitchOffer, type HitchOfferOptions } from '../ui/hitchOffer';
 import { t } from '../ui/i18n';
@@ -28,6 +29,7 @@ export function mountLevelScreenView(root: HTMLElement, deps: LevelScreenViewDep
   const parts = createParts(deps);
   root.append(
     parts.levelOverlay.element,
+    parts.adjustable.element,
     parts.engine.element,
     parts.status.element,
     ...(parts.hitchOffer ? [parts.hitchOffer.element] : []),
@@ -50,7 +52,9 @@ function createParts(deps: LevelScreenViewDeps) {
   const alarm = createAnnouncer(true);
   const status = createStatusLine(announcer.say);
   const tilt = createTiltReadout();
+  const adjustable = createAdjustableLine(announcer.say);
   return {
+    adjustable,
     announcer,
     alarm,
     status,
@@ -64,6 +68,7 @@ function createParts(deps: LevelScreenViewDeps) {
         status.markLevel(isLevel);
       },
       showTilt: (reading) => tilt.update(reading),
+      showAdjustable: adjustable.show,
     }),
     hitchOffer: deps.hitchOffer ? createHitchOffer(deps.hitchOffer) : null,
     pose: createPoseOverlay(deps.openActiveSensorPage, announcer.say),
@@ -97,9 +102,9 @@ function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
     hideStale: () => (stale.element.hidden = true),
     showPose: pose.show,
     hidePose: () => (pose.element.hidden = true),
-    tick(gravity, nowMs) {
+    tick(gravity, nowMs, still) {
       hitchOffer?.refresh();
-      return engine.tick(gravity, nowMs);
+      return engine.tick(gravity, nowMs, still);
     },
     showMeasuring() {
       status.show(t('status.measuring'));
@@ -117,10 +122,31 @@ function viewOf(parts: Parts, deps: LevelScreenViewDeps): LevelFrameView {
 /** While there is no reading at all (first load, or a lost box), the
  * diagram and readout are dimmed and say nothing: the last frame's steps
  * must never stay on screen looking live. */
-function dim({ engine, tilt, status }: Parts, noData: boolean): void {
+function dim({ engine, tilt, status, adjustable }: Parts, noData: boolean): void {
   engine.element.classList.toggle('is-no-data', noData);
   tilt.element.classList.toggle('is-no-data', noData);
-  if (noData) status.show('');
+  if (noData) {
+    status.show('');
+    adjustable.show('hidden');
+  }
+}
+
+const ADJUSTABLE_TEXT = { before: 'adjustable.before', after: 'adjustable.after' } as const;
+
+/** The adjustable kloss's line above the vehicle (#687): there until the
+ * vehicle is level, read out when its sentence changes. */
+function createAdjustableLine(say: (text: string) => void) {
+  const element = createElement('p', 'adjustable-line');
+  element.hidden = true;
+  return {
+    element,
+    show(phase: AdjustablePhase) {
+      const text = phase === 'hidden' ? '' : t(ADJUSTABLE_TEXT[phase]);
+      if (text !== '' && text !== element.textContent) say(text);
+      element.textContent = text;
+      element.hidden = text === '';
+    },
+  };
 }
 
 /**

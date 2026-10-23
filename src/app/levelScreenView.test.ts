@@ -38,6 +38,7 @@ describe('mountLevelScreenView', () => {
     expect(root.classList.contains('app--level')).toBe(true);
     expect([...root.children].map((el) => el.className)).toEqual([
       'level-overlay',
+      'adjustable-line',
       'fake-engine',
       'status-line',
       'tilt-readout',
@@ -76,8 +77,27 @@ describe('mountLevelScreenView', () => {
 
   it('ticks the engine', () => {
     const { view, engine } = setup();
-    expect(view.tick(GRAVITY, 5)).toEqual(LEVEL_TICK);
-    expect(engine.tick).toHaveBeenCalledWith(GRAVITY, 5);
+    expect(view.tick(GRAVITY, 5, true)).toEqual(LEVEL_TICK);
+    expect(engine.tick).toHaveBeenCalledWith(GRAVITY, 5, true);
+  });
+
+  it('shows the adjustable line above the vehicle until it is hidden (#687)', () => {
+    const { output, $ } = setup();
+    expect($('.adjustable-line').hidden).toBe(true);
+    output().showAdjustable('before');
+    expect($('.adjustable-line').hidden).toBe(false);
+    expect($('.adjustable-line').textContent).toBe(t('adjustable.before'));
+    output().showAdjustable('after');
+    expect($('.adjustable-line').textContent).toBe(t('adjustable.after'));
+    output().showAdjustable('hidden');
+    expect($('.adjustable-line').hidden).toBe(true);
+  });
+
+  it('hides the adjustable line while there is no data (#687)', () => {
+    const { view, output, $ } = setup();
+    output().showAdjustable('before');
+    view.showNoData(false, true);
+    expect($('.adjustable-line').hidden).toBe(true);
   });
 
   it('dims the screen with no data and offers the way back when unavailable', () => {

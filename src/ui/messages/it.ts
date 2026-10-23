@@ -281,6 +281,8 @@ export const it: Messages = {
   'status.almost': 'Quasi in bolla — mancano {left}',
   'status.cantLevel.close': 'Le tue rampe ci arrivano quasi, ma non basta — sposta il veicolo',
   'status.cantLevel.far': 'Qui le tue rampe non bastano affatto — sposta il veicolo',
+  'adjustable.before': 'Regola le rampe sul gradino indicato prima di salirci.',
+  'adjustable.after': 'Non ancora in bolla. Scendi dalle rampe e l’app misura di nuovo.',
   'calibration.intro':
     'Metti il telefono su una superficie che sai essere in piano, poi tocca «Calibra ora». L’inclinazione attuale diventa il punto zero.',
   'calibration.status': 'Calibrato: fronte/retro {pitch}, laterale {roll}.',

@@ -1370,6 +1370,16 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Level screen: status line when the owned ramps cannot level here.',
     'The klossar (ramps) fall far short; suggests moving the vehicle. kloss is a fixed term.',
   ),
+  'adjustable.before': ctx(
+    'line',
+    'Level screen: line above the vehicle for an adjustable kloss (Lippert LEVEL9), shown until level.',
+    'The kloss has a movable step set before driving up: set it to the step (steg) each wheel card shows, then drive up. kloss and steg are fixed terms.',
+  ),
+  'adjustable.after': ctx(
+    'line',
+    'Level screen: the same line once the vehicle has driven up onto an adjustable kloss and is still not level.',
+    'The steps shown are only right from the ground: drive off the klossar so the app measures again. kloss is a fixed term.',
+  ),
   'sensorFallback.lost': ctx(
     'line',
     'Level screen › box lost prompt: main sentence while an automatic retry is possible.',
