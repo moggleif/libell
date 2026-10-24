@@ -53,6 +53,7 @@ function setup(initial: Setup = {}) {
   const settings: LevelSettings = { ...DEFAULT_SETTINGS, ...initial.settings };
   const calls: string[] = [];
   const ticked: GravityVector[] = [];
+  const stillness: boolean[] = [];
   const view: LevelFrameView = {
     pause: () => void calls.push('pause'),
     showNoData: (unavailable, silent) => void calls.push(`noData:${unavailable}:${silent}`),
@@ -62,8 +63,9 @@ function setup(initial: Setup = {}) {
     showPose: (problem) =>
       void calls.push(`pose:${problem.message}:${problem.hint}:${problem.offerSensorPage}`),
     hidePose: () => void calls.push('hidePose'),
-    tick: (gravity, nowMs) => {
+    tick: (gravity, nowMs, still) => {
       ticked.push(gravity);
+      stillness.push(still);
       calls.push(`tick:${nowMs}`);
       return world.engine;
     },
@@ -101,7 +103,7 @@ function setup(initial: Setup = {}) {
     frame(now);
     return [...calls];
   };
-  return { run, world, calls, ticked, refreshStatus, boxes, playGuidancePulse, speak };
+  return { run, world, calls, ticked, stillness, refreshStatus, boxes, playGuidancePulse, speak };
 }
 
 describe('createLevelFrame', () => {
@@ -214,6 +216,14 @@ describe('createLevelFrame', () => {
     run(0);
     world.gravity = ROCKED;
     expect(run(16)).toContain('measuring');
+  });
+
+  it('tells the engine whether the vehicle stands still (#687)', () => {
+    const { run, world, stillness } = setup();
+    run(0);
+    world.gravity = ROCKED;
+    run(16);
+    expect(stillness).toEqual([true, false]);
   });
 
   describe('the level celebration', () => {

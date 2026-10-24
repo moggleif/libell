@@ -644,7 +644,8 @@ URL and must keep working with no signal.
 - **When** I choose a model sold in camping shops (the catalog is `RAMP_MODELS` in
   `src/domain/ramps.ts`; a model is listed only with step heights taken from the maker's
   or a shop's product page, or measured, never guessed, with the source next to it,
-  #601)
+  #601; the one exception is Lippert LEVEL9, whose 9 positions no source gives, set to
+  2 cm per step by Morgan's decision, #686; it is adjustable, R57)
 - **Then** its step heights fill in and it shows as "Selected"; in the compact picker,
   editing the heights afterwards switches it to "Custom set" (the Ramps page offers the
   step editor only under "Custom set"). A set matching a catalog model shows the
@@ -1781,6 +1782,8 @@ the footer, with the card and the footer both spelling out the same step heights
   chosen: a block reading top-down as a statement — "Selected", the model's name,
   "Step heights" with the display unit, then the heights themselves. The same numbers
   are never printed twice, and no second card repeats them next to the list.
+  Up to five heights share one row; more wrap into rows as even as they go (nine steps
+  read 5 + 4), so a nine-step ramp such as Lippert LEVEL9 fits a 320 px phone (#686).
 - **Given** the tab's running order
 - **Then** the answer comes first and the means of changing it below: what is set (the
   model and its step heights), the settings that follow from it (number of ramps), the
@@ -2244,3 +2247,30 @@ per vehicle (Morgan, #599).
 - **Given** one vehicle or several
 - **Then** the main screen shows nothing new; the picker in Settings is where the
   active vehicle is seen and changed.
+
+## R57 — An adjustable kloss: set it first, drive off to adjust (#687)
+
+On an adjustable kloss such as Lippert LEVEL9 one movable step is set on the kloss
+before driving up, and moving it means driving off again (Morgan, 2026-10-23). The wheel
+cards' steps count from the ground, so they say where to set it; this line says what to
+do with them. Which klossar are adjustable is `adjustable` in `RAMP_MODELS`; a set with
+the same steps counts too, as it shows that model's name (R21). ADR 0019.
+
+- **Given** a motorhome on an adjustable kloss, not level, with at least one wheel on a
+  step
+- **Then** one line between the vehicle/target badges (R31, R56) and the vehicle reads
+  "Set the ramps to the step shown, then drive up." and stays until the vehicle is level.
+- **Given** that line
+- **When** the vehicle moves and then stands still, not level, with the largest lift at
+  least half the smallest step below the reading on the ground within a few seconds
+  (it has driven up onto the klossar)
+- **Then** the line reads "Not level yet. Drive off the ramps and the app measures
+  again." until the lift is back near the ground reading, where the first text returns
+  with the steps measured afresh.
+- **Given** the vehicle moving (R25), or reversed up to the klossar on the same ground
+- **Then** the line keeps its last text; it never flickers away mid-drive.
+- **Given** the vehicle level, no reading at all, any other kloss, a stepless wedge or a
+  caravan
+- **Then** there is no line, and reaching level is announced by R16 as always.
+- **Given** a screen reader
+- **Then** each new sentence on the line is read out once (R53).

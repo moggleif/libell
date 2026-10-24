@@ -10,8 +10,9 @@ import {
 } from '../domain/caravan';
 import { hitchDisplay } from '../domain/hitchHeight';
 import { computeLeveling, WHEEL_IDS, type GravityVector } from '../domain/leveling';
+import { createAdjustableGuide, type AdjustablePhase } from '../domain/adjustableGuide';
 import { deficitMagnitude } from '../domain/rampPlan';
-import { numberedSteps } from '../domain/ramps';
+import { driveUpDropMm, isAdjustableRamp, numberedSteps } from '../domain/ramps';
 import type { LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
 import type { Calibration } from '../domain/calibration';
@@ -26,11 +27,14 @@ import type { EngineTick } from './levelFrame';
 export interface EngineOutput {
   showStatus(text: string, isLevel: boolean): void;
   showTilt(tilt: { rollDeg: number; pitchDeg: number }): void;
+  /** The adjustable kloss's line above the vehicle (#687). */
+  showAdjustable(phase: AdjustablePhase): void;
 }
 
 export interface LevelEngine {
   element: HTMLElement;
-  tick(gravity: GravityVector, nowMs: number): EngineTick;
+  /** `still` is R25's stillness detector; a reading counts as still when omitted. */
+  tick(gravity: GravityVector, nowMs: number, still?: boolean): EngineTick;
 }
 
 /**
@@ -46,11 +50,7 @@ export function motorhomeStatusText(result: DisplayResult, settings: LevelSettin
       left: formatLength(Math.max(1, maxMm - settings.toleranceMm), settings.displayUnit),
     });
   }
-  // A red wheel without a step is one the owned ramps cannot serve.
-  const toRaise = WHEEL_IDS.filter(
-    (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
-  ).length;
-  if (toRaise > 0) return '';
+  if (hasStepToDrive(result)) return '';
   const magnitude = deficitMagnitude(result.maxDeficitMm, settings.toleranceMm);
   return t(magnitude === 'close' ? 'status.cantLevel.close' : 'status.cantLevel.far');
 }
@@ -64,6 +64,31 @@ export function hitchStatusText(
   if (jockey.direction === 'ok') return t('hitch.reached');
   const amount = formatLength(jockey.displayMm, unit);
   return t(jockey.direction === 'up' ? 'hitch.crank.up' : 'hitch.crank.down', { amount });
+}
+
+/** A wheel the plan drives up; a red wheel without a step is one the
+ * owned ramps cannot serve. */
+function hasStepToDrive(result: DisplayResult): boolean {
+  return WHEEL_IDS.some(
+    (id) => result.wheels[id].stepMm > 0 && result.wheels[id].severity !== 'none',
+  );
+}
+
+/** The adjustable kloss's line for this reading; none for other klossar. */
+function adjustablePhase(
+  guide: ReturnType<typeof createAdjustableGuide>,
+  result: DisplayResult,
+  settings: LevelSettings,
+  { still, nowMs }: { still: boolean; nowMs: number },
+): AdjustablePhase {
+  if (!isAdjustableRamp(settings)) return 'hidden';
+  const reading = {
+    isLevel: result.isLevel,
+    still,
+    hasStep: hasStepToDrive(result),
+    maxLiftMm: largestLift(result),
+  };
+  return guide(reading, driveUpDropMm(settings), nowMs);
 }
 
 function largestLift(result: DisplayResult): number {
@@ -90,14 +115,16 @@ function createMotorhomeEngine(
   const { rearAxle, appearance } = settings();
   const diagram = createRvDiagram(rearAxle, appearance);
   const stabilize = createDisplayStabilizer();
+  const adjustable = createAdjustableGuide();
   return {
     element: diagram.element,
-    tick(gravity, nowMs) {
+    tick(gravity, nowMs, still = true) {
       const current = settings();
       const result = stabilize(computeLeveling(gravity, current, calibration()), current, nowMs);
       diagram.update(result, current.displayUnit, numberedSteps(current));
       output.showStatus(motorhomeStatusText(result, current), result.isLevel);
       output.showTilt(result);
+      output.showAdjustable(adjustablePhase(adjustable, result, current, { still, nowMs }));
       return {
         isLevel: result.isLevel,
         maxCorrectionMm: largestLift(result),
@@ -137,6 +164,7 @@ function createCaravanEngine(
       const status = toHitch ? hitchStatusText(result.jockey, current.displayUnit) : '';
       output.showStatus(status, result.isLevel);
       output.showTilt(result);
+      output.showAdjustable('hidden');
       const maxAxleMm = Math.max(result.axle.left.displayMm, result.axle.right.displayMm);
       const jockeyMm = result.jockey.direction === 'ok' ? 0 : result.jockey.displayMm;
       return {

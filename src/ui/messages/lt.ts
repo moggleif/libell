@@ -300,6 +300,8 @@ export const lt: Messages = {
   'status.cantLevel.close':
     'Pakylų čia beveik pakanka, bet ne visai — perstatykite transporto priemonę',
   'status.cantLevel.far': 'Pakylų čia toli gražu nepakanka — perstatykite transporto priemonę',
+  'adjustable.before': 'Nustatykite pakylas ant rodomos pakopos ir tada užvažiuokite.',
+  'adjustable.after': 'Dar nelygu. Nuvažiuokite nuo pakylų, ir programėlė išmatuos iš naujo.',
 
   'calibration.intro':
     'Padėkite telefoną ant paviršiaus, kuris tikrai lygus, ir palieskite „Kalibruoti dabar“. ' +

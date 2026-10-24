@@ -298,6 +298,8 @@ export const es: Messages = {
   'status.almost': 'Casi nivelado: faltan {left}',
   'status.cantLevel.close': 'Tus rampas se acercan pero no bastan aquí: mueve el vehículo',
   'status.cantLevel.far': 'Aquí tus rampas se quedan muy cortas: mueve el vehículo',
+  'adjustable.before': 'Ajusta las rampas al escalón indicado antes de subirte a ellas.',
+  'adjustable.after': 'Aún no está nivelado. Baja de las rampas y la app vuelve a medir.',
 
   'calibration.intro':
     'Pon el móvil sobre una superficie que sepas que está nivelada y toca Calibrar ahora. ' +

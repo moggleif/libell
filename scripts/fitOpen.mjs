@@ -13,7 +13,8 @@ const ONBOARDED_KEY = 'libell.onboarded';
 /**
  * A new page on `base + query`, reloaded once the settings are stored. The
  * unit is stored too, so a run never starts in inches just because the
- * browser's region uses them (#627).
+ * browser's region uses them (#627). `ramp` overrides the ramp settings,
+ * e.g. `{ rampStepHeightsMm }`.
  */
 export async function openWithSettings(
   context,
@@ -25,6 +26,7 @@ export async function openWithSettings(
     onboarded = true,
     vehicleType = 'motorhome',
     displayUnit = 'mm',
+    ramp = {},
   },
 ) {
   const page = await context.newPage();
@@ -40,7 +42,7 @@ export async function openWithSettings(
     },
     [
       { settings: SETTINGS_KEY, language: LANGUAGE_KEY, onboarded: ONBOARDED_KEY },
-      { appearance, vehicleType, displayUnit },
+      { appearance, vehicleType, displayUnit, ...ramp },
       language,
       onboarded,
     ],

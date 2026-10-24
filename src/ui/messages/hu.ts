@@ -299,6 +299,8 @@ export const hu: Messages = {
   'status.cantLevel.close':
     'A rámpáid itt majdnem elegendők, de nem eléggé — állj odébb a járművel',
   'status.cantLevel.far': 'A rámpáid itt messze nem elegendők — állj odébb a járművel',
+  'adjustable.before': 'Állítsd a rámpákat a jelzett lépcsőre, majd hajts fel.',
+  'adjustable.after': 'Még nem vízszintes. Hajts le a rámpákról, és az alkalmazás újra mér.',
 
   'calibration.intro':
     'Tedd a telefont egy biztosan vízszintes felületre, majd koppints a Kalibrálás gombra. ' +

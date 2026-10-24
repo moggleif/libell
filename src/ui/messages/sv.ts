@@ -302,6 +302,8 @@ export const sv: Messages = {
   'status.almost': 'Nästan i våg — {left} kvar',
   'status.cantLevel.close': 'Klossarna räcker nästan här — flytta fordonet',
   'status.cantLevel.far': 'Klossarna räcker inte alls här — flytta fordonet',
+  'adjustable.before': 'Sätt klossarna på steget som visas och kör sedan upp.',
+  'adjustable.after': 'Inte i våg än. Kör av klossarna, så mäter appen om.',
 
   'calibration.intro':
     'Lägg telefonen på en yta du vet är plan och tryck sedan på Kalibrera nu. ' +

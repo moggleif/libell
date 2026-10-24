@@ -889,6 +889,21 @@ body {
   padding: 4px 8px;
 }
 
+/* The adjustable kloss's line above the vehicle (#687): what to do with
+ * the steps the wheel cards show, there until level. */
+.adjustable-line {
+  margin: 0;
+  padding: 0 16px;
+  text-align: center;
+  color: var(--on-surface);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.adjustable-line[hidden] {
+  display: none;
+}
+
 /* Brief confirmation on reaching level. motion.ts skips the transition
  * under `prefers-reduced-motion`. */
 .level-overlay {

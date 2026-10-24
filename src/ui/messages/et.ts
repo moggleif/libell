@@ -292,6 +292,8 @@ export const et: Messages = {
   'status.almost': 'Peaaegu loodis — veel {left}',
   'status.cantLevel.close': 'Sinu kiilud jäävad siin napilt lühikeseks — liiguta sõidukit',
   'status.cantLevel.far': 'Sinu kiilud jäävad siin kaugelt lühikeseks — liiguta sõidukit',
+  'adjustable.before': 'Sea kiilud näidatud astmele ja sõida siis peale.',
+  'adjustable.after': 'Veel pole loodis. Sõida kiiludelt maha, siis rakendus mõõdab uuesti.',
 
   'calibration.intro':
     'Aseta telefon pinnale, mis on kindlasti loodis, ja puuduta „Kalibreeri kohe“. ' +

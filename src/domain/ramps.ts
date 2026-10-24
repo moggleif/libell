@@ -2,7 +2,8 @@
  * Catalog of ready-made leveling ramps sold by camping shops and DIY
  * stores (Camping4u, Campingvaruhuset, GetCamping, Kama Fritid, Biltema,
  * Jula …), with their step heights in mm. New models are added only with
- * step heights from a product page, noted beside the entry (#601). Picking one in Settings fills the ramp
+ * step heights from a product page, noted beside the entry (#601), or
+ * by Morgan's explicit decision, noted the same way (#686). Picking one in Settings fills the ramp
  * step list; the chips still allow fine-tuning afterwards. Pure data —
  * product names are proper nouns and are not translated.
  */
@@ -15,6 +16,8 @@ export interface RampModel {
   stepsMm: number[];
   /** Driven up to any height up to its maximum (#600). */
   stepless?: boolean;
+  /** One movable step, set on the kloss before driving up (#687, R57). */
+  adjustable?: boolean;
 }
 
 export const RAMP_MODELS: RampModel[] = [
@@ -42,6 +45,14 @@ export const RAMP_MODELS: RampModel[] = [
   { name: 'Briv nivåklossar', stepsMm: [40, 70, 100] },
   // "3 verschiedene Höhen in einer Rampe: 10 / 7 / 4 cm" (kaufland.at, product 539657967).
   { name: 'TrutzHolm Auffahrkeil 5 t', stepsMm: [40, 70, 100] },
+  // "9 nivåer, upp till 18 cm höjd" (fortaltsbutiken.se, art. C16-47); no
+  // source gives each position's height, so 2 cm per step is Morgan's
+  // decision (2026-10-22, #686), not a quote.
+  {
+    name: 'Lippert LEVEL9',
+    stepsMm: [20, 40, 60, 80, 100, 120, 140, 160, 180],
+    adjustable: true,
+  },
   // "Precise leveling at any increment between 1/2” and 4”"
   // (andersenhitches.com/products/camper-leveler): 4″ is 101.6 mm, rounded
   // down so the plan never counts on height the wedge lacks.
@@ -84,4 +95,18 @@ export function matchRampModel(
       model.stepsMm.every((mm, i) => mm === sorted[i]),
   );
   return matches.find((model) => model.name === preferName) ?? matches[0] ?? null;
+}
+
+/** Klossar set before driving up (#687): a catalog model marked
+ * adjustable, or a set with its exact steps, which shows its name too. */
+export function isAdjustableRamp(
+  ramp: Pick<LevelSettings, 'rampStepHeightsMm' | 'rampStepless'>,
+): boolean {
+  return matchRampModel(ramp.rampStepHeightsMm, undefined, ramp.rampStepless)?.adjustable ?? false;
+}
+
+/** How far the largest lift must fall for the vehicle to have driven up
+ * onto the klossar: half the smallest step (#687). */
+export function driveUpDropMm(ramp: Pick<LevelSettings, 'rampStepHeightsMm'>): number {
+  return Math.min(...ramp.rampStepHeightsMm) / 2;
 }

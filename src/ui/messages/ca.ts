@@ -297,6 +297,8 @@ export const ca: Messages = {
   'status.almost': 'Gairebé anivellat — falten {left}',
   'status.cantLevel.close': 'Les rampes no hi arriben per poc — mou el vehicle',
   'status.cantLevel.far': 'Les rampes no hi arriben ni de lluny — mou el vehicle',
+  'adjustable.before': 'Ajusta les rampes al graó indicat abans de pujar-hi.',
+  'adjustable.after': 'Encara no està anivellat. Baixa de les rampes i l’app tornarà a mesurar.',
 
   'calibration.intro':
     'Posa el mòbil sobre una superfície que saps que és plana i toca Calibra ara. ' +

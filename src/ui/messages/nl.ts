@@ -298,6 +298,8 @@ export const nl: Messages = {
   'status.cantLevel.close':
     'Je blokken komen dichtbij maar zijn hier net niet genoeg — verplaats het voertuig',
   'status.cantLevel.far': 'Je blokken zijn hier lang niet genoeg — verplaats het voertuig',
+  'adjustable.before': 'Zet de blokken op de getoonde trede voor het oprijden.',
+  'adjustable.after': 'Nog niet waterpas. Rij van de blokken af, dan meet de app opnieuw.',
 
   'calibration.intro':
     'Leg de telefoon op een ondergrond waarvan je weet dat die waterpas is en tik op Nu kalibreren. ' +

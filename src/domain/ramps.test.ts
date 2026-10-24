@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { matchRampModel, numberedSteps, rampHeights, rampLabel, RAMP_MODELS } from './ramps';
+import {
+  driveUpDropMm,
+  isAdjustableRamp,
+  matchRampModel,
+  numberedSteps,
+  rampHeights,
+  rampLabel,
+  RAMP_MODELS,
+} from './ramps';
 import { DEFAULT_SETTINGS, LENGTH_RANGES_MM } from './settings';
 
 describe('ramp catalog', () => {
@@ -33,6 +41,24 @@ describe('ramp catalog', () => {
     expect(steps('Hamron nivåklossar')).toEqual([40, 70, 100]);
     expect(steps('Briv nivåklossar')).toEqual([40, 70, 100]);
     expect(steps('TrutzHolm Auffahrkeil 5 t')).toEqual([40, 70, 100]);
+  });
+
+  it('lists Lippert LEVEL9 with 9 steps of 2 cm (#686)', () => {
+    const level9 = RAMP_MODELS.find((m) => m.name === 'Lippert LEVEL9');
+    expect(level9?.stepsMm).toEqual([20, 40, 60, 80, 100, 120, 140, 160, 180]);
+    expect(level9?.stepless).toBeUndefined();
+  });
+
+  it('marks only LEVEL9 adjustable, also as a set with its steps (#687)', () => {
+    expect(RAMP_MODELS.filter((m) => m.adjustable).map((m) => m.name)).toEqual(['Lippert LEVEL9']);
+    const level9 = [20, 40, 60, 80, 100, 120, 140, 160, 180];
+    expect(isAdjustableRamp({ rampStepHeightsMm: level9, rampStepless: false })).toBe(true);
+    expect(isAdjustableRamp(DEFAULT_SETTINGS)).toBe(false);
+    expect(isAdjustableRamp({ rampStepHeightsMm: [180], rampStepless: true })).toBe(false);
+  });
+
+  it('counts half the smallest step as driving up (#687)', () => {
+    expect(driveUpDropMm({ rampStepHeightsMm: [20, 40, 60] })).toBe(10);
   });
 
   it('has unique names', () => {

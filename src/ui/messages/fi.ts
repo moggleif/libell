@@ -275,6 +275,8 @@ export const fi: Messages = {
   'status.almost': 'Melkein vaakatasossa — {left} jäljellä',
   'status.cantLevel.close': 'Kiilasi jäävät tässä hieman vajaiksi — siirrä ajoneuvoa',
   'status.cantLevel.far': 'Kiilasi eivät riitä tässä lähellekään — siirrä ajoneuvoa',
+  'adjustable.before': 'Säädä kiilat näytettyyn askelmaan ja aja sitten niiden päälle.',
+  'adjustable.after': 'Ei vielä vaakatasossa. Aja pois kiiloilta, niin sovellus mittaa uudelleen.',
   'calibration.intro':
     'Aseta puhelin alustalle, jonka tiedät olevan vaakatasossa, ja napauta Kalibroi nyt. Nykyinen kallistus otetaan lähtötasoksi.',
   'calibration.status': 'Kalibroitu: etu/taka {pitch}, sivuttain {roll}.',

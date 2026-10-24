@@ -291,6 +291,8 @@ export const cs: Messages = {
   'status.almost': 'Téměř vyrovnáno — zbývá {left}',
   'status.cantLevel.close': 'Vaše nájezdy tu skoro stačí, ale ne úplně — přeparkujte vozidlo',
   'status.cantLevel.far': 'Vaše nájezdy tu zdaleka nestačí — přeparkujte vozidlo',
+  'adjustable.before': 'Nastavte nájezdy na zobrazený stupeň a pak najeďte.',
+  'adjustable.after': 'Ještě není vyrovnáno. Sjeďte z nájezdů a aplikace změří znovu.',
 
   'calibration.intro':
     'Položte telefon na plochu, o které víte, že je vodorovná, a klepněte na Kalibrovat. ' +

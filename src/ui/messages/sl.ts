@@ -283,6 +283,8 @@ export const sl: Messages = {
   'status.almost': 'Skoraj vodoravno — še {left}',
   'status.cantLevel.close': 'Rampe tukaj skoraj zadoščajo, a ne povsem — premaknite vozilo',
   'status.cantLevel.far': 'Rampe tukaj še zdaleč ne zadoščajo — premaknite vozilo',
+  'adjustable.before': 'Nastavi rampe na prikazano stopnico, nato zapelji nanje.',
+  'adjustable.after': 'Še ni vodoravno. Zapelji z ramp in aplikacija bo izmerila znova.',
 
   'calibration.intro':
     'Telefon položite na površino, za katero veste, da je vodoravna, in tapnite „Kalibriraj“. Trenutni nagib postane izhodišče.',

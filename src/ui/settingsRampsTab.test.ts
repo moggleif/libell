@@ -349,6 +349,15 @@ describe('the Ramps page', () => {
     );
   });
 
+  it('wraps many steps into balanced rows of at most five (#686)', () => {
+    const columns = (steps: number[]) =>
+      page({ rampStepHeightsMm: steps }).selected.querySelector<HTMLElement>('.klossar__grid')!
+        .style.gridTemplateColumns;
+    expect(columns([20, 40, 60, 80, 100])).toBe('repeat(5, 1fr)');
+    expect(columns([20, 40, 60, 80, 100, 120])).toBe('repeat(3, 1fr)');
+    expect(columns([20, 40, 60, 80, 100, 120, 140, 160, 180])).toBe('repeat(5, 1fr)');
+  });
+
   it('keeps the catalogue collapsed behind "Change ramp"', () => {
     const { catalogue } = page();
     expect(catalogue.open).toBe(false);
@@ -425,6 +434,7 @@ describe('the Ramps page', () => {
       'Hamron',
       'Briv',
       'TrutzHolm',
+      'Lippert',
       'Andersen',
     ]);
   });

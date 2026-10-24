@@ -306,6 +306,8 @@ export const ro: Messages = {
   'status.cantLevel.close':
     'Rampele dumneavoastră aproape ajung, dar nu destul aici — mutați vehiculul',
   'status.cantLevel.far': 'Rampele dumneavoastră nu ajung nici pe departe aici — mutați vehiculul',
+  'adjustable.before': 'Reglați rampele pe treapta afișată înainte de a urca.',
+  'adjustable.after': 'Încă nu este nivelat. Coborâți de pe rampe și aplicația măsoară din nou.',
 
   'calibration.intro':
     'Puneți telefonul pe o suprafață despre care știți că e orizontală, apoi atingeți Calibrați. ' +

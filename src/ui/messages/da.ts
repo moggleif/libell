@@ -294,6 +294,8 @@ export const da: Messages = {
   'status.almost': 'Næsten i vater — {left} tilbage',
   'status.cantLevel.close': 'Dine klodser er tæt på, men ikke nok her — flyt køretøjet',
   'status.cantLevel.far': 'Dine klodser er langt fra nok her — flyt køretøjet',
+  'adjustable.before': 'Stil klodserne på det viste trin, og kør op.',
+  'adjustable.after': 'Ikke i vater endnu. Kør ned fra klodserne, så måler appen igen.',
 
   'calibration.intro':
     'Læg telefonen på en flade, du ved er i vater, og tryk på Kalibrér nu. ' +

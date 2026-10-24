@@ -276,6 +276,9 @@ export const sk: Messages = {
   'status.almost': 'Takmer vodorovne — zostáva {left}',
   'status.cantLevel.close': 'Vaše nájazdy tu takmer stačia, ale nie celkom — presuňte vozidlo',
   'status.cantLevel.far': 'Vaše nájazdy tu ani zďaleka nestačia — presuňte vozidlo',
+  'adjustable.before': 'Nastavte nájazdy na zobrazený stupeň a potom na ne vyjdite.',
+  'adjustable.after':
+    'Vozidlo ešte nie je vodorovne. Zíďte autom z nájazdov a aplikácia zmeria znova.',
   'calibration.intro':
     'Položte telefón na povrch, o ktorom viete, že je vodorovný, a ťuknite na „Kalibrovať“. Aktuálny náklon sa stane východiskovým bodom.',
   'calibration.status': 'Kalibrované: pozdĺžne {pitch}, priečne {roll}.',
