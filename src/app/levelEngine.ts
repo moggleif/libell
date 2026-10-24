@@ -74,6 +74,23 @@ function hasStepToDrive(result: DisplayResult): boolean {
   );
 }
 
+/** The adjustable kloss's line for this reading; none for other klossar. */
+function adjustablePhase(
+  guide: ReturnType<typeof createAdjustableGuide>,
+  result: DisplayResult,
+  settings: LevelSettings,
+  { still, nowMs }: { still: boolean; nowMs: number },
+): AdjustablePhase {
+  if (!isAdjustableRamp(settings)) return 'hidden';
+  const reading = {
+    isLevel: result.isLevel,
+    still,
+    hasStep: hasStepToDrive(result),
+    maxLiftMm: largestLift(result),
+  };
+  return guide(reading, driveUpDropMm(settings), nowMs);
+}
+
 function largestLift(result: DisplayResult): number {
   return Math.max(...WHEEL_IDS.map((id) => result.wheels[id].displayMm));
 }
@@ -107,15 +124,7 @@ function createMotorhomeEngine(
       diagram.update(result, current.displayUnit, numberedSteps(current));
       output.showStatus(motorhomeStatusText(result, current), result.isLevel);
       output.showTilt(result);
-      const reading = {
-        isLevel: result.isLevel,
-        still,
-        hasStep: hasStepToDrive(result),
-        maxLiftMm: largestLift(result),
-      };
-      output.showAdjustable(
-        isAdjustableRamp(current) ? adjustable(reading, driveUpDropMm(current), nowMs) : 'hidden',
-      );
+      output.showAdjustable(adjustablePhase(adjustable, result, current, { still, nowMs }));
       return {
         isLevel: result.isLevel,
         maxCorrectionMm: largestLift(result),
