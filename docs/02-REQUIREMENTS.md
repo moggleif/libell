@@ -2366,7 +2366,7 @@ tracking anyone (ADR 0021). R58 is the stored-data view (#678).
 - **Given** dev, a preview build or `?demo`
 - **Then** nothing is counted.
 
-## R61 — Search engines and AI assistants can read what Libell is (#673, #701)
+## R61 — Search engines, AI assistants and link previews can read what Libell is (#673, #701, #702)
 
 People searching for how to level a motorhome or caravan, in a search engine or by asking
 an AI assistant, should find Libell and have it described correctly. The app draws all
@@ -2386,6 +2386,10 @@ Findability). (R60 is the privacy policy, #675.)
 - **Given** `/llms.txt`
 - **Then** it summarises Libell in the app's own English words (the About texts), names
   the languages and links to the app and its source code.
+- **Given** a Libell link shared in a chat app or social network
+- **When** the preview is shown
+- **Then** it has the title, the description and a 1200×630 image of the spirit-level
+  vial over the name Libell, with no other words, so it fits every language (#702).
 - **Given** the app itself
 - **Then** nothing it shows changes apart from the browser tab's title, and its CSP is
   unchanged.

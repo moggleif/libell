@@ -28,6 +28,20 @@ describe('headTags (#701)', () => {
     expect(canonical?.attrs?.href).toBe(SITE);
   });
 
+  it('gives a shared link a preview: name, description, address and image (#702)', () => {
+    const og = (property: string) =>
+      tags.find((tag) => tag.attrs?.property === property)?.attrs?.content;
+    expect(og('og:type')).toBe('website');
+    expect(og('og:site_name')).toBe('Libell');
+    expect(og('og:title')).toBe(MESSAGES.en['seo.title']);
+    expect(og('og:description')).toBe(MESSAGES.en['seo.description']);
+    expect(og('og:url')).toBe(SITE);
+    expect(og('og:image')).toBe(`${SITE}preview.png`);
+    expect(og('og:image:width')).toBe('1200');
+    expect(og('og:image:height')).toBe('630');
+    expect(meta('twitter:card')?.attrs?.content).toBe('summary_large_image');
+  });
+
   it('carries the structured data as a data block, not a script the CSP would run', () => {
     const block = tags.find((tag) => tag.tag === 'script');
     expect(block?.attrs?.type).toBe('application/ld+json');
