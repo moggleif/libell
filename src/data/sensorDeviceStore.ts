@@ -21,6 +21,7 @@ import {
   writeItem,
   type KeyValueStorage,
 } from './keyValueStorage';
+import { perSource, type StoredKey } from './storedKeys';
 
 const DEVICE_KEY_PREFIX = 'libell.sensorDevice.';
 
@@ -84,4 +85,13 @@ export function migrateLegacyRememberedDeviceId(
 /** Each box's remembered device (#599): the box belongs to its vehicle. */
 export function rememberedDeviceKeys(): string[] {
   return SENSOR_SOURCES.map(deviceKey);
+}
+
+/** Every key this store writes (#678). */
+export function sensorDeviceStoredKeys(): StoredKey[] {
+  return [
+    ...perSource(SENSOR_SOURCES, deviceKey, 'rememberedBox'),
+    { key: LEGACY_EASYLEVEL_DEVICE_KEY, kind: 'legacy', source: 'easylevel' },
+    { key: DEVICE_MIGRATED_KEY, kind: 'note' },
+  ];
 }

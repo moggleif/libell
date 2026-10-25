@@ -52,7 +52,8 @@ function makeOptions(
   hasDoneOnboarding = () => true,
   extra: Partial<InfoPageOptions> = {},
 ): InfoPageOptions {
-  return { openOnboarding, hasDoneOnboarding, ...extra };
+  const storedData = { read: () => [], deleteAll: vi.fn() };
+  return { openOnboarding, hasDoneOnboarding, storedData, ...extra };
 }
 
 describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
@@ -88,10 +89,36 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
     expect(info.isOpen()).toBe(false);
   });
 
-  it('shows three tabs — Help, About, Feedback, in that order (screen-cleanup follow-up)', () => {
+  it('shows four tabs — Help, About, Feedback, Privacy, in that order (#678)', () => {
     const info = createInfoPage(makeOptions());
     const tabs = [...info.element.querySelectorAll<HTMLElement>('.settings__tab')];
-    expect(tabs.map((tab) => tab.dataset.tab)).toEqual(['help', 'about', 'feedback']);
+    expect(tabs.map((tab) => tab.dataset.tab)).toEqual(['help', 'about', 'feedback', 'privacy']);
+  });
+
+  it('reads the storage again each time the Privacy tab is selected (#678)', () => {
+    const read = vi.fn(() => []);
+    const info = createInfoPage(
+      makeOptions(vi.fn(), () => true, { storedData: { read, deleteAll: vi.fn() } }),
+    );
+    const before = read.mock.calls.length;
+    info.element.querySelector<HTMLButtonElement>('[data-tab="privacy"]')!.click();
+    expect(read.mock.calls.length).toBe(before + 1);
+    expect(info.element.querySelector('.menu-page__title')?.textContent).toBe(t('menu.privacy'));
+  });
+
+  it('"Reset only the settings" closes this page, then opens General (#678)', async () => {
+    const openTarget = vi.fn();
+    const info = createInfoPage(makeOptions(vi.fn(), () => true, { openTarget }));
+    const button = document.createElement('button');
+    info.attach(button);
+    button.click();
+    info.element.querySelector<HTMLButtonElement>('[data-tab="privacy"]')!.click();
+    const reset = [...info.element.querySelectorAll<HTMLButtonElement>('button')].find(
+      (b) => b.textContent === t('privacy.resetSettings'),
+    )!;
+    reset.click();
+    expect(info.isOpen()).toBe(false);
+    await vi.waitFor(() => expect(openTarget).toHaveBeenCalledWith('general'));
   });
 
   it('switching tabs shows the matching content and updates the header title', () => {

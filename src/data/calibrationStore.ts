@@ -13,6 +13,7 @@ import {
   writeJson,
   type KeyValueStorage,
 } from './keyValueStorage';
+import { perSource, type StoredKey } from './storedKeys';
 
 const CALIBRATION_KEY = 'libell.calibration';
 const VEHICLE_CALIBRATION_KEY = 'libell.vehicleCalibration';
@@ -220,5 +221,17 @@ export function vehicleCalibrationKeys(): string[] {
     VEHICLE_CALIBRATION_KEY,
     ...SENSOR_SOURCES.map(installCalibrationKey),
     ...SENSOR_SOURCES.map(zeroTrimKey),
+  ];
+}
+
+/** Every key this store writes (#678). */
+export function calibrationStoredKeys(): StoredKey[] {
+  return [
+    { key: CALIBRATION_KEY, kind: 'phoneCalibration' },
+    { key: VEHICLE_CALIBRATION_KEY, kind: 'vehicleZero' },
+    ...perSource(SENSOR_SOURCES, installCalibrationKey, 'boxZero'),
+    ...perSource(SENSOR_SOURCES, zeroTrimKey, 'zeroTrim'),
+    { key: LEGACY_EASYLEVEL_CALIBRATION_KEY, kind: 'legacy', source: 'easylevel' },
+    { key: INSTALL_CALIBRATION_MIGRATED_KEY, kind: 'note' },
   ];
 }

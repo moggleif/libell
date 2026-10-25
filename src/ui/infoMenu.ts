@@ -1,5 +1,5 @@
 /**
- * Info page behind the "?" button: Help / About / Feedback as tabs.
+ * Info page behind the "?" button: Help / About / Feedback / Privacy as tabs.
  *
  * It owns no shared navigation state: sharing the menu's history depth let
  * back land one level up, revealing a Settings drawer the user never opened.
@@ -8,6 +8,7 @@
  */
 import { createAboutSection } from './about';
 import { createFeedbackSection } from './feedback';
+import { createPrivacyPanel, type PrivacyPanelOptions } from './privacyPanel';
 import { createStandalonePage, type StandalonePage } from './standalonePage';
 import { t, type MessageKey } from './i18n';
 import {
@@ -20,7 +21,7 @@ import { EXTERNAL_SENSORS } from '../sensor/boxes';
 import { createElement } from './dom';
 
 /** `main.ts` maps each to the right Settings tab or the sensor page. */
-export type HelpTarget = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'sensor';
+export type HelpTarget = 'general' | 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'sensor';
 
 export interface InfoPageOptions {
   openOnboarding(): void;
@@ -31,6 +32,8 @@ export interface InfoPageOptions {
   hasDoneOnboarding(): boolean;
   /** Called after this page has closed. Without it, topics show no buttons. */
   openTarget?(target: HelpTarget): void;
+  /** What the Privacy tab lists and deletes (#678). */
+  storedData: Pick<PrivacyPanelOptions, 'read' | 'deleteAll'>;
 }
 
 export interface InfoPage {
@@ -39,7 +42,7 @@ export interface InfoPage {
   attach(button: HTMLButtonElement): void;
 }
 
-type InfoTab = 'help' | 'about' | 'feedback';
+type InfoTab = 'help' | 'about' | 'feedback' | 'privacy';
 
 /** The Help tab's topics (R28). "Reading the screen" opens first: it is what
  * people come back for. */
@@ -276,6 +279,8 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   tabs.add('help', helpPanel.element);
   tabs.add('about', createAboutSection());
   tabs.add('feedback', createFeedbackSection());
+  const privacy = createPrivacy(page, options);
+  tabs.add('privacy', privacy.element, privacy.refresh);
   tabs.select('help');
 
   page.body.append(tabs.bar, ...tabs.panels.values());
@@ -286,7 +291,18 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   };
 }
 
-/** Help, About and Feedback as tabs; selecting one also retitles the page. */
+/** "Reset only the settings" opens General, where that button is, once this
+ * page has closed. */
+function createPrivacy(page: StandalonePage, options: InfoPageOptions) {
+  const { openTarget } = options;
+  return createPrivacyPanel({
+    ...options.storedData,
+    openSettings: openTarget && (() => page.close(() => openTarget('general'))),
+  });
+}
+
+/** The tabs; selecting one also retitles the page, and refreshes a panel
+ * that shows live state. */
 function createInfoTabs(page: StandalonePage) {
   const bar = createElement('div', 'settings__tabs');
   bar.setAttribute('role', 'tablist');
@@ -294,22 +310,27 @@ function createInfoTabs(page: StandalonePage) {
     help: t('menu.help'),
     about: t('menu.about.tab'),
     feedback: t('menu.feedback'),
+    privacy: t('menu.privacy.tab'),
   };
   // The header spells out the full name ("About Libell", not "About").
   const titles: Record<InfoTab, string> = {
     help: t('menu.help'),
     about: t('menu.about'),
     feedback: t('menu.feedback'),
+    privacy: t('menu.privacy'),
   };
   const buttons = new Map<InfoTab, HTMLButtonElement>();
   const panels = new Map<InfoTab, HTMLElement>();
+  const onSelect = new Map<InfoTab, () => void>();
 
   function select(id: InfoTab): void {
     for (const [tid, btn] of buttons) btn.setAttribute('aria-selected', String(tid === id));
     for (const [tid, panel] of panels) panel.hidden = tid !== id;
     page.setTitle(titles[id]);
+    onSelect.get(id)?.();
   }
-  function add(id: InfoTab, panel: HTMLElement): void {
+  function add(id: InfoTab, panel: HTMLElement, refresh?: () => void): void {
+    if (refresh) onSelect.set(id, refresh);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'settings__tab';

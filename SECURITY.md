@@ -33,6 +33,9 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
 - **The Xparkle box's password is a pairing code, not a secret.** The box's four-digit
   code is kept in `localStorage` with the other settings and is only ever written to
   that box over Bluetooth. Libell never changes it.
+- **Everything stored can be seen and deleted.** The help page's Privacy tab
+  (R58 in `docs/02-REQUIREMENTS.md`) lists every `libell.*` key, shows the box password
+  only as dots, and deletes them all on request.
 
 ## Supply chain
 

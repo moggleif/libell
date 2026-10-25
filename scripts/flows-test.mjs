@@ -9,7 +9,7 @@
 // the intro, Install and the install row. For the first-run wizard: its phone calibration
 // and its box path, connected or not. For the level screen: the pose
 // guard, the level celebration, a lost box coming back, the status row
-// per vehicle, and the rebuild after a saved change. The mute
+// per vehicle, and the rebuild after a saved change. What is stored, and deleting it. The mute
 // button and the sounds, against a stand-in for WebAudio. None of it
 // needs hardware or Web Bluetooth.
 //
@@ -50,6 +50,7 @@ import { navigationFlow } from './flows/navigation.mjs';
 import { settingsSaveFlow } from './flows/settingsSave.mjs';
 import { startupFlow } from './flows/startup.mjs';
 import { vehiclesFlow } from './flows/vehicles.mjs';
+import { privacyFlow } from './flows/privacy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -94,8 +95,9 @@ try {
   await settingsSaveFlow(browser);
   await startupFlow(browser);
   await vehiclesFlow(browser);
+  await privacyFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, first visit, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up, vehicles',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, first visit, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up, vehicles, privacy',
   );
 } finally {
   await browser?.close();

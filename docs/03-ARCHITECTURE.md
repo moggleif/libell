@@ -48,7 +48,8 @@ src/
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
 │                  # remembered device id, #130), vehicleStore.ts (the waiting
 │                  # vehicles, #599) — localStorage read/write, on the
-│                  # shared guarded helpers in keyValueStorage.ts
+│                  # shared guarded helpers in keyValueStorage.ts; storedData.ts
+│                  # gathers every store's keys for the Privacy tab (#678)
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
 │                  # boxes.ts (the registry), boxController.ts
 │                  # (connect, reconnect, fallback), easyLevel*.ts and xparkle*.ts (each
@@ -425,6 +426,22 @@ and its values. Saving, Undo and the message for an unusable number are
 steps) is `settingsLayout.ts`, which also assembles the Calibration tab around
 `calibrationSection.ts` (its controls and layouts are `calibrationControls.ts` and
 `calibrationLayouts.ts`).
+
+## Stored data (`src/data/storedData.ts`, #678)
+
+Everything Libell stores is under keys starting with `libell.` (`LIBELL_PREFIX` in
+`storedKeys.ts`): in `localStorage` through the stores above, plus the one
+`sessionStorage` mark in `sessionKeys.ts` that reopens Settings after a reload. Each
+store lists its own keys, with what each holds (`StoredKind`), in a `…StoredKeys()`
+function; `storedData.ts` gathers them into one catalogue. `storedData.test.ts` scans
+the source for `libell.` literals and fails on any key no store lists.
+
+The Privacy tab (R58, `src/ui/privacyPanel.ts`) reads the storage itself rather than
+the catalogue, so a key no store knows (say from a removed version) still shows, as
+`other`; `src/ui/storedDataText.ts` turns the entries into plain-words rows, and
+`maskSecrets` hides the box password at any depth in the raw view. "Delete all Libell
+data" removes every `libell.*` key in both storages and reloads; first-run start-up
+then writes its migration markers again, as on any fresh install.
 
 ## Offline
 
