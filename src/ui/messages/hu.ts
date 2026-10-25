@@ -190,7 +190,7 @@ export const hu: Messages = {
   'policy.counting.change':
     'A választásodat bármikor megváltoztathatod itt: {help} › {tab}. Internet nélkül semmi sem kerül elküldésre, és semmi sem marad későbbre.',
   'policy.counting.basis':
-    'A számlálás a GDPR szerinti jogos érdeken alapul (6. cikk (1) bekezdés f) pont): hogy kiderüljön, min kell javítani. Mivel semmi olyan nem kerül mentésre, ami azonosítana, rólad nincs mit megmutatni vagy törölni. Panaszt tehetsz az országod adatvédelmi hatóságánál.',
+    'A számlálás a GDPR szerinti hozzájárulásodon alapul (6. cikk (1) bekezdés a) pont): a választásoddal adod meg, és bármikor visszavonhatod. Mivel semmi olyan nem kerül mentésre, ami azonosítana téged, rólad nincs mit megmutatni vagy törölni. Panaszt tehetsz az országod adatvédelmi hatóságánál.',
   'policy.shared.h': 'Amit te magad osztasz meg',
   'policy.shared.feedback':
     'Itt: {help} › {feedback} megnyithatsz egy előre kitöltött bejelentést a GitHubon, amelyet te magad teszel közzé a saját GitHub-fiókoddal. A bejelentés nyilvános. A szövegeden kívül tartalmazza az alkalmazás verzióját, a képernyő méretét, az időpontot és a böngésző nevét, és mindent látsz a közzététel előtt.',

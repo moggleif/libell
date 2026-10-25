@@ -181,7 +181,7 @@ export const nb: Messages = {
   'policy.counting.change':
     'Du kan endre valget ditt når som helst under {help} › {tab}. Uten internett sendes ingenting, og ingenting lagres til senere.',
   'policy.counting.basis':
-    'Tellingen bygger på en berettiget interesse etter GDPR (artikkel 6 nr. 1 bokstav f): å vite hva som bør bli bedre. Siden ingenting som kan identifisere deg lagres, finnes det ingenting om deg å vise eller slette. Du kan klage til datatilsynet i landet ditt.',
+    'Tellingen bygger på samtykket ditt etter GDPR (artikkel 6 nr. 1 bokstav a): du gir det med valget ditt og kan trekke det tilbake når som helst. Siden ingenting som kan identifisere deg lagres, finnes det ingenting om deg å vise eller slette. Du kan klage til datatilsynet i landet ditt.',
   'policy.shared.h': 'Det du selv velger å dele',
   'policy.shared.feedback':
     'Under {help} › {feedback} kan du åpne en ferdig sak på GitHub, som du selv publiserer med din egen GitHub-konto. Saken er offentlig. I tillegg til teksten din inneholder den appens versjon, skjermstørrelse, tidspunkt og nettleserens navn, og du ser alt før du publiserer.',

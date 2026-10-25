@@ -177,7 +177,7 @@ export const tr: Messages = {
   'policy.counting.change':
     'Seçiminizi istediğiniz zaman {help} › {tab} bölümünden değiştirebilirsiniz. İnternet yokken hiçbir şey gönderilmez ve sonraya hiçbir şey saklanmaz.',
   'policy.counting.basis':
-    'Sayım, GDPR kapsamında meşru menfaate dayanır (madde 6.1 f): neyin iyileştirileceğini bilmek. Sizi tanımlayan hiçbir şey kaydedilmediği için hakkınızda gösterilecek veya silinecek bir şey yoktur. Ülkenizdeki veri koruma kurumuna şikâyette bulunabilirsiniz.',
+    'Sayım, GDPR kapsamında sizin onayınıza dayanır (madde 6.1 a): onayı seçiminizle verirsiniz ve istediğiniz zaman geri alabilirsiniz. Sizi tanımlayan hiçbir şey kaydedilmediği için hakkınızda gösterilecek veya silinecek bir şey yoktur. Ülkenizdeki veri koruma kurumuna şikâyette bulunabilirsiniz.',
   'policy.shared.h': 'Kendi seçiminizle paylaştıklarınız',
   'policy.shared.feedback':
     '{help} › {feedback} bölümünde GitHub’da hazır bir kayıt açabilir ve bunu kendi GitHub hesabınızla kendiniz yayımlayabilirsiniz. Kayıt herkese açıktır. Metninizin yanında uygulama sürümünü, ekran boyutunu, saati ve tarayıcının adını içerir ve yayımlamadan önce hepsini görürsünüz.',

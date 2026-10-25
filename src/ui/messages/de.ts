@@ -192,7 +192,7 @@ export const de: Messages = {
   'policy.counting.change':
     'Deine Wahl kannst du jederzeit unter {help} › {tab} ändern. Ohne Internet wird nichts gesendet und nichts für später aufbewahrt.',
   'policy.counting.basis':
-    'Die Zählung beruht auf einem berechtigten Interesse nach DSGVO (Art. 6 Abs. 1 lit. f): zu wissen, was besser werden muss. Da nichts gespeichert wird, was dich erkennbar macht, gibt es nichts über dich, was gezeigt oder gelöscht werden könnte. Du kannst dich bei der Datenschutzbehörde deines Landes beschweren.',
+    'Die Zählung beruht auf deiner Einwilligung nach DSGVO (Art. 6 Abs. 1 lit. a): Du gibst sie mit deiner Wahl und kannst sie jederzeit widerrufen. Da nichts gespeichert wird, was dich erkennbar macht, gibt es nichts über dich, was gezeigt oder gelöscht werden könnte. Du kannst dich bei der Datenschutzbehörde deines Landes beschweren.',
   'policy.shared.h': 'Was du selbst teilen möchtest',
   'policy.shared.feedback':
     'Unter {help} › {feedback} kannst du ein vorausgefülltes Issue auf GitHub öffnen, das du selbst mit deinem eigenen GitHub-Konto veröffentlichst. Das Issue ist öffentlich. Neben deinem Text enthält es die App-Version, die Bildschirmgröße, die Uhrzeit und den Namen des Browsers, und du siehst alles vor dem Veröffentlichen.',

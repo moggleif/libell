@@ -178,7 +178,7 @@ export const is: Messages = {
   'policy.counting.change':
     'Þú getur breytt valinu hvenær sem er undir {help} › {tab}. Án nettengingar er ekkert sent og ekkert geymt til síðari tíma.',
   'policy.counting.basis':
-    'Talningin byggir á lögmætum hagsmunum samkvæmt persónuverndarreglugerðinni (GDPR, 6. gr. 1. mgr. f-lið): að vita hvað þarf að bæta. Þar sem ekkert er vistað sem auðkennir þig er ekkert um þig til að sýna eða eyða. Þú getur kvartað til persónuverndaryfirvalda í þínu landi.',
+    'Talningin byggir á samþykki þínu samkvæmt persónuverndarreglugerðinni (GDPR, 6. gr. 1. mgr. a-lið): þú veitir það með valinu þínu og getur dregið það til baka hvenær sem er. Þar sem ekkert er vistað sem auðkennir þig er ekkert um þig til að sýna eða eyða. Þú getur kvartað til persónuverndaryfirvalda í þínu landi.',
   'policy.shared.h': 'Það sem þú velur að deila',
   'policy.shared.feedback':
     'Undir {help} › {feedback} getur þú opnað tilbúið mál á GitHub sem þú birtir með þínum eigin GitHub-aðgangi. Málið er opinbert. Auk textans þíns inniheldur það útgáfu appsins, skjástærð, tíma og heiti vafrans, og þú sérð þetta allt áður en þú birtir.',

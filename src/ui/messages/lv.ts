@@ -181,7 +181,7 @@ export const lv: Messages = {
   'policy.counting.change':
     'Savu izvēli varat jebkurā laikā mainīt sadaļā {help} › {tab}. Bez interneta nekas netiek sūtīts un nekas netiek glabāts vēlākam.',
   'policy.counting.basis':
-    'Skaitīšana balstās uz leģitīmām interesēm saskaņā ar VDAR (6. panta 1. punkta f) apakšpunkts): zināt, ko uzlabot. Tā kā netiek saglabāts nekas, kas jūs identificētu, par jums nav nekā, ko parādīt vai dzēst. Jūs varat iesniegt sūdzību savas valsts datu aizsardzības iestādē.',
+    'Skaitīšana balstās uz jūsu piekrišanu saskaņā ar VDAR (6. panta 1. punkta a) apakšpunkts): jūs to dodat ar savu izvēli un varat to jebkurā laikā atsaukt. Tā kā netiek saglabāts nekas, kas jūs identificētu, par jums nav nekā, ko parādīt vai dzēst. Jūs varat iesniegt sūdzību savas valsts datu aizsardzības iestādē.',
   'policy.shared.h': 'Ko jūs paši izvēlaties kopīgot',
   'policy.shared.feedback':
     'Sadaļā {help} › {feedback} varat atvērt gatavu pieteikumu GitHub, ko publicējat paši ar savu GitHub kontu. Pieteikums ir publisks. Papildus jūsu tekstam tajā ir lietotnes versija, ekrāna izmērs, laiks un pārlūka nosaukums, un visu redzat pirms publicēšanas.',

@@ -193,7 +193,7 @@ export const fr: Messages = {
   'policy.counting.change':
     'Vous pouvez changer votre choix à tout moment dans {help} › {tab}. Hors ligne, rien n’est envoyé et rien n’est gardé pour plus tard.',
   'policy.counting.basis':
-    'Le comptage repose sur un intérêt légitime au sens du RGPD (article 6.1 f) : savoir quoi améliorer. Comme rien qui vous identifie n’est enregistré, il n’y a rien sur vous à montrer ou à supprimer. Vous pouvez porter plainte auprès de l’autorité de protection des données de votre pays.',
+    'Le comptage repose sur votre consentement au sens du RGPD (article 6.1 a) : vous le donnez par votre choix et pouvez le retirer à tout moment. Comme rien qui vous identifie n’est enregistré, il n’y a rien sur vous à montrer ou à supprimer. Vous pouvez introduire une réclamation auprès de l’autorité de protection des données de votre pays.',
   'policy.shared.h': 'Ce que vous choisissez de partager',
   'policy.shared.feedback':
     'Dans {help} › {feedback}, vous pouvez ouvrir un ticket prérempli sur GitHub, que vous publiez vous-même avec votre propre compte GitHub. Le ticket est public. En plus de votre texte, il contient la version de l’appli, la taille de l’écran, l’heure et le nom du navigateur, et vous voyez tout avant de publier.',

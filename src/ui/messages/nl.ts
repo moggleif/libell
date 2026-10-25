@@ -189,7 +189,7 @@ export const nl: Messages = {
   'policy.counting.change':
     'Je kunt je keuze altijd wijzigen via {help} › {tab}. Zonder internet wordt niets verzonden en niets bewaard voor later.',
   'policy.counting.basis':
-    'Het tellen berust op een gerechtvaardigd belang volgens de AVG (artikel 6.1 f): weten wat beter moet. Omdat niets wordt opgeslagen dat jou herkenbaar maakt, is er niets over jou om te tonen of te wissen. Je kunt een klacht indienen bij de gegevensbeschermingsautoriteit in je land.',
+    'Het tellen berust op jouw toestemming volgens de AVG (artikel 6.1 a): je geeft die met je keuze en kunt die op elk moment intrekken. Omdat niets wordt opgeslagen dat jou herkenbaar maakt, is er niets over jou om te tonen of te wissen. Je kunt een klacht indienen bij de gegevensbeschermingsautoriteit in je land.',
   'policy.shared.h': 'Wat je zelf kiest te delen',
   'policy.shared.feedback':
     'Via {help} › {feedback} kun je een kant-en-klare melding op GitHub openen, die je zelf plaatst met je eigen GitHub-account. De melding is openbaar. Naast je tekst bevat hij de appversie, de schermgrootte, het tijdstip en de naam van de browser, en je ziet alles voordat je plaatst.',

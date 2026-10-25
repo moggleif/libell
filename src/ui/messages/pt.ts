@@ -180,7 +180,7 @@ export const pt: Messages = {
   'policy.counting.change':
     'Pode mudar a sua escolha quando quiser em {help} › {tab}. Sem internet nada é enviado e nada fica guardado para depois.',
   'policy.counting.basis':
-    'A contagem baseia-se num interesse legítimo nos termos do RGPD (artigo 6.º, n.º 1, alínea f): saber o que melhorar. Como nada que o identifique é guardado, não há nada sobre si para mostrar ou apagar. Pode apresentar queixa à autoridade de proteção de dados do seu país.',
+    'A contagem baseia-se no seu consentimento nos termos do RGPD (artigo 6.º, n.º 1, alínea a): dá-o com a sua escolha e pode retirá-lo a qualquer momento. Como nada que o identifique é guardado, não há nada sobre si para mostrar ou apagar. Pode apresentar queixa à autoridade de proteção de dados do seu país.',
   'policy.shared.h': 'O que escolhe partilhar',
   'policy.shared.feedback':
     'Em {help} › {feedback} pode abrir um pedido já preenchido no GitHub, que publica com a sua própria conta GitHub. O pedido é público. Além do seu texto, inclui a versão da app, o tamanho do ecrã, a hora e o nome do navegador, e vê tudo antes de publicar.',

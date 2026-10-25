@@ -192,7 +192,7 @@ export const lt: Messages = {
   'policy.counting.change':
     'Savo pasirinkimą bet kada galite pakeisti: {help} › {tab}. Be interneto niekas nesiunčiama ir niekas nesaugoma vėlesniam laikui.',
   'policy.counting.basis':
-    'Skaičiavimas grindžiamas teisėtu interesu pagal BDAR (6 straipsnio 1 dalies f punktas): žinoti, ką tobulinti. Kadangi nesaugoma nieko, kas jus identifikuotų, apie jus nėra ko parodyti ar ištrinti. Galite pateikti skundą savo šalies duomenų apsaugos institucijai.',
+    'Skaičiavimas grindžiamas jūsų sutikimu pagal BDAR (6 straipsnio 1 dalies a punktas): jį duodate savo pasirinkimu ir bet kada galite atšaukti. Kadangi nesaugoma nieko, kas jus identifikuotų, apie jus nėra ko parodyti ar ištrinti. Galite pateikti skundą savo šalies duomenų apsaugos institucijai.',
   'policy.shared.h': 'Kuo pasirenkate dalytis patys',
   'policy.shared.feedback':
     'Skiltyje {help} › {feedback} galite atidaryti paruoštą pranešimą GitHub, kurį paskelbiate patys naudodami savo GitHub paskyrą. Pranešimas yra viešas. Be jūsų teksto, jame yra programėlės versija, ekrano dydis, laikas ir naršyklės pavadinimas, ir viską matote prieš paskelbdami.',

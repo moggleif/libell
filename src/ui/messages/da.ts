@@ -187,7 +187,7 @@ export const da: Messages = {
   'policy.counting.change':
     'Du kan ændre dit valg når som helst under {help} › {tab}. Uden internet sendes intet, og intet gemmes til senere.',
   'policy.counting.basis':
-    'Optællingen bygger på en legitim interesse efter GDPR (artikel 6, stk. 1, litra f): at vide, hvad der skal forbedres. Da intet, der kan identificere dig, gemmes, er der intet om dig at vise eller slette. Du kan klage til databeskyttelsesmyndigheden i dit land.',
+    'Optællingen bygger på dit samtykke efter GDPR (artikel 6, stk. 1, litra a): du giver det med dit valg og kan trække det tilbage når som helst. Da intet, der kan identificere dig, gemmes, er der intet om dig at vise eller slette. Du kan klage til databeskyttelsesmyndigheden i dit land.',
   'policy.shared.h': 'Det, du selv vælger at dele',
   'policy.shared.feedback':
     'Under {help} › {feedback} kan du åbne en færdig sag på GitHub, som du selv opretter med din egen GitHub-konto. Sagen er offentlig. Ud over din tekst indeholder den appens version, skærmstørrelse, tidspunkt og browserens navn, og du ser det hele, før du opretter den.',

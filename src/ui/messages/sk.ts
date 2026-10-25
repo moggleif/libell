@@ -175,7 +175,7 @@ export const sk: Messages = {
   'policy.counting.change':
     'Svoju voľbu môžete kedykoľvek zmeniť v {help} › {tab}. Bez internetu sa nič neposiela a nič sa neuchováva na neskôr.',
   'policy.counting.basis':
-    'Počítanie sa opiera o oprávnený záujem podľa GDPR (čl. 6 ods. 1 písm. f): vedieť, čo zlepšiť. Keďže sa neukladá nič, čo by vás identifikovalo, nie je o vás čo ukázať ani vymazať. Sťažnosť môžete podať úradu na ochranu osobných údajov vo svojej krajine.',
+    'Počítanie sa opiera o váš súhlas podľa GDPR (čl. 6 ods. 1 písm. a): dávate ho svojou voľbou a môžete ho kedykoľvek odvolať. Keďže sa neukladá nič, čo by vás identifikovalo, nie je o vás čo ukázať ani vymazať. Sťažnosť môžete podať úradu na ochranu osobných údajov vo svojej krajine.',
   'policy.shared.h': 'Čo sa sami rozhodnete zdieľať',
   'policy.shared.feedback':
     'V {help} › {feedback} môžete otvoriť pripravené hlásenie na GitHube, ktoré sami zverejníte pod svojím vlastným účtom GitHub. Hlásenie je verejné. Okrem vášho textu obsahuje verziu aplikácie, veľkosť obrazovky, čas a názov prehliadača a všetko vidíte pred zverejnením.',

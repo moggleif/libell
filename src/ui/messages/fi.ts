@@ -173,7 +173,7 @@ export const fi: Messages = {
   'policy.counting.change':
     'Voit muuttaa valintaasi milloin tahansa kohdassa {help} › {tab}. Ilman verkkoyhteyttä mitään ei lähetetä eikä mitään säilytetä myöhempää varten.',
   'policy.counting.basis':
-    'Laskenta perustuu tietosuoja-asetuksen (GDPR) mukaiseen oikeutettuun etuun (6 artiklan 1 kohdan f alakohta): siihen, että tiedetään, mitä pitää parantaa. Koska mitään sinut tunnistavaa ei tallenneta, sinusta ei ole mitään näytettävää tai poistettavaa. Voit tehdä valituksen maasi tietosuojaviranomaiselle.',
+    'Laskenta perustuu suostumukseesi tietosuoja-asetuksen (GDPR) mukaisesti (6 artiklan 1 kohdan a alakohta): annat sen valinnallasi ja voit perua sen milloin tahansa. Koska mitään sinut tunnistavaa ei tallenneta, sinusta ei ole mitään näytettävää tai poistettavaa. Voit tehdä valituksen maasi tietosuojaviranomaiselle.',
   'policy.shared.h': 'Mitä itse päätät jakaa',
   'policy.shared.feedback':
     'Kohdassa {help} › {feedback} voit avata valmiin ilmoituksen, jonka julkaiset itse GitHubissa omalla GitHub-tililläsi. Ilmoitus on julkinen. Tekstisi lisäksi siinä on sovelluksen versio, näytön koko, kellonaika ja selaimen nimi, ja näet kaiken ennen julkaisua.',

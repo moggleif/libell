@@ -185,7 +185,7 @@ export const et: Messages = {
   'policy.counting.change':
     'Oma valikut saad igal ajal muuta: {help} › {tab}. Ilma internetita ei saadeta midagi ega hoita midagi hilisemaks.',
   'policy.counting.basis':
-    'Loendamine põhineb isikuandmete kaitse üldmääruse (GDPR) artikli 6 lõike 1 punktis f nimetatud õigustatud huvil: teada, mida parandada. Kuna midagi, mis sind tuvastaks, ei salvestata, pole sinu kohta midagi näidata ega kustutada. Võid esitada kaebuse oma riigi andmekaitseasutusele.',
+    'Loendamine põhineb sinu nõusolekul isikuandmete kaitse üldmääruse (GDPR) artikli 6 lõike 1 punkti a alusel: annad selle oma valikuga ja saad selle igal ajal tagasi võtta. Kuna midagi, mis sind tuvastaks, ei salvestata, pole sinu kohta midagi näidata ega kustutada. Võid esitada kaebuse oma riigi andmekaitseasutusele.',
   'policy.shared.h': 'Mida sa ise jagada otsustad',
   'policy.shared.feedback':
     'Jaotises {help} › {feedback} saad avada GitHubis valmis teate, mille avaldad ise oma GitHubi kontoga. Teade on avalik. Lisaks sinu tekstile sisaldab see rakenduse versiooni, ekraani suurust, kellaaega ja brauseri nime ning näed kõike enne avaldamist.',

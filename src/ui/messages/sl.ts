@@ -178,7 +178,7 @@ export const sl: Messages = {
   'policy.counting.change':
     'Svojo izbiro lahko kadar koli spremenite pod {help} › {tab}. Brez interneta se nič ne pošlje in nič se ne hrani za pozneje.',
   'policy.counting.basis':
-    'Štetje temelji na zakonitem interesu po GDPR (člen 6(1)(f)): vedeti, kaj izboljšati. Ker se ne shrani nič, kar bi vas identificiralo, o vas ni ničesar za prikaz ali izbris. Pritožbo lahko vložite pri organu za varstvo podatkov v svoji državi.',
+    'Štetje temelji na vaši privolitvi po GDPR-ju (člen 6(1)(a)): daste jo s svojo izbiro in jo lahko kadar koli prekličete. Ker se ne shrani nič, kar bi vas identificiralo, o vas ni ničesar za prikaz ali izbris. Pritožbo lahko vložite pri organu za varstvo podatkov v svoji državi.',
   'policy.shared.h': 'Kaj se sami odločite deliti',
   'policy.shared.feedback':
     'Pod {help} › {feedback} lahko odprete pripravljeno prijavo na GitHubu, ki jo objavite sami s svojim računom GitHub. Prijava je javna. Poleg vašega besedila vsebuje različico aplikacije, velikost zaslona, čas in ime brskalnika, vse pa vidite pred objavo.',

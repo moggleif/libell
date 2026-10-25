@@ -218,9 +218,7 @@ export const en = {
     'You can change your choice any time under {help} › {tab}. Offline, nothing is sent ' +
     'and nothing is kept for later.',
   'policy.counting.basis':
-    'The counting rests on a legitimate interest under the GDPR (article 6.1 f): knowing ' +
-    'what to improve. As nothing that identifies you is saved, there is nothing about you ' +
-    'to show or delete. You can complain to the data protection authority in your country.',
+    'The counting rests on your consent under the GDPR (article 6.1 a): you give it with your choice and can take it back at any time. As nothing that identifies you is saved, there is nothing about you to show or delete. You can complain to the data protection authority in your country.',
   'policy.shared.h': 'What you choose to share',
   'policy.shared.feedback':
     'Under {help} › {feedback} you can open a ready-made issue on GitHub, which you post yourself with your own GitHub account. The issue is public. Besides your text it contains the app version, screen size, time and the browser’s name, and you see all of it before posting.',

@@ -186,7 +186,7 @@ export const cs: Messages = {
   'policy.counting.change':
     'Svou volbu můžete kdykoli změnit v {help} › {tab}. Bez internetu se nic neposílá a nic se neukládá na později.',
   'policy.counting.basis':
-    'Počítání se opírá o oprávněný zájem podle GDPR (čl. 6 odst. 1 písm. f): vědět, co zlepšit. Protože se neukládá nic, co by vás identifikovalo, není o vás co ukázat ani smazat. Stížnost můžete podat u úřadu pro ochranu osobních údajů ve své zemi.',
+    'Počítání se opírá o váš souhlas podle GDPR (čl. 6 odst. 1 písm. a): dáváte ho svou volbou a můžete ho kdykoli odvolat. Protože se neukládá nic, co by vás identifikovalo, není o vás co ukázat ani smazat. Stížnost můžete podat u úřadu pro ochranu osobních údajů ve své zemi.',
   'policy.shared.h': 'Co se sami rozhodnete sdílet',
   'policy.shared.feedback':
     'V {help} › {feedback} můžete otevřít připravené hlášení na GitHubu, které sami zveřejníte pod svým vlastním účtem GitHub. Hlášení je veřejné. Kromě vašeho textu obsahuje verzi aplikace, velikost obrazovky, čas a název prohlížeče a vše vidíte před zveřejněním.',

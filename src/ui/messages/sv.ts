@@ -208,10 +208,7 @@ export const sv: Messages = {
     'Du kan ändra ditt val när som helst under {help} › {tab}. Utan internet skickas ' +
     'ingenting, och ingenting sparas till senare.',
   'policy.counting.basis':
-    'Räkningen bygger på ett berättigat intresse enligt GDPR (artikel 6.1 f): att veta vad ' +
-    'som behöver bli bättre. Eftersom ingenting som pekar ut dig sparas finns det inget ' +
-    'om dig att visa eller radera. Du kan klaga hos Integritetsskyddsmyndigheten (IMY) ' +
-    'eller dataskyddsmyndigheten i ditt land.',
+    'Räkningen bygger på ditt samtycke enligt GDPR (artikel 6.1 a): du ger det med ditt val och kan ta tillbaka det när som helst. Eftersom ingenting som pekar ut dig sparas finns det inget om dig att visa eller radera. Du kan klaga hos Integritetsskyddsmyndigheten (IMY) eller dataskyddsmyndigheten i ditt land.',
   'policy.shared.h': 'Det du själv väljer att dela',
   'policy.shared.feedback':
     'Under {help} › {feedback} kan du öppna ett färdigt ärende på GitHub, som du själv postar med ditt eget GitHub-konto. Ärendet är offentligt. Förutom din text innehåller det appens version, skärmstorlek, tidpunkt och webbläsarens namn, och du ser allt innan du postar.',

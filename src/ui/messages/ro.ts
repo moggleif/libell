@@ -193,7 +193,7 @@ export const ro: Messages = {
   'policy.counting.change':
     'Vă puteți schimba alegerea oricând din {help} › {tab}. Fără internet nu se trimite nimic și nu se păstrează nimic pentru mai târziu.',
   'policy.counting.basis':
-    'Numărarea se bazează pe un interes legitim conform GDPR (articolul 6 alineatul (1) litera (f)): să știm ce trebuie îmbunătățit. Deoarece nu se salvează nimic care să vă identifice, nu există nimic despre dvs. de arătat sau de șters. Puteți depune o plângere la autoritatea de protecție a datelor din țara dvs.',
+    'Numărarea se bazează pe consimțământul dvs. conform GDPR (articolul 6 alineatul (1) litera (a)): îl dați prin alegerea dvs. și îl puteți retrage oricând. Deoarece nu se salvează nimic care să vă identifice, nu există nimic despre dvs. de arătat sau de șters. Puteți depune o plângere la autoritatea de protecție a datelor din țara dvs.',
   'policy.shared.h': 'Ce alegeți să partajați',
   'policy.shared.feedback':
     'În {help} › {feedback} puteți deschide un tichet gata completat pe GitHub, pe care îl publicați chiar dvs. cu propriul cont GitHub. Tichetul este public. Pe lângă textul dvs., conține versiunea aplicației, dimensiunea ecranului, ora și numele browserului, iar dvs. vedeți totul înainte de publicare.',

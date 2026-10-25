@@ -187,7 +187,7 @@ export const hr: Messages = {
   'policy.counting.change':
     'Svoj odabir možete promijeniti bilo kada pod {help} › {tab}. Bez interneta ništa se ne šalje i ništa se ne čuva za kasnije.',
   'policy.counting.basis':
-    'Brojanje se temelji na legitimnom interesu prema GDPR-u (članak 6. stavak 1. točka (f)): znati što poboljšati. Budući da se ne sprema ništa što bi vas identificiralo, o vama nema ničega za prikaz ili brisanje. Pritužbu možete podnijeti tijelu za zaštitu podataka u svojoj zemlji.',
+    'Brojanje se temelji na vašoj privoli prema GDPR-u (članak 6. stavak 1. točka (a)): dajete je svojim odabirom i možete je povući bilo kada. Budući da se ne sprema ništa što bi vas identificiralo, o vama nema ničega za prikaz ili brisanje. Pritužbu možete podnijeti tijelu za zaštitu podataka u svojoj zemlji.',
   'policy.shared.h': 'Što sami odlučite podijeliti',
   'policy.shared.feedback':
     'Pod {help} › {feedback} možete otvoriti gotovu prijavu na GitHubu, koju sami objavljujete sa svojim GitHub računom. Prijava je javna. Osim vašeg teksta sadrži verziju aplikacije, veličinu zaslona, vrijeme i naziv preglednika, a sve vidite prije objave.',

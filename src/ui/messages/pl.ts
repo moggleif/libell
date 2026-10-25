@@ -181,7 +181,7 @@ export const pl: Messages = {
   'policy.counting.change':
     'Swój wybór możesz zmienić w każdej chwili w {help} › {tab}. Bez internetu nic nie jest wysyłane ani zachowywane na później.',
   'policy.counting.basis':
-    'Liczenie opiera się na prawnie uzasadnionym interesie zgodnie z RODO (art. 6 ust. 1 lit. f): wiedzy, co poprawić. Ponieważ nie zapisuje się nic, co by cię identyfikowało, nie ma niczego o tobie do pokazania ani usunięcia. Możesz złożyć skargę do organu ochrony danych w swoim kraju.',
+    'Liczenie opiera się na twojej zgodzie zgodnie z RODO (art. 6 ust. 1 lit. a): wyrażasz ją swoim wyborem i możesz ją wycofać w każdej chwili. Ponieważ nie zapisuje się nic, co by cię identyfikowało, nie ma niczego o tobie do pokazania ani usunięcia. Możesz złożyć skargę do organu ochrony danych w swoim kraju.',
   'policy.shared.h': 'Co sam decydujesz się udostępnić',
   'policy.shared.feedback':
     'W {help} › {feedback} możesz otworzyć gotowe zgłoszenie na GitHubie, które publikujesz sam ze swojego konta GitHub. Zgłoszenie jest publiczne. Oprócz twojego tekstu zawiera wersję aplikacji, rozmiar ekranu, godzinę i nazwę przeglądarki, a wszystko widzisz przed publikacją.',

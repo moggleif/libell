@@ -187,7 +187,7 @@ export const ca: Messages = {
   'policy.counting.change':
     'Pots canviar la teva tria quan vulguis a {help} › {tab}. Sense connexió no s’envia res i no es guarda res per a més tard.',
   'policy.counting.basis':
-    'El recompte es basa en un interès legítim segons el RGPD (article 6.1 f): saber què cal millorar. Com que no es desa res que t’identifiqui, no hi ha res sobre tu per mostrar o esborrar. Pots presentar una reclamació a l’autoritat de protecció de dades del teu país.',
+    'El recompte es basa en el teu consentiment segons el RGPD (article 6.1 a): el dones amb la teva tria i el pots retirar quan vulguis. Com que no es desa res que t’identifiqui, no hi ha res sobre tu per mostrar o esborrar. Pots presentar una reclamació a l’autoritat de protecció de dades del teu país.',
   'policy.shared.h': 'El que tu tries compartir',
   'policy.shared.feedback':
     'A {help} › {feedback} pots obrir una incidència ja omplerta a GitHub, que publiques tu mateix amb el teu propi compte de GitHub. La incidència és pública. A més del teu text, inclou la versió de l’app, la mida de la pantalla, l’hora i el nom del navegador, i ho veus tot abans de publicar.',

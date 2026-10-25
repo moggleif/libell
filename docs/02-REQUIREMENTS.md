@@ -2401,7 +2401,7 @@ shipped language and says what the app's texts say (R58, R59).
   are used only on the phone; the anonymous counting (R59): that it waits for the user's
   choice, what is counted and never saved, that the IP address and browser name reach
   GoatCounter but are only held in memory, where it runs, how to change the choice, the
-  legal basis and the right to complain; what feedback and a vehicle share link carry
+  legal basis (consent, given with that choice) and the right to complain; what feedback and a vehicle share link carry
   (R41); that GitHub Pages hosts the site and sees the IP address; that Libell belongs to
   its open source project, MIT, without warranty; and that questions go to GitHub
   issues. It shows the date the text last changed, links to every other language and

@@ -190,7 +190,7 @@ export const es: Messages = {
   'policy.counting.change':
     'Puedes cambiar tu elección cuando quieras en {help} › {tab}. Sin conexión no se envía nada y no se guarda nada para después.',
   'policy.counting.basis':
-    'El recuento se basa en un interés legítimo según el RGPD (artículo 6.1 f): saber qué mejorar. Como no se guarda nada que te identifique, no hay nada sobre ti que mostrar o borrar. Puedes reclamar ante la autoridad de protección de datos de tu país.',
+    'El recuento se basa en tu consentimiento según el RGPD (artículo 6.1 a): lo das con tu elección y puedes retirarlo cuando quieras. Como no se guarda nada que te identifique, no hay nada sobre ti que mostrar o borrar. Puedes reclamar ante la autoridad de protección de datos de tu país.',
   'policy.shared.h': 'Lo que tú decides compartir',
   'policy.shared.feedback':
     'En {help} › {feedback} puedes abrir una incidencia ya rellenada en GitHub, que publicas tú mismo con tu propia cuenta de GitHub. La incidencia es pública. Además de tu texto, incluye la versión de la app, el tamaño de pantalla, la hora y el nombre del navegador, y lo ves todo antes de publicar.',

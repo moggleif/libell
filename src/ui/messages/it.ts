@@ -178,7 +178,7 @@ export const it: Messages = {
   'policy.counting.change':
     'Puoi cambiare la tua scelta quando vuoi in {help} › {tab}. Offline non viene inviato nulla e nulla viene conservato per dopo.',
   'policy.counting.basis':
-    'Il conteggio si basa su un interesse legittimo secondo il GDPR (articolo 6.1 f): sapere cosa migliorare. Poiché non si salva nulla che ti identifichi, non c’è nulla su di te da mostrare o eliminare. Puoi presentare reclamo all’autorità per la protezione dei dati del tuo paese.',
+    'Il conteggio si basa sul tuo consenso secondo il GDPR (articolo 6.1 a): lo dai con la tua scelta e puoi revocarlo in qualsiasi momento. Poiché non si salva nulla che ti identifichi, non c’è nulla su di te da mostrare o eliminare. Puoi presentare reclamo all’autorità per la protezione dei dati del tuo paese.',
   'policy.shared.h': 'Cosa scegli di condividere',
   'policy.shared.feedback':
     'In {help} › {feedback} puoi aprire una segnalazione già compilata su GitHub, che pubblichi tu con il tuo account GitHub. La segnalazione è pubblica. Oltre al tuo testo contiene la versione dell’app, le dimensioni dello schermo, l’ora e il nome del browser, e vedi tutto prima di pubblicare.',

@@ -1843,7 +1843,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'policy.counting.basis': ctx(
     'text',
     'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: last paragraph of "Anonymous counting".',
-    'Gives the GDPR legal basis (legitimate interest, article 6.1 f), why there is nothing to show or delete, and the right to complain to a data protection authority.',
+    'Gives the GDPR legal basis (the user’s consent, article 6.1 a, given with the counting choice and withdrawable any time), why there is nothing to show or delete, and the right to complain to a data protection authority.',
   ),
   'policy.shared.h': ctx(
     'label',
