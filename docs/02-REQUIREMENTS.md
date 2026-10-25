@@ -2297,7 +2297,8 @@ data).
 
 - **Given** the "?" page (R38)
 - **When** I open its Privacy tab
-- **Then** I see, in my language, that everything stays on the phone, then "Stored on
+- **Then** I see, in my language, that everything stays on the phone and a link to the
+  privacy policy (R60), then "Stored on
   this phone": one row per thing I would recognise, in plain words, never a raw key —
   each vehicle with its wheelbase, the settings, the sensor box password as "••••", the
   language, the phone's calibration and each zero with whose it is and the date it was
@@ -2365,3 +2366,34 @@ tracking anyone (ADR 0021). R58 is the stored-data view (#678).
 - **Then** the counting choice is kept: it is stored on its own (`libell.countingOff`).
 - **Given** dev, a preview build or `?demo`
 - **Then** nothing is counted.
+
+## R60 — A privacy policy page in every language (#675)
+
+A plain privacy policy at a stable address, which app stores can link to and users can
+read without the app. Its text is the app's own message strings, so it exists in every
+shipped language and says what the app's texts say (R58, R59).
+
+- **Given** the deployed site
+- **When** someone opens `/privacy/<lang>/` for a shipped language, without running
+  scripts
+- **Then** they see the whole policy in that language: what is stored on the phone and
+  where to see and delete it (Help › Privacy, R58); that the motion sensors and Bluetooth
+  are used only on the phone; the anonymous counting (R59): that it waits for the user's
+  choice, what is counted and never saved, that the IP address and browser name reach
+  GoatCounter but are only held in memory, where it runs, how to change the choice, the
+  legal basis and the right to complain; what feedback and a vehicle share link carry
+  (R41); that GitHub Pages hosts the site and sees the IP address; that Libell belongs to
+  its open source project, MIT, without warranty; and that questions go to GitHub
+  issues. It shows the date the text last changed, links to every other language and
+  back to the app.
+- **When** someone opens `/privacy/`
+- **Then** they see the English policy with the same list of languages.
+- **Given** a policy page
+- **Then** it runs no script, loads nothing from elsewhere and follows the phone's light
+  or dark theme. Once the app has been opened online, the pages work offline too.
+- **Given** the Privacy tab (R58)
+- **When** I tap "Read the privacy policy"
+- **Then** the policy opens in my language, in a new tab.
+- **Given** a change to what Libell stores or sends
+- **Then** the policy text and its date change in the same change (the `docs-sync`
+  skill).

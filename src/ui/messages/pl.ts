@@ -158,6 +158,44 @@ export const pl: Messages = {
     'Usunąć wszystko, co Libell zapisał na tym telefonie? Pojazdy, wymiary i kalibracja znikną, a Libell uruchomi się jak za pierwszym razem.',
   'privacy.deleteAll.yes': 'Tak, usuń wszystko',
   'privacy.deleteAll.cancel': 'Anuluj',
+  'privacy.policy': 'Przeczytaj politykę prywatności',
+  'policy.title': 'Polityka prywatności Libell',
+  'policy.changed': 'Ostatnia zmiana: {date}',
+  'policy.intro':
+    'Libell to wolny projekt open source. Nie ma kont, reklam ani śledzenia i nikt nie zbiera informacji o tobie.',
+  'policy.stored.h': 'Co jest zapisywane w telefonie',
+  'policy.stored':
+    'Libell zapisuje twoje pojazdy, wymiary, ustawienia, kalibracje, cele, wybrany język i moduł czujnika używany ostatnio. Wszystko leży w lokalnej pamięci przeglądarki w twoim telefonie. Działa ona podobnie jak pliki cookie, ale nigdy nie jest nigdzie wysyłana. Libell potrzebuje tych danych do działania, dlatego nie ma okna zgody.',
+  'policy.stored.delete':
+    'W {help} › {tab} w aplikacji widzisz wszystko, co jest zapisane, i możesz to wszystko usunąć. Możesz też wyczyścić dane witryny w przeglądarce.',
+  'policy.sensors.h': 'Czujniki i Bluetooth',
+  'policy.sensors':
+    'Czujniki ruchu i Bluetooth telefonu są używane tylko w telefonie i tylko do pomiaru nachylenia. Odczyty nigdy nie opuszczają telefonu.',
+  'policy.counting':
+    'Aby wiedzieć, co poprawić, Libell może anonimowo liczyć użycie za pomocą GoatCounter. Libell pyta cię raz, czy może liczyć, i nic nie jest liczone, zanim wybierzesz. Statystyki są publiczne.',
+  'policy.counting.ip':
+    'Jak przy każdym zapytaniu w internecie, adres IP telefonu i nazwa przeglądarki docierają do GoatCounter. GoatCounter nigdy ich nie zapisuje: trzyma je w pamięci najwyżej osiem godzin, aby rozpoznać tę samą wizytę. GoatCounter jest prowadzony z Irlandii, a jego serwery stoją w Finlandii i Niemczech, więc nic nie opuszcza UE.',
+  'policy.counting.change':
+    'Swój wybór możesz zmienić w każdej chwili w {help} › {tab}. Bez internetu nic nie jest wysyłane ani zachowywane na później.',
+  'policy.counting.basis':
+    'Liczenie opiera się na prawnie uzasadnionym interesie zgodnie z RODO (art. 6 ust. 1 lit. f): wiedzy, co poprawić. Ponieważ nie zapisuje się nic, co by cię identyfikowało, nie ma niczego o tobie do pokazania ani usunięcia. Możesz złożyć skargę do organu ochrony danych w swoim kraju.',
+  'policy.shared.h': 'Co sam decydujesz się udostępnić',
+  'policy.shared.feedback':
+    'W {help} › {feedback} możesz otworzyć gotowe zgłoszenie na GitHubie, które publikujesz sam ze swojego konta GitHub. Zgłoszenie jest publiczne. Oprócz twojego tekstu zawiera wersję aplikacji, rozmiar ekranu, godzinę i nazwę przeglądarki, a wszystko widzisz przed publikacją.',
+  'policy.shared.vehicle':
+    '„{share}” tworzy link z wymiarami pojazdu, bez kalibracji. Link trafia tylko tam, dokąd go wyślesz.',
+  'policy.site.h': 'Strona internetowa',
+  'policy.site':
+    'Libell jest hostowany na GitHub Pages. Jak każdy hosting, GitHub widzi twój adres IP, gdy strona się ładuje. Libell nie ma dostępu do logów GitHuba.',
+  'policy.owner.h': 'Kto stoi za Libellem',
+  'policy.owner':
+    'Libell należy do swojego projektu open source, a nie do osoby czy firmy. Jest darmowy i możesz go używać, jak chcesz, na licencji MIT. Jest udostępniany w obecnej postaci, bez gwarancji.',
+  'policy.questions.h': 'Pytania i zmiany',
+  'policy.questions':
+    'Zadawaj pytania jako zgłoszenie na GitHubie. Gdy Libell zmienia to, co zapisuje lub wysyła, ta strona jest aktualizowana jednocześnie.',
+  'policy.questions.link': 'Zgłoszenia na GitHubie',
+  'policy.languages': 'Inne języki',
+  'policy.open': 'Otwórz Libell',
   'stored.vehicle': 'Pojazd',
   'stored.vehicle.detail': '{name}, rozstaw osi {wheelbase}',
   'stored.settings': 'Ustawienia',

@@ -158,6 +158,44 @@ export const lv: Messages = {
     'Dzēst visu, ko Libell ir saglabājis šajā tālrunī? Transportlīdzekļi, izmēri un kalibrēšana pazudīs, un Libell sāksies no jauna kā pirmajā reizē.',
   'privacy.deleteAll.yes': 'Jā, dzēst visu',
   'privacy.deleteAll.cancel': 'Atcelt',
+  'privacy.policy': 'Lasīt privātuma politiku',
+  'policy.title': 'Libell privātuma politika',
+  'policy.changed': 'Pēdējās izmaiņas: {date}',
+  'policy.intro':
+    'Libell ir brīvs atvērtā pirmkoda projekts. Nav kontu, reklāmu vai izsekošanas, un neviens par jums nevāc informāciju.',
+  'policy.stored.h': 'Kas tiek saglabāts tālrunī',
+  'policy.stored':
+    'Libell saglabā jūsu transportlīdzekļus, izmērus, iestatījumus, kalibrējumus, mērķus, izvēlēto valodu un pēdējo izmantoto sensora bloku. Viss atrodas pārlūka lokālajā krātuvē jūsu tālrunī. Tā darbojas līdzīgi sīkdatnēm, taču nekad netiek nekur sūtīta. Libell to vajag darbībai, tāpēc nav piekrišanas loga.',
+  'policy.stored.delete':
+    'Lietotnē sadaļā {help} › {tab} redzat visu saglabāto un varat to visu dzēst. Vietnes datus varat notīrīt arī pārlūkā.',
+  'policy.sensors.h': 'Sensori un Bluetooth',
+  'policy.sensors':
+    'Tālruņa kustības sensori un Bluetooth tiek izmantoti tikai tālrunī un tikai slīpuma mērīšanai. Rādījumi nekad nepamet tālruni.',
+  'policy.counting':
+    'Lai zinātu, ko uzlabot, Libell var anonīmi skaitīt lietošanu ar GoatCounter. Libell vienu reizi jums jautā, vai drīkst skaitīt, un nekas netiek skaitīts, līdz esat izdarījis izvēli. Statistika ir publiska.',
+  'policy.counting.ip':
+    'Kā jebkurā pieprasījumā internetā, tālruņa IP adrese un pārlūka nosaukums nonāk līdz GoatCounter. GoatCounter tos nekad nesaglabā, bet glabā atmiņā ne ilgāk kā astoņas stundas, lai atpazītu to pašu apmeklējumu. GoatCounter tiek pārvaldīts no Īrijas, un tā serveri atrodas Somijā un Vācijā, tāpēc nekas neatstāj ES.',
+  'policy.counting.change':
+    'Savu izvēli varat jebkurā laikā mainīt sadaļā {help} › {tab}. Bez interneta nekas netiek sūtīts un nekas netiek glabāts vēlākam.',
+  'policy.counting.basis':
+    'Skaitīšana balstās uz leģitīmām interesēm saskaņā ar VDAR (6. panta 1. punkta f) apakšpunkts): zināt, ko uzlabot. Tā kā netiek saglabāts nekas, kas jūs identificētu, par jums nav nekā, ko parādīt vai dzēst. Jūs varat iesniegt sūdzību savas valsts datu aizsardzības iestādē.',
+  'policy.shared.h': 'Ko jūs paši izvēlaties kopīgot',
+  'policy.shared.feedback':
+    'Sadaļā {help} › {feedback} varat atvērt gatavu pieteikumu GitHub, ko publicējat paši ar savu GitHub kontu. Pieteikums ir publisks. Papildus jūsu tekstam tajā ir lietotnes versija, ekrāna izmērs, laiks un pārlūka nosaukums, un visu redzat pirms publicēšanas.',
+  'policy.shared.vehicle':
+    '„{share}” izveido saiti ar transportlīdzekļa izmēriem, bez kalibrēšanas. Saite nonāk tikai tur, kurp jūs to nosūtāt.',
+  'policy.site.h': 'Vietne',
+  'policy.site':
+    'Libell tiek mitināts GitHub Pages. Kā jebkurš tīmekļa mitinātājs, GitHub redz jūsu IP adresi, kad lapa ielādējas. Libell nav piekļuves GitHub žurnāliem.',
+  'policy.owner.h': 'Kas ir aiz Libell',
+  'policy.owner':
+    'Libell pieder savam atvērtā pirmkoda projektam, nevis personai vai uzņēmumam. Tas ir bez maksas un to var lietot, kā vēlaties, saskaņā ar MIT licenci, un tas tiek nodrošināts tāds, kāds tas ir, bez garantijas.',
+  'policy.questions.h': 'Jautājumi un izmaiņas',
+  'policy.questions':
+    'Uzdodiet savus jautājumus kā pieteikumu GitHub. Kad Libell maina to, ko saglabā vai sūta, šī lapa tiek atjaunināta vienlaikus.',
+  'policy.questions.link': 'Pieteikumi GitHub',
+  'policy.languages': 'Citas valodas',
+  'policy.open': 'Atvērt Libell',
   'stored.vehicle': 'Transportlīdzeklis',
   'stored.vehicle.detail': '{name}, garenbāze {wheelbase}',
   'stored.settings': 'Iestatījumi',

@@ -166,6 +166,44 @@ export const nl: Messages = {
     'Alles wissen wat Libell op deze telefoon heeft opgeslagen? Voertuigen, maten en kalibratie verdwijnen, en Libell begint opnieuw zoals de eerste keer.',
   'privacy.deleteAll.yes': 'Ja, alles wissen',
   'privacy.deleteAll.cancel': 'Annuleren',
+  'privacy.policy': 'Privacybeleid lezen',
+  'policy.title': 'Privacybeleid van Libell',
+  'policy.changed': 'Laatst gewijzigd op {date}',
+  'policy.intro':
+    'Libell is een vrij opensourceproject. Er zijn geen accounts, geen advertenties en geen tracking, en niemand verzamelt gegevens over jou.',
+  'policy.stored.h': 'Wat er op je telefoon wordt opgeslagen',
+  'policy.stored':
+    'Libell slaat je voertuigen, maten, instellingen, kalibraties, doelen, gekozen taal en de laatst gebruikte sensorbox op. Alles staat in de lokale opslag van de browser op je telefoon. Die werkt ongeveer als cookies, maar wordt nooit ergens naartoe gestuurd. Libell heeft het nodig om te werken, daarom is er geen toestemmingsbanner.',
+  'policy.stored.delete':
+    'Onder {help} › {tab} in de app zie je alles wat is opgeslagen en kun je alles wissen. Je kunt ook de sitegegevens in je browser wissen.',
+  'policy.sensors.h': 'Sensoren en Bluetooth',
+  'policy.sensors':
+    'De bewegingssensoren en Bluetooth van de telefoon worden alleen op de telefoon gebruikt, en alleen om de helling te meten. De metingen verlaten de telefoon nooit.',
+  'policy.counting':
+    'Om te weten wat beter moet, kan Libell het gebruik anoniem tellen met GoatCounter. Libell vraagt je één keer of dat mag, en er wordt niets geteld voordat je hebt gekozen. De statistieken zijn openbaar.',
+  'policy.counting.ip':
+    'Zoals bij elk verzoek op internet komen het IP-adres van de telefoon en de naam van de browser bij GoatCounter aan. GoatCounter slaat ze nooit op, maar houdt ze hooguit acht uur in het geheugen om hetzelfde bezoek te herkennen. GoatCounter wordt vanuit Ierland beheerd en de servers staan in Finland en Duitsland, dus niets verlaat de EU.',
+  'policy.counting.change':
+    'Je kunt je keuze altijd wijzigen via {help} › {tab}. Zonder internet wordt niets verzonden en niets bewaard voor later.',
+  'policy.counting.basis':
+    'Het tellen berust op een gerechtvaardigd belang volgens de AVG (artikel 6.1 f): weten wat beter moet. Omdat niets wordt opgeslagen dat jou herkenbaar maakt, is er niets over jou om te tonen of te wissen. Je kunt een klacht indienen bij de gegevensbeschermingsautoriteit in je land.',
+  'policy.shared.h': 'Wat je zelf kiest te delen',
+  'policy.shared.feedback':
+    'Via {help} › {feedback} kun je een kant-en-klare melding op GitHub openen, die je zelf plaatst met je eigen GitHub-account. De melding is openbaar. Naast je tekst bevat hij de appversie, de schermgrootte, het tijdstip en de naam van de browser, en je ziet alles voordat je plaatst.',
+  'policy.shared.vehicle':
+    '“{share}” maakt een link met de maten van het voertuig, zonder kalibratie. De link komt alleen terecht waar jij hem naartoe stuurt.',
+  'policy.site.h': 'De website',
+  'policy.site':
+    'Libell staat op GitHub Pages. Zoals elke webhost ziet GitHub je IP-adres wanneer de pagina laadt. Libell heeft geen toegang tot de logbestanden van GitHub.',
+  'policy.owner.h': 'Wie er achter Libell zit',
+  'policy.owner':
+    'Libell is van zijn opensourceproject, niet van een persoon of bedrijf. Het is gratis en vrij te gebruiken zoals je wilt onder de MIT-licentie, en wordt geleverd zoals het is, zonder garantie.',
+  'policy.questions.h': 'Vragen en wijzigingen',
+  'policy.questions':
+    'Stel je vragen als melding op GitHub. Als Libell verandert wat het opslaat of verstuurt, wordt deze pagina tegelijk bijgewerkt.',
+  'policy.questions.link': 'Meldingen op GitHub',
+  'policy.languages': 'Andere talen',
+  'policy.open': 'Libell openen',
   'stored.vehicle': 'Voertuig',
   'stored.vehicle.detail': '{name}, wielbasis {wheelbase}',
   'stored.settings': 'Instellingen',

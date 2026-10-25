@@ -472,6 +472,22 @@ introduction wizard's counting step (`src/ui/onboarding/countingStep.ts`) and th
 Privacy tab (`privacyPanel.ts`, under the stored data) both show `countingSection.ts`;
 `countingStoredKeys()` puts the off switch in the stored-data catalogue (#678).
 
+## Privacy policy pages (`src/ui/privacyPolicy.ts`, #675)
+
+The policy (R60) is not a page of the app but static HTML the build writes: the
+`privacy-pages` plugin in `vite.config.ts` loads `privacyPolicy.ts` through Vite's
+`runnerImport` (it is app code, typed and tested with the app) and emits
+`privacy/<lang>/index.html` for every language in `LANGUAGES`, `privacy/index.html` in
+English and `privacy/privacy.css`. The text is the `policy.*` strings plus the counting
+block's own strings (`counting.sent`, `counting.notSent`, `counting.gpc`), looked up per
+language with `translate()` from `i18n.ts`; brands come from `EXTERNAL_SENSORS` and the
+in-app paths from the tab names. Every text is escaped, the page has a
+`default-src 'none'; style-src 'self'` CSP of its own and no script, and the stylesheet
+uses only the browser's system colours (`Canvas`, `CanvasText`, `LinkText`) under
+`color-scheme: light dark`. `POLICY_CHANGED` holds the date shown on the page. The
+pages fall under the precache glob, and `navigateFallbackDenylist` keeps the service
+worker from answering them with the app.
+
 ## UI
 
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
@@ -479,7 +495,7 @@ the bubble level embedded at its center; per-wheel readouts sit directly at the 
 (the step name and one height, the lift in whole mm — R6), drawn on the SVG in Classic and on floating wheel cards in Modern, for the motorhome and the caravan alike (`stepAndLiftText` in `src/ui/diagramParts.ts`). Everything is inline SVG, sized in viewport units so the
 diagram stays legible on a phone lying on a table. Settings open from the bottom action
 bar's gear: in Modern a page with one tab per section, in Classic the ☰ drawer with one page per section (`src/app/settingsSurface.ts`).
-Help is its own page behind "?", with Help, About and Feedback tabs (`src/ui/infoMenu.ts`,
+Help is its own page behind "?", with Help, About, Feedback and Privacy tabs (`src/ui/infoMenu.ts`,
 R12, R38). The Sensorbox is reached from the sensor icon in the top bar's corner (R9);
 no menu entry leads there. Amber warning lamps in the top bar point to missing
 measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language in `LANGUAGES` in `src/ui/messages/`, next to `context.ts` (what each string is for) and `glossary.ts` (the locked terms, #628).

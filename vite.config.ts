@@ -1,5 +1,6 @@
 // `vitest/config` re-exports Vite's defineConfig with the `test` block typed.
 import { defineConfig } from 'vitest/config';
+import { runnerImport, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -41,6 +42,27 @@ const CSP =
   "font-src 'self'; connect-src 'self' https://libell.goatcounter.com; manifest-src 'self'; worker-src 'self'; " +
   "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
+// The privacy policy (#675): one static page per language, written from the
+// message dictionaries by `src/ui/privacyPolicy.ts`. That module is app code
+// (typed and tested with the app), so it is loaded through Vite here rather
+// than imported into this config.
+interface PrivacyPolicyModule {
+  privacyPages(base: string): { fileName: string; source: string }[];
+}
+
+function privacyPages(): Plugin {
+  return {
+    name: 'privacy-pages',
+    apply: 'build',
+    async generateBundle() {
+      const { module } = await runnerImport<PrivacyPolicyModule>('./src/ui/privacyPolicy.ts');
+      for (const { fileName, source } of module.privacyPages(base)) {
+        this.emitFile({ type: 'asset', fileName, source });
+      }
+    },
+  };
+}
+
 export default defineConfig({
   base,
   define: {
@@ -69,6 +91,7 @@ export default defineConfig({
         ];
       },
     },
+    privacyPages(),
     VitePWA({
       registerType: 'autoUpdate',
       // The glob below already precaches every icon; listing the manifest's
@@ -110,6 +133,8 @@ export default defineConfig({
         // build asset is precached.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         cleanupOutdatedCaches: true,
+        // The privacy pages are pages of their own, never the app (#675).
+        navigateFallbackDenylist: [/\/privacy\//],
       },
     }),
   ],

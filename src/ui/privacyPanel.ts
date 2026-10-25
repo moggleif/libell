@@ -6,7 +6,8 @@
 import { maskSecrets, type StoredEntry } from '../data/storedData';
 import { createCountingSection, type CountingChoice } from './countingSection';
 import { createElement } from './dom';
-import { t } from './i18n';
+import { getLanguage, t } from './i18n';
+import { privacyPolicyPath } from './privacyPolicy';
 import { storedRows } from './storedDataText';
 
 export interface PrivacyPanelOptions {
@@ -42,6 +43,19 @@ function button(className: string, label: string, onClick: () => void): HTMLButt
   element.textContent = label;
   element.addEventListener('click', onClick);
   return element;
+}
+
+/** "Read the privacy policy": the static page in the app's language (#675),
+ * in a tab of its own so the app stays where it was. */
+function policyLink(): HTMLParagraphElement {
+  const p = createElement('p', 'menu__text');
+  const link = createElement('a', 'menu__link');
+  link.href = privacyPolicyPath(import.meta.env.BASE_URL, getLanguage());
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = t('privacy.policy');
+  p.append(link);
+  return p;
 }
 
 function fillSummary(list: HTMLElement, entries: StoredEntry[]): void {
@@ -125,6 +139,7 @@ export function createPrivacyPanel(options: PrivacyPanelOptions): PrivacyPanel {
   const remove = createDelete(options.deleteAll);
   element.append(
     textElement('p', 'menu__text', t('about.privacy')),
+    policyLink(),
     textElement('h3', 'stored-data__heading', t('privacy.stored.h')),
     summary,
     raw.element,

@@ -155,6 +155,44 @@ export const is: Messages = {
     'Eyða öllu sem Libell hefur vistað í þessum síma? Ökutæki, mál og kvörðun hverfa og Libell byrjar upp á nýtt eins og í fyrsta sinn.',
   'privacy.deleteAll.yes': 'Já, eyða öllu',
   'privacy.deleteAll.cancel': 'Hætta við',
+  'privacy.policy': 'Lesa persónuverndarstefnuna',
+  'policy.title': 'Persónuverndarstefna Libell',
+  'policy.changed': 'Síðast breytt {date}',
+  'policy.intro':
+    'Libell er frjálst opið hugbúnaðarverkefni. Það eru engir aðgangar, engar auglýsingar og engin rakning, og enginn safnar upplýsingum um þig.',
+  'policy.stored.h': 'Það sem er vistað í símanum',
+  'policy.stored':
+    'Libell vistar ökutækin þín, mál, stillingar, kvarðanir, viðmið, valið tungumál og skynjaraboxið sem þú notaðir síðast. Allt er geymt í staðbundinni geymslu vafrans í símanum þínum. Hún virkar svipað og vafrakökur en er aldrei send neins staðar. Libell þarf þetta til að virka og því er enginn samþykkisgluggi.',
+  'policy.stored.delete':
+    'Undir {help} › {tab} í appinu sérðu allt sem er vistað og getur eytt því öllu. Þú getur líka hreinsað gögn vefsvæðisins í vafranum.',
+  'policy.sensors.h': 'Skynjarar og Bluetooth',
+  'policy.sensors':
+    'Hreyfiskynjarar símans og Bluetooth eru aðeins notuð í símanum og aðeins til að mæla hallann. Mælingarnar fara aldrei úr símanum.',
+  'policy.counting':
+    'Til að vita hvað þarf að bæta getur Libell talið notkunina nafnlaust með GoatCounter. Libell spyr þig einu sinni hvort það megi telja, og ekkert er talið fyrr en þú hefur valið. Tölfræðin er opinber.',
+  'policy.counting.ip':
+    'Eins og með allar beiðnir á netinu berast IP-tala símans og heiti vafrans til GoatCounter. GoatCounter vistar þau aldrei heldur geymir þau í minni í mesta lagi átta klukkustundir til að þekkja sömu heimsókn. GoatCounter er rekið frá Írlandi og þjónar þess eru í Finnlandi og Þýskalandi, svo ekkert fer út fyrir ESB.',
+  'policy.counting.change':
+    'Þú getur breytt valinu hvenær sem er undir {help} › {tab}. Án nettengingar er ekkert sent og ekkert geymt til síðari tíma.',
+  'policy.counting.basis':
+    'Talningin byggir á lögmætum hagsmunum samkvæmt persónuverndarreglugerðinni (GDPR, 6. gr. 1. mgr. f-lið): að vita hvað þarf að bæta. Þar sem ekkert er vistað sem auðkennir þig er ekkert um þig til að sýna eða eyða. Þú getur kvartað til persónuverndaryfirvalda í þínu landi.',
+  'policy.shared.h': 'Það sem þú velur að deila',
+  'policy.shared.feedback':
+    'Undir {help} › {feedback} getur þú opnað tilbúið mál á GitHub sem þú birtir með þínum eigin GitHub-aðgangi. Málið er opinbert. Auk textans þíns inniheldur það útgáfu appsins, skjástærð, tíma og heiti vafrans, og þú sérð þetta allt áður en þú birtir.',
+  'policy.shared.vehicle':
+    '„{share}“ býr til tengil með málum ökutækisins, án kvörðunar. Tengillinn fer aðeins þangað sem þú sendir hann.',
+  'policy.site.h': 'Vefsvæðið',
+  'policy.site':
+    'Libell er hýst á GitHub Pages. Eins og allir vefhýsingaraðilar sér GitHub IP-töluna þína þegar síðan hleðst. Libell hefur ekki aðgang að annálum GitHub.',
+  'policy.owner.h': 'Hver stendur að Libell',
+  'policy.owner':
+    'Libell tilheyrir sínu opna hugbúnaðarverkefni, ekki einstaklingi eða fyrirtæki. Það er ókeypis og frjálst til notkunar eins og þú vilt samkvæmt MIT-leyfinu og er látið í té eins og það er, án ábyrgðar.',
+  'policy.questions.h': 'Spurningar og breytingar',
+  'policy.questions':
+    'Settu spurningarnar þínar fram sem mál á GitHub. Þegar Libell breytir því sem það vistar eða sendir er þessi síða uppfærð á sama tíma.',
+  'policy.questions.link': 'Mál á GitHub',
+  'policy.languages': 'Önnur tungumál',
+  'policy.open': 'Opna Libell',
   'stored.vehicle': 'Ökutæki',
   'stored.vehicle.detail': '{name}, hjólhaf {wheelbase}',
   'stored.settings': 'Stillingar',

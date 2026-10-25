@@ -182,6 +182,63 @@ export const en = {
     'Delete everything Libell has stored on this phone? Vehicles, measurements and calibration are removed, and Libell starts again as the first time.',
   'privacy.deleteAll.yes': 'Yes, delete everything',
   'privacy.deleteAll.cancel': 'Cancel',
+  'privacy.policy': 'Read the privacy policy',
+  // The privacy policy (#675): a static page per language at /privacy/<lang>/.
+  'policy.title': 'Libell privacy policy',
+  'policy.changed': 'Last changed {date}',
+  'policy.intro':
+    'Libell is a free open source project. There are no accounts, no ads and no tracking, ' +
+    'and nobody collects information about you.',
+  'policy.stored.h': 'What is stored on your phone',
+  'policy.stored':
+    'Libell stores your vehicles, measurements, settings, calibrations, targets, chosen ' +
+    'language and the sensor box you last used. All of it is kept in the browser’s local ' +
+    'storage on your phone. It works much like cookies, but it is never sent anywhere. ' +
+    'Libell needs it to work, so there is no consent banner.',
+  'policy.stored.delete':
+    'Under {help} › {tab} in the app you can see everything stored and delete all of it. ' +
+    'You can also clear the site’s data in your browser.',
+  'policy.sensors.h': 'Sensors and Bluetooth',
+  'policy.sensors':
+    'The phone’s motion sensors and Bluetooth are used only on the phone, and only to ' +
+    'measure the tilt. The readings never leave the phone.',
+  'policy.counting':
+    'To know what to improve, Libell can count its use anonymously with GoatCounter. ' +
+    'Libell asks you once whether to count, and nothing is counted until you have chosen. ' +
+    'The statistics are public.',
+  'policy.counting.ip':
+    'As with any request on the internet, your phone’s IP address and the browser’s name ' +
+    'reach GoatCounter. GoatCounter never saves them: it keeps them in memory for at most ' +
+    'eight hours to recognise the same visit. GoatCounter is run from Ireland and its ' +
+    'servers are in Finland and Germany, so nothing leaves the EU.',
+  'policy.counting.change':
+    'You can change your choice any time under {help} › {tab}. Offline, nothing is sent ' +
+    'and nothing is kept for later.',
+  'policy.counting.basis':
+    'The counting rests on a legitimate interest under the GDPR (article 6.1 f): knowing ' +
+    'what to improve. As nothing that identifies you is saved, there is nothing about you ' +
+    'to show or delete. You can complain to the data protection authority in your country.',
+  'policy.shared.h': 'What you choose to share',
+  'policy.shared.feedback':
+    'Under {help} › {feedback} you can open a ready-made issue on GitHub, which you post yourself with your own GitHub account. The issue is public. Besides your text it contains the app version, screen size, time and the browser’s name, and you see all of it before posting.',
+  'policy.shared.vehicle':
+    '“{share}” makes a link with the vehicle’s measurements, without calibration. The link ' +
+    'goes only where you send it.',
+  'policy.site.h': 'The website',
+  'policy.site':
+    'Libell is hosted on GitHub Pages. Like every web host, GitHub sees your IP address ' +
+    'when the page loads. Libell has no access to GitHub’s logs.',
+  'policy.owner.h': 'Who is behind Libell',
+  'policy.owner':
+    'Libell belongs to its open source project, not to a person or a company. It is free ' +
+    'to use however you like under the MIT license, and is provided as is, without warranty.',
+  'policy.questions.h': 'Questions and changes',
+  'policy.questions':
+    'Ask your questions as an issue on GitHub. When Libell changes what it stores or ' +
+    'sends, this page is updated at the same time.',
+  'policy.questions.link': 'Issues on GitHub',
+  'policy.languages': 'Other languages',
+  'policy.open': 'Open Libell',
   'stored.vehicle': 'Vehicle',
   'stored.vehicle.detail': '{name}, wheelbase {wheelbase}',
   'stored.settings': 'Settings',

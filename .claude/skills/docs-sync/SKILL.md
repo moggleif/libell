@@ -40,6 +40,13 @@ catches file names that no longer exist; this skill covers what needs judgement.
   _Kalibrera_ only for the phone's own sensor, _Nollställ_ for the vehicle's zero,
   _kloss_ never "ramp", _Sensorbox_).
 
+**What is stored or sent → the privacy policy (`policy.*` in `src/ui/messages/`)**
+
+- Does the change alter what Libell stores on the phone, sends, or to whom (a storage
+  key, a counted event, a new request, the feedback or share-link contents)? Then the
+  policy's strings say so in **every** language, and `POLICY_CHANGED` in
+  `src/ui/privacyPolicy.ts` is the day of the change (R60).
+
 **How it is built → `docs/03-ARCHITECTURE.md`**
 
 - Does the change add, remove, rename or move a module, a layer seam, a sensor path, a

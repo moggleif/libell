@@ -170,6 +170,44 @@ export const ro: Messages = {
     'Ștergeți tot ce a salvat Libell pe acest telefon? Vehiculele, dimensiunile și calibrarea dispar, iar Libell pornește din nou ca prima dată.',
   'privacy.deleteAll.yes': 'Da, ștergeți tot',
   'privacy.deleteAll.cancel': 'Anulați',
+  'privacy.policy': 'Citiți politica de confidențialitate',
+  'policy.title': 'Politica de confidențialitate Libell',
+  'policy.changed': 'Ultima modificare: {date}',
+  'policy.intro':
+    'Libell este un proiect open source liber. Nu există conturi, reclame sau urmărire, iar nimeni nu colectează informații despre dvs.',
+  'policy.stored.h': 'Ce se salvează pe telefon',
+  'policy.stored':
+    'Libell salvează vehiculele, dimensiunile, setările, calibrările, țintele, limba aleasă și modulul senzor folosit ultima dată. Totul rămâne în stocarea locală a browserului, pe telefonul dvs. Funcționează cam ca modulele cookie, dar nu este trimisă niciodată nicăieri. Libell are nevoie de ea ca să funcționeze, de aceea nu există o fereastră de consimțământ.',
+  'policy.stored.delete':
+    'În {help} › {tab} din aplicație vedeți tot ce este salvat și puteți șterge totul. Puteți șterge și datele site-ului din browser.',
+  'policy.sensors.h': 'Senzori și Bluetooth',
+  'policy.sensors':
+    'Senzorii de mișcare și Bluetooth-ul telefonului sunt folosiți doar pe telefon și doar pentru a măsura înclinarea. Citirile nu părăsesc niciodată telefonul.',
+  'policy.counting':
+    'Ca să știm ce trebuie îmbunătățit, Libell poate număra anonim utilizarea cu GoatCounter. Libell vă întreabă o singură dată dacă poate număra și nu se numără nimic până nu alegeți. Statisticile sunt publice.',
+  'policy.counting.ip':
+    'Ca la orice cerere pe internet, adresa IP a telefonului și numele browserului ajung la GoatCounter. GoatCounter nu le salvează niciodată, ci le ține în memorie cel mult opt ore pentru a recunoaște aceeași vizită. GoatCounter este administrat din Irlanda, iar serverele sunt în Finlanda și Germania, deci nimic nu părăsește UE.',
+  'policy.counting.change':
+    'Vă puteți schimba alegerea oricând din {help} › {tab}. Fără internet nu se trimite nimic și nu se păstrează nimic pentru mai târziu.',
+  'policy.counting.basis':
+    'Numărarea se bazează pe un interes legitim conform GDPR (articolul 6 alineatul (1) litera (f)): să știm ce trebuie îmbunătățit. Deoarece nu se salvează nimic care să vă identifice, nu există nimic despre dvs. de arătat sau de șters. Puteți depune o plângere la autoritatea de protecție a datelor din țara dvs.',
+  'policy.shared.h': 'Ce alegeți să partajați',
+  'policy.shared.feedback':
+    'În {help} › {feedback} puteți deschide un tichet gata completat pe GitHub, pe care îl publicați chiar dvs. cu propriul cont GitHub. Tichetul este public. Pe lângă textul dvs., conține versiunea aplicației, dimensiunea ecranului, ora și numele browserului, iar dvs. vedeți totul înainte de publicare.',
+  'policy.shared.vehicle':
+    '„{share}” creează un link cu dimensiunile vehiculului, fără calibrare. Linkul ajunge doar unde îl trimiteți dvs.',
+  'policy.site.h': 'Site-ul',
+  'policy.site':
+    'Libell este găzduit pe GitHub Pages. Ca orice gazdă web, GitHub vede adresa dvs. IP când se încarcă pagina. Libell nu are acces la jurnalele GitHub.',
+  'policy.owner.h': 'Cine se află în spatele Libell',
+  'policy.owner':
+    'Libell aparține proiectului său open source, nu unei persoane sau unei firme. Este gratuit și îl puteți folosi cum doriți, sub licența MIT, și este oferit ca atare, fără garanție.',
+  'policy.questions.h': 'Întrebări și modificări',
+  'policy.questions':
+    'Puneți-vă întrebările sub forma unui tichet pe GitHub. Când Libell schimbă ce salvează sau trimite, această pagină se actualizează în același timp.',
+  'policy.questions.link': 'Tichete pe GitHub',
+  'policy.languages': 'Alte limbi',
+  'policy.open': 'Deschideți Libell',
   'stored.vehicle': 'Vehicul',
   'stored.vehicle.detail': '{name}, ampatament {wheelbase}',
   'stored.settings': 'Setări',

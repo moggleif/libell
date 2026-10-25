@@ -154,6 +154,44 @@ export const tr: Messages = {
     'Libell’in bu telefona kaydettiği her şey silinsin mi? Araçlar, ölçüler ve kalibrasyon silinir ve Libell ilk seferdeki gibi yeniden başlar.',
   'privacy.deleteAll.yes': 'Evet, hepsini sil',
   'privacy.deleteAll.cancel': 'İptal',
+  'privacy.policy': 'Gizlilik politikasını okuyun',
+  'policy.title': 'Libell gizlilik politikası',
+  'policy.changed': 'Son değişiklik: {date}',
+  'policy.intro':
+    'Libell özgür, açık kaynaklı bir projedir. Hesap, reklam veya izleme yoktur ve kimse sizin hakkınızda bilgi toplamaz.',
+  'policy.stored.h': 'Telefonunuzda saklananlar',
+  'policy.stored':
+    'Libell araçlarınızı, ölçüleri, ayarları, kalibrasyonları, hedefleri, seçilen dili ve en son kullandığınız sensör kutusunu saklar. Hepsi telefonunuzdaki tarayıcının yerel depolama alanında durur. Bu, çerezlere benzer şekilde çalışır ama hiçbir yere gönderilmez. Libell çalışmak için buna ihtiyaç duyar, bu yüzden onay penceresi yoktur.',
+  'policy.stored.delete':
+    'Uygulamada {help} › {tab} bölümünde saklanan her şeyi görebilir ve tümünü silebilirsiniz. Sitenin verilerini tarayıcıdan da temizleyebilirsiniz.',
+  'policy.sensors.h': 'Sensörler ve Bluetooth',
+  'policy.sensors':
+    'Telefonun hareket sensörleri ve Bluetooth yalnızca telefonda ve yalnızca eğimi ölçmek için kullanılır. Ölçümler telefondan asla çıkmaz.',
+  'policy.counting':
+    'Neyin iyileştirileceğini bilmek için Libell kullanımı GoatCounter ile anonim olarak sayabilir. Libell size sayıp sayamayacağını bir kez sorar ve siz seçene kadar hiçbir şey sayılmaz. İstatistikler herkese açıktır.',
+  'policy.counting.ip':
+    'İnternetteki her istekte olduğu gibi telefonun IP adresi ve tarayıcının adı GoatCounter’a ulaşır. GoatCounter bunları asla kaydetmez; aynı ziyareti tanımak için en fazla sekiz saat bellekte tutar. GoatCounter İrlanda’dan işletilir ve sunucuları Finlandiya ile Almanya’dadır, yani hiçbir şey AB dışına çıkmaz.',
+  'policy.counting.change':
+    'Seçiminizi istediğiniz zaman {help} › {tab} bölümünden değiştirebilirsiniz. İnternet yokken hiçbir şey gönderilmez ve sonraya hiçbir şey saklanmaz.',
+  'policy.counting.basis':
+    'Sayım, GDPR kapsamında meşru menfaate dayanır (madde 6.1 f): neyin iyileştirileceğini bilmek. Sizi tanımlayan hiçbir şey kaydedilmediği için hakkınızda gösterilecek veya silinecek bir şey yoktur. Ülkenizdeki veri koruma kurumuna şikâyette bulunabilirsiniz.',
+  'policy.shared.h': 'Kendi seçiminizle paylaştıklarınız',
+  'policy.shared.feedback':
+    '{help} › {feedback} bölümünde GitHub’da hazır bir kayıt açabilir ve bunu kendi GitHub hesabınızla kendiniz yayımlayabilirsiniz. Kayıt herkese açıktır. Metninizin yanında uygulama sürümünü, ekran boyutunu, saati ve tarayıcının adını içerir ve yayımlamadan önce hepsini görürsünüz.',
+  'policy.shared.vehicle':
+    '“{share}” aracın ölçülerini içeren bir bağlantı oluşturur, kalibrasyon olmadan. Bağlantı yalnızca sizin gönderdiğiniz yere gider.',
+  'policy.site.h': 'Web sitesi',
+  'policy.site':
+    'Libell, GitHub Pages’te barındırılır. Her web barındırıcısı gibi GitHub da sayfa yüklenirken IP adresinizi görür. Libell’in GitHub günlüklerine erişimi yoktur.',
+  'policy.owner.h': 'Libell’in arkasında kim var',
+  'policy.owner':
+    'Libell bir kişiye veya şirkete değil, kendi açık kaynak projesine aittir. Ücretsizdir ve MIT lisansıyla dilediğiniz gibi kullanılabilir; olduğu gibi, garantisiz sunulur.',
+  'policy.questions.h': 'Sorular ve değişiklikler',
+  'policy.questions':
+    'Sorularınızı GitHub’da bir kayıt olarak sorun. Libell sakladığını veya gönderdiğini değiştirdiğinde bu sayfa da aynı anda güncellenir.',
+  'policy.questions.link': 'GitHub’daki kayıtlar',
+  'policy.languages': 'Diğer diller',
+  'policy.open': 'Libell’i açın',
   'stored.vehicle': 'Araç',
   'stored.vehicle.detail': '{name}, dingil mesafesi {wheelbase}',
   'stored.settings': 'Ayarlar',

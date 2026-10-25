@@ -170,6 +170,44 @@ export const fr: Messages = {
     'Effacer tout ce que Libell a enregistré sur ce téléphone ? Les véhicules, les mesures et l’étalonnage sont supprimés, et Libell redémarre comme la première fois.',
   'privacy.deleteAll.yes': 'Oui, tout effacer',
   'privacy.deleteAll.cancel': 'Annuler',
+  'privacy.policy': 'Lire la politique de confidentialité',
+  'policy.title': 'Politique de confidentialité de Libell',
+  'policy.changed': 'Dernière modification : {date}',
+  'policy.intro':
+    'Libell est un projet open source libre. Il n’y a ni compte, ni publicité, ni pistage, et personne ne collecte d’informations sur vous.',
+  'policy.stored.h': 'Ce qui est enregistré sur votre téléphone',
+  'policy.stored':
+    'Libell enregistre vos véhicules, vos mesures, vos réglages, vos étalonnages, vos cibles, la langue choisie et le boîtier capteur utilisé en dernier. Tout est conservé dans le stockage local du navigateur, sur votre téléphone. Ce stockage fonctionne à peu près comme les cookies, mais rien n’est jamais envoyé nulle part. Libell en a besoin pour fonctionner : c’est pourquoi il n’y a pas de bandeau de consentement.',
+  'policy.stored.delete':
+    'Dans {help} › {tab}, vous voyez tout ce qui est enregistré et pouvez tout supprimer. Vous pouvez aussi effacer les données du site dans votre navigateur.',
+  'policy.sensors.h': 'Capteurs et Bluetooth',
+  'policy.sensors':
+    'Les capteurs de mouvement et le Bluetooth du téléphone ne servent que sur le téléphone, et uniquement à mesurer l’inclinaison. Les mesures ne quittent jamais le téléphone.',
+  'policy.counting':
+    'Pour savoir quoi améliorer, Libell peut compter son utilisation de façon anonyme avec GoatCounter. Libell vous demande une fois si vous l’acceptez, et rien n’est compté avant votre choix. Les statistiques sont publiques.',
+  'policy.counting.ip':
+    'Comme pour toute requête sur Internet, l’adresse IP du téléphone et le nom du navigateur parviennent à GoatCounter. GoatCounter ne les enregistre jamais : il les garde en mémoire huit heures au plus pour reconnaître une même visite. GoatCounter est exploité depuis l’Irlande et ses serveurs sont en Finlande et en Allemagne : rien ne quitte l’UE.',
+  'policy.counting.change':
+    'Vous pouvez changer votre choix à tout moment dans {help} › {tab}. Hors ligne, rien n’est envoyé et rien n’est gardé pour plus tard.',
+  'policy.counting.basis':
+    'Le comptage repose sur un intérêt légitime au sens du RGPD (article 6.1 f) : savoir quoi améliorer. Comme rien qui vous identifie n’est enregistré, il n’y a rien sur vous à montrer ou à supprimer. Vous pouvez porter plainte auprès de l’autorité de protection des données de votre pays.',
+  'policy.shared.h': 'Ce que vous choisissez de partager',
+  'policy.shared.feedback':
+    'Dans {help} › {feedback}, vous pouvez ouvrir un ticket prérempli sur GitHub, que vous publiez vous-même avec votre propre compte GitHub. Le ticket est public. En plus de votre texte, il contient la version de l’appli, la taille de l’écran, l’heure et le nom du navigateur, et vous voyez tout avant de publier.',
+  'policy.shared.vehicle':
+    '« {share} » crée un lien avec les mesures du véhicule, sans étalonnage. Le lien ne va que là où vous l’envoyez.',
+  'policy.site.h': 'Le site',
+  'policy.site':
+    'Libell est hébergé sur GitHub Pages. Comme tout hébergeur, GitHub voit votre adresse IP quand la page se charge. Libell n’a pas accès aux journaux de GitHub.',
+  'policy.owner.h': 'Qui est derrière Libell',
+  'policy.owner':
+    'Libell appartient à son projet open source, et non à une personne ou à une entreprise. Il est gratuit, vous pouvez l’utiliser librement comme vous le voulez sous licence MIT, et il est fourni tel quel, sans garantie.',
+  'policy.questions.h': 'Questions et modifications',
+  'policy.questions':
+    'Posez vos questions sous forme de ticket sur GitHub. Quand Libell change ce qu’il enregistre ou envoie, cette page est mise à jour en même temps.',
+  'policy.questions.link': 'Tickets sur GitHub',
+  'policy.languages': 'Autres langues',
+  'policy.open': 'Ouvrir Libell',
   'stored.vehicle': 'Véhicule',
   'stored.vehicle.detail': '{name}, empattement {wheelbase}',
   'stored.settings': 'Réglages',

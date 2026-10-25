@@ -164,6 +164,44 @@ export const hr: Messages = {
     'Izbrisati sve što je Libell spremio na ovaj telefon? Vozila, mjere i kalibracija nestaju, a Libell kreće ispočetka kao prvi put.',
   'privacy.deleteAll.yes': 'Da, izbriši sve',
   'privacy.deleteAll.cancel': 'Odustani',
+  'privacy.policy': 'Pročitajte pravila o privatnosti',
+  'policy.title': 'Pravila o privatnosti aplikacije Libell',
+  'policy.changed': 'Zadnja izmjena: {date}',
+  'policy.intro':
+    'Libell je slobodan projekt otvorenog koda. Nema računa, oglasa ni praćenja, i nitko ne prikuplja podatke o vama.',
+  'policy.stored.h': 'Što se sprema na telefon',
+  'policy.stored':
+    'Libell sprema vaša vozila, mjere, postavke, kalibracije, ciljeve, odabrani jezik i senzorsku kutiju koju ste zadnju koristili. Sve je u lokalnoj pohrani preglednika na vašem telefonu. Ona radi otprilike kao kolačići, ali se nikada nikamo ne šalje. Libell je treba za rad, zato nema prozora za privolu.',
+  'policy.stored.delete':
+    'U aplikaciji pod {help} › {tab} vidite sve što je spremljeno i možete sve izbrisati. Podatke web-mjesta možete izbrisati i u pregledniku.',
+  'policy.sensors.h': 'Senzori i Bluetooth',
+  'policy.sensors':
+    'Senzori pokreta i Bluetooth telefona koriste se samo na telefonu i samo za mjerenje nagiba. Očitanja nikada ne napuštaju telefon.',
+  'policy.counting':
+    'Da bismo znali što poboljšati, Libell može anonimno brojati korištenje uz GoatCounter. Libell vas jednom pita smije li brojati, i ništa se ne broji dok ne odaberete. Statistika je javna.',
+  'policy.counting.ip':
+    'Kao kod svakog zahtjeva na internetu, IP adresa telefona i naziv preglednika stižu do GoatCountera. GoatCounter ih nikada ne sprema, nego ih drži u memoriji najviše osam sati kako bi prepoznao isti posjet. GoatCounter se vodi iz Irske, a poslužitelji su mu u Finskoj i Njemačkoj, pa ništa ne napušta EU.',
+  'policy.counting.change':
+    'Svoj odabir možete promijeniti bilo kada pod {help} › {tab}. Bez interneta ništa se ne šalje i ništa se ne čuva za kasnije.',
+  'policy.counting.basis':
+    'Brojanje se temelji na legitimnom interesu prema GDPR-u (članak 6. stavak 1. točka (f)): znati što poboljšati. Budući da se ne sprema ništa što bi vas identificiralo, o vama nema ničega za prikaz ili brisanje. Pritužbu možete podnijeti tijelu za zaštitu podataka u svojoj zemlji.',
+  'policy.shared.h': 'Što sami odlučite podijeliti',
+  'policy.shared.feedback':
+    'Pod {help} › {feedback} možete otvoriti gotovu prijavu na GitHubu, koju sami objavljujete sa svojim GitHub računom. Prijava je javna. Osim vašeg teksta sadrži verziju aplikacije, veličinu zaslona, vrijeme i naziv preglednika, a sve vidite prije objave.',
+  'policy.shared.vehicle':
+    '„{share}” stvara poveznicu s mjerama vozila, bez kalibracije. Poveznica stiže samo tamo kamo je sami pošaljete.',
+  'policy.site.h': 'Web-mjesto',
+  'policy.site':
+    'Libell se nalazi na GitHub Pages. Kao svaki web-host, GitHub vidi vašu IP adresu kad se stranica učitava. Libell nema pristup GitHubovim zapisima.',
+  'policy.owner.h': 'Tko stoji iza Libella',
+  'policy.owner':
+    'Libell pripada svom projektu otvorenog koda, a ne osobi ili tvrtki. Besplatan je i možete ga koristiti kako želite prema MIT licenci, a pruža se takav kakav jest, bez jamstva.',
+  'policy.questions.h': 'Pitanja i promjene',
+  'policy.questions':
+    'Svoja pitanja postavite kao prijavu na GitHubu. Kad Libell promijeni što sprema ili šalje, ova se stranica istodobno ažurira.',
+  'policy.questions.link': 'Prijave na GitHubu',
+  'policy.languages': 'Ostali jezici',
+  'policy.open': 'Otvorite Libell',
   'stored.vehicle': 'Vozilo',
   'stored.vehicle.detail': '{name}, međuosovinski razmak {wheelbase}',
   'stored.settings': 'Postavke',
