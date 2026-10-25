@@ -142,6 +142,9 @@ export const tr: Messages = {
     'Ayarlarınız telefonunuzda kalır — hesap yok ve izleme yok. Libell yalnızca uygulamanın nasıl kullanıldığına dair anonim sayılar gönderir ve bunu kapatabilirsiniz.',
   'about.source': 'Libell ücretsiz ve açık kaynaklıdır (MIT lisansı).',
   'about.source.link': 'GitHub’da kaynak kodu',
+  'seo.title': 'Libell – motokaravanınızı veya karavanınızı telefonla seviyeleyin',
+  'seo.description':
+    'Motokaravanınızın veya karavanınızın hangi tekerleklerinin takozun hangi basamağına çıkacağını gösteren ücretsiz uygulama. Telefonunuzu veya bir sensör kutusunu kullanır, çevrimdışı çalışır.',
   'menu.privacy': 'Gizlilik',
   'menu.privacy.tab': 'Gizlilik',
   'privacy.stored.h': 'Bu telefonda kayıtlı',

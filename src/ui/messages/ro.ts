@@ -158,6 +158,9 @@ export const ro: Messages = {
     'Setările dvs. rămân pe telefon — fără cont și fără urmărire. Libell trimite doar numere anonime despre cum este folosită aplicația, iar asta puteți dezactiva.',
   'about.source': 'Libell este gratuit și open source (licență MIT).',
   'about.source.link': 'Codul sursă pe GitHub',
+  'seo.title': 'Libell – nivelați autorulota sau rulota cu telefonul',
+  'seo.description':
+    'O aplicație gratuită care arată ce roți ale autorulotei sau rulotei trebuie ridicate și pe ce treaptă a rampei. Folosește telefonul sau un modul senzor și funcționează offline.',
   'menu.privacy': 'Confidențialitate',
   'menu.privacy.tab': 'Date',
   'privacy.stored.h': 'Salvat pe acest telefon',

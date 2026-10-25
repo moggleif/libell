@@ -138,6 +138,9 @@ export const fi: Messages = {
     'Asetuksesi pysyvät puhelimessa — ei tiliä eikä seurantaa. Libell lähettää vain nimettömiä lukuja siitä, miten sovellusta käytetään, ja sen voit kytkeä pois.',
   'about.source': 'Libell on ilmainen ja avointa lähdekoodia (MIT-lisenssi).',
   'about.source.link': 'Lähdekoodi GitHubissa',
+  'seo.title': 'Libell – matkailuauto tai -vaunu vaakatasoon puhelimella',
+  'seo.description':
+    'Ilmainen sovellus, joka näyttää, mitkä matkailuauton tai -vaunun pyörät nostetaan ja mille kiilan askelmalle. Käyttää puhelinta tai anturirasiaa ja toimii ilman verkkoyhteyttä.',
   'menu.privacy': 'Tietosuoja',
   'menu.privacy.tab': 'Tietosuoja',
   'privacy.stored.h': 'Tallennettu tähän puhelimeen',

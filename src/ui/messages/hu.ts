@@ -155,6 +155,9 @@ export const hu: Messages = {
     'A beállításaid a telefonodon maradnak — nincs fiók és nincs követés. A Libell csak névtelen számokat küld arról, hogyan használják az alkalmazást, és ezt kikapcsolhatod.',
   'about.source': 'A Libell ingyenes és nyílt forráskódú (MIT-licenc).',
   'about.source.link': 'Forráskód a GitHubon',
+  'seo.title': 'Libell – szintezd be a lakóautód vagy lakókocsid a telefonoddal',
+  'seo.description':
+    'Ingyenes alkalmazás, amely megmutatja, a lakóautód vagy lakókocsid mely kerekeit kell megemelni, és a rámpa melyik lépcsőjére. A telefonodat vagy egy szenzordobozt használ, és offline is működik.',
   'menu.privacy': 'Adatvédelem',
   'menu.privacy.tab': 'Adatvédelem',
   'privacy.stored.h': 'Ezen a telefonon tárolva',

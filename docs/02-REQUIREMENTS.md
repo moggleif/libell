@@ -2365,3 +2365,27 @@ tracking anyone (ADR 0021). R58 is the stored-data view (#678).
 - **Then** the counting choice is kept: it is stored on its own (`libell.countingOff`).
 - **Given** dev, a preview build or `?demo`
 - **Then** nothing is counted.
+
+## R61 — Search engines and AI assistants can read what Libell is (#673, #701)
+
+People searching for how to level a motorhome or caravan, in a search engine or by asking
+an AI assistant, should find Libell and have it described correctly. The app draws all
+its text with script, so the build writes static words for them (architecture:
+Findability). (R60 is the privacy policy, #675.)
+
+- **Given** the deployed site
+- **When** a crawler fetches `/` without running scripts
+- **Then** it gets a title and a description that say what Libell does (`seo.title`,
+  `seo.description`, in English), the canonical address `https://libell.app/` and
+  schema.org `WebApplication` data: free, a web app, every shipped language.
+- **Given** `/robots.txt`
+- **Then** every crawler is allowed, AI search and AI training crawlers included
+  (Morgan, 2026-10-25), and it names the sitemap.
+- **Given** `/sitemap.xml`
+- **Then** it lists the address of every page the build writes.
+- **Given** `/llms.txt`
+- **Then** it summarises Libell in the app's own English words (the About texts), names
+  the languages and links to the app and its source code.
+- **Given** the app itself
+- **Then** nothing it shows changes apart from the browser tab's title, and its CSP is
+  unchanged.
