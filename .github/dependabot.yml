@@ -1,11 +1,22 @@
 version: 2
 updates:
+  # Patch and minor updates arrive as one grouped PR a week per ecosystem and
+  # merge themselves once CI is green; a major version gets a PR of its own
+  # and waits for a person (#694, ADR 0021).
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      npm-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions-minor-and-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
