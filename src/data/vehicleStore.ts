@@ -22,6 +22,7 @@ import {
   type MaybeStorage,
 } from './keyValueStorage';
 import { rememberedDeviceKeys } from './sensorDeviceStore';
+import type { StoredKey } from './storedKeys';
 import { loadSettings, saveSettings, vehicleFlagKeys } from './settingsStore';
 
 const VEHICLES_KEY = 'libell.vehicles';
@@ -67,4 +68,9 @@ export function restoreVehicle(
     if (value !== undefined) writeItem(storage, key, value);
   }
   saveSettings(parseSettings(withVehicleFields(loadSettings(storage), vehicle.fields)), storage);
+}
+
+/** Every key this store writes (#678). */
+export function vehicleStoredKeys(): StoredKey[] {
+  return [{ key: VEHICLES_KEY, kind: 'vehicles' }];
 }

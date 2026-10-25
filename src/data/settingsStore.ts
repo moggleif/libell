@@ -25,6 +25,7 @@ import {
   writeJson,
   type MaybeStorage,
 } from './keyValueStorage';
+import type { StoredKey } from './storedKeys';
 
 const STORAGE_KEY = 'libell.settings';
 // Set once the vehicle measurements have been saved: the ⚠ Setup lamp's
@@ -202,4 +203,24 @@ export function vehicleFlagKeys(): string[] {
  * measurements count as saved, so the lamp stays off. */
 export function measuredVehicleFlags(): Record<string, string> {
   return { [MEASUREMENTS_SAVED_KEY]: '1' };
+}
+
+/** Every key this store writes (#678). */
+export function settingsStoredKeys(): StoredKey[] {
+  const notes = [
+    MEASUREMENTS_SAVED_KEY,
+    MEASUREMENTS_MIGRATED_KEY,
+    ONBOARDED_KEY,
+    ONBOARDING_DONE_KEY,
+    BOX_PENDING_KEY,
+    INSTALL_DISMISSED_KEY,
+  ].map((key): StoredKey => ({ key, kind: 'note' }));
+  return [
+    { key: STORAGE_KEY, kind: 'settings' },
+    { key: LANGUAGE_KEY, kind: 'language' },
+    { key: TARGET_PRESETS_KEY, kind: 'targets' },
+    { key: ACTIVE_TARGET_KEY, kind: 'activeTarget' },
+    { key: HITCH_PITCH_KEY, kind: 'hitch' },
+    ...notes,
+  ];
 }

@@ -7,9 +7,9 @@
  * `sessionStorage`, not `localStorage`: the mark belongs to this one reload
  * in this one tab and must never reopen Settings on a later, ordinary start.
  */
+import { REOPEN_SETTINGS_KEY as KEY } from '../data/sessionKeys';
 import type { MenuSection } from './menu';
 
-const KEY = 'libell.reopenSettings';
 const SECTIONS: readonly MenuSection[] = ['general', 'calibration', 'vehicle', 'ramps', 'targets'];
 
 export function markReopenSettings(section: MenuSection = 'general'): void {
