@@ -4,6 +4,8 @@ dev-dist/
 
 # Generated PWA icons (rendered from public/icons/icon.svg at build time)
 public/icons/icon-*.png
+# and the link preview, rendered from art/preview.svg (#702)
+public/preview.png
 
 # Test coverage output
 coverage/

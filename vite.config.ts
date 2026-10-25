@@ -147,6 +147,8 @@ export default defineConfig({
         // The app must work with no signal at all on a campsite, so every
         // build asset is precached.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The link preview is for chat apps, never shown offline (#702).
+        globIgnores: ['preview.png'],
         cleanupOutdatedCaches: true,
       },
     }),

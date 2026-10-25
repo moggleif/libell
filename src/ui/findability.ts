@@ -1,6 +1,6 @@
 /**
  * What a search engine or an AI assistant reads about Libell (#701, R61):
- * the page head, `robots.txt`, `sitemap.xml` and `llms.txt`. The app draws
+ * the page head and link preview (#702), `robots.txt`, `sitemap.xml` and `llms.txt`. The app draws
  * all its text with script, so these are the static words a crawler sees.
  * Built at build time by the `findability` plugin in `vite.config.ts`; the
  * text comes from the message dictionaries, in English for now.
@@ -47,11 +47,34 @@ function jsonForHtml(value: object): string {
   return JSON.stringify(value).replaceAll('<', '\\u003c');
 }
 
+/** The preview a chat app shows for a shared link (#702), drawn by
+ * `scripts/generate-icons.mjs` from `art/preview.svg`. */
+const PREVIEW_IMAGE = { file: 'preview.png', width: 1200, height: 630 };
+
+function openGraph(property: string, content: string): HeadTag {
+  return { tag: 'meta', attrs: { property, content } };
+}
+
+function previewTags(site: string): HeadTag[] {
+  return [
+    openGraph('og:type', 'website'),
+    openGraph('og:site_name', 'Libell'),
+    openGraph('og:title', en['seo.title']),
+    openGraph('og:description', en['seo.description']),
+    openGraph('og:url', site),
+    openGraph('og:image', site + PREVIEW_IMAGE.file),
+    openGraph('og:image:width', String(PREVIEW_IMAGE.width)),
+    openGraph('og:image:height', String(PREVIEW_IMAGE.height)),
+    { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+  ];
+}
+
 export function headTags(site: string): HeadTag[] {
   return [
     { tag: 'title', children: en['seo.title'] },
     { tag: 'meta', attrs: { name: 'description', content: en['seo.description'] } },
     { tag: 'link', attrs: { rel: 'canonical', href: site } },
+    ...previewTags(site),
     // A data block, not a script: the CSP (ADR 0005) never runs it.
     {
       tag: 'script',
