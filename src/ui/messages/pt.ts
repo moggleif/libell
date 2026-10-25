@@ -148,6 +148,29 @@ export const pt: Messages = {
   'seo.title': 'Libell – nivele a sua autocaravana ou caravana com o telemóvel',
   'seo.description':
     'Uma app gratuita que mostra que rodas da sua autocaravana ou caravana levantar e para que degrau da rampa. Usa o telemóvel ou uma caixa de sensor e funciona offline.',
+  'landing.how.h': 'Como funciona',
+  'landing.how.phone':
+    'Pouse o telemóvel na horizontal no veículo, com a parte de cima virada para a frente. O Libell mostra a sua autocaravana ou caravana vista de cima e, para cada roda, para que degrau da rampa subir.',
+  'landing.how.ramps':
+    'Indique as rampas que leva e o Libell planeia com elas: que rodas levantar, para que degrau e quando as suas rampas não chegam e é melhor mudar o veículo de sítio.',
+  'landing.how.caravan':
+    'Numa caravana, o Libell nivela o eixo e diz-lhe quanto subir ou descer a roda de apoio com a manivela.',
+  'landing.how.box':
+    'Uma caixa de sensor montada no veículo pode medir em vez do telemóvel. O Libell funciona com {boxes}.',
+  'landing.how.app':
+    'O Libell funciona no navegador, sem conta, e pode ser instalado no ecrã principal. É gratuito e de código aberto.',
+  'landing.faq.h': 'Perguntas frequentes',
+  'landing.faq.level.q': 'Como nivelar a autocaravana com o telemóvel?',
+  'landing.faq.level.a':
+    'Abra o Libell, indique as medidas e as rampas do seu veículo e pouse o telemóvel na horizontal, com a parte de cima virada para a frente. Faça subir cada roda laranja para o degrau indicado, espere até o veículo estar parado e volte a ver. Quando todas as rodas estiverem verdes, está nivelado.',
+  'landing.faq.free.q': 'O Libell é pago?',
+  'landing.faq.free.a':
+    'Não. O Libell é gratuito, sem anúncios nem conta, e o código-fonte é aberto (licença MIT).',
+  'landing.faq.box.q': 'Preciso de uma caixa de sensor?',
+  'landing.faq.box.a':
+    'Não, o sensor do próprio telemóvel chega. Uma caixa de sensor fica montada no veículo, por isso o telemóvel fica livre e não tem de ficar sempre no mesmo sítio.',
+  'landing.faq.offline.q': 'Funciona sem internet?',
+  'landing.faq.privacy.q': 'Que dados guarda o Libell sobre mim?',
   'menu.privacy': 'Privacidade',
   'menu.privacy.tab': 'Privacidade',
   'privacy.stored.h': 'Guardado neste telemóvel',

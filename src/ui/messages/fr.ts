@@ -161,6 +161,29 @@ export const fr: Messages = {
   'seo.title': 'Libell – camping-car ou caravane de niveau avec votre téléphone',
   'seo.description':
     'Une app gratuite qui indique quelles roues de votre camping-car ou caravane surélever, et sur quel palier de la rampe. Utilise votre téléphone ou un boîtier capteur, et fonctionne hors ligne.',
+  'landing.how.h': 'Comment ça marche',
+  'landing.how.phone':
+    'Posez le téléphone à plat dans le véhicule, le bord supérieur vers l’avant. Libell affiche votre camping-car ou votre caravane vu du dessus et, pour chaque roue, le palier de la rampe sur lequel monter.',
+  'landing.how.ramps':
+    'Saisissez les rampes que vous emportez et Libell planifie avec elles : quelles roues surélever, sur quel palier, et quand vos rampes ne suffisent pas et qu’il vaut mieux déplacer le véhicule.',
+  'landing.how.caravan':
+    'Pour une caravane, Libell met l’essieu de niveau et vous indique de combien monter ou descendre la roue jockey à la manivelle.',
+  'landing.how.box':
+    'Un boîtier capteur fixé dans le véhicule peut mesurer à la place du téléphone. Libell fonctionne avec {boxes}.',
+  'landing.how.app':
+    'Libell fonctionne dans le navigateur, sans compte, et peut être installé sur l’écran d’accueil. Il est gratuit et open source.',
+  'landing.faq.h': 'Questions fréquentes',
+  'landing.faq.level.q': 'Comment mettre son camping-car de niveau avec son téléphone ?',
+  'landing.faq.level.a':
+    'Ouvrez Libell, saisissez les dimensions et les rampes de votre véhicule, et posez le téléphone à plat, le haut vers l’avant. Montez chaque roue orange sur le palier indiqué, attendez que le véhicule ne bouge plus et regardez de nouveau. Quand toutes les roues sont vertes, vous êtes de niveau.',
+  'landing.faq.free.q': 'Libell est-il payant ?',
+  'landing.faq.free.a':
+    'Non. Libell est gratuit, sans publicité ni compte, et son code source est ouvert (licence MIT).',
+  'landing.faq.box.q': 'Faut-il un boîtier capteur ?',
+  'landing.faq.box.a':
+    'Non, le capteur du téléphone suffit. Un boîtier capteur reste fixé dans le véhicule : le téléphone reste libre et n’a pas à rester posé au même endroit.',
+  'landing.faq.offline.q': 'Est-ce que ça marche sans internet ?',
+  'landing.faq.privacy.q': 'Que conserve Libell sur moi ?',
   'menu.privacy': 'Confidentialité',
   'menu.privacy.tab': 'Données',
   'privacy.stored.h': 'Enregistré sur ce téléphone',

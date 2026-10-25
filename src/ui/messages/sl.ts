@@ -146,6 +146,29 @@ export const sl: Messages = {
   'seo.title': 'Libell – izravnajte avtodom ali počitniško prikolico s telefonom',
   'seo.description':
     'Brezplačna aplikacija, ki pokaže, katera kolesa avtodoma ali počitniške prikolice dvigniti in na katero stopnico rampe. Uporablja telefon ali senzorsko enoto in deluje brez povezave.',
+  'landing.how.h': 'Kako deluje',
+  'landing.how.phone':
+    'Telefon položite ravno v vozilo, z zgornjim robom proti sprednjemu delu. Libell pokaže avtodom ali počitniško prikolico od zgoraj in za vsako kolo, na katero stopnico rampe zapeljete.',
+  'landing.how.ramps':
+    'Vnesite rampe, ki jih vozite s seboj, in Libell načrtuje z njimi: katera kolesa dvigniti, na katero stopnico in kdaj rampe ne zadoščajo in je bolje premakniti vozilo.',
+  'landing.how.caravan':
+    'Pri počitniški prikolici Libell izravna os in pove, za koliko vrtite oporno kolo gor ali dol.',
+  'landing.how.box':
+    'Namesto telefona lahko meri senzorska enota, nameščena v vozilu. Libell deluje z {boxes}.',
+  'landing.how.app':
+    'Libell deluje v brskalniku brez računa in ga lahko namestite na začetni zaslon. Je brezplačen in odprtokoden.',
+  'landing.faq.h': 'Pogosta vprašanja',
+  'landing.faq.level.q': 'Kako izravnati avtodom s telefonom?',
+  'landing.faq.level.a':
+    'Odprite Libell, vnesite mere vozila in rampe ter telefon položite ravno, z vrhom proti sprednjemu delu. Z vsakim oranžnim kolesom zapeljite na prikazano stopnico, počakajte, da se vozilo umiri, in ponovno poglejte. Ko so vsa kolesa zelena, stojite vodoravno.',
+  'landing.faq.free.q': 'Ali Libell kaj stane?',
+  'landing.faq.free.a':
+    'Ne. Libell je brezplačen, brez oglasov in brez računa, njegova izvorna koda pa je odprta (licenca MIT).',
+  'landing.faq.box.q': 'Ali potrebujem senzorsko enoto?',
+  'landing.faq.box.a':
+    'Ne, dovolj je senzor v telefonu. Senzorska enota ostane nameščena v vozilu, zato je telefon prost in mu ni treba ležati na istem mestu.',
+  'landing.faq.offline.q': 'Ali deluje brez interneta?',
+  'landing.faq.privacy.q': 'Kaj Libell shrani o meni?',
   'menu.privacy': 'Zasebnost',
   'menu.privacy.tab': 'Zasebnost',
   'privacy.stored.h': 'Shranjeno v tem telefonu',

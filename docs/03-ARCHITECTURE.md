@@ -477,21 +477,30 @@ data, with the switch) both show `countingSection.ts`; `countingStoredKeys()` pu
 choice in the stored-data catalogue (#678), and a start-up migration turns #674's
 `libell.countingOff` into the choice "off".
 
-## Privacy policy pages (`src/ui/privacyPolicy.ts`, #675)
+## Static pages (`src/ui/staticPages.ts`, #675, #703)
 
-The policy (R60) is not a page of the app but static HTML the build writes: the
-`privacy-pages` plugin in `vite.config.ts` loads `privacyPolicy.ts` through Vite's
-`runnerImport` (it is app code, typed and tested with the app) and emits
-`privacy/<lang>/index.html` for every language in `LANGUAGES`, `privacy/index.html` in
-English and `privacy/privacy.css`. The text is the `policy.*` strings plus the counting
-block's own strings (`counting.sent`, `counting.notSent`, `counting.gpc`), looked up per
-language with `translate()` from `i18n.ts`; brands come from `EXTERNAL_SENSORS` and the
-in-app paths from the tab names. Every text is escaped, the page has a
-`default-src 'none'; style-src 'self'` CSP of its own and no script, and the stylesheet
+The privacy policy (R60) and the language pages (R61) are not pages of the app but static
+HTML the build writes: the `static-pages` plugin in `vite.config.ts` loads
+`staticPages.ts` through Vite's `runnerImport` (it is app code, typed and tested with the
+app) and emits what it returns. `src/ui/staticPage.ts` holds what they share: the
+escaping every text goes through, the head with a `default-src 'none'; style-src 'self'`
+CSP of its own, the list of the same page in the other languages, and the one stylesheet (`STATIC_CSS`), which
 uses only the browser's system colours (`Canvas`, `CanvasText`, `LinkText`) under
-`color-scheme: light dark`. `POLICY_CHANGED` holds the date shown on the page. The
-pages fall under the precache glob, and `navigateFallbackDenylist` keeps the service
-worker from answering them with the app.
+`color-scheme: light dark`. No page has a script it runs. Text is looked up per language
+with `translate()` from `i18n.ts`; brands come from `EXTERNAL_SENSORS`. The pages fall
+under the precache glob, and `navigateFallbackDenylist` keeps the service worker from
+answering them with the app.
+
+- **Privacy policy** (`privacyPolicy.ts`): `privacy/<lang>/index.html` for every language
+  in `LANGUAGES` and `privacy/index.html` in English. The text is the `policy.*` strings
+  plus the counting block's own strings (`counting.sent`, `counting.notSent`,
+  `counting.gpc`), with the in-app paths from the tab names. `POLICY_CHANGED` holds the
+  date shown on the page.
+- **Language pages** (`languagePages.ts`): `<lang>/index.html` for every language. The
+  text is `seo.*`, `landing.*` and the About tab's offline and privacy sentences; the
+  head carries the canonical address, `hreflang` alternates for every language with
+  `x-default` on `en/`, the link-preview tags and schema.org `WebApplication` and
+  `FAQPage` data in an `application/ld+json` block, which is data and never run.
 
 ## Findability (`src/ui/findability.ts`, #701)
 
@@ -503,7 +512,8 @@ description, canonical link, the Open Graph and Twitter card tags of the link pr
 data block is never run, so the CSP stays as it is; `<` in it is escaped), and a
 `generateBundle` hook ordered `post` writes `robots.txt`, `llms.txt` and `sitemap.xml`,
 the sitemap from every `index.html` in the bundle so pages other plugins write are listed
-too. The text is the `seo.*` keys and the About strings in English; addresses come from
+too, the static pages above among them. The text is the `seo.*` keys and the About
+strings in English, and `llms.txt` links every language page and the privacy policy; addresses come from
 `SITE_ORIGIN` and `REPO_URL` in `src/domain/site.ts` plus the build's base path. None of
 the three files is precached. The preview image, `preview.png` (1200×630), is drawn from
 `art/preview.svg` by `scripts/generate-icons.mjs` with the icons, gitignored like them

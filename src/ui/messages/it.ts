@@ -146,6 +146,29 @@ export const it: Messages = {
   'seo.title': 'Libell – livella il camper o la caravan con il telefono',
   'seo.description':
     'Un’app gratuita che mostra quali ruote del camper o della caravan alzare e su quale gradino della rampa. Usa il telefono o un box sensore e funziona offline.',
+  'landing.how.h': 'Come funziona',
+  'landing.how.phone':
+    'Appoggia il telefono in piano nel veicolo con il lato superiore verso la parte anteriore. Libell mostra il camper o la caravan visti dall’alto e, per ogni ruota, su quale gradino della rampa salire.',
+  'landing.how.ramps':
+    'Inserisci le rampe che hai con te e Libell le usa nei suoi calcoli: quali ruote alzare, su quale gradino, e quando le rampe non bastano e conviene spostare il veicolo.',
+  'landing.how.caravan':
+    'Per una caravan, Libell livella l’asse e ti dice di quanto alzare o abbassare il ruotino con la manovella.',
+  'landing.how.box':
+    'Un box sensore montato nel veicolo può misurare al posto del telefono. Libell funziona con {boxes}.',
+  'landing.how.app':
+    'Libell funziona nel browser senza account e si può installare sulla schermata Home. È gratuito e open source.',
+  'landing.faq.h': 'Domande frequenti',
+  'landing.faq.level.q': 'Come livellare il camper con il telefono?',
+  'landing.faq.level.a':
+    'Apri Libell, inserisci le misure e le rampe del veicolo e appoggia il telefono in piano con il lato superiore verso la parte anteriore. Fai salire ogni ruota arancione sul gradino indicato, aspetta che il veicolo sia fermo e guarda di nuovo. Quando tutte le ruote sono verdi, sei in piano.',
+  'landing.faq.free.q': 'Libell è gratis?',
+  'landing.faq.free.a':
+    'Sì, è gratuito: niente pubblicità, niente account, e il codice sorgente è aperto (licenza MIT).',
+  'landing.faq.box.q': 'Serve un box sensore?',
+  'landing.faq.box.a':
+    'No, basta il sensore del telefono. Un box sensore resta montato nel veicolo, così il telefono resta libero e non deve stare sempre nello stesso punto.',
+  'landing.faq.offline.q': 'Funziona senza internet?',
+  'landing.faq.privacy.q': 'Quali dati conserva Libell su di me?',
   'menu.privacy': 'Privacy',
   'menu.privacy.tab': 'Privacy',
   'privacy.stored.h': 'Salvato su questo telefono',

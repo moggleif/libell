@@ -2418,7 +2418,7 @@ shipped language and says what the app's texts say (R58, R59).
 - **Then** the policy text and its date change in the same change (the `docs-sync`
   skill).
 
-## R61 — Search engines, AI assistants and link previews can read what Libell is (#673, #701, #702)
+## R61 — Search engines, AI assistants and link previews can read what Libell is (#673, #701–#703)
 
 People searching for how to level a motorhome or caravan, in a search engine or by asking
 an AI assistant, should find Libell and have it described correctly. The app draws all
@@ -2436,8 +2436,18 @@ Findability). (R60 is the privacy policy, #675.)
 - **Given** `/sitemap.xml`
 - **Then** it lists the address of every page the build writes.
 - **Given** `/llms.txt`
-- **Then** it summarises Libell in the app's own English words (the About texts), names
-  the languages and links to the app and its source code.
+- **Then** it summarises Libell in the app's own English words (the About texts) and
+  links to the app, its source code, the privacy policy and every language page.
+- **Given** any shipped language
+- **When** `/<lang>/` (for example `/sv/`) is fetched without running scripts
+- **Then** a page in that language says what Libell is, how it works (the phone flat
+  with its top toward the front, the step of each kloss, caravans, the Sensorbox models,
+  free and in the browser) and answers common questions: how to level a motorhome with
+  the phone, whether it costs anything, whether a Sensorbox is needed, whether it works
+  offline and what it stores. It links to the app, to the privacy policy in the same
+  language and to the page in every other language, and tells search engines about every
+  language version (`hreflang`). The page has no script and loads nothing from elsewhere
+  (#703).
 - **Given** a Libell link shared in a chat app or social network
 - **When** the preview is shown
 - **Then** it has the title, the description and a 1200×630 image of the spirit-level

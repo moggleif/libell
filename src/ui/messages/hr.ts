@@ -155,6 +155,29 @@ export const hr: Messages = {
   'seo.title': 'Libell – izravnajte kamper ili kamp-prikolicu telefonom',
   'seo.description':
     'Besplatna aplikacija koja pokazuje koje kotače kampera ili kamp-prikolice treba podići i na koju stepenicu rampe. Koristi vaš telefon ili senzorsku kutiju i radi izvan mreže.',
+  'landing.how.h': 'Kako radi',
+  'landing.how.phone':
+    'Položite telefon ravno u vozilo, gornjim rubom prema naprijed. Libell prikazuje kamper ili kamp-prikolicu odozgo i za svaki kotač stepenicu rampe na koju ga navezete.',
+  'landing.how.ramps':
+    'Unesite rampe koje vozite sa sobom i Libell planira s njima: koje kotače podići, na koju stepenicu te kada rampe nisu dovoljne pa je bolje premjestiti vozilo.',
+  'landing.how.caravan':
+    'Kod kamp-prikolice Libell izravnava osovinu i kaže vam koliko vrtjeti potporni kotač gore ili dolje.',
+  'landing.how.box':
+    'Umjesto telefona može mjeriti senzorska kutija ugrađena u vozilo. Libell radi s {boxes}.',
+  'landing.how.app':
+    'Libell radi u pregledniku bez računa i može se instalirati na početni zaslon. Besplatan je i otvorenog koda.',
+  'landing.faq.h': 'Česta pitanja',
+  'landing.faq.level.q': 'Kako izravnati kamper pomoću mobitela?',
+  'landing.faq.level.a':
+    'Otvorite Libell, unesite mjere vozila i rampe te položite telefon ravno, vrhom prema naprijed. Navezite svaki narančasti kotač na prikazanu stepenicu, pričekajte da se vozilo smiri i pogledajte ponovno. Kad su svi kotači zeleni, vozilo je u ravnini.',
+  'landing.faq.free.q': 'Naplaćuje li se Libell?',
+  'landing.faq.free.a':
+    'Ne. Libell je besplatan, bez oglasa i bez računa, a izvorni kod mu je otvoren (licenca MIT).',
+  'landing.faq.box.q': 'Trebam li senzorsku kutiju?',
+  'landing.faq.box.a':
+    'Ne, dovoljan je senzor u telefonu. Senzorska kutija ostaje ugrađena u vozilu, pa vam je telefon slobodan i ne mora ležati na istom mjestu.',
+  'landing.faq.offline.q': 'Radi li bez interneta?',
+  'landing.faq.privacy.q': 'Što Libell sprema o meni?',
   'menu.privacy': 'Privatnost',
   'menu.privacy.tab': 'Podaci',
   'privacy.stored.h': 'Spremljeno na ovom telefonu',

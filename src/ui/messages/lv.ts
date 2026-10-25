@@ -149,6 +149,29 @@ export const lv: Messages = {
   'seo.title': 'Libell – nolīmeņojiet kemperi vai dzīvojamo piekabi ar tālruni',
   'seo.description':
     'Bezmaksas lietotne, kas parāda, kurus kempera vai dzīvojamās piekabes riteņus pacelt un uz kuras rampas pakāpes. Izmanto tālruni vai sensora bloku un darbojas bezsaistē.',
+  'landing.how.h': 'Kā tas darbojas',
+  'landing.how.phone':
+    'Novietojiet tālruni transportlīdzeklī horizontāli ar augšējo malu uz priekšu. Libell parāda jūsu kemperi vai dzīvojamo piekabi no augšas un katram ritenim — uz kuras rampas pakāpes uzbraukt.',
+  'landing.how.ramps':
+    'Ievadiet rampas, kas jums ir līdzi, un Libell plāno ar tām: kurus riteņus pacelt, uz kuras pakāpes un kad ar rampām nepietiek un transportlīdzeklis jāpārvieto.',
+  'landing.how.caravan':
+    'Dzīvojamai piekabei Libell nolīmeņo asi un norāda, cik daudz griezt atbalsta riteni augšup vai lejup.',
+  'landing.how.box':
+    'Transportlīdzeklī uzstādīts sensora bloks var mērīt tālruņa vietā. Libell darbojas ar {boxes}.',
+  'landing.how.app':
+    'Libell darbojas pārlūkā bez konta, un to var instalēt sākuma ekrānā. Tā ir bezmaksas un atvērtā pirmkoda.',
+  'landing.faq.h': 'Biežākie jautājumi',
+  'landing.faq.level.q': 'Kā nolīmeņot kemperi ar telefonu?',
+  'landing.faq.level.a':
+    'Atveriet Libell, ievadiet transportlīdzekļa izmērus un rampas un novietojiet tālruni horizontāli ar augšu uz priekšu. Uzbrauciet ar katru oranžo riteni uz norādītās pakāpes, pagaidiet, līdz transportlīdzeklis nekustas, un paskatieties vēlreiz. Kad visi riteņi ir zaļi, transportlīdzeklis ir līmenī.',
+  'landing.faq.free.q': 'Vai Libell kaut ko maksā?',
+  'landing.faq.free.a':
+    'Nē. Libell ir bezmaksas, bez reklāmām un bez konta, un tās pirmkods ir atvērts (MIT licence).',
+  'landing.faq.box.q': 'Vai man vajag sensora bloku?',
+  'landing.faq.box.a':
+    'Nē, pietiek ar paša tālruņa sensoru. Sensora bloks paliek uzstādīts transportlīdzeklī, tāpēc tālrunis ir brīvs un tam nav jāatrodas tajā pašā vietā.',
+  'landing.faq.offline.q': 'Vai tā darbojas bez interneta?',
+  'landing.faq.privacy.q': 'Ko Libell saglabā par mani?',
   'menu.privacy': 'Privātums',
   'menu.privacy.tab': 'Privātums',
   'privacy.stored.h': 'Saglabāts šajā tālrunī',

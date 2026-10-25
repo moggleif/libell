@@ -157,6 +157,29 @@ export const nl: Messages = {
   'seo.title': 'Libell – zet je camper of caravan waterpas met je telefoon',
   'seo.description':
     'Een gratis app die laat zien welke wielen van je camper of caravan omhoog moeten, en op welke trede van het blok. Werkt met je telefoon of een sensorbox, en volledig offline.',
+  'landing.how.h': 'Zo werkt het',
+  'landing.how.phone':
+    'Leg de telefoon plat in het voertuig met de bovenkant naar voren. Libell toont je camper of caravan van bovenaf en geeft per wiel aan op welke trede van het blok het moet oprijden.',
+  'landing.how.ramps':
+    'Voer de blokken in die je bij je hebt en Libell plant ermee: welke wielen omhoog moeten, op welke trede, en wanneer je blokken niet volstaan en je het voertuig beter kunt verplaatsen.',
+  'landing.how.caravan':
+    'Bij een caravan zet Libell de as waterpas en zegt hoe ver je het neuswiel omhoog of omlaag moet draaien.',
+  'landing.how.box':
+    'Een vast in het voertuig gemonteerde sensorbox kan meten in plaats van de telefoon. Libell werkt met {boxes}.',
+  'landing.how.app':
+    'Libell draait in de browser zonder account en kan op het startscherm worden geïnstalleerd. Het is gratis en open source.',
+  'landing.faq.h': 'Veelgestelde vragen',
+  'landing.faq.level.q': 'Hoe zet ik mijn camper waterpas met mijn telefoon?',
+  'landing.faq.level.a':
+    'Open Libell, voer de maten van je voertuig en je blokken in en leg de telefoon plat met de bovenkant naar voren. Rij elk oranje wiel op de aangegeven trede, wacht tot het voertuig stilstaat en kijk opnieuw. Als elk wiel groen is, sta je waterpas.',
+  'landing.faq.free.q': 'Kost Libell iets?',
+  'landing.faq.free.a':
+    'Nee. Libell is gratis, zonder advertenties en zonder account, en de broncode is open (MIT-licentie).',
+  'landing.faq.box.q': 'Heb ik een sensorbox nodig?',
+  'landing.faq.box.a':
+    'Nee, de eigen sensor van de telefoon is genoeg. Een sensorbox blijft vast in het voertuig zitten, zodat je telefoon vrij is en niet op dezelfde plek hoeft te liggen.',
+  'landing.faq.offline.q': 'Werkt het zonder internet?',
+  'landing.faq.privacy.q': 'Wat slaat Libell over mij op?',
   'menu.privacy': 'Privacy',
   'menu.privacy.tab': 'Privacy',
   'privacy.stored.h': 'Opgeslagen op deze telefoon',

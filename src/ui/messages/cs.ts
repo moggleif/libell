@@ -154,6 +154,29 @@ export const cs: Messages = {
   'seo.title': 'Libell – vyrovnejte obytný vůz nebo karavan telefonem',
   'seo.description':
     'Bezplatná aplikace, která ukáže, která kola obytného vozu nebo karavanu zvednout a na který stupeň nájezdu. Používá telefon nebo senzorový box a funguje offline.',
+  'landing.how.h': 'Jak to funguje',
+  'landing.how.phone':
+    'Položte telefon naplocho do vozidla horní hranou dopředu. Libell ukáže obytný vůz nebo karavan shora a u každého kola, na který stupeň nájezdu najet.',
+  'landing.how.ramps':
+    'Zadejte nájezdy, které vozíte, a Libell s nimi počítá: která kola zvednout, na který stupeň a kdy nájezdy nestačí a je lepší s vozidlem přejet jinam.',
+  'landing.how.caravan':
+    'U karavanu Libell vyrovná nápravu a řekne vám, o kolik točit příďovým kolem nahoru nebo dolů.',
+  'landing.how.box':
+    'Místo telefonu může měřit senzorový box namontovaný ve vozidle. Libell funguje s {boxes}.',
+  'landing.how.app':
+    'Libell běží v prohlížeči bez účtu a lze ho nainstalovat na plochu. Je zdarma a má otevřený zdrojový kód.',
+  'landing.faq.h': 'Časté otázky',
+  'landing.faq.level.q': 'Jak vyrovnat obytný vůz pomocí mobilu?',
+  'landing.faq.level.a':
+    'Otevřete Libell, zadejte rozměry vozidla a nájezdy a položte telefon naplocho horní stranou dopředu. Každým oranžovým kolem najeďte na zobrazený stupeň, počkejte, až se vozidlo uklidní, a podívejte se znovu. Když jsou všechna kola zelená, stojíte rovně.',
+  'landing.faq.free.q': 'Stojí Libell něco?',
+  'landing.faq.free.a':
+    'Ne. Libell je zdarma, bez reklam a bez účtu a jeho zdrojový kód je otevřený (licence MIT).',
+  'landing.faq.box.q': 'Potřebuji senzorový box?',
+  'landing.faq.box.a':
+    'Ne, stačí senzor v telefonu. Senzorový box zůstává namontovaný ve vozidle, takže telefon máte volný a nemusí ležet na stejném místě.',
+  'landing.faq.offline.q': 'Funguje to bez internetu?',
+  'landing.faq.privacy.q': 'Co o mně Libell ukládá?',
   'menu.privacy': 'Soukromí',
   'menu.privacy.tab': 'Soukromí',
   'privacy.stored.h': 'Uloženo v tomto telefonu',

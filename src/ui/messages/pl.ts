@@ -149,6 +149,29 @@ export const pl: Messages = {
   'seo.title': 'Libell – wypoziomuj kampera lub przyczepę telefonem',
   'seo.description':
     'Darmowa aplikacja, która pokazuje, które koła kampera lub przyczepy podnieść i na który stopień najazdu. Działa z telefonem lub modułem czujnika, także offline.',
+  'landing.how.h': 'Jak to działa',
+  'landing.how.phone':
+    'Połóż telefon płasko w pojeździe, górną krawędzią w stronę przodu. Libell pokazuje twojego kampera lub przyczepę kempingową z góry i przy każdym kole, na który stopień najazdu wjechać.',
+  'landing.how.ramps':
+    'Wpisz najazdy, które wozisz, a Libell zaplanuje z nimi poziomowanie: które koła podnieść, na który stopień, oraz kiedy najazdy nie wystarczą i lepiej przestawić pojazd.',
+  'landing.how.caravan':
+    'W przyczepie kempingowej Libell poziomuje oś i podpowiada, o ile kręcić kółkiem podporowym w górę lub w dół.',
+  'landing.how.box':
+    'Moduł czujnika zamontowany w pojeździe może mierzyć zamiast telefonu. Libell współpracuje z {boxes}.',
+  'landing.how.app':
+    'Libell działa w przeglądarce bez zakładania konta i można go zainstalować na ekranie głównym. Jest darmowy i ma otwarty kod źródłowy.',
+  'landing.faq.h': 'Częste pytania',
+  'landing.faq.level.q': 'Jak wypoziomować kampera telefonem?',
+  'landing.faq.level.a':
+    'Otwórz Libell, wpisz wymiary pojazdu i swoje najazdy, a potem połóż telefon płasko, górą w stronę przodu. Wjedź każdym pomarańczowym kołem na pokazany stopień, poczekaj, aż pojazd przestanie się kołysać, i sprawdź ponownie. Gdy wszystkie koła są zielone, pojazd stoi poziomo.',
+  'landing.faq.free.q': 'Czy Libell coś kosztuje?',
+  'landing.faq.free.a':
+    'Nie. Libell jest darmowy, bez reklam i bez konta, a jego kod źródłowy jest otwarty (licencja MIT).',
+  'landing.faq.box.q': 'Czy potrzebuję modułu czujnika?',
+  'landing.faq.box.a':
+    'Nie, wystarczy czujnik w telefonie. Moduł czujnika jest na stałe zamontowany w pojeździe, więc telefon masz wolny i nie musi leżeć w tym samym miejscu.',
+  'landing.faq.offline.q': 'Czy działa bez internetu?',
+  'landing.faq.privacy.q': 'Co Libell przechowuje na mój temat?',
   'menu.privacy': 'Prywatność',
   'menu.privacy.tab': 'Prywatność',
   'privacy.stored.h': 'Zapisane na tym telefonie',

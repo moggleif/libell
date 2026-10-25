@@ -143,6 +143,29 @@ export const sk: Messages = {
   'seo.title': 'Libell – vyrovnajte obytné auto alebo obytný príves telefónom',
   'seo.description':
     'Bezplatná aplikácia, ktorá ukáže, ktoré kolesá obytného auta alebo obytného prívesu zdvihnúť a na ktorý stupeň nájazdu. Používa telefón alebo senzorový modul a funguje offline.',
+  'landing.how.h': 'Ako to funguje',
+  'landing.how.phone':
+    'Položte telefón naplocho do vozidla hornou hranou dopredu. Libell zobrazí obytné auto alebo obytný príves zhora a pri každom kolese, na ktorý stupeň nájazdu vyjsť.',
+  'landing.how.ramps':
+    'Zadajte nájazdy, ktoré vozíte, a Libell s nimi počíta: ktoré kolesá zdvihnúť, na ktorý stupeň a kedy nájazdy nestačia a je lepšie s vozidlom preparkovať.',
+  'landing.how.caravan':
+    'Pri obytnom prívese Libell vyrovná nápravu a povie vám, o koľko točiť oporným kolieskom hore alebo dole.',
+  'landing.how.box':
+    'Namiesto telefónu môže merať senzorový modul namontovaný vo vozidle. Libell funguje s {boxes}.',
+  'landing.how.app':
+    'Libell beží v prehliadači bez účtu a dá sa nainštalovať na plochu. Je bezplatný a open source.',
+  'landing.faq.h': 'Časté otázky',
+  'landing.faq.level.q': 'Ako vyrovnať obytné auto pomocou mobilu?',
+  'landing.faq.level.a':
+    'Otvorte Libell, zadajte rozmery vozidla a nájazdy a položte telefón naplocho hornou stranou dopredu. Každým oranžovým kolesom vyjdite na zobrazený stupeň, počkajte, kým sa vozidlo upokojí, a pozrite sa znova. Keď sú všetky kolesá zelené, stojíte rovno.',
+  'landing.faq.free.q': 'Stojí Libell niečo?',
+  'landing.faq.free.a':
+    'Nie. Libell je bezplatný, bez reklám a bez účtu a jeho zdrojový kód je otvorený (licencia MIT).',
+  'landing.faq.box.q': 'Potrebujem senzorový modul?',
+  'landing.faq.box.a':
+    'Nie, stačí senzor v telefóne. Senzorový modul zostáva namontovaný vo vozidle, takže telefón máte voľný a nemusí ležať na tom istom mieste.',
+  'landing.faq.offline.q': 'Funguje to bez internetu?',
+  'landing.faq.privacy.q': 'Čo o mne Libell ukladá?',
   'menu.privacy': 'Súkromie',
   'menu.privacy.tab': 'Súkromie',
   'privacy.stored.h': 'Uložené v tomto telefóne',

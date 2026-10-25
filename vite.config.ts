@@ -42,21 +42,23 @@ const CSP =
   "font-src 'self'; connect-src 'self' https://libell.goatcounter.com; manifest-src 'self'; worker-src 'self'; " +
   "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
-// The privacy policy (#675): one static page per language, written from the
-// message dictionaries by `src/ui/privacyPolicy.ts`. That module is app code
-// (typed and tested with the app), so it is loaded through Vite here rather
-// than imported into this config.
-interface PrivacyPolicyModule {
-  privacyPages(base: string): { fileName: string; source: string }[];
+// The static pages: the privacy policy (#675) and the language pages (#703),
+// one page per language each, plus their shared stylesheet, written from the
+// message dictionaries. `src/ui/staticPages.ts` is app code (typed and tested
+// with the app), so it is loaded through Vite here rather than imported.
+// Its shape is written out: importing its type would pull the app's sources,
+// with their browser-only types, into this config's type check.
+interface StaticPagesModule {
+  staticPages(base: string): { fileName: string; source: string }[];
 }
 
-function privacyPages(): Plugin {
+function staticPages(): Plugin {
   return {
-    name: 'privacy-pages',
+    name: 'static-pages',
     apply: 'build',
     async generateBundle() {
-      const { module } = await runnerImport<PrivacyPolicyModule>('./src/ui/privacyPolicy.ts');
-      for (const { fileName, source } of module.privacyPages(base)) {
+      const { module } = await runnerImport<StaticPagesModule>('./src/ui/staticPages.ts');
+      for (const { fileName, source } of module.staticPages(base)) {
         this.emitFile({ type: 'asset', fileName, source });
       }
     },
@@ -128,7 +130,7 @@ export default defineConfig({
         ];
       },
     },
-    privacyPages(),
+    staticPages(),
     VitePWA({
       registerType: 'autoUpdate',
       // The glob below already precaches every icon; listing the manifest's
@@ -172,8 +174,9 @@ export default defineConfig({
         // The link preview is for chat apps, never shown offline (#702).
         globIgnores: ['preview.png'],
         cleanupOutdatedCaches: true,
-        // The privacy pages are pages of their own, never the app (#675).
-        navigateFallbackDenylist: [/\/privacy\//],
+        // The privacy and language pages are pages of their own, never the
+        // app (#675, #703).
+        navigateFallbackDenylist: [/\/privacy\//, /\/[a-z]{2}\/(index\.html)?$/],
       },
     }),
   ],

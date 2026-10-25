@@ -160,6 +160,29 @@ export const lt: Messages = {
   'seo.title': 'Libell – išlyginkite kemperį ar karavaną telefonu',
   'seo.description':
     'Nemokama programėlė, kuri parodo, kuriuos kemperio ar karavano ratus pakelti ir ant kurios pakylos pakopos. Naudoja telefoną arba jutiklio dėžutę ir veikia be interneto.',
+  'landing.how.h': 'Kaip tai veikia',
+  'landing.how.phone':
+    'Paguldykite telefoną transporto priemonėje plokščiai, viršutiniu kraštu į priekį. Libell parodo jūsų kemperį ar karavaną iš viršaus ir prie kiekvieno rato — ant kurios pakylos pakopos užvažiuoti.',
+  'landing.how.ramps':
+    'Įveskite pakylas, kurias vežatės, ir Libell planuoja pagal jas: kuriuos ratus pakelti, ant kurios pakopos ir kada pakylų nepakanka ir transporto priemonę geriau perstatyti.',
+  'landing.how.caravan':
+    'Karavanui Libell išlygina ašį ir nurodo, kiek sukti atraminį ratuką aukštyn ar žemyn.',
+  'landing.how.box':
+    'Transporto priemonėje įmontuota jutiklio dėžutė gali matuoti vietoj telefono. Libell veikia su {boxes}.',
+  'landing.how.app':
+    'Libell veikia naršyklėje be paskyros ir gali būti įdiegta pradžios ekrane. Ji nemokama ir atvirojo kodo.',
+  'landing.faq.h': 'Dažni klausimai',
+  'landing.faq.level.q': 'Kaip išlyginti kemperį telefonu?',
+  'landing.faq.level.a':
+    'Atidarykite Libell, įveskite transporto priemonės matmenis ir pakylas ir paguldykite telefoną plokščiai, viršumi į priekį. Kiekvienu oranžiniu ratu užvažiuokite ant nurodytos pakopos, palaukite, kol transporto priemonė nustos judėti, ir pažiūrėkite dar kartą. Kai visi ratai žali, transporto priemonė išlyginta.',
+  'landing.faq.free.q': 'Ar Libell kainuoja?',
+  'landing.faq.free.a':
+    'Ne. Libell nemokama, be reklamų ir be paskyros, o jos kodas atviras (MIT licencija).',
+  'landing.faq.box.q': 'Ar man reikia jutiklio dėžutės?',
+  'landing.faq.box.a':
+    'Ne, pakanka paties telefono jutiklio. Jutiklio dėžutė lieka įmontuota transporto priemonėje, todėl telefonas laisvas ir neturi gulėti toje pačioje vietoje.',
+  'landing.faq.offline.q': 'Ar veikia be interneto?',
+  'landing.faq.privacy.q': 'Ką Libell saugo apie mane?',
   'menu.privacy': 'Privatumas',
   'menu.privacy.tab': 'Privatumas',
   'privacy.stored.h': 'Išsaugota šiame telefone',

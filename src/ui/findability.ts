@@ -43,13 +43,13 @@ export function structuredData(site: string): object {
 }
 
 /** `<` is written as `<`, so no string can end the data block early. */
-function jsonForHtml(value: object): string {
+export function jsonForHtml(value: object): string {
   return JSON.stringify(value).replaceAll('<', '\\u003c');
 }
 
 /** The preview a chat app shows for a shared link (#702), drawn by
  * `scripts/generate-icons.mjs` from `art/preview.svg`. */
-const PREVIEW_IMAGE = { file: 'preview.png', width: 1200, height: 630 };
+export const PREVIEW_IMAGE = { file: 'preview.png', width: 1200, height: 630 };
 
 function openGraph(property: string, content: string): HeadTag {
   return { tag: 'meta', attrs: { property, content } };
@@ -118,7 +118,9 @@ export function sitemapXml(site: string, fileNames: readonly string[]): string {
 
 /** The llms.txt convention: a name, a quoted summary, then plain Markdown. */
 export function llmsTxt(site: string): string {
-  const languages = LANGUAGES.map((lang) => `${LANGUAGE_NAMES[lang]} (${lang})`).join(', ');
+  const languages = LANGUAGES.map((lang) => `[${LANGUAGE_NAMES[lang]}](${site}${lang}/)`).join(
+    ', ',
+  );
   return [
     '# Libell',
     '',
@@ -129,12 +131,13 @@ export function llmsTxt(site: string): string {
     `- ${en['about.offline']}`,
     `- ${en['about.privacy']}`,
     `- ${en['about.source']}`,
-    `- Languages: ${languages}.`,
+    `- Languages, each with a page about Libell: ${languages}.`,
     '',
     '## Links',
     '',
     `- [Open Libell](${site}): the app itself, in the browser or installed on the home screen`,
     `- [Source code and README](${REPO_URL}): how it works, the Sensorbox models it supports, and how to report a problem`,
+    `- [Privacy policy](${site}privacy/): what Libell stores on the phone and the one thing it sends`,
     '',
   ].join('\n');
 }

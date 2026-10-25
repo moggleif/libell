@@ -158,6 +158,29 @@ export const hu: Messages = {
   'seo.title': 'Libell – szintezd be a lakóautód vagy lakókocsid a telefonoddal',
   'seo.description':
     'Ingyenes alkalmazás, amely megmutatja, a lakóautód vagy lakókocsid mely kerekeit kell megemelni, és a rámpa melyik lépcsőjére. A telefonodat vagy egy szenzordobozt használ, és offline is működik.',
+  'landing.how.h': 'Így működik',
+  'landing.how.phone':
+    'Fektesd a telefont laposan a járműbe, a felső élével előre. A Libell felülről mutatja a lakóautód vagy lakókocsid, és minden keréknél azt, hogy a rámpa melyik lépcsőjére hajts fel.',
+  'landing.how.ramps':
+    'Add meg a nálad lévő rámpákat, és a Libell azokkal tervez: mely kerekeket kell megemelni, melyik lépcsőre, és mikor nem elég a rámpa, így inkább állj át a járművel.',
+  'landing.how.caravan':
+    'Lakókocsinál a Libell vízszintbe hozza a tengelyt, és megmondja, mennyivel tekerd fel vagy le az orrkereket.',
+  'landing.how.box':
+    'A járműbe szerelt szenzordoboz is mérhet a telefon helyett. A Libell ezekkel működik: {boxes}.',
+  'landing.how.app':
+    'A Libell fiók nélkül fut a böngészőben, és telepíthető a kezdőképernyőre. Ingyenes és nyílt forráskódú.',
+  'landing.faq.h': 'Gyakori kérdések',
+  'landing.faq.level.q': 'Hogyan szintezzem be a lakóautót telefonnal?',
+  'landing.faq.level.a':
+    'Nyisd meg a Libellt, add meg a járműved méreteit és a rámpáidat, majd fektesd le a telefont laposan, a tetejével előre. Minden narancssárga kerékkel hajts fel a jelzett lépcsőre, várd meg, amíg a jármű megnyugszik, és nézd meg újra. Ha minden kerék zöld, vízszintben állsz.',
+  'landing.faq.free.q': 'Kerül valamibe a Libell?',
+  'landing.faq.free.a':
+    'Nem. A Libell ingyenes, nincs benne reklám, nem kell hozzá fiók, és a forráskódja nyílt (MIT-licenc).',
+  'landing.faq.box.q': 'Szükségem van szenzordobozra?',
+  'landing.faq.box.a':
+    'Nem, elég a telefon saját szenzora. A szenzordoboz a járműbe szerelve marad, így a telefonod szabad, és nem kell mindig ugyanott feküdnie.',
+  'landing.faq.offline.q': 'Működik internet nélkül?',
+  'landing.faq.privacy.q': 'Mit tárol rólam a Libell?',
   'menu.privacy': 'Adatvédelem',
   'menu.privacy.tab': 'Adatvédelem',
   'privacy.stored.h': 'Ezen a telefonon tárolva',
