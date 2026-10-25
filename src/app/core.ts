@@ -35,6 +35,7 @@ import type { SettingsSurface } from './settingsSurface';
 import { createSound, type Sound } from './sound';
 import { createTargets } from './targets';
 import { readTilt } from './tiltReading';
+import { countSensor } from './usage';
 import { createZeroTrims, type ZeroTrims } from './zeroTrims';
 
 export interface Core {
@@ -145,7 +146,10 @@ function createSensorController(
     isRememberedDeviceUsable,
     getPreferredSource: () => settings.get().sensorSource,
     hasPersistentDeviceAccess,
-    rememberSource: (source) => settings.set({ ...settings.get(), sensorSource: source }),
+    rememberSource(source) {
+      countSensor(source);
+      settings.set({ ...settings.get(), sensorSource: source });
+    },
     // The level screen may never have been built (a desktop without
     // motion sensors): build it now a real source feeds readings.
     onLevelScreenNeeded: () => screen.levelScreen.show(),

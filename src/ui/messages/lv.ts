@@ -143,7 +143,7 @@ export const lv: Messages = {
   'about.offline':
     'Darbojas pilnībā bezsaistē — tīkls tiek izmantots tikai pašas lietotnes atjauninājumu lejupielādei.',
   'about.privacy':
-    'Viss paliek jūsu tālrunī — nav konta, nav izsekošanas, un nekādi dati nekad nepamet ierīci.',
+    'Jūsu iestatījumi paliek tālrunī — nav konta un nav izsekošanas. Libell sūta tikai anonīmus skaitļus par to, kā lietotne tiek izmantota, un to varat izslēgt.',
   'about.source': 'Libell ir bezmaksas atvērtā pirmkoda programmatūra (MIT licence).',
   'about.source.link': 'Pirmkods GitHub',
   'menu.privacy': 'Privātums',
@@ -183,6 +183,18 @@ export const lv: Messages = {
   'intro.later': 'Vispirms apskatīties',
   'onboard.source.sensorIcon':
     'Sensora bloku var pievienot jebkurā laikā ar sensora ikonu augšējā labajā stūrī.',
+  'counting.title': 'Anonīma skaitīšana',
+  'counting.intro':
+    'Libell anonīmi skaita, cik cilvēku izmanto lietotni un kuras funkcijas, lai mēs zinātu, ko uzlabot. Pēc tā nevienu nevar identificēt.',
+  'counting.sent.h': 'Kas tiek skaitīts',
+  'counting.sent':
+    'Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, {boxes}), lietotnes versija un Libell lietotnē izvēlētā valoda.',
+  'counting.notSent.h': 'Kas nekad netiek saglabāts',
+  'counting.notSent':
+    'Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Skaitīšanai tālrunī nekas netiek saglabāts.',
+  'counting.gpc': 'Ja jūsu pārlūks lūdz vietnēm jūs neizsekot, Libell neko neskaita.',
+  'counting.toggle': 'Anonīmi skaitīt manu lietošanu',
+  'counting.dashboard': 'Skatīt statistiku',
   'onboard.sound.h': 'Skaņa',
   'onboard.source.h': 'Kā vēlaties mērīt?',
   'onboard.source.intro':

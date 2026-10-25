@@ -140,7 +140,7 @@ export const sl: Messages = {
   'about.offline':
     'Deluje popolnoma brez povezave — omrežje se uporablja le za prenos posodobitev same aplikacije.',
   'about.privacy':
-    'Vse ostane na vašem telefonu — brez računa, brez sledenja in noben podatek nikoli ne zapusti naprave.',
+    'Vaše nastavitve ostanejo na telefonu — brez računa in brez sledenja. Libell pošilja le anonimne številke o tem, kako se aplikacija uporablja, in to lahko izklopite.',
   'about.source': 'Libell je brezplačen in odprtokoden (licenca MIT).',
   'about.source.link': 'Koda na GitHubu',
   'menu.privacy': 'Zasebnost',
@@ -181,6 +181,19 @@ export const sl: Messages = {
   'intro.later': 'Najprej razglejte',
   'onboard.source.sensorIcon':
     'Senzorsko enoto lahko kadar koli povežete z ikono senzorja zgoraj desno.',
+  'counting.title': 'Anonimno štetje',
+  'counting.intro':
+    'Libell anonimno šteje, koliko ljudi uporablja aplikacijo in katere funkcije, da vemo, kaj izboljšati. Nikogar ni mogoče prepoznati iz tega.',
+  'counting.sent.h': 'Kaj se šteje',
+  'counting.sent':
+    'Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je {boxes}), različica aplikacije in jezik, izbran v Libellu.',
+  'counting.notSent.h': 'Česa se nikoli ne shrani',
+  'counting.notSent':
+    'Vašega naslova IP, države, naprave, zaslona, operacijskega sistema ali brskalnika, mer vozila, vaših nastavitev ali česar koli drugega o vas. Za štetje se v telefon ne shrani nič.',
+  'counting.gpc':
+    'Če vaš brskalnik prosi spletna mesta, naj vam ne sledijo, Libell ne šteje ničesar.',
+  'counting.toggle': 'Anonimno štetje moje uporabe',
+  'counting.dashboard': 'Oglejte si statistiko',
   'onboard.sound.h': 'Zvok',
   'onboard.source.h': 'S čim želite meriti?',
   'onboard.source.intro':

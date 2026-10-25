@@ -154,8 +154,7 @@ export const lt: Messages = {
   'about.offline':
     'Veikia visiškai be interneto — tinklas naudojamas tik pačios programėlės atnaujinimams atsisiųsti.',
   'about.privacy':
-    'Viskas lieka jūsų telefone — jokios paskyros, jokio sekimo, ir jokie duomenys ' +
-    'niekada nepalieka įrenginio.',
+    'Jūsų nustatymai lieka telefone — jokios paskyros ir jokio sekimo. Libell siunčia tik anoniminius skaičius apie tai, kaip naudojama programėlė, ir tai galite išjungti.',
   'about.source': 'Libell yra nemokama atvirojo kodo programėlė (MIT licencija).',
   'about.source.link': 'Šaltinio kodas GitHub',
   'menu.privacy': 'Privatumas',
@@ -196,6 +195,18 @@ export const lt: Messages = {
   'intro.later': 'Pirma apsižvalgyti',
   'onboard.source.sensorIcon':
     'Jutiklio dėžutę bet kada galima prijungti jutiklio piktograma viršuje dešinėje.',
+  'counting.title': 'Anoniminis skaičiavimas',
+  'counting.intro':
+    'Libell anonimiškai skaičiuoja, kiek žmonių naudoja programėlę ir kokias funkcijas, kad žinotume, ką tobulinti. Pagal tai neįmanoma atpažinti nė vieno žmogaus.',
+  'counting.sent.h': 'Kas skaičiuojama',
+  'counting.sent':
+    'Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., {boxes}), programėlės versija ir Libell programėlėje pasirinkta kalba.',
+  'counting.notSent.h': 'Kas niekada nesaugoma',
+  'counting.notSent':
+    'Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Skaičiavimui telefone nieko nesaugoma.',
+  'counting.gpc': 'Jei jūsų naršyklė prašo svetainių jūsų nesekti, Libell nieko neskaičiuoja.',
+  'counting.toggle': 'Anonimiškai skaičiuoti mano naudojimą',
+  'counting.dashboard': 'Peržiūrėti statistiką',
   'onboard.sound.h': 'Garsas',
   'onboard.source.h': 'Kuo norite matuoti?',
   'onboard.source.intro':

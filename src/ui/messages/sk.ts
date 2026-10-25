@@ -137,7 +137,7 @@ export const sk: Messages = {
   'about.offline':
     'Funguje úplne offline — sieť sa používa len na sťahovanie aktualizácií samotnej aplikácie.',
   'about.privacy':
-    'Všetko zostáva vo vašom telefóne — bez účtu, bez sledovania a žiadne údaje nikdy neopustia zariadenie.',
+    'Vaše nastavenia zostávajú v telefóne — žiadny účet a žiadne sledovanie. Libell odosiela len anonymné počty toho, ako sa aplikácia používa, a to môžete vypnúť.',
   'about.source': 'Libell je bezplatný a open source (licencia MIT).',
   'about.source.link': 'Kód na GitHube',
   'menu.privacy': 'Súkromie',
@@ -177,6 +177,18 @@ export const sk: Messages = {
   'intro.later': 'Najprv sa rozhliadnuť',
   'onboard.source.sensorIcon':
     'Senzorový modul môžete kedykoľvek pripojiť ikonou senzora vpravo hore.',
+  'counting.title': 'Anonymné počítanie',
+  'counting.intro':
+    'Libell anonymne počíta, koľko ľudí aplikáciu používa a ktoré funkcie, aby sme vedeli, čo zlepšiť. Nikoho z toho nemožno identifikovať.',
+  'counting.sent.h': 'Čo sa počíta',
+  'counting.sent':
+    'Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako {boxes}), verzia aplikácie a jazyk zvolený v Libell.',
+  'counting.notSent.h': 'Čo sa nikdy neukladá',
+  'counting.notSent':
+    'Vaša IP adresa, krajina, zariadenie, obrazovka, operačný systém ani prehliadač, rozmery vozidla, vaše nastavenia ani nič iné o vás. Kvôli počítaniu sa do telefónu nič neukladá.',
+  'counting.gpc': 'Ak váš prehliadač žiada weby, aby vás nesledovali, Libell nepočíta nič.',
+  'counting.toggle': 'Anonymne počítať moje používanie',
+  'counting.dashboard': 'Zobraziť štatistiky',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čím chcete merať?',
   'onboard.source.intro':

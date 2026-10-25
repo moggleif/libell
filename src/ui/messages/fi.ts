@@ -135,7 +135,7 @@ export const fi: Messages = {
   'about.offline':
     'Toimii täysin ilman verkkoyhteyttä — verkkoa käytetään vain itse sovelluksen päivitysten hakemiseen.',
   'about.privacy':
-    'Kaikki pysyy puhelimessasi — ei tiliä, ei seurantaa, eikä mitään tietoja lähetetä laitteesta.',
+    'Asetuksesi pysyvät puhelimessa — ei tiliä eikä seurantaa. Libell lähettää vain nimettömiä lukuja siitä, miten sovellusta käytetään, ja sen voit kytkeä pois.',
   'about.source': 'Libell on ilmainen ja avointa lähdekoodia (MIT-lisenssi).',
   'about.source.link': 'Lähdekoodi GitHubissa',
   'menu.privacy': 'Tietosuoja',
@@ -175,6 +175,19 @@ export const fi: Messages = {
   'intro.later': 'Katsele ensin',
   'onboard.source.sensorIcon':
     'Anturirasian voi yhdistää milloin tahansa oikean yläkulman anturikuvakkeesta.',
+  'counting.title': 'Nimetön laskenta',
+  'counting.intro':
+    'Libell laskee nimettömästi, kuinka moni käyttää sovellusta ja mitä toimintoja, jotta tiedämme, mitä parantaa. Ketään ei voi tunnistaa sen perusteella.',
+  'counting.sent.h': 'Mitä lasketaan',
+  'counting.sent':
+    'Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten {boxes}), sovelluksen versio ja Libellissä valittu kieli.',
+  'counting.notSent.h': 'Mitä ei koskaan tallenneta',
+  'counting.notSent':
+    'IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Laskentaa varten puhelimeen ei tallenneta mitään.',
+  'counting.gpc':
+    'Jos selaimesi pyytää verkkosivustoja olemaan seuraamatta sinua, Libell ei laske mitään.',
+  'counting.toggle': 'Laske käyttöni nimettömästi',
+  'counting.dashboard': 'Katso tilastot',
   'onboard.sound.h': 'Ääni',
   'onboard.source.h': 'Miten haluat mitata?',
   'onboard.source.intro':

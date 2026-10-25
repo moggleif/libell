@@ -147,8 +147,7 @@ export const et: Messages = {
   'about.offline':
     'Töötab täielikult võrguühenduseta — võrku kasutatakse ainult rakenduse enda uuenduste laadimiseks.',
   'about.privacy':
-    'Kõik jääb sinu telefoni — pole kontot ega jälitamist ning ükski andmetükk ' +
-    'ei lahku seadmest.',
+    'Sinu seaded jäävad telefoni — pole kontot ega jälitamist. Libell saadab ainult anonüümseid arve selle kohta, kuidas rakendust kasutatakse, ja selle saad välja lülitada.',
   'about.source': 'Libell on tasuta ja avatud lähtekoodiga (MIT-litsents).',
   'about.source.link': 'Lähtekood GitHubis',
   'menu.privacy': 'Privaatsus',
@@ -189,6 +188,18 @@ export const et: Messages = {
   'intro.later': 'Vaata enne ringi',
   'onboard.source.sensorIcon':
     'Välisanduri saad igal ajal ühendada üleval paremal oleva anduri ikooniga.',
+  'counting.title': 'Anonüümne loendamine',
+  'counting.intro':
+    'Libell loendab anonüümselt, kui paljud rakendust kasutavad ja milliseid funktsioone, et teaksime, mida parandada. Kedagi ei saa selle põhjal tuvastada.',
+  'counting.sent.h': 'Mida loendatakse',
+  'counting.sent':
+    'Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu {boxes}), rakenduse versioon ja Libellis valitud keel.',
+  'counting.notSent.h': 'Mida kunagi ei salvestata',
+  'counting.notSent':
+    'Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Loendamiseks ei salvestata telefoni midagi.',
+  'counting.gpc': 'Kui su brauser palub veebisaitidel sind mitte jälgida, ei loenda Libell midagi.',
+  'counting.toggle': 'Loenda minu kasutust anonüümselt',
+  'counting.dashboard': 'Vaata statistikat',
   'onboard.sound.h': 'Heli',
   'onboard.source.h': 'Millega soovid mõõta?',
   'onboard.source.intro':

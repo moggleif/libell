@@ -149,8 +149,7 @@ export const hr: Messages = {
   'about.offline':
     'Radi potpuno izvan mreže — mreža se koristi samo za preuzimanje ažuriranja same aplikacije.',
   'about.privacy':
-    'Sve ostaje na vašem telefonu — bez računa, bez praćenja i nikakvi podaci ' +
-    'nikada ne napuštaju uređaj.',
+    'Vaše postavke ostaju na telefonu — bez računa i bez praćenja. Libell šalje samo anonimne brojke o tome kako se aplikacija koristi, a to možete isključiti.',
   'about.source': 'Libell je besplatan i otvorenog koda (licenca MIT).',
   'about.source.link': 'Izvorni kod na GitHubu',
   'menu.privacy': 'Privatnost',
@@ -191,6 +190,18 @@ export const hr: Messages = {
   'intro.later': 'Prvo razgledajte',
   'onboard.source.sensorIcon':
     'Senzorsku kutiju možete povezati u bilo kojem trenutku ikonom senzora gore desno.',
+  'counting.title': 'Anonimno brojanje',
+  'counting.intro':
+    'Libell anonimno broji koliko ljudi koristi aplikaciju i koje funkcije, kako bismo znali što poboljšati. Nikoga se ne može prepoznati iz toga.',
+  'counting.sent.h': 'Što se broji',
+  'counting.sent':
+    'Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput {boxes}), verzija aplikacije i jezik odabran u Libellu.',
+  'counting.notSent.h': 'Što se nikada ne sprema',
+  'counting.notSent':
+    'Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Za brojanje se ništa ne sprema na telefon.',
+  'counting.gpc': 'Ako vaš preglednik traži od web-mjesta da vas ne prate, Libell ne broji ništa.',
+  'counting.toggle': 'Anonimno brojanje mog korištenja',
+  'counting.dashboard': 'Pogledajte statistiku',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čime želite mjeriti?',
   'onboard.source.intro':

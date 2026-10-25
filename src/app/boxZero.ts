@@ -15,6 +15,7 @@ import { XPARKLE_DESCRIPTOR, type XparkleSensor } from '../sensor/xparkleSensor'
 import { t } from '../ui/i18n';
 import type { InstallOffsets } from './installOffsets';
 import { exceedsCalibrationLimit } from './tiltReading';
+import { countFeature } from './usage';
 
 /** How long an EasyLevel zero averages the box's samples. */
 export const EASYLEVEL_ZERO_SAMPLE_MS = 1500;
@@ -59,6 +60,7 @@ export function createBoxZeroing(deps: BoxZeroDeps): BoxZeroing {
   };
   return {
     zero(source) {
+      countFeature('zero-vehicle');
       if (source === 'xparkle') return zeroXparkle(zeroer);
       if (source === 'easylevel') return zeroEasyLevel(zeroer);
       const reading = zeroer.readTilt();

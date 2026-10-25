@@ -139,7 +139,7 @@ export const tr: Messages = {
   'about.offline':
     'Tamamen çevrimdışı çalışır — ağ yalnızca uygulamanın kendi güncellemelerini almak için kullanılır.',
   'about.privacy':
-    'Her şey telefonunuzda kalır — hesap yok, izleme yok ve hiçbir veri cihazdan çıkmaz.',
+    'Ayarlarınız telefonunuzda kalır — hesap yok ve izleme yok. Libell yalnızca uygulamanın nasıl kullanıldığına dair anonim sayılar gönderir ve bunu kapatabilirsiniz.',
   'about.source': 'Libell ücretsiz ve açık kaynaklıdır (MIT lisansı).',
   'about.source.link': 'GitHub’da kaynak kodu',
   'menu.privacy': 'Gizlilik',
@@ -180,6 +180,19 @@ export const tr: Messages = {
   'intro.later': 'Önce göz atın',
   'onboard.source.sensorIcon':
     'Sensör kutusu, sağ üstteki sensör simgesiyle istediğiniz zaman bağlanabilir.',
+  'counting.title': 'Anonim sayım',
+  'counting.intro':
+    'Libell, neyi iyileştirmemiz gerektiğini bilmek için uygulamayı kaç kişinin kullandığını ve hangi özelliklerin kullanıldığını anonim olarak sayar. Bundan kimse tanınamaz.',
+  'counting.sent.h': 'Neler sayılır',
+  'counting.sent':
+    'Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya {boxes} gibi bir model), uygulama sürümü ve Libell’de seçilen dil.',
+  'counting.notSent.h': 'Neler asla kaydedilmez',
+  'counting.notSent':
+    'IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Sayım için telefona hiçbir şey kaydedilmez.',
+  'counting.gpc':
+    'Tarayıcınız web sitelerinden sizi izlememelerini isterse Libell hiçbir şey saymaz.',
+  'counting.toggle': 'Kullanımımı anonim olarak say',
+  'counting.dashboard': 'İstatistikleri görün',
   'onboard.sound.h': 'Ses',
   'onboard.source.h': 'Nasıl ölçmek istiyorsunuz?',
   'onboard.source.intro':

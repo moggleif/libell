@@ -1,6 +1,7 @@
 import { boxPositionStep, connectStep } from './boxSteps';
 import { sensorCalibrationStep } from './calibrationStep';
 import { sourceStep, vehicleStep } from './choiceSteps';
+import { countingStep } from './countingStep';
 import { placementStep, readScreenStep } from './placementSteps';
 import { measurementsStep, preferenceStep, rampsStep } from './settingsSteps';
 import type { Step } from './types';
@@ -32,6 +33,7 @@ export function resolveSteps(state: WizardState): Step[] {
     preferenceStep(state, 'settings.language', 'language'),
     preferenceStep(state, 'settings.appearance', 'appearance'),
     preferenceStep(state, 'onboard.sound.h', 'sound'),
+    countingStep(state),
   ];
   if (!state.sourceChoiceAvailable) return [...leading, vehicleStep(state), ...phoneSteps(state)];
   const path = state.sensorChoice === 'external' ? externalSteps(state) : phoneSteps(state);

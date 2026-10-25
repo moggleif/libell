@@ -151,8 +151,7 @@ export const nl: Messages = {
   'about.offline':
     'Werkt volledig offline — het netwerk wordt alleen gebruikt om updates van de app zelf op te halen.',
   'about.privacy':
-    'Alles blijft op je telefoon — geen account, geen tracking, en er verlaten nooit ' +
-    'gegevens het apparaat.',
+    'Je instellingen blijven op je telefoon — geen account en geen tracking. Libell stuurt alleen anonieme tellingen van hoe de app wordt gebruikt, en dat kun je uitzetten.',
   'about.source': 'Libell is gratis en open source (MIT-licentie).',
   'about.source.link': 'Broncode op GitHub',
   'menu.privacy': 'Privacy',
@@ -193,6 +192,18 @@ export const nl: Messages = {
   'intro.later': 'Eerst rondkijken',
   'onboard.source.sensorIcon':
     'Een sensorbox kun je altijd verbinden met het sensorpictogram rechtsboven.',
+  'counting.title': 'Anoniem tellen',
+  'counting.intro':
+    'Libell telt anoniem hoeveel mensen de app gebruiken en welke functies, zodat we weten wat beter moet. Niemand is daaraan te herkennen.',
+  'counting.sent.h': 'Wat wordt geteld',
+  'counting.sent':
+    'Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals {boxes}), de appversie en de taal die in Libell is gekozen.',
+  'counting.notSent.h': 'Wat nooit wordt opgeslagen',
+  'counting.notSent':
+    'Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Voor het tellen wordt niets op je telefoon opgeslagen.',
+  'counting.gpc': 'Als je browser websites vraagt je niet te volgen, telt Libell niets.',
+  'counting.toggle': 'Mijn gebruik anoniem tellen',
+  'counting.dashboard': 'Bekijk de statistieken',
   'onboard.sound.h': 'Geluid',
   'onboard.source.h': 'Hoe wil je meten?',
   'onboard.source.intro':

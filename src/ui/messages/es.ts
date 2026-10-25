@@ -152,8 +152,7 @@ export const es: Messages = {
     'Funciona totalmente sin conexión: la red solo se usa para descargar actualizaciones ' +
     'de la propia app.',
   'about.privacy':
-    'Todo se queda en tu móvil: sin cuenta, sin seguimiento y sin que ningún dato salga ' +
-    'del dispositivo.',
+    'Tus ajustes se quedan en tu móvil: sin cuenta y sin seguimiento. Lo único que envía Libell son recuentos anónimos de cómo se usa la app, y puedes desactivarlo.',
   'about.source': 'Libell es gratuita y de código abierto (licencia MIT).',
   'about.source.link': 'Código fuente en GitHub',
   'menu.privacy': 'Privacidad',
@@ -193,6 +192,18 @@ export const es: Messages = {
   'intro.later': 'Echar un vistazo',
   'onboard.source.sensorIcon':
     'Puedes conectar una caja sensora cuando quieras con el icono del sensor arriba a la derecha.',
+  'counting.title': 'Recuento anónimo',
+  'counting.intro':
+    'Libell cuenta de forma anónima cuánta gente usa la app y qué funciones usa, para saber qué mejorar. Nadie puede ser identificado con ello.',
+  'counting.sent.h': 'Qué se cuenta',
+  'counting.sent':
+    'Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como {boxes}), la versión de la app y el idioma elegido en Libell.',
+  'counting.notSent.h': 'Qué no se guarda nunca',
+  'counting.notSent':
+    'Tu dirección IP, país, dispositivo, pantalla, sistema operativo o navegador, las medidas del vehículo, tus ajustes, ni nada más sobre ti. No se guarda nada en el móvil para el recuento.',
+  'counting.gpc': 'Si tu navegador pide a las webs que no te rastreen, Libell no cuenta nada.',
+  'counting.toggle': 'Contar mi uso de forma anónima',
+  'counting.dashboard': 'Ver las estadísticas',
   'onboard.sound.h': 'Sonido',
   'onboard.source.h': '¿Cómo quieres medir?',
   'onboard.source.intro':

@@ -13,13 +13,20 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
 - **No backend, no accounts, no secrets.** The client contains no tokens or API keys;
   the repository contains no credentials. Feedback is filed by the visitor under their
   own GitHub account via a pre-filled issue URL.
-- **No third-party code at runtime.** No CDNs, no analytics, no remote requests; every
+- **No third-party code at runtime.** No CDNs and no third-party scripts; every
   asset is same-origin, and everything the app loads is precached by the service
   worker. The one exception is install metadata: the manifest's screenshot (shown only
   in the install sheet) is generated from the built app after the service worker, so it
   is fetched on demand instead. Production builds carry a
   `default-src 'self'` Content-Security-Policy meta tag and a `no-referrer` referrer
   policy, so injected external script/style is refused by the browser.
+- **One remote request: anonymous counting (ADR 0021).** The app sends GoatCounter
+  (`libell.goatcounter.com`, the only origin added to `connect-src`) a fixed event name:
+  app opened, app version, the language chosen in Libell, the sensor model and the
+  features listed in `src/domain/usage.ts`, each at most once per app start. It sends no
+  cookie, referrer or identifier, and nothing about the user, the phone or its readings;
+  GoatCounter sees the IP address and User-Agent of the request but does not store them.
+  The user's switch, Global Privacy Control and Do Not Track stop every request.
 - **No HTML injection surface.** The DOM is built exclusively with `createElement` /
   `textContent`; `innerHTML` and friends are not used.
 - **Framing is refused.** Pages cannot send headers and browsers ignore
@@ -29,7 +36,8 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
   validation with per-field fallback, so hand-edited or corrupt values cannot break
   or subvert startup.
 - **Sensor data stays on the device.** Tilt readings, from the phone or from a Sensorbox
-  over Web Bluetooth, are processed in memory and never leave the phone.
+  over Web Bluetooth, are processed in memory and never leave the phone; the counter
+  only learns which sensor model is used.
 - **The Xparkle box's password is a pairing code, not a secret.** The box's four-digit
   code is kept in `localStorage` with the other settings and is only ever written to
   that box over Bluetooth. Libell never changes it.

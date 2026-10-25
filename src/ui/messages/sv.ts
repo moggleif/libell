@@ -157,8 +157,8 @@ export const sv: Messages = {
     'Fungerar helt utan internet — nätet används bara för att hämta appens ' +
     'egna uppdateringar.',
   'about.privacy':
-    'Allt stannar i din telefon — inget konto, ingen spårning och ingen data ' +
-    'lämnar någonsin enheten.',
+    'Dina inställningar stannar i telefonen — inget konto och ingen spårning. Det enda ' +
+    'Libell skickar är anonyma siffror över hur appen används, och det kan du stänga av.',
   'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
   'about.source.link': 'Källkoden på GitHub',
   'menu.privacy': 'Integritet',
@@ -199,6 +199,22 @@ export const sv: Messages = {
   'intro.later': 'Titta runt först',
   'onboard.source.sensorIcon':
     'En sensorbox ansluter du när som helst med sensorikonen uppe till höger.',
+  'counting.title': 'Anonym räkning',
+  'counting.intro':
+    'Libell räknar anonymt hur många som använder appen och vilka funktioner de använder, ' +
+    'så att vi vet vad som behöver bli bättre. Ingen kan identifieras av det.',
+  'counting.sent.h': 'Det här räknas',
+  'counting.sent':
+    'Att appen öppnades, vilka funktioner som används, vilken sensor som mäter ' +
+    '(telefonen eller en modell som {boxes}), appens version och språket som är valt i Libell.',
+  'counting.notSent.h': 'Det här sparas aldrig',
+  'counting.notSent':
+    'Din IP-adress, ditt land, din enhet, skärm, ditt operativsystem eller din webbläsare, ' +
+    'fordonets mått, dina inställningar eller något annat om dig. Inget sparas i telefonen för ' +
+    'räkningen.',
+  'counting.gpc': 'Om din webbläsare ber webbplatser att inte spåra dig räknar Libell ingenting.',
+  'counting.toggle': 'Räkna min användning anonymt',
+  'counting.dashboard': 'Se statistiken',
   'onboard.sound.h': 'Ljud',
   'onboard.source.h': 'Hur vill du mäta?',
   'onboard.source.intro':

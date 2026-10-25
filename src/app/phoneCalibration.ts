@@ -23,6 +23,7 @@ import {
 import type { KeyValueStorage } from '../data/keyValueStorage';
 import { t } from '../ui/i18n';
 import { exceedsCalibrationLimit } from './tiltReading';
+import { countFeature } from './usage';
 
 /** Puts back what a capture replaced. */
 type Restore = () => void;
@@ -91,14 +92,20 @@ export function createPhoneCalibration(deps: PhoneCalibrationDeps): PhoneCalibra
     vehicleZero: () => layers.vehicleZero?.value ?? null,
     vehicleZeroCapturedAt: () => layers.vehicleZero?.capturedAt ?? null,
     zero,
-    calibrate: () => calibrate(layers),
+    calibrate() {
+      countFeature('calibrate-phone');
+      return calibrate(layers);
+    },
     applyBias: (value) => storeBias(layers, value),
     clearBias() {
       layers.bias = null;
       clearCalibration(deps.storage);
       deps.onCleared();
     },
-    zeroVehicle: () => zeroVehicle(layers),
+    zeroVehicle() {
+      countFeature('zero-vehicle');
+      return zeroVehicle(layers);
+    },
     clearVehicleZero() {
       layers.vehicleZero = null;
       clearVehicleCalibration(deps.storage);

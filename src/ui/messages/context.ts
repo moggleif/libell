@@ -1723,7 +1723,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'about.privacy': ctx(
     'text',
     'Help › About tab: privacy paragraph.',
-    'No account, no tracking, no data leaves the phone.',
+    'Settings stay on the phone, no account, no tracking; only anonymous usage counts are sent, and they can be turned off (#674).',
   ),
   'menu.privacy': ctx(
     'label',
@@ -1904,6 +1904,51 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'text',
     'Introduction wizard › source step: second paragraph, under the step intro.',
     'Points to the sensor icon at the top right for connecting a Sensorbox (external Bluetooth box) later.',
+  ),
+  'counting.title': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step: the step title.',
+    'Names the anonymous usage counting the step explains and lets the user switch off.',
+  ),
+  'counting.intro': ctx(
+    'text',
+    'Introduction wizard › anonymous counting step: first paragraph.',
+    'Says Libell counts app use and features anonymously, why, and that no one can be identified.',
+  ),
+  'counting.sent.h': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step: heading over the list of what is counted.',
+    'Introduces exactly what the counting sends.',
+  ),
+  'counting.sent': ctx(
+    'text',
+    'Introduction wizard › anonymous counting step: under "What is counted".',
+    'Lists everything that is counted: app opened, features used, sensor model, app version, language chosen in the app.',
+  ),
+  'counting.notSent.h': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step: heading over the list of what is never saved.',
+    'Introduces what the counting never keeps.',
+  ),
+  'counting.notSent': ctx(
+    'text',
+    'Introduction wizard › anonymous counting step: under "What is never saved".',
+    'Lists what is never saved (IP, country, device, screen, OS, browser, measurements, settings, anything personal) and that nothing is stored on the phone for it.',
+  ),
+  'counting.gpc': ctx(
+    'line',
+    'Introduction wizard › anonymous counting step: line above the switch.',
+    'Says a browser privacy signal (Global Privacy Control / Do Not Track) turns counting off.',
+  ),
+  'counting.toggle': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step: checkbox caption.',
+    'Turns the anonymous counting on or off; on from the start.',
+  ),
+  'counting.dashboard': ctx(
+    'button',
+    'Introduction wizard › anonymous counting step: link under the switch.',
+    'Opens the public statistics page in a new tab, so anyone can see what is counted.',
   ),
   'onboard.sound.h': ctx(
     'label',

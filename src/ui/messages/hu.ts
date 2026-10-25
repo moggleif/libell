@@ -152,8 +152,7 @@ export const hu: Messages = {
   'about.offline':
     'Teljesen offline működik — a hálózatot csak az alkalmazás saját frissítéseinek letöltésére használja.',
   'about.privacy':
-    'Minden a telefonodon marad — nincs fiók, nincs követés, és semmilyen adat ' +
-    'nem hagyja el az eszközt.',
+    'A beállításaid a telefonodon maradnak — nincs fiók és nincs követés. A Libell csak névtelen számokat küld arról, hogyan használják az alkalmazást, és ezt kikapcsolhatod.',
   'about.source': 'A Libell ingyenes és nyílt forráskódú (MIT-licenc).',
   'about.source.link': 'Forráskód a GitHubon',
   'menu.privacy': 'Adatvédelem',
@@ -194,6 +193,19 @@ export const hu: Messages = {
   'intro.later': 'Előbb körülnézek',
   'onboard.source.sensorIcon':
     'Szenzordobozt bármikor csatlakoztathatsz a jobb felső sarokban lévő szenzorikonnal.',
+  'counting.title': 'Névtelen számlálás',
+  'counting.intro':
+    'A Libell névtelenül számolja, hányan használják az alkalmazást és mely funkciókat, hogy tudjuk, min kell javítani. Ebből senki sem azonosítható.',
+  'counting.sent.h': 'Mit számolunk',
+  'counting.sent':
+    'Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például {boxes}), az alkalmazás verzióját és a Libellben választott nyelvet.',
+  'counting.notSent.h': 'Mit nem mentünk soha',
+  'counting.notSent':
+    'Az IP-címedet, országodat, eszközödet, képernyődet, operációs rendszeredet vagy böngésződet, a jármű méreteit, a beállításaidat, sem semmi mást rólad. A számláláshoz semmi sem kerül a telefonra.',
+  'counting.gpc':
+    'Ha a böngésződ arra kéri a webhelyeket, hogy ne kövessenek, a Libell semmit sem számol.',
+  'counting.toggle': 'Használatom névtelen számlálása',
+  'counting.dashboard': 'Statisztika megtekintése',
   'onboard.sound.h': 'Hang',
   'onboard.source.h': 'Mivel szeretnél mérni?',
   'onboard.source.intro':

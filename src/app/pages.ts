@@ -21,6 +21,7 @@ import { createNavigation, type Navigation } from './navigation';
 import { createOnboardingLauncher, type OnboardingLauncher } from './onboardingLauncher';
 import { mountSensorPages, type SensorPages } from './sensorPages';
 import { createSettingsAdoption } from './settingsAdoption';
+import { countFeature } from './usage';
 import { mountSettingsSurface, type SettingsSurface } from './settingsSurface';
 
 export interface Pages {
@@ -56,7 +57,10 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
     openOnboarding: onboarding.open,
     openBoxPage: () => screen.navigation.openActiveSensorPage(),
     effectiveCalibration: core.effectiveCalibration,
-    shareVehicleSetup: (current) => void shareVehicleSetup(pickVehicleGeometry(current)),
+    shareVehicleSetup(current) {
+      countFeature('share-created');
+      void shareVehicleSetup(pickVehicleGeometry(current));
+    },
   });
 
   const settingsSurface = mountSettingsSurface(menuOptions);
@@ -102,6 +106,7 @@ function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): 
     hasDoneOnboarding,
     openTarget: navigation.openHelpTarget,
     storedData: { read: () => readStoredData(), deleteAll: deleteAllAndRestart },
+    onFeedbackSent: () => countFeature('feedback'),
   });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');

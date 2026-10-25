@@ -21,6 +21,18 @@ done. A caravan gets a ramp for the low axle wheel and a signed correction for t
 jockey wheel; a tandem (boggie) axle is supported too. Everything works offline once
 loaded; there is no account.
 
+## Privacy
+
+Your settings, measurements and calibrations stay in your phone's browser storage and are
+never sent anywhere. The one thing Libell sends is an anonymous count to
+[GoatCounter](https://libell.goatcounter.com): that the app was opened, the app version,
+the language chosen in Libell, the sensor model in use and which features are used. No
+country, IP address, screen, device, operating system, browser, firmware or identifier is
+saved, and no cookie is set. It is on from the start, the introduction says so on a page
+of its own, and it can be switched off; a browser's Global Privacy Control or Do Not Track
+switches it off too. The statistics are public. Details: `SECURITY.md` and
+[ADR 0021](docs/adr/0021-anonymous-usage-counting.md).
+
 ## Try the demo modes
 
 Each link opens the deployed app in a mode that needs no phone sensor and no Sensorbox:
