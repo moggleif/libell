@@ -152,6 +152,9 @@ export const hr: Messages = {
     'Vaše postavke ostaju na telefonu — bez računa i bez praćenja. Libell šalje samo anonimne brojke o tome kako se aplikacija koristi, a to možete isključiti.',
   'about.source': 'Libell je besplatan i otvorenog koda (licenca MIT).',
   'about.source.link': 'Izvorni kod na GitHubu',
+  'seo.title': 'Libell – izravnajte kamper ili kamp-prikolicu telefonom',
+  'seo.description':
+    'Besplatna aplikacija koja pokazuje koje kotače kampera ili kamp-prikolice treba podići i na koju stepenicu rampe. Koristi vaš telefon ili senzorsku kutiju i radi izvan mreže.',
   'menu.privacy': 'Privatnost',
   'menu.privacy.tab': 'Podaci',
   'privacy.stored.h': 'Spremljeno na ovom telefonu',

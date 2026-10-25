@@ -154,6 +154,9 @@ export const nl: Messages = {
     'Je instellingen blijven op je telefoon — geen account en geen tracking. Libell stuurt alleen anonieme tellingen van hoe de app wordt gebruikt, en dat kun je uitzetten.',
   'about.source': 'Libell is gratis en open source (MIT-licentie).',
   'about.source.link': 'Broncode op GitHub',
+  'seo.title': 'Libell – zet je camper of caravan waterpas met je telefoon',
+  'seo.description':
+    'Een gratis app die laat zien welke wielen van je camper of caravan omhoog moeten, en op welke trede van het blok. Werkt met je telefoon of een sensorbox, en volledig offline.',
   'menu.privacy': 'Privacy',
   'menu.privacy.tab': 'Privacy',
   'privacy.stored.h': 'Opgeslagen op deze telefoon',

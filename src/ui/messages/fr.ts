@@ -158,6 +158,9 @@ export const fr: Messages = {
     'Vos réglages restent sur votre téléphone — pas de compte et pas de suivi. Libell n’envoie que des comptages anonymes de l’utilisation de l’app, et vous pouvez les désactiver.',
   'about.source': 'Libell est gratuit et open source (licence MIT).',
   'about.source.link': 'Code source sur GitHub',
+  'seo.title': 'Libell – camping-car ou caravane de niveau avec votre téléphone',
+  'seo.description':
+    'Une app gratuite qui indique quelles roues de votre camping-car ou caravane surélever, et sur quel palier de la rampe. Utilise votre téléphone ou un boîtier capteur, et fonctionne hors ligne.',
   'menu.privacy': 'Confidentialité',
   'menu.privacy.tab': 'Données',
   'privacy.stored.h': 'Enregistré sur ce téléphone',

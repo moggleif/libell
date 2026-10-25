@@ -63,6 +63,42 @@ function privacyPages(): Plugin {
   };
 }
 
+// What search engines and AI assistants read (#701): the page head, plus
+// robots.txt, sitemap.xml and llms.txt at the root. `src/ui/findability.ts`
+// is app code (typed and tested with the app, its text from the message
+// dictionaries), so it is loaded through Vite rather than imported here.
+type FindabilityModule = typeof import('./src/ui/findability');
+
+function loadFindability(): Promise<FindabilityModule> {
+  return runnerImport<FindabilityModule>('./src/ui/findability.ts').then((r) => r.module);
+}
+
+function findability(): Plugin {
+  return {
+    name: 'findability',
+    async transformIndexHtml() {
+      const { headTags, siteUrl } = await loadFindability();
+      return headTags(siteUrl(base)).map((tag) => ({ ...tag, injectTo: 'head' as const }));
+    },
+    // After every other plugin, so the sitemap sees every page they wrote.
+    generateBundle: {
+      order: 'post',
+      async handler(_options, bundle) {
+        const { llmsTxt, robotsTxt, sitemapXml, siteUrl } = await loadFindability();
+        const site = siteUrl(base);
+        const files = {
+          'robots.txt': robotsTxt(site),
+          'sitemap.xml': sitemapXml(site, Object.keys(bundle)),
+          'llms.txt': llmsTxt(site),
+        };
+        for (const [fileName, source] of Object.entries(files)) {
+          this.emitFile({ type: 'asset', fileName, source });
+        }
+      },
+    },
+  };
+}
+
 export default defineConfig({
   base,
   define: {
@@ -73,6 +109,7 @@ export default defineConfig({
     sourcemap: true,
   },
   plugins: [
+    findability(),
     {
       name: 'security-meta-tags',
       apply: 'build',
@@ -132,6 +169,8 @@ export default defineConfig({
         // The app must work with no signal at all on a campsite, so every
         // build asset is precached.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The link preview is for chat apps, never shown offline (#702).
+        globIgnores: ['preview.png'],
         cleanupOutdatedCaches: true,
         // The privacy pages are pages of their own, never the app (#675).
         navigateFallbackDenylist: [/\/privacy\//],

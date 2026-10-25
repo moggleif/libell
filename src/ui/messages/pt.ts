@@ -145,6 +145,9 @@ export const pt: Messages = {
     'As suas definições ficam no telemóvel — sem conta e sem rastreio. O Libell só envia contagens anónimas de como a app é usada, e pode desativar isso.',
   'about.source': 'O Libell é gratuito e de código aberto (licença MIT).',
   'about.source.link': 'Código no GitHub',
+  'seo.title': 'Libell – nivele a sua autocaravana ou caravana com o telemóvel',
+  'seo.description':
+    'Uma app gratuita que mostra que rodas da sua autocaravana ou caravana levantar e para que degrau da rampa. Usa o telemóvel ou uma caixa de sensor e funciona offline.',
   'menu.privacy': 'Privacidade',
   'menu.privacy.tab': 'Privacidade',
   'privacy.stored.h': 'Guardado neste telemóvel',

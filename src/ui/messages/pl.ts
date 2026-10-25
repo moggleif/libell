@@ -146,6 +146,9 @@ export const pl: Messages = {
     'Twoje ustawienia zostają w telefonie — bez konta i bez śledzenia. Libell wysyła tylko anonimowe liczby o tym, jak używana jest aplikacja, i możesz to wyłączyć.',
   'about.source': 'Libell jest darmowy i ma otwarty kod źródłowy (licencja MIT).',
   'about.source.link': 'Kod na GitHubie',
+  'seo.title': 'Libell – wypoziomuj kampera lub przyczepę telefonem',
+  'seo.description':
+    'Darmowa aplikacja, która pokazuje, które koła kampera lub przyczepy podnieść i na który stopień najazdu. Działa z telefonem lub modułem czujnika, także offline.',
   'menu.privacy': 'Prywatność',
   'menu.privacy.tab': 'Prywatność',
   'privacy.stored.h': 'Zapisane na tym telefonie',

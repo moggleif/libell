@@ -157,6 +157,9 @@ export const de: Messages = {
     'Deine Einstellungen bleiben auf deinem Handy — kein Konto und kein Tracking. Libell sendet nur anonyme Zahlen dazu, wie die App genutzt wird, und das kannst du ausschalten.',
   'about.source': 'Libell ist kostenlos und quelloffen (MIT-Lizenz).',
   'about.source.link': 'Quellcode auf GitHub',
+  'seo.title': 'Libell – Wohnmobil oder Wohnwagen mit dem Handy ausrichten',
+  'seo.description':
+    'Kostenlose App, die zeigt, welche Räder deines Wohnmobils oder Wohnwagens hoch müssen und auf welche Stufe des Keils. Nutzt dein Handy oder eine Sensorbox und funktioniert offline.',
   'menu.privacy': 'Datenschutz',
   'menu.privacy.tab': 'Datenschutz',
   'privacy.stored.h': 'Auf diesem Handy gespeichert',

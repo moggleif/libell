@@ -155,6 +155,9 @@ export const es: Messages = {
     'Tus ajustes se quedan en tu móvil: sin cuenta y sin seguimiento. Lo único que envía Libell son recuentos anónimos de cómo se usa la app, y puedes desactivarlo.',
   'about.source': 'Libell es gratuita y de código abierto (licencia MIT).',
   'about.source.link': 'Código fuente en GitHub',
+  'seo.title': 'Libell – nivela tu autocaravana o caravana con el móvil',
+  'seo.description':
+    'Una app gratuita que te dice qué ruedas de tu autocaravana o caravana subir y a qué escalón de la rampa. Usa tu móvil o una caja sensora y funciona sin conexión.',
   'menu.privacy': 'Privacidad',
   'menu.privacy.tab': 'Datos',
   'privacy.stored.h': 'Guardado en este móvil',

@@ -2010,6 +2010,16 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Help › About tab: link after the open-source sentence.',
     'Opens the source code repository on GitHub.',
   ),
+  'seo.title': ctx(
+    'line',
+    'Not in the app: the page title search engines and AI assistants show for Libell, also the browser tab title (#701).',
+    'Names Libell and says in the words people search with what it does: level a motorhome or caravan with the phone. Keep it under about 60 characters.',
+  ),
+  'seo.description': ctx(
+    'line',
+    'Not in the app: the summary under the title in search results, link previews and the text AI assistants read about Libell (#701).',
+    'Tells a stranger what Libell does and why to pick it: free, says which wheels to raise and onto which step, phone or Sensorbox, works offline. Aim for about 160 characters.',
+  ),
   'intro.h': ctx(
     'label',
     'First-visit intro (before the introduction wizard): the heading.',

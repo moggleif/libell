@@ -150,6 +150,9 @@ export const et: Messages = {
     'Sinu seaded jäävad telefoni — pole kontot ega jälitamist. Libell saadab ainult anonüümseid arve selle kohta, kuidas rakendust kasutatakse, ja selle saad välja lülitada.',
   'about.source': 'Libell on tasuta ja avatud lähtekoodiga (MIT-litsents).',
   'about.source.link': 'Lähtekood GitHubis',
+  'seo.title': 'Libell – sea matkaauto või haagissuvila telefoniga loodi',
+  'seo.description':
+    'Tasuta rakendus, mis näitab, milliseid matkaauto või haagissuvila rattaid tõsta ja millisele kiilu astmele. Kasutab telefoni või välisandurit ja töötab võrguühenduseta.',
   'menu.privacy': 'Privaatsus',
   'menu.privacy.tab': 'Privaatsus',
   'privacy.stored.h': 'Selles telefonis salvestatud',

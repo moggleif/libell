@@ -6,6 +6,7 @@
  * in every language. Plain strings, no DOM: this runs in the build, not in
  * the app.
  */
+import { REPO_URL } from '../domain/site';
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
 import { LANGUAGE_NAMES, LANGUAGES, translate, type Language, type MessageKey } from './i18n';
@@ -13,7 +14,7 @@ import { LANGUAGE_NAMES, LANGUAGES, translate, type Language, type MessageKey } 
 /** The day the policy's text last changed. Change it with the text. */
 const POLICY_CHANGED = '2026-10-25';
 
-const ISSUES_URL = 'https://github.com/moggleif/libell/issues';
+const ISSUES_URL = `${REPO_URL}/issues`;
 
 /** Where a language's page is served, under the app's base path. */
 export function privacyPolicyPath(base: string, lang: Language): string {

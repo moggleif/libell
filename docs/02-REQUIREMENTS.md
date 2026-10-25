@@ -2397,3 +2397,31 @@ shipped language and says what the app's texts say (R58, R59).
 - **Given** a change to what Libell stores or sends
 - **Then** the policy text and its date change in the same change (the `docs-sync`
   skill).
+
+## R61 — Search engines, AI assistants and link previews can read what Libell is (#673, #701, #702)
+
+People searching for how to level a motorhome or caravan, in a search engine or by asking
+an AI assistant, should find Libell and have it described correctly. The app draws all
+its text with script, so the build writes static words for them (architecture:
+Findability). (R60 is the privacy policy, #675.)
+
+- **Given** the deployed site
+- **When** a crawler fetches `/` without running scripts
+- **Then** it gets a title and a description that say what Libell does (`seo.title`,
+  `seo.description`, in English), the canonical address `https://libell.app/` and
+  schema.org `WebApplication` data: free, a web app, every shipped language.
+- **Given** `/robots.txt`
+- **Then** every crawler is allowed, AI search and AI training crawlers included
+  (Morgan, 2026-10-25), and it names the sitemap.
+- **Given** `/sitemap.xml`
+- **Then** it lists the address of every page the build writes.
+- **Given** `/llms.txt`
+- **Then** it summarises Libell in the app's own English words (the About texts), names
+  the languages and links to the app and its source code.
+- **Given** a Libell link shared in a chat app or social network
+- **When** the preview is shown
+- **Then** it has the title, the description and a 1200×630 image of the spirit-level
+  vial over the name Libell, with no other words, so it fits every language (#702).
+- **Given** the app itself
+- **Then** nothing it shows changes apart from the browser tab's title, and its CSP is
+  unchanged.

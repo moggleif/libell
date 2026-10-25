@@ -40,3 +40,13 @@ for (const { file, size, padding } of targets) {
   await writeFile(resolve(outDir, file), out);
   console.log(`icons: wrote ${file} (${size}x${size})`);
 }
+
+// The link preview (#702): 1200×630, the size chat apps and social networks
+// expect, from its own SVG source. Kept out of public/ so it is not
+// precached; written to public/ only as build output.
+const preview = await readFile(resolve(root, 'art/preview.svg'));
+await sharp(preview, { density: 144 })
+  .resize(1200, 630)
+  .png()
+  .toFile(resolve(root, 'public/preview.png'));
+console.log('icons: wrote preview.png (1200x630)');
