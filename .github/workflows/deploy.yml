@@ -72,27 +72,38 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-        env:
-          BUILD_VERSION: ${{ needs.compute-version.outputs.version_string }}
-
-      - name: Generate manifest screenshots
-        run: |
-          npx playwright install --with-deps chromium
-          npm run screenshots
-
+      # Before the build: its base path is where Pages serves the site, ""
+      # at the root of the custom domain, "/libell" on the project site
+      # (#672), so every deploy fits whichever the Pages setting says.
       - name: Configure Pages
+        id: pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
         with:
           # First run on a fresh repo: enable Pages (source: GitHub Actions)
           # instead of requiring a manual settings step.
           enablement: true
 
+      - name: Build
+        run: npm run build
+        env:
+          BUILD_VERSION: ${{ needs.compute-version.outputs.version_string }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Generate manifest screenshots
+        run: |
+          npx playwright install --with-deps chromium
+          npm run screenshots
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: dist
+          # /.well-known/ (public/.well-known/) is a dot-directory, which the
+          # action leaves out unless told otherwise; Google Play's
+          # assetlinks.json lives there (#671, #672).
+          include-hidden-files: true
 
       - name: Deploy
         id: deployment

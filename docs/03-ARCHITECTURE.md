@@ -5,7 +5,8 @@
 - TypeScript (strict) + Vite, no UI framework — plain DOM and inline SVG
 - Vitest (unit tests), Prettier (formatting)
 - `vite-plugin-pwa` / Workbox — web app manifest + offline service worker
-- Static site on GitHub Pages, base path `/libell/` (override with `BASE_PATH`)
+- Static site on GitHub Pages at the root of `https://libell.app/` (ADR 0020); the base path
+  is `/` unless `BASE_PATH` says otherwise (`scripts/basePath.ts`)
 
 ## Layers
 
@@ -482,4 +483,6 @@ phone screen — R4/#241, R18/#239 and R40/#243; the unit tests run in happy-dom
 has no layout engine and measures every height as zero, so this is the only place a
 too-tall or too-wide view can fail). `fit` also checks the stylesheet directly for the
 one rule no browser in CI can reproduce — the iOS large-vs-small viewport, see
-`docs/01-CONTRIBUTING.md`. Pushes to `main` deploy `dist/` to GitHub Pages.
+`docs/01-CONTRIBUTING.md`. Pushes to `main` deploy `dist/` to GitHub Pages. The deploy
+builds with the base path Pages reports, so a build fits the custom domain once it is set
+and the project site before that, and it publishes a `.well-known` folder from the static files too (ADR 0020).

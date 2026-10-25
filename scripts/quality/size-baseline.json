@@ -4,6 +4,6 @@
     "scripts/fit-test.mjs > checkLevelScreen": 110
   },
   "fileBaseline": {
-    "scripts/fit-test.mjs": 661
+    "scripts/fit-test.mjs": 659
   }
 }

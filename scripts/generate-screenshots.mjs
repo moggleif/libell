@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
+import { basePath } from './basePath.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'dist/screenshots');
@@ -16,10 +17,11 @@ const preview = spawn('npx', ['vite', 'preview', '--port', '4173', '--strictPort
 });
 try {
   // Wait for the preview server to accept connections.
-  const url = 'http://localhost:4173/libell/?demo=1';
+  const appUrl = `http://localhost:4173${basePath()}`;
+  const url = `${appUrl}?demo=1`;
   for (let attempt = 0; ; attempt += 1) {
     try {
-      await fetch('http://localhost:4173/libell/');
+      await fetch(appUrl);
       break;
     } catch {
       if (attempt > 40) throw new Error('vite preview did not start');

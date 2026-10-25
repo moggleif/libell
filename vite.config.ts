@@ -4,10 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { localVersion } from './scripts/version.ts';
+import { basePath } from './scripts/basePath.ts';
 
-// GitHub Pages serves a project site from /<repo>/. Override with BASE_PATH
-// (e.g. BASE_PATH=/ for a custom domain or local static hosting).
-const base = process.env.BASE_PATH ?? '/libell/';
+// The root of libell.app, or the BASE_PATH the deploy workflow passes (#672).
+const base = basePath();
 
 // ── Version string for the footer ──────────────────────────────────────────
 // The VERSION file holds major.minor (or major.minor.patch); the deploy

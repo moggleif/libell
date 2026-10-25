@@ -22,7 +22,7 @@ those in-app strings are kept consistent with.
 
 1. Install **Bluefy – Web Bluetooth Browser** from the App Store.
 2. Open Bluefy and allow the Bluetooth permission prompt.
-3. In Bluefy's address bar, go to <https://moggleif.github.io/libell/>.
+3. In Bluefy's address bar, go to <https://libell.app/>.
 4. Turn on the box (an EasyLevel box's name starts with "CARATI").
 5. Tap the sensor icon at the top right to open the **Sensor box** page, tap
    **Connect EasyLevel sensor** or **Connect Xparkle RVS01 sensor**, then pick the box from the

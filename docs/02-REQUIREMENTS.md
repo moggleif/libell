@@ -240,6 +240,12 @@ URL and must keep working with no signal.
 - **When** I choose "Add to Home Screen" / "Install"
 - **Then** it installs with its own Libell icon and opens standalone, without browser
   chrome.
+- **Given** I open <https://libell.app/>
+- **Then** the app loads at the root of its own domain and installs with `start_url` and
+  `scope` `/` (#672, ADR 0020).
+- **Given** I open the old address, <https://moggleif.github.io/libell/>
+- **Then** I end up on <https://libell.app/>. Nothing saved under the old address carries
+  over, because a browser keeps saved data per address.
 
 ## R11 — Phone calibration and dashboard warning lamps
 

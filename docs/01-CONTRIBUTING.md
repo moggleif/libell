@@ -9,7 +9,7 @@
 
 ```sh
 npm install
-npm run dev      # dev server on http://localhost:5173/libell/
+npm run dev      # dev server on http://localhost:5173/
 ```
 
 ## Build & test
@@ -26,8 +26,10 @@ npm run flows         # Playwright: the app's flows through main.ts's real wirin
 npm run fit           # Playwright: it all fits a phone screen (needs `build` first)
 ```
 
-The base path defaults to `/libell/` for GitHub Pages project hosting; override it with
-`BASE_PATH=/ npm run build` for a custom domain or root-level hosting.
+The app is served from the root of `libell.app`, so the base path defaults to `/`. The
+deploy workflow passes the base path GitHub Pages reports as `BASE_PATH`, and the
+Playwright scripts read the same variable, so `BASE_PATH=/libell npm run build` builds for
+a project site ([ADR 0020](adr/0020-own-domain-at-the-root.md)).
 
 The Playwright scripts need a build to serve, so they are not part of the
 pre-commit set — CI runs them after `build`. `flows` (#374, #392) drives the simulated
