@@ -1,6 +1,6 @@
 # Libell
 
-**➡️ Open the app: <https://moggleif.github.io/libell/>** · no sensor at hand?
+**➡️ Open the app: <https://libell.app/>** · no sensor at hand?
 [Try the demo modes](#try-the-demo-modes).
 
 Libell is an installable web app (PWA) that helps you level a motorhome / RV with your
@@ -25,20 +25,20 @@ loaded; there is no account.
 
 Each link opens the deployed app in a mode that needs no phone sensor and no Sensorbox:
 
-- [Demo](https://moggleif.github.io/libell/?demo) — a fixed synthetic tilt instead of the
+- [Demo](https://libell.app/?demo) — a fixed synthetic tilt instead of the
   phone's sensor.
-- [Xparkle, simulated](https://moggleif.github.io/libell/?xparkle-sim) — a simulated
+- [Xparkle, simulated](https://libell.app/?xparkle-sim) — a simulated
   Xparkle box.
-- [Xparkle, connection drops](https://moggleif.github.io/libell/?xparkle-sim=drop) — the
+- [Xparkle, connection drops](https://libell.app/?xparkle-sim=drop) — the
   simulated box loses its connection now and then.
-- [Xparkle, wrong password](https://moggleif.github.io/libell/?xparkle-sim=badpassword) —
+- [Xparkle, wrong password](https://libell.app/?xparkle-sim=badpassword) —
   the box rejects the factory password; enter `1234` to get past it.
-- [EasyLevel, simulated](https://moggleif.github.io/libell/?easylevel-sim) — a simulated
+- [EasyLevel, simulated](https://libell.app/?easylevel-sim) — a simulated
   EasyLevel box.
-- [EasyLevel, connection drops](https://moggleif.github.io/libell/?easylevel-sim=drop) —
+- [EasyLevel, connection drops](https://libell.app/?easylevel-sim=drop) —
   the simulated box loses its connection now and then.
-- [Demo + Xparkle](https://moggleif.github.io/libell/?demo&xparkle-sim) and
-  [Demo + EasyLevel](https://moggleif.github.io/libell/?demo&easylevel-sim) — the flags
+- [Demo + Xparkle](https://libell.app/?demo&xparkle-sim) and
+  [Demo + EasyLevel](https://libell.app/?demo&easylevel-sim) — the flags
   combine.
 
 ## Using it on your phone
@@ -119,12 +119,12 @@ static site to GitHub Pages. The stack, layers and math are described in
 
 ```sh
 npm install
-npm run dev           # http://localhost:5173/libell/
+npm run dev           # http://localhost:5173/
 ```
 
 The same query flags as in [Try the demo modes](#try-the-demo-modes) work on the dev
 server, so the app runs on a machine with no sensors.
-Every merge to `main` deploys to GitHub Pages; versions and release builds are described
+Every merge to `main` deploys to GitHub Pages at <https://libell.app/>; versions and release builds are described
 in [ADR 0007](docs/adr/0007-pages-as-qa-and-versioning.md).
 
 See [`docs/01-CONTRIBUTING.md`](docs/01-CONTRIBUTING.md) for the build, test and

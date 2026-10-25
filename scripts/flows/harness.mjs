@@ -2,8 +2,10 @@
 // the app on a fresh page, polling, reading storage and the lamps, and
 // finding and leaving its pages.
 
+import { basePath } from '../basePath.ts';
+
 export const PORT = 4175;
-export const BASE = `http://localhost:${PORT}/libell/`;
+export const BASE = `http://localhost:${PORT}${basePath()}`;
 
 export function assert(condition, message) {
   if (!condition) throw new Error(`flows test failed: ${message}`);

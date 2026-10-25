@@ -6,7 +6,9 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
+import { basePath } from './basePath.ts';
 
+const APP_URL = `http://localhost:4174${basePath()}`;
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function assert(condition, message) {
@@ -21,7 +23,7 @@ let browser;
 try {
   for (let attempt = 0; ; attempt += 1) {
     try {
-      await fetch('http://localhost:4174/libell/');
+      await fetch(APP_URL);
       break;
     } catch {
       if (attempt > 40) throw new Error('vite preview did not start');
@@ -37,7 +39,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'en-GB' });
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await page.goto('http://localhost:4174/libell/?demo=1');
+  await page.goto(`${APP_URL}?demo=1`);
 
   await page.waitForSelector('.rv-diagram svg', { timeout: 10_000 });
   // The status row is deliberately silent when the wheel cards already say

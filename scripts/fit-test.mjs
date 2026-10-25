@@ -31,11 +31,9 @@ import { chromium } from 'playwright';
 import { APPEARANCES } from '../src/domain/appearance.ts';
 import { selectAppearances } from './fitAppearances.ts';
 import { calibrationGapProblem, measureCalibrationGap } from './fitWizardSpacing.ts';
-import { openWithSettings } from './fitOpen.mjs';
+import { BASE, PORT, openWithSettings } from './fitOpen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PORT = 4175;
-const BASE = `http://localhost:${PORT}/libell/`;
 
 // Every shipped language (one `xx.ts` dictionary each): a view that fits in
 // one language can overflow in another, where words run longer.
