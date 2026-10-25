@@ -9,7 +9,8 @@
 import { REPO_URL } from '../domain/site';
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
-import { LANGUAGE_NAMES, LANGUAGES, translate, type Language, type MessageKey } from './i18n';
+import { LANGUAGES, translate, type Language, type MessageKey } from './i18n';
+import { escapeHtml, languageList, link, staticHead } from './staticPage';
 
 /** The day the policy's text last changed. Change it with the text. */
 const POLICY_CHANGED = '2026-10-25';
@@ -22,7 +23,7 @@ export function privacyPolicyPath(base: string, lang: Language): string {
 }
 
 /** Every file the build writes, by its name under the output folder: a page
- * per language, `privacy/` in English, and the pages' stylesheet. */
+ * per language and `privacy/` in English. */
 export function privacyPages(base: string): { fileName: string; source: string }[] {
   return [
     { fileName: 'privacy/index.html', source: renderPrivacyPage('en', base) },
@@ -30,7 +31,6 @@ export function privacyPages(base: string): { fileName: string; source: string }
       fileName: `privacy/${lang}/index.html`,
       source: renderPrivacyPage(lang, base),
     })),
-    { fileName: 'privacy/privacy.css', source: PRIVACY_CSS },
   ];
 }
 
@@ -76,24 +76,6 @@ function sections(lang: Language): Section[] {
   ];
 }
 
-const ESCAPES: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-};
-
-/** Every text and attribute goes through here: the dictionaries are ours,
- * but the page must stay inert whatever a translation contains. */
-export function escapeHtml(value: string): string {
-  return value.replace(/[&<>"]/g, (c) => ESCAPES[c] ?? c);
-}
-
-function link(href: string, label: string, lang?: Language): string {
-  const hreflang = lang ? ` hreflang="${lang}" lang="${lang}"` : '';
-  return `<a href="${escapeHtml(href)}"${hreflang}>${escapeHtml(label)}</a>`;
-}
-
 function renderParagraph(paragraph: Section['paragraphs'][number]): string {
   if (typeof paragraph === 'string') return `<p>${escapeHtml(paragraph)}</p>`;
   const [subheading, text] = paragraph;
@@ -115,32 +97,13 @@ function changedDate(lang: Language): string {
   }).format(new Date(`${POLICY_CHANGED}T12:00:00Z`));
 }
 
-function languageList(base: string, current: Language): string {
-  const items = LANGUAGES.filter((lang) => lang !== current).map(
-    (lang) => `<li>${link(privacyPolicyPath(base, lang), LANGUAGE_NAMES[lang], lang)}</li>`,
-  );
-  return `<ul class="languages">\n${items.join('\n')}\n</ul>`;
-}
-
-// No script, no inline style and nothing from elsewhere: the page only
-// loads its own stylesheet.
-// (`frame-ancestors` is left out: a meta CSP cannot carry it, and a page with
-// nothing to click is no clickjacking target.)
-const CSP =
-  "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'";
-
 /** The whole page for one language. */
 export function renderPrivacyPage(lang: Language, base: string): string {
   const text = (key: MessageKey, vars?: Record<string, string>) => translate(lang, key, vars);
   return `<!doctype html>
 <html lang="${lang}">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="${CSP}">
-<meta name="referrer" content="no-referrer">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(text('policy.title'))}</title>
-<link rel="stylesheet" href="${base}privacy/privacy.css">
+${staticHead(base, text('policy.title'))}
 </head>
 <body>
 <main>
@@ -152,28 +115,9 @@ ${sections(lang)
 <p>${link(ISSUES_URL, text('policy.questions.link'))} · ${link(COUNTER_ORIGIN, text('counting.dashboard'))}</p>
 <p>${link(base, text('policy.open'))}</p>
 <h2>${escapeHtml(text('policy.languages'))}</h2>
-${languageList(base, lang)}
+${languageList(lang, (other) => privacyPolicyPath(base, other))}
 </main>
 </body>
 </html>
 `;
 }
-
-/** The pages' stylesheet: the browser's own light and dark colours, so the
- * page follows the phone's theme without a colour of its own. */
-const PRIVACY_CSS = `:root { color-scheme: light dark; }
-body {
-  margin: 0;
-  background: Canvas;
-  color: CanvasText;
-  font: 1rem/1.5 system-ui, sans-serif;
-}
-main { max-width: 40rem; margin: 0 auto; padding: 16px; }
-h1 { font-size: 1.6rem; line-height: 1.2; }
-h2 { font-size: 1.2rem; margin-top: 2rem; }
-h3 { font-size: 1rem; margin-bottom: 0; }
-h3 + p { margin-top: 0.25rem; }
-.changed { opacity: 0.75; }
-.languages { columns: 2; padding-left: 1.2rem; }
-a { color: LinkText; }
-`;

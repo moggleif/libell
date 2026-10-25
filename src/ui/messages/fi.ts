@@ -141,6 +141,29 @@ export const fi: Messages = {
   'seo.title': 'Libell – matkailuauto tai -vaunu vaakatasoon puhelimella',
   'seo.description':
     'Ilmainen sovellus, joka näyttää, mitkä matkailuauton tai -vaunun pyörät nostetaan ja mille kiilan askelmalle. Käyttää puhelinta tai anturirasiaa ja toimii ilman verkkoyhteyttä.',
+  'landing.how.h': 'Näin se toimii',
+  'landing.how.phone':
+    'Aseta puhelin lappeelleen ajoneuvoon yläreuna eteenpäin. Libell näyttää matkailuautosi tai -vaunusi ylhäältä päin ja kunkin pyörän kohdalla, mille kiilan askelmalle se ajetaan.',
+  'landing.how.ramps':
+    'Syötä mukanasi olevat kiilat, niin Libell suunnittelee niiden mukaan: mitkä pyörät nostetaan, mille askelmalle ja milloin kiilat eivät riitä ja ajoneuvoa kannattaa siirtää.',
+  'landing.how.caravan':
+    'Matkailuvaunussa Libell tasaa akselin ja kertoo, kuinka paljon nokkapyörää veivataan ylös tai alas.',
+  'landing.how.box':
+    'Ajoneuvoon asennettu anturirasia voi mitata puhelimen sijaan. Tuetut mallit: {boxes}.',
+  'landing.how.app':
+    'Libell toimii selaimessa ilman tiliä, ja sen voi asentaa Koti-valikkoon. Se on ilmainen ja avointa lähdekoodia.',
+  'landing.faq.h': 'Usein kysyttyä',
+  'landing.faq.level.q': 'Miten matkailuauto saadaan vaakatasoon puhelimella?',
+  'landing.faq.level.a':
+    'Avaa Libell, syötä ajoneuvosi mitat ja kiilat ja aseta puhelin lappeelleen yläreuna eteenpäin. Aja jokainen oranssi pyörä näytetylle askelmalle, odota, kunnes ajoneuvo on paikallaan, ja katso uudelleen. Kun kaikki pyörät ovat vihreitä, ajoneuvo on vaakatasossa.',
+  'landing.faq.free.q': 'Maksaako Libell jotain?',
+  'landing.faq.free.a':
+    'Ei. Libell on ilmainen, ilman mainoksia ja tiliä, ja sen lähdekoodi on avoin (MIT-lisenssi).',
+  'landing.faq.box.q': 'Tarvitsenko anturirasian?',
+  'landing.faq.box.a':
+    'Et, puhelimen oma anturi riittää. Anturirasia pysyy asennettuna ajoneuvoon, joten puhelin jää vapaaksi eikä sen tarvitse olla samassa kohdassa.',
+  'landing.faq.offline.q': 'Toimiiko se ilman nettiä?',
+  'landing.faq.privacy.q': 'Mitä Libell tallentaa minusta?',
   'menu.privacy': 'Tietosuoja',
   'menu.privacy.tab': 'Tietosuoja',
   'privacy.stored.h': 'Tallennettu tähän puhelimeen',

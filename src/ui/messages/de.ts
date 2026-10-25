@@ -160,6 +160,29 @@ export const de: Messages = {
   'seo.title': 'Libell – Wohnmobil oder Wohnwagen mit dem Handy ausrichten',
   'seo.description':
     'Kostenlose App, die zeigt, welche Räder deines Wohnmobils oder Wohnwagens hoch müssen und auf welche Stufe des Keils. Nutzt dein Handy oder eine Sensorbox und funktioniert offline.',
+  'landing.how.h': 'So funktioniert es',
+  'landing.how.phone':
+    'Leg das Handy flach ins Fahrzeug, die Oberkante nach vorn. Libell zeigt dein Wohnmobil oder deinen Wohnwagen von oben und für jedes Rad, auf welche Stufe des Keils es auffahren soll.',
+  'landing.how.ramps':
+    'Trag die Keile ein, die du dabeihast, und Libell plant mit ihnen: welche Räder hoch müssen, auf welche Stufe, und wann deine Keile nicht reichen und du das Fahrzeug besser umstellst.',
+  'landing.how.caravan':
+    'Beim Wohnwagen richtet Libell die Achse aus und sagt dir, wie weit du das Stützrad hoch- oder herunterkurbeln sollst.',
+  'landing.how.box':
+    'Eine fest im Fahrzeug montierte Sensorbox kann statt des Handys messen. Libell funktioniert mit {boxes}.',
+  'landing.how.app':
+    'Libell läuft im Browser ohne Konto und lässt sich auf dem Startbildschirm installieren. Es ist kostenlos und quelloffen.',
+  'landing.faq.h': 'Häufige Fragen',
+  'landing.faq.level.q': 'Wie richte ich mein Wohnmobil mit dem Handy aus?',
+  'landing.faq.level.a':
+    'Öffne Libell, trag die Maße deines Fahrzeugs und deine Keile ein und leg das Handy flach hin, die Oberkante nach vorn. Fahr jedes orangefarbene Rad auf die angezeigte Stufe auf, warte, bis das Fahrzeug ruhig steht, und schau erneut. Wenn alle Räder grün sind, steht es waagerecht.',
+  'landing.faq.free.q': 'Kostet Libell etwas?',
+  'landing.faq.free.a':
+    'Nein. Libell ist kostenlos, ohne Werbung und ohne Konto, und der Quellcode ist offen (MIT-Lizenz).',
+  'landing.faq.box.q': 'Brauche ich eine Sensorbox?',
+  'landing.faq.box.a':
+    'Nein, der eigene Sensor des Handys reicht. Eine Sensorbox bleibt fest im Fahrzeug montiert, so ist das Handy frei und muss nicht an derselben Stelle liegen.',
+  'landing.faq.offline.q': 'Funktioniert es ohne Internet?',
+  'landing.faq.privacy.q': 'Was speichert Libell über mich?',
   'menu.privacy': 'Datenschutz',
   'menu.privacy.tab': 'Datenschutz',
   'privacy.stored.h': 'Auf diesem Handy gespeichert',

@@ -155,6 +155,29 @@ export const ca: Messages = {
   'seo.title': 'Libell – anivella l’autocaravana o la caravana amb el mòbil',
   'seo.description':
     'Una app gratuïta que mostra quines rodes de l’autocaravana o la caravana cal pujar i a quin graó de la rampa. Fa servir el mòbil o una caixa sensora i funciona sense connexió.',
+  'landing.how.h': 'Com funciona',
+  'landing.how.phone':
+    'Posa el mòbil pla dins el vehicle amb la vora superior cap endavant. Libell mostra l’autocaravana o la caravana vista des de dalt i, per a cada roda, a quin graó de la rampa ha de pujar.',
+  'landing.how.ramps':
+    'Introdueix les rampes que portes i Libell planifica amb elles: quines rodes cal pujar, a quin graó, i quan les rampes no basten i val més moure el vehicle.',
+  'landing.how.caravan':
+    'En una caravana, Libell anivella l’eix i et diu quant has de pujar o baixar la roda jockey amb la manovella.',
+  'landing.how.box':
+    'Una caixa sensora muntada al vehicle pot mesurar en lloc del mòbil. Libell funciona amb {boxes}.',
+  'landing.how.app':
+    'Libell funciona al navegador, sense compte, i es pot instal·lar a la pantalla d’inici. És gratuït i de codi obert.',
+  'landing.faq.h': 'Preguntes freqüents',
+  'landing.faq.level.q': 'Com anivellar l’autocaravana amb el mòbil?',
+  'landing.faq.level.a':
+    'Obre Libell, introdueix les mides i les rampes del vehicle i posa el mòbil pla amb la part de dalt cap endavant. Puja cada roda taronja al graó indicat, espera que el vehicle estigui quiet i torna a mirar. Quan totes les rodes són verdes, està anivellat.',
+  'landing.faq.free.q': 'Libell és gratuït?',
+  'landing.faq.free.a':
+    'Sí. Libell és gratuït, sense anuncis ni compte, i el codi font és obert (llicència MIT).',
+  'landing.faq.box.q': 'Cal una caixa sensora?',
+  'landing.faq.box.a':
+    'No, n’hi ha prou amb el sensor del mòbil. Una caixa sensora es queda muntada al vehicle, així el mòbil queda lliure i no ha d’estar sempre al mateix lloc.',
+  'landing.faq.offline.q': 'Funciona sense internet?',
+  'landing.faq.privacy.q': 'Què guarda Libell sobre mi?',
   'menu.privacy': 'Privadesa',
   'menu.privacy.tab': 'Privadesa',
   'privacy.stored.h': 'Desat en aquest mòbil',

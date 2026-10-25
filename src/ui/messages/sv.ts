@@ -164,6 +164,29 @@ export const sv: Messages = {
   'seo.title': 'Libell – få husbilen eller husvagnen i våg med telefonen',
   'seo.description':
     'En gratis app som visar vilka hjul på husbilen eller husvagnen som ska upp, och på vilket steg på klossen. Använder telefonen eller en sensorbox och fungerar utan internet.',
+  'landing.how.h': 'Så fungerar det',
+  'landing.how.phone':
+    'Lägg telefonen plant i fordonet med överkanten mot fronten. Libell visar husbilen eller husvagnen ovanifrån och, för varje hjul, vilket steg på klossen det ska köras upp på.',
+  'landing.how.ramps':
+    'Fyll i de klossar du har med dig så planerar Libell med dem: vilka hjul som ska upp, på vilket steg, och när klossarna inte räcker och du hellre ska flytta fordonet.',
+  'landing.how.caravan':
+    'För en husvagn ställer Libell axeln i våg och säger hur långt du ska veva stödhjulet upp eller ner.',
+  'landing.how.box':
+    'En sensorbox som sitter monterad i fordonet kan mäta i stället för telefonen. Libell fungerar med {boxes}.',
+  'landing.how.app':
+    'Libell körs i webbläsaren utan konto och kan installeras på hemskärmen. Appen är gratis och har öppen källkod.',
+  'landing.faq.h': 'Vanliga frågor',
+  'landing.faq.level.q': 'Hur ställer jag husbilen i våg med mobilen?',
+  'landing.faq.level.a':
+    'Öppna Libell, fyll i fordonets mått och dina klossar, och lägg telefonen plant med överkanten mot fronten. Kör upp varje orange hjul på steget som visas, vänta tills fordonet står still och titta igen. När alla hjul är gröna står du i våg.',
+  'landing.faq.free.q': 'Kostar Libell något?',
+  'landing.faq.free.a':
+    'Nej. Libell är gratis, utan reklam och utan konto, och källkoden är öppen (MIT-licens).',
+  'landing.faq.box.q': 'Behöver jag en sensorbox?',
+  'landing.faq.box.a':
+    'Nej, telefonens egen sensor räcker. En sensorbox sitter kvar monterad i fordonet, så telefonen är ledig och behöver inte ligga på samma ställe.',
+  'landing.faq.offline.q': 'Fungerar det utan internet?',
+  'landing.faq.privacy.q': 'Vad sparar Libell om mig?',
   'menu.privacy': 'Integritet',
   'menu.privacy.tab': 'Integritet',
   'privacy.stored.h': 'Sparat på den här telefonen',

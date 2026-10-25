@@ -161,6 +161,29 @@ export const ro: Messages = {
   'seo.title': 'Libell – nivelați autorulota sau rulota cu telefonul',
   'seo.description':
     'O aplicație gratuită care arată ce roți ale autorulotei sau rulotei trebuie ridicate și pe ce treaptă a rampei. Folosește telefonul sau un modul senzor și funcționează offline.',
+  'landing.how.h': 'Cum funcționează',
+  'landing.how.phone':
+    'Așezați telefonul plat în vehicul, cu marginea de sus spre față. Libell arată autorulota sau rulota văzută de sus și, pentru fiecare roată, pe ce treaptă a rampei să urcați.',
+  'landing.how.ramps':
+    'Introduceți rampele pe care le aveți, iar Libell planifică cu ele: ce roți să ridicați, pe ce treaptă și când rampele nu sunt suficiente și e mai bine să mutați vehiculul.',
+  'landing.how.caravan':
+    'La o rulotă, Libell nivelează osia și vă spune cu cât să ridicați sau să coborâți roata jockey din manivelă.',
+  'landing.how.box':
+    'Un modul senzor montat în vehicul poate măsura în locul telefonului. Libell funcționează cu {boxes}.',
+  'landing.how.app':
+    'Libell rulează în browser, fără cont, și poate fi instalat pe ecranul principal. Este gratuit și open source.',
+  'landing.faq.h': 'Întrebări frecvente',
+  'landing.faq.level.q': 'Cum nivelez autorulota cu telefonul?',
+  'landing.faq.level.a':
+    'Deschideți Libell, introduceți dimensiunile și rampele vehiculului și așezați telefonul plat, cu partea de sus spre față. Urcați fiecare roată portocalie pe treapta indicată, așteptați până când vehiculul stă nemișcat și verificați din nou. Când toate roțile sunt verzi, vehiculul este la nivel.',
+  'landing.faq.free.q': 'Libell costă ceva?',
+  'landing.faq.free.a':
+    'Nu. Libell este gratuit, fără reclame și fără cont, iar codul sursă este deschis (licență MIT).',
+  'landing.faq.box.q': 'Am nevoie de un modul senzor?',
+  'landing.faq.box.a':
+    'Nu, senzorul telefonului este suficient. Un modul senzor rămâne montat în vehicul, astfel telefonul este liber și nu trebuie să stea mereu în același loc.',
+  'landing.faq.offline.q': 'Funcționează fără internet?',
+  'landing.faq.privacy.q': 'Ce stochează Libell despre mine?',
   'menu.privacy': 'Confidențialitate',
   'menu.privacy.tab': 'Date',
   'privacy.stored.h': 'Salvat pe acest telefon',

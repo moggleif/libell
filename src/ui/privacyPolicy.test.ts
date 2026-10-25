@@ -1,22 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { LANGUAGES, translate } from './i18n';
-import { escapeHtml, privacyPages, privacyPolicyPath, renderPrivacyPage } from './privacyPolicy';
+import { privacyPages, privacyPolicyPath, renderPrivacyPage } from './privacyPolicy';
+import { escapeHtml } from './staticPage';
 
 describe('privacy policy pages (#675)', () => {
-  it('writes one page per shipped language, privacy/ in English, and their stylesheet', () => {
+  it('writes one page per shipped language and privacy/ in English', () => {
     const files = privacyPages('/');
     expect(files.map((f) => f.fileName)).toEqual([
       'privacy/index.html',
       ...LANGUAGES.map((lang) => `privacy/${lang}/index.html`),
-      'privacy/privacy.css',
     ]);
     expect(files[0]!.source).toBe(renderPrivacyPage('en', '/'));
-  });
-
-  it('styles the pages with the browser’s own light and dark colours only', () => {
-    const css = privacyPages('/').at(-1)!.source;
-    expect(css).toContain('color-scheme: light dark');
-    expect(css).not.toMatch(/#[0-9a-f]{3,8}\b|rgb|hsl/i);
   });
 
   it.each(LANGUAGES)('says the whole policy in %s, in that language', (lang) => {
@@ -50,7 +44,7 @@ describe('privacy policy pages (#675)', () => {
     const html = renderPrivacyPage('fr', '/');
     expect(html).not.toMatch(/<script|<style|\sstyle=|\son[a-z]+=/i);
     expect(html).toContain("default-src 'none'; style-src 'self'");
-    expect(html.match(/<link [^>]*href="([^"]+)"/)?.[1]).toBe('/privacy/privacy.css');
+    expect(html.match(/<link [^>]*href="([^"]+)"/)?.[1]).toBe('/page.css');
     expect(escapeHtml('<a href="x">&</a>')).toBe('&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;');
   });
 

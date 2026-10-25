@@ -145,6 +145,29 @@ export const tr: Messages = {
   'seo.title': 'Libell – motokaravanınızı veya karavanınızı telefonla seviyeleyin',
   'seo.description':
     'Motokaravanınızın veya karavanınızın hangi tekerleklerinin takozun hangi basamağına çıkacağını gösteren ücretsiz uygulama. Telefonunuzu veya bir sensör kutusunu kullanır, çevrimdışı çalışır.',
+  'landing.how.h': 'Nasıl çalışır',
+  'landing.how.phone':
+    'Telefonu araçta üst kenarı öne bakacak şekilde düz yatırın. Libell motokaravanınızı veya karavanınızı yukarıdan gösterir ve her tekerlek için takozun hangi basamağına yukarı sürüleceğini söyler.',
+  'landing.how.ramps':
+    'Yanınızdaki takozları girin, Libell onlarla plan yapar: hangi tekerleklerin takozun hangi basamağına yukarı sürüleceğini gösterir ve takozlarınız yetmediğinde aracı başka bir yere çekmenizi söyler.',
+  'landing.how.caravan':
+    'Karavanda Libell dingili düzler ve jokey tekerini ne kadar yukarı ya da aşağı çevirmeniz gerektiğini söyler.',
+  'landing.how.box':
+    'Araca monte edilmiş bir sensör kutusu telefonun yerine ölçüm yapabilir. Libell şunlarla çalışır: {boxes}.',
+  'landing.how.app':
+    'Libell hesap gerektirmeden tarayıcıda çalışır ve ana ekrana yüklenebilir. Ücretsiz ve açık kaynaklıdır.',
+  'landing.faq.h': 'Sık sorulan sorular',
+  'landing.faq.level.q': 'Karavanımı telefonla nasıl seviyelerim?',
+  'landing.faq.level.a':
+    'Libell’i açın, aracınızın ölçülerini ve takozlarınızı girin ve telefonu üst kenarı öne bakacak şekilde düz yatırın. Her turuncu tekerleği gösterilen basamağa yukarı sürün, araç hareketsiz kalana kadar bekleyin ve tekrar bakın. Tüm tekerlekler yeşil olduğunda aracınız düzdür.',
+  'landing.faq.free.q': 'Libell ücretli mi?',
+  'landing.faq.free.a':
+    'Hayır. Libell ücretsizdir, reklam ve hesap yoktur, kaynak kodu açıktır (MIT lisansı).',
+  'landing.faq.box.q': 'Sensör kutusuna ihtiyacım var mı?',
+  'landing.faq.box.a':
+    'Hayır, telefonun kendi sensörü yeterlidir. Sensör kutusu araçta monte kalır, böylece telefonunuz serbest kalır ve aynı yerde durması gerekmez.',
+  'landing.faq.offline.q': 'İnternet olmadan çalışır mı?',
+  'landing.faq.privacy.q': 'Libell benim hakkımda ne saklıyor?',
   'menu.privacy': 'Gizlilik',
   'menu.privacy.tab': 'Gizlilik',
   'privacy.stored.h': 'Bu telefonda kayıtlı',

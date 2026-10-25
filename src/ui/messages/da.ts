@@ -155,6 +155,29 @@ export const da: Messages = {
   'seo.title': 'Libell – sæt autocamperen eller campingvognen i vater med telefonen',
   'seo.description':
     'En gratis app, der viser, hvilke hjul på autocamperen eller campingvognen der skal op, og på hvilket trin på klodsen. Bruger telefonen eller en sensorboks og virker offline.',
+  'landing.how.h': 'Sådan virker det',
+  'landing.how.phone':
+    'Læg telefonen fladt i køretøjet med overkanten mod fronten. Libell viser din autocamper eller campingvogn oppefra og, for hvert hjul, hvilket trin på klodsen det skal køre op på.',
+  'landing.how.ramps':
+    'Indtast de klodser, du har med, så planlægger Libell med dem: hvilke hjul der skal op, på hvilket trin, og hvornår klodserne ikke slår til, og du hellere skal flytte køretøjet.',
+  'landing.how.caravan':
+    'Til en campingvogn sætter Libell akslen i vater og fortæller, hvor meget du skal skrue næsehjulet op eller ned.',
+  'landing.how.box':
+    'En sensorboks, der sidder fast monteret i køretøjet, kan måle i stedet for telefonen. Libell virker med {boxes}.',
+  'landing.how.app':
+    'Libell kører i browseren uden konto og kan installeres på hjemmeskærmen. Den er gratis og open source.',
+  'landing.faq.h': 'Ofte stillede spørgsmål',
+  'landing.faq.level.q': 'Hvordan sætter jeg min autocamper i vater med mobilen?',
+  'landing.faq.level.a':
+    'Åbn Libell, indtast køretøjets mål og dine klodser, og læg telefonen fladt med overkanten mod fronten. Kør hvert orange hjul op på det viste trin, vent, til køretøjet står stille, og se igen. Når alle hjul er grønne, står du i vater.',
+  'landing.faq.free.q': 'Koster Libell noget?',
+  'landing.faq.free.a':
+    'Nej. Libell er gratis, uden reklamer og uden konto, og kildekoden er åben (MIT-licens).',
+  'landing.faq.box.q': 'Skal jeg have en sensorboks?',
+  'landing.faq.box.a':
+    'Nej, telefonens egen sensor er nok. En sensorboks bliver siddende i køretøjet, så telefonen er fri og ikke behøver at ligge samme sted.',
+  'landing.faq.offline.q': 'Virker det uden internet?',
+  'landing.faq.privacy.q': 'Hvad gemmer Libell om mig?',
   'menu.privacy': 'Privatliv',
   'menu.privacy.tab': 'Privatliv',
   'privacy.stored.h': 'Gemt på denne telefon',

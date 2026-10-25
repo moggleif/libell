@@ -173,6 +173,29 @@ export const en = {
   'seo.title': 'Libell – level your motorhome or caravan with your phone',
   'seo.description':
     'A free app that shows which wheels of your motorhome or caravan to raise, and onto which ramp step. Uses your phone or a sensor box, and works offline.',
+  'landing.how.h': 'How it works',
+  'landing.how.phone':
+    'Lay the phone flat in the vehicle with its top edge toward the front. Libell shows your motorhome or caravan from above and, for each wheel, which ramp step to drive up onto.',
+  'landing.how.ramps':
+    'Enter the ramps you carry and Libell plans with them: which wheels to raise, onto which step, and when your ramps are not enough and you should move the vehicle instead.',
+  'landing.how.caravan':
+    'For a caravan, Libell levels the axle and tells you how far to crank the jockey wheel up or down.',
+  'landing.how.box':
+    'A sensor box mounted in the vehicle can measure instead of the phone. Libell works with {boxes}.',
+  'landing.how.app':
+    'Libell runs in the browser with no account and can be installed on the home screen. It is free and open source.',
+  'landing.faq.h': 'Common questions',
+  'landing.faq.level.q': 'How do I level my motorhome with my phone?',
+  'landing.faq.level.a':
+    'Open Libell, enter your vehicle’s measurements and ramps, and lay the phone flat with its top toward the front. Drive each orange wheel up onto the step shown, wait until the vehicle is still and look again. When every wheel is green, you are level.',
+  'landing.faq.free.q': 'Does Libell cost anything?',
+  'landing.faq.free.a':
+    'No. Libell is free, with no ads and no account, and its source code is open (MIT license).',
+  'landing.faq.box.q': 'Do I need a sensor box?',
+  'landing.faq.box.a':
+    'No, the phone’s own sensor is enough. A sensor box stays mounted in the vehicle, so the phone is free and does not have to lie in the same spot.',
+  'landing.faq.offline.q': 'Does it work without internet?',
+  'landing.faq.privacy.q': 'What does Libell store about me?',
   'menu.privacy': 'Privacy',
   'menu.privacy.tab': 'Privacy',
   'privacy.stored.h': 'Stored on this phone',

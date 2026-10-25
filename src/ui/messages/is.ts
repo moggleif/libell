@@ -146,6 +146,29 @@ export const is: Messages = {
   'seo.title': 'Libell – gerðu húsbílinn eða hjólhýsið lárétt með símanum',
   'seo.description':
     'Ókeypis app sem sýnir hvaða hjól á húsbílnum eða hjólhýsinu þarf að hækka og upp á hvaða þrep kubbsins. Notar símann eða skynjarabox og virkar án nettengingar.',
+  'landing.how.h': 'Svona virkar það',
+  'landing.how.phone':
+    'Leggðu símann flatan í ökutækið með efri brúnina fram. Libell sýnir húsbílinn eða hjólhýsið ofan frá og, fyrir hvert hjól, upp á hvaða þrep kubbsins á að keyra það.',
+  'landing.how.ramps':
+    'Skráðu kubbana sem þú ert með og Libell skipuleggur með þeim: hvaða hjól þarf að hækka, upp á hvaða þrep, og hvenær kubbarnir duga ekki og betra er að færa ökutækið.',
+  'landing.how.caravan':
+    'Fyrir hjólhýsi gerir Libell öxulinn láréttan og segir hve mikið þú átt að hækka eða lækka nefhjólið með sveifinni.',
+  'landing.how.box':
+    'Skynjarabox sem er fest í ökutækinu getur mælt í stað símans. Libell virkar með {boxes}.',
+  'landing.how.app':
+    'Libell keyrir í vafranum án aðgangs og má setja upp á heimaskjáinn. Það er ókeypis og opinn hugbúnaður.',
+  'landing.faq.h': 'Algengar spurningar',
+  'landing.faq.level.q': 'Hvernig geri ég húsbílinn láréttan með símanum?',
+  'landing.faq.level.a':
+    'Opnaðu Libell, skráðu mál ökutækisins og kubbana þína, og leggðu símann flatan með efri brúnina fram. Keyrðu hvert appelsínugult hjól upp á þrepið sem sýnt er, bíddu þar til ökutækið er kyrrt og líttu aftur. Þegar öll hjól eru græn er ökutækið lárétt.',
+  'landing.faq.free.q': 'Kostar Libell eitthvað?',
+  'landing.faq.free.a':
+    'Nei. Libell er ókeypis, án auglýsinga og án aðgangs, og frumkóðinn er opinn (MIT-leyfi).',
+  'landing.faq.box.q': 'Þarf ég skynjarabox?',
+  'landing.faq.box.a':
+    'Nei, eigin skynjari símans dugar. Skynjarabox situr fast í ökutækinu, svo síminn er laus og þarf ekki að liggja á sama stað.',
+  'landing.faq.offline.q': 'Virkar það án nettengingar?',
+  'landing.faq.privacy.q': 'Hvað geymir Libell um mig?',
   'menu.privacy': 'Persónuvernd',
   'menu.privacy.tab': 'Persónuvernd',
   'privacy.stored.h': 'Vistað í þessum síma',

@@ -153,6 +153,29 @@ export const et: Messages = {
   'seo.title': 'Libell – sea matkaauto või haagissuvila telefoniga loodi',
   'seo.description':
     'Tasuta rakendus, mis näitab, milliseid matkaauto või haagissuvila rattaid tõsta ja millisele kiilu astmele. Kasutab telefoni või välisandurit ja töötab võrguühenduseta.',
+  'landing.how.h': 'Kuidas see töötab',
+  'landing.how.phone':
+    'Pane telefon sõidukis lapiti, ülemine serv suunaga ette. Libell näitab sinu matkaautot või haagissuvilat ülalt ja iga ratta kohta, millisele kiilu astmele sellega peale sõita.',
+  'landing.how.ramps':
+    'Sisesta kiilud, mis sul kaasas on, ja Libell arvestab nendega: milliseid rattaid tõsta, millisele astmele ja millal kiiludest ei piisa ning sõidukit tuleks hoopis liigutada.',
+  'landing.how.caravan':
+    'Haagissuvila puhul seab Libell telje loodi ja ütleb, kui palju tugiratast üles või alla keerata.',
+  'landing.how.box':
+    'Sõidukisse paigaldatud välisandur saab mõõta telefoni asemel. Libell toetab mudeleid {boxes}.',
+  'landing.how.app':
+    'Libell töötab brauseris ilma kontota ja selle saab paigaldada avakuvale. See on tasuta ja avatud lähtekoodiga.',
+  'landing.faq.h': 'Korduma kippuvad küsimused',
+  'landing.faq.level.q': 'Kuidas matkaautot telefoniga loodi seada?',
+  'landing.faq.level.a':
+    'Ava Libell, sisesta sõiduki mõõdud ja kiilud ning pane telefon lapiti, ülemine serv ette. Sõida iga oranž ratas näidatud astmele, oota, kuni sõiduk on paigal, ja vaata uuesti. Kui kõik rattad on rohelised, on sõiduk loodis.',
+  'landing.faq.free.q': 'Kas Libell maksab midagi?',
+  'landing.faq.free.a':
+    'Ei. Libell on tasuta, reklaamideta ja kontota ning selle lähtekood on avatud (MIT-litsents).',
+  'landing.faq.box.q': 'Kas mul on välisandurit vaja?',
+  'landing.faq.box.a':
+    'Ei, telefoni enda andurist piisab. Välisandur jääb sõidukisse paigaldatuks, nii et telefon on vaba ega pea lebama samas kohas.',
+  'landing.faq.offline.q': 'Kas see töötab ilma internetita?',
+  'landing.faq.privacy.q': 'Mida Libell minu kohta salvestab?',
   'menu.privacy': 'Privaatsus',
   'menu.privacy.tab': 'Privaatsus',
   'privacy.stored.h': 'Selles telefonis salvestatud',

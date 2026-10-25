@@ -149,6 +149,29 @@ export const nb: Messages = {
   'seo.title': 'Libell – få bobilen eller campingvognen i vater med telefonen',
   'seo.description':
     'En gratis app som viser hvilke hjul på bobilen eller campingvognen som skal opp, og på hvilket trinn på kilen. Bruker telefonen eller en sensorboks og fungerer uten nett.',
+  'landing.how.h': 'Slik fungerer det',
+  'landing.how.phone':
+    'Legg telefonen flatt i kjøretøyet med overkanten mot fronten. Libell viser bobilen eller campingvognen ovenfra og, for hvert hjul, hvilket trinn på kilen det skal kjøre opp på.',
+  'landing.how.ramps':
+    'Legg inn kilene du har med, så planlegger Libell med dem: hvilke hjul som skal opp, på hvilket trinn, og når kilene ikke strekker til og du heller bør flytte kjøretøyet.',
+  'landing.how.caravan':
+    'For en campingvogn setter Libell akselen i vater og forteller hvor langt du skal sveive nesehjulet opp eller ned.',
+  'landing.how.box':
+    'En sensorboks som sitter fast montert i kjøretøyet, kan måle i stedet for telefonen. Libell fungerer med {boxes}.',
+  'landing.how.app':
+    'Libell kjører i nettleseren uten konto og kan installeres på hjemskjermen. Den er gratis og åpen kildekode.',
+  'landing.faq.h': 'Vanlige spørsmål',
+  'landing.faq.level.q': 'Hvordan får jeg bobilen i vater med mobilen?',
+  'landing.faq.level.a':
+    'Åpne Libell, legg inn kjøretøyets mål og kilene dine, og legg telefonen flatt med overkanten mot fronten. Kjør hvert oransje hjul opp på trinnet som vises, vent til kjøretøyet står stille, og se igjen. Når alle hjul er grønne, står du i vater.',
+  'landing.faq.free.q': 'Koster Libell noe?',
+  'landing.faq.free.a':
+    'Nei. Libell er gratis, uten reklame og uten konto, og kildekoden er åpen (MIT-lisens).',
+  'landing.faq.box.q': 'Trenger jeg en sensorboks?',
+  'landing.faq.box.a':
+    'Nei, telefonens egen sensor holder. En sensorboks blir sittende i kjøretøyet, så telefonen er ledig og ikke trenger å ligge på samme sted.',
+  'landing.faq.offline.q': 'Fungerer det uten internett?',
+  'landing.faq.privacy.q': 'Hva lagrer Libell om meg?',
   'menu.privacy': 'Personvern',
   'menu.privacy.tab': 'Personvern',
   'privacy.stored.h': 'Lagret på denne telefonen',

@@ -24,6 +24,7 @@ and this guide has a bug — fix the guide in the same change. Clarity over clev
 | User-facing strings                         | `src/ui/messages/<lang>.ts`, one per `LANGUAGES`  |
 | What each string is for, the fixed terms    | `src/ui/messages/context.ts`, `glossary.ts`       |
 | What the privacy policy says                | `policy.*` strings, `src/ui/privacyPolicy.ts`     |
+| What the language pages say                 | `landing.*` strings, `src/ui/languagePages.ts`    |
 | How to translate or review a language       | `.claude/skills/translate/`                       |
 | Colors                                      | CSS custom properties in `src/ui/styles.css`      |
 

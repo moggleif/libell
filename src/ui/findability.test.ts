@@ -110,7 +110,8 @@ describe('llmsTxt (#701)', () => {
     expect(text).toContain('(https://github.com/moggleif/libell)');
   });
 
-  it('names every shipped language', () => {
-    for (const lang of LANGUAGES) expect(text).toContain(lang);
+  it('links the page of every shipped language and the privacy policy (#703)', () => {
+    for (const lang of LANGUAGES) expect(text).toContain(`(${SITE}${lang}/)`);
+    expect(text).toContain(`(${SITE}privacy/)`);
   });
 });

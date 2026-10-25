@@ -2025,6 +2025,81 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Not in the app: the summary under the title in search results, link previews and the text AI assistants read about Libell (#701).',
     'Tells a stranger what Libell does and why to pick it: free, says which wheels to raise and onto which step, phone or Sensorbox, works offline. Aim for about 160 characters.',
   ),
+  'landing.how.h': ctx(
+    'label',
+    'Language page: heading over the how-it-works paragraphs.',
+    'Introduces how Libell is used.',
+  ),
+  'landing.how.phone': ctx(
+    'text',
+    'Language page › How it works: first paragraph.',
+    'Explains the basic use: phone flat, top to the front, the screen says which step of the kloss each wheel drives onto.',
+  ),
+  'landing.how.ramps': ctx(
+    'text',
+    'Language page › How it works: second paragraph.',
+    "Says Libell plans with the user's own klossar, and tells them when the klossar cannot do it.",
+  ),
+  'landing.how.caravan': ctx(
+    'text',
+    'Language page › How it works: third paragraph.',
+    'Says caravans are supported: the axle wheels are levelled and the jockey wheel is cranked up or down.',
+  ),
+  'landing.how.box': ctx(
+    'text',
+    'Language page › How it works: fourth paragraph. {boxes} is a list of brand names.',
+    'Says a Sensorbox can replace the phone as the sensor, and names the supported models.',
+  ),
+  'landing.how.app': ctx(
+    'text',
+    'Language page › How it works: last paragraph.',
+    'Says there is nothing to sign up for or buy: browser app, installable, free, open source.',
+  ),
+  'landing.faq.h': ctx(
+    'label',
+    'Language page: heading over the questions and answers.',
+    'Introduces the questions people ask about Libell.',
+  ),
+  'landing.faq.level.q': ctx(
+    'label',
+    'Language page › Common questions: a question, as people would type it into a search engine.',
+    'The question someone asks before finding Libell; use the words people search with.',
+  ),
+  'landing.faq.level.a': ctx(
+    'text',
+    'Language page › Common questions: answer to "How do I level my motorhome with my phone?".',
+    'The steps, in order: measurements and klossar, phone flat, drive up, wait, repeat until all green.',
+  ),
+  'landing.faq.free.q': ctx(
+    'label',
+    'Language page › Common questions: a question.',
+    'Asks whether Libell is free.',
+  ),
+  'landing.faq.free.a': ctx(
+    'text',
+    'Language page › Common questions: answer to "Does Libell cost anything?".',
+    'Says it is free, no ads, no account, open source.',
+  ),
+  'landing.faq.box.q': ctx(
+    'label',
+    'Language page › Common questions: a question.',
+    'Asks whether a Sensorbox is required.',
+  ),
+  'landing.faq.box.a': ctx(
+    'text',
+    'Language page › Common questions: answer to "Do I need a sensor box?".',
+    'Says the phone alone is enough, and what a Sensorbox adds.',
+  ),
+  'landing.faq.offline.q': ctx(
+    'label',
+    "Language page › Common questions: a question. The answer is the About tab's offline sentence.",
+    'Asks whether Libell works with no connection, as on a campsite.',
+  ),
+  'landing.faq.privacy.q': ctx(
+    'label',
+    "Language page › Common questions: a question. The answer is the About tab's privacy sentence and a link to the privacy policy.",
+    'Asks what Libell keeps or sends about the user.',
+  ),
   'intro.h': ctx(
     'label',
     'First-visit intro (before the introduction wizard): the heading.',
