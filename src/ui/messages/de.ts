@@ -172,6 +172,44 @@ export const de: Messages = {
     'Alles löschen, was Libell auf diesem Handy gespeichert hat? Fahrzeuge, Maße und Kalibrierung gehen verloren, und Libell startet wie beim ersten Mal.',
   'privacy.deleteAll.yes': 'Ja, alles löschen',
   'privacy.deleteAll.cancel': 'Abbrechen',
+  'privacy.policy': 'Datenschutzerklärung lesen',
+  'policy.title': 'Datenschutzerklärung von Libell',
+  'policy.changed': 'Zuletzt geändert am {date}',
+  'policy.intro':
+    'Libell ist ein freies Open-Source-Projekt. Es gibt keine Konten, keine Werbung und kein Tracking, und niemand sammelt Daten über dich.',
+  'policy.stored.h': 'Was auf deinem Handy gespeichert wird',
+  'policy.stored':
+    'Libell speichert deine Fahrzeuge, Maße, Einstellungen, Kalibrierungen, Ziele, die gewählte Sprache und die zuletzt verwendete Sensorbox. Alles liegt im lokalen Speicher des Browsers auf deinem Handy. Er funktioniert ähnlich wie Cookies, wird aber nie irgendwohin gesendet. Libell braucht diese Daten, um zu funktionieren, deshalb gibt es kein Einwilligungsbanner.',
+  'policy.stored.delete':
+    'Unter {help} › {tab} in der App siehst du alles, was gespeichert ist, und kannst alles löschen. Du kannst auch die Websitedaten im Browser löschen.',
+  'policy.sensors.h': 'Sensoren und Bluetooth',
+  'policy.sensors':
+    'Die Bewegungssensoren und Bluetooth des Handys werden nur auf dem Handy genutzt und nur, um die Neigung zu messen. Die Messwerte verlassen das Handy nie.',
+  'policy.counting':
+    'Um zu wissen, was besser werden muss, kann Libell die Nutzung anonym mit GoatCounter zählen. Libell fragt dich einmal, ob gezählt werden darf, und bis zu deiner Wahl wird nichts gezählt. Die Statistik ist öffentlich.',
+  'policy.counting.ip':
+    'Wie bei jeder Anfrage im Internet erreichen die IP-Adresse des Handys und der Name des Browsers GoatCounter. GoatCounter speichert sie nie, sondern hält sie höchstens acht Stunden im Arbeitsspeicher, um denselben Besuch zu erkennen. GoatCounter wird aus Irland betrieben, die Server stehen in Finnland und Deutschland, also verlässt nichts die EU.',
+  'policy.counting.change':
+    'Deine Wahl kannst du jederzeit unter {help} › {tab} ändern. Ohne Internet wird nichts gesendet und nichts für später aufbewahrt.',
+  'policy.counting.basis':
+    'Die Zählung beruht auf deiner Einwilligung nach DSGVO (Art. 6 Abs. 1 lit. a): Du gibst sie mit deiner Wahl und kannst sie jederzeit widerrufen. Da nichts gespeichert wird, was dich erkennbar macht, gibt es nichts über dich, was gezeigt oder gelöscht werden könnte. Du kannst dich bei der Datenschutzbehörde deines Landes beschweren.',
+  'policy.shared.h': 'Was du selbst teilen möchtest',
+  'policy.shared.feedback':
+    'Unter {help} › {feedback} kannst du ein vorausgefülltes Issue auf GitHub öffnen, das du selbst mit deinem eigenen GitHub-Konto veröffentlichst. Das Issue ist öffentlich. Neben deinem Text enthält es die App-Version, die Bildschirmgröße, die Uhrzeit und den Namen des Browsers, und du siehst alles vor dem Veröffentlichen.',
+  'policy.shared.vehicle':
+    '„{share}“ erstellt einen Link mit den Maßen des Fahrzeugs, ohne Kalibrierung. Der Link landet nur dort, wohin du ihn schickst.',
+  'policy.site.h': 'Die Website',
+  'policy.site':
+    'Libell liegt auf GitHub Pages. Wie jeder Webhoster sieht GitHub deine IP-Adresse, wenn die Seite lädt. Libell hat keinen Zugriff auf die Protokolle von GitHub.',
+  'policy.owner.h': 'Wer hinter Libell steht',
+  'policy.owner':
+    'Libell gehört seinem Open-Source-Projekt, nicht einer Person oder einer Firma. Es ist kostenlos und darf unter der MIT-Lizenz beliebig genutzt werden. Es wird so bereitgestellt, wie es ist, ohne Gewährleistung.',
+  'policy.questions.h': 'Fragen und Änderungen',
+  'policy.questions':
+    'Stell deine Fragen als Issue auf GitHub. Wenn Libell ändert, was gespeichert oder gesendet wird, wird diese Seite gleichzeitig angepasst.',
+  'policy.questions.link': 'Issues auf GitHub',
+  'policy.languages': 'Andere Sprachen',
+  'policy.open': 'Libell öffnen',
   'stored.vehicle': 'Fahrzeug',
   'stored.vehicle.detail': '{name}, Radstand {wheelbase}',
   'stored.settings': 'Einstellungen',

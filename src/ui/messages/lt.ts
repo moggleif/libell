@@ -172,6 +172,44 @@ export const lt: Messages = {
     'Ištrinti viską, ką Libell išsaugojo šiame telefone? Transporto priemonės, matmenys ir kalibravimas dings, o Libell pradės iš naujo kaip pirmą kartą.',
   'privacy.deleteAll.yes': 'Taip, ištrinti viską',
   'privacy.deleteAll.cancel': 'Atšaukti',
+  'privacy.policy': 'Skaityti privatumo politiką',
+  'policy.title': 'Libell privatumo politika',
+  'policy.changed': 'Paskutinį kartą keista {date}',
+  'policy.intro':
+    'Libell yra laisvas atvirojo kodo projektas. Nėra paskyrų, reklamų ar sekimo, ir niekas nerenka informacijos apie jus.',
+  'policy.stored.h': 'Kas saugoma telefone',
+  'policy.stored':
+    'Libell saugo jūsų transporto priemones, matmenis, nustatymus, kalibravimus, tikslus, pasirinktą kalbą ir paskutinį kartą naudotą jutiklio dėžutę. Viskas laikoma naršyklės vietinėje saugykloje jūsų telefone. Ji veikia panašiai kaip slapukai, bet niekada niekur nesiunčiama. Libell jos reikia, kad veiktų, todėl sutikimo lango nėra.',
+  'policy.stored.delete':
+    'Programėlėje skiltyje {help} › {tab} matote viską, kas išsaugota, ir galite viską ištrinti. Svetainės duomenis taip pat galite išvalyti naršyklėje.',
+  'policy.sensors.h': 'Jutikliai ir Bluetooth',
+  'policy.sensors':
+    'Telefono judesio jutikliai ir Bluetooth naudojami tik telefone ir tik polinkiui matuoti. Rodmenys niekada nepalieka telefono.',
+  'policy.counting':
+    'Kad būtų aišku, ką tobulinti, Libell gali anonimiškai skaičiuoti naudojimą su GoatCounter. Libell vieną kartą jūsų paklausia, ar galima skaičiuoti, ir niekas neskaičiuojama, kol nepasirinksite. Statistika yra vieša.',
+  'policy.counting.ip':
+    'Kaip ir su bet kuria užklausa internete, telefono IP adresas ir naršyklės pavadinimas pasiekia GoatCounter. GoatCounter jų niekada neišsaugo, o laiko atmintyje ne ilgiau kaip aštuonias valandas, kad atpažintų tą patį apsilankymą. GoatCounter valdomas iš Airijos, o jo serveriai yra Suomijoje ir Vokietijoje, todėl niekas nepalieka ES.',
+  'policy.counting.change':
+    'Savo pasirinkimą bet kada galite pakeisti: {help} › {tab}. Be interneto niekas nesiunčiama ir niekas nesaugoma vėlesniam laikui.',
+  'policy.counting.basis':
+    'Skaičiavimas grindžiamas jūsų sutikimu pagal BDAR (6 straipsnio 1 dalies a punktas): jį duodate savo pasirinkimu ir bet kada galite atšaukti. Kadangi nesaugoma nieko, kas jus identifikuotų, apie jus nėra ko parodyti ar ištrinti. Galite pateikti skundą savo šalies duomenų apsaugos institucijai.',
+  'policy.shared.h': 'Kuo pasirenkate dalytis patys',
+  'policy.shared.feedback':
+    'Skiltyje {help} › {feedback} galite atidaryti paruoštą pranešimą GitHub, kurį paskelbiate patys naudodami savo GitHub paskyrą. Pranešimas yra viešas. Be jūsų teksto, jame yra programėlės versija, ekrano dydis, laikas ir naršyklės pavadinimas, ir viską matote prieš paskelbdami.',
+  'policy.shared.vehicle':
+    '„{share}“ sukuria nuorodą su transporto priemonės matmenimis, be kalibravimo. Nuoroda patenka tik ten, kur ją nusiunčiate patys.',
+  'policy.site.h': 'Svetainė',
+  'policy.site':
+    'Libell talpinamas GitHub Pages. Kaip ir bet kuri talpinimo paslauga, GitHub mato jūsų IP adresą, kai puslapis įkeliamas. Libell neturi prieigos prie GitHub žurnalų.',
+  'policy.owner.h': 'Kas stovi už Libell',
+  'policy.owner':
+    'Libell priklauso savo atvirojo kodo projektui, o ne asmeniui ar įmonei. Jis nemokamas ir jį galite naudoti kaip norite pagal MIT licenciją; jis teikiamas toks, koks yra, be garantijų.',
+  'policy.questions.h': 'Klausimai ir pakeitimai',
+  'policy.questions':
+    'Savo klausimus užduokite kaip pranešimą GitHub. Kai Libell pakeičia, ką saugo ar siunčia, šis puslapis atnaujinamas tuo pačiu metu.',
+  'policy.questions.link': 'Pranešimai GitHub',
+  'policy.languages': 'Kitos kalbos',
+  'policy.open': 'Atidaryti Libell',
   'stored.vehicle': 'Transporto priemonė',
   'stored.vehicle.detail': '{name}, ratų bazė {wheelbase}',
   'stored.settings': 'Nustatymai',

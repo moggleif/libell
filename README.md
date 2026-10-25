@@ -32,7 +32,9 @@ saved, and no cookie is set. It only happens if you choose it: the first screen 
 "Would you like to help make Libell better?", with "Yes, count anonymously" and "No
 thanks", and the choice can be changed under Help › Privacy, which
 also shows everything Libell has stored; a browser's Global Privacy Control or Do Not
-Track means no counting, without asking. The statistics are public. Details: `SECURITY.md` and
+Track means no counting, without asking. The statistics are public. The full
+[privacy policy](https://libell.app/privacy/) is on its own page in every language.
+Details: `SECURITY.md` and
 [ADR 0021](docs/adr/0021-anonymous-usage-counting.md) and
 [ADR 0022](docs/adr/0022-counting-is-an-active-choice.md).
 

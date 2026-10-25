@@ -155,6 +155,44 @@ export const sk: Messages = {
     'Vymazať všetko, čo Libell uložil v tomto telefóne? Vozidlá, rozmery a kalibrácia zmiznú a Libell začne znova ako prvýkrát.',
   'privacy.deleteAll.yes': 'Áno, vymazať všetko',
   'privacy.deleteAll.cancel': 'Zrušiť',
+  'privacy.policy': 'Prečítať zásady ochrany súkromia',
+  'policy.title': 'Zásady ochrany súkromia aplikácie Libell',
+  'policy.changed': 'Naposledy zmenené {date}',
+  'policy.intro':
+    'Libell je slobodný open source projekt. Nemá účty, reklamy ani sledovanie a nikto o vás nezbiera žiadne údaje.',
+  'policy.stored.h': 'Čo sa ukladá do telefónu',
+  'policy.stored':
+    'Libell ukladá vaše vozidlá, rozmery, nastavenia, kalibrácie, ciele, zvolený jazyk a naposledy použitý senzorový modul. Všetko je v miestnom úložisku prehliadača vo vašom telefóne. Toto úložisko funguje podobne ako cookies, no nikdy sa nikam neposiela. Libell ho potrebuje na fungovanie, a preto tu nie je žiadne okno so súhlasom.',
+  'policy.stored.delete':
+    'V aplikácii v {help} › {tab} vidíte všetko, čo je uložené, a môžete to celé vymazať. Údaje webu môžete vymazať aj v prehliadači.',
+  'policy.sensors.h': 'Senzory a Bluetooth',
+  'policy.sensors':
+    'Pohybové senzory a Bluetooth telefónu sa používajú len v telefóne a len na meranie náklonu. Namerané hodnoty nikdy neopustia telefón.',
+  'policy.counting':
+    'Aby bolo jasné, čo zlepšiť, môže Libell anonymne počítať používanie pomocou služby GoatCounter. Libell sa vás raz opýta, či smie počítať, a kým nezvolíte, nepočíta sa nič. Štatistiky sú verejné.',
+  'policy.counting.ip':
+    'Ako pri každej požiadavke na internete sa ku GoatCounteru dostane IP adresa telefónu a názov prehliadača. GoatCounter ich nikdy neukladá, drží ich v pamäti najviac osem hodín, aby rozpoznal tú istú návštevu. GoatCounter je prevádzkovaný z Írska a jeho servery sú vo Fínsku a Nemecku, takže nič neopúšťa EÚ.',
+  'policy.counting.change':
+    'Svoju voľbu môžete kedykoľvek zmeniť v {help} › {tab}. Bez internetu sa nič neposiela a nič sa neuchováva na neskôr.',
+  'policy.counting.basis':
+    'Počítanie sa opiera o váš súhlas podľa GDPR (čl. 6 ods. 1 písm. a): dávate ho svojou voľbou a môžete ho kedykoľvek odvolať. Keďže sa neukladá nič, čo by vás identifikovalo, nie je o vás čo ukázať ani vymazať. Sťažnosť môžete podať úradu na ochranu osobných údajov vo svojej krajine.',
+  'policy.shared.h': 'Čo sa sami rozhodnete zdieľať',
+  'policy.shared.feedback':
+    'V {help} › {feedback} môžete otvoriť pripravené hlásenie na GitHube, ktoré sami zverejníte pod svojím vlastným účtom GitHub. Hlásenie je verejné. Okrem vášho textu obsahuje verziu aplikácie, veľkosť obrazovky, čas a názov prehliadača a všetko vidíte pred zverejnením.',
+  'policy.shared.vehicle':
+    '„{share}“ vytvorí odkaz s rozmermi vozidla, bez kalibrácie. Odkaz sa dostane len tam, kam ho sami pošlete.',
+  'policy.site.h': 'Web',
+  'policy.site':
+    'Libell beží na GitHub Pages. Ako každý hosting vidí GitHub vašu IP adresu, keď sa stránka načítava. Libell nemá prístup k záznamom GitHubu.',
+  'policy.owner.h': 'Kto stojí za Libell',
+  'policy.owner':
+    'Libell patrí svojmu open source projektu, nie osobe ani firme. Je zadarmo a môžete ho používať, ako chcete, podľa licencie MIT. Poskytuje sa tak, ako je, bez záruky.',
+  'policy.questions.h': 'Otázky a zmeny',
+  'policy.questions':
+    'Svoje otázky píšte ako hlásenie na GitHube. Keď Libell zmení, čo ukladá alebo posiela, táto stránka sa zároveň aktualizuje.',
+  'policy.questions.link': 'Hlásenia na GitHube',
+  'policy.languages': 'Ďalšie jazyky',
+  'policy.open': 'Otvoriť Libell',
   'stored.vehicle': 'Vozidlo',
   'stored.vehicle.detail': '{name}, rázvor {wheelbase}',
   'stored.settings': 'Nastavenia',

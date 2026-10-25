@@ -167,6 +167,44 @@ export const ca: Messages = {
     'Vols esborrar tot el que Libell ha desat en aquest mòbil? Els vehicles, les mesures i el calibratge desapareixen, i Libell torna a començar com la primera vegada.',
   'privacy.deleteAll.yes': 'Sí, esborra-ho tot',
   'privacy.deleteAll.cancel': 'Cancel·la',
+  'privacy.policy': 'Llegeix la política de privadesa',
+  'policy.title': 'Política de privadesa de Libell',
+  'policy.changed': 'Darrera modificació: {date}',
+  'policy.intro':
+    'Libell és un projecte lliure de codi obert. No hi ha comptes, ni anuncis, ni seguiment, i ningú recull informació sobre tu.',
+  'policy.stored.h': 'El que es desa al mòbil',
+  'policy.stored':
+    'Libell desa els teus vehicles, mesures, configuració, calibratges, objectius, l’idioma triat i la caixa sensora que vas fer servir per última vegada. Tot queda a l’emmagatzematge local del navegador, al teu mòbil. Funciona més o menys com les galetes, però mai no s’envia enlloc. Libell ho necessita per funcionar, per això no hi ha cap avís de consentiment.',
+  'policy.stored.delete':
+    'A {help} › {tab} de l’app veus tot el que hi ha desat i ho pots esborrar tot. També pots esborrar les dades del lloc al navegador.',
+  'policy.sensors.h': 'Sensors i Bluetooth',
+  'policy.sensors':
+    'Els sensors de moviment i el Bluetooth del mòbil només s’utilitzen al mòbil i només per mesurar la inclinació. Les lectures mai no surten del mòbil.',
+  'policy.counting':
+    'Per saber què cal millorar, Libell pot comptar l’ús de manera anònima amb GoatCounter. Libell et pregunta un cop si vols que compti, i no es compta res fins que hagis triat. Les estadístiques són públiques.',
+  'policy.counting.ip':
+    'Com en qualsevol petició a internet, l’adreça IP del mòbil i el nom del navegador arriben a GoatCounter. GoatCounter mai no els desa: els manté a la memòria com a màxim vuit hores per reconèixer la mateixa visita. GoatCounter es gestiona des d’Irlanda i té els servidors a Finlàndia i Alemanya, així que res no surt de la UE.',
+  'policy.counting.change':
+    'Pots canviar la teva tria quan vulguis a {help} › {tab}. Sense connexió no s’envia res i no es guarda res per a més tard.',
+  'policy.counting.basis':
+    'El recompte es basa en el teu consentiment segons el RGPD (article 6.1 a): el dones amb la teva tria i el pots retirar quan vulguis. Com que no es desa res que t’identifiqui, no hi ha res sobre tu per mostrar o esborrar. Pots presentar una reclamació a l’autoritat de protecció de dades del teu país.',
+  'policy.shared.h': 'El que tu tries compartir',
+  'policy.shared.feedback':
+    'A {help} › {feedback} pots obrir una incidència ja omplerta a GitHub, que publiques tu mateix amb el teu propi compte de GitHub. La incidència és pública. A més del teu text, inclou la versió de l’app, la mida de la pantalla, l’hora i el nom del navegador, i ho veus tot abans de publicar.',
+  'policy.shared.vehicle':
+    '«{share}» crea un enllaç amb les mesures del vehicle, sense calibratge. L’enllaç només arriba allà on l’envies.',
+  'policy.site.h': 'El lloc web',
+  'policy.site':
+    'Libell està allotjat a GitHub Pages. Com qualsevol allotjament web, GitHub veu la teva adreça IP quan es carrega la pàgina. Libell no té accés als registres de GitHub.',
+  'policy.owner.h': 'Qui hi ha darrere de Libell',
+  'policy.owner':
+    'Libell pertany al seu projecte de codi obert, no a una persona ni a una empresa. És gratuït i el pots fer servir com vulguis amb la llicència MIT, i s’ofereix tal com és, sense garantia.',
+  'policy.questions.h': 'Preguntes i canvis',
+  'policy.questions':
+    'Fes les teves preguntes com una incidència a GitHub. Quan Libell canvia el que desa o envia, aquesta pàgina s’actualitza alhora.',
+  'policy.questions.link': 'Incidències a GitHub',
+  'policy.languages': 'Altres idiomes',
+  'policy.open': 'Obre Libell',
   'stored.vehicle': 'Vehicle',
   'stored.vehicle.detail': '{name}, distància entre eixos {wheelbase}',
   'stored.settings': 'Configuració',

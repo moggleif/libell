@@ -42,6 +42,27 @@ const CSP =
   "font-src 'self'; connect-src 'self' https://libell.goatcounter.com; manifest-src 'self'; worker-src 'self'; " +
   "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
+// The privacy policy (#675): one static page per language, written from the
+// message dictionaries by `src/ui/privacyPolicy.ts`. That module is app code
+// (typed and tested with the app), so it is loaded through Vite here rather
+// than imported into this config.
+interface PrivacyPolicyModule {
+  privacyPages(base: string): { fileName: string; source: string }[];
+}
+
+function privacyPages(): Plugin {
+  return {
+    name: 'privacy-pages',
+    apply: 'build',
+    async generateBundle() {
+      const { module } = await runnerImport<PrivacyPolicyModule>('./src/ui/privacyPolicy.ts');
+      for (const { fileName, source } of module.privacyPages(base)) {
+        this.emitFile({ type: 'asset', fileName, source });
+      }
+    },
+  };
+}
+
 // What search engines and AI assistants read (#701): the page head, plus
 // robots.txt, sitemap.xml and llms.txt at the root. `src/ui/findability.ts`
 // is app code (typed and tested with the app, its text from the message
@@ -107,6 +128,7 @@ export default defineConfig({
         ];
       },
     },
+    privacyPages(),
     VitePWA({
       registerType: 'autoUpdate',
       // The glob below already precaches every icon; listing the manifest's
@@ -150,6 +172,8 @@ export default defineConfig({
         // The link preview is for chat apps, never shown offline (#702).
         globIgnores: ['preview.png'],
         cleanupOutdatedCaches: true,
+        // The privacy pages are pages of their own, never the app (#675).
+        navigateFallbackDenylist: [/\/privacy\//],
       },
     }),
   ],

@@ -1780,6 +1780,131 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Help › Privacy tab: button next to "Yes, delete everything".',
     'Keeps everything and folds the question away.',
   ),
+  'privacy.policy': ctx(
+    'button',
+    'Help › Privacy tab: a link under the first sentence.',
+    "Opens the privacy policy page in the user's language.",
+  ),
+  'policy.title': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: the page title and main heading.',
+    "Names the page as Libell's privacy policy; the address app stores link to.",
+  ),
+  'policy.changed': ctx(
+    'line',
+    "The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: under the title; {date} is a long date in the page's language.",
+    'Says when the policy text last changed.',
+  ),
+  'policy.intro': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: the first paragraph.',
+    'Says Libell is free open source, with no accounts, ads or tracking, and collects nothing about the user.',
+  ),
+  'policy.stored.h': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: section heading.',
+    'Heads what Libell keeps on the phone.',
+  ),
+  'policy.stored': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under "What is stored on your phone".',
+    "Lists what is stored, that it stays in the browser's local storage (like cookies, never sent), and why no consent banner is needed.",
+  ),
+  'policy.stored.delete': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph after the stored list; {help} › {tab} is the in-app path Help › Privacy.',
+    "Tells where in the app to see and delete everything, or to clear the site's data in the browser.",
+  ),
+  'policy.sensors.h': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: section heading.',
+    'Heads how the motion sensors and Bluetooth are used.',
+  ),
+  'policy.sensors': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under "Sensors and Bluetooth".',
+    'Promises sensors and Bluetooth are used only on the phone, only for measuring tilt, and readings never leave it.',
+  ),
+  'policy.counting': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: first paragraph under "Anonymous counting".',
+    "Says Libell may count use anonymously with GoatCounter, only after the user's own choice, and the statistics are public.",
+  ),
+  'policy.counting.ip': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under the lists of what is and is never counted.',
+    'Honestly says the IP address and browser name reach GoatCounter, are only held in memory up to eight hours, and stay in the EU.',
+  ),
+  'policy.counting.change': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph in "Anonymous counting"; {help} › {tab} is the in-app path Help › Privacy.',
+    'Tells where to change the counting choice, and that nothing is sent or saved for later when offline.',
+  ),
+  'policy.counting.basis': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: last paragraph of "Anonymous counting".',
+    'Gives the GDPR legal basis (the user’s consent, article 6.1 a, given with the counting choice and withdrawable any time), why there is nothing to show or delete, and the right to complain to a data protection authority.',
+  ),
+  'policy.shared.h': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: section heading.',
+    'Heads data that leaves the phone only when the user chooses to send it.',
+  ),
+  'policy.shared.feedback': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under "What you choose to share"; {help} › {feedback} is the in-app path Help › Feedback.',
+    'Says feedback becomes a public GitHub issue the user posts themselves, and what technical details it carries.',
+  ),
+  'policy.shared.vehicle': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under "What you choose to share"; {share} is the Settings button that shares a vehicle.',
+    'Says a vehicle share link carries only measurements, no calibration, and goes only where the user sends it.',
+  ),
+  'policy.site.h': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: section heading.',
+    'Heads the hosting of the website.',
+  ),
+  'policy.site': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under "The website".',
+    'Says GitHub Pages hosts Libell and, like any host, sees the IP address; Libell cannot see those logs.',
+  ),
+  'policy.owner.h': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: section heading.',
+    'Heads who owns Libell.',
+  ),
+  'policy.owner': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: paragraph under "Who is behind Libell".',
+    'Says Libell belongs to its open source project, no person or company; free under the MIT license, as is, without warranty.',
+  ),
+  'policy.questions.h': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: section heading.',
+    'Heads how to ask questions and how changes are handled.',
+  ),
+  'policy.questions': ctx(
+    'text',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: last paragraph.',
+    'Tells users to ask as a GitHub issue, and that the page changes with any change to what is stored or sent.',
+  ),
+  'policy.questions.link': ctx(
+    'button',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: link after the last paragraph.',
+    "Opens Libell's issue list on GitHub.",
+  ),
+  'policy.languages': ctx(
+    'label',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: heading over the list of the page in other languages.',
+    'Heads links to the same policy in every other language.',
+  ),
+  'policy.open': ctx(
+    'button',
+    'The privacy policy page (libell.app/privacy/<lang>/), a static web page outside the app: link at the foot of the page.',
+    'Opens the Libell app.',
+  ),
   'stored.vehicle': ctx(
     'label',
     'Help › Privacy tab › list: row label for one saved vehicle.',

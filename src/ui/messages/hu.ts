@@ -170,6 +170,44 @@ export const hu: Messages = {
     'Törlöd mindazt, amit a Libell ezen a telefonon tárol? A járművek, a méretek és a kalibrálás elvesznek, és a Libell úgy indul, mint először.',
   'privacy.deleteAll.yes': 'Igen, minden törlése',
   'privacy.deleteAll.cancel': 'Mégse',
+  'privacy.policy': 'Olvasd el az adatvédelmi tájékoztatót',
+  'policy.title': 'A Libell adatvédelmi tájékoztatója',
+  'policy.changed': 'Utoljára módosítva: {date}',
+  'policy.intro':
+    'A Libell szabad, nyílt forráskódú projekt. Nincs fiók, nincs reklám és nincs követés, és senki sem gyűjt rólad adatokat.',
+  'policy.stored.h': 'Mi kerül a telefonodra',
+  'policy.stored':
+    'A Libell elmenti a járműveidet, a méreteket, a beállításokat, a kalibrációkat, a célokat, a választott nyelvet és a legutóbb használt szenzordobozt. Mindez a böngésző helyi tárhelyén van a telefonodon. Nagyjából úgy működik, mint a sütik, de soha nem kerül el sehová. A Libellnek szüksége van rá a működéshez, ezért nincs hozzájárulási ablak.',
+  'policy.stored.delete':
+    'Az alkalmazásban a(z) {help} › {tab} részen mindent látsz, ami el van mentve, és mindent törölhetsz. A webhely adatait a böngészőben is törölheted.',
+  'policy.sensors.h': 'Szenzorok és Bluetooth',
+  'policy.sensors':
+    'A telefon mozgásérzékelőit és a Bluetooth-t csak a telefonon és csak a dőlés mérésére használja a Libell. A mért értékek soha nem hagyják el a telefont.',
+  'policy.counting':
+    'Hogy kiderüljön, min kell javítani, a Libell névtelenül számolhatja a használatot a GoatCounterrel. A Libell egyszer megkérdezi, hogy számolhat-e, és amíg nem választasz, semmit sem számol. A statisztika nyilvános.',
+  'policy.counting.ip':
+    'Mint minden internetes kérésnél, a telefon IP-címe és a böngésző neve eljut a GoatCounterhez. A GoatCounter soha nem menti el őket, legfeljebb nyolc óráig tartja a memóriában, hogy felismerje ugyanazt a látogatást. A GoatCountert Írországból üzemeltetik, a szerverei Finnországban és Németországban vannak, így semmi sem hagyja el az EU-t.',
+  'policy.counting.change':
+    'A választásodat bármikor megváltoztathatod itt: {help} › {tab}. Internet nélkül semmi sem kerül elküldésre, és semmi sem marad későbbre.',
+  'policy.counting.basis':
+    'A számlálás a GDPR szerinti hozzájárulásodon alapul (6. cikk (1) bekezdés a) pont): a választásoddal adod meg, és bármikor visszavonhatod. Mivel semmi olyan nem kerül mentésre, ami azonosítana téged, rólad nincs mit megmutatni vagy törölni. Panaszt tehetsz az országod adatvédelmi hatóságánál.',
+  'policy.shared.h': 'Amit te magad osztasz meg',
+  'policy.shared.feedback':
+    'Itt: {help} › {feedback} megnyithatsz egy előre kitöltött bejelentést a GitHubon, amelyet te magad teszel közzé a saját GitHub-fiókoddal. A bejelentés nyilvános. A szövegeden kívül tartalmazza az alkalmazás verzióját, a képernyő méretét, az időpontot és a böngésző nevét, és mindent látsz a közzététel előtt.',
+  'policy.shared.vehicle':
+    'A „{share}” egy hivatkozást készít a jármű méreteivel, kalibráció nélkül. A hivatkozás csak oda jut, ahová te küldöd.',
+  'policy.site.h': 'A weboldal',
+  'policy.site':
+    'A Libell a GitHub Pagesen fut. Mint minden tárhelyszolgáltató, a GitHub is látja az IP-címedet, amikor az oldal betöltődik. A Libell nem fér hozzá a GitHub naplóihoz.',
+  'policy.owner.h': 'Ki áll a Libell mögött',
+  'policy.owner':
+    'A Libell a saját nyílt forráskódú projektjéé, nem egy személyé vagy cégé. Ingyenes, és az MIT-licenc alapján szabadon használhatod, ahogy akarod. Úgy érhető el, ahogy van, garancia nélkül.',
+  'policy.questions.h': 'Kérdések és változások',
+  'policy.questions':
+    'A kérdéseidet bejelentésként tedd fel a GitHubon. Ha a Libell megváltoztatja, mit ment vagy küld, ez az oldal is egyszerre frissül.',
+  'policy.questions.link': 'Bejelentések a GitHubon',
+  'policy.languages': 'Más nyelvek',
+  'policy.open': 'Nyisd meg a Libellt',
   'stored.vehicle': 'Jármű',
   'stored.vehicle.detail': '{name}, tengelytáv {wheelbase}',
   'stored.settings': 'Beállítások',

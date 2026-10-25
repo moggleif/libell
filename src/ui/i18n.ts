@@ -131,7 +131,17 @@ export function setLanguage(lang: Language): void {
 
 /** Substitutes `{name}` placeholders from `vars`. */
 export function t(key: MessageKey, vars?: Record<string, string | number>): string {
-  let text: string = MESSAGES[current][key] ?? MESSAGES.en[key];
+  return translate(current, key, vars);
+}
+
+/** `t()` in a given language, for text built outside the running app, such
+ * as the static privacy pages (#675). */
+export function translate(
+  lang: Language,
+  key: MessageKey,
+  vars?: Record<string, string | number>,
+): string {
+  let text: string = MESSAGES[lang][key] ?? MESSAGES.en[key];
   if (vars) {
     for (const [name, value] of Object.entries(vars)) {
       text = text.replaceAll(`{${name}}`, String(value));

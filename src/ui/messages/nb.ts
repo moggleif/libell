@@ -161,6 +161,44 @@ export const nb: Messages = {
     'Slette alt Libell har lagret på denne telefonen? Kjøretøy, dimensjoner og kalibrering forsvinner, og Libell starter på nytt som første gang.',
   'privacy.deleteAll.yes': 'Ja, slett alt',
   'privacy.deleteAll.cancel': 'Avbryt',
+  'privacy.policy': 'Les personvernerklæringen',
+  'policy.title': 'Personvernerklæring for Libell',
+  'policy.changed': 'Sist endret {date}',
+  'policy.intro':
+    'Libell er et fritt åpen kildekode-prosjekt. Det finnes ingen kontoer, ingen reklame og ingen sporing, og ingen samler inn opplysninger om deg.',
+  'policy.stored.h': 'Det som lagres på telefonen',
+  'policy.stored':
+    'Libell lagrer kjøretøyene dine med mål, innstillinger, kalibreringer, målposisjoner, valgt språk og sensorboksen du sist brukte. Alt ligger i nettleserens lokale lagring på telefonen din. Den fungerer omtrent som informasjonskapsler, men sendes aldri noe sted. Libell trenger dette for å fungere, og derfor finnes det ingen samtykkeboks.',
+  'policy.stored.delete':
+    'Under {help} › {tab} i appen ser du alt som er lagret, og kan slette alt sammen. Du kan også tømme nettstedsdataene i nettleseren.',
+  'policy.sensors.h': 'Sensorer og Bluetooth',
+  'policy.sensors':
+    'Telefonens bevegelsessensorer og Bluetooth brukes bare på telefonen og bare til å måle helningen. Måleverdiene forlater aldri telefonen.',
+  'policy.counting':
+    'For å vite hva som bør bli bedre, kan Libell telle bruken anonymt med GoatCounter. Libell spør deg én gang om det kan telles, og ingenting telles før du har valgt. Statistikken er offentlig.',
+  'policy.counting.ip':
+    'Som ved alle forespørsler på internett når telefonens IP-adresse og nettleserens navn GoatCounter. GoatCounter lagrer dem aldri, men holder dem i minnet i høyst åtte timer for å kjenne igjen det samme besøket. GoatCounter drives fra Irland og har serverne sine i Finland og Tyskland, så ingenting forlater EU.',
+  'policy.counting.change':
+    'Du kan endre valget ditt når som helst under {help} › {tab}. Uten internett sendes ingenting, og ingenting lagres til senere.',
+  'policy.counting.basis':
+    'Tellingen bygger på samtykket ditt etter GDPR (artikkel 6 nr. 1 bokstav a): du gir det med valget ditt og kan trekke det tilbake når som helst. Siden ingenting som kan identifisere deg lagres, finnes det ingenting om deg å vise eller slette. Du kan klage til datatilsynet i landet ditt.',
+  'policy.shared.h': 'Det du selv velger å dele',
+  'policy.shared.feedback':
+    'Under {help} › {feedback} kan du åpne en ferdig sak på GitHub, som du selv publiserer med din egen GitHub-konto. Saken er offentlig. I tillegg til teksten din inneholder den appens versjon, skjermstørrelse, tidspunkt og nettleserens navn, og du ser alt før du publiserer.',
+  'policy.shared.vehicle':
+    '«{share}» lager en lenke med kjøretøyets mål, uten kalibrering. Lenken havner bare der du selv sender den.',
+  'policy.site.h': 'Nettstedet',
+  'policy.site':
+    'Libell ligger på GitHub Pages. Som alle nettverter ser GitHub IP-adressen din når siden lastes. Libell har ikke tilgang til GitHubs logger.',
+  'policy.owner.h': 'Hvem som står bak Libell',
+  'policy.owner':
+    'Libell tilhører sitt åpen kildekode-prosjekt, ikke en person eller et selskap. Det er gratis og fritt å bruke som du vil under MIT-lisensen, og leveres som det er, uten garanti.',
+  'policy.questions.h': 'Spørsmål og endringer',
+  'policy.questions':
+    'Still spørsmålene dine som en sak på GitHub. Når Libell endrer hva som lagres eller sendes, oppdateres denne siden samtidig.',
+  'policy.questions.link': 'Saker på GitHub',
+  'policy.languages': 'Andre språk',
+  'policy.open': 'Åpne Libell',
   'stored.vehicle': 'Kjøretøy',
   'stored.vehicle.detail': '{name}, akselavstand {wheelbase}',
   'stored.settings': 'Innstillinger',

@@ -153,6 +153,44 @@ export const fi: Messages = {
     'Poistetaanko kaikki, mitä Libell on tallentanut tähän puhelimeen? Ajoneuvot, mitat ja kalibrointi katoavat, ja Libell alkaa alusta kuin ensimmäisellä kerralla.',
   'privacy.deleteAll.yes': 'Kyllä, poista kaikki',
   'privacy.deleteAll.cancel': 'Peruuta',
+  'privacy.policy': 'Lue tietosuojaseloste',
+  'policy.title': 'Libellin tietosuojaseloste',
+  'policy.changed': 'Muutettu viimeksi {date}',
+  'policy.intro':
+    'Libell on vapaa avoimen lähdekoodin projekti. Siinä ei ole tilejä, mainoksia eikä seurantaa, eikä kukaan kerää tietoja sinusta.',
+  'policy.stored.h': 'Mitä puhelimeen tallennetaan',
+  'policy.stored':
+    'Libell tallentaa ajoneuvosi, mitat, asetukset, kalibroinnit, tavoitteet, valitun kielen ja viimeksi käyttämäsi anturirasian. Kaikki on selaimen paikallisessa tallennustilassa puhelimessasi. Se toimii suunnilleen kuten evästeet, mutta sitä ei koskaan lähetetä minnekään. Libell tarvitsee sitä toimiakseen, joten suostumusikkunaa ei ole.',
+  'policy.stored.delete':
+    'Kohdassa {help} › {tab} näet sovelluksessa kaiken tallennetun ja voit poistaa kaiken. Voit myös tyhjentää sivuston tiedot selaimessa.',
+  'policy.sensors.h': 'Anturit ja Bluetooth',
+  'policy.sensors':
+    'Puhelimen liikeantureita ja Bluetoothia käytetään vain puhelimessa ja vain kallistuksen mittaamiseen. Lukemat eivät koskaan poistu puhelimesta.',
+  'policy.counting':
+    'Jotta tiedetään, mitä pitää parantaa, Libell voi laskea käyttöä nimettömästi GoatCounterilla. Libell kysyy sinulta kerran, saako laskea, eikä mitään lasketa ennen kuin olet valinnut. Tilastot ovat julkisia.',
+  'policy.counting.ip':
+    'Kuten kaikissa verkkopyynnöissä, puhelimen IP-osoite ja selaimen nimi päätyvät GoatCounterille. GoatCounter ei koskaan tallenna niitä, vaan pitää ne muistissa enintään kahdeksan tuntia saman käynnin tunnistamiseksi. GoatCounteria ylläpidetään Irlannista, ja sen palvelimet ovat Suomessa ja Saksassa, joten mikään ei poistu EU:sta.',
+  'policy.counting.change':
+    'Voit muuttaa valintaasi milloin tahansa kohdassa {help} › {tab}. Ilman verkkoyhteyttä mitään ei lähetetä eikä mitään säilytetä myöhempää varten.',
+  'policy.counting.basis':
+    'Laskenta perustuu suostumukseesi tietosuoja-asetuksen (GDPR) mukaisesti (6 artiklan 1 kohdan a alakohta): annat sen valinnallasi ja voit perua sen milloin tahansa. Koska mitään sinut tunnistavaa ei tallenneta, sinusta ei ole mitään näytettävää tai poistettavaa. Voit tehdä valituksen maasi tietosuojaviranomaiselle.',
+  'policy.shared.h': 'Mitä itse päätät jakaa',
+  'policy.shared.feedback':
+    'Kohdassa {help} › {feedback} voit avata valmiin ilmoituksen, jonka julkaiset itse GitHubissa omalla GitHub-tililläsi. Ilmoitus on julkinen. Tekstisi lisäksi siinä on sovelluksen versio, näytön koko, kellonaika ja selaimen nimi, ja näet kaiken ennen julkaisua.',
+  'policy.shared.vehicle':
+    '”{share}” luo linkin, jossa on ajoneuvon mitat ilman kalibrointia. Linkki menee vain sinne, minne itse sen lähetät.',
+  'policy.site.h': 'Verkkosivusto',
+  'policy.site':
+    'Libell toimii GitHub Pagesissa. Kuten kaikki verkkopalvelimet, GitHub näkee IP-osoitteesi, kun sivu latautuu. Libellillä ei ole pääsyä GitHubin lokeihin.',
+  'policy.owner.h': 'Kuka on Libellin takana',
+  'policy.owner':
+    'Libell kuuluu omalle avoimen lähdekoodin projektilleen, ei henkilölle eikä yritykselle. Se on ilmainen ja vapaasti käytettävissä haluamallasi tavalla MIT-lisenssillä, ja se toimitetaan sellaisenaan, ilman takuuta.',
+  'policy.questions.h': 'Kysymykset ja muutokset',
+  'policy.questions':
+    'Esitä kysymyksesi ilmoituksena GitHubissa. Kun Libell muuttaa sitä, mitä se tallentaa tai lähettää, tämä sivu päivitetään samalla.',
+  'policy.questions.link': 'Ilmoitukset GitHubissa',
+  'policy.languages': 'Muut kielet',
+  'policy.open': 'Avaa Libell',
   'stored.vehicle': 'Ajoneuvo',
   'stored.vehicle.detail': '{name}, akseliväli {wheelbase}',
   'stored.settings': 'Asetukset',

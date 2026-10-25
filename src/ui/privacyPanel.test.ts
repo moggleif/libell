@@ -28,6 +28,16 @@ function buttonNamed(panel: HTMLElement, label: string): HTMLButtonElement | und
 }
 
 describe('createPrivacyPanel (#678)', () => {
+  it('links to the privacy policy in the app language, in a new tab (#675)', () => {
+    const panel = createPrivacyPanel({ counting, read: () => [], deleteAll: vi.fn() });
+    const link = [...panel.element.querySelectorAll('a')].find(
+      (a) => a.textContent === t('privacy.policy'),
+    );
+    expect(link?.getAttribute('href')).toBe(`${import.meta.env.BASE_URL}privacy/en/`);
+    expect(link?.target).toBe('_blank');
+    expect(link?.rel).toBe('noopener');
+  });
+
   it('lists what is stored in plain words, and says so when nothing is', () => {
     const entries = [settings];
     const panel = createPrivacyPanel({ counting, read: () => entries, deleteAll: vi.fn() });
