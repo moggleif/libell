@@ -16,6 +16,7 @@ import {
   versionPath,
   type FeatureEvent,
 } from '../domain/usage';
+import { SITE_ORIGIN } from '../domain/site';
 import { isCountingOn } from '../data/countingStore';
 
 export interface UsageDeps {
@@ -23,9 +24,6 @@ export interface UsageDeps {
   allowed(): boolean;
   send(url: string): void;
 }
-
-/** Only the real app counts: not dev, not a preview, not `?demo`. */
-const COUNTED_ORIGIN = 'https://libell.app';
 
 let count: (path: string) => void = () => {};
 
@@ -51,9 +49,10 @@ export function refusesTracking(nav: {
 
 export function browserUsageDeps(demo: boolean): UsageDeps {
   return {
+    // Only the real app counts: not dev, not a preview, not `?demo`.
     allowed: () =>
       !demo &&
-      location.origin === COUNTED_ORIGIN &&
+      location.origin === SITE_ORIGIN &&
       navigator.onLine &&
       !refusesTracking(navigator as Navigator & { globalPrivacyControl?: boolean }) &&
       isCountingOn(),

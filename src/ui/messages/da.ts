@@ -152,6 +152,9 @@ export const da: Messages = {
     'Dine indstillinger bliver på telefonen — ingen konto og ingen sporing. Det eneste, Libell sender, er anonyme tal for, hvordan appen bruges, og det kan du slå fra.',
   'about.source': 'Libell er gratis og open source (MIT-licens).',
   'about.source.link': 'Kildekode på GitHub',
+  'seo.title': 'Libell – sæt autocamperen eller campingvognen i vater med telefonen',
+  'seo.description':
+    'En gratis app, der viser, hvilke hjul på autocamperen eller campingvognen der skal op, og på hvilket trin på klodsen. Bruger telefonen eller en sensorboks og virker offline.',
   'menu.privacy': 'Privatliv',
   'menu.privacy.tab': 'Privatliv',
   'privacy.stored.h': 'Gemt på denne telefon',

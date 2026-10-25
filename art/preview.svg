@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Libell">
+  <!-- The link preview (#702): the icon's spirit-level vial, wide, on the
+       icon's background, over the name. No other words, so one image serves
+       every language; the description comes from the page's own tags. The
+       name uses the system's sans-serif, so it renders on any build machine. -->
+  <rect width="1200" height="630" fill="#101418"/>
+  <rect x="200" y="150" width="800" height="160" rx="80" fill="none" stroke="#e6edf3" stroke-width="24"/>
+  <line x1="530" y1="177" x2="530" y2="283" stroke="#e6edf3" stroke-width="18" stroke-linecap="round"/>
+  <line x1="670" y1="177" x2="670" y2="283" stroke="#e6edf3" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="600" cy="230" r="52" fill="#3fb950"/>
+  <text x="600" y="500" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="120" fill="#e6edf3">Libell</text>
+</svg>

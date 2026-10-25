@@ -143,6 +143,9 @@ export const is: Messages = {
     'Stillingarnar þínar haldast í símanum — enginn aðgangur og engin rakning. Það eina sem Libell sendir eru nafnlausar tölur um hvernig appið er notað, og þú getur slökkt á því.',
   'about.source': 'Libell er ókeypis og opinn hugbúnaður (MIT-leyfi).',
   'about.source.link': 'Frumkóði á GitHub',
+  'seo.title': 'Libell – gerðu húsbílinn eða hjólhýsið lárétt með símanum',
+  'seo.description':
+    'Ókeypis app sem sýnir hvaða hjól á húsbílnum eða hjólhýsinu þarf að hækka og upp á hvaða þrep kubbsins. Notar símann eða skynjarabox og virkar án nettengingar.',
   'menu.privacy': 'Persónuvernd',
   'menu.privacy.tab': 'Persónuvernd',
   'privacy.stored.h': 'Vistað í þessum síma',

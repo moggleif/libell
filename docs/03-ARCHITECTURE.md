@@ -477,6 +477,22 @@ data, with the switch) both show `countingSection.ts`; `countingStoredKeys()` pu
 choice in the stored-data catalogue (#678), and a start-up migration turns #674's
 `libell.countingOff` into the choice "off".
 
+## Findability (`src/ui/findability.ts`, #701)
+
+What a search engine or AI assistant reads (R61). The `findability` plugin in
+`vite.config.ts` loads `findability.ts` through Vite's `runnerImport` (it is app code,
+typed and tested with the app) and uses it twice: `transformIndexHtml` adds the title,
+description, canonical link, the Open Graph and Twitter card tags of the link preview
+(#702) and a `application/ld+json` data block to `index.html` (a
+data block is never run, so the CSP stays as it is; `<` in it is escaped), and a
+`generateBundle` hook ordered `post` writes `robots.txt`, `llms.txt` and `sitemap.xml`,
+the sitemap from every `index.html` in the bundle so pages other plugins write are listed
+too. The text is the `seo.*` keys and the About strings in English; addresses come from
+`SITE_ORIGIN` and `REPO_URL` in `src/domain/site.ts` plus the build's base path. None of
+the three files is precached. The preview image, `preview.png` (1200×630), is drawn from
+`art/preview.svg` by `scripts/generate-icons.mjs` with the icons, gitignored like them
+and left out of the precache (`globIgnores`).
+
 ## UI
 
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with
@@ -504,8 +520,9 @@ silently overwrite a mute on the next unrelated change.
 
 ## Build / CI notes
 
-The repository is text-only: PWA icons are rendered from `public/icons/icon.svg` by
-`scripts/generate-icons.mjs` during `npm run build` and are gitignored. The `?demo`
+The repository is text-only: PWA icons are rendered from `public/icons/icon.svg`, and
+the link preview from `art/preview.svg`, by `scripts/generate-icons.mjs` during
+`npm run build`, and are gitignored. The `?demo`
 flag replaces the sensor with a fixed tilt **and presents the app as configured** (no
 warning lamps, in memory only), so screenshots and demos show the product rather than
 the first-run state. The `?easylevel-sim` (R44) and `?xparkle-sim` (R48) flags are its

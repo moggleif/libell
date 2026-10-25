@@ -157,6 +157,9 @@ export const lt: Messages = {
     'Jūsų nustatymai lieka telefone — jokios paskyros ir jokio sekimo. Libell siunčia tik anoniminius skaičius apie tai, kaip naudojama programėlė, ir tai galite išjungti.',
   'about.source': 'Libell yra nemokama atvirojo kodo programėlė (MIT licencija).',
   'about.source.link': 'Šaltinio kodas GitHub',
+  'seo.title': 'Libell – išlyginkite kemperį ar karavaną telefonu',
+  'seo.description':
+    'Nemokama programėlė, kuri parodo, kuriuos kemperio ar karavano ratus pakelti ir ant kurios pakylos pakopos. Naudoja telefoną arba jutiklio dėžutę ir veikia be interneto.',
   'menu.privacy': 'Privatumas',
   'menu.privacy.tab': 'Privatumas',
   'privacy.stored.h': 'Išsaugota šiame telefone',

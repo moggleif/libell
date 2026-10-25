@@ -140,6 +140,9 @@ export const sk: Messages = {
     'Vaše nastavenia zostávajú v telefóne — žiadny účet a žiadne sledovanie. Libell odosiela len anonymné počty toho, ako sa aplikácia používa, a to môžete vypnúť.',
   'about.source': 'Libell je bezplatný a open source (licencia MIT).',
   'about.source.link': 'Kód na GitHube',
+  'seo.title': 'Libell – vyrovnajte obytné auto alebo obytný príves telefónom',
+  'seo.description':
+    'Bezplatná aplikácia, ktorá ukáže, ktoré kolesá obytného auta alebo obytného prívesu zdvihnúť a na ktorý stupeň nájazdu. Používa telefón alebo senzorový modul a funguje offline.',
   'menu.privacy': 'Súkromie',
   'menu.privacy.tab': 'Súkromie',
   'privacy.stored.h': 'Uložené v tomto telefóne',

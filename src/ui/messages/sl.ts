@@ -143,6 +143,9 @@ export const sl: Messages = {
     'Vaše nastavitve ostanejo na telefonu — brez računa in brez sledenja. Libell pošilja le anonimne številke o tem, kako se aplikacija uporablja, in to lahko izklopite.',
   'about.source': 'Libell je brezplačen in odprtokoden (licenca MIT).',
   'about.source.link': 'Koda na GitHubu',
+  'seo.title': 'Libell – izravnajte avtodom ali počitniško prikolico s telefonom',
+  'seo.description':
+    'Brezplačna aplikacija, ki pokaže, katera kolesa avtodoma ali počitniške prikolice dvigniti in na katero stopnico rampe. Uporablja telefon ali senzorsko enoto in deluje brez povezave.',
   'menu.privacy': 'Zasebnost',
   'menu.privacy.tab': 'Zasebnost',
   'privacy.stored.h': 'Shranjeno v tem telefonu',

@@ -161,6 +161,9 @@ export const sv: Messages = {
     'Libell skickar är anonyma siffror över hur appen används, och det kan du stänga av.',
   'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
   'about.source.link': 'Källkoden på GitHub',
+  'seo.title': 'Libell – få husbilen eller husvagnen i våg med telefonen',
+  'seo.description':
+    'En gratis app som visar vilka hjul på husbilen eller husvagnen som ska upp, och på vilket steg på klossen. Använder telefonen eller en sensorbox och fungerar utan internet.',
   'menu.privacy': 'Integritet',
   'menu.privacy.tab': 'Integritet',
   'privacy.stored.h': 'Sparat på den här telefonen',

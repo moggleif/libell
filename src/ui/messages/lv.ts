@@ -146,6 +146,9 @@ export const lv: Messages = {
     'Jūsu iestatījumi paliek tālrunī — nav konta un nav izsekošanas. Libell sūta tikai anonīmus skaitļus par to, kā lietotne tiek izmantota, un to varat izslēgt.',
   'about.source': 'Libell ir bezmaksas atvērtā pirmkoda programmatūra (MIT licence).',
   'about.source.link': 'Pirmkods GitHub',
+  'seo.title': 'Libell – nolīmeņojiet kemperi vai dzīvojamo piekabi ar tālruni',
+  'seo.description':
+    'Bezmaksas lietotne, kas parāda, kurus kempera vai dzīvojamās piekabes riteņus pacelt un uz kuras rampas pakāpes. Izmanto tālruni vai sensora bloku un darbojas bezsaistē.',
   'menu.privacy': 'Privātums',
   'menu.privacy.tab': 'Privātums',
   'privacy.stored.h': 'Saglabāts šajā tālrunī',
