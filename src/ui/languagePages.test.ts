@@ -82,7 +82,7 @@ describe('language pages (#703)', () => {
 
   it('is inert: no runnable script, no style, the static CSP', () => {
     const html = renderLanguagePage('fr', '/');
-    expect(html.match(/<script[^>]*>/g)).toEqual(['<script type="application/ld+json">']);
+    expect(html.match(/<script[^>]*>/gi)).toEqual(['<script type="application/ld+json">']);
     expect(html).not.toMatch(/<style|\sstyle=|\son[a-z]+=/i);
     expect(html).toContain("default-src 'none'; style-src 'self'");
   });
