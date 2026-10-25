@@ -18,6 +18,8 @@ export const et: Messages = {
   'update.offline': 'Ühendus puudub, uuendusi ei saa otsida',
   'update.unsupported': 'Uuendused pole siin saadaval',
   'install.hint': 'Puuduta „Jaga“, seejärel „Lisa avakuvale“.',
+  'install.row': 'Paigalda Libell rakendusena avakuvale.',
+  'install.close': 'Peida',
   'share.vehicle.text': 'Minu sõiduki seadistus Libelli jaoks — mõõdud ja kiilud.',
   'settings.shareVehicle': 'Saada teise telefoni',
   'setup.incoming.h': 'Saabunud sõiduki seadistus',
@@ -150,11 +152,12 @@ export const et: Messages = {
   'about.source': 'Libell on tasuta ja avatud lähtekoodiga (MIT-litsents).',
   'about.source.link': 'Lähtekood GitHubis',
 
-  'onboard.welcome.h': 'Tere tulemast Libelli',
-  'onboard.welcome.t':
-    'See lühike juhend seadistab sinu sõiduki ja telefoni. Iga sammu võib vahele jätta ja ' +
-    'hiljem seadetes lõpetada.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Tere tulemast Libelli',
+  'intro.how':
+    'Pane telefon sõidukis lapiti ja Libell näitab, milliseid rattaid tõsta ja kui palju.',
+  'intro.start': 'Alusta',
+  'intro.later': 'Vaata enne ringi',
+  'onboard.source.sensorIcon':
     'Välisanduri saad igal ajal ühendada üleval paremal oleva anduri ikooniga.',
   'onboard.sound.h': 'Heli',
   'onboard.source.h': 'Millega soovid mõõta?',

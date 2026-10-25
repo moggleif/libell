@@ -19,6 +19,8 @@ export const en = {
   'update.offline': "No connection, can't check for updates",
   'update.unsupported': "Updates aren't available here",
   'install.hint': 'Tap Share, then "Add to Home Screen".',
+  'install.row': 'Install Libell as an app on your home screen.',
+  'install.close': 'Hide',
   // A shared link carries only the vehicle's measurements (R41).
   'share.vehicle.text': 'My vehicle setup for Libell — measurements and ramps.',
   'settings.shareVehicle': 'Share to another phone',
@@ -170,12 +172,13 @@ export const en = {
   'about.source.link': 'Source code on GitHub',
 
   // The very first thing a new user sees, before any question.
-  'onboard.welcome.h': 'Welcome to Libell',
-  'onboard.welcome.t':
-    'This quick guide sets up your vehicle and phone. Every step can be skipped and ' +
-    'finished later from Settings.',
+  'intro.h': 'Welcome to Libell',
+  'intro.how':
+    'Lay the phone flat in the vehicle and Libell shows which wheels to raise, and by how much.',
+  'intro.start': 'Get started',
+  'intro.later': 'Look around first',
   // The box is not in Settings, so this says where it is.
-  'onboard.welcome.sensor':
+  'onboard.source.sensorIcon':
     'A sensor box can be connected any time with the sensor icon at the top right.',
   // Heads the wizard step holding the chime and the audio guidance.
   'onboard.sound.h': 'Sound',

@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '../domain/settings';
 import { createCore, type Screen } from './core';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { MenuOptionsDeps } from './menuOptions';
+import type { InstallOffer } from '../ui/install';
 import type { OnboardingLauncherDeps } from './onboardingLauncher';
 import type { mountSensorPages } from './sensorPages';
 
@@ -51,6 +52,8 @@ vi.mock('../ui/vehicleShare', () => ({ shareVehicleSetup: captured.share }));
 
 const { mountPages } = await import('./pages');
 
+const noInstall: InstallOffer = { kind: () => null, install: () => null, onChange: () => {} };
+
 function fakeScreen(): Screen {
   const refreshable = () => ({ refresh: vi.fn() });
   return {
@@ -78,7 +81,7 @@ describe('mountPages', () => {
   it('hands the settings surface and the navigation to the screen', () => {
     button('settings-button');
     const screen = fakeScreen();
-    const pages = mountPages(createCore(screen), screen);
+    const pages = mountPages(createCore(screen), screen, noInstall);
     expect(screen.settingsSurface).toBe(pages.settingsSurface);
     expect(screen.navigation).toBe(pages.navigation);
   });
@@ -86,7 +89,7 @@ describe('mountPages', () => {
   it('mounts the "?" page behind the help button', () => {
     const help = button('help-button');
     const screen = fakeScreen();
-    const pages = mountPages(createCore(screen), screen);
+    const pages = mountPages(createCore(screen), screen, noInstall);
     expect(document.body.contains(pages.infoPage.element)).toBe(true);
     expect(pages.infoPage.isOpen()).toBe(false);
     help.click();
@@ -95,13 +98,13 @@ describe('mountPages', () => {
 
   it('mounts the "?" page even without a help button', () => {
     const screen = fakeScreen();
-    const pages = mountPages(createCore(screen), screen);
+    const pages = mountPages(createCore(screen), screen, noInstall);
     expect(document.body.contains(pages.infoPage.element)).toBe(true);
   });
 
   it('starts with every page closed', () => {
     const screen = fakeScreen();
-    const pages = mountPages(createCore(screen), screen);
+    const pages = mountPages(createCore(screen), screen, noInstall);
     expect(pages.onboarding.isOpen()).toBe(false);
     expect(pages.settingsSurface.isOpen()).toBe(false);
   });
@@ -109,7 +112,7 @@ describe('mountPages', () => {
   it('opens settings from the gear', () => {
     const gear = button('settings-button');
     const screen = fakeScreen();
-    const pages = mountPages(createCore(screen), screen);
+    const pages = mountPages(createCore(screen), screen, noInstall);
     gear.click();
     expect(pages.settingsSurface.isOpen()).toBe(true);
   });
@@ -120,7 +123,7 @@ describe('mountPages', () => {
     function mounted() {
       const screen = fakeScreen();
       const core = createCore(screen);
-      mountPages(core, screen);
+      mountPages(core, screen, noInstall);
       return { screen, core };
     }
 
@@ -143,7 +146,7 @@ describe('mountPages', () => {
 
   it('opens the active sensor page from the settings', () => {
     const screen = fakeScreen();
-    mountPages(createCore(screen), screen);
+    mountPages(createCore(screen), screen, noInstall);
     const open = vi.spyOn(screen.navigation, 'openActiveSensorPage').mockImplementation(() => {});
     captured.menu.openBoxPage();
     expect(open).toHaveBeenCalledOnce();
@@ -151,7 +154,7 @@ describe('mountPages', () => {
 
   it('shares only the vehicle geometry of the current settings', () => {
     const screen = fakeScreen();
-    mountPages(createCore(screen), screen);
+    mountPages(createCore(screen), screen, noInstall);
     captured.menu.shareVehicleSetup({ ...DEFAULT_SETTINGS, wheelbaseMm: 4200 });
     expect(captured.share).toHaveBeenCalledOnce();
     const [geometry] = captured.share.mock.lastCall ?? [];
@@ -161,7 +164,7 @@ describe('mountPages', () => {
 
   it('lets the wizard refresh the lamps and read the active source', () => {
     const screen = fakeScreen();
-    mountPages(createCore(screen), screen);
+    mountPages(createCore(screen), screen, noInstall);
     captured.wizard.refreshLamps();
     expect(screen.lamps.refresh).toHaveBeenCalledOnce();
     expect(captured.wizard.activeSource()).toBe('phone');
@@ -169,7 +172,7 @@ describe('mountPages', () => {
 
   it("builds a box's options for its page and for the wizard's box step", () => {
     const screen = fakeScreen();
-    mountPages(createCore(screen), screen);
+    mountPages(createCore(screen), screen, noInstall);
     const page = captured.boxPage(EASYLEVEL_DESCRIPTOR);
     const wizard = captured.wizard.sensorOptionsFor?.(EASYLEVEL_DESCRIPTOR);
     expect(page).toMatchObject({ sensor: EASYLEVEL_DESCRIPTOR });
@@ -181,7 +184,7 @@ describe('mountPages', () => {
   it('opens the calibration settings while the phone is in use and no box is pending', () => {
     button('settings-button');
     const screen = fakeScreen();
-    const pages = mountPages(createCore(screen), screen);
+    const pages = mountPages(createCore(screen), screen, noInstall);
     pages.navigation.openCalibration();
     expect(pages.settingsSurface.isOpen()).toBe(true);
   });

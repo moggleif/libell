@@ -250,7 +250,7 @@ body {
 /* Classic is "unstyled HTML": flat color, outset/inset borders, square
  * corners. Modern and Glossy override each of these per component (the
  * primary buttons share theirs, by `.menu__action`). */
-.topbar__install {
+.install-row__install {
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
@@ -333,9 +333,48 @@ body {
   display: block;
 }
 
-.install-hint {
+/* ---- Install row (#691) ----
+ * Under the top bar rather than in its corner, where it crowded the lamps:
+ * one line of text, Install, and a ✕ that hides it for good. */
+.install-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 8px 6px 16px;
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--outline);
+}
+
+.install-row[hidden] {
+  display: none;
+}
+
+.install-row__text {
+  flex: 1 1 0;
+  min-width: 0;
   margin: 0;
-  padding: 4px 16px 8px;
+  font-size: 0.875rem;
+  color: var(--on-surface);
+}
+
+.install-row__close {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--on-surface-muted);
+  background: none;
+  border: 0;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.install-hint {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 0 0 4px;
   color: var(--on-surface-muted);
   font-size: 0.9rem;
   text-align: center;
@@ -1223,14 +1262,14 @@ body {
 
 /* The primary buttons' Modern and Glossy looks; only Glossy's outer
  * shadow differs per button. */
-:root[data-appearance='modern'] .topbar__install,
+:root[data-appearance='modern'] .install-row__install,
 :root[data-appearance='modern'] .app__start,
 :root[data-appearance='modern'] .menu__action {
   border: 0;
   border-radius: 999px;
 }
 
-:root[data-appearance='glossy'] .topbar__install,
+:root[data-appearance='glossy'] .install-row__install,
 :root[data-appearance='glossy'] .app__start,
 :root[data-appearance='glossy'] .menu__action {
   background: linear-gradient(
@@ -1246,7 +1285,7 @@ body {
     inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
-:root[data-appearance='glossy'] .topbar__install {
+:root[data-appearance='glossy'] .install-row__install {
   box-shadow:
     0 1px 3px rgb(0 0 0 / 35%),
     inset 0 1px 0 rgb(255 255 255 / 45%);
@@ -2428,6 +2467,84 @@ body {
 
 .illu__measure--dash {
   stroke-dasharray: 5 4;
+}
+
+/* ---- First-visit intro (#691) ----
+ * One screen before the guide, laid out like it (same full-screen sheet),
+ * with the drawing and the words up top and the actions at the thumb. */
+.intro {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100svh;
+  z-index: 30;
+  background: var(--surface);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  padding: calc(24px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+.intro__card {
+  width: min(100%, 420px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intro__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.intro .illu {
+  max-height: 28svh;
+  margin: 0 auto 8px;
+}
+
+.intro__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.intro__text {
+  margin: 0;
+  line-height: 1.45;
+  color: var(--on-surface);
+}
+
+.intro__nav {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.intro__hint {
+  color: var(--on-surface-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.intro__later {
+  font: inherit;
+  color: var(--level);
+  background: none;
+  border: 0;
+  min-height: 44px;
+  margin-top: 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 /* ---- Onboarding wizard ---- */

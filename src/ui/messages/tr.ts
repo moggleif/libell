@@ -18,6 +18,8 @@ export const tr: Messages = {
   'update.offline': 'Bağlantı yok, güncellemeler kontrol edilemiyor',
   'update.unsupported': 'Güncellemeler burada kullanılamıyor',
   'install.hint': 'Paylaş’a, ardından “Ana Ekrana Ekle”ye dokunun.',
+  'install.row': 'Libell’i uygulama olarak ana ekrana yükleyin.',
+  'install.close': 'Gizle',
   'share.vehicle.text': 'Libell için araç ayarlarım — ölçüler ve takozlar.',
   'settings.shareVehicle': 'Başka telefona gönder',
   'setup.incoming.h': 'Gelen araç ayarları',
@@ -141,10 +143,12 @@ export const tr: Messages = {
   'about.source': 'Libell ücretsiz ve açık kaynaklıdır (MIT lisansı).',
   'about.source.link': 'GitHub’da kaynak kodu',
 
-  'onboard.welcome.h': 'Libell’e hoş geldiniz',
-  'onboard.welcome.t':
-    'Bu kısa rehber aracınızı ve telefonunuzu ayarlar. Her adım atlanabilir ve daha sonra Ayarlar’dan tamamlanabilir.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Libell’e hoş geldiniz',
+  'intro.how':
+    'Telefonu araçta düz bırakın; Libell hangi tekerleklerin ne kadar yükseltileceğini gösterir.',
+  'intro.start': 'Başlayın',
+  'intro.later': 'Önce göz atın',
+  'onboard.source.sensorIcon':
     'Sensör kutusu, sağ üstteki sensör simgesiyle istediğiniz zaman bağlanabilir.',
   'onboard.sound.h': 'Ses',
   'onboard.source.h': 'Nasıl ölçmek istiyorsunuz?',

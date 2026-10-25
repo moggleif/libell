@@ -1,31 +1,28 @@
 // @vitest-environment happy-dom
 //
-// The Install button (#512): Chromium's deferred prompt is replayed on tap;
-// iOS, which has no prompt, toggles the "Add to Home Screen" hint instead.
+// Installing the app (#512, #691): Chromium's deferred prompt is replayed on
+// tap; iOS, which has no prompt, shows the "Add to Home Screen" hint instead.
+// One offer serves both the intro and the install row under the top bar.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const platform = vi.hoisted(() => ({ ios: false }));
 vi.mock('./platform', () => ({ isIos: () => platform.ios }));
 
-const { setupInstallButton } = await import('./install');
+const { createInstallOffer, setupInstallRow } = await import('./install');
 
 function standalone(matches: boolean): void {
   vi.spyOn(window, 'matchMedia').mockReturnValue({ matches } as MediaQueryList);
 }
 
-function setup() {
-  const button = document.createElement('button');
-  const hint = document.createElement('p');
-  button.hidden = true;
-  hint.hidden = true;
+function offer() {
   const add = vi.spyOn(window, 'addEventListener');
-  setupInstallButton(button, hint);
+  const created = createInstallOffer();
   const fire = (type: string, event: Event = new Event(type)) => {
     for (const [name, listener] of add.mock.calls) {
       if (name === type) (listener as EventListener)(event);
     }
   };
-  return { button, hint, fire };
+  return { offer: created, fire };
 }
 
 function installPrompt() {
@@ -34,6 +31,18 @@ function installPrompt() {
     prompt: vi.fn(() => Promise.resolve()),
     userChoice: Promise.resolve({ outcome: 'accepted' as const }),
   });
+}
+
+function row() {
+  const els = {
+    row: document.createElement('div'),
+    button: document.createElement('button'),
+    hint: document.createElement('p'),
+    close: document.createElement('button'),
+  };
+  els.row.hidden = true;
+  els.hint.hidden = true;
+  return els;
 }
 
 beforeEach(() => {
@@ -45,42 +54,109 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('setupInstallButton', () => {
-  it('shows the button once the browser offers to install, and replays that offer on tap', () => {
-    const { button, fire } = setup();
-    expect(button.hidden).toBe(true);
+describe('createInstallOffer', () => {
+  it('offers nothing until the browser offers to install, then replays that offer once', () => {
+    const { offer: install, fire } = offer();
+    const changed = vi.fn();
+    install.onChange(changed);
+    expect(install.kind()).toBeNull();
     const event = installPrompt();
     fire('beforeinstallprompt', event);
     expect(event.defaultPrevented).toBe(true);
-    expect(button.hidden).toBe(false);
-    button.click();
+    expect(install.kind()).toBe('prompt');
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(install.install()).toBe('prompt');
     expect(event.prompt).toHaveBeenCalledOnce();
-    expect(button.hidden).toBe(true);
+    // Single-use: Chromium refires the event if the dialog is dismissed.
+    expect(install.kind()).toBeNull();
+    expect(changed).toHaveBeenCalledTimes(2);
   });
 
-  it('on iOS shows the button and toggles the Add to Home Screen hint', () => {
+  it('on iOS offers the Add to Home Screen hint', () => {
     platform.ios = true;
-    const { button, hint } = setup();
-    expect(button.hidden).toBe(false);
-    button.click();
-    expect(hint.hidden).toBe(false);
-    button.click();
-    expect(hint.hidden).toBe(true);
+    const { offer: install } = offer();
+    expect(install.kind()).toBe('hint');
+    expect(install.install()).toBe('hint');
+    expect(install.kind()).toBe('hint');
   });
 
-  it('hides the button and the hint once the app is installed', () => {
+  it('offers nothing once the app is installed', () => {
     platform.ios = true;
-    const { button, hint, fire } = setup();
-    button.click();
+    const { offer: install, fire } = offer();
+    const changed = vi.fn();
+    install.onChange(changed);
     fire('appinstalled');
-    expect(button.hidden).toBe(true);
-    expect(hint.hidden).toBe(true);
+    expect(install.kind()).toBeNull();
+    expect(changed).toHaveBeenCalledOnce();
   });
 
   it('offers nothing when already running as the installed app', () => {
     platform.ios = true;
     standalone(true);
-    const { button } = setup();
-    expect(button.hidden).toBe(true);
+    const { offer: install, fire } = offer();
+    fire('beforeinstallprompt', installPrompt());
+    expect(install.kind()).toBeNull();
+    expect(install.install()).toBeNull();
+  });
+});
+
+describe('setupInstallRow', () => {
+  function dismissal(dismissed = false) {
+    return { isDismissed: () => dismissed, dismiss: vi.fn() };
+  }
+
+  it('shows the row once the browser offers to install, and replays that offer on tap', () => {
+    const { offer: install, fire } = offer();
+    const els = row();
+    setupInstallRow(els, install, dismissal());
+    expect(els.row.hidden).toBe(true);
+    const event = installPrompt();
+    fire('beforeinstallprompt', event);
+    expect(els.row.hidden).toBe(false);
+    els.button.click();
+    expect(event.prompt).toHaveBeenCalledOnce();
+    expect(els.row.hidden).toBe(true);
+  });
+
+  it('on iOS shows the row and toggles the Add to Home Screen hint', () => {
+    platform.ios = true;
+    const { offer: install } = offer();
+    const els = row();
+    setupInstallRow(els, install, dismissal());
+    expect(els.row.hidden).toBe(false);
+    els.button.click();
+    expect(els.hint.hidden).toBe(false);
+    els.button.click();
+    expect(els.hint.hidden).toBe(true);
+  });
+
+  it('hides the row and the hint once the app is installed', () => {
+    platform.ios = true;
+    const { offer: install, fire } = offer();
+    const els = row();
+    setupInstallRow(els, install, dismissal());
+    els.button.click();
+    fire('appinstalled');
+    expect(els.row.hidden).toBe(true);
+    expect(els.hint.hidden).toBe(true);
+  });
+
+  it('✕ hides the row for good, and remembers it', () => {
+    platform.ios = true;
+    const { offer: install } = offer();
+    const els = row();
+    const remembered = dismissal();
+    setupInstallRow(els, install, remembered);
+    els.close.click();
+    expect(els.row.hidden).toBe(true);
+    expect(remembered.dismiss).toHaveBeenCalledOnce();
+  });
+
+  it('stays hidden after an earlier ✕, even when the browser offers to install', () => {
+    const { offer: install, fire } = offer();
+    const els = row();
+    setupInstallRow(els, install, dismissal(true));
+    fire('beforeinstallprompt', installPrompt());
+    expect(els.row.hidden).toBe(true);
   });
 });

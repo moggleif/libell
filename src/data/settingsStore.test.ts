@@ -8,7 +8,9 @@ import {
   saveLanguage,
   clearLanguage,
   hasStoredMeasurements,
+  hasDismissedInstall,
   isBoxPending,
+  markInstallDismissed,
   setBoxPending,
   markMeasurementsSaved,
   migrateMeasurementsSaved,
@@ -496,5 +498,20 @@ describe('language and first-run storage (#480)', () => {
   it('counts the introduction as seen when storage throws, so it never loops', () => {
     expect(hasSeenOnboarding(throwingStorage)).toBe(true);
     expect(() => markOnboardingSeen(throwingStorage)).not.toThrow();
+  });
+});
+
+// #691: the install row's ✕ hides the row for good.
+describe('install row dismissed (#691)', () => {
+  it('is false until dismissed, then true', () => {
+    const storage = memoryStorage();
+    expect(hasDismissedInstall(storage)).toBe(false);
+    markInstallDismissed(storage);
+    expect(hasDismissedInstall(storage)).toBe(true);
+  });
+
+  it('reads as not dismissed when storage is blocked, and never throws', () => {
+    expect(hasDismissedInstall(null)).toBe(false);
+    expect(() => markInstallDismissed(null)).not.toThrow();
   });
 });

@@ -31,7 +31,7 @@ import { chromium } from 'playwright';
 import { APPEARANCES } from '../src/domain/appearance.ts';
 import { selectAppearances } from './fitAppearances.ts';
 import { calibrationGapProblem, measureCalibrationGap } from './fitWizardSpacing.ts';
-import { BASE, PORT, openWithSettings } from './fitOpen.mjs';
+import { BASE, PORT, openWithSettings, passIntro } from './fitOpen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -95,7 +95,7 @@ const IOS_UA =
 // Every container that covers the screen in its own right. Anything open
 // gets the reachability checks below, and each is held to the iOS rule at
 // the end of this file.
-const VIEW_CONTAINERS = ['.menu-page', '.onboarding', '.menu', '.incoming-setup'];
+const VIEW_CONTAINERS = ['.menu-page', '.intro', '.onboarding', '.menu', '.incoming-setup'];
 
 const failures = [];
 let checked = 0;
@@ -304,8 +304,8 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
  * the only way onto the external path, since the radios exist only then.
  */
 async function checkWizard(page, label, { external = false, fitsWhole = true } = {}) {
-  await page.waitForSelector('.onboarding');
-  // 12 is past the longest path (11, external sensor); the loop ends when the guide closes.
+  await passIntro(page, () => auditView(page, `${label} / intro`));
+  // 12 is past the longest path (10, external sensor); the loop ends when the guide closes.
   for (let step = 0; step < 12; step += 1) {
     if (external) {
       await page.evaluate(() => {

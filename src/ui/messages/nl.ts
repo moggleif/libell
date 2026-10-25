@@ -18,6 +18,8 @@ export const nl: Messages = {
   'update.offline': 'Geen verbinding, kan niet zoeken naar updates',
   'update.unsupported': 'Updates zijn hier niet beschikbaar',
   'install.hint': 'Tik op Deel en dan op “Zet op beginscherm”.',
+  'install.row': 'Installeer Libell als app op je beginscherm.',
+  'install.close': 'Verbergen',
   'share.vehicle.text': 'Mijn voertuiginstellingen voor Libell — maten en blokken.',
   'settings.shareVehicle': 'Naar andere telefoon',
   'setup.incoming.h': 'Ontvangen voertuiginstellingen',
@@ -154,11 +156,12 @@ export const nl: Messages = {
   'about.source': 'Libell is gratis en open source (MIT-licentie).',
   'about.source.link': 'Broncode op GitHub',
 
-  'onboard.welcome.h': 'Welkom bij Libell',
-  'onboard.welcome.t':
-    'Deze korte handleiding stelt je voertuig en telefoon in. Elke stap kun je overslaan en ' +
-    'later afmaken via Instellingen.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Welkom bij Libell',
+  'intro.how':
+    'Leg de telefoon plat in het voertuig en Libell laat zien welke wielen omhoog moeten, en hoeveel.',
+  'intro.start': 'Aan de slag',
+  'intro.later': 'Eerst rondkijken',
+  'onboard.source.sensorIcon':
     'Een sensorbox kun je altijd verbinden met het sensorpictogram rechtsboven.',
   'onboard.sound.h': 'Geluid',
   'onboard.source.h': 'Hoe wil je meten?',

@@ -18,6 +18,8 @@ export const fi: Messages = {
   'update.offline': 'Ei yhteyttä, päivityksiä ei voi tarkistaa',
   'update.unsupported': 'Päivitykset eivät ole käytettävissä täällä',
   'install.hint': 'Napauta Jaa ja sitten ”Lisää Koti-valikkoon”.',
+  'install.row': 'Asenna Libell sovellukseksi Koti-valikkoon.',
+  'install.close': 'Piilota',
   'share.vehicle.text': 'Ajoneuvoni asetukset Libelliä varten — mitat ja kiilat.',
   'settings.shareVehicle': 'Jaa toiseen puhelimeen',
   'setup.incoming.h': 'Vastaanotetut ajoneuvoasetukset',
@@ -136,10 +138,12 @@ export const fi: Messages = {
     'Kaikki pysyy puhelimessasi — ei tiliä, ei seurantaa, eikä mitään tietoja lähetetä laitteesta.',
   'about.source': 'Libell on ilmainen ja avointa lähdekoodia (MIT-lisenssi).',
   'about.source.link': 'Lähdekoodi GitHubissa',
-  'onboard.welcome.h': 'Tervetuloa Libelliin',
-  'onboard.welcome.t':
-    'Tämä lyhyt opas määrittää ajoneuvosi ja puhelimesi. Jokaisen vaiheen voi ohittaa ja tehdä myöhemmin asetuksissa.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Tervetuloa Libelliin',
+  'intro.how':
+    'Aseta puhelin ajoneuvoon vaakatasoon, niin Libell näyttää, mitä pyöriä nostetaan ja kuinka paljon.',
+  'intro.start': 'Aloita',
+  'intro.later': 'Katsele ensin',
+  'onboard.source.sensorIcon':
     'Anturirasian voi yhdistää milloin tahansa oikean yläkulman anturikuvakkeesta.',
   'onboard.sound.h': 'Ääni',
   'onboard.source.h': 'Miten haluat mitata?',

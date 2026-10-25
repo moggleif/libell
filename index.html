@@ -36,17 +36,25 @@
       <div class="topbar__actions">
         <div id="indicators" class="topbar__indicators"></div>
       </div>
-      <!-- The pinned top-right corner: Install directly left of the
-           sensor-status icon (whose element main.ts appends into the slot
-           below). Pinned rather than in flow so the pair always owns the
-           corner and everything else wraps or shifts to its left — the
-           warning lamps above included, which keep their own place. -->
+      <!-- The pinned top-right corner: the sensor-status icon (whose
+           element main.ts appends into the slot below). Pinned rather than
+           in flow so it always owns the corner and everything else wraps or
+           shifts to its left — the warning lamps above included, which
+           keep their own place. -->
       <div id="topbar-corner" class="topbar__corner">
-        <button id="install-button" class="topbar__install" type="button" hidden>Install</button>
         <div id="sensor-slot" class="topbar__sensor-slot"></div>
       </div>
     </header>
-    <p id="install-hint" class="install-hint" hidden></p>
+    <!-- Install, on a row of its own under the top bar (#691): in the
+         corner it crowded the lamps. -->
+    <div id="install-row" class="install-row" hidden>
+      <p id="install-text" class="install-row__text"></p>
+      <button id="install-button" class="install-row__install" type="button">Install</button>
+      <button id="install-close" class="install-row__close" type="button" aria-label="Hide">
+        ✕
+      </button>
+      <p id="install-hint" class="install-hint" hidden></p>
+    </div>
     <!-- The active vehicle and target, while there is a choice (#616). -->
     <div id="choices" class="choices" hidden></div>
     <main id="app" class="app"></main>

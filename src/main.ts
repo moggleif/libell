@@ -2,6 +2,7 @@ import './ui/styles.css';
 import { hasSeenOnboarding, loadLanguage, markMeasurementsSaved } from './data/settingsStore';
 import { isSensorSupported, needsPermissionGesture } from './sensor/orientation';
 import { resolveLanguage, setLanguage } from './ui/i18n';
+import { createInstallOffer, type InstallOffer } from './ui/install';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
 import { nextVehicleName } from './ui/vehiclePicker';
@@ -23,23 +24,24 @@ import { setupTopBar, type TopBar } from './app/topBar';
 
 guardAgainstFraming();
 setLanguage(resolveLanguage(loadLanguage()));
-const topBar = setupTopBar();
+const install = createInstallOffer();
+const topBar = setupTopBar(install);
 const root = document.querySelector<HTMLElement>('#app');
-if (root) bootstrap(root, topBar);
+if (root) bootstrap(root, topBar, install);
 
-function bootstrap(root: HTMLElement, topBar: TopBar): void {
+function bootstrap(root: HTMLElement, topBar: TopBar, install: InstallOffer): void {
   keepScreenAwake();
   runStartupMigrations();
   // Consumed off the URL at once, so a later refresh never re-prompts.
   const pendingSetupCode = takePendingVehicleSetupCode();
   const screen = {} as Screen;
   const core = createCore(screen);
-  const pages = mountPages(core, screen);
+  const pages = mountPages(core, screen, install);
   mountMainScreen(root, core, pages, screen, topBar);
   start(root, core, pages, screen, pendingSetupCode);
 }
 
-/** An incoming setup link or the first-run wizard, then the readings. */
+/** An incoming setup link or the first-run intro, then the readings. */
 function start(
   root: HTMLElement,
   core: Core,
@@ -59,7 +61,7 @@ function start(
     show: showIncomingVehicleSetup,
     toast: (text) => void showToast(text),
   });
-  if (!offered && !core.demo && !hasSeenOnboarding()) pages.onboarding.open();
+  if (!offered && !core.demo && !hasSeenOnboarding()) pages.onboarding.openFirstRun();
 
   if (core.demo) {
     screen.levelScreen.show();
