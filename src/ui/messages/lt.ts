@@ -18,6 +18,8 @@ export const lt: Messages = {
   'update.offline': 'Nėra ryšio, negalima patikrinti atnaujinimų',
   'update.unsupported': 'Atnaujinimai čia nepasiekiami',
   'install.hint': 'Palieskite „Bendrinti“, tada „Įtraukti į pradžios ekraną“.',
+  'install.row': 'Įdiekite Libell kaip programėlę pradžios ekrane.',
+  'install.close': 'Slėpti',
   'share.vehicle.text': 'Mano transporto priemonės nustatymai Libell — matmenys ir pakylos.',
   'settings.shareVehicle': 'Siųsti į kitą telefoną',
   'setup.incoming.h': 'Gauti transporto priemonės nustatymai',
@@ -157,11 +159,12 @@ export const lt: Messages = {
   'about.source': 'Libell yra nemokama atvirojo kodo programėlė (MIT licencija).',
   'about.source.link': 'Šaltinio kodas GitHub',
 
-  'onboard.welcome.h': 'Sveiki atvykę į Libell',
-  'onboard.welcome.t':
-    'Šis trumpas vadovas padės nustatyti transporto priemonę ir telefoną. Kiekvieną žingsnį galima ' +
-    'praleisti ir užbaigti vėliau skiltyje „Nustatymai“.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Sveiki atvykę į Libell',
+  'intro.how':
+    'Padėkite telefoną transporto priemonėje gulsčiai, ir Libell parodys, kuriuos ratus pakelti ir kiek.',
+  'intro.start': 'Pradėti',
+  'intro.later': 'Pirma apsižvalgyti',
+  'onboard.source.sensorIcon':
     'Jutiklio dėžutę bet kada galima prijungti jutiklio piktograma viršuje dešinėje.',
   'onboard.sound.h': 'Garsas',
   'onboard.source.h': 'Kuo norite matuoti?',

@@ -18,6 +18,8 @@ export const pl: Messages = {
   'update.offline': 'Brak połączenia, nie można sprawdzić aktualizacji',
   'update.unsupported': 'Aktualizacje nie są tu dostępne',
   'install.hint': 'Dotknij „Udostępnij”, a potem „Do ekranu początkowego”.',
+  'install.row': 'Zainstaluj Libell jako aplikację na ekranie głównym.',
+  'install.close': 'Ukryj',
   'share.vehicle.text': 'Ustawienia mojego pojazdu dla Libell — wymiary i najazdy.',
   'settings.shareVehicle': 'Wyślij na inny telefon',
   'setup.incoming.h': 'Otrzymane ustawienia pojazdu',
@@ -145,10 +147,11 @@ export const pl: Messages = {
   'about.source': 'Libell jest darmowy i ma otwarty kod źródłowy (licencja MIT).',
   'about.source.link': 'Kod na GitHubie',
 
-  'onboard.welcome.h': 'Witaj w Libell',
-  'onboard.welcome.t':
-    'Ten krótki przewodnik skonfiguruje pojazd i telefon. Każdy krok możesz pominąć i dokończyć później w Ustawieniach.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Witaj w Libell',
+  'intro.how': 'Połóż telefon płasko w pojeździe, a Libell pokaże, które koła podnieść i o ile.',
+  'intro.start': 'Zaczynamy',
+  'intro.later': 'Najpierw się rozejrzę',
+  'onboard.source.sensorIcon':
     'Moduł czujnika możesz w każdej chwili połączyć ikoną czujnika w prawym górnym rogu.',
   'onboard.sound.h': 'Dźwięk',
   'onboard.source.h': 'Czym chcesz mierzyć?',

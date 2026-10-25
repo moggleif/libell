@@ -18,6 +18,8 @@ export const is: Messages = {
   'update.offline': 'Engin tenging, ekki hægt að leita að uppfærslum',
   'update.unsupported': 'Uppfærslur eru ekki í boði hér',
   'install.hint': 'Ýttu á Share og svo „Add to Home Screen“.',
+  'install.row': 'Settu Libell upp sem app á heimaskjánum.',
+  'install.close': 'Fela',
   'share.vehicle.text': 'Uppsetning ökutækisins míns fyrir Libell — mál og kubbar.',
   'settings.shareVehicle': 'Senda í annan síma',
   'setup.incoming.h': 'Móttekin uppsetning ökutækis',
@@ -142,10 +144,12 @@ export const is: Messages = {
   'about.source': 'Libell er ókeypis og opinn hugbúnaður (MIT-leyfi).',
   'about.source.link': 'Frumkóði á GitHub',
 
-  'onboard.welcome.h': 'Velkomin í Libell',
-  'onboard.welcome.t':
-    'Þessi stutta leiðsögn setur upp ökutækið og símann. Það má sleppa hverju skrefi og klára það síðar í Stillingum.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Velkomin í Libell',
+  'intro.how':
+    'Leggðu símann flatan í ökutækið og Libell sýnir hvaða hjól þarf að hækka og hve mikið.',
+  'intro.start': 'Byrja',
+  'intro.later': 'Skoða fyrst',
+  'onboard.source.sensorIcon':
     'Skynjarabox má tengja hvenær sem er með skynjaratákninu efst til hægri.',
   'onboard.sound.h': 'Hljóð',
   'onboard.source.h': 'Hvernig viltu mæla?',

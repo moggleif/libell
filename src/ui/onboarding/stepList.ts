@@ -4,7 +4,6 @@ import { sourceStep, vehicleStep } from './choiceSteps';
 import { placementStep, readScreenStep } from './placementSteps';
 import { measurementsStep, preferenceStep, rampsStep } from './settingsSteps';
 import type { Step } from './types';
-import { welcomeStep } from './welcomeStep';
 import type { WizardState } from './wizardState';
 
 // With a box already active the calibration step is left out: phone
@@ -28,8 +27,8 @@ function externalSteps(state: WizardState): Step[] {
 /** The source step only exists when an external sensor is available, and
  * decides the rest. */
 export function resolveSteps(state: WizardState): Step[] {
+  // What Libell is comes before the guide, on the intro (#691).
   const leading = [
-    welcomeStep(state),
     preferenceStep(state, 'settings.language', 'language'),
     preferenceStep(state, 'settings.appearance', 'appearance'),
     preferenceStep(state, 'onboard.sound.h', 'sound'),

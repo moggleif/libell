@@ -44,6 +44,8 @@ const ONBOARDING_DONE_KEY = 'libell.onboardingDone';
 // (or the phone is calibrated after all) the amber lamp asks for the box
 // instead of ⚠ Calibrate.
 const BOX_PENDING_KEY = 'libell.boxPending';
+// The install row's ✕ (#691): hidden for good once tapped.
+const INSTALL_DISMISSED_KEY = 'libell.installDismissed';
 // Separate from the calibration keys (ADR 0013): a preset is never stored in
 // the same field as either calibration layer.
 const TARGET_PRESETS_KEY = 'libell.targetPresets';
@@ -128,6 +130,15 @@ export function hasDoneOnboarding(storage: MaybeStorage = defaultStorage()): boo
 
 export function markOnboardingDone(storage: MaybeStorage = defaultStorage()): void {
   writeFlag(storage, ONBOARDING_DONE_KEY, true);
+}
+
+/** Blocked storage reads as not dismissed: the row may show again. */
+export function hasDismissedInstall(storage: MaybeStorage = defaultStorage()): boolean {
+  return readFlag(storage, INSTALL_DISMISSED_KEY, false);
+}
+
+export function markInstallDismissed(storage: MaybeStorage = defaultStorage()): void {
+  writeFlag(storage, INSTALL_DISMISSED_KEY, true);
 }
 
 /** Blocked storage reads as not pending: the ordinary phone lamp. */

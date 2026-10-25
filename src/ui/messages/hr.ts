@@ -18,6 +18,8 @@ export const hr: Messages = {
   'update.offline': 'Nema veze, ne mogu provjeriti ažuriranja',
   'update.unsupported': 'Ažuriranja ovdje nisu dostupna',
   'install.hint': 'Dodirnite „Dijeli”, a zatim „Dodaj na početni zaslon”.',
+  'install.row': 'Instalirajte Libell kao aplikaciju na početni zaslon.',
+  'install.close': 'Sakrij',
   'share.vehicle.text': 'Postavke mog vozila za Libell — mjere i rampe.',
   'settings.shareVehicle': 'Pošalji na drugi telefon',
   'setup.incoming.h': 'Primljene postavke vozila',
@@ -152,11 +154,12 @@ export const hr: Messages = {
   'about.source': 'Libell je besplatan i otvorenog koda (licenca MIT).',
   'about.source.link': 'Izvorni kod na GitHubu',
 
-  'onboard.welcome.h': 'Dobro došli u Libell',
-  'onboard.welcome.t':
-    'Ovaj kratki vodič postavlja vaše vozilo i telefon. Svaki se korak može preskočiti i ' +
-    'dovršiti kasnije u postavkama.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Dobro došli u Libell',
+  'intro.how':
+    'Položite telefon ravno u vozilo i Libell će pokazati koje kotače podići i za koliko.',
+  'intro.start': 'Započnite',
+  'intro.later': 'Prvo razgledajte',
+  'onboard.source.sensorIcon':
     'Senzorsku kutiju možete povezati u bilo kojem trenutku ikonom senzora gore desno.',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čime želite mjeriti?',

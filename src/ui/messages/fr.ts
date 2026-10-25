@@ -18,6 +18,8 @@ export const fr: Messages = {
   'update.offline': 'Pas de connexion, impossible de rechercher des mises à jour',
   'update.unsupported': 'Les mises à jour ne sont pas disponibles ici',
   'install.hint': 'Touchez Partager, puis « Sur l’écran d’accueil ».',
+  'install.row': 'Installez Libell comme appli sur l’écran d’accueil.',
+  'install.close': 'Masquer',
   'share.vehicle.text': 'La configuration de mon véhicule pour Libell — mesures et rampes.',
   'settings.shareVehicle': 'Partager vers un autre téléphone',
   'setup.incoming.h': 'Configuration de véhicule reçue',
@@ -158,11 +160,12 @@ export const fr: Messages = {
   'about.source': 'Libell est gratuit et open source (licence MIT).',
   'about.source.link': 'Code source sur GitHub',
 
-  'onboard.welcome.h': 'Bienvenue dans Libell',
-  'onboard.welcome.t':
-    'Ce guide rapide configure votre véhicule et votre téléphone. Chaque étape peut ' +
-    'être passée et terminée plus tard depuis les Réglages.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Bienvenue dans Libell',
+  'intro.how':
+    'Posez le téléphone à plat dans le véhicule : Libell indique quelles roues surélever, et de combien.',
+  'intro.start': 'Commencer',
+  'intro.later': 'Explorer d’abord',
+  'onboard.source.sensorIcon':
     'Un boîtier capteur se connecte à tout moment avec l’icône du capteur en haut à droite.',
   'onboard.sound.h': 'Son',
   'onboard.source.h': 'Comment voulez-vous mesurer ?',

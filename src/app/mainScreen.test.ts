@@ -29,7 +29,8 @@ function mount() {
   const root = mountShell();
   const screen = {} as Screen;
   const core = createCore(screen);
-  const pages = mountPages(core, screen);
+  const install = { kind: () => null, install: () => null, onChange: () => {} };
+  const pages = mountPages(core, screen, install);
   const topBar = { syncCorner: vi.fn() };
   mountMainScreen(root, core, pages, screen, topBar);
   return { root, screen, core, topBar };

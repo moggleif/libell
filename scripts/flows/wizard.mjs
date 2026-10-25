@@ -1,3 +1,4 @@
+import { intro } from './firstVisit.mjs';
 import {
   DEMO_PITCH,
   DEMO_ROLL,
@@ -56,6 +57,7 @@ export async function wizardBoxFlow(browser, connect) {
   const { context, page, errors } = await openApp(browser, 'xparkle-sim', {
     'libell.onboarded': null,
   });
+  await button(intro(page), 'Get started').click();
   await nextUntil(page, 'How do you want to measure?');
   await wizard(page).getByText('Sensor box', { exact: true }).click();
   await nextUntil(page, 'Sensor box');
@@ -92,6 +94,7 @@ export async function wizardPasswordFlow(browser) {
   const { context, page, errors } = await openApp(browser, 'xparkle-sim=badpassword', {
     'libell.onboarded': null,
   });
+  await button(intro(page), 'Get started').click();
   await nextUntil(page, 'How do you want to measure?');
   await wizard(page).getByText('Sensor box', { exact: true }).click();
   await nextUntil(page, 'Sensor box');

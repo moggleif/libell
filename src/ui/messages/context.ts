@@ -1557,7 +1557,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   ),
   'topbar.install': ctx(
     'button',
-    'Level screen › top bar: the Install button at the top right (shown only when the app can be installed).',
+    'Install row under the top bar, and the first-visit intro: the Install button (shown only when the app can be installed).',
     'Installs Libell as an app on the home screen. Keep very short.',
   ),
   'topbar.share': ctx(
@@ -1630,9 +1630,19 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Toast when the browser cannot check for updates (no service worker).',
     'Update checks are not possible in this browser or context.',
   ),
+  'install.row': ctx(
+    'line',
+    'Install row under the top bar: the text left of the Install button.',
+    'Invites the user to install Libell as an app on the home screen. One short line.',
+  ),
+  'install.close': ctx(
+    'speech',
+    'Install row under the top bar: aria label of the ✕ button.',
+    'Hides the install row for good.',
+  ),
   'install.hint': ctx(
     'line',
-    'Level screen › below the top bar: hint shown on iPhone after tapping Install.',
+    'Install row under the top bar, and the first-visit intro: hint shown on iPhone after tapping Install.',
     'Explains manual install on iOS; "Share" and "Add to Home Screen" must match the Safari menu names in your language.',
   ),
   'share.vehicle.text': ctx(
@@ -1697,7 +1707,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   ),
   'about.text': ctx(
     'text',
-    "Help › About tab: first paragraph; also the first paragraph of the introduction's welcome step.",
+    'Help › About tab: first paragraph; also the first paragraph of the first-visit intro.',
     'What Libell does in one sentence: level a motorhome or caravan with your own phone, no guessing.',
   ),
   'about.version': ctx(
@@ -1725,19 +1735,29 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Help › About tab: link after the open-source sentence.',
     'Opens the source code repository on GitHub.',
   ),
-  'onboard.welcome.h': ctx(
+  'intro.h': ctx(
     'label',
-    'Introduction wizard › welcome step: the step title.',
+    'First-visit intro (before the introduction wizard): the heading.',
     'Welcome heading on the very first screen a new user sees; Libell is the app name.',
   ),
-  'onboard.welcome.t': ctx(
+  'intro.how': ctx(
     'text',
-    'Introduction wizard › welcome step: second paragraph.',
-    'Explains this guide sets up vehicle and phone; any step can be skipped and done later from Settings.',
+    'First-visit intro: second paragraph, under the one-sentence pitch.',
+    'What you do with Libell: lay the phone flat in the vehicle, and it shows which wheels to raise and by how much.',
   ),
-  'onboard.welcome.sensor': ctx(
+  'intro.start': ctx(
+    'button',
+    'First-visit intro: the main button at the bottom.',
+    'Opens the introduction wizard (the short setup guide).',
+  ),
+  'intro.later': ctx(
+    'button',
+    'First-visit intro: a text link under the buttons.',
+    'Skips the guide and goes straight to the app; the guide can be opened later from Help.',
+  ),
+  'onboard.source.sensorIcon': ctx(
     'text',
-    'Introduction wizard › welcome step: third paragraph.',
+    'Introduction wizard › source step: second paragraph, under the step intro.',
     'Points to the sensor icon at the top right for connecting a Sensorbox (external Bluetooth box) later.',
   ),
   'onboard.sound.h': ctx(

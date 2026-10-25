@@ -325,7 +325,7 @@ URL and must keep working with no signal.
 - **Then** a ramp is always _kloss/klossar_, never _ramp_.
 - **Given** text shown for any vehicle type (#366)
 - **Then** it does not call a caravan a motorhome: the level overlay and the start hint
-  say "vehicle". About and the welcome step do not promise "no spirit level", since
+  say "vehicle". About and the intro do not promise "no spirit level", since
   zeroing asks for one.
 
 ## R12 — Feedback without a backend
@@ -446,10 +446,19 @@ URL and must keep working with no signal.
 
 ## R18 — A first-run introduction, skippable and reopenable
 
-- **Given** I open Libell for the very first time, on a browser without Web Bluetooth
-  support (R32's exact gate)
-- **Then** a nine-step wizard runs: welcome (design review — what Libell is for, before
-  any question), Language, Appearance — Theme + Appearance, Sound — Chime + Continuous
+- **Given** I open Libell for the very first time (no incoming setup link, R41)
+- **Then** an intro comes first (#691): one screen, no step counter, with a drawing of
+  the phone in the vehicle, "Welcome to Libell", what Libell does (the same one-line
+  pitch the About page uses) and what you do with it (lay the phone flat in the vehicle,
+  and it shows which wheels to raise and by how much). Its main button, "Get started",
+  opens the wizard below. Under it, "Install" shows while the browser offers to install
+  (R20) — it appears the moment that offer arrives, even with the intro already open —
+  and a "Look around first" link goes straight to the app. Looking around counts as a
+  closed wizard (seen, not done): it never opens by itself again, and the warning lamps
+  (R11) show what is left. "Show introduction" (below) opens the wizard directly, not the
+  intro.
+- **Given** "Get started", on a browser without Web Bluetooth support (R32's exact gate)
+- **Then** an eight-step wizard runs: Language, Appearance — Theme + Appearance, Sound — Chime + Continuous
   audio guidance, which vehicle I'm leveling (motorhome or caravan — #184), how to place
   the phone and how to read the answer (the wheel-state legend and the bubble), vehicle
   measurements (skippable), ramp model/count (skippable), phone-sensor calibration.
@@ -460,22 +469,17 @@ URL and must keep working with no signal.
   once — an early ✕ does not count, even though it still counts for the auto-launch
   gate above (design review, follow-up); once truly completed, it turns secondary, a
   plain re-launch rather than an unfinished first-run task.
-- **Given** the welcome step (design review, always first)
-- **Then** it shows what Libell does (the same one-line pitch the About page uses) and
-  that the guide ahead is short and every step can be skipped and finished later from
-  Settings. Where an external sensor is an option (R32's gate) it adds that a sensor is
-  connected any time with the sensor icon at the top right (#365) — the box is not in
-  Settings. No form, no Skip control — there is nothing to configure here, only Next.
 - **Given** the Language, Appearance and Sound steps (#189 introduced these as one
   combined "General" step; a later design review split it into one step per actual
   decision, not per what used to share a Settings section header)
-- **Then** Language stands alone, right after welcome — it has to resolve before the
+- **Then** Language stands alone, first — it has to resolve before the
   rest of the guide is legible, a reason none of the other fields share (still applies
   via a full reload immediately on change, same as Settings). Theme and Appearance share
   a step, one "how it looks" decision. Chime and Continuous audio guidance share a step,
   one "what it sounds like" decision. All three reuse the exact fields/handlers Settings
-  → General has. Each has only Back and Next (#365): the form shows the shipped
-  defaults until changed, so a Skip did exactly what Next does.
+  → General has. Each has only Back and Next (#365; Language, being first, only Next):
+  the form shows the shipped defaults until changed, so a Skip did exactly what Next
+  does.
 - **Given** any step that embeds a real Settings form — Language, Appearance, Sound,
   measurements, ramps (design review)
 - **Then** the embedded form shows only its fields, and is saved by the step's Next (see
@@ -532,9 +536,11 @@ URL and must keep working with no signal.
   after the Sound step, offering "This phone" (pre-selected) or "Sensor box" — the
   same name and wording the sensor-status icon and its page use (R32) elsewhere, never
   a separate "Libell Sensor" product name, which was never real; every other browser
-  gets exactly the nine-step flow above, with no added step and no dead radio button
+  gets exactly the eight-step flow above, with no added step and no dead radio button
   (#135). The vehicle step always follows immediately after this one, so it is answered
-  before either device path continues.
+  before either device path continues. Under its intro line it says that a sensor box is
+  connected any time with the sensor icon at the top right (#365) — the box is not in
+  Settings.
 - **Given** the source step, with "This phone" left selected (the default)
 - **Then** the rest of the wizard is the phone flow above (vehicle, placement,
   measurements, ramps, sensor calibration).
@@ -638,10 +644,13 @@ URL and must keep working with no signal.
 
 - **Given** the browser offers a real install prompt (Chromium's
   `beforeinstallprompt`)
-- **Then** an "Install" button appears in the top bar and replays the deferred prompt
-  when tapped. On iOS, which has no install API, the button toggles a hint describing
-  Share → "Add to Home Screen". When the app already runs standalone, no install UI
-  appears.
+- **Then** a row under the top bar says "Install Libell as an app on your home screen"
+  beside an "Install" button that replays the deferred prompt when tapped. On iOS, which
+  has no install API, the button toggles a hint describing Share → "Add to Home Screen".
+  When the app already runs standalone, no install UI appears. The row is out of the top
+  bar so it never crowds the warning lamps (#691), and its ✕ hides it for good. The
+  first-visit intro (R18) carries the same Install button, since the intro covers the
+  row; one offer serves both, so a single-use prompt is never replayed twice.
 
 ## R21 — Ready-made ramps by name
 

@@ -18,6 +18,8 @@ export const hu: Messages = {
   'update.offline': 'Nincs kapcsolat, nem lehet frissítést keresni',
   'update.unsupported': 'A frissítés itt nem érhető el',
   'install.hint': 'Koppints a Megosztás gombra, majd a „Főképernyőhöz adás” pontra.',
+  'install.row': 'Telepítsd a Libellt alkalmazásként a főképernyőre.',
+  'install.close': 'Elrejtés',
   'share.vehicle.text': 'A járművem beállításai a Libellhez — méretek és rámpák.',
   'settings.shareVehicle': 'Küldés másik telefonra',
   'setup.incoming.h': 'Kapott járműbeállítás',
@@ -155,11 +157,12 @@ export const hu: Messages = {
   'about.source': 'A Libell ingyenes és nyílt forráskódú (MIT-licenc).',
   'about.source.link': 'Forráskód a GitHubon',
 
-  'onboard.welcome.h': 'Üdvözöl a Libell',
-  'onboard.welcome.t':
-    'Ez a rövid útmutató beállítja a járművedet és a telefonodat. Minden lépés kihagyható, ' +
-    'és később a Beállításokban befejezhető.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Üdvözöl a Libell',
+  'intro.how':
+    'Tedd a telefont laposan a járműbe, és a Libell megmutatja, melyik kereket mennyivel kell megemelni.',
+  'intro.start': 'Kezdjük',
+  'intro.later': 'Előbb körülnézek',
+  'onboard.source.sensorIcon':
     'Szenzordobozt bármikor csatlakoztathatsz a jobb felső sarokban lévő szenzorikonnal.',
   'onboard.sound.h': 'Hang',
   'onboard.source.h': 'Mivel szeretnél mérni?',

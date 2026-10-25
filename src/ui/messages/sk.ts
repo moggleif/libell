@@ -18,6 +18,8 @@ export const sk: Messages = {
   'update.offline': 'Bez pripojenia, aktualizácie nemožno skontrolovať',
   'update.unsupported': 'Aktualizácie tu nie sú dostupné',
   'install.hint': 'Ťuknite na „Zdieľať“ a potom na „Pridať na plochu“.',
+  'install.row': 'Nainštalujte si Libell ako aplikáciu na plochu.',
+  'install.close': 'Skryť',
   'share.vehicle.text': 'Nastavenie môjho vozidla pre Libell — rozmery a nájazdy.',
   'settings.shareVehicle': 'Poslať na iný telefón',
   'setup.incoming.h': 'Prijaté nastavenie vozidla',
@@ -138,10 +140,12 @@ export const sk: Messages = {
     'Všetko zostáva vo vašom telefóne — bez účtu, bez sledovania a žiadne údaje nikdy neopustia zariadenie.',
   'about.source': 'Libell je bezplatný a open source (licencia MIT).',
   'about.source.link': 'Kód na GitHube',
-  'onboard.welcome.h': 'Vitajte v Libell',
-  'onboard.welcome.t':
-    'Tento krátky sprievodca nastaví vaše vozidlo a telefón. Každý krok môžete preskočiť a dokončiť neskôr v Nastaveniach.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Vitajte v Libell',
+  'intro.how':
+    'Položte telefón naplocho do vozidla a Libell ukáže, ktoré kolesá zdvihnúť a o koľko.',
+  'intro.start': 'Začať',
+  'intro.later': 'Najprv sa rozhliadnuť',
+  'onboard.source.sensorIcon':
     'Senzorový modul môžete kedykoľvek pripojiť ikonou senzora vpravo hore.',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čím chcete merať?',

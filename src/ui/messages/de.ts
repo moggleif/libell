@@ -18,6 +18,8 @@ export const de: Messages = {
   'update.offline': 'Keine Verbindung, Suche nach Updates nicht möglich',
   'update.unsupported': 'Updates sind hier nicht verfügbar',
   'install.hint': 'Auf Teilen tippen, dann „Zum Home-Bildschirm“.',
+  'install.row': 'Installiere Libell als App auf dem Home-Bildschirm.',
+  'install.close': 'Ausblenden',
   'share.vehicle.text': 'Die Konfiguration meines Fahrzeugs für Libell — Maße und Keile.',
   'settings.shareVehicle': 'An ein anderes Handy senden',
   'setup.incoming.h': 'Empfangene Fahrzeugkonfiguration',
@@ -156,11 +158,12 @@ export const de: Messages = {
   'about.source': 'Libell ist kostenlos und quelloffen (MIT-Lizenz).',
   'about.source.link': 'Quellcode auf GitHub',
 
-  'onboard.welcome.h': 'Willkommen bei Libell',
-  'onboard.welcome.t':
-    'Diese kurze Einführung richtet Fahrzeug und Handy ein. Jeder Schritt lässt sich ' +
-    'überspringen und später in den Einstellungen erledigen.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Willkommen bei Libell',
+  'intro.how':
+    'Leg das Handy flach ins Fahrzeug, und Libell zeigt, welche Räder hoch müssen und um wie viel.',
+  'intro.start': 'Los geht’s',
+  'intro.later': 'Erst umsehen',
+  'onboard.source.sensorIcon':
     'Eine Sensorbox verbindest du jederzeit über das Sensorsymbol oben rechts.',
   'onboard.sound.h': 'Ton',
   'onboard.source.h': 'Wie möchtest du messen?',

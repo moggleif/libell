@@ -1,3 +1,4 @@
+import { intro } from './firstVisit.mjs';
 import {
   assert,
   audioLog,
@@ -42,6 +43,7 @@ export async function settingsSaveFlow(browser) {
   // The wizard's measurements clear the lamp as soon as they are saved.
   app = await openApp(browser, 'xparkle-sim', { 'libell.onboarded': null });
   page = app.page;
+  await button(intro(page), 'Get started').click();
   await nextUntil(page, 'The measurements');
   const field = wizard(page)
     .locator('input[type=number]:visible, input[type=text]:visible')

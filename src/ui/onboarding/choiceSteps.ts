@@ -21,6 +21,8 @@ export function sourceStep(state: WizardState): Step {
     title: t('onboard.source.h'),
     build: () => [
       paragraph(textClass(state), t('onboard.source.intro')),
+      // The box is not in Settings: say where it lives (#365).
+      paragraph(textClass(state), t('onboard.source.sensorIcon')),
       ...externalActiveNote(state),
       buildChoiceGroup('onboarding-source', SOURCE_OPTIONS, state.sensorChoice, (value) => {
         state.sensorChoice = value;

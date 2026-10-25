@@ -18,6 +18,8 @@ export const sl: Messages = {
   'update.offline': 'Ni povezave, posodobitev ni mogoče preveriti',
   'update.unsupported': 'Posodobitve tukaj niso na voljo',
   'install.hint': 'Tapnite „Deli“, nato „Dodaj na začetni zaslon“.',
+  'install.row': 'Namestite Libell kot aplikacijo na začetni zaslon.',
+  'install.close': 'Skrij',
   'share.vehicle.text': 'Nastavitve mojega vozila za Libell — mere in rampe.',
   'settings.shareVehicle': 'Pošlji na drug telefon',
   'setup.incoming.h': 'Prejete nastavitve vozila',
@@ -142,10 +144,12 @@ export const sl: Messages = {
   'about.source': 'Libell je brezplačen in odprtokoden (licenca MIT).',
   'about.source.link': 'Koda na GitHubu',
 
-  'onboard.welcome.h': 'Dobrodošli v Libellu',
-  'onboard.welcome.t':
-    'Ta kratki vodnik nastavi vaše vozilo in telefon. Vsak korak lahko preskočite in ga dokončate pozneje v Nastavitvah.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Dobrodošli v Libellu',
+  'intro.how':
+    'Položite telefon ravno v vozilo in Libell pokaže, katera kolesa dvigniti in za koliko.',
+  'intro.start': 'Začnite',
+  'intro.later': 'Najprej razglejte',
+  'onboard.source.sensorIcon':
     'Senzorsko enoto lahko kadar koli povežete z ikono senzorja zgoraj desno.',
   'onboard.sound.h': 'Zvok',
   'onboard.source.h': 'S čim želite meriti?',

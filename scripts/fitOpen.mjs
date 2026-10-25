@@ -56,3 +56,12 @@ export async function openWithSettings(
   await page.reload();
   return page;
 }
+
+/** The first-visit intro (#691) stands before the guide: `audit` it, then
+ * "Get started" (its main button) into the guide. */
+export async function passIntro(page, audit) {
+  await page.waitForSelector('.intro');
+  await audit();
+  await page.locator('.intro .menu__action').first().click();
+  await page.waitForSelector('.onboarding');
+}

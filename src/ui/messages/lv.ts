@@ -18,6 +18,8 @@ export const lv: Messages = {
   'update.offline': 'Nav savienojuma, nevar pārbaudīt atjauninājumus',
   'update.unsupported': 'Atjauninājumi šeit nav pieejami',
   'install.hint': 'Pieskarieties „Kopīgot”, tad „Pievienot sākuma ekrānam”.',
+  'install.row': 'Instalējiet Libell kā lietotni sākuma ekrānā.',
+  'install.close': 'Paslēpt',
   'share.vehicle.text': 'Mana transportlīdzekļa iestatījumi Libell — izmēri un rampas.',
   'settings.shareVehicle': 'Sūtīt uz citu tālruni',
   'setup.incoming.h': 'Saņemti transportlīdzekļa iestatījumi',
@@ -144,10 +146,12 @@ export const lv: Messages = {
     'Viss paliek jūsu tālrunī — nav konta, nav izsekošanas, un nekādi dati nekad nepamet ierīci.',
   'about.source': 'Libell ir bezmaksas atvērtā pirmkoda programmatūra (MIT licence).',
   'about.source.link': 'Pirmkods GitHub',
-  'onboard.welcome.h': 'Laipni lūdzam Libell',
-  'onboard.welcome.t':
-    'Šis īsais ceļvedis iestata jūsu transportlīdzekli un tālruni. Jebkuru soli var izlaist un pabeigt vēlāk iestatījumos.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Laipni lūdzam Libell',
+  'intro.how':
+    'Novietojiet tālruni transportlīdzeklī guļus, un Libell parādīs, kuri riteņi jāpaceļ un par cik.',
+  'intro.start': 'Sākt',
+  'intro.later': 'Vispirms apskatīties',
+  'onboard.source.sensorIcon':
     'Sensora bloku var pievienot jebkurā laikā ar sensora ikonu augšējā labajā stūrī.',
   'onboard.sound.h': 'Skaņa',
   'onboard.source.h': 'Kā vēlaties mērīt?',

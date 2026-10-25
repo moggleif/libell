@@ -18,6 +18,8 @@ export const ro: Messages = {
   'update.offline': 'Fără conexiune, nu se pot căuta actualizări',
   'update.unsupported': 'Actualizările nu sunt disponibile aici',
   'install.hint': 'Atingeți Partajează, apoi „Adaugă pe ecranul principal”.',
+  'install.row': 'Instalați Libell ca aplicație pe ecranul principal.',
+  'install.close': 'Ascundeți',
   'share.vehicle.text': 'Configurația vehiculului meu pentru Libell — dimensiuni și rampe.',
   'settings.shareVehicle': 'Trimiteți pe alt telefon',
   'setup.incoming.h': 'Configurație de vehicul primită',
@@ -158,11 +160,12 @@ export const ro: Messages = {
   'about.source': 'Libell este gratuit și open source (licență MIT).',
   'about.source.link': 'Codul sursă pe GitHub',
 
-  'onboard.welcome.h': 'Bun venit în Libell',
-  'onboard.welcome.t':
-    'Acest scurt ghid configurează vehiculul și telefonul. Orice pas poate fi sărit și ' +
-    'terminat mai târziu din Setări.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Bun venit în Libell',
+  'intro.how':
+    'Așezați telefonul culcat în vehicul, iar Libell arată ce roți trebuie ridicate și cu cât.',
+  'intro.start': 'Să începem',
+  'intro.later': 'Mai întâi explorez',
+  'onboard.source.sensorIcon':
     'Un modul senzor poate fi conectat oricând cu pictograma senzorului din dreapta sus.',
   'onboard.sound.h': 'Sunet',
   'onboard.source.h': 'Cum doriți să măsurați?',

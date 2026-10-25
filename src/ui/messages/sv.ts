@@ -18,6 +18,8 @@ export const sv: Messages = {
   'update.offline': 'Ingen anslutning, kan inte söka efter uppdatering',
   'update.unsupported': 'Uppdateringar är inte tillgängliga här',
   'install.hint': 'Tryck på Dela och sedan "Lägg till på hemskärmen".',
+  'install.row': 'Installera Libell som app på hemskärmen.',
+  'install.close': 'Dölj',
   'share.vehicle.text': 'Mina fordonsmått för Libell — mått och klossar.',
   'settings.shareVehicle': 'Dela till en annan telefon',
   'setup.incoming.h': 'Inkommande fordonsinställning',
@@ -160,11 +162,12 @@ export const sv: Messages = {
   'about.source': 'Libell är fri och öppen källkod (MIT-licens).',
   'about.source.link': 'Källkoden på GitHub',
 
-  'onboard.welcome.h': 'Välkommen till Libell',
-  'onboard.welcome.t':
-    'Den här snabbguiden ställer in ditt fordon och din telefon. Varje steg går att ' +
-    'hoppa över och avsluta senare från Inställningar.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Välkommen till Libell',
+  'intro.how':
+    'Lägg telefonen plant i fordonet så visar Libell vilka hjul som ska upp och hur mycket.',
+  'intro.start': 'Kom igång',
+  'intro.later': 'Titta runt först',
+  'onboard.source.sensorIcon':
     'En sensorbox ansluter du när som helst med sensorikonen uppe till höger.',
   'onboard.sound.h': 'Ljud',
   'onboard.source.h': 'Hur vill du mäta?',

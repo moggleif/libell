@@ -18,6 +18,8 @@ export const nb: Messages = {
   'update.offline': 'Ingen tilkobling, kan ikke se etter oppdateringer',
   'update.unsupported': 'Oppdateringer er ikke tilgjengelige her',
   'install.hint': 'Trykk på Del, og deretter «Legg til på Hjem-skjerm».',
+  'install.row': 'Installer Libell som app på Hjem-skjermen.',
+  'install.close': 'Skjul',
   'share.vehicle.text': 'Kjøretøyoppsettet mitt for Libell — dimensjoner og kiler.',
   'settings.shareVehicle': 'Del til en annen telefon',
   'setup.incoming.h': 'Mottatt kjøretøyoppsett',
@@ -145,10 +147,12 @@ export const nb: Messages = {
   'about.source': 'Libell er gratis og åpen kildekode (MIT-lisens).',
   'about.source.link': 'Kildekode på GitHub',
 
-  'onboard.welcome.h': 'Velkommen til Libell',
-  'onboard.welcome.t':
-    'Denne korte veiledningen setter opp kjøretøyet og telefonen. Hvert trinn kan hoppes over og fullføres senere under Innstillinger.',
-  'onboard.welcome.sensor':
+  'intro.h': 'Velkommen til Libell',
+  'intro.how':
+    'Legg telefonen flatt i kjøretøyet, så viser Libell hvilke hjul som skal opp, og hvor mye.',
+  'intro.start': 'Kom i gang',
+  'intro.later': 'Se deg rundt først',
+  'onboard.source.sensorIcon':
     'En sensorboks kan kobles til når som helst med sensorikonet øverst til høyre.',
   'onboard.sound.h': 'Lyd',
   'onboard.source.h': 'Hvordan vil du måle?',

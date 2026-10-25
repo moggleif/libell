@@ -10,6 +10,8 @@ import {
   markOnboardingSeen,
 } from '../data/settingsStore';
 import { createInfoPage, type InfoPage } from '../ui/infoMenu';
+import type { InstallOffer } from '../ui/install';
+import { showIntro } from '../ui/intro';
 import { showOnboarding } from '../ui/onboarding';
 import { shareVehicleSetup } from '../ui/vehicleShare';
 import { applyLook, type Core, type Screen } from './core';
@@ -28,11 +30,13 @@ export interface Pages {
   navigation: Navigation;
 }
 
-export function mountPages(core: Core, screen: Screen): Pages {
+export function mountPages(core: Core, screen: Screen, install: InstallOffer): Pages {
   const { settings, optionDeps } = core;
   const adoption = createAdoption(core, screen);
   const onboarding = createOnboardingLauncher({
     show: showOnboarding,
+    showIntro,
+    install,
     settings: settings.get,
     onSettingsSaved: adoption.fromWizard,
     parts: optionDeps,
