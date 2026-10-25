@@ -1375,15 +1375,12 @@ holds for every sensor box (#266), not only EasyLevel.
 - **Given** the app loads, on any screen width
 - **Then** the top bar shows only identity on the left (logo, title with the version
   under it — R50 — and share) and the
-  actions cluster on the right — no menu button there. The Install button (R20) and the
-  sensor-status icon keep the top-right corner together, Install immediately to the icon's
-  left (#244), and neither ever moves; the warning lamps sit to their
-  left and are the ones that move when space runs out, wrapping onto further
-  right-aligned rows below — never pushing the corner pair out of place and never
-  overlapping the identity group. The bar reserves the corner's own measured width, so
-  the reservation holds whatever language the Install label is in. The install
-  prompt (R20) is otherwise unaffected, still using the
-  `#install-hint` banner under the top bar. The sensor-status icon (R32/R33,
+  actions cluster on the right — no menu button there. The sensor-status icon owns the
+  top-right corner and never moves (#244); the warning lamps sit to its left and are the
+  ones that move when space runs out, wrapping onto further right-aligned rows below —
+  never pushing the icon out of place and never overlapping the identity group. The bar
+  reserves the corner's own measured width. Install is not in the bar but on its own row
+  under it (R20, #691), so it never competes with the lamps. The sensor-status icon (R32/R33,
   screen-cleanup follow-up) is the one always-present way to reach Sensor box (no
   menu entry leads there; Help's sensor topic and the ⚠ Zero lamp only link to it) —
   it stays visible whenever Web Bluetooth exists at all (a neutral "tap to connect"
