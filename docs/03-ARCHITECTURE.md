@@ -472,6 +472,19 @@ introduction wizard's counting step (`src/ui/onboarding/countingStep.ts`) and th
 Privacy tab (`privacyPanel.ts`, under the stored data) both show `countingSection.ts`;
 `countingStoredKeys()` puts the off switch in the stored-data catalogue (#678).
 
+## Findability (`src/ui/findability.ts`, #701)
+
+What a search engine or AI assistant reads (R61). The `findability` plugin in
+`vite.config.ts` loads `findability.ts` through Vite's `runnerImport` (it is app code,
+typed and tested with the app) and uses it twice: `transformIndexHtml` adds the title,
+description, canonical link and a `application/ld+json` data block to `index.html` (a
+data block is never run, so the CSP stays as it is; `<` in it is escaped), and a
+`generateBundle` hook ordered `post` writes `robots.txt`, `llms.txt` and `sitemap.xml`,
+the sitemap from every `index.html` in the bundle so pages other plugins write are listed
+too. The text is the `seo.*` keys and the About strings in English; addresses come from
+`SITE_ORIGIN` and `REPO_URL` in `src/domain/site.ts` plus the build's base path. None of
+the three files is precached.
+
 ## UI
 
 The RV top-down diagram is the hero element (see `docs/02-REQUIREMENTS.md` R4–R6) with

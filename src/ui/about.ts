@@ -3,10 +3,9 @@
  * the page itself loads nothing remote (ADR 0005).
  */
 
+import { REPO_URL } from '../domain/site';
 import { t } from './i18n';
 import { createElement } from './dom';
-
-const REPO_URL = 'https://github.com/moggleif/libell';
 
 /**
  * @param version null for a CI build without `BUILD_VERSION`; injected so

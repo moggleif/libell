@@ -1,5 +1,6 @@
 // `vitest/config` re-exports Vite's defineConfig with the `test` block typed.
 import { defineConfig } from 'vitest/config';
+import { runnerImport, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -41,6 +42,42 @@ const CSP =
   "font-src 'self'; connect-src 'self' https://libell.goatcounter.com; manifest-src 'self'; worker-src 'self'; " +
   "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
+// What search engines and AI assistants read (#701): the page head, plus
+// robots.txt, sitemap.xml and llms.txt at the root. `src/ui/findability.ts`
+// is app code (typed and tested with the app, its text from the message
+// dictionaries), so it is loaded through Vite rather than imported here.
+type FindabilityModule = typeof import('./src/ui/findability');
+
+function loadFindability(): Promise<FindabilityModule> {
+  return runnerImport<FindabilityModule>('./src/ui/findability.ts').then((r) => r.module);
+}
+
+function findability(): Plugin {
+  return {
+    name: 'findability',
+    async transformIndexHtml() {
+      const { headTags, siteUrl } = await loadFindability();
+      return headTags(siteUrl(base)).map((tag) => ({ ...tag, injectTo: 'head' as const }));
+    },
+    // After every other plugin, so the sitemap sees every page they wrote.
+    generateBundle: {
+      order: 'post',
+      async handler(_options, bundle) {
+        const { llmsTxt, robotsTxt, sitemapXml, siteUrl } = await loadFindability();
+        const site = siteUrl(base);
+        const files = {
+          'robots.txt': robotsTxt(site),
+          'sitemap.xml': sitemapXml(site, Object.keys(bundle)),
+          'llms.txt': llmsTxt(site),
+        };
+        for (const [fileName, source] of Object.entries(files)) {
+          this.emitFile({ type: 'asset', fileName, source });
+        }
+      },
+    },
+  };
+}
+
 export default defineConfig({
   base,
   define: {
@@ -51,6 +88,7 @@ export default defineConfig({
     sourcemap: true,
   },
   plugins: [
+    findability(),
     {
       name: 'security-meta-tags',
       apply: 'build',

@@ -152,6 +152,9 @@ export const ca: Messages = {
     'La teva configuració es queda al mòbil — sense compte i sense seguiment. L’únic que envia Libell són recomptes anònims de com es fa servir l’app, i ho pots desactivar.',
   'about.source': 'Libell és lliure i de codi obert (llicència MIT).',
   'about.source.link': 'Codi font a GitHub',
+  'seo.title': 'Libell – anivella l’autocaravana o la caravana amb el mòbil',
+  'seo.description':
+    'Una app gratuïta que mostra quines rodes de l’autocaravana o la caravana cal pujar i a quin graó de la rampa. Fa servir el mòbil o una caixa sensora i funciona sense connexió.',
   'menu.privacy': 'Privadesa',
   'menu.privacy.tab': 'Privadesa',
   'privacy.stored.h': 'Desat en aquest mòbil',

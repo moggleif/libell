@@ -170,6 +170,9 @@ export const en = {
     'Libell sends is anonymous counts of how the app is used, which you can turn off.',
   'about.source': 'Libell is free and open source (MIT license).',
   'about.source.link': 'Source code on GitHub',
+  'seo.title': 'Libell – level your motorhome or caravan with your phone',
+  'seo.description':
+    'A free app that shows which wheels of your motorhome or caravan to raise, and onto which ramp step. Uses your phone or a sensor box, and works offline.',
   'menu.privacy': 'Privacy',
   'menu.privacy.tab': 'Privacy',
   'privacy.stored.h': 'Stored on this phone',
