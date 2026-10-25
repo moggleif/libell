@@ -191,8 +191,7 @@ export const da: Messages = {
   'onboard.source.sensorIcon':
     'En sensorboks kan forbindes når som helst med sensorikonet øverst til højre.',
   'counting.title': 'Anonym optælling',
-  'counting.intro':
-    'Libell tæller anonymt, hvor mange der bruger appen, og hvilke funktioner de bruger, så vi ved, hvad der skal forbedres. Ingen kan identificeres ud fra det.',
+  'counting.intro': 'Libell tæller brugen anonymt, så vi ved, hvad der skal forbedres.',
   'counting.sent.h': 'Det her tælles',
   'counting.sent':
     'At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som {boxes}), appens version og det sprog, der er valgt i Libell.',

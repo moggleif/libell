@@ -189,8 +189,7 @@ export const et: Messages = {
   'onboard.source.sensorIcon':
     'Välisanduri saad igal ajal ühendada üleval paremal oleva anduri ikooniga.',
   'counting.title': 'Anonüümne loendamine',
-  'counting.intro':
-    'Libell loendab anonüümselt, kui paljud rakendust kasutavad ja milliseid funktsioone, et teaksime, mida parandada. Kedagi ei saa selle põhjal tuvastada.',
+  'counting.intro': 'Libell loendab kasutust anonüümselt, et teaksime, mida parandada.',
   'counting.sent.h': 'Mida loendatakse',
   'counting.sent':
     'Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu {boxes}), rakenduse versioon ja Libellis valitud keel.',

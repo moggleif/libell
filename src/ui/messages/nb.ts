@@ -185,8 +185,7 @@ export const nb: Messages = {
   'onboard.source.sensorIcon':
     'En sensorboks kan kobles til når som helst med sensorikonet øverst til høyre.',
   'counting.title': 'Anonym telling',
-  'counting.intro':
-    'Libell teller anonymt hvor mange som bruker appen og hvilke funksjoner de bruker, så vi vet hva som bør bli bedre. Ingen kan identifiseres ut fra det.',
+  'counting.intro': 'Libell teller bruken anonymt, så vi vet hva som bør bli bedre.',
   'counting.sent.h': 'Dette telles',
   'counting.sent':
     'At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som {boxes}), appens versjon og språket som er valgt i Libell.',

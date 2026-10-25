@@ -212,9 +212,7 @@ export const en = {
     'A sensor box can be connected any time with the sensor icon at the top right.',
   // Anonymous counting (#674): its own wizard step.
   'counting.title': 'Anonymous counting',
-  'counting.intro':
-    'Libell counts anonymously how many use the app and which features they use, so we ' +
-    'know what to improve. Nobody can be identified from it.',
+  'counting.intro': 'Libell counts use anonymously, so we know what to improve.',
   'counting.sent.h': 'What is counted',
   'counting.sent':
     'That the app was opened, which features are used, which sensor measures ' +

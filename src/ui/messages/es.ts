@@ -193,8 +193,7 @@ export const es: Messages = {
   'onboard.source.sensorIcon':
     'Puedes conectar una caja sensora cuando quieras con el icono del sensor arriba a la derecha.',
   'counting.title': 'Recuento anónimo',
-  'counting.intro':
-    'Libell cuenta de forma anónima cuánta gente usa la app y qué funciones usa, para saber qué mejorar. Nadie puede ser identificado con ello.',
+  'counting.intro': 'Libell cuenta el uso de forma anónima, para saber qué mejorar.',
   'counting.sent.h': 'Qué se cuenta',
   'counting.sent':
     'Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como {boxes}), la versión de la app y el idioma elegido en Libell.',

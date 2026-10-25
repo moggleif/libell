@@ -197,8 +197,7 @@ export const ro: Messages = {
   'onboard.source.sensorIcon':
     'Un modul senzor poate fi conectat oricând cu pictograma senzorului din dreapta sus.',
   'counting.title': 'Numărare anonimă',
-  'counting.intro':
-    'Libell numără anonim câți folosesc aplicația și ce funcții, ca să știm ce să îmbunătățim. Nimeni nu poate fi identificat astfel.',
+  'counting.intro': 'Libell numără anonim utilizarea, ca să știm ce să îmbunătățim.',
   'counting.sent.h': 'Ce se numără',
   'counting.sent':
     'Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum {boxes}), versiunea aplicației și limba aleasă în Libell.',

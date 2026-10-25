@@ -200,9 +200,7 @@ export const sv: Messages = {
   'onboard.source.sensorIcon':
     'En sensorbox ansluter du när som helst med sensorikonen uppe till höger.',
   'counting.title': 'Anonym räkning',
-  'counting.intro':
-    'Libell räknar anonymt hur många som använder appen och vilka funktioner de använder, ' +
-    'så att vi vet vad som behöver bli bättre. Ingen kan identifieras av det.',
+  'counting.intro': 'Libell räknar användningen anonymt, så att vi vet vad som behöver bli bättre.',
   'counting.sent.h': 'Det här räknas',
   'counting.sent':
     'Att appen öppnades, vilka funktioner som används, vilken sensor som mäter ' +

@@ -184,8 +184,7 @@ export const pl: Messages = {
   'onboard.source.sensorIcon':
     'Moduł czujnika możesz w każdej chwili połączyć ikoną czujnika w prawym górnym rogu.',
   'counting.title': 'Anonimowe liczenie',
-  'counting.intro':
-    'Libell anonimowo liczy, ile osób używa aplikacji i z jakich funkcji, żebyśmy wiedzieli, co poprawić. Nikogo nie da się na tej podstawie zidentyfikować.',
+  'counting.intro': 'Libell anonimowo liczy użycie, żebyśmy wiedzieli, co poprawić.',
   'counting.sent.h': 'Co jest liczone',
   'counting.sent':
     'Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. {boxes}), wersja aplikacji i język wybrany w Libell.',

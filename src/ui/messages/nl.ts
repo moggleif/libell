@@ -193,8 +193,7 @@ export const nl: Messages = {
   'onboard.source.sensorIcon':
     'Een sensorbox kun je altijd verbinden met het sensorpictogram rechtsboven.',
   'counting.title': 'Anoniem tellen',
-  'counting.intro':
-    'Libell telt anoniem hoeveel mensen de app gebruiken en welke functies, zodat we weten wat beter moet. Niemand is daaraan te herkennen.',
+  'counting.intro': 'Libell telt het gebruik anoniem, zodat we weten wat beter moet.',
   'counting.sent.h': 'Wat wordt geteld',
   'counting.sent':
     'Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals {boxes}), de appversie en de taal die in Libell is gekozen.',

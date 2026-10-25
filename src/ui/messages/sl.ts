@@ -182,8 +182,7 @@ export const sl: Messages = {
   'onboard.source.sensorIcon':
     'Senzorsko enoto lahko kadar koli povežete z ikono senzorja zgoraj desno.',
   'counting.title': 'Anonimno štetje',
-  'counting.intro':
-    'Libell anonimno šteje, koliko ljudi uporablja aplikacijo in katere funkcije, da vemo, kaj izboljšati. Nikogar ni mogoče prepoznati iz tega.',
+  'counting.intro': 'Libell anonimno šteje uporabo, da vemo, kaj izboljšati.',
   'counting.sent.h': 'Kaj se šteje',
   'counting.sent':
     'Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je {boxes}), različica aplikacije in jezik, izbran v Libellu.',

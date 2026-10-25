@@ -196,8 +196,7 @@ export const de: Messages = {
   'onboard.source.sensorIcon':
     'Eine Sensorbox verbindest du jederzeit über das Sensorsymbol oben rechts.',
   'counting.title': 'Anonyme Zählung',
-  'counting.intro':
-    'Libell zählt anonym, wie viele die App nutzen und welche Funktionen, damit wir wissen, was besser werden muss. Niemand lässt sich daraus erkennen.',
+  'counting.intro': 'Libell zählt die Nutzung anonym, damit wir wissen, was besser werden muss.',
   'counting.sent.h': 'Was gezählt wird',
   'counting.sent':
     'Dass die App geöffnet wurde, welche Funktionen genutzt werden, welches Sensormodell misst (das Handy oder ein Modell wie {boxes}), die App-Version und die in Libell gewählte Sprache.',

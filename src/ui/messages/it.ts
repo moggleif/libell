@@ -181,8 +181,7 @@ export const it: Messages = {
   'onboard.source.sensorIcon':
     'Puoi collegare un box sensore in qualsiasi momento con l’icona del sensore in alto a destra.',
   'counting.title': 'Conteggio anonimo',
-  'counting.intro':
-    'Libell conta in modo anonimo quante persone usano l’app e quali funzioni, per sapere cosa migliorare. Nessuno può essere identificato così.',
+  'counting.intro': 'Libell conta l’uso in modo anonimo, per sapere cosa migliorare.',
   'counting.sent.h': 'Cosa viene contato',
   'counting.sent':
     'Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come {boxes}), la versione dell’app e la lingua scelta in Libell.',

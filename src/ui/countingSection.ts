@@ -18,7 +18,7 @@ export interface CountingChoice {
 function paragraph(
   className: string,
   key: MessageKey,
-  vars?: Record<string, string>,
+  vars: Record<string, string>,
 ): HTMLParagraphElement {
   const p = createElement('p', className);
   p.textContent = t(key, vars);
@@ -43,15 +43,20 @@ function toggle(choice: CountingChoice): HTMLElement {
   return field.element;
 }
 
-function dashboardLink(className: string): HTMLParagraphElement {
-  const line = createElement('p', className);
+function dashboardLink(): HTMLAnchorElement {
   const link = createElement('a', 'menu__link');
   link.href = COUNTER_ORIGIN;
   link.target = '_blank';
   link.rel = 'noopener';
   link.textContent = t('counting.dashboard');
-  line.append(link);
-  return line;
+  return link;
+}
+
+/** Sentences that share one paragraph, so the step fits a small phone whole. */
+function joined(className: string, ...parts: (string | Element)[]): HTMLParagraphElement {
+  const p = createElement('p', className);
+  parts.forEach((part, i) => p.append(i > 0 ? ' ' : '', part));
+  return p;
 }
 
 export function createCountingSection(
@@ -60,14 +65,12 @@ export function createCountingSection(
 ): HTMLElement {
   const body = document.createElement('div');
   body.append(
-    paragraph(textClass, 'counting.intro'),
+    joined(textClass, t('counting.intro'), dashboardLink()),
     heading('counting.sent.h'),
     paragraph(textClass, 'counting.sent', boxNames()),
     heading('counting.notSent.h'),
-    paragraph(textClass, 'counting.notSent'),
-    paragraph(textClass, 'counting.gpc'),
+    joined(textClass, t('counting.notSent'), t('counting.gpc')),
     toggle(choice),
-    dashboardLink(textClass),
   );
   return body;
 }

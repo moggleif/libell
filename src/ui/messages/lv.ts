@@ -184,8 +184,7 @@ export const lv: Messages = {
   'onboard.source.sensorIcon':
     'Sensora bloku var pievienot jebkurā laikā ar sensora ikonu augšējā labajā stūrī.',
   'counting.title': 'Anonīma skaitīšana',
-  'counting.intro':
-    'Libell anonīmi skaita, cik cilvēku izmanto lietotni un kuras funkcijas, lai mēs zinātu, ko uzlabot. Pēc tā nevienu nevar identificēt.',
+  'counting.intro': 'Libell anonīmi skaita lietošanu, lai mēs zinātu, ko uzlabot.',
   'counting.sent.h': 'Kas tiek skaitīts',
   'counting.sent':
     'Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, {boxes}), lietotnes versija un Libell lietotnē izvēlētā valoda.',

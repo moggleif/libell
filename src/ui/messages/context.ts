@@ -1913,7 +1913,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'counting.intro': ctx(
     'text',
     'Introduction wizard › anonymous counting step: first paragraph.',
-    'Says Libell counts app use and features anonymously, why, and that no one can be identified.',
+    'Says Libell counts app use anonymously, and why; the details follow under the two headings.',
   ),
   'counting.sent.h': ctx(
     'label',
@@ -1937,7 +1937,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   ),
   'counting.gpc': ctx(
     'line',
-    'Introduction wizard › anonymous counting step: line above the switch.',
+    'Introduction wizard › anonymous counting step: last sentence of the "What is never saved" paragraph.',
     'Says a browser privacy signal (Global Privacy Control / Do Not Track) turns counting off.',
   ),
   'counting.toggle': ctx(
@@ -1947,7 +1947,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   ),
   'counting.dashboard': ctx(
     'button',
-    'Introduction wizard › anonymous counting step: link under the switch.',
+    'Introduction wizard › anonymous counting step: link at the end of the first paragraph.',
     'Opens the public statistics page in a new tab, so anyone can see what is counted.',
   ),
   'onboard.sound.h': ctx(

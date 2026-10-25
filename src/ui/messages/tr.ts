@@ -182,7 +182,7 @@ export const tr: Messages = {
     'Sensör kutusu, sağ üstteki sensör simgesiyle istediğiniz zaman bağlanabilir.',
   'counting.title': 'Anonim sayım',
   'counting.intro':
-    'Libell, neyi iyileştirmemiz gerektiğini bilmek için uygulamayı kaç kişinin kullandığını ve hangi özelliklerin kullanıldığını anonim olarak sayar. Bundan kimse tanınamaz.',
+    'Libell, neyi iyileştirmemiz gerektiğini bilmek için kullanımı anonim olarak sayar.',
   'counting.sent.h': 'Neler sayılır',
   'counting.sent':
     'Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya {boxes} gibi bir model), uygulama sürümü ve Libell’de seçilen dil.',

@@ -196,8 +196,7 @@ export const lt: Messages = {
   'onboard.source.sensorIcon':
     'Jutiklio dėžutę bet kada galima prijungti jutiklio piktograma viršuje dešinėje.',
   'counting.title': 'Anoniminis skaičiavimas',
-  'counting.intro':
-    'Libell anonimiškai skaičiuoja, kiek žmonių naudoja programėlę ir kokias funkcijas, kad žinotume, ką tobulinti. Pagal tai neįmanoma atpažinti nė vieno žmogaus.',
+  'counting.intro': 'Libell anonimiškai skaičiuoja naudojimą, kad žinotume, ką tobulinti.',
   'counting.sent.h': 'Kas skaičiuojama',
   'counting.sent':
     'Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., {boxes}), programėlės versija ir Libell programėlėje pasirinkta kalba.',

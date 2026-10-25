@@ -178,8 +178,7 @@ export const sk: Messages = {
   'onboard.source.sensorIcon':
     'Senzorový modul môžete kedykoľvek pripojiť ikonou senzora vpravo hore.',
   'counting.title': 'Anonymné počítanie',
-  'counting.intro':
-    'Libell anonymne počíta, koľko ľudí aplikáciu používa a ktoré funkcie, aby sme vedeli, čo zlepšiť. Nikoho z toho nemožno identifikovať.',
+  'counting.intro': 'Libell anonymne počíta používanie, aby sme vedeli, čo zlepšiť.',
   'counting.sent.h': 'Čo sa počíta',
   'counting.sent':
     'Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako {boxes}), verzia aplikácie a jazyk zvolený v Libell.',

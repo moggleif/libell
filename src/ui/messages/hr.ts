@@ -191,8 +191,7 @@ export const hr: Messages = {
   'onboard.source.sensorIcon':
     'Senzorsku kutiju možete povezati u bilo kojem trenutku ikonom senzora gore desno.',
   'counting.title': 'Anonimno brojanje',
-  'counting.intro':
-    'Libell anonimno broji koliko ljudi koristi aplikaciju i koje funkcije, kako bismo znali što poboljšati. Nikoga se ne može prepoznati iz toga.',
+  'counting.intro': 'Libell anonimno broji korištenje kako bismo znali što poboljšati.',
   'counting.sent.h': 'Što se broji',
   'counting.sent':
     'Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput {boxes}), verzija aplikacije i jezik odabran u Libellu.',

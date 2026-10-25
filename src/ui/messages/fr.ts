@@ -197,8 +197,7 @@ export const fr: Messages = {
   'onboard.source.sensorIcon':
     'Un boîtier capteur se connecte à tout moment avec l’icône du capteur en haut à droite.',
   'counting.title': 'Comptage anonyme',
-  'counting.intro':
-    'Libell compte de façon anonyme combien de personnes utilisent l’app et quelles fonctions, pour savoir quoi améliorer. Personne ne peut être identifié ainsi.',
+  'counting.intro': 'Libell compte l’utilisation de façon anonyme, pour savoir quoi améliorer.',
   'counting.sent.h': 'Ce qui est compté',
   'counting.sent':
     'Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme {boxes}), la version de l’app et la langue choisie dans Libell.',

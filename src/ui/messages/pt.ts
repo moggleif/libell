@@ -184,8 +184,7 @@ export const pt: Messages = {
   'onboard.source.sensorIcon':
     'Pode ligar uma caixa de sensor a qualquer momento com o ícone do sensor no canto superior direito.',
   'counting.title': 'Contagem anónima',
-  'counting.intro':
-    'O Libell conta de forma anónima quantas pessoas usam a app e que funções, para sabermos o que melhorar. Ninguém pode ser identificado por isso.',
+  'counting.intro': 'O Libell conta a utilização de forma anónima, para sabermos o que melhorar.',
   'counting.sent.h': 'O que é contado',
   'counting.sent':
     'Que a app foi aberta, que funções são usadas, que modelo de sensor mede (o telemóvel ou um modelo como {boxes}), a versão da app e o idioma escolhido no Libell.',

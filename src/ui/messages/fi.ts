@@ -176,8 +176,7 @@ export const fi: Messages = {
   'onboard.source.sensorIcon':
     'Anturirasian voi yhdistää milloin tahansa oikean yläkulman anturikuvakkeesta.',
   'counting.title': 'Nimetön laskenta',
-  'counting.intro':
-    'Libell laskee nimettömästi, kuinka moni käyttää sovellusta ja mitä toimintoja, jotta tiedämme, mitä parantaa. Ketään ei voi tunnistaa sen perusteella.',
+  'counting.intro': 'Libell laskee käyttöä nimettömästi, jotta tiedämme, mitä parantaa.',
   'counting.sent.h': 'Mitä lasketaan',
   'counting.sent':
     'Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten {boxes}), sovelluksen versio ja Libellissä valittu kieli.',

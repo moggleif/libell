@@ -189,8 +189,7 @@ export const cs: Messages = {
   'onboard.source.sensorIcon':
     'Senzorový box můžete kdykoli připojit pomocí ikony senzoru vpravo nahoře.',
   'counting.title': 'Anonymní počítání',
-  'counting.intro':
-    'Libell anonymně počítá, kolik lidí aplikaci používá a které funkce, abychom věděli, co zlepšit. Nikoho z toho nelze identifikovat.',
+  'counting.intro': 'Libell anonymně počítá používání, abychom věděli, co zlepšit.',
   'counting.sent.h': 'Co se počítá',
   'counting.sent':
     'Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako {boxes}), verze aplikace a jazyk zvolený v Libell.',

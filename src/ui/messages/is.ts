@@ -182,8 +182,7 @@ export const is: Messages = {
   'onboard.source.sensorIcon':
     'Skynjarabox má tengja hvenær sem er með skynjaratákninu efst til hægri.',
   'counting.title': 'Nafnlaus talning',
-  'counting.intro':
-    'Libell telur nafnlaust hversu margir nota appið og hvaða aðgerðir, svo við vitum hvað þarf að bæta. Enginn verður auðkenndur út frá því.',
+  'counting.intro': 'Libell telur notkun nafnlaust svo við vitum hvað þarf að bæta.',
   'counting.sent.h': 'Þetta er talið',
   'counting.sent':
     'Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og {boxes}), útgáfa appsins og tungumálið sem er valið í Libell.',

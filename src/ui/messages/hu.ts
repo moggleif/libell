@@ -194,16 +194,14 @@ export const hu: Messages = {
   'onboard.source.sensorIcon':
     'Szenzordobozt bármikor csatlakoztathatsz a jobb felső sarokban lévő szenzorikonnal.',
   'counting.title': 'Névtelen számlálás',
-  'counting.intro':
-    'A Libell névtelenül számolja, hányan használják az alkalmazást és mely funkciókat, hogy tudjuk, min kell javítani. Ebből senki sem azonosítható.',
+  'counting.intro': 'A Libell névtelenül számolja a használatot, hogy tudjuk, min kell javítani.',
   'counting.sent.h': 'Mit számolunk',
   'counting.sent':
     'Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például {boxes}), az alkalmazás verzióját és a Libellben választott nyelvet.',
   'counting.notSent.h': 'Mit nem mentünk soha',
   'counting.notSent':
     'Az IP-címedet, országodat, eszközödet, képernyődet, operációs rendszeredet vagy böngésződet, a jármű méreteit, a beállításaidat, sem semmi mást rólad. A számláláshoz semmi sem kerül a telefonra.',
-  'counting.gpc':
-    'Ha a böngésződ arra kéri a webhelyeket, hogy ne kövessenek, a Libell semmit sem számol.',
+  'counting.gpc': 'Ha a böngésződ kéri, hogy ne kövessenek, a Libell semmit sem számol.',
   'counting.toggle': 'Használatom névtelen számlálása',
   'counting.dashboard': 'Statisztika megtekintése',
   'onboard.sound.h': 'Hang',
