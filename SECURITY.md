@@ -26,7 +26,8 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
   features listed in `src/domain/usage.ts`, each at most once per app start. It sends no
   cookie, referrer or identifier, and nothing about the user, the phone or its readings;
   GoatCounter sees the IP address and User-Agent of the request but does not store them.
-  The user's switch, Global Privacy Control and Do Not Track stop every request.
+  Nothing is sent until the user has chosen "Count" on the first screen (ADR 0022);
+  "Don't count", Global Privacy Control and Do Not Track stop every request.
 - **No HTML injection surface.** The DOM is built exclusively with `createElement` /
   `textContent`; `innerHTML` and friends are not used.
 - **Framing is refused.** Pages cannot send headers and browsers ignore

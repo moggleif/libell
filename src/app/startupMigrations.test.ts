@@ -22,4 +22,11 @@ describe('runStartupMigrations', () => {
     runStartupMigrations();
     expect(localStorage.getItem('libell.sensorDevice.easylevel')).toBeNull();
   });
+
+  it('keeps #674’s counting switched off as the choice "don’t count" (#699)', () => {
+    localStorage.setItem('libell.countingOff', '1');
+    runStartupMigrations();
+    expect(localStorage.getItem('libell.counting')).toBe('off');
+    expect(localStorage.getItem('libell.countingOff')).toBeNull();
+  });
 });

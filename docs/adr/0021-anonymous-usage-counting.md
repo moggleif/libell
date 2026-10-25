@@ -1,6 +1,8 @@
 # 0021 — Anonymous usage counting with GoatCounter, on by default, one origin
 
 **Status:** Accepted, 2026-10-25. Amends ADR 0005 ("no analytics, no remote calls").
+"On by default" is superseded by [ADR 0022](0022-counting-is-an-active-choice.md)
+(2026-10-25): counting is an active choice made first.
 
 ## Context
 

@@ -15,6 +15,7 @@ export const BASE = `http://localhost:${PORT}${basePath()}`;
 const SETTINGS_KEY = 'libell.settings';
 const LANGUAGE_KEY = 'libell.language';
 const ONBOARDED_KEY = 'libell.onboarded';
+const COUNTING_KEY = 'libell.counting';
 
 /**
  * A new page on `base + query`, reloaded once the settings are stored. The
@@ -42,12 +43,18 @@ export async function openWithSettings(
       localStorage.clear();
       localStorage.setItem(keys.settings, JSON.stringify(settings));
       localStorage.setItem(keys.language, language);
-      // Without this the first-run guide auto-opens over whatever view is
-      // under test.
+      // Without these the counting choice and the first-run guide open
+      // over whatever view is under test; a first run gets both.
       if (onboarded) localStorage.setItem(keys.onboarded, '1');
+      if (onboarded) localStorage.setItem(keys.counting, 'off');
     },
     [
-      { settings: SETTINGS_KEY, language: LANGUAGE_KEY, onboarded: ONBOARDED_KEY },
+      {
+        settings: SETTINGS_KEY,
+        language: LANGUAGE_KEY,
+        onboarded: ONBOARDED_KEY,
+        counting: COUNTING_KEY,
+      },
       { appearance, vehicleType, displayUnit, ...ramp },
       language,
       onboarded,
@@ -57,11 +64,16 @@ export async function openWithSettings(
   return page;
 }
 
-/** The first-visit intro (#691) stands before the guide: `audit` it, then
- * "Get started" (its main button) into the guide. */
+/** The counting choice (#699) and the first-visit intro (#691) stand
+ * before the guide: `audit` each by name, then "Don't count" (the choice's
+ * second button) and "Get started" (the intro's main button). */
 export async function passIntro(page, audit) {
+  await page.waitForSelector('.counting-choice');
+  await audit('counting choice');
+  await page.locator('.counting-choice .intro__nav button').last().click();
+  await page.waitForSelector('.counting-choice', { state: 'detached' });
   await page.waitForSelector('.intro');
-  await audit();
+  await audit('intro');
   await page.locator('.intro .menu__action').first().click();
   await page.waitForSelector('.onboarding');
 }

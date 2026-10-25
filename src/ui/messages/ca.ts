@@ -182,6 +182,7 @@ export const ca: Messages = {
   'stored.phone': 'El mòbil',
   'stored.saved': 'desat',
   'stored.counting.off': 'Desactivat',
+  'stored.counting.on': 'Activat',
   'stored.savedOn': 'desat el {date}',
 
   'intro.h': 'Benvinguda a Libell',
@@ -192,18 +193,21 @@ export const ca: Messages = {
   'onboard.source.sensorIcon':
     'Pots connectar una caixa sensora quan vulguis amb la icona del sensor a dalt a la dreta.',
   'counting.title': 'Recompte anònim',
-  'counting.intro': 'Libell compta l’ús de manera anònima, per saber què cal millorar.',
+  'counting.intro': 'Libell pot comptar l’ús de manera anònima, per saber què cal millorar.',
   'counting.sent.h': 'Què es compta',
   'counting.sent':
     'Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com {boxes}), la versió de l’app i l’idioma triat a Libell.',
   'counting.notSent.h': 'Què no es desa mai',
   'counting.notSent':
-    'La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. No es desa res al mòbil per al recompte.',
+    'La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. Al mòbil només es desa la teva tria.',
   'counting.gpc':
     'Si el teu navegador demana als llocs web que no et rastregin, Libell no compta res.',
-  'counting.later': 'El pots desactivar quan vulguis a {help} › {tab}.',
+  'counting.later': 'Pots canviar la teva tria quan vulguis a {help} › {tab}.',
   'counting.toggle': 'Compta el meu ús de manera anònima',
   'counting.dashboard': 'Mira les estadístiques',
+  'counting.ask': 'Libell pot comptar el teu ús de manera anònima?',
+  'counting.yes': 'Comptar',
+  'counting.no': 'No comptar',
   'onboard.sound.h': 'So',
   'onboard.source.h': 'Com vols mesurar?',
   'onboard.source.intro':

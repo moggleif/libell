@@ -2,7 +2,7 @@
 // and on the row under the top bar, and the row's ✕.
 import { assert, button, openApp, storage, wizard } from './harness.mjs';
 
-export const intro = (page) => page.locator('.intro');
+export const intro = (page) => page.locator('.intro:not(.counting-choice)');
 
 /** A stand-in for Chromium's install offer; its tap is counted. */
 async function offerInstall(page) {

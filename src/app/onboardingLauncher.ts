@@ -4,7 +4,6 @@
  * skipped.
  */
 import type { LevelSettings, SensorSource } from '../domain/settings';
-import { isCountingOn, setCountingOn } from '../data/countingStore';
 import type { InstallOffer } from '../ui/install';
 import type { IntroOptions } from '../ui/intro';
 import type { OnboardingOptions } from '../ui/onboarding';
@@ -47,7 +46,6 @@ export function createOnboardingLauncher(deps: OnboardingLauncherDeps): Onboardi
       onSettingsSaved: (next) => deps.onSettingsSaved(next),
       ...sharedOptions(deps.parts),
       sensorOptionsFor: deps.sensorOptionsFor,
-      counting: { isOn: () => isCountingOn(), setOn: (on) => setCountingOn(on) },
       onFinished(done, path) {
         open = false;
         deps.progress.markSeen();

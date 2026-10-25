@@ -168,6 +168,7 @@ export const fi: Messages = {
   'stored.phone': 'Puhelin',
   'stored.saved': 'tallennettu',
   'stored.counting.off': 'Pois päältä',
+  'stored.counting.on': 'Päällä',
   'stored.savedOn': 'tallennettu {date}',
   'intro.h': 'Tervetuloa Libelliin',
   'intro.how':
@@ -177,18 +178,21 @@ export const fi: Messages = {
   'onboard.source.sensorIcon':
     'Anturirasian voi yhdistää milloin tahansa oikean yläkulman anturikuvakkeesta.',
   'counting.title': 'Nimetön laskenta',
-  'counting.intro': 'Libell laskee käyttöä nimettömästi, jotta tiedämme, mitä parantaa.',
+  'counting.intro': 'Libell voi laskea käyttöä nimettömästi, jotta tiedämme, mitä parantaa.',
   'counting.sent.h': 'Mitä lasketaan',
   'counting.sent':
     'Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten {boxes}), sovelluksen versio ja Libellissä valittu kieli.',
   'counting.notSent.h': 'Mitä ei koskaan tallenneta',
   'counting.notSent':
-    'IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Laskentaa varten puhelimeen ei tallenneta mitään.',
+    'IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Puhelimeen tallennetaan vain valintasi.',
   'counting.gpc':
     'Jos selaimesi pyytää verkkosivustoja olemaan seuraamatta sinua, Libell ei laske mitään.',
-  'counting.later': 'Voit kytkeä sen pois milloin tahansa kohdassa {help} › {tab}.',
+  'counting.later': 'Voit muuttaa valintaasi milloin tahansa kohdassa {help} › {tab}.',
   'counting.toggle': 'Laske käyttöni nimettömästi',
   'counting.dashboard': 'Katso tilastot',
+  'counting.ask': 'Saako Libell laskea käyttöäsi nimettömästi?',
+  'counting.yes': 'Laske',
+  'counting.no': 'Älä laske',
   'onboard.sound.h': 'Ääni',
   'onboard.source.h': 'Miten haluat mitata?',
   'onboard.source.intro':

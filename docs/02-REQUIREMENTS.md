@@ -447,7 +447,7 @@ URL and must keep working with no signal.
 ## R18 — A first-run introduction, skippable and reopenable
 
 - **Given** I open Libell for the very first time (no incoming setup link, R41)
-- **Then** an intro comes first (#691): one screen, no step counter, with a drawing of
+- **Then** after the counting choice (R59, #699) an intro comes first (#691): one screen, no step counter, with a drawing of
   the phone in the vehicle, "Welcome to Libell", what Libell does (the same one-line
   pitch the About page uses) and what you do with it (lay the phone flat in the vehicle,
   and it shows which wheels to raise and by how much). Its main button, "Get started",
@@ -2326,17 +2326,40 @@ data).
 - **When** the tests run
 - **Then** they fail until its store lists it (`src/data/storedData.test.ts`).
 
-## R59 — Anonymous usage counting, said plainly and easy to switch off (#674)
+## R59 — Anonymous usage counting, an active choice made first (#674, #699)
 
-Libell counts how many use it and which features, to know what to improve, without
-tracking anyone (ADR 0021). R58 is the stored-data view (#678).
+Libell can count how many use it and which features, to know what to improve, without
+tracking anyone (ADR 0021). Counting happens only if the user has chosen it (ADR 0022).
+R58 is the stored-data view (#678).
 
-- **Given** counting is on and the phone is online on libell.app
+- **Given** no counting choice is stored, the browser sends neither Global Privacy
+  Control nor Do Not Track, and the app is not in `?demo`
+- **When** the app opens
+- **Then** before anything else (the intro R18, an incoming setup link R41) one screen,
+  "Anonymous counting" ("Anonym räkning"), says what would be counted, what is never
+  saved and where the choice can be changed later (Help › Privacy), links the public
+  statistics, asks "May Libell count your use anonymously?" and offers two equal
+  buttons, "Count" ("Räkna") and "Don't count" ("Räkna inte"). Nothing else in the app
+  can be reached until one is picked. It fits a small phone whole (R45), in every
+  shipped language and both themes.
+- **Then** nothing is sent to the counter before the choice is made.
+- **When** I pick one
+- **Then** the choice is stored, the screen closes and the app goes on where it would
+  have (the intro, an incoming setup link, or the level view). After "Count" this app
+  start's events are sent as below; after "Don't count" nothing ever is.
+- **Given** a choice is stored
+- **Then** the screen never shows again; the switch in Help › Privacy changes it.
+- **Given** someone whose counting was on by default before #699
+- **Then** they are asked at their next start. Someone who had switched it off has
+  chosen "Don't count" and is not asked.
+- **Given** the browser sends Global Privacy Control or Do Not Track
+- **Then** the screen is not shown: the signal is the answer, and nothing is counted.
+- **Given** counting is chosen and the phone is online on libell.app
 - **When** the app opens
 - **Then** it sends GoatCounter one event each for: the app opened, the app version, the
   language chosen in Libell and the sensor model chosen (the phone, Xparkle RVS01 or
   EasyLevel), plus Continuous audio guidance (R30) and Spoken guidance (R54) when they
-  are on. No cookie or stored identifier is created for it.
+  are on. No cookie or identifier is created for it.
 - **When** I use a feature: zero the vehicle (R24, R34), calibrate the phone, switch to a
   saved target (R31), save or go back to the hitch height (R55), switch vehicle (R56),
   create or receive a share link (R41), switch to another sensor, finish the introduction,
@@ -2345,23 +2368,19 @@ tracking anyone (ADR 0021). R58 is the stored-data view (#678).
 - **Then** nothing else is ever sent: no country, region, screen, device, operating
   system, browser, firmware, device id, readings, measurements or settings
   (`src/domain/usage.ts` holds every name that may be sent).
-- **Given** counting is switched off, or the browser sends Global Privacy Control or Do
+- **Given** "Don't count" is chosen, or the browser sends Global Privacy Control or Do
   Not Track
 - **Then** no request is made to the counter at all.
 - **Given** the phone is offline or the counter cannot be reached
 - **Then** the app works exactly as before, and nothing is kept or retried later.
-- **Given** a first-time user in the introduction (R12)
-- **When** they reach the step after Sound
-- **Then** a step of its own, "Anonymous counting" ("Anonym räkning"), says what is
-  counted, what is never saved and where to switch it off later (Help › Privacy), with
-  the switch (on from the start) and a link to the public statistics, in every shipped
-  language. A change takes effect at once, and the step has nothing to skip. It fits a
-  small phone whole (R45).
 - **Given** the Privacy tab (R58)
-- **Then** under the stored data it shows the same block, with "a browser privacy
-  signal turns it off" in place of where to find it, and the same switch. Switched off,
-  the stored-data list shows "Anonymous counting: Switched off".
+- **Then** under the stored data it shows the same explanation, with "a browser privacy
+  signal turns it off" in place of where to change it, and an on/off switch. The
+  stored-data list shows "Anonymous counting: Switched on" or "Switched off".
 - **Given** "Reset all settings"
-- **Then** the counting choice is kept: it is stored on its own (`libell.countingOff`).
-- **Given** dev, a preview build or `?demo`
-- **Then** nothing is counted.
+- **Then** the counting choice is kept: it is stored on its own (`libell.counting`).
+- **Given** "Delete all Libell data" (R58)
+- **Then** the choice is deleted too, and the screen shows at the next start.
+- **Given** dev or a preview build
+- **Then** nothing is counted, whatever is chosen (the screen still shows, so it can be
+  tried).

@@ -6,7 +6,7 @@
 // phone: calibrating, zeroing and checking it, target presets and a
 // caravan's hitch height, against
 // `?demo`'s fixed tilt. Settings' Calibration tab while a box is in use. For the first visit:
-// the intro, Install and the install row. For the first-run wizard: its phone calibration
+// the counting choice, the intro, Install and the install row. For the first-run wizard: its phone calibration
 // and its box path, connected or not. For the level screen: the pose
 // guard, the level celebration, a lost box coming back, the status row
 // per vehicle, and the rebuild after a saved change. What is stored, and deleting it. The mute
@@ -37,6 +37,7 @@ import {
   targetsFlow,
 } from './flows/phone.mjs';
 import { settingsBoxFlow } from './flows/settingsBox.mjs';
+import { countingFlow } from './flows/counting.mjs';
 import { firstVisitFlow } from './flows/firstVisit.mjs';
 import { wizardPhoneFlow, wizardBoxFlow, wizardPasswordFlow } from './flows/wizard.mjs';
 import {
@@ -81,6 +82,7 @@ try {
   await targetsFlow(browser);
   await hitchHeightFlow(browser);
   await settingsBoxFlow(browser);
+  await countingFlow(browser);
   await firstVisitFlow(browser);
   await wizardPhoneFlow(browser);
   await wizardBoxFlow(browser, true);
@@ -97,7 +99,7 @@ try {
   await vehiclesFlow(browser);
   await privacyFlow(browser);
   console.log(
-    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, first visit, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up, vehicles, privacy',
+    'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, counting choice, first visit, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up, vehicles, privacy',
   );
 } finally {
   await browser?.close();

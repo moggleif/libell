@@ -32,7 +32,7 @@ src/
 │                  # topBar.ts, frameGuard.ts, startupMigrations.ts, incomingSetup.ts,
 │                  # sensorStartup.ts (start-up), appSettings.ts (the app's one copy
 │                  # of the settings), sensorStaleness.ts (when a source is stale),
-│                  # usage.ts (anonymous counting, ADR 0021)
+│                  # usage.ts and countingGate.ts (anonymous counting, ADR 0021/0022)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable, among them:
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── caravan.ts    # the caravan's axle + jockey-wheel math (ADR 0008)
@@ -49,8 +49,8 @@ src/
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
 │                  # remembered device id, #130), vehicleStore.ts (the waiting
-│                  # vehicles, #599), countingStore.ts (counting's off switch,
-│                  # #674) — localStorage read/write, on the
+│                  # vehicles, #599), countingStore.ts (the counting choice,
+│                  # #674, #699) — localStorage read/write, on the
 │                  # shared guarded helpers in keyValueStorage.ts; storedData.ts
 │                  # gathers every store's keys for the Privacy tab (#678)
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
@@ -467,10 +467,15 @@ path at most once per app start, as `GET https://libell.goatcounter.com/count?p=
 with `fetch` (`no-cors`, `credentials: 'omit'`, `keepalive`, no referrer), and forgets
 failures: nothing is queued or retried. `allowed()` is asked on every send: only on
 `libell.app`, online, not in `?demo`, without Global Privacy Control or Do Not Track, and
-with the switch on (`src/data/countingStore.ts`; blocked storage reads as off). The
-introduction wizard's counting step (`src/ui/onboarding/countingStep.ts`) and the
-Privacy tab (`privacyPanel.ts`, under the stored data) both show `countingSection.ts`;
-`countingStoredKeys()` puts the off switch in the stored-data catalogue (#678).
+with "Count" chosen (`src/data/countingStore.ts`: `libell.counting` is `on` or `off`,
+missing until chosen; blocked storage reads as not chosen, so nothing counts). Before
+anything else `main.ts` runs `decideCountingFirst` (`src/app/countingGate.ts`, ADR 0022):
+with no choice stored, no GPC/DNT and no `?demo`, it shows `src/ui/countingChoice.ts`,
+stores the answer, and only then counts the start and opens the intro or an incoming
+setup link. The choice screen and the Privacy tab (`privacyPanel.ts`, under the stored
+data, with the switch) both show `countingSection.ts`; `countingStoredKeys()` puts the
+choice in the stored-data catalogue (#678), and a start-up migration turns #674's
+`libell.countingOff` into the choice "off".
 
 ## UI
 

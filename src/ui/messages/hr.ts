@@ -182,6 +182,7 @@ export const hr: Messages = {
   'stored.phone': 'Telefon',
   'stored.saved': 'spremljeno',
   'stored.counting.off': 'Isključeno',
+  'stored.counting.on': 'Uključeno',
   'stored.savedOn': 'spremljeno {date}',
 
   'intro.h': 'Dobro došli u Libell',
@@ -192,17 +193,20 @@ export const hr: Messages = {
   'onboard.source.sensorIcon':
     'Senzorsku kutiju možete povezati u bilo kojem trenutku ikonom senzora gore desno.',
   'counting.title': 'Anonimno brojanje',
-  'counting.intro': 'Libell anonimno broji korištenje kako bismo znali što poboljšati.',
+  'counting.intro': 'Libell može anonimno brojati korištenje kako bismo znali što poboljšati.',
   'counting.sent.h': 'Što se broji',
   'counting.sent':
     'Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput {boxes}), verzija aplikacije i jezik odabran u Libellu.',
   'counting.notSent.h': 'Što se nikada ne sprema',
   'counting.notSent':
-    'Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Za brojanje se ništa ne sprema na telefon.',
+    'Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Na telefon se sprema samo vaš izbor.',
   'counting.gpc': 'Ako vaš preglednik traži od web-mjesta da vas ne prate, Libell ne broji ništa.',
-  'counting.later': 'Možete ga isključiti bilo kada u {help} › {tab}.',
+  'counting.later': 'Svoj izbor možete promijeniti bilo kada u {help} › {tab}.',
   'counting.toggle': 'Anonimno brojanje mog korištenja',
   'counting.dashboard': 'Pogledajte statistiku',
+  'counting.ask': 'Smije li Libell anonimno brojati vaše korištenje?',
+  'counting.yes': 'Brojati',
+  'counting.no': 'Ne brojati',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čime želite mjeriti?',
   'onboard.source.intro':

@@ -180,6 +180,7 @@ export const et: Messages = {
   'stored.phone': 'Telefon',
   'stored.saved': 'salvestatud',
   'stored.counting.off': 'Välja lülitatud',
+  'stored.counting.on': 'Sisse lülitatud',
   'stored.savedOn': 'salvestatud {date}',
 
   'intro.h': 'Tere tulemast Libelli',
@@ -190,17 +191,20 @@ export const et: Messages = {
   'onboard.source.sensorIcon':
     'Välisanduri saad igal ajal ühendada üleval paremal oleva anduri ikooniga.',
   'counting.title': 'Anonüümne loendamine',
-  'counting.intro': 'Libell loendab kasutust anonüümselt, et teaksime, mida parandada.',
+  'counting.intro': 'Libell võib kasutust anonüümselt loendada, et teaksime, mida parandada.',
   'counting.sent.h': 'Mida loendatakse',
   'counting.sent':
     'Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu {boxes}), rakenduse versioon ja Libellis valitud keel.',
   'counting.notSent.h': 'Mida kunagi ei salvestata',
   'counting.notSent':
-    'Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Loendamiseks ei salvestata telefoni midagi.',
+    'Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Telefoni salvestatakse ainult sinu valik.',
   'counting.gpc': 'Kui su brauser palub veebisaitidel sind mitte jälgida, ei loenda Libell midagi.',
-  'counting.later': 'Saad selle igal ajal välja lülitada: {help} › {tab}.',
+  'counting.later': 'Saad oma valikut igal ajal muuta: {help} › {tab}.',
   'counting.toggle': 'Loenda minu kasutust anonüümselt',
   'counting.dashboard': 'Vaata statistikat',
+  'counting.ask': 'Kas Libell võib sinu kasutust anonüümselt loendada?',
+  'counting.yes': 'Loenda',
+  'counting.no': 'Ära loenda',
   'onboard.sound.h': 'Heli',
   'onboard.source.h': 'Millega soovid mõõta?',
   'onboard.source.intro':

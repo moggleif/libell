@@ -1,6 +1,7 @@
 // The Privacy tab (#678): what is stored, in plain words and raw, and
 // "Delete all Libell data", which starts the app again as on first run.
 import { assert, button, closeClean, openApp, storage } from './harness.mjs';
+import { countingChoice } from './counting.mjs';
 import { intro } from './firstVisit.mjs';
 
 const SEED = {
@@ -45,6 +46,10 @@ export async function privacyFlow(browser) {
   await page.evaluate(() => localStorage.setItem('other.site', 'keep'));
   await button(panel, 'Delete all Libell data').click();
   await Promise.all([page.waitForEvent('load'), button(panel, 'Yes, delete everything').click()]);
+  // The counting choice is deleted too, so it is asked again first (#699).
+  await countingChoice(page).waitFor();
+  assert((await storage(page, 'libell.counting')) === null, 'the choice should be deleted');
+  await button(countingChoice(page), 'Don’t count').click();
   await intro(page).waitFor();
   for (const key of Object.keys(SEED)) {
     assert((await storage(page, key)) === null, `${key} should be deleted`);

@@ -176,6 +176,7 @@ export const lv: Messages = {
   'stored.phone': 'Tālrunis',
   'stored.saved': 'saglabāts',
   'stored.counting.off': 'Izslēgta',
+  'stored.counting.on': 'Ieslēgta',
   'stored.savedOn': 'saglabāts {date}',
   'intro.h': 'Laipni lūdzam Libell',
   'intro.how':
@@ -185,17 +186,20 @@ export const lv: Messages = {
   'onboard.source.sensorIcon':
     'Sensora bloku var pievienot jebkurā laikā ar sensora ikonu augšējā labajā stūrī.',
   'counting.title': 'Anonīma skaitīšana',
-  'counting.intro': 'Libell anonīmi skaita lietošanu, lai mēs zinātu, ko uzlabot.',
+  'counting.intro': 'Libell var anonīmi skaitīt lietošanu, lai mēs zinātu, ko uzlabot.',
   'counting.sent.h': 'Kas tiek skaitīts',
   'counting.sent':
     'Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, {boxes}), lietotnes versija un Libell lietotnē izvēlētā valoda.',
   'counting.notSent.h': 'Kas nekad netiek saglabāts',
   'counting.notSent':
-    'Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Skaitīšanai tālrunī nekas netiek saglabāts.',
+    'Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Tālrunī tiek saglabāta tikai jūsu izvēle.',
   'counting.gpc': 'Ja jūsu pārlūks lūdz vietnēm jūs neizsekot, Libell neko neskaita.',
-  'counting.later': 'To jebkurā laikā varat izslēgt sadaļā {help} › {tab}.',
+  'counting.later': 'Savu izvēli jebkurā laikā varat mainīt sadaļā {help} › {tab}.',
   'counting.toggle': 'Anonīmi skaitīt manu lietošanu',
   'counting.dashboard': 'Skatīt statistiku',
+  'counting.ask': 'Vai Libell drīkst anonīmi skaitīt jūsu lietošanu?',
+  'counting.yes': 'Skaitīt',
+  'counting.no': 'Neskaitīt',
   'onboard.sound.h': 'Skaņa',
   'onboard.source.h': 'Kā vēlaties mērīt?',
   'onboard.source.intro':

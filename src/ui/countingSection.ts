@@ -1,7 +1,8 @@
 /**
  * Anonymous counting, said plainly (#674): what is counted, what never is,
- * the on/off switch and the public statistics. The introduction wizard
- * shows it as a step of its own, and the Privacy tab under its stored data.
+ * and the public statistics. The first-start choice (#699) shows it above
+ * its two buttons, and the Privacy tab under its stored data with the
+ * on/off switch.
  */
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
@@ -59,27 +60,31 @@ function joined(className: string, ...parts: (string | Element)[]): HTMLParagrap
   return p;
 }
 
-/** The guide says where the switch lives later; the Privacy tab, which is
+/** The choice says where to change it later; the Privacy tab, which is
  * that place, says what a browser privacy signal does instead. Kept to one
- * sentence each, so the guide step fits a small phone whole. */
-function closingSentence(place: 'guide' | 'privacy'): string {
+ * sentence each, so the choice fits a small phone whole. */
+function closingSentence(place: 'choice' | 'privacy'): string {
   if (place === 'privacy') return t('counting.gpc');
   return t('counting.later', { help: t('bottombar.help'), tab: t('menu.privacy.tab') });
 }
 
-export function createCountingSection(
-  choice: CountingChoice,
-  place: 'guide' | 'privacy',
+/** What is counted and what never is, without the switch. */
+export function createCountingExplanation(
+  place: 'choice' | 'privacy',
   textClass = 'menu__text',
-): HTMLElement {
-  const body = document.createElement('div');
-  body.append(
+): HTMLElement[] {
+  return [
     joined(textClass, t('counting.intro'), dashboardLink()),
     heading('counting.sent.h'),
     paragraph(textClass, 'counting.sent', boxNames()),
     heading('counting.notSent.h'),
     joined(textClass, t('counting.notSent'), closingSentence(place)),
-    toggle(choice),
-  );
+  ];
+}
+
+/** The Privacy tab's block: the explanation and the on/off switch. */
+export function createCountingSection(choice: CountingChoice): HTMLElement {
+  const body = document.createElement('div');
+  body.append(...createCountingExplanation('privacy'), toggle(choice));
   return body;
 }
