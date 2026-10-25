@@ -197,13 +197,13 @@ export const de: Messages = {
   'onboard.source.sensorIcon':
     'Eine Sensorbox verbindest du jederzeit über das Sensorsymbol oben rechts.',
   'counting.title': 'Anonyme Zählung',
-  'counting.intro': 'Libell zählt die Nutzung anonym, damit wir wissen, was besser werden muss.',
+  'counting.intro': 'Libell zählt die Nutzung anonym, um die App zu verbessern.',
   'counting.sent.h': 'Was gezählt wird',
   'counting.sent':
     'Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie {boxes}), die App-Version und die in Libell gewählte Sprache.',
   'counting.notSent.h': 'Was nie gespeichert wird',
   'counting.notSent':
-    'IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, die Maße deines Fahrzeugs, deine Einstellungen oder sonst etwas über dich. Auf dem Handy wird dafür nichts gespeichert.',
+    'IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, Fahrzeugmaße, Einstellungen oder sonst etwas über dich. Auf dem Handy wird dafür nichts gespeichert.',
   'counting.gpc':
     'Wenn dein Browser Websites bittet, dich nicht zu verfolgen, zählt Libell gar nichts.',
   'counting.later': 'Ausschalten kannst du sie jederzeit unter {help} › {tab}.',
