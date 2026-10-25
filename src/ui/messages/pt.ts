@@ -185,15 +185,15 @@ export const pt: Messages = {
   'onboard.source.sensorIcon':
     'Pode ligar uma caixa de sensor a qualquer momento com o ícone do sensor no canto superior direito.',
   'counting.title': 'Contagem anónima',
-  'counting.intro': 'O Libell conta a utilização de forma anónima, para sabermos o que melhorar.',
+  'counting.intro': 'O Libell conta o uso anonimamente, para sabermos o que melhorar.',
   'counting.sent.h': 'O que é contado',
   'counting.sent':
-    'Que a app foi aberta, que funções são usadas, que modelo de sensor mede (o telemóvel ou um modelo como {boxes}), a versão da app e o idioma escolhido no Libell.',
+    'Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como {boxes}), a versão da app e o idioma escolhido no Libell.',
   'counting.notSent.h': 'O que nunca é guardado',
   'counting.notSent':
-    'O seu endereço IP, país, dispositivo, ecrã, sistema operativo ou navegador, as medidas do veículo, as suas definições, nem mais nada sobre si. Nada é guardado no telemóvel para a contagem.',
+    'O seu IP, país, dispositivo, ecrã, sistema operativo, navegador, as medidas do veículo, as suas definições ou qualquer outra coisa sobre si. Nada fica guardado no telemóvel para isto.',
   'counting.gpc': 'Se o seu navegador pedir aos sites que não o sigam, o Libell não conta nada.',
-  'counting.later': 'Pode desativá-la a qualquer momento em {help} › {tab}.',
+  'counting.later': 'Pode desativá-la quando quiser em {help} › {tab}.',
   'counting.toggle': 'Contar a minha utilização de forma anónima',
   'counting.dashboard': 'Ver as estatísticas',
   'onboard.sound.h': 'Som',
