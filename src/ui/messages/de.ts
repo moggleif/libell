@@ -228,6 +228,7 @@ export const de: Messages = {
   'stored.phone': 'Das Handy',
   'stored.saved': 'gespeichert',
   'stored.counting.off': 'Ausgeschaltet',
+  'stored.counting.on': 'Eingeschaltet',
   'stored.savedOn': 'gespeichert am {date}',
 
   'intro.h': 'Willkommen bei Libell',
@@ -238,18 +239,21 @@ export const de: Messages = {
   'onboard.source.sensorIcon':
     'Eine Sensorbox verbindest du jederzeit über das Sensorsymbol oben rechts.',
   'counting.title': 'Anonyme Zählung',
-  'counting.intro': 'Libell zählt die Nutzung anonym, um die App zu verbessern.',
+  'counting.intro': 'Libell kann die Nutzung anonym zählen, um die App zu verbessern.',
   'counting.sent.h': 'Was gezählt wird',
   'counting.sent':
     'Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie {boxes}), die App-Version und die in Libell gewählte Sprache.',
   'counting.notSent.h': 'Was nie gespeichert wird',
   'counting.notSent':
-    'IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, Fahrzeugmaße, Einstellungen oder sonst etwas über dich. Auf dem Handy wird dafür nichts gespeichert.',
+    'IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, Fahrzeugmaße, Einstellungen oder sonst etwas über dich. Auf dem Handy wird nur deine Wahl gespeichert.',
   'counting.gpc':
     'Wenn dein Browser Websites bittet, dich nicht zu verfolgen, zählt Libell gar nichts.',
-  'counting.later': 'Ausschalten kannst du sie jederzeit unter {help} › {tab}.',
+  'counting.later': 'Deine Wahl kannst du jederzeit unter {help} › {tab} ändern.',
   'counting.toggle': 'Meine Nutzung anonym zählen',
   'counting.dashboard': 'Statistik ansehen',
+  'counting.ask': 'Möchtest du helfen, Libell besser zu machen?',
+  'counting.yes': 'Ja, anonym zählen',
+  'counting.no': 'Nein danke',
   'onboard.sound.h': 'Ton',
   'onboard.source.h': 'Wie möchtest du messen?',
   'onboard.source.intro':

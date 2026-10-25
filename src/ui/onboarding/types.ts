@@ -2,7 +2,6 @@ import type { LevelSettings } from '../../domain/settings';
 import type { CalibrationOptions } from '../calibrationSection';
 import type { SensorSourceOptions } from '../sensorSourceSection';
 import type { BoxDescriptor } from '../../sensor/boxes';
-import type { CountingChoice } from '../countingSection';
 
 export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptions {
   /**
@@ -12,8 +11,6 @@ export interface OnboardingOptions extends CalibrationOptions, SensorSourceOptio
   sensorOptionsFor?(sensor: BoxDescriptor): SensorSourceOptions;
   initialSettings: LevelSettings;
   onSettingsSaved(settings: LevelSettings): void;
-  /** Anonymous counting's on/off choice, for its own step (#674). */
-  counting: CountingChoice;
   /**
    * Called on ✕ and at the end. `done` is true only when the end was
    * reached (skipped steps included); both count as "seen".

@@ -1,7 +1,6 @@
 import { boxPositionStep, connectStep } from './boxSteps';
 import { sensorCalibrationStep } from './calibrationStep';
 import { sourceStep, vehicleStep } from './choiceSteps';
-import { countingStep } from './countingStep';
 import { placementStep, readScreenStep } from './placementSteps';
 import { measurementsStep, preferenceStep, rampsStep } from './settingsSteps';
 import type { Step } from './types';
@@ -28,12 +27,12 @@ function externalSteps(state: WizardState): Step[] {
 /** The source step only exists when an external sensor is available, and
  * decides the rest. */
 export function resolveSteps(state: WizardState): Step[] {
-  // What Libell is comes before the guide, on the intro (#691).
+  // What Libell is comes before the guide, on the intro (#691), and the
+  // counting choice before that (#699).
   const leading = [
     preferenceStep(state, 'settings.language', 'language'),
     preferenceStep(state, 'settings.appearance', 'appearance'),
     preferenceStep(state, 'onboard.sound.h', 'sound'),
-    countingStep(state),
   ];
   if (!state.sourceChoiceAvailable) return [...leading, vehicleStep(state), ...phoneSteps(state)];
   const path = state.sensorChoice === 'external' ? externalSteps(state) : phoneSteps(state);

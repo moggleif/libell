@@ -226,6 +226,7 @@ export const es: Messages = {
   'stored.phone': 'El móvil',
   'stored.saved': 'guardado',
   'stored.counting.off': 'Desactivado',
+  'stored.counting.on': 'Activado',
   'stored.savedOn': 'guardado el {date}',
 
   'intro.h': 'Te damos la bienvenida a Libell',
@@ -235,17 +236,20 @@ export const es: Messages = {
   'onboard.source.sensorIcon':
     'Puedes conectar una caja sensora cuando quieras con el icono del sensor arriba a la derecha.',
   'counting.title': 'Recuento anónimo',
-  'counting.intro': 'Libell cuenta el uso de forma anónima, para saber qué mejorar.',
+  'counting.intro': 'Libell puede contar el uso de forma anónima, para saber qué mejorar.',
   'counting.sent.h': 'Qué se cuenta',
   'counting.sent':
     'Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como {boxes}), la versión de la app y el idioma elegido en Libell.',
   'counting.notSent.h': 'Qué no se guarda nunca',
   'counting.notSent':
-    'Tu dirección IP, país, dispositivo, pantalla, sistema operativo o navegador, las medidas del vehículo, tus ajustes, ni nada más sobre ti. No se guarda nada en el móvil para el recuento.',
+    'Tu dirección IP, país, dispositivo, pantalla, sistema operativo o navegador, las medidas del vehículo, tus ajustes, ni nada más sobre ti. En el móvil solo se guarda tu elección.',
   'counting.gpc': 'Si tu navegador pide a las webs que no te rastreen, Libell no cuenta nada.',
-  'counting.later': 'Puedes desactivarlo cuando quieras en {help} › {tab}.',
+  'counting.later': 'Puedes cambiar tu elección cuando quieras en {help} › {tab}.',
   'counting.toggle': 'Contar mi uso de forma anónima',
   'counting.dashboard': 'Ver las estadísticas',
+  'counting.ask': '¿Quieres ayudar a mejorar Libell?',
+  'counting.yes': 'Sí, contar anónimamente',
+  'counting.no': 'No, gracias',
   'onboard.sound.h': 'Sonido',
   'onboard.source.h': '¿Cómo quieres medir?',
   'onboard.source.intro':

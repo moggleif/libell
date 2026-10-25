@@ -222,6 +222,7 @@ export const cs: Messages = {
   'stored.phone': 'Telefon',
   'stored.saved': 'uloženo',
   'stored.counting.off': 'Vypnuto',
+  'stored.counting.on': 'Zapnuto',
   'stored.savedOn': 'uloženo {date}',
 
   'intro.h': 'Vítejte v Libell',
@@ -231,17 +232,20 @@ export const cs: Messages = {
   'onboard.source.sensorIcon':
     'Senzorový box můžete kdykoli připojit pomocí ikony senzoru vpravo nahoře.',
   'counting.title': 'Anonymní počítání',
-  'counting.intro': 'Libell anonymně počítá používání, abychom věděli, co zlepšit.',
+  'counting.intro': 'Libell může anonymně počítat používání, abychom věděli, co zlepšit.',
   'counting.sent.h': 'Co se počítá',
   'counting.sent':
     'Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako {boxes}), verze aplikace a jazyk zvolený v Libell.',
   'counting.notSent.h': 'Co se nikdy neukládá',
   'counting.notSent':
-    'Vaše IP adresa, země, zařízení, obrazovka, operační systém ani prohlížeč, rozměry vozidla, vaše nastavení ani nic jiného o vás. Kvůli počítání se do telefonu nic neukládá.',
+    'Vaše IP adresa, země, zařízení, obrazovka, operační systém ani prohlížeč, rozměry vozidla, vaše nastavení ani nic jiného o vás. Do telefonu se ukládá jen vaše volba.',
   'counting.gpc': 'Pokud váš prohlížeč žádá weby, aby vás nesledovaly, Libell nepočítá nic.',
-  'counting.later': 'Kdykoli ho můžete vypnout v {help} › {tab}.',
+  'counting.later': 'Svou volbu můžete kdykoli změnit v {help} › {tab}.',
   'counting.toggle': 'Anonymně počítat mé používání',
   'counting.dashboard': 'Zobrazit statistiky',
+  'counting.ask': 'Chcete pomoct vylepšit Libell?',
+  'counting.yes': 'Ano, počítat anonymně',
+  'counting.no': 'Ne, děkuji',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čím chcete měřit?',
   'onboard.source.intro':
