@@ -175,6 +175,7 @@ export const tr: Messages = {
   'stored.phone': 'Telefon',
   'stored.saved': 'kaydedildi',
   'stored.counting.off': 'Kapalı',
+  'stored.counting.on': 'Açık',
   'stored.savedOn': '{date} tarihinde kaydedildi',
 
   'intro.h': 'Libell’e hoş geldiniz',
@@ -186,18 +187,21 @@ export const tr: Messages = {
     'Sensör kutusu, sağ üstteki sensör simgesiyle istediğiniz zaman bağlanabilir.',
   'counting.title': 'Anonim sayım',
   'counting.intro':
-    'Libell, neyi iyileştirmemiz gerektiğini bilmek için kullanımı anonim olarak sayar.',
+    'Libell, neyi iyileştirmemiz gerektiğini bilmek için kullanımı anonim olarak sayabilir.',
   'counting.sent.h': 'Neler sayılır',
   'counting.sent':
     'Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya {boxes} gibi bir model), uygulama sürümü ve Libell’de seçilen dil.',
   'counting.notSent.h': 'Neler asla kaydedilmez',
   'counting.notSent':
-    'IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Sayım için telefona hiçbir şey kaydedilmez.',
+    'IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Telefona yalnızca seçiminiz kaydedilir.',
   'counting.gpc':
     'Tarayıcınız web sitelerinden sizi izlememelerini isterse Libell hiçbir şey saymaz.',
-  'counting.later': 'İstediğiniz zaman {help} › {tab} bölümünden kapatabilirsiniz.',
+  'counting.later': 'Seçiminizi istediğiniz zaman {help} › {tab} bölümünden değiştirebilirsiniz.',
   'counting.toggle': 'Kullanımımı anonim olarak say',
   'counting.dashboard': 'İstatistikleri görün',
+  'counting.ask': 'Libell’i daha iyi hale getirmeye yardım etmek ister misiniz?',
+  'counting.yes': 'Evet, anonim sayılsın',
+  'counting.no': 'Hayır, teşekkürler',
   'onboard.sound.h': 'Ses',
   'onboard.source.h': 'Nasıl ölçmek istiyorsunuz?',
   'onboard.source.intro':

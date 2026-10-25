@@ -9,6 +9,7 @@ import { nextVehicleName } from './ui/vehiclePicker';
 import { takePendingVehicleSetupCode } from './ui/vehicleShare';
 import { keepScreenAwake } from './ui/wakeLock';
 import { createCore, type Core, type Screen } from './app/core';
+import { browserCountingGate, decideCountingFirst } from './app/countingGate';
 import { guardAgainstFraming } from './app/frameGuard';
 import { offerIncomingSetup } from './app/incomingSetup';
 import { mountMainScreen } from './app/mainScreen';
@@ -38,19 +39,47 @@ function bootstrap(root: HTMLElement, topBar: TopBar, install: InstallOffer): vo
   const screen = {} as Screen;
   const core = createCore(screen);
   startUsageCounting(browserUsageDeps(core.demo));
-  countAppStart({
-    version: __APP_VERSION__,
-    language: getLanguage(),
-    settings: core.settings.get(),
-  });
   const pages = mountPages(core, screen, install);
   mountMainScreen(root, core, pages, screen, topBar);
   start(root, core, pages, screen, pendingSetupCode);
 }
 
-/** An incoming setup link or the first-run intro, then the readings. */
+/** The counting choice, then an incoming setup link or the first-run
+ * intro; the readings start behind them. */
 function start(
   root: HTMLElement,
+  core: Core,
+  pages: Pages,
+  screen: Screen,
+  pendingSetupCode: string | null,
+): void {
+  // Nothing is counted before the choice is made (#699).
+  decideCountingFirst(browserCountingGate(core.demo), () => {
+    countAppStart({
+      version: __APP_VERSION__,
+      language: getLanguage(),
+      settings: core.settings.get(),
+    });
+    openFirstOverlay(core, pages, screen, pendingSetupCode);
+  });
+
+  if (core.demo) {
+    screen.levelScreen.show();
+    return;
+  }
+  void startSensors({
+    root,
+    sensor: core.sensor,
+    attemptAutoReconnect: () => core.boxes.attemptAutoReconnect(),
+    showLevelScreen: () => screen.levelScreen.show(),
+    isSensorSupported,
+    needsPermissionGesture,
+    isSecureContext: () => window.isSecureContext,
+  });
+}
+
+/** An incoming setup link, or else the first-run intro. */
+function openFirstOverlay(
   core: Core,
   pages: Pages,
   screen: Screen,
@@ -70,18 +99,4 @@ function start(
     toast: (text) => void showToast(text),
   });
   if (!offered && !core.demo && !hasSeenOnboarding()) pages.onboarding.openFirstRun();
-
-  if (core.demo) {
-    screen.levelScreen.show();
-    return;
-  }
-  void startSensors({
-    root,
-    sensor: core.sensor,
-    attemptAutoReconnect: () => core.boxes.attemptAutoReconnect(),
-    showLevelScreen: () => screen.levelScreen.show(),
-    isSensorSupported,
-    needsPermissionGesture,
-    isSecureContext: () => window.isSecureContext,
-  });
 }

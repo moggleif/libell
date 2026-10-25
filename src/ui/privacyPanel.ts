@@ -129,17 +129,14 @@ export function createPrivacyPanel(options: PrivacyPanelOptions): PrivacyPanel {
     summary,
     raw.element,
     textElement('h3', 'stored-data__heading', t('counting.title')),
-    // Switching off stores a key, so the list above reads the storage again.
-    createCountingSection(
-      {
-        isOn: options.counting.isOn,
-        setOn(on) {
-          options.counting.setOn(on);
-          refresh();
-        },
+    // Switching stores the choice, so the list above reads the storage again.
+    createCountingSection({
+      isOn: options.counting.isOn,
+      setOn(on) {
+        options.counting.setOn(on);
+        refresh();
       },
-      'privacy',
-    ),
+    }),
   );
   const { openSettings } = options;
   if (openSettings) {

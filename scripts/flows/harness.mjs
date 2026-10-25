@@ -11,7 +11,8 @@ export function assert(condition, message) {
   if (!condition) throw new Error(`flows test failed: ${message}`);
 }
 
-/** A fresh page, past the first-run wizard, in English, with `seed`
+/** A fresh page, past the counting choice and the first-run wizard, in
+ * English, with `seed`
  * written to localStorage before the app first reads it (a null value
  * removes the key), and `initScript` run before the app's own code. */
 export async function openApp(
@@ -32,6 +33,7 @@ export async function openApp(
     if (sessionStorage.getItem('flows.seeded')) return;
     sessionStorage.setItem('flows.seeded', '1');
     localStorage.setItem('libell.onboarded', '1');
+    localStorage.setItem('libell.counting', 'off');
     localStorage.setItem('libell.language', 'en');
     for (const [key, value] of Object.entries(extra)) {
       if (value === null) localStorage.removeItem(key);

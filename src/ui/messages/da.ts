@@ -185,6 +185,7 @@ export const da: Messages = {
   'stored.phone': 'Telefonen',
   'stored.saved': 'gemt',
   'stored.counting.off': 'Slået fra',
+  'stored.counting.on': 'Slået til',
   'stored.savedOn': 'gemt {date}',
 
   'intro.h': 'Velkommen til Libell',
@@ -195,17 +196,20 @@ export const da: Messages = {
   'onboard.source.sensorIcon':
     'En sensorboks kan forbindes når som helst med sensorikonet øverst til højre.',
   'counting.title': 'Anonym optælling',
-  'counting.intro': 'Libell tæller brugen anonymt, så vi ved, hvad der skal forbedres.',
+  'counting.intro': 'Libell kan tælle brugen anonymt, så vi ved, hvad der skal forbedres.',
   'counting.sent.h': 'Det her tælles',
   'counting.sent':
     'At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som {boxes}), appens version og det sprog, der er valgt i Libell.',
   'counting.notSent.h': 'Det her gemmes aldrig',
   'counting.notSent':
-    'Din IP-adresse, dit land, din enhed, skærm, dit styresystem eller din browser, køretøjets mål, dine indstillinger eller noget andet om dig. Intet gemmes på telefonen til optællingen.',
+    'Din IP-adresse, dit land, din enhed, skærm, dit styresystem eller din browser, køretøjets mål, dine indstillinger eller noget andet om dig. Kun dit valg gemmes på telefonen.',
   'counting.gpc': 'Hvis din browser beder websteder om ikke at spore dig, tæller Libell ingenting.',
-  'counting.later': 'Du kan slå den fra når som helst under {help} › {tab}.',
+  'counting.later': 'Du kan ændre dit valg når som helst under {help} › {tab}.',
   'counting.toggle': 'Tæl min brug anonymt',
   'counting.dashboard': 'Se statistikken',
+  'counting.ask': 'Vil du hjælpe med at gøre Libell bedre?',
+  'counting.yes': 'Ja, tæl anonymt',
+  'counting.no': 'Nej tak',
   'onboard.sound.h': 'Lyd',
   'onboard.source.h': 'Hvordan vil du måle?',
   'onboard.source.intro':

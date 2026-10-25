@@ -28,10 +28,13 @@ never sent anywhere. The one thing Libell sends is an anonymous count to
 [GoatCounter](https://libell.goatcounter.com): that the app was opened, the app version,
 the language chosen in Libell, the sensor model in use and which features are used. No
 country, IP address, screen, device, operating system, browser, firmware or identifier is
-saved, and no cookie is set. It is on from the start, the introduction says so on a page
-of its own, and it can be switched off under Help › Privacy, which also shows everything
-Libell has stored; a browser's Global Privacy Control or Do Not Track switches it off too. The statistics are public. Details: `SECURITY.md` and
-[ADR 0021](docs/adr/0021-anonymous-usage-counting.md).
+saved, and no cookie is set. It only happens if you choose it: the first screen asks,
+"Would you like to help make Libell better?", with "Yes, count anonymously" and "No
+thanks", and the choice can be changed under Help › Privacy, which
+also shows everything Libell has stored; a browser's Global Privacy Control or Do Not
+Track means no counting, without asking. The statistics are public. Details: `SECURITY.md` and
+[ADR 0021](docs/adr/0021-anonymous-usage-counting.md) and
+[ADR 0022](docs/adr/0022-counting-is-an-active-choice.md).
 
 ## Try the demo modes
 

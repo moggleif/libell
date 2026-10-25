@@ -112,6 +112,11 @@ function byKind(a: StoredEntry, b: StoredEntry): number {
   return KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind);
 }
 
+/** "on" is the only value that counts; #674's legacy flag means off. */
+function countingDetail(value: string): 'stored.counting.on' | 'stored.counting.off' {
+  return value === 'on' ? 'stored.counting.on' : 'stored.counting.off';
+}
+
 /** Rows for the kinds that each stand on their own. */
 function entryRow(entry: StoredEntry, entries: StoredEntry[]): StoredRow | null {
   switch (entry.kind) {
@@ -132,7 +137,7 @@ function entryRow(entry: StoredEntry, entries: StoredEntry[]): StoredRow | null 
     case 'rememberedBox':
       return { label: t('stored.rememberedBox'), detail: sourceName(entry.source) };
     case 'counting':
-      return { label: t('counting.title'), detail: t('stored.counting.off') };
+      return { label: t('counting.title'), detail: t(countingDetail(entry.value)) };
     default:
       return null;
   }

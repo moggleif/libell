@@ -92,8 +92,8 @@ describe('createPrivacyPanel (#678)', () => {
   });
 });
 
-describe('the Privacy tab’s counting block (#674)', () => {
-  it('shows the counting switch and lists "switched off" once it is off', () => {
+describe('the Privacy tab’s counting block (#674, #699)', () => {
+  it('shows the counting switch, and the list says the choice after each change', () => {
     const stored = { on: true };
     const entries: StoredEntry[] = [];
     const panel = createPrivacyPanel({
@@ -103,7 +103,12 @@ describe('the Privacy tab’s counting block (#674)', () => {
         isOn: () => stored.on,
         setOn(on) {
           stored.on = on;
-          entries.push({ key: 'libell.countingOff', kind: 'counting', value: '1', session: false });
+          entries.splice(0, entries.length, {
+            key: 'libell.counting',
+            kind: 'counting',
+            value: on ? 'on' : 'off',
+            session: false,
+          });
         },
       },
     });
@@ -115,5 +120,8 @@ describe('the Privacy tab’s counting block (#674)', () => {
     box.dispatchEvent(new Event('change'));
     expect(stored.on).toBe(false);
     expect(panel.element.textContent).toContain(t('stored.counting.off'));
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+    expect(panel.element.textContent).toContain(t('stored.counting.on'));
   });
 });

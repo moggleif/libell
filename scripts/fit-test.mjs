@@ -304,7 +304,7 @@ async function checkLevelScreen(page, label, { fitsWhole = true } = {}) {
  * the only way onto the external path, since the radios exist only then.
  */
 async function checkWizard(page, label, { external = false, fitsWhole = true } = {}) {
-  await passIntro(page, () => auditView(page, `${label} / intro`));
+  await passIntro(page, (screen) => auditView(page, `${label} / ${screen}`));
   // 12 is past the longest path (10, external sensor); the loop ends when the guide closes.
   for (let step = 0; step < 12; step += 1) {
     if (external) {

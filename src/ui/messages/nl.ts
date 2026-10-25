@@ -187,6 +187,7 @@ export const nl: Messages = {
   'stored.phone': 'De telefoon',
   'stored.saved': 'opgeslagen',
   'stored.counting.off': 'Uitgeschakeld',
+  'stored.counting.on': 'Ingeschakeld',
   'stored.savedOn': 'opgeslagen op {date}',
 
   'intro.h': 'Welkom bij Libell',
@@ -197,17 +198,20 @@ export const nl: Messages = {
   'onboard.source.sensorIcon':
     'Een sensorbox kun je altijd verbinden met het sensorpictogram rechtsboven.',
   'counting.title': 'Anoniem tellen',
-  'counting.intro': 'Libell telt het gebruik anoniem, zodat we weten wat beter moet.',
+  'counting.intro': 'Libell kan het gebruik anoniem tellen, zodat we weten wat beter moet.',
   'counting.sent.h': 'Wat wordt geteld',
   'counting.sent':
     'Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals {boxes}), de appversie en de taal die in Libell is gekozen.',
   'counting.notSent.h': 'Wat nooit wordt opgeslagen',
   'counting.notSent':
-    'Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Voor het tellen wordt niets op je telefoon opgeslagen.',
+    'Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Alleen je keuze wordt op je telefoon opgeslagen.',
   'counting.gpc': 'Als je browser websites vraagt je niet te volgen, telt Libell niets.',
-  'counting.later': 'Je kunt het altijd uitzetten via {help} › {tab}.',
+  'counting.later': 'Je kunt je keuze altijd wijzigen via {help} › {tab}.',
   'counting.toggle': 'Mijn gebruik anoniem tellen',
   'counting.dashboard': 'Bekijk de statistieken',
+  'counting.ask': 'Wil je helpen Libell beter te maken?',
+  'counting.yes': 'Ja, anoniem tellen',
+  'counting.no': 'Nee, bedankt',
   'onboard.sound.h': 'Geluid',
   'onboard.source.h': 'Hoe wil je meten?',
   'onboard.source.intro':

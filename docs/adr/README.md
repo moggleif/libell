@@ -41,3 +41,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0021 | [Anonymous usage counting with GoatCounter, on by default, one origin](0021-anonymous-usage-counting.md)                      |
 | 0020 | [Libell is served from the root of its own domain, libell.app](0020-own-domain-at-the-root.md)                                |
 | 0021 | [Dependabot's patch and minor updates merge themselves on green CI](0021-dependabot-patch-and-minor-merge-themselves.md)      |
+| 0022 | [Anonymous counting is an active choice, made before anything else](0022-counting-is-an-active-choice.md)                     |

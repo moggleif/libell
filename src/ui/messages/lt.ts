@@ -190,6 +190,7 @@ export const lt: Messages = {
   'stored.phone': 'Telefonas',
   'stored.saved': 'išsaugota',
   'stored.counting.off': 'Išjungtas',
+  'stored.counting.on': 'Įjungtas',
   'stored.savedOn': 'išsaugota {date}',
 
   'intro.h': 'Sveiki atvykę į Libell',
@@ -200,17 +201,20 @@ export const lt: Messages = {
   'onboard.source.sensorIcon':
     'Jutiklio dėžutę bet kada galima prijungti jutiklio piktograma viršuje dešinėje.',
   'counting.title': 'Anoniminis skaičiavimas',
-  'counting.intro': 'Libell anonimiškai skaičiuoja naudojimą, kad žinotume, ką tobulinti.',
+  'counting.intro': 'Libell gali anonimiškai skaičiuoti naudojimą, kad žinotume, ką tobulinti.',
   'counting.sent.h': 'Kas skaičiuojama',
   'counting.sent':
     'Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., {boxes}), programėlės versija ir Libell programėlėje pasirinkta kalba.',
   'counting.notSent.h': 'Kas niekada nesaugoma',
   'counting.notSent':
-    'Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Skaičiavimui telefone nieko nesaugoma.',
+    'Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Telefone saugomas tik jūsų pasirinkimas.',
   'counting.gpc': 'Jei jūsų naršyklė prašo svetainių jūsų nesekti, Libell nieko neskaičiuoja.',
-  'counting.later': 'Bet kada galite jį išjungti: {help} › {tab}.',
+  'counting.later': 'Savo pasirinkimą bet kada galite pakeisti: {help} › {tab}.',
   'counting.toggle': 'Anonimiškai skaičiuoti mano naudojimą',
   'counting.dashboard': 'Peržiūrėti statistiką',
+  'counting.ask': 'Ar norite padėti tobulinti Libell?',
+  'counting.yes': 'Taip, skaičiuoti anonimiškai',
+  'counting.no': 'Ne, ačiū',
   'onboard.sound.h': 'Garsas',
   'onboard.source.h': 'Kuo norite matuoti?',
   'onboard.source.intro':

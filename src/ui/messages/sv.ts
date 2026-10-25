@@ -194,6 +194,7 @@ export const sv: Messages = {
   'stored.phone': 'Telefonen',
   'stored.saved': 'sparad',
   'stored.counting.off': 'Avstängd',
+  'stored.counting.on': 'Påslagen',
   'stored.savedOn': 'sparad {date}',
 
   'intro.h': 'Välkommen till Libell',
@@ -204,7 +205,8 @@ export const sv: Messages = {
   'onboard.source.sensorIcon':
     'En sensorbox ansluter du när som helst med sensorikonen uppe till höger.',
   'counting.title': 'Anonym räkning',
-  'counting.intro': 'Libell räknar användningen anonymt, så att vi vet vad som behöver bli bättre.',
+  'counting.intro':
+    'Libell kan räkna användningen anonymt, så att vi vet vad som behöver bli bättre.',
   'counting.sent.h': 'Det här räknas',
   'counting.sent':
     'Att appen öppnades, vilka funktioner som används, vilken sensor som mäter ' +
@@ -212,12 +214,15 @@ export const sv: Messages = {
   'counting.notSent.h': 'Det här sparas aldrig',
   'counting.notSent':
     'Din IP-adress, ditt land, din enhet, skärm, ditt operativsystem eller din webbläsare, ' +
-    'fordonets mått, dina inställningar eller något annat om dig. Inget sparas i telefonen för ' +
-    'räkningen.',
+    'fordonets mått, dina inställningar eller något annat om dig. Bara ditt val sparas i ' +
+    'telefonen.',
   'counting.gpc': 'Om din webbläsare ber webbplatser att inte spåra dig räknar Libell ingenting.',
-  'counting.later': 'Du kan stänga av den när som helst under {help} › {tab}.',
+  'counting.later': 'Du kan ändra ditt val när som helst under {help} › {tab}.',
   'counting.toggle': 'Räkna min användning anonymt',
   'counting.dashboard': 'Se statistiken',
+  'counting.ask': 'Vill du hjälpa till att göra Libell bättre?',
+  'counting.yes': 'Ja, räkna anonymt',
+  'counting.no': 'Nej tack',
   'onboard.sound.h': 'Ljud',
   'onboard.source.h': 'Hur vill du mäta?',
   'onboard.source.intro':
