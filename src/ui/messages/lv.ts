@@ -148,7 +148,7 @@ export const lv: Messages = {
   'about.source.link': 'Pirmkods GitHub',
   'intro.h': 'Laipni lūdzam Libell',
   'intro.how':
-    'Novietojiet tālruni transportlīdzeklī guļus, un Libell parādīs, kuri riteņi jāpaceļ un par cik.',
+    'Novietojiet tālruni transportlīdzeklī horizontāli, un Libell parādīs, kuri riteņi jāpaceļ un par cik.',
   'intro.start': 'Sākt',
   'intro.later': 'Vispirms apskatīties',
   'onboard.source.sensorIcon':

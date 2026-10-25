@@ -18,7 +18,7 @@ export const tr: Messages = {
   'update.offline': 'Bağlantı yok, güncellemeler kontrol edilemiyor',
   'update.unsupported': 'Güncellemeler burada kullanılamıyor',
   'install.hint': 'Paylaş’a, ardından “Ana Ekrana Ekle”ye dokunun.',
-  'install.row': 'Libell’i ana ekrana uygulama olarak yükleyin.',
+  'install.row': 'Libell’i uygulama olarak ana ekrana yükleyin.',
   'install.close': 'Gizle',
   'share.vehicle.text': 'Libell için araç ayarlarım — ölçüler ve takozlar.',
   'settings.shareVehicle': 'Başka telefona gönder',

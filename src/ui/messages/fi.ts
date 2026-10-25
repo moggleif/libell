@@ -140,7 +140,7 @@ export const fi: Messages = {
   'about.source.link': 'Lähdekoodi GitHubissa',
   'intro.h': 'Tervetuloa Libelliin',
   'intro.how':
-    'Aseta puhelin tasaisesti ajoneuvoon, niin Libell näyttää, mitä pyöriä nostetaan ja kuinka paljon.',
+    'Aseta puhelin ajoneuvoon vaakatasoon, niin Libell näyttää, mitä pyöriä nostetaan ja kuinka paljon.',
   'intro.start': 'Aloita',
   'intro.later': 'Katsele ensin',
   'onboard.source.sensorIcon':
