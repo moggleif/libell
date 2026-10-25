@@ -175,6 +175,7 @@ export const pl: Messages = {
   'stored.notes.detail': 'Drobne znaczniki: {n}, np. czy wprowadzenie zostało pokazane',
   'stored.phone': 'Telefon',
   'stored.saved': 'zapisano',
+  'stored.counting.off': 'Wyłączone',
   'stored.savedOn': 'zapisano {date}',
 
   'intro.h': 'Witaj w Libell',
@@ -193,6 +194,7 @@ export const pl: Messages = {
     'Twojego adresu IP, kraju, urządzenia, ekranu, systemu operacyjnego ani przeglądarki, wymiarów pojazdu, twoich ustawień ani niczego innego o tobie. Na potrzeby liczenia nic nie jest zapisywane w telefonie.',
   'counting.gpc':
     'Jeśli twoja przeglądarka prosi strony, by cię nie śledziły, Libell nic nie liczy.',
+  'counting.later': 'Możesz je wyłączyć w każdej chwili w {help} › {tab}.',
   'counting.toggle': 'Licz moje użycie anonimowo',
   'counting.dashboard': 'Zobacz statystyki',
   'onboard.sound.h': 'Dźwięk',

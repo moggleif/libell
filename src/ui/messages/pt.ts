@@ -174,6 +174,7 @@ export const pt: Messages = {
   'stored.notes.detail': '{n} pequenas marcas, por exemplo se a introdução já foi vista',
   'stored.phone': 'O telemóvel',
   'stored.saved': 'guardado',
+  'stored.counting.off': 'Desativada',
   'stored.savedOn': 'guardado a {date}',
 
   'intro.h': 'Bem-vindo ao Libell',
@@ -192,6 +193,7 @@ export const pt: Messages = {
   'counting.notSent':
     'O seu endereço IP, país, dispositivo, ecrã, sistema operativo ou navegador, as medidas do veículo, as suas definições, nem mais nada sobre si. Nada é guardado no telemóvel para a contagem.',
   'counting.gpc': 'Se o seu navegador pedir aos sites que não o sigam, o Libell não conta nada.',
+  'counting.later': 'Pode desativá-la a qualquer momento em {help} › {tab}.',
   'counting.toggle': 'Contar a minha utilização de forma anónima',
   'counting.dashboard': 'Ver as estatísticas',
   'onboard.sound.h': 'Som',

@@ -4,6 +4,7 @@
  * settings never turns counting back on.
  */
 import { defaultStorage, readFlag, writeFlag, type MaybeStorage } from './keyValueStorage';
+import type { StoredKey } from './storedKeys';
 
 const COUNTING_OFF_KEY = 'libell.countingOff';
 
@@ -14,4 +15,8 @@ export function isCountingOn(storage: MaybeStorage = defaultStorage()): boolean 
 
 export function setCountingOn(on: boolean, storage: MaybeStorage = defaultStorage()): void {
   writeFlag(storage, COUNTING_OFF_KEY, !on);
+}
+
+export function countingStoredKeys(): StoredKey[] {
+  return [{ key: COUNTING_OFF_KEY, kind: 'counting' }];
 }

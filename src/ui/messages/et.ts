@@ -179,6 +179,7 @@ export const et: Messages = {
   'stored.notes.detail': 'Väikesed märked: {n}, näiteks kas tutvustust on näidatud',
   'stored.phone': 'Telefon',
   'stored.saved': 'salvestatud',
+  'stored.counting.off': 'Välja lülitatud',
   'stored.savedOn': 'salvestatud {date}',
 
   'intro.h': 'Tere tulemast Libelli',
@@ -197,6 +198,7 @@ export const et: Messages = {
   'counting.notSent':
     'Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Loendamiseks ei salvestata telefoni midagi.',
   'counting.gpc': 'Kui su brauser palub veebisaitidel sind mitte jälgida, ei loenda Libell midagi.',
+  'counting.later': 'Saad selle igal ajal välja lülitada: {help} › {tab}.',
   'counting.toggle': 'Loenda minu kasutust anonüümselt',
   'counting.dashboard': 'Vaata statistikat',
   'onboard.sound.h': 'Heli',

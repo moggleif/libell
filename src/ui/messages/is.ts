@@ -172,6 +172,7 @@ export const is: Messages = {
   'stored.notes.detail': '{n} smá merki, t.d. hvort kynningin hafi verið sýnd',
   'stored.phone': 'Síminn',
   'stored.saved': 'vistað',
+  'stored.counting.off': 'Slökkt',
   'stored.savedOn': 'vistað {date}',
 
   'intro.h': 'Velkomin í Libell',
@@ -190,6 +191,7 @@ export const is: Messages = {
   'counting.notSent':
     'IP-talan þín, land, tæki, skjár, stýrikerfi eða vafri, mál ökutækisins, stillingar þínar eða nokkuð annað um þig. Ekkert er vistað í símanum vegna talningarinnar.',
   'counting.gpc': 'Ef vafrinn þinn biður vefsvæði um að rekja þig ekki, telur Libell ekkert.',
+  'counting.later': 'Þú getur slökkt á henni hvenær sem er undir {help} › {tab}.',
   'counting.toggle': 'Telja notkun mína nafnlaust',
   'counting.dashboard': 'Sjá tölfræðina',
   'onboard.sound.h': 'Hljóð',

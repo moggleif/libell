@@ -171,6 +171,7 @@ export const tr: Messages = {
   'stored.notes.detail': '{n} küçük işaret, örneğin tanıtımın gösterilip gösterilmediği',
   'stored.phone': 'Telefon',
   'stored.saved': 'kaydedildi',
+  'stored.counting.off': 'Kapalı',
   'stored.savedOn': '{date} tarihinde kaydedildi',
 
   'intro.h': 'Libell’e hoş geldiniz',
@@ -191,6 +192,7 @@ export const tr: Messages = {
     'IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Sayım için telefona hiçbir şey kaydedilmez.',
   'counting.gpc':
     'Tarayıcınız web sitelerinden sizi izlememelerini isterse Libell hiçbir şey saymaz.',
+  'counting.later': 'İstediğiniz zaman {help} › {tab} bölümünden kapatabilirsiniz.',
   'counting.toggle': 'Kullanımımı anonim olarak say',
   'counting.dashboard': 'İstatistikleri görün',
   'onboard.sound.h': 'Ses',

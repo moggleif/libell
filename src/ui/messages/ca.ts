@@ -181,6 +181,7 @@ export const ca: Messages = {
   'stored.notes.detail': '{n} marques petites, per exemple si ja s’ha vist la introducció',
   'stored.phone': 'El mòbil',
   'stored.saved': 'desat',
+  'stored.counting.off': 'Desactivat',
   'stored.savedOn': 'desat el {date}',
 
   'intro.h': 'Benvinguda a Libell',
@@ -200,6 +201,7 @@ export const ca: Messages = {
     'La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. No es desa res al mòbil per al recompte.',
   'counting.gpc':
     'Si el teu navegador demana als llocs web que no et rastregin, Libell no compta res.',
+  'counting.later': 'El pots desactivar quan vulguis a {help} › {tab}.',
   'counting.toggle': 'Compta el meu ús de manera anònima',
   'counting.dashboard': 'Mira les estadístiques',
   'onboard.sound.h': 'So',

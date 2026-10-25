@@ -105,6 +105,7 @@ const KIND_ORDER: StoredEntry['kind'][] = [
   'targets',
   'hitch',
   'rememberedBox',
+  'counting',
 ];
 
 function byKind(a: StoredEntry, b: StoredEntry): number {
@@ -130,6 +131,8 @@ function entryRow(entry: StoredEntry, entries: StoredEntry[]): StoredRow | null 
       return { label: t('stored.hitch'), detail: t('stored.saved') };
     case 'rememberedBox':
       return { label: t('stored.rememberedBox'), detail: sourceName(entry.source) };
+    case 'counting':
+      return { label: t('counting.title'), detail: t('stored.counting.off') };
     default:
       return null;
   }

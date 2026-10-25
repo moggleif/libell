@@ -187,6 +187,7 @@ export const ro: Messages = {
   'stored.notes.detail': '{n} mici marcaje, de exemplu dacă introducerea a fost afișată',
   'stored.phone': 'Telefonul',
   'stored.saved': 'salvat',
+  'stored.counting.off': 'Dezactivată',
   'stored.savedOn': 'salvat pe {date}',
 
   'intro.h': 'Bun venit în Libell',
@@ -206,6 +207,7 @@ export const ro: Messages = {
     'Adresa dvs. IP, țara, dispozitivul, ecranul, sistemul de operare sau browserul, dimensiunile vehiculului, setările dvs. sau orice altceva despre dvs. Pentru numărare nu se salvează nimic pe telefon.',
   'counting.gpc':
     'Dacă browserul dvs. cere site-urilor să nu vă urmărească, Libell nu numără nimic.',
+  'counting.later': 'O puteți dezactiva oricând din {help} › {tab}.',
   'counting.toggle': 'Numărarea anonimă a utilizării mele',
   'counting.dashboard': 'Vedeți statisticile',
   'onboard.sound.h': 'Sunet',

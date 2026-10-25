@@ -172,6 +172,7 @@ export const sl: Messages = {
   'stored.notes.detail': 'Drobne oznake: {n}, npr. ali je bil uvod prikazan',
   'stored.phone': 'Telefon',
   'stored.saved': 'shranjeno',
+  'stored.counting.off': 'Izklopljeno',
   'stored.savedOn': 'shranjeno {date}',
 
   'intro.h': 'Dobrodošli v Libellu',
@@ -191,6 +192,7 @@ export const sl: Messages = {
     'Vašega naslova IP, države, naprave, zaslona, operacijskega sistema ali brskalnika, mer vozila, vaših nastavitev ali česar koli drugega o vas. Za štetje se v telefon ne shrani nič.',
   'counting.gpc':
     'Če vaš brskalnik prosi spletna mesta, naj vam ne sledijo, Libell ne šteje ničesar.',
+  'counting.later': 'Kadar koli ga lahko izklopite v {help} › {tab}.',
   'counting.toggle': 'Anonimno štetje moje uporabe',
   'counting.dashboard': 'Oglejte si statistiko',
   'onboard.sound.h': 'Zvok',

@@ -186,6 +186,7 @@ export const de: Messages = {
   'stored.notes.detail': '{n} kleine Vermerke, etwa ob die Einführung gezeigt wurde',
   'stored.phone': 'Das Handy',
   'stored.saved': 'gespeichert',
+  'stored.counting.off': 'Ausgeschaltet',
   'stored.savedOn': 'gespeichert am {date}',
 
   'intro.h': 'Willkommen bei Libell',
@@ -205,6 +206,7 @@ export const de: Messages = {
     'Deine IP-Adresse, dein Land, Gerät, Bildschirm, Betriebssystem oder Browser, die Maße deines Fahrzeugs, deine Einstellungen oder sonst etwas über dich. Für die Zählung wird nichts auf dem Handy gespeichert.',
   'counting.gpc':
     'Wenn dein Browser Websites bittet, dich nicht zu verfolgen, zählt Libell gar nichts.',
+  'counting.later': 'Du kannst sie jederzeit unter {help} › {tab} ausschalten.',
   'counting.toggle': 'Meine Nutzung anonym zählen',
   'counting.dashboard': 'Statistik ansehen',
   'onboard.sound.h': 'Ton',

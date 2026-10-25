@@ -33,7 +33,7 @@ export interface InfoPageOptions {
   /** Called after this page has closed. Without it, topics show no buttons. */
   openTarget?(target: HelpTarget): void;
   /** What the Privacy tab lists and deletes (#678). */
-  storedData: Pick<PrivacyPanelOptions, 'read' | 'deleteAll'>;
+  storedData: Pick<PrivacyPanelOptions, 'read' | 'deleteAll' | 'counting'>;
   /** The feedback form opened GitHub's new-issue page. */
   onFeedbackSent?(): void;
 }

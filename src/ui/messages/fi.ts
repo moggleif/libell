@@ -167,6 +167,7 @@ export const fi: Messages = {
   'stored.notes.detail': '{n} pientä merkintää, esimerkiksi onko esittely näytetty',
   'stored.phone': 'Puhelin',
   'stored.saved': 'tallennettu',
+  'stored.counting.off': 'Pois päältä',
   'stored.savedOn': 'tallennettu {date}',
   'intro.h': 'Tervetuloa Libelliin',
   'intro.how':
@@ -185,6 +186,7 @@ export const fi: Messages = {
     'IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Laskentaa varten puhelimeen ei tallenneta mitään.',
   'counting.gpc':
     'Jos selaimesi pyytää verkkosivustoja olemaan seuraamatta sinua, Libell ei laske mitään.',
+  'counting.later': 'Voit kytkeä sen pois milloin tahansa kohdassa {help} › {tab}.',
   'counting.toggle': 'Laske käyttöni nimettömästi',
   'counting.dashboard': 'Katso tilastot',
   'onboard.sound.h': 'Ääni',

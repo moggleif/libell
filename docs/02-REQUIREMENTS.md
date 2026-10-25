@@ -2353,9 +2353,14 @@ tracking anyone (ADR 0021). R58 is the stored-data view (#678).
 - **Given** a first-time user in the introduction (R12)
 - **When** they reach the step after Sound
 - **Then** a step of its own, "Anonymous counting" ("Anonym räkning"), says what is
-  counted, what is never saved and that a browser privacy signal turns it off, with the
-  switch (on from the start) and a link to the public statistics, in every shipped
-  language. A change takes effect at once, and the step has nothing to skip.
+  counted, what is never saved and where to switch it off later (Help › Privacy), with
+  the switch (on from the start) and a link to the public statistics, in every shipped
+  language. A change takes effect at once, and the step has nothing to skip. It fits a
+  small phone whole (R45).
+- **Given** the Privacy tab (R58)
+- **Then** under the stored data it shows the same block, with "a browser privacy
+  signal turns it off" in place of where to find it, and the same switch. Switched off,
+  the stored-data list shows "Anonymous counting: Switched off".
 - **Given** "Reset all settings"
 - **Then** the counting choice is kept: it is stored on its own (`libell.countingOff`).
 - **Given** dev, a preview build or `?demo`

@@ -199,6 +199,7 @@ export const en = {
   'stored.notes.detail': '{n} small marks, such as whether the introduction has been shown',
   'stored.phone': 'The phone',
   'stored.saved': 'saved',
+  'stored.counting.off': 'Switched off',
   'stored.savedOn': 'saved {date}',
 
   // The very first thing a new user sees, before any question.
@@ -223,6 +224,7 @@ export const en = {
     'vehicle’s measurements, your settings, or anything else about you. Nothing is stored on your ' +
     'phone for the counting.',
   'counting.gpc': 'If your browser asks websites not to track you, Libell counts nothing.',
+  'counting.later': 'You can switch it off any time under {help} › {tab}.',
   'counting.toggle': 'Count my use anonymously',
   'counting.dashboard': 'See the statistics',
   // Heads the wizard step holding the chime and the audio guidance.

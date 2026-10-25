@@ -180,6 +180,7 @@ export const cs: Messages = {
   'stored.notes.detail': 'Drobné značky: {n}, např. zda byl zobrazen úvod',
   'stored.phone': 'Telefon',
   'stored.saved': 'uloženo',
+  'stored.counting.off': 'Vypnuto',
   'stored.savedOn': 'uloženo {date}',
 
   'intro.h': 'Vítejte v Libell',
@@ -197,6 +198,7 @@ export const cs: Messages = {
   'counting.notSent':
     'Vaše IP adresa, země, zařízení, obrazovka, operační systém ani prohlížeč, rozměry vozidla, vaše nastavení ani nic jiného o vás. Kvůli počítání se do telefonu nic neukládá.',
   'counting.gpc': 'Pokud váš prohlížeč žádá weby, aby vás nesledovaly, Libell nepočítá nic.',
+  'counting.later': 'Kdykoli ho můžete vypnout v {help} › {tab}.',
   'counting.toggle': 'Anonymně počítat mé používání',
   'counting.dashboard': 'Zobrazit statistiky',
   'onboard.sound.h': 'Zvuk',

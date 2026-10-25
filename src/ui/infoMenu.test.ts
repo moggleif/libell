@@ -52,7 +52,11 @@ function makeOptions(
   hasDoneOnboarding = () => true,
   extra: Partial<InfoPageOptions> = {},
 ): InfoPageOptions {
-  const storedData = { read: () => [], deleteAll: vi.fn() };
+  const storedData = {
+    read: () => [],
+    deleteAll: vi.fn(),
+    counting: { isOn: () => true, setOn: () => {} },
+  };
   return { openOnboarding, hasDoneOnboarding, storedData, ...extra };
 }
 
@@ -98,7 +102,9 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
   it('reads the storage again each time the Privacy tab is selected (#678)', () => {
     const read = vi.fn(() => []);
     const info = createInfoPage(
-      makeOptions(vi.fn(), () => true, { storedData: { read, deleteAll: vi.fn() } }),
+      makeOptions(vi.fn(), () => true, {
+        storedData: { read, deleteAll: vi.fn(), counting: { isOn: () => true, setOn: () => {} } },
+      }),
     );
     const before = read.mock.calls.length;
     info.element.querySelector<HTMLButtonElement>('[data-tab="privacy"]')!.click();

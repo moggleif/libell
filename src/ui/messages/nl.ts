@@ -183,6 +183,7 @@ export const nl: Messages = {
   'stored.notes.detail': '{n} kleine markeringen, zoals of de introductie is getoond',
   'stored.phone': 'De telefoon',
   'stored.saved': 'opgeslagen',
+  'stored.counting.off': 'Uitgeschakeld',
   'stored.savedOn': 'opgeslagen op {date}',
 
   'intro.h': 'Welkom bij Libell',
@@ -201,6 +202,7 @@ export const nl: Messages = {
   'counting.notSent':
     'Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Voor het tellen wordt niets op je telefoon opgeslagen.',
   'counting.gpc': 'Als je browser websites vraagt je niet te volgen, telt Libell niets.',
+  'counting.later': 'Je kunt het altijd uitzetten via {help} › {tab}.',
   'counting.toggle': 'Mijn gebruik anoniem tellen',
   'counting.dashboard': 'Bekijk de statistieken',
   'onboard.sound.h': 'Geluid',

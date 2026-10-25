@@ -175,6 +175,7 @@ export const lv: Messages = {
   'stored.notes.detail': 'Sīkas atzīmes: {n}, piemēram, vai ievads ir parādīts',
   'stored.phone': 'Tālrunis',
   'stored.saved': 'saglabāts',
+  'stored.counting.off': 'Izslēgta',
   'stored.savedOn': 'saglabāts {date}',
   'intro.h': 'Laipni lūdzam Libell',
   'intro.how':
@@ -192,6 +193,7 @@ export const lv: Messages = {
   'counting.notSent':
     'Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Skaitīšanai tālrunī nekas netiek saglabāts.',
   'counting.gpc': 'Ja jūsu pārlūks lūdz vietnēm jūs neizsekot, Libell neko neskaita.',
+  'counting.later': 'To jebkurā laikā varat izslēgt sadaļā {help} › {tab}.',
   'counting.toggle': 'Anonīmi skaitīt manu lietošanu',
   'counting.dashboard': 'Skatīt statistiku',
   'onboard.sound.h': 'Skaņa',

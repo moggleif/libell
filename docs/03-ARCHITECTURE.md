@@ -468,8 +468,9 @@ with `fetch` (`no-cors`, `credentials: 'omit'`, `keepalive`, no referrer), and f
 failures: nothing is queued or retried. `allowed()` is asked on every send: only on
 `libell.app`, online, not in `?demo`, without Global Privacy Control or Do Not Track, and
 with the switch on (`src/data/countingStore.ts`; blocked storage reads as off). The
-introduction wizard's counting step (`src/ui/onboarding/countingStep.ts`) shows
-`countingSection.ts`.
+introduction wizard's counting step (`src/ui/onboarding/countingStep.ts`) and the
+Privacy tab (`privacyPanel.ts`, under the stored data) both show `countingSection.ts`;
+`countingStoredKeys()` puts the off switch in the stored-data catalogue (#678).
 
 ## UI
 

@@ -25,7 +25,7 @@ export interface UsageDeps {
 }
 
 /** Only the real app counts: not dev, not a preview, not `?demo`. */
-const COUNTED_HOST = 'libell.app';
+const COUNTED_ORIGIN = 'https://libell.app';
 
 let count: (path: string) => void = () => {};
 
@@ -53,7 +53,7 @@ export function browserUsageDeps(demo: boolean): UsageDeps {
   return {
     allowed: () =>
       !demo &&
-      location.hostname === COUNTED_HOST &&
+      location.origin === COUNTED_ORIGIN &&
       navigator.onLine &&
       !refusesTracking(navigator as Navigator & { globalPrivacyControl?: boolean }) &&
       isCountingOn(),

@@ -8,6 +8,6 @@ import { textClass, type WizardState } from './wizardState';
 export function countingStep(state: WizardState): Step {
   return {
     title: t('counting.title'),
-    build: () => [createCountingSection(state.options.counting, textClass(state))],
+    build: () => [createCountingSection(state.options.counting, 'guide', textClass(state))],
   };
 }

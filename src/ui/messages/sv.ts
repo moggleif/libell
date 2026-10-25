@@ -190,6 +190,7 @@ export const sv: Messages = {
   'stored.notes.detail': '{n} små markeringar, till exempel om introduktionen är visad',
   'stored.phone': 'Telefonen',
   'stored.saved': 'sparad',
+  'stored.counting.off': 'Avstängd',
   'stored.savedOn': 'sparad {date}',
 
   'intro.h': 'Välkommen till Libell',
@@ -211,6 +212,7 @@ export const sv: Messages = {
     'fordonets mått, dina inställningar eller något annat om dig. Inget sparas i telefonen för ' +
     'räkningen.',
   'counting.gpc': 'Om din webbläsare ber webbplatser att inte spåra dig räknar Libell ingenting.',
+  'counting.later': 'Du kan stänga av den när som helst under {help} › {tab}.',
   'counting.toggle': 'Räkna min användning anonymt',
   'counting.dashboard': 'Se statistiken',
   'onboard.sound.h': 'Ljud',

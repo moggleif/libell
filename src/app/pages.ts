@@ -2,6 +2,7 @@
  * The pages over the main screen: the first-run wizard, settings, the
  * sensor pages, the "?" page, and the navigation between them.
  */
+import { isCountingOn, setCountingOn } from '../data/countingStore';
 import { deleteAllStoredData, readStoredData } from '../data/storedData';
 import { pickVehicleGeometry } from '../domain/vehicleShare';
 import {
@@ -105,7 +106,11 @@ function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): 
     openOnboarding: onboarding.open,
     hasDoneOnboarding,
     openTarget: navigation.openHelpTarget,
-    storedData: { read: () => readStoredData(), deleteAll: deleteAllAndRestart },
+    storedData: {
+      read: () => readStoredData(),
+      deleteAll: deleteAllAndRestart,
+      counting: { isOn: () => isCountingOn(), setOn: (on) => setCountingOn(on) },
+    },
     onFeedbackSent: () => countFeature('feedback'),
   });
   document.body.append(infoPage.element);

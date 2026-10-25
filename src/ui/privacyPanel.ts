@@ -4,6 +4,7 @@
  * data" at the bottom, after one confirmation.
  */
 import { maskSecrets, type StoredEntry } from '../data/storedData';
+import { createCountingSection, type CountingChoice } from './countingSection';
 import { createElement } from './dom';
 import { t } from './i18n';
 import { storedRows } from './storedDataText';
@@ -14,6 +15,8 @@ export interface PrivacyPanelOptions {
   deleteAll(): void;
   /** "Reset only the settings": opens the place where that button is. */
   openSettings?(): void;
+  /** Anonymous counting's switch, shown under the stored data (#674). */
+  counting: CountingChoice;
 }
 
 export interface PrivacyPanel {
@@ -125,6 +128,18 @@ export function createPrivacyPanel(options: PrivacyPanelOptions): PrivacyPanel {
     textElement('h3', 'stored-data__heading', t('privacy.stored.h')),
     summary,
     raw.element,
+    textElement('h3', 'stored-data__heading', t('counting.title')),
+    // Switching off stores a key, so the list above reads the storage again.
+    createCountingSection(
+      {
+        isOn: options.counting.isOn,
+        setOn(on) {
+          options.counting.setOn(on);
+          refresh();
+        },
+      },
+      'privacy',
+    ),
   );
   const { openSettings } = options;
   if (openSettings) {

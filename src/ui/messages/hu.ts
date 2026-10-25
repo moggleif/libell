@@ -184,6 +184,7 @@ export const hu: Messages = {
   'stored.notes.detail': '{n} apró jelölés, például hogy a bemutató megjelent-e már',
   'stored.phone': 'A telefon',
   'stored.saved': 'tárolva',
+  'stored.counting.off': 'Kikapcsolva',
   'stored.savedOn': 'tárolva: {date}',
 
   'intro.h': 'Üdvözöl a Libell',
@@ -202,6 +203,7 @@ export const hu: Messages = {
   'counting.notSent':
     'Az IP-címedet, országodat, eszközödet, képernyődet, operációs rendszeredet vagy böngésződet, a jármű méreteit, a beállításaidat, sem semmi mást rólad. A számláláshoz semmi sem kerül a telefonra.',
   'counting.gpc': 'Ha a böngésződ kéri, hogy ne kövessenek, a Libell semmit sem számol.',
+  'counting.later': 'Bármikor kikapcsolhatod itt: {help} › {tab}.',
   'counting.toggle': 'Használatom névtelen számlálása',
   'counting.dashboard': 'Statisztika megtekintése',
   'onboard.sound.h': 'Hang',

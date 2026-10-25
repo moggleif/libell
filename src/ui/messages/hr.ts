@@ -181,6 +181,7 @@ export const hr: Messages = {
   'stored.notes.detail': 'Sitne oznake: {n}, npr. je li uvod prikazan',
   'stored.phone': 'Telefon',
   'stored.saved': 'spremljeno',
+  'stored.counting.off': 'Isključeno',
   'stored.savedOn': 'spremljeno {date}',
 
   'intro.h': 'Dobro došli u Libell',
@@ -199,6 +200,7 @@ export const hr: Messages = {
   'counting.notSent':
     'Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Za brojanje se ništa ne sprema na telefon.',
   'counting.gpc': 'Ako vaš preglednik traži od web-mjesta da vas ne prate, Libell ne broji ništa.',
+  'counting.later': 'Možete ga isključiti bilo kada u {help} › {tab}.',
   'counting.toggle': 'Anonimno brojanje mog korištenja',
   'counting.dashboard': 'Pogledajte statistiku',
   'onboard.sound.h': 'Zvuk',

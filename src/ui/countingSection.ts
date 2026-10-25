@@ -1,7 +1,7 @@
 /**
  * Anonymous counting, said plainly (#674): what is counted, what never is,
  * the on/off switch and the public statistics. The introduction wizard
- * shows it as a step of its own.
+ * shows it as a step of its own, and the Privacy tab under its stored data.
  */
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
@@ -59,8 +59,17 @@ function joined(className: string, ...parts: (string | Element)[]): HTMLParagrap
   return p;
 }
 
+/** The guide says where the switch lives later; the Privacy tab, which is
+ * that place, says what a browser privacy signal does instead. Kept to one
+ * sentence each, so the guide step fits a small phone whole. */
+function closingSentence(place: 'guide' | 'privacy'): string {
+  if (place === 'privacy') return t('counting.gpc');
+  return t('counting.later', { help: t('bottombar.help'), tab: t('menu.privacy.tab') });
+}
+
 export function createCountingSection(
   choice: CountingChoice,
+  place: 'guide' | 'privacy',
   textClass = 'menu__text',
 ): HTMLElement {
   const body = document.createElement('div');
@@ -69,7 +78,7 @@ export function createCountingSection(
     heading('counting.sent.h'),
     paragraph(textClass, 'counting.sent', boxNames()),
     heading('counting.notSent.h'),
-    joined(textClass, t('counting.notSent'), t('counting.gpc')),
+    joined(textClass, t('counting.notSent'), closingSentence(place)),
     toggle(choice),
   );
   return body;

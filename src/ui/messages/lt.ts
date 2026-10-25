@@ -186,6 +186,7 @@ export const lt: Messages = {
   'stored.notes.detail': 'Smulkios žymos: {n}, pvz., ar įvadas jau parodytas',
   'stored.phone': 'Telefonas',
   'stored.saved': 'išsaugota',
+  'stored.counting.off': 'Išjungtas',
   'stored.savedOn': 'išsaugota {date}',
 
   'intro.h': 'Sveiki atvykę į Libell',
@@ -204,6 +205,7 @@ export const lt: Messages = {
   'counting.notSent':
     'Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Skaičiavimui telefone nieko nesaugoma.',
   'counting.gpc': 'Jei jūsų naršyklė prašo svetainių jūsų nesekti, Libell nieko neskaičiuoja.',
+  'counting.later': 'Bet kada galite jį išjungti: {help} › {tab}.',
   'counting.toggle': 'Anonimiškai skaičiuoti mano naudojimą',
   'counting.dashboard': 'Peržiūrėti statistiką',
   'onboard.sound.h': 'Garsas',

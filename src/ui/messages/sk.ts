@@ -169,6 +169,7 @@ export const sk: Messages = {
   'stored.notes.detail': 'Drobné značky: {n}, napr. či bol zobrazený úvod',
   'stored.phone': 'Telefón',
   'stored.saved': 'uložené',
+  'stored.counting.off': 'Vypnuté',
   'stored.savedOn': 'uložené {date}',
   'intro.h': 'Vitajte v Libell',
   'intro.how':
@@ -186,6 +187,7 @@ export const sk: Messages = {
   'counting.notSent':
     'Vaša IP adresa, krajina, zariadenie, obrazovka, operačný systém ani prehliadač, rozmery vozidla, vaše nastavenia ani nič iné o vás. Kvôli počítaniu sa do telefónu nič neukladá.',
   'counting.gpc': 'Ak váš prehliadač žiada weby, aby vás nesledovali, Libell nepočíta nič.',
+  'counting.later': 'Kedykoľvek ho môžete vypnúť v {help} › {tab}.',
   'counting.toggle': 'Anonymne počítať moje používanie',
   'counting.dashboard': 'Zobraziť štatistiky',
   'onboard.sound.h': 'Zvuk',
