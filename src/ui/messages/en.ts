@@ -166,8 +166,8 @@ export const en = {
   'about.offline':
     'Works fully offline — the network is only used to fetch updates of the app itself.',
   'about.privacy':
-    'Everything stays on your phone — no account, no tracking, and no data ' +
-    'ever leaves the device.',
+    'Your settings stay on your phone — no account and no tracking. The only thing ' +
+    'Libell sends is anonymous counts of how the app is used, which you can turn off.',
   'about.source': 'Libell is free and open source (MIT license).',
   'about.source.link': 'Source code on GitHub',
   'menu.privacy': 'Privacy',
@@ -199,6 +199,7 @@ export const en = {
   'stored.notes.detail': '{n} small marks, such as whether the introduction has been shown',
   'stored.phone': 'The phone',
   'stored.saved': 'saved',
+  'stored.counting.off': 'Switched off',
   'stored.savedOn': 'saved {date}',
 
   // The very first thing a new user sees, before any question.
@@ -210,6 +211,22 @@ export const en = {
   // The box is not in Settings, so this says where it is.
   'onboard.source.sensorIcon':
     'A sensor box can be connected any time with the sensor icon at the top right.',
+  // Anonymous counting (#674): its own wizard step.
+  'counting.title': 'Anonymous counting',
+  'counting.intro': 'Libell counts use anonymously, so we know what to improve.',
+  'counting.sent.h': 'What is counted',
+  'counting.sent':
+    'That the app was opened, which features are used, which sensor measures ' +
+    '(the phone or a model such as {boxes}), the app version and the language chosen in Libell.',
+  'counting.notSent.h': 'What is never saved',
+  'counting.notSent':
+    'Your IP address, country, device, screen, operating system or browser, your ' +
+    'vehicle’s measurements, your settings, or anything else about you. Nothing is stored on your ' +
+    'phone for the counting.',
+  'counting.gpc': 'If your browser asks websites not to track you, Libell counts nothing.',
+  'counting.later': 'You can switch it off any time under {help} › {tab}.',
+  'counting.toggle': 'Count my use anonymously',
+  'counting.dashboard': 'See the statistics',
   // Heads the wizard step holding the chime and the audio guidance.
   'onboard.sound.h': 'Sound',
   // The wizard's source step; the box radio is labelled 'menu.sensorSource'.

@@ -155,8 +155,7 @@ export const fr: Messages = {
     'Fonctionne entièrement hors ligne — le réseau ne sert qu’à télécharger les mises ' +
     'à jour de l’application elle-même.',
   'about.privacy':
-    'Tout reste sur votre téléphone — pas de compte, pas de suivi, et aucune donnée ne ' +
-    'quitte l’appareil.',
+    'Vos réglages restent sur votre téléphone — pas de compte et pas de suivi. Libell n’envoie que des comptages anonymes de l’utilisation de l’app, et vous pouvez les désactiver.',
   'about.source': 'Libell est gratuit et open source (licence MIT).',
   'about.source.link': 'Code source sur GitHub',
   'menu.privacy': 'Confidentialité',
@@ -188,6 +187,7 @@ export const fr: Messages = {
   'stored.notes.detail': '{n} petites marques, par exemple si l’introduction a été vue',
   'stored.phone': 'Le téléphone',
   'stored.saved': 'enregistré',
+  'stored.counting.off': 'Désactivé',
   'stored.savedOn': 'enregistré le {date}',
 
   'intro.h': 'Bienvenue dans Libell',
@@ -197,6 +197,19 @@ export const fr: Messages = {
   'intro.later': 'Explorer d’abord',
   'onboard.source.sensorIcon':
     'Un boîtier capteur se connecte à tout moment avec l’icône du capteur en haut à droite.',
+  'counting.title': 'Comptage anonyme',
+  'counting.intro': 'Libell compte l’utilisation de façon anonyme, pour savoir quoi améliorer.',
+  'counting.sent.h': 'Ce qui est compté',
+  'counting.sent':
+    'Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme {boxes}), la version de l’app et la langue choisie dans Libell.',
+  'counting.notSent.h': 'Ce qui n’est jamais enregistré',
+  'counting.notSent':
+    'Votre adresse IP, votre pays, appareil, écran, système d’exploitation ou navigateur, les mesures du véhicule, vos réglages, ni rien d’autre sur vous. Rien n’est enregistré sur le téléphone pour le comptage.',
+  'counting.gpc':
+    'Si votre navigateur demande aux sites de ne pas vous suivre, Libell ne compte rien.',
+  'counting.later': 'Vous pouvez le désactiver à tout moment dans {help} › {tab}.',
+  'counting.toggle': 'Compter mon utilisation anonymement',
+  'counting.dashboard': 'Voir les statistiques',
   'onboard.sound.h': 'Son',
   'onboard.source.h': 'Comment voulez-vous mesurer ?',
   'onboard.source.intro':

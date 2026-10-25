@@ -142,7 +142,7 @@ export const pt: Messages = {
   'about.offline':
     'Funciona totalmente offline — a rede só é usada para obter atualizações da própria app.',
   'about.privacy':
-    'Tudo fica no seu telemóvel — sem conta, sem rastreio, e nenhum dado sai do dispositivo.',
+    'As suas definições ficam no telemóvel — sem conta e sem rastreio. O Libell só envia contagens anónimas de como a app é usada, e pode desativar isso.',
   'about.source': 'O Libell é gratuito e de código aberto (licença MIT).',
   'about.source.link': 'Código no GitHub',
   'menu.privacy': 'Privacidade',
@@ -174,6 +174,7 @@ export const pt: Messages = {
   'stored.notes.detail': '{n} pequenas marcas, por exemplo se a introdução já foi vista',
   'stored.phone': 'O telemóvel',
   'stored.saved': 'guardado',
+  'stored.counting.off': 'Desativada',
   'stored.savedOn': 'guardado a {date}',
 
   'intro.h': 'Bem-vindo ao Libell',
@@ -183,6 +184,18 @@ export const pt: Messages = {
   'intro.later': 'Explorar primeiro',
   'onboard.source.sensorIcon':
     'Pode ligar uma caixa de sensor a qualquer momento com o ícone do sensor no canto superior direito.',
+  'counting.title': 'Contagem anónima',
+  'counting.intro': 'O Libell conta o uso anonimamente, para sabermos o que melhorar.',
+  'counting.sent.h': 'O que é contado',
+  'counting.sent':
+    'Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como {boxes}), a versão da app e o idioma escolhido no Libell.',
+  'counting.notSent.h': 'O que nunca é guardado',
+  'counting.notSent':
+    'O seu IP, país, dispositivo, ecrã, sistema operativo, navegador, as medidas do veículo, as suas definições ou qualquer outra coisa sobre si. Nada fica guardado no telemóvel para isto.',
+  'counting.gpc': 'Se o seu navegador pedir aos sites que não o sigam, o Libell não conta nada.',
+  'counting.later': 'Pode desativá-la quando quiser em {help} › {tab}.',
+  'counting.toggle': 'Contar a minha utilização de forma anónima',
+  'counting.dashboard': 'Ver as estatísticas',
   'onboard.sound.h': 'Som',
   'onboard.source.h': 'Como quer medir?',
   'onboard.source.intro':

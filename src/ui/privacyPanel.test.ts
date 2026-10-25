@@ -19,6 +19,8 @@ const language: StoredEntry = {
   session: false,
 };
 
+const counting = { isOn: () => true, setOn: () => {} };
+
 function buttonNamed(panel: HTMLElement, label: string): HTMLButtonElement | undefined {
   return [...panel.querySelectorAll<HTMLButtonElement>('button')].find(
     (b) => b.textContent === label && !b.closest('[hidden]') && !b.hidden,
@@ -28,7 +30,7 @@ function buttonNamed(panel: HTMLElement, label: string): HTMLButtonElement | und
 describe('createPrivacyPanel (#678)', () => {
   it('lists what is stored in plain words, and says so when nothing is', () => {
     const entries = [settings];
-    const panel = createPrivacyPanel({ read: () => entries, deleteAll: vi.fn() });
+    const panel = createPrivacyPanel({ counting, read: () => entries, deleteAll: vi.fn() });
     expect(panel.element.querySelector('.stored-data__list')?.textContent).toContain(
       t('stored.settings'),
     );
@@ -38,7 +40,11 @@ describe('createPrivacyPanel (#678)', () => {
   });
 
   it('shows the raw keys and values by key, with the password masked everywhere', () => {
-    const panel = createPrivacyPanel({ read: () => [settings, language], deleteAll: vi.fn() });
+    const panel = createPrivacyPanel({
+      counting,
+      read: () => [settings, language],
+      deleteAll: vi.fn(),
+    });
     const keys = [...panel.element.querySelectorAll('.stored-data__raw-key')].map(
       (k) => k.textContent,
     );
@@ -49,7 +55,7 @@ describe('createPrivacyPanel (#678)', () => {
 
   it('deletes only after "Yes", and Cancel removes nothing', () => {
     const deleteAll = vi.fn();
-    const panel = createPrivacyPanel({ read: () => [settings], deleteAll });
+    const panel = createPrivacyPanel({ counting, read: () => [settings], deleteAll });
     buttonNamed(panel.element, t('privacy.deleteAll'))!.click();
     expect(deleteAll).not.toHaveBeenCalled();
     expect(panel.element.textContent).toContain(t('privacy.deleteAll.confirm'));
@@ -64,7 +70,7 @@ describe('createPrivacyPanel (#678)', () => {
   });
 
   it('folds an open question away when it is shown again', () => {
-    const panel = createPrivacyPanel({ read: () => [], deleteAll: vi.fn() });
+    const panel = createPrivacyPanel({ counting, read: () => [], deleteAll: vi.fn() });
     buttonNamed(panel.element, t('privacy.deleteAll'))!.click();
     panel.refresh();
     expect(buttonNamed(panel.element, t('privacy.deleteAll'))).toBeDefined();
@@ -72,11 +78,42 @@ describe('createPrivacyPanel (#678)', () => {
   });
 
   it('offers "Reset only the settings" only where it can open them', () => {
-    const without = createPrivacyPanel({ read: () => [], deleteAll: vi.fn() });
+    const without = createPrivacyPanel({ counting, read: () => [], deleteAll: vi.fn() });
     expect(buttonNamed(without.element, t('privacy.resetSettings'))).toBeUndefined();
     const openSettings = vi.fn();
-    const withIt = createPrivacyPanel({ read: () => [], deleteAll: vi.fn(), openSettings });
+    const withIt = createPrivacyPanel({
+      counting,
+      read: () => [],
+      deleteAll: vi.fn(),
+      openSettings,
+    });
     buttonNamed(withIt.element, t('privacy.resetSettings'))!.click();
     expect(openSettings).toHaveBeenCalledOnce();
+  });
+});
+
+describe('the Privacy tab’s counting block (#674)', () => {
+  it('shows the counting switch and lists "switched off" once it is off', () => {
+    const stored = { on: true };
+    const entries: StoredEntry[] = [];
+    const panel = createPrivacyPanel({
+      read: () => entries,
+      deleteAll: vi.fn(),
+      counting: {
+        isOn: () => stored.on,
+        setOn(on) {
+          stored.on = on;
+          entries.push({ key: 'libell.countingOff', kind: 'counting', value: '1', session: false });
+        },
+      },
+    });
+    expect(panel.element.textContent).toContain(t('counting.notSent'));
+    expect(panel.element.textContent).toContain(t('counting.gpc'));
+    const box = panel.element.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+    expect(box.checked).toBe(true);
+    box.checked = false;
+    box.dispatchEvent(new Event('change'));
+    expect(stored.on).toBe(false);
+    expect(panel.element.textContent).toContain(t('stored.counting.off'));
   });
 });

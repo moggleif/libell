@@ -1723,7 +1723,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'about.privacy': ctx(
     'text',
     'Help › About tab: privacy paragraph.',
-    'No account, no tracking, no data leaves the phone.',
+    'Settings stay on the phone, no account, no tracking; only anonymous usage counts are sent, and they can be turned off (#674).',
   ),
   'menu.privacy': ctx(
     'label',
@@ -1865,6 +1865,11 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Help › Privacy tab › list: when a value was saved, date unknown.',
     'Says the value is saved, for one saved before dates were kept.',
   ),
+  'stored.counting.off': ctx(
+    'card',
+    'Help › Privacy tab › list: the value next to "Anonymous counting".',
+    'Says anonymous counting has been switched off (the only state that stores anything).',
+  ),
   'stored.savedOn': ctx(
     'card',
     'Help › Privacy tab › list: when a value was saved.',
@@ -1904,6 +1909,56 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'text',
     'Introduction wizard › source step: second paragraph, under the step intro.',
     'Points to the sensor icon at the top right for connecting a Sensorbox (external Bluetooth box) later.',
+  ),
+  'counting.title': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: the step title.',
+    'Names the anonymous usage counting the step explains and lets the user switch off.',
+  ),
+  'counting.intro': ctx(
+    'text',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: first paragraph.',
+    'Says Libell counts app use anonymously, and why; the details follow under the two headings.',
+  ),
+  'counting.sent.h': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: heading over the list of what is counted.',
+    'Introduces exactly what the counting sends.',
+  ),
+  'counting.sent': ctx(
+    'text',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: under "What is counted".',
+    'Lists everything that is counted: app opened, features used, sensor model, app version, language chosen in the app.',
+  ),
+  'counting.notSent.h': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: heading over the list of what is never saved.',
+    'Introduces what the counting never keeps.',
+  ),
+  'counting.notSent': ctx(
+    'text',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: under "What is never saved".',
+    'Lists what is never saved (IP, country, device, screen, OS, browser, measurements, settings, anything personal) and that nothing is stored on the phone for it.',
+  ),
+  'counting.gpc': ctx(
+    'line',
+    'Help › Privacy tab › counting block: last sentence of the "What is never saved" paragraph.',
+    'Says a browser privacy signal (Global Privacy Control / Do Not Track) turns counting off.',
+  ),
+  'counting.later': ctx(
+    'line',
+    'Introduction wizard › anonymous counting step: last sentence of the "What is never saved" paragraph. {help} is the Help page name, {tab} its Privacy tab.',
+    'Says where the counting switch can be found later: Help › Privacy.',
+  ),
+  'counting.toggle': ctx(
+    'label',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: checkbox caption.',
+    'Turns the anonymous counting on or off; on from the start.',
+  ),
+  'counting.dashboard': ctx(
+    'button',
+    'Introduction wizard › anonymous counting step, and Help › Privacy tab’s counting block: link at the end of the first paragraph.',
+    'Opens the public statistics page in a new tab, so anyone can see what is counted.',
   ),
   'onboard.sound.h': ctx(
     'label',

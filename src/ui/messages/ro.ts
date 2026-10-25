@@ -155,8 +155,7 @@ export const ro: Messages = {
   'about.offline':
     'Funcționează complet offline — rețeaua este folosită doar pentru actualizările aplicației.',
   'about.privacy':
-    'Totul rămâne pe telefon — fără cont, fără urmărire, iar datele nu ' +
-    'părăsesc niciodată dispozitivul.',
+    'Setările dvs. rămân pe telefon — fără cont și fără urmărire. Libell trimite doar numere anonime despre cum este folosită aplicația, iar asta puteți dezactiva.',
   'about.source': 'Libell este gratuit și open source (licență MIT).',
   'about.source.link': 'Codul sursă pe GitHub',
   'menu.privacy': 'Confidențialitate',
@@ -188,6 +187,7 @@ export const ro: Messages = {
   'stored.notes.detail': '{n} mici marcaje, de exemplu dacă introducerea a fost afișată',
   'stored.phone': 'Telefonul',
   'stored.saved': 'salvat',
+  'stored.counting.off': 'Dezactivată',
   'stored.savedOn': 'salvat pe {date}',
 
   'intro.h': 'Bun venit în Libell',
@@ -197,6 +197,19 @@ export const ro: Messages = {
   'intro.later': 'Mai întâi explorez',
   'onboard.source.sensorIcon':
     'Un modul senzor poate fi conectat oricând cu pictograma senzorului din dreapta sus.',
+  'counting.title': 'Numărare anonimă',
+  'counting.intro': 'Libell numără anonim utilizarea, ca să știm ce să îmbunătățim.',
+  'counting.sent.h': 'Ce se numără',
+  'counting.sent':
+    'Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum {boxes}), versiunea aplicației și limba aleasă în Libell.',
+  'counting.notSent.h': 'Ce nu se salvează niciodată',
+  'counting.notSent':
+    'Adresa dvs. IP, țara, dispozitivul, ecranul, sistemul de operare sau browserul, dimensiunile vehiculului, setările dvs. sau orice altceva despre dvs. Pentru numărare nu se salvează nimic pe telefon.',
+  'counting.gpc':
+    'Dacă browserul dvs. cere site-urilor să nu vă urmărească, Libell nu numără nimic.',
+  'counting.later': 'O puteți dezactiva oricând din {help} › {tab}.',
+  'counting.toggle': 'Numărarea anonimă a utilizării mele',
+  'counting.dashboard': 'Vedeți statisticile',
   'onboard.sound.h': 'Sunet',
   'onboard.source.h': 'Cum doriți să măsurați?',
   'onboard.source.intro':

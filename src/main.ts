@@ -1,7 +1,7 @@
 import './ui/styles.css';
 import { hasSeenOnboarding, loadLanguage, markMeasurementsSaved } from './data/settingsStore';
 import { isSensorSupported, needsPermissionGesture } from './sensor/orientation';
-import { resolveLanguage, setLanguage } from './ui/i18n';
+import { getLanguage, resolveLanguage, setLanguage } from './ui/i18n';
 import { createInstallOffer, type InstallOffer } from './ui/install';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
@@ -16,6 +16,7 @@ import { mountPages, type Pages } from './app/pages';
 import { startSensors } from './app/sensorStartup';
 import { runStartupMigrations } from './app/startupMigrations';
 import { setupTopBar, type TopBar } from './app/topBar';
+import { browserUsageDeps, countAppStart, countFeature, startUsageCounting } from './app/usage';
 
 /**
  * Only creates the app's modules and connects them; behaviour lives in
@@ -36,6 +37,12 @@ function bootstrap(root: HTMLElement, topBar: TopBar, install: InstallOffer): vo
   const pendingSetupCode = takePendingVehicleSetupCode();
   const screen = {} as Screen;
   const core = createCore(screen);
+  startUsageCounting(browserUsageDeps(core.demo));
+  countAppStart({
+    version: __APP_VERSION__,
+    language: getLanguage(),
+    settings: core.settings.get(),
+  });
   const pages = mountPages(core, screen, install);
   mountMainScreen(root, core, pages, screen, topBar);
   start(root, core, pages, screen, pendingSetupCode);
@@ -53,6 +60,7 @@ function start(
     settings: core.settings,
     markMeasurementsSaved,
     onApplied() {
+      countFeature('share-received');
       screen.lamps.refresh();
       screen.levelScreen.rebuildIfChanged();
     },

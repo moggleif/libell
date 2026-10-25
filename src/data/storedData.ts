@@ -4,6 +4,7 @@
  * key must be listed by its store, or `storedData.test.ts` fails.
  */
 import { calibrationStoredKeys } from './calibrationStore';
+import { countingStoredKeys } from './countingStore';
 import { guarded, type KeyValueStorage } from './keyValueStorage';
 import { sensorDeviceStoredKeys } from './sensorDeviceStore';
 import { sessionStoredKeys } from './sessionKeys';
@@ -30,6 +31,7 @@ export function storedKeyCatalogue(): StoredKey[] {
     ...calibrationStoredKeys(),
     ...sensorDeviceStoredKeys(),
     ...sessionStoredKeys(),
+    ...countingStoredKeys(),
   ];
 }
 

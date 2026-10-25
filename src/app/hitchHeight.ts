@@ -8,6 +8,7 @@ import type { Calibration } from '../domain/calibration';
 import { hitchCalibration, hitchPitchFromReading } from '../domain/hitchHeight';
 import { loadHitchPitch, saveHitchPitch } from '../data/settingsStore';
 import type { KeyValueStorage } from '../data/keyValueStorage';
+import { countFeature } from './usage';
 
 export interface HitchHeightDeps {
   /** The active sensor's tilt now, or the message to show instead. */
@@ -50,6 +51,7 @@ export function createHitchHeight(deps: HitchHeightDeps): HitchHeight {
   return {
     savedPitch: () => saved,
     save() {
+      countFeature('hitch-height');
       const reading = deps.readTilt();
       if (typeof reading === 'string') return reading;
       saved = hitchPitchFromReading(reading, deps.zeroCalibration());
@@ -59,6 +61,7 @@ export function createHitchHeight(deps: HitchHeightDeps): HitchHeight {
     },
     isActive,
     start() {
+      countFeature('hitch-height');
       going = saved !== null;
       deps.onChanged();
     },

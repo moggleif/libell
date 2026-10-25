@@ -149,8 +149,7 @@ export const ca: Messages = {
   'about.offline':
     'Funciona completament sense connexió — la xarxa només s’utilitza per baixar actualitzacions de la mateixa app.',
   'about.privacy':
-    'Tot es queda al mòbil — sense compte, sense seguiment, i cap dada no surt mai ' +
-    'del dispositiu.',
+    'La teva configuració es queda al mòbil — sense compte i sense seguiment. L’únic que envia Libell són recomptes anònims de com es fa servir l’app, i ho pots desactivar.',
   'about.source': 'Libell és lliure i de codi obert (llicència MIT).',
   'about.source.link': 'Codi font a GitHub',
   'menu.privacy': 'Privadesa',
@@ -182,6 +181,7 @@ export const ca: Messages = {
   'stored.notes.detail': '{n} marques petites, per exemple si ja s’ha vist la introducció',
   'stored.phone': 'El mòbil',
   'stored.saved': 'desat',
+  'stored.counting.off': 'Desactivat',
   'stored.savedOn': 'desat el {date}',
 
   'intro.h': 'Benvinguda a Libell',
@@ -191,6 +191,19 @@ export const ca: Messages = {
   'intro.later': 'Fes una ullada primer',
   'onboard.source.sensorIcon':
     'Pots connectar una caixa sensora quan vulguis amb la icona del sensor a dalt a la dreta.',
+  'counting.title': 'Recompte anònim',
+  'counting.intro': 'Libell compta l’ús de manera anònima, per saber què cal millorar.',
+  'counting.sent.h': 'Què es compta',
+  'counting.sent':
+    'Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com {boxes}), la versió de l’app i l’idioma triat a Libell.',
+  'counting.notSent.h': 'Què no es desa mai',
+  'counting.notSent':
+    'La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. No es desa res al mòbil per al recompte.',
+  'counting.gpc':
+    'Si el teu navegador demana als llocs web que no et rastregin, Libell no compta res.',
+  'counting.later': 'El pots desactivar quan vulguis a {help} › {tab}.',
+  'counting.toggle': 'Compta el meu ús de manera anònima',
+  'counting.dashboard': 'Mira les estadístiques',
   'onboard.sound.h': 'So',
   'onboard.source.h': 'Com vols mesurar?',
   'onboard.source.intro':

@@ -38,5 +38,6 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0017 | [Several vehicles: only the active one lives in the app's keys](0017-several-vehicles-swap-the-active-one.md)                 |
 | 0018 | [A stepless wedge is a ramp with one height per wheel: the lift itself](0018-stepless-wedge-is-one-height-per-wheel.md)       |
 | 0019 | [An adjustable kloss is told by its model, and "driven up" by a falling lift](0019-adjustable-kloss-told-by-its-model.md)     |
+| 0021 | [Anonymous usage counting with GoatCounter, on by default, one origin](0021-anonymous-usage-counting.md)                      |
 | 0020 | [Libell is served from the root of its own domain, libell.app](0020-own-domain-at-the-root.md)                                |
 | 0021 | [Dependabot's patch and minor updates merge themselves on green CI](0021-dependabot-patch-and-minor-merge-themselves.md)      |

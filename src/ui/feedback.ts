@@ -20,7 +20,7 @@ const MAX_DESCRIPTION = 2000;
 
 type Category = (typeof CATEGORIES)[number];
 
-export function createFeedbackSection(): HTMLElement {
+export function createFeedbackSection(onSent: () => void = () => {}): HTMLElement {
   const intro = createElement('p', 'menu__text');
   intro.textContent = t('feedback.intro');
   const form = createElement('form', 'settings__form');
@@ -42,6 +42,7 @@ export function createFeedbackSection(): HTMLElement {
       '_blank',
       'noopener',
     );
+    onSent();
   });
   form.append(categoryRow, title.field, description.field, warning, submit);
   const body = document.createElement('div');

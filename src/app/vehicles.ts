@@ -15,6 +15,7 @@ import {
   saveVehicleList,
 } from '../data/vehicleStore';
 import { hasStoredMeasurements, loadSettings, measuredVehicleFlags } from '../data/settingsStore';
+import { countFeature } from './usage';
 
 export interface VehiclesDeps {
   /** Starts the app again on the vehicle just made active. */
@@ -61,7 +62,9 @@ export function createVehicles(deps: VehiclesDeps): Vehicles {
     switchTo(id) {
       const list = load();
       const next = list.vehicles.find((vehicle) => vehicle.id === id);
-      if (next && id !== list.activeId) activate(list, next);
+      if (!next || id === list.activeId) return;
+      countFeature('switch-vehicle');
+      activate(list, next);
     },
     add(name, geometry) {
       const list = load();

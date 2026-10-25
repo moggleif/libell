@@ -2325,3 +2325,43 @@ data).
 - **Given** a new `libell.` key anywhere in the source
 - **When** the tests run
 - **Then** they fail until its store lists it (`src/data/storedData.test.ts`).
+
+## R59 — Anonymous usage counting, said plainly and easy to switch off (#674)
+
+Libell counts how many use it and which features, to know what to improve, without
+tracking anyone (ADR 0021). R58 is the stored-data view (#678).
+
+- **Given** counting is on and the phone is online on libell.app
+- **When** the app opens
+- **Then** it sends GoatCounter one event each for: the app opened, the app version, the
+  language chosen in Libell and the sensor model chosen (the phone, Xparkle RVS01 or
+  EasyLevel), plus Continuous audio guidance (R30) and Spoken guidance (R54) when they
+  are on. No cookie or stored identifier is created for it.
+- **When** I use a feature: zero the vehicle (R24, R34), calibrate the phone, switch to a
+  saved target (R31), save or go back to the hitch height (R55), switch vehicle (R56),
+  create or receive a share link (R41), switch to another sensor, finish the introduction,
+  or send feedback
+- **Then** that feature's event is sent, at most once per app start.
+- **Then** nothing else is ever sent: no country, region, screen, device, operating
+  system, browser, firmware, device id, readings, measurements or settings
+  (`src/domain/usage.ts` holds every name that may be sent).
+- **Given** counting is switched off, or the browser sends Global Privacy Control or Do
+  Not Track
+- **Then** no request is made to the counter at all.
+- **Given** the phone is offline or the counter cannot be reached
+- **Then** the app works exactly as before, and nothing is kept or retried later.
+- **Given** a first-time user in the introduction (R12)
+- **When** they reach the step after Sound
+- **Then** a step of its own, "Anonymous counting" ("Anonym räkning"), says what is
+  counted, what is never saved and where to switch it off later (Help › Privacy), with
+  the switch (on from the start) and a link to the public statistics, in every shipped
+  language. A change takes effect at once, and the step has nothing to skip. It fits a
+  small phone whole (R45).
+- **Given** the Privacy tab (R58)
+- **Then** under the stored data it shows the same block, with "a browser privacy
+  signal turns it off" in place of where to find it, and the same switch. Switched off,
+  the stored-data list shows "Anonymous counting: Switched off".
+- **Given** "Reset all settings"
+- **Then** the counting choice is kept: it is stored on its own (`libell.countingOff`).
+- **Given** dev, a preview build or `?demo`
+- **Then** nothing is counted.

@@ -4,12 +4,14 @@
  * skipped.
  */
 import type { LevelSettings, SensorSource } from '../domain/settings';
+import { isCountingOn, setCountingOn } from '../data/countingStore';
 import type { InstallOffer } from '../ui/install';
 import type { IntroOptions } from '../ui/intro';
 import type { OnboardingOptions } from '../ui/onboarding';
 import type { BoxPending } from './indicatorWiring';
 import type { MenuOptionDeps } from './menuOptionParts';
 import { sharedOptions } from './menuOptions';
+import { countFeature } from './usage';
 
 export interface OnboardingLauncherDeps {
   show(options: OnboardingOptions): void;
@@ -45,10 +47,12 @@ export function createOnboardingLauncher(deps: OnboardingLauncherDeps): Onboardi
       onSettingsSaved: (next) => deps.onSettingsSaved(next),
       ...sharedOptions(deps.parts),
       sensorOptionsFor: deps.sensorOptionsFor,
+      counting: { isOn: () => isCountingOn(), setOn: (on) => setCountingOn(on) },
       onFinished(done, path) {
         open = false;
         deps.progress.markSeen();
         if (done) deps.progress.markDone();
+        if (done) countFeature('guide-done');
         // A box chosen but not connected: see `createBoxPending`.
         if (done) deps.boxPending.settle(path === 'external' && deps.activeSource() === 'phone');
         deps.refreshLamps();

@@ -140,7 +140,7 @@ export const it: Messages = {
   'about.offline':
     'Funziona completamente offline — la rete serve solo a scaricare gli aggiornamenti dell’app stessa.',
   'about.privacy':
-    'Tutto resta sul tuo telefono — nessun account, nessun tracciamento e nessun dato lascia mai il dispositivo.',
+    'Le tue impostazioni restano sul telefono — nessun account e nessun tracciamento. Libell invia solo conteggi anonimi di come si usa l’app, e puoi disattivarli.',
   'about.source': 'Libell è gratuito e open source (licenza MIT).',
   'about.source.link': 'Sorgente su GitHub',
   'menu.privacy': 'Privacy',
@@ -172,6 +172,7 @@ export const it: Messages = {
   'stored.notes.detail': '{n} piccoli segni, ad esempio se l’introduzione è stata vista',
   'stored.phone': 'Il telefono',
   'stored.saved': 'salvato',
+  'stored.counting.off': 'Disattivato',
   'stored.savedOn': 'salvato il {date}',
   'intro.h': 'Benvenuto in Libell',
   'intro.how':
@@ -180,6 +181,18 @@ export const it: Messages = {
   'intro.later': 'Prima dai un’occhiata',
   'onboard.source.sensorIcon':
     'Puoi collegare un box sensore in qualsiasi momento con l’icona del sensore in alto a destra.',
+  'counting.title': 'Conteggio anonimo',
+  'counting.intro': 'Libell conta l’uso in modo anonimo, per sapere cosa migliorare.',
+  'counting.sent.h': 'Cosa viene contato',
+  'counting.sent':
+    'Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come {boxes}), la versione dell’app e la lingua scelta in Libell.',
+  'counting.notSent.h': 'Cosa non viene mai salvato',
+  'counting.notSent':
+    'Il tuo indirizzo IP, paese, dispositivo, schermo, sistema operativo o browser, le misure del veicolo, le tue impostazioni, né altro su di te. Per il conteggio non viene salvato nulla sul telefono.',
+  'counting.gpc': 'Se il tuo browser chiede ai siti di non tracciarti, Libell non conta nulla.',
+  'counting.later': 'Puoi disattivarlo quando vuoi in {help} › {tab}.',
+  'counting.toggle': 'Conta il mio uso in modo anonimo',
+  'counting.dashboard': 'Vedi le statistiche',
   'onboard.sound.h': 'Audio',
   'onboard.source.h': 'Come vuoi misurare?',
   'onboard.source.intro':

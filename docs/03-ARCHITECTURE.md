@@ -31,7 +31,8 @@ src/
 │                  # (the level screen), sound.ts (chime, guidance pulse, mute),
 │                  # topBar.ts, frameGuard.ts, startupMigrations.ts, incomingSetup.ts,
 │                  # sensorStartup.ts (start-up), appSettings.ts (the app's one copy
-│                  # of the settings), sensorStaleness.ts (when a source is stale)
+│                  # of the settings), sensorStaleness.ts (when a source is stale),
+│                  # usage.ts (anonymous counting, ADR 0021)
 ├── domain/        # PURE TypeScript (no browser APIs) — unit-testable, among them:
 │   ├── leveling.ts   # computeLeveling(gravity, settings, calibration) -> LevelingResult
 │   ├── caravan.ts    # the caravan's axle + jockey-wheel math (ADR 0008)
@@ -41,13 +42,15 @@ src/
 │   ├── stability.ts  # display hysteresis: values change only past a dead band
 │   ├── calibration.ts, targetPresets.ts  # the three calibration terms (ADR 0010/0013/0014)
 │   ├── pose.ts, stillness.ts, staleness.ts  # when a reading can be trusted
+│   ├── usage.ts      # the only names anonymous counting may send (ADR 0021)
 │   ├── settings.ts   # LevelSettings and DEFAULT_SETTINGS; settingsParsing.ts reads a
 │   │                 # stored blob back (validation, legacy migrations)
 │   └── sensorDeviceSettings.ts  # typed per-box settings inside sensorDevices
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
 │                  # remembered device id, #130), vehicleStore.ts (the waiting
-│                  # vehicles, #599) — localStorage read/write, on the
+│                  # vehicles, #599), countingStore.ts (counting's off switch,
+│                  # #674) — localStorage read/write, on the
 │                  # shared guarded helpers in keyValueStorage.ts; storedData.ts
 │                  # gathers every store's keys for the Privacy tab (#678)
 ├── sensor/        # every gravity source behind one seam: orientation.ts (the phone),
@@ -453,6 +456,21 @@ the install-sheet screenshot, generated from the built app afterwards, is not pr
 an already-controlled page once on `controllerchange`, re-checks for a new worker when
 the app returns to the foreground, and lets a tap on the top-bar name / version check on
 demand (R50).
+
+## Anonymous counting (`src/app/usage.ts`, ADR 0021)
+
+`main.ts` starts the counter with `browserUsageDeps` and counts the start (`countAppStart`:
+open, version, language, the chosen sensor, and spoken or continuous audio guidance when
+on); features call `countFeature(name)`, and a source switch calls `countSensor`. Every
+path is built in `src/domain/usage.ts`, so nothing else can be sent. The counter sends each
+path at most once per app start, as `GET https://libell.goatcounter.com/count?p=<path>&e=true`
+with `fetch` (`no-cors`, `credentials: 'omit'`, `keepalive`, no referrer), and forgets
+failures: nothing is queued or retried. `allowed()` is asked on every send: only on
+`libell.app`, online, not in `?demo`, without Global Privacy Control or Do Not Track, and
+with the switch on (`src/data/countingStore.ts`; blocked storage reads as off). The
+introduction wizard's counting step (`src/ui/onboarding/countingStep.ts`) and the
+Privacy tab (`privacyPanel.ts`, under the stored data) both show `countingSection.ts`;
+`countingStoredKeys()` puts the off switch in the stored-data catalogue (#678).
 
 ## UI
 

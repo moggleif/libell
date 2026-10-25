@@ -140,7 +140,7 @@ export const is: Messages = {
   'about.offline':
     'Virkar alveg án nettengingar — netið er aðeins notað til að sækja uppfærslur á appinu sjálfu.',
   'about.privacy':
-    'Allt helst í símanum þínum — enginn aðgangur, engin rakning og engin gögn fara nokkurn tíma úr tækinu.',
+    'Stillingarnar þínar haldast í símanum — enginn aðgangur og engin rakning. Það eina sem Libell sendir eru nafnlausar tölur um hvernig appið er notað, og þú getur slökkt á því.',
   'about.source': 'Libell er ókeypis og opinn hugbúnaður (MIT-leyfi).',
   'about.source.link': 'Frumkóði á GitHub',
   'menu.privacy': 'Persónuvernd',
@@ -172,6 +172,7 @@ export const is: Messages = {
   'stored.notes.detail': '{n} smá merki, t.d. hvort kynningin hafi verið sýnd',
   'stored.phone': 'Síminn',
   'stored.saved': 'vistað',
+  'stored.counting.off': 'Slökkt',
   'stored.savedOn': 'vistað {date}',
 
   'intro.h': 'Velkomin í Libell',
@@ -181,6 +182,18 @@ export const is: Messages = {
   'intro.later': 'Skoða fyrst',
   'onboard.source.sensorIcon':
     'Skynjarabox má tengja hvenær sem er með skynjaratákninu efst til hægri.',
+  'counting.title': 'Nafnlaus talning',
+  'counting.intro': 'Libell telur notkun nafnlaust svo við vitum hvað þarf að bæta.',
+  'counting.sent.h': 'Þetta er talið',
+  'counting.sent':
+    'Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og {boxes}), útgáfa appsins og tungumálið sem er valið í Libell.',
+  'counting.notSent.h': 'Þetta er aldrei vistað',
+  'counting.notSent':
+    'IP-talan þín, land, tæki, skjár, stýrikerfi eða vafri, mál ökutækisins, stillingar þínar eða nokkuð annað um þig. Ekkert er vistað í símanum vegna talningarinnar.',
+  'counting.gpc': 'Ef vafrinn þinn biður vefsvæði um að rekja þig ekki, telur Libell ekkert.',
+  'counting.later': 'Þú getur slökkt á henni hvenær sem er undir {help} › {tab}.',
+  'counting.toggle': 'Telja notkun mína nafnlaust',
+  'counting.dashboard': 'Sjá tölfræðina',
   'onboard.sound.h': 'Hljóð',
   'onboard.source.h': 'Hvernig viltu mæla?',
   'onboard.source.intro':

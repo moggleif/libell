@@ -62,7 +62,8 @@ src/
 - **All lengths are millimetres** — model, math, settings and storage alike (ADR 0003);
   only the display layer formats cm or inches.
 - The app must work fully **offline** and inside a static-host CSP (ADR 0005): no CDNs,
-  no remote requests, no new external resources.
+  no remote requests, no new external resources. The one exception is the anonymous
+  counter of ADR 0021, which sends only the names in `src/domain/usage.ts`.
 - The repository stays **text-only** (ADR 0004): new artwork is SVG plus a generator
   change, never a committed binary.
 

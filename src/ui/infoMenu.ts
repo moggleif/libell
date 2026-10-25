@@ -33,7 +33,9 @@ export interface InfoPageOptions {
   /** Called after this page has closed. Without it, topics show no buttons. */
   openTarget?(target: HelpTarget): void;
   /** What the Privacy tab lists and deletes (#678). */
-  storedData: Pick<PrivacyPanelOptions, 'read' | 'deleteAll'>;
+  storedData: Pick<PrivacyPanelOptions, 'read' | 'deleteAll' | 'counting'>;
+  /** The feedback form opened GitHub's new-issue page. */
+  onFeedbackSent?(): void;
 }
 
 export interface InfoPage {
@@ -278,7 +280,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   resetHelp = helpPanel.reset;
   tabs.add('help', helpPanel.element);
   tabs.add('about', createAboutSection());
-  tabs.add('feedback', createFeedbackSection());
+  tabs.add('feedback', createFeedbackSection(options.onFeedbackSent));
   const privacy = createPrivacy(page, options);
   tabs.add('privacy', privacy.element, privacy.refresh);
   tabs.select('help');

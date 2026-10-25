@@ -20,6 +20,7 @@ import {
 } from '../data/settingsStore';
 import type { KeyValueStorage } from '../data/keyValueStorage';
 import { t } from '../ui/i18n';
+import { countFeature } from './usage';
 
 export interface TargetsDeps {
   /** The active sensor's tilt now, or the message to show instead. */
@@ -66,6 +67,7 @@ export function createTargets(deps: TargetsDeps): Targets {
   }
 
   function select(id: string | null): void {
+    if (id !== null) countFeature('target');
     activeId = id;
     saveActiveTargetId(id, storage);
     deps.onChanged();

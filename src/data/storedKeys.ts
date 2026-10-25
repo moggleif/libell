@@ -19,6 +19,8 @@ export type StoredKind =
   | 'activeTarget'
   | 'hitch'
   | 'rememberedBox'
+  /** Anonymous counting switched off (#674). */
+  | 'counting'
   /** First-run, migration and reload marks: how far the app has come. */
   | 'note'
   /** A copy an older version wrote, kept for a rollback. */
