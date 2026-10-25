@@ -7,6 +7,7 @@ import { createCountingExplanation } from './countingSection';
 import { createElement } from './dom';
 import { holdFocus } from './focusHold';
 import { t } from './i18n';
+import { button } from './intro';
 
 export interface CountingChoiceOptions {
   /** True for "Count", false for "Don't count"; the screen has closed. */
@@ -54,14 +55,9 @@ function buildBody(heading: HTMLHeadingElement): HTMLElement {
 /** Equal buttons: neither answer is the one the app leans towards. */
 function buildNav(onYes: () => void, onNo: () => void): HTMLElement {
   const nav = createElement('div', 'intro__nav');
-  nav.append(button(t('counting.yes'), onYes), button(t('counting.no'), onNo));
+  nav.append(
+    button('menu__action', t('counting.yes'), onYes),
+    button('menu__action', t('counting.no'), onNo),
+  );
   return nav;
-}
-
-function button(label: string, onClick: () => void): HTMLButtonElement {
-  const element = createElement('button', 'menu__action');
-  element.type = 'button';
-  element.textContent = label;
-  element.addEventListener('click', onClick);
-  return element;
 }

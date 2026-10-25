@@ -95,7 +95,8 @@ function installParts(install: InstallOffer): HTMLElement[] {
   return [installButton, hint];
 }
 
-function button(className: string, label: string, onClick: () => void): HTMLButtonElement {
+/** A plain button, shared with the counting choice that comes before it. */
+export function button(className: string, label: string, onClick: () => void): HTMLButtonElement {
   const element = createElement('button', className);
   element.type = 'button';
   element.textContent = label;
