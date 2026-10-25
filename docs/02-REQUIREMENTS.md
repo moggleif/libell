@@ -1393,8 +1393,8 @@ holds for every sensor box (#266), not only EasyLevel.
   follow-up: not clustered together in the middle): settings (a gear icon, R9 —
   Help/About/Feedback are not part of this menu at all), sound (visually larger —
   the primary, most-reached-for control), help ("?", opens its own page with Help
-  (R28, "Show introduction" below its topics), About (R28) and Feedback (R12)
-  as tabs, in that order — a fully independent component from the Settings
+  (R28, "Show introduction" below its topics), About (R28), Feedback (R12) and
+  Privacy (R58) as tabs, in that order — a fully independent component from the Settings
   page/menu, never routed through its drawer or sharing its back-navigation state,
   so its close (✕) can never reveal the Settings drawer underneath).
 - **Given** I tap the sound button while any of "Chime when level" (R16), "Continuous
@@ -2286,3 +2286,42 @@ the same steps counts too, as it shows that model's name (R21). ADR 0019.
 - **Then** there is no line, and reaching level is announced by R16 as always.
 - **Given** a screen reader
 - **Then** each new sentence on the line is read out once (R53).
+
+## R58 — Privacy: see everything Libell has stored, and delete it all (#678)
+
+Users can see exactly what Libell keeps on the phone, and remove all of it from inside
+the app; seeing it first makes it less likely people delete it only because they are
+unsure what it is (Morgan, 2026-10-17). Everything Libell stores is under keys starting
+with `libell.` in `localStorage`, plus one `sessionStorage` mark (architecture: Stored
+data).
+
+- **Given** the "?" page (R38)
+- **When** I open its Privacy tab
+- **Then** I see, in my language, that everything stays on the phone, then "Stored on
+  this phone": one row per thing I would recognise, in plain words, never a raw key —
+  each vehicle with its wheelbase, the settings, the sensor box password as "••••", the
+  language, the phone's calibration and each zero with whose it is and the date it was
+  saved, fine adjustments, targets (the selected one marked), the hitch height, the
+  remembered sensor box by its brand, and one row counting the app's own small marks
+  (first-run, migration, a rollback copy, or a `libell.` key no store knows). With
+  nothing stored the list says so.
+- **When** I open "Show raw data"
+- **Then** every stored key and its value is listed exactly as stored, sorted by key,
+  with the box password masked wherever it appears (the settings and each waiting
+  vehicle).
+- **Given** "Reset only the settings"
+- **When** I tap it
+- **Then** the page closes and Settings › General opens, where "Reset all settings" is.
+- **Given** "Delete all Libell data" (a red button, last on the page)
+- **When** I tap it
+- **Then** it asks once, saying vehicles, measurements and calibration go and Libell
+  starts as the first time, with "Yes, delete everything" and "Cancel".
+- **When** I tap "Cancel", or leave the tab and come back
+- **Then** nothing is removed and the question is gone.
+- **When** I tap "Yes, delete everything"
+- **Then** every `libell.*` key in `localStorage` and `sessionStorage` is removed, and
+  the app reloads and starts as on first run. Other sites' data and the app's offline
+  cache are not touched.
+- **Given** a new `libell.` key anywhere in the source
+- **When** the tests run
+- **Then** they fail until its store lists it (`src/data/storedData.test.ts`).

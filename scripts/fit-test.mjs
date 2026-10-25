@@ -31,7 +31,7 @@ import { chromium } from 'playwright';
 import { APPEARANCES } from '../src/domain/appearance.ts';
 import { selectAppearances } from './fitAppearances.ts';
 import { calibrationGapProblem, measureCalibrationGap } from './fitWizardSpacing.ts';
-import { BASE, PORT, openWithSettings, passIntro } from './fitOpen.mjs';
+import { BASE, PORT, openPrivacyTab, openWithSettings, passIntro } from './fitOpen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -465,16 +465,16 @@ try {
           }
         }
 
-        // Reload rather than closing: a page's own ✕ goes through
-        // history.back(), which from a freshly-loaded page can leave the
-        // app entirely. Saving one page load is not worth a test that
-        // depends on the browser's history stack.
+        // Reload rather than closing: a page's own ✕ goes through history.back(), which from a
+        // freshly-loaded page can leave the app; a test must not depend on the history stack.
         await level.reload();
         await level.waitForSelector('.rv-diagram svg');
 
         // --- Help / info, the longest scrolling page in the app.
         await level.locator('#help-button').click();
         await auditView(level, at('help'));
+        await openPrivacyTab(level);
+        await auditView(level, at('privacy'));
         await level.close();
 
         // --- External sensor page, via the simulated box.

@@ -1756,6 +1756,70 @@ body {
   transform: rotate(90deg);
 }
 
+/* ---- Privacy tab: what is stored (#678) ---- */
+
+.stored-data__heading {
+  margin: 16px 0 6px;
+  font-size: 1rem;
+}
+
+.stored-data__list {
+  margin: 0;
+}
+
+.stored-data__row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--outline);
+}
+
+.stored-data__label {
+  font-weight: 600;
+  color: var(--on-surface);
+}
+
+.stored-data__detail {
+  margin: 2px 0 0;
+  color: var(--on-surface-muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.stored-data__raw-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stored-data__raw-item {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--outline);
+}
+
+.stored-data__raw-key {
+  font-size: 0.8rem;
+  color: var(--on-surface);
+}
+
+.stored-data__raw-value {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--on-surface-muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.stored-data .menu__action {
+  margin-top: 12px;
+}
+
+/* Red in every appearance: the one action that cannot be undone. */
+.menu__action.menu__action--danger,
+:root[data-appearance] .menu__action.menu__action--danger {
+  color: var(--surface-raised);
+  background: var(--lift-large);
+  border-color: var(--lift-large);
+}
+
 /* ---- Feedback form ---- */
 
 .feedback__categories {

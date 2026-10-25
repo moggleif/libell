@@ -65,7 +65,7 @@ export function readStoredData(
     libellKeys(storage).flatMap((key) => {
       const value = guarded(() => storage?.getItem(key) ?? null, null);
       if (value === null) return [];
-      const { session: _session, ...entry } = known.get(key) ?? { key, kind: 'other' as const };
+      const entry = known.get(key) ?? { key, kind: 'other' as const };
       return [{ ...entry, value, session: inSession }];
     });
   return [...read(local, false), ...read(session, true)];
@@ -83,7 +83,8 @@ export function deleteAllStoredData(
   }
 }
 
-const MASK = '••••';
+/** How the box password shows, in the raw view and in plain words. */
+export const MASK = '••••';
 
 /** A stored value with the box password hidden at any depth, for the raw
  * view. A value that is not JSON has no password field and stays as it is. */

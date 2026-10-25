@@ -1725,6 +1725,151 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
     'Help › About tab: privacy paragraph.',
     'No account, no tracking, no data leaves the phone.',
   ),
+  'menu.privacy': ctx(
+    'label',
+    'Help page: the page title while the Privacy tab is selected.',
+    'Names the page that shows what Libell has stored on the phone and lets the user delete it all.',
+  ),
+  'menu.privacy.tab': ctx(
+    'button',
+    'Help page: the Privacy tab pill label, the fourth of four tabs on a 320 px screen.',
+    'Short form of the Privacy title for a tight tab; keep it one short word ("Data" is fine where "Privacy" is long).',
+  ),
+  'privacy.stored.h': ctx(
+    'label',
+    'Help › Privacy tab: heading above the list of what is stored.',
+    'Introduces the plain-words list of everything Libell keeps on this phone.',
+  ),
+  'privacy.stored.empty': ctx(
+    'line',
+    'Help › Privacy tab: shown instead of the list when nothing is stored.',
+    'Says Libell keeps nothing on this phone right now.',
+  ),
+  'privacy.raw': ctx(
+    'button',
+    'Help › Privacy tab: a fold-out below the list.',
+    'Opens the exact stored keys and values, for the curious.',
+  ),
+  'privacy.raw.hint': ctx(
+    'line',
+    'Help › Privacy tab › Show raw data: first line inside the fold-out.',
+    'Says these are the exact stored values, except the sensor box password, which shows as dots.',
+  ),
+  'privacy.resetSettings': ctx(
+    'button',
+    'Help › Privacy tab: secondary button above "Delete all Libell data".',
+    'Opens Settings › General, where "Reset all settings" resets the settings and keeps vehicles and calibration.',
+  ),
+  'privacy.deleteAll': ctx(
+    'button',
+    'Help › Privacy tab: red button at the bottom.',
+    'Asks once, then removes everything Libell has stored on this phone.',
+  ),
+  'privacy.deleteAll.confirm': ctx(
+    'line',
+    'Help › Privacy tab: the question after tapping "Delete all Libell data".',
+    'Warns what is lost and that the app restarts as on first use; answered with Yes or Cancel.',
+  ),
+  'privacy.deleteAll.yes': ctx(
+    'button',
+    'Help › Privacy tab: red button under the delete question.',
+    'Confirms: removes all stored data and restarts the app.',
+  ),
+  'privacy.deleteAll.cancel': ctx(
+    'button',
+    'Help › Privacy tab: button next to "Yes, delete everything".',
+    'Keeps everything and folds the question away.',
+  ),
+  'stored.vehicle': ctx(
+    'label',
+    'Help › Privacy tab › list: row label for one saved vehicle.',
+    'Names the kind of stored data: a vehicle the user has set up.',
+  ),
+  'stored.vehicle.detail': ctx(
+    'line',
+    "Help › Privacy tab › list: the vehicle row's value.",
+    'The vehicle\'s name and its wheelbase, e.g. "Hymer B 2, wheelbase 3800 mm".',
+  ),
+  'stored.settings': ctx(
+    'label',
+    'Help › Privacy tab › list: row label for the saved settings.',
+    "Names the kind of stored data: the app's settings.",
+  ),
+  'stored.settings.detail': ctx(
+    'line',
+    "Help › Privacy tab › list: the settings row's value.",
+    'Says in a few words what the settings hold.',
+  ),
+  'stored.password': ctx(
+    'label',
+    'Help › Privacy tab › list: row label; the value is the box brand and dots.',
+    'Says the sensor box password is stored, without ever showing it.',
+  ),
+  'stored.language': ctx(
+    'label',
+    'Help › Privacy tab › list: row label for the chosen language.',
+    'Names the kind of stored data: the language picked in Settings.',
+  ),
+  'stored.phoneCalibration': ctx(
+    'label',
+    'Help › Privacy tab › list: row label; the value says when it was saved.',
+    "Names the phone's own calibration on a flat surface.",
+  ),
+  'stored.zero': ctx(
+    'label',
+    'Help › Privacy tab › list: row label; the value names the phone or the box, and when.',
+    'Names a saved "Zero the vehicle" for the phone or a sensor box.',
+  ),
+  'stored.zeroTrim': ctx(
+    'label',
+    'Help › Privacy tab › list: row label; the value names the phone or the box.',
+    'Names a saved fine adjustment of the vehicle zero.',
+  ),
+  'stored.targets': ctx(
+    'label',
+    "Help › Privacy tab › list: row label; the value lists the targets' names.",
+    'Names the saved level targets (presets).',
+  ),
+  'stored.targets.active': ctx(
+    'card',
+    'Help › Privacy tab › list: one target in the Targets row.',
+    'Marks the target that is selected now.',
+  ),
+  'stored.hitch': ctx(
+    'label',
+    "Help › Privacy tab › list: row label for a caravan's saved hitch height.",
+    'Names the saved hitch height.',
+  ),
+  'stored.rememberedBox': ctx(
+    'label',
+    'Help › Privacy tab › list: row label; the value is the box brand.',
+    'Says which box Libell remembers to reconnect to.',
+  ),
+  'stored.notes': ctx(
+    'label',
+    'Help › Privacy tab › list: row label for small internal marks.',
+    'Groups small marks the app keeps, such as whether the introduction was shown.',
+  ),
+  'stored.notes.detail': ctx(
+    'line',
+    "Help › Privacy tab › list: the notes row's value.",
+    'How many internal marks there are, with one example.',
+  ),
+  'stored.phone': ctx(
+    'card',
+    'Help › Privacy tab › list: the owner in a zero row, when it is the phone and not a box.',
+    "Says the value belongs to the phone's own sensor.",
+  ),
+  'stored.saved': ctx(
+    'card',
+    'Help › Privacy tab › list: when a value was saved, date unknown.',
+    'Says the value is saved, for one saved before dates were kept.',
+  ),
+  'stored.savedOn': ctx(
+    'card',
+    'Help › Privacy tab › list: when a value was saved.',
+    'The date the value was saved, e.g. "saved 12 Oct 2026".',
+  ),
   'about.source': ctx(
     'line',
     'Help › About tab: sentence followed directly by the source-code link.',

@@ -2,6 +2,7 @@
  * The pages over the main screen: the first-run wizard, settings, the
  * sensor pages, the "?" page, and the navigation between them.
  */
+import { deleteAllStoredData, readStoredData } from '../data/storedData';
 import { pickVehicleGeometry } from '../domain/vehicleShare';
 import {
   hasDoneOnboarding,
@@ -88,12 +89,19 @@ function createAdoption(core: Core, screen: Screen) {
   });
 }
 
+/** "Delete all Libell data" (#678): a reload then starts as on first run. */
+function deleteAllAndRestart(): void {
+  deleteAllStoredData();
+  window.location.reload();
+}
+
 /** The "?" page, opened from the help button. */
 function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): InfoPage {
   const infoPage = createInfoPage({
     openOnboarding: onboarding.open,
     hasDoneOnboarding,
     openTarget: navigation.openHelpTarget,
+    storedData: { read: () => readStoredData(), deleteAll: deleteAllAndRestart },
   });
   document.body.append(infoPage.element);
   const helpButton = document.querySelector<HTMLButtonElement>('#help-button');

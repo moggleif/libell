@@ -65,3 +65,11 @@ export async function passIntro(page, audit) {
   await page.locator('.intro .menu__action').first().click();
   await page.waitForSelector('.onboarding');
 }
+
+/** The help page's Privacy tab (#678) at its longest: the raw data open and
+ * the delete question asked. */
+export async function openPrivacyTab(page) {
+  await page.locator('[data-tab="privacy"]').click();
+  await page.locator('.stored-data__raw summary').click();
+  await page.locator('.stored-data .menu__action--danger').first().click();
+}
