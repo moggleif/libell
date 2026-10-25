@@ -202,9 +202,9 @@ export const cs: Messages = {
   'counting.later': 'Svou volbu můžete kdykoli změnit v {help} › {tab}.',
   'counting.toggle': 'Anonymně počítat mé používání',
   'counting.dashboard': 'Zobrazit statistiky',
-  'counting.ask': 'Smí Libell anonymně počítat vaše používání?',
-  'counting.yes': 'Počítat',
-  'counting.no': 'Nepočítat',
+  'counting.ask': 'Chcete pomoct vylepšit Libell?',
+  'counting.yes': 'Ano, počítat anonymně',
+  'counting.no': 'Ne, děkuji',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čím chcete měřit?',
   'onboard.source.intro':

@@ -199,9 +199,9 @@ export const nb: Messages = {
   'counting.later': 'Du kan endre valget ditt når som helst under {help} › {tab}.',
   'counting.toggle': 'Tell bruken min anonymt',
   'counting.dashboard': 'Se statistikken',
-  'counting.ask': 'Får Libell telle bruken din anonymt?',
-  'counting.yes': 'Tell',
-  'counting.no': 'Ikke tell',
+  'counting.ask': 'Vil du hjelpe til med å gjøre Libell bedre?',
+  'counting.yes': 'Ja, tell anonymt',
+  'counting.no': 'Nei takk',
   'onboard.sound.h': 'Lyd',
   'onboard.source.h': 'Hvordan vil du måle?',
   'onboard.source.intro':

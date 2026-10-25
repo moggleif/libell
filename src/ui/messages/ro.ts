@@ -211,9 +211,9 @@ export const ro: Messages = {
   'counting.later': 'Vă puteți schimba alegerea oricând din {help} › {tab}.',
   'counting.toggle': 'Numărarea anonimă a utilizării mele',
   'counting.dashboard': 'Vedeți statisticile',
-  'counting.ask': 'Poate Libell să vă numere anonim utilizarea?',
-  'counting.yes': 'Cu numărare',
-  'counting.no': 'Fără numărare',
+  'counting.ask': 'Vreți să ajutați la îmbunătățirea Libell?',
+  'counting.yes': 'Da, cu numărare anonimă',
+  'counting.no': 'Nu, mulțumesc',
   'onboard.sound.h': 'Sunet',
   'onboard.source.h': 'Cum doriți să măsurați?',
   'onboard.source.intro':

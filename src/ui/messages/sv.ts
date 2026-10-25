@@ -217,9 +217,9 @@ export const sv: Messages = {
   'counting.later': 'Du kan ändra ditt val när som helst under {help} › {tab}.',
   'counting.toggle': 'Räkna min användning anonymt',
   'counting.dashboard': 'Se statistiken',
-  'counting.ask': 'Får Libell räkna din användning anonymt?',
-  'counting.yes': 'Räkna',
-  'counting.no': 'Räkna inte',
+  'counting.ask': 'Vill du hjälpa till att göra Libell bättre?',
+  'counting.yes': 'Ja, räkna anonymt',
+  'counting.no': 'Nej tack',
   'onboard.sound.h': 'Ljud',
   'onboard.source.h': 'Hur vill du mäta?',
   'onboard.source.intro':

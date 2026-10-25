@@ -208,9 +208,9 @@ export const hu: Messages = {
   'counting.later': 'A döntésedet bármikor megváltoztathatod itt: {help} › {tab}.',
   'counting.toggle': 'Használatom névtelen számlálása',
   'counting.dashboard': 'Statisztika megtekintése',
-  'counting.ask': 'Számolhatja a Libell névtelenül a használatodat?',
-  'counting.yes': 'Számolhat',
-  'counting.no': 'Ne számoljon',
+  'counting.ask': 'Segítesz jobbá tenni a Libellt?',
+  'counting.yes': 'Igen, számolj névtelenül',
+  'counting.no': 'Nem, köszönöm',
   'onboard.sound.h': 'Hang',
   'onboard.source.h': 'Mivel szeretnél mérni?',
   'onboard.source.intro':

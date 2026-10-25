@@ -1968,17 +1968,17 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'counting.ask': ctx(
     'label',
     'First-start counting choice screen: its heading, above what is and is not counted; the two buttons at the bottom answer it.',
-    'Asks the user whether Libell may count their use anonymously; the two buttons below answer it.',
+    'Asks the user for help making Libell better; the text below says the help is anonymous counting, and the two buttons answer it.',
   ),
   'counting.yes': ctx(
     'button',
     'First-start counting choice screen: the first of two equal buttons.',
-    'Agrees to anonymous counting; stores the choice and goes on into the app.',
+    'Yes: agrees to anonymous counting, says so in the label; stores the choice and goes on into the app.',
   ),
   'counting.no': ctx(
     'button',
     'First-start counting choice screen: the second of two equal buttons.',
-    'Declines anonymous counting; stores the choice, nothing is ever counted, and goes on into the app.',
+    'A polite no: declines anonymous counting; stores the choice, nothing is ever counted, and goes on into the app.',
   ),
   'onboard.sound.h': ctx(
     'label',

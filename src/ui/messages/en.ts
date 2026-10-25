@@ -228,9 +228,9 @@ export const en = {
   'counting.later': 'You can change your choice any time under {help} › {tab}.',
   'counting.toggle': 'Count my use anonymously',
   'counting.dashboard': 'See the statistics',
-  'counting.ask': 'May Libell count your use anonymously?',
-  'counting.yes': 'Count',
-  'counting.no': 'Don’t count',
+  'counting.ask': 'Would you like to help make Libell better?',
+  'counting.yes': 'Yes, count anonymously',
+  'counting.no': 'No thanks',
   // Heads the wizard step holding the chime and the audio guidance.
   'onboard.sound.h': 'Sound',
   // The wizard's source step; the box radio is labelled 'menu.sensorSource'.

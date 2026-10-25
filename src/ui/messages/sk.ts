@@ -191,9 +191,9 @@ export const sk: Messages = {
   'counting.later': 'Svoju voľbu môžete kedykoľvek zmeniť v {help} › {tab}.',
   'counting.toggle': 'Anonymne počítať moje používanie',
   'counting.dashboard': 'Zobraziť štatistiky',
-  'counting.ask': 'Môže Libell anonymne počítať vaše používanie?',
-  'counting.yes': 'Počítať',
-  'counting.no': 'Nepočítať',
+  'counting.ask': 'Chcete pomôcť vylepšiť Libell?',
+  'counting.yes': 'Áno, počítať anonymne',
+  'counting.no': 'Nie, ďakujem',
   'onboard.sound.h': 'Zvuk',
   'onboard.source.h': 'Čím chcete merať?',
   'onboard.source.intro':

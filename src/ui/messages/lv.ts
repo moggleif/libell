@@ -197,9 +197,9 @@ export const lv: Messages = {
   'counting.later': 'Savu izvēli jebkurā laikā varat mainīt sadaļā {help} › {tab}.',
   'counting.toggle': 'Anonīmi skaitīt manu lietošanu',
   'counting.dashboard': 'Skatīt statistiku',
-  'counting.ask': 'Vai Libell drīkst anonīmi skaitīt jūsu lietošanu?',
-  'counting.yes': 'Skaitīt',
-  'counting.no': 'Neskaitīt',
+  'counting.ask': 'Vai vēlaties palīdzēt uzlabot Libell?',
+  'counting.yes': 'Jā, skaitīt anonīmi',
+  'counting.no': 'Nē, paldies',
   'onboard.sound.h': 'Skaņa',
   'onboard.source.h': 'Kā vēlaties mērīt?',
   'onboard.source.intro':

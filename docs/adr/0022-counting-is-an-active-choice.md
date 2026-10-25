@@ -14,10 +14,11 @@ a single clear screen.
 ## Decision
 
 - **The choice comes first.** With no choice stored, the first thing the app shows is one
-  screen that explains the counting and asks, with two equal buttons, "Count" and "Don't
-  count". The intro, an incoming setup link and everything else wait behind it.
+  screen that explains the counting and asks for help making Libell better, with two equal
+  buttons, "Yes, count anonymously" and "No thanks" (Morgan: ask for help, and let the
+  button say what it means). The intro, an incoming setup link and everything else wait behind it.
 - **Nothing before the choice.** The app start is counted only after the answer, and only
-  after "Count".
+  after "Yes, count anonymously".
 - **Stored as made.** `libell.counting` holds `on` or `off`, apart from the settings so a
   settings reset keeps it; "Delete all Libell data" removes it, and the user is asked
   again. Missing or unreadable storage means not chosen, which never counts.
@@ -33,7 +34,7 @@ a single clear screen.
 - **Keep the step in the guide** — rejected: "Look around first" skips the guide, so the
   choice would not be made by everyone.
 - **Ask only new users** — rejected: users counted by default never chose.
-- **Store the GPC/DNT answer as "Don't count"** — rejected: the signal already stops
+- **Store the GPC/DNT answer as "No thanks"** — rejected: the signal already stops
   every request, and storing it would hide the choice from someone who later turns the
   signal off.
 
@@ -43,4 +44,4 @@ a single clear screen.
   screen once before the intro. It must fit a small phone whole in every language.
 - The flows and fit tests store a choice before opening the app, and test the screen
   itself on its own.
-- Counted numbers drop to those who chose "Count"; the public statistics show only them.
+- Counted numbers drop to those who chose "Yes, count anonymously"; the public statistics show only them.

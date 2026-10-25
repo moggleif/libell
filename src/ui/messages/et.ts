@@ -202,9 +202,9 @@ export const et: Messages = {
   'counting.later': 'Saad oma valikut igal ajal muuta: {help} › {tab}.',
   'counting.toggle': 'Loenda minu kasutust anonüümselt',
   'counting.dashboard': 'Vaata statistikat',
-  'counting.ask': 'Kas Libell võib sinu kasutust anonüümselt loendada?',
-  'counting.yes': 'Loenda',
-  'counting.no': 'Ära loenda',
+  'counting.ask': 'Kas soovid aidata Libelli paremaks teha?',
+  'counting.yes': 'Jah, loenda anonüümselt',
+  'counting.no': 'Ei, aitäh',
   'onboard.sound.h': 'Heli',
   'onboard.source.h': 'Millega soovid mõõta?',
   'onboard.source.intro':

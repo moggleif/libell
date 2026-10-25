@@ -206,9 +206,9 @@ export const nl: Messages = {
   'counting.later': 'Je kunt je keuze altijd wijzigen via {help} › {tab}.',
   'counting.toggle': 'Mijn gebruik anoniem tellen',
   'counting.dashboard': 'Bekijk de statistieken',
-  'counting.ask': 'Mag Libell je gebruik anoniem tellen?',
-  'counting.yes': 'Tellen',
-  'counting.no': 'Niet tellen',
+  'counting.ask': 'Wil je helpen Libell beter te maken?',
+  'counting.yes': 'Ja, anoniem tellen',
+  'counting.no': 'Nee, bedankt',
   'onboard.sound.h': 'Geluid',
   'onboard.source.h': 'Hoe wil je meten?',
   'onboard.source.intro':

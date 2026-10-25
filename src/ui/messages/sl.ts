@@ -196,9 +196,9 @@ export const sl: Messages = {
   'counting.later': 'Svojo izbiro lahko kadar koli spremenite v {help} › {tab}.',
   'counting.toggle': 'Anonimno štetje moje uporabe',
   'counting.dashboard': 'Oglejte si statistiko',
-  'counting.ask': 'Ali sme Libell anonimno šteti vašo uporabo?',
-  'counting.yes': 'Šteti',
-  'counting.no': 'Ne šteti',
+  'counting.ask': 'Bi radi pomagali izboljšati Libell?',
+  'counting.yes': 'Da, šteti anonimno',
+  'counting.no': 'Ne, hvala',
   'onboard.sound.h': 'Zvok',
   'onboard.source.h': 'S čim želite meriti?',
   'onboard.source.intro':

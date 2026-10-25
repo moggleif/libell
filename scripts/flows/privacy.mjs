@@ -49,7 +49,7 @@ export async function privacyFlow(browser) {
   // The counting choice is deleted too, so it is asked again first (#699).
   await countingChoice(page).waitFor();
   assert((await storage(page, 'libell.counting')) === null, 'the choice should be deleted');
-  await button(countingChoice(page), 'Don’t count').click();
+  await button(countingChoice(page), 'No thanks').click();
   await intro(page).waitFor();
   for (const key of Object.keys(SEED)) {
     assert((await storage(page, key)) === null, `${key} should be deleted`);

@@ -467,7 +467,7 @@ path at most once per app start, as `GET https://libell.goatcounter.com/count?p=
 with `fetch` (`no-cors`, `credentials: 'omit'`, `keepalive`, no referrer), and forgets
 failures: nothing is queued or retried. `allowed()` is asked on every send: only on
 `libell.app`, online, not in `?demo`, without Global Privacy Control or Do Not Track, and
-with "Count" chosen (`src/data/countingStore.ts`: `libell.counting` is `on` or `off`,
+with "Yes, count anonymously" chosen (`src/data/countingStore.ts`: `libell.counting` is `on` or `off`,
 missing until chosen; blocked storage reads as not chosen, so nothing counts). Before
 anything else `main.ts` runs `decideCountingFirst` (`src/app/countingGate.ts`, ADR 0022):
 with no choice stored, no GPC/DNT and no `?demo`, it shows `src/ui/countingChoice.ts`,

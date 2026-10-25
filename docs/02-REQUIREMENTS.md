@@ -2338,20 +2338,21 @@ R58 is the stored-data view (#678).
 - **Then** before anything else (the intro R18, an incoming setup link R41) one screen,
   "Anonymous counting" ("Anonym räkning"), says what would be counted, what is never
   saved and where the choice can be changed later (Help › Privacy), links the public
-  statistics, asks "May Libell count your use anonymously?" and offers two equal
-  buttons, "Count" ("Räkna") and "Don't count" ("Räkna inte"). Nothing else in the app
+  statistics, asks "Would you like to help make Libell better?" ("Vill du hjälpa till att göra
+  Libell bättre?") and offers two equal buttons, "Yes, count anonymously" ("Ja, räkna
+  anonymt") and "No thanks" ("Nej tack"). Nothing else in the app
   can be reached until one is picked. It fits a small phone whole (R45), in every
   shipped language and both themes.
 - **Then** nothing is sent to the counter before the choice is made.
 - **When** I pick one
 - **Then** the choice is stored, the screen closes and the app goes on where it would
-  have (the intro, an incoming setup link, or the level view). After "Count" this app
-  start's events are sent as below; after "Don't count" nothing ever is.
+  have (the intro, an incoming setup link, or the level view). After "Yes, count anonymously" this app
+  start's events are sent as below; after "No thanks" nothing ever is.
 - **Given** a choice is stored
 - **Then** the screen never shows again; the switch in Help › Privacy changes it.
 - **Given** someone whose counting was on by default before #699
 - **Then** they are asked at their next start. Someone who had switched it off has
-  chosen "Don't count" and is not asked.
+  chosen "No thanks" and is not asked.
 - **Given** the browser sends Global Privacy Control or Do Not Track
 - **Then** the screen is not shown: the signal is the answer, and nothing is counted.
 - **Given** counting is chosen and the phone is online on libell.app
@@ -2368,7 +2369,7 @@ R58 is the stored-data view (#678).
 - **Then** nothing else is ever sent: no country, region, screen, device, operating
   system, browser, firmware, device id, readings, measurements or settings
   (`src/domain/usage.ts` holds every name that may be sent).
-- **Given** "Don't count" is chosen, or the browser sends Global Privacy Control or Do
+- **Given** "No thanks" is chosen, or the browser sends Global Privacy Control or Do
   Not Track
 - **Then** no request is made to the counter at all.
 - **Given** the phone is offline or the counter cannot be reached

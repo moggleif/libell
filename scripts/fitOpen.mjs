@@ -65,7 +65,7 @@ export async function openWithSettings(
 }
 
 /** The counting choice (#699) and the first-visit intro (#691) stand
- * before the guide: `audit` each by name, then "Don't count" (the choice's
+ * before the guide: `audit` each by name, then "No thanks" (the choice's
  * second button) and "Get started" (the intro's main button). */
 export async function passIntro(page, audit) {
   await page.waitForSelector('.counting-choice');

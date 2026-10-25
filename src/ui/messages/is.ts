@@ -195,9 +195,9 @@ export const is: Messages = {
   'counting.later': 'Þú getur breytt vali þínu hvenær sem er undir {help} › {tab}.',
   'counting.toggle': 'Telja notkun mína nafnlaust',
   'counting.dashboard': 'Sjá tölfræðina',
-  'counting.ask': 'Má Libell telja notkun þína nafnlaust?',
-  'counting.yes': 'Telja',
-  'counting.no': 'Ekki telja',
+  'counting.ask': 'Viltu hjálpa til við að gera Libell betra?',
+  'counting.yes': 'Já, telja nafnlaust',
+  'counting.no': 'Nei takk',
   'onboard.sound.h': 'Hljóð',
   'onboard.source.h': 'Hvernig viltu mæla?',
   'onboard.source.intro':

@@ -206,9 +206,9 @@ export const es: Messages = {
   'counting.later': 'Puedes cambiar tu elección cuando quieras en {help} › {tab}.',
   'counting.toggle': 'Contar mi uso de forma anónima',
   'counting.dashboard': 'Ver las estadísticas',
-  'counting.ask': '¿Puede Libell contar tu uso de forma anónima?',
-  'counting.yes': 'Contar',
-  'counting.no': 'No contar',
+  'counting.ask': '¿Quieres ayudar a mejorar Libell?',
+  'counting.yes': 'Sí, contar anónimamente',
+  'counting.no': 'No, gracias',
   'onboard.sound.h': 'Sonido',
   'onboard.source.h': '¿Cómo quieres medir?',
   'onboard.source.intro':

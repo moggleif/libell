@@ -190,9 +190,9 @@ export const fi: Messages = {
   'counting.later': 'Voit muuttaa valintaasi milloin tahansa kohdassa {help} › {tab}.',
   'counting.toggle': 'Laske käyttöni nimettömästi',
   'counting.dashboard': 'Katso tilastot',
-  'counting.ask': 'Saako Libell laskea käyttöäsi nimettömästi?',
-  'counting.yes': 'Laske',
-  'counting.no': 'Älä laske',
+  'counting.ask': 'Haluatko auttaa tekemään Libellistä paremman?',
+  'counting.yes': 'Kyllä, laske nimettömästi',
+  'counting.no': 'Ei kiitos',
   'onboard.sound.h': 'Ääni',
   'onboard.source.h': 'Miten haluat mitata?',
   'onboard.source.intro':

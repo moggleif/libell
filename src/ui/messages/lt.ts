@@ -209,9 +209,9 @@ export const lt: Messages = {
   'counting.later': 'Savo pasirinkimą bet kada galite pakeisti: {help} › {tab}.',
   'counting.toggle': 'Anonimiškai skaičiuoti mano naudojimą',
   'counting.dashboard': 'Peržiūrėti statistiką',
-  'counting.ask': 'Ar Libell gali anonimiškai skaičiuoti jūsų naudojimą?',
-  'counting.yes': 'Skaičiuoti',
-  'counting.no': 'Neskaičiuoti',
+  'counting.ask': 'Ar norite padėti tobulinti Libell?',
+  'counting.yes': 'Taip, skaičiuoti anonimiškai',
+  'counting.no': 'Ne, ačiū',
   'onboard.sound.h': 'Garsas',
   'onboard.source.h': 'Kuo norite matuoti?',
   'onboard.source.intro':

@@ -10,7 +10,7 @@ import { t } from './i18n';
 import { button } from './intro';
 
 export interface CountingChoiceOptions {
-  /** True for "Count", false for "Don't count"; the screen has closed. */
+  /** True for "Yes, count anonymously", false for "No thanks"; the screen has closed. */
   onChoose(on: boolean): void;
 }
 

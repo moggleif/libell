@@ -196,9 +196,9 @@ export const tr: Messages = {
   'counting.later': 'Seçiminizi istediğiniz zaman {help} › {tab} bölümünden değiştirebilirsiniz.',
   'counting.toggle': 'Kullanımımı anonim olarak say',
   'counting.dashboard': 'İstatistikleri görün',
-  'counting.ask': 'Libell kullanımınızı anonim olarak sayabilir mi?',
-  'counting.yes': 'Sayılsın',
-  'counting.no': 'Sayılmasın',
+  'counting.ask': 'Libell’i daha iyi hale getirmeye yardım etmek ister misiniz?',
+  'counting.yes': 'Evet, anonim sayılsın',
+  'counting.no': 'Hayır, teşekkürler',
   'onboard.sound.h': 'Ses',
   'onboard.source.h': 'Nasıl ölçmek istiyorsunuz?',
   'onboard.source.intro':

@@ -212,9 +212,9 @@ export const fr: Messages = {
   'counting.later': 'Vous pouvez changer votre choix à tout moment dans {help} › {tab}.',
   'counting.toggle': 'Compter mon utilisation anonymement',
   'counting.dashboard': 'Voir les statistiques',
-  'counting.ask': 'Libell peut-il compter votre utilisation de façon anonyme ?',
-  'counting.yes': 'Compter',
-  'counting.no': 'Ne pas compter',
+  'counting.ask': 'Voulez-vous aider à améliorer Libell ?',
+  'counting.yes': 'Oui, compter anonymement',
+  'counting.no': 'Non merci',
   'onboard.sound.h': 'Son',
   'onboard.source.h': 'Comment voulez-vous mesurer ?',
   'onboard.source.intro':

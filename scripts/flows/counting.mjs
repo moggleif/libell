@@ -8,8 +8,8 @@ export const countingChoice = (page) => page.locator('.counting-choice');
 const FIRST_VISIT = { 'libell.onboarded': null, 'libell.counting': null };
 
 export async function countingFlow(browser) {
-  await chooseScenario(browser, 'Count', 'on');
-  await chooseScenario(browser, 'Don’t count', 'off');
+  await chooseScenario(browser, 'Yes, count anonymously', 'on');
+  await chooseScenario(browser, 'No thanks', 'off');
   await legacyOffScenario(browser);
   await privacySignalScenario(browser);
 }
@@ -20,7 +20,7 @@ async function chooseScenario(browser, label, stored) {
   await countingChoice(page).waitFor();
   assert((await intro(page).count()) === 0, 'the intro should wait behind the choice');
   const text = await countingChoice(page).textContent();
-  assert(text.includes('May Libell count your use anonymously?'), 'the screen should ask');
+  assert(text.includes('Would you like to help make Libell better?'), 'the screen should ask');
   assert(text.includes('What is never saved'), 'the screen should say what is never saved');
   await button(countingChoice(page), label).click();
   await countingChoice(page).waitFor({ state: 'detached' });
