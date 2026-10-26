@@ -42,6 +42,15 @@ describe('privacy policy pages (#675)', () => {
     expect(html).toContain(`“${translate('en', 'settings.shareVehicle')}”`);
   });
 
+  it('describes itself to search engines in its own words (#730)', () => {
+    for (const lang of LANGUAGES) {
+      const html = renderPrivacyPage(lang, '/');
+      expect(html).toContain(
+        `<meta name="description" content="${escapeHtml(translate(lang, 'policy.intro'))}">`,
+      );
+    }
+  });
+
   it('is inert: no script, nothing loaded from elsewhere, everything escaped', () => {
     const html = renderPrivacyPage('fr', '/');
     expect(html).not.toMatch(/<script|<style|\sstyle=|\son[a-z]+=/i);

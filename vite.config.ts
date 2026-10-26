@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { localVersion } from './scripts/version.ts';
 import { basePath } from './scripts/basePath.ts';
+import { inlineStylesheets, withStyleHashes } from './scripts/inlineStylesheets.ts';
 
 // The root of libell.app, or the BASE_PATH the deploy workflow passes (#672).
 const base = basePath();
@@ -34,13 +35,55 @@ function resolveVersionString(): string | null {
 // app is self-contained (no CDNs, no remote calls) apart from the anonymous
 // counter (ADR 0021): its origin, `COUNTER_ORIGIN` in src/domain/usage.ts,
 // is the one addition to connect-src. Anything injected from elsewhere is
-// refused by the browser. Browsers ignore `frame-ancestors` in a meta
-// CSP — it is kept for header-capable hosts, and the framing guard in
-// main.ts covers clickjacking on Pages (#67, ADR 0005).
+// refused by the browser. `frame-ancestors` is left out: browsers ignore it
+// in a meta CSP and log an error, and the framing guard in main.ts covers
+// clickjacking on Pages (#67, #730, ADR 0005). The inlined stylesheet is
+// added to style-src by its hash (`withStyleHashes`).
 const CSP =
   "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; " +
   "font-src 'self'; connect-src 'self' https://libell.goatcounter.com; manifest-src 'self'; worker-src 'self'; " +
-  "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+  "object-src 'none'; base-uri 'none'; form-action 'none'";
+
+// The security tags, after Vite has linked the stylesheet: it is inlined
+// into the page (#730) and its file dropped, so the CSP can name its hash.
+function securityMetaTags(): Plugin {
+  return {
+    name: 'security-meta-tags',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, { bundle }) {
+        const sheets = Object.values(bundle ?? {}).flatMap((file) =>
+          file.type === 'asset' && file.fileName.endsWith('.css')
+            ? [{ fileName: file.fileName, source: asText(file.source) }]
+            : [],
+        );
+        const result = inlineStylesheets(html, base, sheets);
+        for (const fileName of result.inlined) delete bundle?.[fileName];
+        const csp = withStyleHashes(CSP, result.hashes);
+        return {
+          html: result.html,
+          tags: [
+            {
+              tag: 'meta',
+              attrs: { 'http-equiv': 'Content-Security-Policy', content: csp },
+              injectTo: 'head-prepend',
+            },
+            {
+              tag: 'meta',
+              attrs: { name: 'referrer', content: 'no-referrer' },
+              injectTo: 'head-prepend',
+            },
+          ],
+        };
+      },
+    },
+  };
+}
+
+function asText(source: string | Uint8Array): string {
+  return typeof source === 'string' ? source : new TextDecoder().decode(source);
+}
 
 // The static pages: the privacy policy (#675) and the language pages (#703),
 // one page per language each, plus their shared stylesheet, written from the
@@ -112,24 +155,7 @@ export default defineConfig({
   },
   plugins: [
     findability(),
-    {
-      name: 'security-meta-tags',
-      apply: 'build',
-      transformIndexHtml() {
-        return [
-          {
-            tag: 'meta',
-            attrs: { 'http-equiv': 'Content-Security-Policy', content: CSP },
-            injectTo: 'head-prepend',
-          },
-          {
-            tag: 'meta',
-            attrs: { name: 'referrer', content: 'no-referrer' },
-            injectTo: 'head-prepend',
-          },
-        ];
-      },
-    },
+    securityMetaTags(),
     staticPages(),
     VitePWA({
       registerType: 'autoUpdate',

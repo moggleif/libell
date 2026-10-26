@@ -100,7 +100,9 @@ export function renderPrivacyPage(lang: Language, base: string): string {
   return `<!doctype html>
 <html lang="${lang}">
 <head>
-${staticHead(base, text('policy.title'))}
+${staticHead(base, text('policy.title'), [
+  `<meta name="description" content="${escapeHtml(text('policy.intro'))}">`,
+])}
 </head>
 <body>
 <main>
