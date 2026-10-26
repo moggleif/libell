@@ -500,7 +500,9 @@ answering them with the app.
   text is `seo.*`, `landing.*` and the About tab's offline and privacy sentences; the
   head carries the canonical address, `hreflang` alternates for every language with
   `x-default` on `en/`, the link-preview tags and schema.org `WebApplication` and
-  `FAQPage` data in an `application/ld+json` block, which is data and never run.
+  `FAQPage` data in an `application/ld+json` block, which is data and never run. The
+  preview tags and the `WebApplication` come from `previewMeta()` and `webApplication()`
+  in `findability.ts`, so the app's head and every language page say the same (#709).
 
 ## Findability (`src/ui/findability.ts`, #701)
 
