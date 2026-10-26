@@ -19,7 +19,9 @@
     "screenshots": "node scripts/generate-screenshots.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "flows": "node scripts/flows-test.mjs",
-    "fit": "node scripts/fit-test.mjs"
+    "fit": "node scripts/fit-test.mjs",
+    "bundle": "node scripts/bundle-guard.mjs",
+    "timing": "node scripts/startup-timing.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",

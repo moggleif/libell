@@ -42,3 +42,4 @@ Template: `NNNN-short-title.md` with sections **Status** (Accepted/Superseded + 
 | 0021 | [Anonymous usage counting with GoatCounter, on by default, one origin](0021-anonymous-usage-counting.md)                      |
 | 0022 | [Anonymous counting is an active choice, made before anything else](0022-counting-is-an-active-choice.md)                     |
 | 0023 | [Dependabot's patch and minor updates merge themselves on green CI](0023-dependabot-patch-and-minor-merge-themselves.md)      |
+| 0024 | [Load only what the first screen needs](0024-load-only-what-the-first-screen-needs.md)                                        |

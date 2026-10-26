@@ -24,6 +24,8 @@ npm run preview       # serve the production build locally
 npm run smoke         # Playwright: the built app renders (needs `build` first)
 npm run flows         # Playwright: the app's flows through main.ts's real wiring (needs `build` first)
 npm run fit           # Playwright: it all fits a phone screen (needs `build` first)
+npm run bundle        # bundle guard: what loads at start, gzip budgets, precache (needs `build` first)
+npm run timing        # Playwright: cold start to the level screen, CPU ×4 (needs `build` first)
 ```
 
 The app is served from the root of `libell.app`, so the base path defaults to `/`. The
@@ -147,6 +149,13 @@ the browser test scripts included. Each failure names the file and what to do.
   from `src/ui/dom.ts` instead (#521). The other small builders live there too, so
   a module does not write its own copy: `button`, `textElement`, `paragraph` and
   `externalLink` (#710).
+- **Bundle:** after the build, CI runs `npm run bundle` (ADR 0024). It fails when the
+  entry file holds a module listed in `entryExcludes` in
+  `scripts/quality/bundle-budget.json` (those load after the first render, through their
+  seams), when a file is over its gzip budget there, or when a file is not precached.
+  Lower a budget when a change makes the files smaller; never raise one to get green,
+  load more after the first render instead. A change to what loads at start reports
+  `npm run timing` before and after in its pull request.
 - **Coverage:** CI runs the unit tests with `npm run test:coverage`, which fails when
   statement, branch, function or line coverage of `src/` drops below the floors in
   `vite.config.ts`. The floors sit about 0.8 points under `main`'s coverage when last
