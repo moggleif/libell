@@ -5,7 +5,7 @@
 
 import { REPO_URL } from '../domain/site';
 import { t } from './i18n';
-import { createElement } from './dom';
+import { createElement, externalLink } from './dom';
 
 /**
  * @param version null for a CI build without `BUILD_VERSION`; injected so
@@ -25,12 +25,10 @@ export function createAboutSection(version: string | null = __APP_VERSION__): HT
   privacy.textContent = t('about.privacy');
 
   const source = createElement('p', 'menu__text');
-  const link = createElement('a', 'menu__link');
-  link.href = REPO_URL;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = t('about.source.link');
-  source.append(document.createTextNode(`${t('about.source')} `), link);
+  source.append(
+    document.createTextNode(`${t('about.source')} `),
+    externalLink(REPO_URL, t('about.source.link')),
+  );
 
   body.append(offline, privacy, source);
 

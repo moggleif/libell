@@ -30,3 +30,13 @@ export function textElement<K extends keyof HTMLElementTagNameMap>(
 export function paragraph(className: string, text: string): HTMLParagraphElement {
   return textElement('p', className, text);
 }
+
+/** A link that opens in a tab of its own, with `noopener` so the page it
+ * opens cannot reach back into the app. */
+export function externalLink(href: string, label: string): HTMLAnchorElement {
+  const link = textElement('a', 'menu__link', label);
+  link.href = href;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  return link;
+}

@@ -6,7 +6,7 @@
  */
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { boxNames } from './boxNames';
-import { createElement, paragraph } from './dom';
+import { createElement, externalLink, paragraph } from './dom';
 import { getLanguage, t, type MessageKey } from './i18n';
 import { createCheckboxField, createSectionHeading } from './settingsFields';
 
@@ -27,15 +27,6 @@ function toggle(choice: CountingChoice): HTMLElement {
   field.caption.textContent = t('counting.toggle');
   field.control.addEventListener('change', () => choice.setOn(field.control.checked));
   return field.element;
-}
-
-function dashboardLink(): HTMLAnchorElement {
-  const link = createElement('a', 'menu__link');
-  link.href = COUNTER_ORIGIN;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = t('counting.dashboard');
-  return link;
 }
 
 /** Sentences that share one paragraph, so the step fits a small phone whole. */
@@ -59,7 +50,7 @@ export function createCountingExplanation(
   textClass = 'menu__text',
 ): HTMLElement[] {
   return [
-    joined(textClass, t('counting.intro'), dashboardLink()),
+    joined(textClass, t('counting.intro'), externalLink(COUNTER_ORIGIN, t('counting.dashboard'))),
     heading('counting.sent.h'),
     paragraph(textClass, t('counting.sent', { boxes: boxNames(getLanguage(), 'disjunction') })),
     heading('counting.notSent.h'),
