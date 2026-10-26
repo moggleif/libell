@@ -570,4 +570,4 @@ one rule no browser in CI can reproduce — the iOS large-vs-small viewport, see
 builds with the base path Pages reports, so a build fits the custom domain once it is set
 and the project site before that, and it publishes a `.well-known` folder from the static files too (ADR 0020).
 Dependabot's grouped patch and minor PRs merge themselves once that CI is green
-(ADR 0021); such a merge does not start the deploy, so it ships with the next merge.
+(ADR 0023); such a merge does not start the deploy, so it ships with the next merge.

@@ -2,7 +2,7 @@ version: 2
 updates:
   # Patch and minor updates arrive as one grouped PR a week per ecosystem and
   # merge themselves once CI is green; a major version gets a PR of its own
-  # and waits for a person (#694, ADR 0021).
+  # and waits for a person (#694, ADR 0023).
   - package-ecosystem: npm
     directory: /
     schedule:

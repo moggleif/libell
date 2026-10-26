@@ -2,7 +2,7 @@ name: Dependabot auto-merge
 
 # Turns on GitHub's auto-merge for a Dependabot PR whose updates are all patch
 # or minor, so it merges itself once the required check "Check, Test & Build"
-# is green. A major version is left for a person (#694, ADR 0021). Runs on
+# is green. A major version is left for a person (#694, ADR 0023). Runs on
 # pull_request, not pull_request_target, and never checks out the PR's code.
 on: pull_request
 
