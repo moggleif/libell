@@ -2143,7 +2143,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'counting.sent': ctx(
     'text',
     'First-start counting choice screen, and Help › Privacy tab’s counting block: under "What is counted".',
-    'Lists everything that is counted: app opened, features used, sensor model, app version, language chosen in the app.',
+    'Lists everything that is counted: app opened, features used, sensor model, app version, language chosen in the app. {boxes} is the box brands joined with "or" in this language, e.g. "EasyLevel or Xparkle RVS01".',
   ),
   'counting.notSent.h': ctx(
     'label',

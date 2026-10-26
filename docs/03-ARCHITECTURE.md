@@ -487,7 +487,9 @@ escaping every text goes through, the head with a `default-src 'none'; style-src
 CSP of its own, the list of the same page in the other languages, and the one stylesheet (`STATIC_CSS`), which
 uses only the browser's system colours (`Canvas`, `CanvasText`, `LinkText`) under
 `color-scheme: light dark`. No page has a script it runs. Text is looked up per language
-with `translate()` from `i18n.ts`; brands come from `EXTERNAL_SENSORS`. The pages fall
+with `translate()` from `i18n.ts`; brands come from `boxNames()` (`boxNames.ts`), which
+lists `EXTERNAL_SENSORS` the way the language joins things ("A and B", or "A or B"
+where any one is meant), as the app's own counting block does (#709). The pages fall
 under the precache glob, and `navigateFallbackDenylist` keeps the service worker from
 answering them with the app.
 

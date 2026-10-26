@@ -5,7 +5,7 @@
  * in that language. Written by the build (`vite.config.ts`) from the message
  * dictionaries, like the privacy policy. Plain strings, no DOM.
  */
-import { EXTERNAL_SENSORS } from '../sensor/boxes';
+import { boxNames } from './boxNames';
 import { jsonForHtml, previewMeta, siteUrl, webApplication } from './findability';
 import { LANGUAGES, translate, type Language, type MessageKey } from './i18n';
 import { privacyPolicyPath } from './privacyPolicy';
@@ -44,14 +44,8 @@ const HOW: readonly MessageKey[] = [
   'landing.how.app',
 ];
 
-/** The supported boxes as the language lists things: "A and B". */
-function boxes(lang: Language): string {
-  const names = EXTERNAL_SENSORS.map((box) => box.displayName);
-  return new Intl.ListFormat(lang, { type: 'conjunction' }).format(names);
-}
-
 function text(lang: Language, key: MessageKey): string {
-  return translate(lang, key, { boxes: boxes(lang) });
+  return translate(lang, key, { boxes: boxNames(lang) });
 }
 
 function answer(lang: Language, question: Question): string {
