@@ -87,6 +87,17 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
     expect(menu.element.querySelector('.menu-page')?.hasAttribute('hidden')).toBe(false);
   });
 
+  it('openDrawer shows the drawer, as a tap of the gear does (#708)', () => {
+    const viaDrawer = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    viaDrawer.openDrawer();
+    const viaGear = createMenu(makeOptions({ initialSettings: classicSettings() }));
+    const gear = document.createElement('button');
+    viaGear.attach(gear);
+    gear.click();
+    expect(viaDrawer.isOpen()).toBe(true);
+    expect(viaDrawer.element.outerHTML).toBe(viaGear.element.outerHTML);
+  });
+
   it('General/Vehicle/Ramps share one settingsForm instance, swapped per page — no tabs', () => {
     const menu = createMenu(makeOptions({ initialSettings: classicSettings() }));
     menu.open('general');

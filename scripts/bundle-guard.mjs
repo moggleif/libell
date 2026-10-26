@@ -1,7 +1,7 @@
 // The bundle guard (ADR 0024): reads the built app in dist/ and fails when the
-// entry file or any other file is over its gzip budget, when the entry file
-// holds a module that must load after the first render, or when a file is
-// not precached. Run after `npm run build`; CI runs it on every pull request.
+// files loaded at start, or any other file, are over their gzip budget, when a
+// file loaded at start holds a module that must load after the first render,
+// or when a file is not precached. Run after `npm run build`; CI runs it on every pull request.
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,7 @@ const dist = join(root, 'dist');
 const chunks = readBuiltChunks(dist, root);
 const precached = precachedFiles(readFileSync(join(dist, 'sw.js'), 'utf8'));
 for (const chunk of chunks) {
-  const kind = chunk.isEntry ? 'entry' : 'chunk';
+  const kind = chunk.atStart ? 'start' : 'later';
   console.log(
     `${(chunk.gzipBytes / 1024).toFixed(1).padStart(7)} kB gzip  ${kind}  ${chunk.fileName}`,
   );
