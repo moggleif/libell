@@ -2,7 +2,8 @@ import { createSensorSourceSection, type SensorSourceOptions } from '../sensorSo
 import { availableBoxes } from '../../sensor/boxes';
 import { t } from '../i18n';
 import type { OnboardingOptions, Step } from './types';
-import { paragraph, textClass, type WizardState } from './wizardState';
+import { textClass, type WizardState } from './wizardState';
+import { paragraph } from '../dom';
 
 /** Falls back to the caller's bag alone when it supplies no per-source
  * factory. */

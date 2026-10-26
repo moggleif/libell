@@ -5,7 +5,7 @@
  */
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import { t } from '../ui/i18n';
-import { createElement } from '../ui/dom';
+import { paragraph } from '../ui/dom';
 
 export interface SensorStartupDeps {
   root: HTMLElement;
@@ -44,14 +44,8 @@ function showSensorState(state: SensorState, deps: SensorStartupDeps): void {
   else showMessage(deps.root, deps.isSecureContext() ? t('main.noSensors') : t('main.https'));
 }
 
-function hint(text: string): HTMLParagraphElement {
-  const element = createElement('p', 'app__hint');
-  element.textContent = text;
-  return element;
-}
-
 function showMessage(root: HTMLElement, text: string): void {
-  root.replaceChildren(hint(text));
+  root.replaceChildren(paragraph('app__hint', text));
 }
 
 /** iOS releases motion data only after a user gesture. */
@@ -61,5 +55,5 @@ function showStartButton(root: HTMLElement, onStart: () => void): void {
   button.className = 'app__start';
   button.textContent = t('main.start');
   button.addEventListener('click', onStart);
-  root.replaceChildren(hint(t('main.hint')), button);
+  root.replaceChildren(paragraph('app__hint', t('main.hint')), button);
 }

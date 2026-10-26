@@ -8,7 +8,7 @@
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { Calibration } from '../domain/calibration';
 import { t, type MessageKey } from './i18n';
-import { createElement } from './dom';
+import { createElement, paragraph, textElement } from './dom';
 
 export interface LearnMountingOptions {
   name: string;
@@ -73,10 +73,10 @@ export function createLearnMountingSection(options: LearnMountingOptions): Learn
 
 function createView() {
   const element = createElement('div', 'learn-mounting');
-  const heading = paragraph('h3', 'menu__heading', t('sensorSource.learn.h'));
-  const intro = paragraph('p', 'menu__text', t('sensorSource.learn.intro'));
-  const instruction = paragraph('p', 'menu__text');
-  const status = paragraph('p', 'menu__text menu__text--status');
+  const heading = textElement('h3', 'menu__heading', t('sensorSource.learn.h'));
+  const intro = paragraph('menu__text', t('sensorSource.learn.intro'));
+  const instruction = createElement('p', 'menu__text');
+  const status = createElement('p', 'menu__text menu__text--status');
   const startButton = makeButton('sensorSource.learn.start');
   const frontButton = makeButton('sensorSource.learn.capture.front');
   const rightButton = makeButton('sensorSource.learn.capture.right');
@@ -92,12 +92,6 @@ function createView() {
     status,
   );
   return { element, instruction, status, startButton, frontButton, rightButton, cancelButton };
-}
-
-function paragraph(tag: 'h3' | 'p', className: string, text?: string): HTMLElement {
-  const element = createElement(tag, className);
-  if (text !== undefined) element.textContent = text;
-  return element;
 }
 
 function makeButton(key: MessageKey, secondary = false): HTMLButtonElement {

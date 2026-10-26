@@ -5,7 +5,7 @@
  * "Look around first" goes straight to the app.
  */
 import { createDialog } from './dialog';
-import { button, createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { placementIllustration } from './helpIllustrations';
 import { t } from './i18n';
 import type { InstallOffer } from './install';
@@ -41,14 +41,13 @@ function buildBody(heading: HTMLHeadingElement): HTMLElement {
   // The words below say it all; the drawing only shows it.
   const drawing = placementIllustration('');
   drawing.setAttribute('aria-hidden', 'true');
-  body.append(drawing, heading, paragraph('about.text'), paragraph('intro.how'));
+  body.append(
+    drawing,
+    heading,
+    paragraph('intro__text', t('about.text')),
+    paragraph('intro__text', t('intro.how')),
+  );
   return body;
-}
-
-function paragraph(key: 'about.text' | 'intro.how' | 'install.hint'): HTMLParagraphElement {
-  const p = createElement('p', 'intro__text');
-  p.textContent = t(key);
-  return p;
 }
 
 function buildNav(
@@ -64,7 +63,7 @@ function buildNav(
 
 /** Shown while the browser offers to install; the offer can arrive late. */
 function installParts(install: InstallOffer): HTMLElement[] {
-  const hint = paragraph('install.hint');
+  const hint = paragraph('intro__text', t('install.hint'));
   hint.classList.add('intro__hint');
   hint.hidden = true;
   const installButton = button('menu__action menu__action--secondary', t('topbar.install'), () => {

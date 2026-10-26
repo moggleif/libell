@@ -15,3 +15,18 @@ export function button(className: string, label: string, onClick?: () => void): 
   if (onClick) element.addEventListener('click', onClick);
   return element;
 }
+
+/** An element with its class and its text, set as text (never as markup). */
+export function textElement<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className: string,
+  text: string,
+): HTMLElementTagNameMap[K] {
+  const element = createElement(tag, className);
+  element.textContent = text;
+  return element;
+}
+
+export function paragraph(className: string, text: string): HTMLParagraphElement {
+  return textElement('p', className, text);
+}
