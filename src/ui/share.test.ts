@@ -4,7 +4,7 @@
 // with a toast, else the address itself in a toast.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setLanguage, t } from './i18n';
-import { shareOrCopyLink } from './share';
+import { appUrl, setupShareButton, shareOrCopyLink } from './share';
 
 setLanguage('en');
 
@@ -64,5 +64,19 @@ describe('shareOrCopyLink', () => {
     });
     await shareOrCopyLink(URL_, 'Level your RV');
     expect(toasts()).toEqual([URL_]);
+  });
+});
+
+describe('setupShareButton (#713)', () => {
+  it('names the button and shares the app address with the share text', async () => {
+    const share = vi.fn(() => Promise.resolve());
+    useNavigator({ share });
+    const button = document.createElement('button');
+    setupShareButton(button);
+    expect(button.getAttribute('aria-label')).toBe(t('topbar.share'));
+    expect(button.title).toBe(t('topbar.share'));
+    button.click();
+    await Promise.resolve();
+    expect(share).toHaveBeenCalledWith({ title: 'Libell', text: t('share.text'), url: appUrl() });
   });
 });

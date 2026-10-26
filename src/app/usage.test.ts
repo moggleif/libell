@@ -1,14 +1,16 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { DEFAULT_SETTINGS } from '../domain/settings';
+import { SITE_ORIGIN } from '../domain/site';
 import {
   countAppStart,
   countFeature,
   countSensor,
   createUsageCounter,
+  browserUsageDeps,
   refusesTracking,
   startUsageCounting,
   type UsageDeps,
@@ -124,5 +126,79 @@ describe('the CSP (#674)', () => {
     const connect = /connect-src ([^;]*);/.exec(config)?.[1];
     expect(connect).toBe(`'self' ${COUNTER_ORIGIN}`);
     expect(/script-src ([^;]*);/.exec(config)?.[1]).toBe(`'self'`);
+  });
+});
+
+interface BrowserState {
+  origin: string;
+  onLine: boolean;
+  globalPrivacyControl?: boolean;
+  doNotTrack?: string;
+  counting: string | null;
+}
+
+const REAL_APP: BrowserState = { origin: SITE_ORIGIN, onLine: true, counting: 'on' };
+
+function useBrowser(state: BrowserState): void {
+  const { origin, counting, ...nav } = state;
+  vi.stubGlobal('location', { origin });
+  vi.stubGlobal('navigator', nav);
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => (key === 'libell.counting' ? counting : null),
+    setItem: () => {},
+    removeItem: () => {},
+  });
+}
+
+describe('browserUsageDeps (#713)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('allows counting in the real app on libell.app with counting on', () => {
+    useBrowser(REAL_APP);
+    expect(browserUsageDeps(false).allowed()).toBe(true);
+  });
+
+  it('never counts in ?demo', () => {
+    useBrowser(REAL_APP);
+    expect(browserUsageDeps(true).allowed()).toBe(false);
+  });
+
+  it.each([
+    ['another origin', { origin: 'http://localhost:5173' }],
+    ['offline', { onLine: false }],
+    ['Global Privacy Control', { globalPrivacyControl: true }],
+    ['Do Not Track', { doNotTrack: '1' }],
+    ['a stored "off"', { counting: 'off' }],
+    ['no stored choice', { counting: null }],
+  ] as const)('never counts with %s', (_, change) => {
+    useBrowser({ ...REAL_APP, ...change });
+    expect(browserUsageDeps(false).allowed()).toBe(false);
+  });
+
+  it('asks again on every send, so switching off takes effect at once', () => {
+    useBrowser(REAL_APP);
+    const deps = browserUsageDeps(false);
+    useBrowser({ ...REAL_APP, counting: 'off' });
+    expect(deps.allowed()).toBe(false);
+  });
+
+  it('sends without cookies, cache or referrer, and outlives the page', () => {
+    const fetch = vi.fn(() => Promise.resolve(new Response()));
+    vi.stubGlobal('fetch', fetch);
+    browserUsageDeps(false).send('https://libell.goatcounter.com/count?p=open');
+    expect(fetch).toHaveBeenCalledWith('https://libell.goatcounter.com/count?p=open', {
+      mode: 'no-cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      keepalive: true,
+      referrerPolicy: 'no-referrer',
+    });
+  });
+
+  // An unhandled rejection would fail the test run, so settling is the check.
+  it('swallows a failed send', async () => {
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('offline')));
+    expect(() => browserUsageDeps(false).send('https://libell.goatcounter.com/')).not.toThrow();
+    await new Promise((settle) => setTimeout(settle, 0));
   });
 });
