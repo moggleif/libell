@@ -520,7 +520,8 @@ export const nl: Messages = {
   'help.ramps.t':
     'Het scherm vertelt op welke trede van je blok elk wiel moet, dus voer de blokken in die je bij je hebt.\n' +
     'Kies een kant-en-klaar blok of een eigen set, en hoeveel je er hebt. Libell legt ze waar ze het meest helpen.\n' +
-    'Voor een blok zonder treden kies je Traploze wig en voer je de hoogte in. Het scherm zegt dan hoe ver je moet oprijden.',
+    'Voor een blok zonder treden kies je Traploze wig en voer je de hoogte in. Het scherm zegt dan hoe ver je moet oprijden.\n' +
+    'Een verstelbaar blok zoals de Lippert LEVEL9 zet je vóór het oprijden op de juiste trede. De regel boven het voertuig zegt wanneer je eraf moet rijden om het bij te stellen.',
   'help.calibration.h': 'Kalibreren en nullen',
   'help.calibration.t':
     'Twee stappen maken de metingen juist: kalibreer de telefoon één keer en nul het voertuig één keer.\n' +

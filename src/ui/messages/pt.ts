@@ -504,7 +504,8 @@ export const pt: Messages = {
   'help.ramps.t':
     'O ecrã diz para que degrau da sua rampa vai cada roda, por isso indique as rampas que leva.\n' +
     'Escolha uma rampa de fábrica ou um conjunto próprio, e quantas tem. O Libell coloca-as onde ajudam mais.\n' +
-    'Para uma rampa sem degraus, escolha Calço sem degraus e indique a altura. O ecrã diz então quanto subir.',
+    'Para uma rampa sem degraus, escolha Calço sem degraus e indique a altura. O ecrã diz então quanto subir.\n' +
+    'Ajuste uma rampa regulável como a Lippert LEVEL9 ao degrau certo antes de subir para ela. A linha acima do veículo diz quando descer e voltar a ajustá-la.',
   'help.calibration.h': 'Calibrar e pôr a zero',
   'help.calibration.t':
     'Dois passos tornam as leituras corretas: calibrar o telemóvel uma vez e pôr o veículo a zero uma vez.\n' +

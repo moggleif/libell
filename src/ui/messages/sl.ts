@@ -501,7 +501,8 @@ export const sl: Messages = {
   'help.ramps.t':
     'Zaslon pokaže, na katero stopnico rampe zapeljete s posameznim kolesom, zato vnesite rampe, ki jih vozite s seboj.\n' +
     'Izberite gotovo rampo ali lasten nabor in koliko ramp imate. Libell jih postavi tja, kjer najbolj pomagajo.\n' +
-    'Za rampo brez stopnic izberite „Klin brez stopnic“ in vnesite njegovo višino. Zaslon nato pove, koliko naj zapeljete gor.',
+    'Za rampo brez stopnic izberite „Klin brez stopnic“ in vnesite njegovo višino. Zaslon nato pove, koliko naj zapeljete gor.\n' +
+    'Nastavljivo rampo, kot je Lippert LEVEL9, nastavite na pravo stopnico, preden zapeljete nanjo. Vrstica nad vozilom pove, kdaj zapeljati z nje in jo znova nastaviti.',
   'help.calibration.h': 'Kalibracija in ničla',
   'help.calibration.t':
     'Za pravilne meritve sta potrebna dva koraka: enkrat kalibrirajte telefon in enkrat nastavite ničlo vozila.\n' +

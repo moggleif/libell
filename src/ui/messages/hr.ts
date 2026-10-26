@@ -514,7 +514,8 @@ export const hr: Messages = {
   'help.ramps.t':
     'Zaslon vam pokazuje na koju stepenicu rampe ide svaki kotač, pa unesite rampe koje vozite sa sobom.\n' +
     'Odaberite gotovu rampu ili vlastiti set te koliko ih imate. Libell ih postavlja gdje najviše pomažu.\n' +
-    'Za klin bez stepenica odaberite „Klin bez stepenica” i unesite njegovu visinu. Kartica kotača tada kaže „Navezi” i za koliko.',
+    'Za klin bez stepenica odaberite „Klin bez stepenica” i unesite njegovu visinu. Kartica kotača tada kaže „Navezi” i za koliko.\n' +
+    'Podesivu rampu, poput Lippert LEVEL9, namjestite na pravu stepenicu prije nego što se navezete na nju. Redak iznad vozila kaže kada se odvesti s nje i ponovno je namjestiti.',
   'help.calibration.h': 'Kalibriraj i nuliraj',
   'help.calibration.t':
     'Dva koraka čine očitanja točnima: jednom kalibrirajte telefon i jednom nulirajte vozilo.\n' +

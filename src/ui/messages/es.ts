@@ -518,7 +518,8 @@ export const es: Messages = {
   'help.ramps.t':
     'La pantalla te dice a qué escalón de tu rampa sube cada rueda, así que introduce las rampas que llevas.\n' +
     'Elige una rampa prefabricada o un juego personalizado, y cuántas tienes. Libell las coloca donde más ayudan.\n' +
-    'Si tienes un calzo sin escalones, elige Calzo sin escalones e introduce su altura. La pantalla dice entonces cuánto subir.',
+    'Si tienes un calzo sin escalones, elige Calzo sin escalones e introduce su altura. La pantalla dice entonces cuánto subir.\n' +
+    'Regula una rampa ajustable como la Lippert LEVEL9 al escalón correcto antes de subirte a ella. La línea sobre el vehículo te dice cuándo bajar y volver a ajustarla.',
   'help.calibration.h': 'Calibrar y poner a cero',
   'help.calibration.t':
     'Dos pasos hacen que la medida sea correcta: calibrar el móvil una vez y poner el vehículo a cero una vez.\n' +

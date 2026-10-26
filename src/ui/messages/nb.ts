@@ -506,7 +506,8 @@ export const nb: Messages = {
   'help.ramps.t':
     'Skjermen viser hvilket trinn på kilen hvert hjul skal opp på, så legg inn kilene du har med.\n' +
     'Velg en kilemodell eller et eget sett, og hvor mange du har. Libell legger dem der de hjelper mest.\n' +
-    'For en kile uten trinn velger du «Trinnløs kile» og skriver inn høyden. Skjermen sier da hvor langt du skal kjøre opp.',
+    'For en kile uten trinn velger du «Trinnløs kile» og skriver inn høyden. Skjermen sier da hvor langt du skal kjøre opp.\n' +
+    'En justerbar kile som Lippert LEVEL9 stiller du på riktig trinn før du kjører opp. Linjen over kjøretøyet sier når du skal kjøre ned og stille den om.',
   'help.calibration.h': 'Kalibrer og nullstill',
   'help.calibration.t':
     'To trinn gjør målingene riktige: kalibrer telefonen én gang og nullstill kjøretøyet én gang.\n' +

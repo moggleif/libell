@@ -2463,7 +2463,7 @@ export const CONTEXT: Record<MessageKey, StringContext> = {
   'help.ramps.t': ctx(
     'text',
     'Info › Help › Ramps topic: paragraph, one fact per line.',
-    'Explains entering the ramps (klossar) you carry; "Stepless wedge" must match the steglös kil option name.',
+    'Explains entering the ramps (klossar) you carry; "Stepless wedge" must match the steglös kil option name. The last line explains an adjustable kloss (Lippert LEVEL9, product name kept): set it to its step before driving up, and the line above the vehicle (adjustable.before/after) says when to drive off and set it again.',
   ),
   'help.calibration.h': ctx(
     'label',

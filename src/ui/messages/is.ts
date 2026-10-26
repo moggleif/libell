@@ -493,7 +493,8 @@ export const is: Messages = {
   'help.ramps.t':
     'Skjárinn segir upp á hvaða þrep kubbsins hvert hjól á að fara, svo skráðu kubbana sem þú ert með.\n' +
     'Veldu kubbategund eða eigið sett, og hve marga þú átt. Libell setur þá þar sem þeir gagnast best.\n' +
-    'Fyrir kubb án þrepa velurðu „Þrepalaus fleygur“ og slærð inn hæð hans. Skjárinn segir þá hve langt á að keyra upp.',
+    'Fyrir kubb án þrepa velurðu „Þrepalaus fleygur“ og slærð inn hæð hans. Skjárinn segir þá hve langt á að keyra upp.\n' +
+    'Stillanlegan kubb eins og Lippert LEVEL9 stillirðu á rétt þrep áður en þú keyrir upp. Línan fyrir ofan ökutækið segir hvenær á að keyra af og stilla hann aftur.',
   'help.calibration.h': 'Kvarða og núllstilla',
   'help.calibration.t':
     'Tvö skref gera mælingarnar réttar: kvarðaðu símann einu sinni og núllstilltu ökutækið einu sinni.\n' +
