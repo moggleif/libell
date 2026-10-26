@@ -483,7 +483,13 @@ offline, says it has no connection and tries again on the next use. The parts so
   through `src/app/onboardingLauncher.ts` once their file is in (`src/app/pages.ts`). The
   launcher counts them open from the moment they are asked for, so the level screen
   pauses its guidance at once. Settings and the guide share the settings forms
-  (`src/ui/settingsPanel.ts` and its tabs), which the build puts in a file of their own.
+  (`src/ui/settingsPanel.ts` and its tabs), which the build puts in a file of their own;
+- the sensor's pages (`src/ui/sensorPage.ts` with each box's own page, iOS's guide, or
+  the page that says Web Bluetooth is missing), through `src/app/sensorPages.ts`. Which
+  one applies is decided at start, so the top bar's sensor icon is right from the first
+  frame; opening the list or a box's page loads it first, and its live rows refresh only
+  once it is in. The box drivers stay in the entry file: Web Bluetooth only connects
+  within the tap that asked for it, and a remembered box reconnects at start.
 
 The build may also split modules the entry shares with these parts into a file the entry
 preloads; that file loads at start too. The bundle guard's `startExcludes`

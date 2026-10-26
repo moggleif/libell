@@ -1,5 +1,5 @@
 {
-  "startMaxKb": 50,
+  "startMaxKb": 45,
   "chunkMaxKb": 15,
   "startExcludes": [
     "src/ui/messages/",
@@ -23,6 +23,15 @@
     "src/ui/rampsPage.ts",
     "src/ui/onboarding",
     "src/ui/intro.ts",
-    "src/ui/helpIllustrations.ts"
+    "src/ui/helpIllustrations.ts",
+    "src/ui/sensorPage.ts",
+    "src/ui/boxStatusPage.ts",
+    "src/ui/boxSetupChecklist.ts",
+    "src/ui/sensorCard.ts",
+    "src/ui/sensorSourceSection.ts",
+    "src/ui/learnMountingSection.ts",
+    "src/ui/mountingPicker.ts",
+    "src/ui/iosSensorGuidePage.ts",
+    "src/ui/unsupportedSensorPage.ts"
   ]
 }
