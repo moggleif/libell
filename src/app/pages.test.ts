@@ -112,6 +112,22 @@ describe('mountPages', () => {
     expect(document.body.contains(infoPage!.element)).toBe(true);
   });
 
+  it('shows the wizard once its module has loaded, paused from the first moment (#708)', async () => {
+    const screen = fakeScreen();
+    const pages = mountPages(createCore(screen), screen, noInstall);
+    pages.onboarding.open();
+    expect(pages.onboarding.isOpen()).toBe(true);
+    await vi.waitFor(() => expect(document.querySelector('.onboarding')).not.toBeNull());
+  });
+
+  it('shows the first-visit intro once its module has loaded (#708)', async () => {
+    const screen = fakeScreen();
+    const pages = mountPages(createCore(screen), screen, noInstall);
+    pages.onboarding.openFirstRun();
+    expect(pages.onboarding.isOpen()).toBe(true);
+    await vi.waitFor(() => expect(document.querySelector('.intro')).not.toBeNull());
+  });
+
   it('starts with every page closed', () => {
     const screen = fakeScreen();
     const pages = mountPages(createCore(screen), screen, noInstall);
@@ -119,12 +135,12 @@ describe('mountPages', () => {
     expect(pages.settingsSurface.isOpen()).toBe(false);
   });
 
-  it('opens settings from the gear', () => {
+  it('opens settings from the gear', async () => {
     const gear = button('settings-button');
     const screen = fakeScreen();
     const pages = mountPages(createCore(screen), screen, noInstall);
     gear.click();
-    expect(pages.settingsSurface.isOpen()).toBe(true);
+    await vi.waitFor(() => expect(pages.settingsSurface.isOpen()).toBe(true));
   });
 
   describe('a settings save (#513)', () => {
@@ -191,11 +207,11 @@ describe('mountPages', () => {
     expect(wizard).toHaveProperty('connectSensor');
   });
 
-  it('opens the calibration settings while the phone is in use and no box is pending', () => {
+  it('opens the calibration settings while the phone is in use and no box is pending', async () => {
     button('settings-button');
     const screen = fakeScreen();
     const pages = mountPages(createCore(screen), screen, noInstall);
     pages.navigation.openCalibration();
-    expect(pages.settingsSurface.isOpen()).toBe(true);
+    await vi.waitFor(() => expect(pages.settingsSurface.isOpen()).toBe(true));
   });
 });

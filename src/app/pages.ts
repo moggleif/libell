@@ -13,16 +13,18 @@ import {
 } from '../data/settingsStore';
 import type { InfoPage } from '../ui/infoMenu';
 import type { InstallOffer } from '../ui/install';
-import { showIntro } from '../ui/intro';
-import { showOnboarding } from '../ui/onboarding';
 import { shareVehicleSetup } from '../ui/vehicleShare';
 import { applyLook, type Core, type Screen } from './core';
 import { boxPageOptions, buildMenuOptions, wizardBoxOptions } from './menuOptions';
 import { createNavigation, type Navigation } from './navigation';
-import { createOnboardingLauncher, type OnboardingLauncher } from './onboardingLauncher';
+import {
+  createOnboardingLauncher,
+  type OnboardingLauncher,
+  type OnboardingLauncherDeps,
+} from './onboardingLauncher';
 import { mountSensorPages, type SensorPages } from './sensorPages';
 import { createSettingsAdoption } from './settingsAdoption';
-import { lazyPage, whenIdle, type LazyPage } from './lazyPart';
+import { lazyPage, lazyPart, whenIdle, type LazyPage } from './lazyPart';
 import { countFeature } from './usage';
 import { mountSettingsSurface, type SettingsSurface } from './settingsSurface';
 
@@ -38,8 +40,7 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
   const { settings, optionDeps } = core;
   const adoption = createAdoption(core, screen);
   const onboarding = createOnboardingLauncher({
-    show: showOnboarding,
-    showIntro,
+    ...guideScreens(),
     install,
     settings: settings.get,
     onSettingsSaved: adoption.fromWizard,
@@ -81,6 +82,18 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
   screen.settingsSurface = settingsSurface;
   screen.navigation = navigation;
   return { onboarding, settingsSurface, sensorPages, infoPage, navigation };
+}
+
+/** The wizard and the first-visit intro, each a file of its own that loads
+ * when the phone is idle, or at once when it is shown first (ADR 0024). */
+function guideScreens(): Pick<OnboardingLauncherDeps, 'show' | 'showIntro'> {
+  const wizard = lazyPart(() => import('../ui/onboarding'));
+  const intro = lazyPart(() => import('../ui/intro'));
+  whenIdle(() => void wizard());
+  return {
+    show: (options) => void wizard().then((module) => module?.showOnboarding(options)),
+    showIntro: (options) => void intro().then((module) => module?.showIntro(options)),
+  };
 }
 
 function createAdoption(core: Core, screen: Screen) {

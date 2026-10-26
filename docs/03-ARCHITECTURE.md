@@ -475,10 +475,20 @@ load means a newer version has replaced it: the app says it is updating and relo
 offline, says it has no connection and tries again on the next use. The parts so far:
 
 - the "?" page (`src/ui/infoMenu.ts`: help, About, feedback and the Privacy tab), behind
-  the help button (`src/app/pages.ts`).
+  the help button (`src/app/pages.ts`);
+- Settings (`src/ui/settingsPage.ts`, or Classic's `src/ui/menu.ts`), behind the gear
+  (`src/app/settingsSurface.ts`); the router's openers load it first, and a reload that
+  asks to reopen a section loads it at once;
+- the guide (`src/ui/onboarding.ts`) and the first-visit intro (`src/ui/intro.ts`), shown
+  through `src/app/onboardingLauncher.ts` once their file is in (`src/app/pages.ts`). The
+  launcher counts them open from the moment they are asked for, so the level screen
+  pauses its guidance at once. Settings and the guide share the settings forms
+  (`src/ui/settingsPanel.ts` and its tabs), which the build puts in a file of their own.
 
-The bundle guard's `entryExcludes` (`scripts/quality/bundle-budget.json`) lists the
-modules of every part, so a static import that pulls one back into the entry file fails CI.
+The build may also split modules the entry shares with these parts into a file the entry
+preloads; that file loads at start too. The bundle guard's `startExcludes`
+(`scripts/quality/bundle-budget.json`) lists the modules of every part, so a static
+import that pulls one back into a file loaded at start fails CI.
 
 ## Anonymous counting (`src/app/usage.ts`, ADR 0021)
 
@@ -593,7 +603,7 @@ phone screen — R4/#241, R18/#239 and R40/#243; the unit tests run in happy-dom
 has no layout engine and measures every height as zero, so this is the only place a
 too-tall or too-wide view can fail). `fit` also checks the stylesheet directly for the
 one rule no browser in CI can reproduce — the iOS large-vs-small viewport, see
-`docs/01-CONTRIBUTING.md`. After the build, `npm run bundle` checks what the entry file holds, the gzip budget of each
+`docs/01-CONTRIBUTING.md`. After the build, `npm run bundle` checks what the files loaded at start hold, the gzip budget of each
 file and that every file is precached (ADR 0024; see "Quality guards" in
 `docs/01-CONTRIBUTING.md`). Pushes to `main` deploy `dist/` to GitHub Pages. The deploy
 builds with the base path Pages reports, so a build fits the custom domain once it is set

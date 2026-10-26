@@ -103,6 +103,8 @@ export interface Menu {
   /** The drawer + page containers, appended to the document body. */
   element: HTMLElement;
   open(section: MenuSection): void;
+  /** Show the drawer, as a tap of the gear does when the menu is closed. */
+  openDrawer(): void;
   attach(button: HTMLButtonElement): void;
   /** True while the drawer or a page is showing — the app pauses guidance. */
   isOpen(): boolean;
@@ -152,17 +154,25 @@ export function createMenu(options: MenuOptions): Menu {
   return {
     element,
     open: showPage,
+    openDrawer: showDrawer,
     isOpen: () => depth.current() > 0,
     refresh() {
       if (depth.current() > 0) refreshPages();
     },
-    attach(button) {
-      button.addEventListener('click', () => {
-        if (depth.current() === 0) showDrawer();
-        else depth.back();
-      });
-    },
+    attach: (button) => toggleOnTap(button, depth, showDrawer),
   };
+}
+
+/** The gear opens the drawer when the menu is closed, and steps back when not. */
+function toggleOnTap(
+  button: HTMLButtonElement,
+  depth: ReturnType<typeof createMenuHistory>,
+  showDrawer: () => void,
+): void {
+  button.addEventListener('click', () => {
+    if (depth.current() === 0) showDrawer();
+    else depth.back();
+  });
 }
 
 /** 0 = closed, 1 = the drawer, 2 = a page on top of it. */
