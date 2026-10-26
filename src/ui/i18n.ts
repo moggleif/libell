@@ -1,66 +1,18 @@
 /**
- * One flat dictionary per language under `./messages/`. The dictionaries are
- * plain data so a unit test can assert every language covers the same keys.
+ * One flat dictionary per language under `./messages/`, each a file of its own
+ * that start-up loads for the one language in use (ADR 0024). `t()` reads the
+ * loaded dictionary; build-time code that needs every language uses
+ * `./translations` instead.
  */
 
-import { ca } from './messages/ca';
-import { cs } from './messages/cs';
-import { da } from './messages/da';
-import { de } from './messages/de';
-import { en } from './messages/en';
-import { es } from './messages/es';
-import { et } from './messages/et';
-import { fi } from './messages/fi';
-import { fr } from './messages/fr';
-import { hr } from './messages/hr';
-import { hu } from './messages/hu';
-import { is } from './messages/is';
-import { it } from './messages/it';
-import { lt } from './messages/lt';
-import { lv } from './messages/lv';
-import { nb } from './messages/nb';
-import { nl } from './messages/nl';
-import { pl } from './messages/pl';
-import { pt } from './messages/pt';
-import { ro } from './messages/ro';
-import { sk } from './messages/sk';
-import { sl } from './messages/sl';
-import { sv } from './messages/sv';
-import { tr } from './messages/tr';
+import type { Messages } from './messages/en';
 
-export const MESSAGES = {
-  en,
-  sv,
-  fr,
-  es,
-  de,
-  nl,
-  it,
-  pl,
-  pt,
-  da,
-  nb,
-  fi,
-  cs,
-  hu,
-  ro,
-  tr,
-  hr,
-  sk,
-  sl,
-  et,
-  lv,
-  lt,
-  ca,
-  is,
-} as const;
-
-export type Language = keyof typeof MESSAGES;
-export type MessageKey = keyof (typeof MESSAGES)['en'];
+export type Language = keyof typeof NAMES;
+export type MessageKey = keyof Messages;
 
 /** Each language named in itself, never through `t()`, so a Swedish reader
  * can still find "Deutsch". */
-export const LANGUAGE_NAMES: Record<Language, string> = {
+const NAMES = {
   sv: 'Svenska',
   en: 'English',
   fr: 'Français',
@@ -85,7 +37,9 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
   lt: 'Lietuvių',
   ca: 'Català',
   is: 'Íslenska',
-};
+} as const;
+
+export const LANGUAGE_NAMES: Record<Language, string> = NAMES;
 
 /** Alphabetical by native name, sorted in a fixed locale so the order is the
  * same on every phone and testable. */
@@ -121,6 +75,56 @@ export function getLanguage(): Language {
   return current;
 }
 
+/** Each language's dictionary, fetched only when that language is used. */
+const DICTIONARIES: Record<Language, () => Promise<Messages>> = {
+  ca: () => import('./messages/ca').then((m) => m.ca),
+  cs: () => import('./messages/cs').then((m) => m.cs),
+  da: () => import('./messages/da').then((m) => m.da),
+  de: () => import('./messages/de').then((m) => m.de),
+  en: () => import('./messages/en').then((m) => m.en),
+  es: () => import('./messages/es').then((m) => m.es),
+  et: () => import('./messages/et').then((m) => m.et),
+  fi: () => import('./messages/fi').then((m) => m.fi),
+  fr: () => import('./messages/fr').then((m) => m.fr),
+  hr: () => import('./messages/hr').then((m) => m.hr),
+  hu: () => import('./messages/hu').then((m) => m.hu),
+  is: () => import('./messages/is').then((m) => m.is),
+  it: () => import('./messages/it').then((m) => m.it),
+  lt: () => import('./messages/lt').then((m) => m.lt),
+  lv: () => import('./messages/lv').then((m) => m.lv),
+  nb: () => import('./messages/nb').then((m) => m.nb),
+  nl: () => import('./messages/nl').then((m) => m.nl),
+  pl: () => import('./messages/pl').then((m) => m.pl),
+  pt: () => import('./messages/pt').then((m) => m.pt),
+  ro: () => import('./messages/ro').then((m) => m.ro),
+  sk: () => import('./messages/sk').then((m) => m.sk),
+  sl: () => import('./messages/sl').then((m) => m.sl),
+  sv: () => import('./messages/sv').then((m) => m.sv),
+  tr: () => import('./messages/tr').then((m) => m.tr),
+};
+
+const loaded: Partial<Record<Language, Messages>> = {};
+
+/** Fetches `lang`'s dictionary, once, so `t()` can speak it. */
+export async function loadDictionary(lang: Language): Promise<void> {
+  loaded[lang] ??= await DICTIONARIES[lang]();
+}
+
+/** Start-up: speak `lang` once its dictionary is in, or English when it
+ * cannot load (ADR 0024). */
+export async function startLanguage(
+  lang: Language,
+  load: (lang: Language) => Promise<void> = loadDictionary,
+): Promise<void> {
+  try {
+    await load(lang);
+    setLanguage(lang);
+  } catch {
+    await load('en');
+    setLanguage('en');
+  }
+}
+
 /** Also tells the page, so a screen reader reads it in that language's
  * voice (#535). The app reloads on a language change, so start-up is the
  * one place it is applied. */
@@ -129,23 +133,18 @@ export function setLanguage(lang: Language): void {
   if (typeof document !== 'undefined') document.documentElement.lang = lang;
 }
 
-/** Substitutes `{name}` placeholders from `vars`. */
+/** Substitutes `{name}` placeholders from `vars`, in the current language.
+ * A dictionary that has not loaded falls back to English, then to the key. */
 export function t(key: MessageKey, vars?: Record<string, string | number>): string {
-  return translate(current, key, vars);
+  return fillPlaceholders(loaded[current]?.[key] ?? loaded.en?.[key] ?? key, vars);
 }
 
-/** `t()` in a given language, for text built outside the running app, such
- * as the static privacy pages (#675). */
-export function translate(
-  lang: Language,
-  key: MessageKey,
-  vars?: Record<string, string | number>,
-): string {
-  let text: string = MESSAGES[lang][key] ?? MESSAGES.en[key];
-  if (vars) {
-    for (const [name, value] of Object.entries(vars)) {
-      text = text.replaceAll(`{${name}}`, String(value));
-    }
+/** `text` with each `{name}` replaced by `vars[name]`. */
+export function fillPlaceholders(text: string, vars?: Record<string, string | number>): string {
+  if (!vars) return text;
+  let filled = text;
+  for (const [name, value] of Object.entries(vars)) {
+    filled = filled.replaceAll(`{${name}}`, String(value));
   }
-  return text;
+  return filled;
 }

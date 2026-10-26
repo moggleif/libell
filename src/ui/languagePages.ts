@@ -7,8 +7,9 @@
  */
 import { boxNames } from './boxNames';
 import { jsonForHtml, previewMeta, siteUrl, webApplication } from './findability';
-import { LANGUAGES, translate, type Language, type MessageKey } from './i18n';
-import { privacyPolicyPath } from './privacyPolicy';
+import { LANGUAGES, type Language, type MessageKey } from './i18n';
+import { translate } from './translations';
+import { privacyPolicyPath } from './privacyPolicyPath';
 import { escapeHtml, languageList, link, staticHead } from './staticPage';
 
 /** Where a language's page is served, under the app's base path. */

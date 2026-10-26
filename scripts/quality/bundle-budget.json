@@ -1,5 +1,5 @@
 {
-  "entryMaxKb": 360,
-  "chunkMaxKb": 360,
-  "entryExcludes": []
+  "entryMaxKb": 70,
+  "chunkMaxKb": 15,
+  "entryExcludes": ["src/ui/messages/", "src/ui/translations.ts"]
 }

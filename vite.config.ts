@@ -186,7 +186,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ['./vitest.locale.ts', './vitest.setup.ts'],
     include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
     // `npm run test:coverage` (CI) fails when coverage of the app source drops
     // below these floors, about 0.8 points under main's coverage when last

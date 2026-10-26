@@ -6,7 +6,8 @@
  * text comes from the message dictionaries, in English for now.
  */
 import { REPO_URL, SITE_ORIGIN } from '../domain/site';
-import { LANGUAGE_NAMES, LANGUAGES, MESSAGES } from './i18n';
+import { LANGUAGE_NAMES, LANGUAGES } from './i18n';
+import { MESSAGES } from './translations';
 
 /** The shape Vite's `transformIndexHtml` takes, without importing Vite. */
 export interface HeadTag {

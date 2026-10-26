@@ -7,7 +7,7 @@ import { maskSecrets, type StoredEntry } from '../data/storedData';
 import { createCountingSection, type CountingChoice } from './countingSection';
 import { button, createElement, externalLink, textElement } from './dom';
 import { getLanguage, t } from './i18n';
-import { privacyPolicyPath } from './privacyPolicy';
+import { privacyPolicyPath } from './privacyPolicyPath';
 import { storedRows } from './storedDataText';
 
 export interface PrivacyPanelOptions {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { LANGUAGES, MESSAGES } from '../i18n';
+import { LANGUAGES } from '../i18n';
+import { MESSAGES } from '../translations';
 import { CONTEXT } from './context';
 import { GLOSSARY } from './glossary';
 

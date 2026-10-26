@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { LANGUAGES, translate } from './i18n';
+import { LANGUAGES } from './i18n';
+import { translate } from './translations';
 import { languagePagePath, languagePages, pageData, renderLanguagePage } from './languagePages';
 import { escapeHtml } from './staticPage';
 

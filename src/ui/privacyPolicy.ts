@@ -9,18 +9,15 @@
 import { REPO_URL } from '../domain/site';
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { boxNames } from './boxNames';
-import { LANGUAGES, translate, type Language, type MessageKey } from './i18n';
+import { LANGUAGES, type Language, type MessageKey } from './i18n';
+import { privacyPolicyPath } from './privacyPolicyPath';
+import { translate } from './translations';
 import { escapeHtml, languageList, link, staticHead } from './staticPage';
 
 /** The day the policy's text last changed. Change it with the text. */
 const POLICY_CHANGED = '2026-10-25';
 
 const ISSUES_URL = `${REPO_URL}/issues`;
-
-/** Where a language's page is served, under the app's base path. */
-export function privacyPolicyPath(base: string, lang: Language): string {
-  return `${base}privacy/${lang}/`;
-}
 
 /** Every file the build writes, by its name under the output folder: a page
  * per language and `privacy/` in English. */
