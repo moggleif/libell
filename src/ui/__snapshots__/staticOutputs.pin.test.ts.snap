@@ -267,6 +267,8 @@ exports[`the static pages in ca > keeps the language page 1`] = `
 <meta property="og:description" content="Una app gratuïta que mostra quines rodes de l’autocaravana o la caravana cal pujar i a quin graó de la rampa. Fa servir el mòbil o una caixa sensora i funciona sense connexió.">
 <meta property="og:url" content="https://libell.app/ca/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -528,6 +530,8 @@ exports[`the static pages in cs > keeps the language page 1`] = `
 <meta property="og:description" content="Bezplatná aplikace, která ukáže, která kola obytného vozu nebo karavanu zvednout a na který stupeň nájezdu. Používá telefon nebo senzorový box a funguje offline.">
 <meta property="og:url" content="https://libell.app/cs/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -789,6 +793,8 @@ exports[`the static pages in da > keeps the language page 1`] = `
 <meta property="og:description" content="En gratis app, der viser, hvilke hjul på autocamperen eller campingvognen der skal op, og på hvilket trin på klodsen. Bruger telefonen eller en sensorboks og virker offline.">
 <meta property="og:url" content="https://libell.app/da/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -1050,6 +1056,8 @@ exports[`the static pages in de > keeps the language page 1`] = `
 <meta property="og:description" content="Kostenlose App, die zeigt, welche Räder deines Wohnmobils oder Wohnwagens hoch müssen und auf welche Stufe des Keils. Nutzt dein Handy oder eine Sensorbox und funktioniert offline.">
 <meta property="og:url" content="https://libell.app/de/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -1311,6 +1319,8 @@ exports[`the static pages in en > keeps the language page 1`] = `
 <meta property="og:description" content="A free app that shows which wheels of your motorhome or caravan to raise, and onto which ramp step. Uses your phone or a sensor box, and works offline.">
 <meta property="og:url" content="https://libell.app/en/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -1572,6 +1582,8 @@ exports[`the static pages in es > keeps the language page 1`] = `
 <meta property="og:description" content="Una app gratuita que te dice qué ruedas de tu autocaravana o caravana subir y a qué escalón de la rampa. Usa tu móvil o una caja sensora y funciona sin conexión.">
 <meta property="og:url" content="https://libell.app/es/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -1833,6 +1845,8 @@ exports[`the static pages in et > keeps the language page 1`] = `
 <meta property="og:description" content="Tasuta rakendus, mis näitab, milliseid matkaauto või haagissuvila rattaid tõsta ja millisele kiilu astmele. Kasutab telefoni või välisandurit ja töötab võrguühenduseta.">
 <meta property="og:url" content="https://libell.app/et/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -2094,6 +2108,8 @@ exports[`the static pages in fi > keeps the language page 1`] = `
 <meta property="og:description" content="Ilmainen sovellus, joka näyttää, mitkä matkailuauton tai -vaunun pyörät nostetaan ja mille kiilan askelmalle. Käyttää puhelinta tai anturirasiaa ja toimii ilman verkkoyhteyttä.">
 <meta property="og:url" content="https://libell.app/fi/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -2355,6 +2371,8 @@ exports[`the static pages in fr > keeps the language page 1`] = `
 <meta property="og:description" content="Une app gratuite qui indique quelles roues de votre camping-car ou caravane surélever, et sur quel palier de la rampe. Utilise votre téléphone ou un boîtier capteur, et fonctionne hors ligne.">
 <meta property="og:url" content="https://libell.app/fr/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -2616,6 +2634,8 @@ exports[`the static pages in hr > keeps the language page 1`] = `
 <meta property="og:description" content="Besplatna aplikacija koja pokazuje koje kotače kampera ili kamp-prikolice treba podići i na koju stepenicu rampe. Koristi vaš telefon ili senzorsku kutiju i radi izvan mreže.">
 <meta property="og:url" content="https://libell.app/hr/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -2877,6 +2897,8 @@ exports[`the static pages in hu > keeps the language page 1`] = `
 <meta property="og:description" content="Ingyenes alkalmazás, amely megmutatja, a lakóautód vagy lakókocsid mely kerekeit kell megemelni, és a rámpa melyik lépcsőjére. A telefonodat vagy egy szenzordobozt használ, és offline is működik.">
 <meta property="og:url" content="https://libell.app/hu/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -3138,6 +3160,8 @@ exports[`the static pages in is > keeps the language page 1`] = `
 <meta property="og:description" content="Ókeypis app sem sýnir hvaða hjól á húsbílnum eða hjólhýsinu þarf að hækka og upp á hvaða þrep kubbsins. Notar símann eða skynjarabox og virkar án nettengingar.">
 <meta property="og:url" content="https://libell.app/is/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -3399,6 +3423,8 @@ exports[`the static pages in it > keeps the language page 1`] = `
 <meta property="og:description" content="Un’app gratuita che mostra quali ruote del camper o della caravan alzare e su quale gradino della rampa. Usa il telefono o un box sensore e funziona offline.">
 <meta property="og:url" content="https://libell.app/it/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -3660,6 +3686,8 @@ exports[`the static pages in lt > keeps the language page 1`] = `
 <meta property="og:description" content="Nemokama programėlė, kuri parodo, kuriuos kemperio ar karavano ratus pakelti ir ant kurios pakylos pakopos. Naudoja telefoną arba jutiklio dėžutę ir veikia be interneto.">
 <meta property="og:url" content="https://libell.app/lt/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -3921,6 +3949,8 @@ exports[`the static pages in lv > keeps the language page 1`] = `
 <meta property="og:description" content="Bezmaksas lietotne, kas parāda, kurus kempera vai dzīvojamās piekabes riteņus pacelt un uz kuras rampas pakāpes. Izmanto tālruni vai sensora bloku un darbojas bezsaistē.">
 <meta property="og:url" content="https://libell.app/lv/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -4182,6 +4212,8 @@ exports[`the static pages in nb > keeps the language page 1`] = `
 <meta property="og:description" content="En gratis app som viser hvilke hjul på bobilen eller campingvognen som skal opp, og på hvilket trinn på kilen. Bruker telefonen eller en sensorboks og fungerer uten nett.">
 <meta property="og:url" content="https://libell.app/nb/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -4443,6 +4475,8 @@ exports[`the static pages in nl > keeps the language page 1`] = `
 <meta property="og:description" content="Een gratis app die laat zien welke wielen van je camper of caravan omhoog moeten, en op welke trede van het blok. Werkt met je telefoon of een sensorbox, en volledig offline.">
 <meta property="og:url" content="https://libell.app/nl/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -4704,6 +4738,8 @@ exports[`the static pages in pl > keeps the language page 1`] = `
 <meta property="og:description" content="Darmowa aplikacja, która pokazuje, które koła kampera lub przyczepy podnieść i na który stopień najazdu. Działa z telefonem lub modułem czujnika, także offline.">
 <meta property="og:url" content="https://libell.app/pl/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -4965,6 +5001,8 @@ exports[`the static pages in pt > keeps the language page 1`] = `
 <meta property="og:description" content="Uma app gratuita que mostra que rodas da sua autocaravana ou caravana levantar e para que degrau da rampa. Usa o telemóvel ou uma caixa de sensor e funciona offline.">
 <meta property="og:url" content="https://libell.app/pt/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -5226,6 +5264,8 @@ exports[`the static pages in ro > keeps the language page 1`] = `
 <meta property="og:description" content="O aplicație gratuită care arată ce roți ale autorulotei sau rulotei trebuie ridicate și pe ce treaptă a rampei. Folosește telefonul sau un modul senzor și funcționează offline.">
 <meta property="og:url" content="https://libell.app/ro/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -5487,6 +5527,8 @@ exports[`the static pages in sk > keeps the language page 1`] = `
 <meta property="og:description" content="Bezplatná aplikácia, ktorá ukáže, ktoré kolesá obytného auta alebo obytného prívesu zdvihnúť a na ktorý stupeň nájazdu. Používa telefón alebo senzorový modul a funguje offline.">
 <meta property="og:url" content="https://libell.app/sk/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -5748,6 +5790,8 @@ exports[`the static pages in sl > keeps the language page 1`] = `
 <meta property="og:description" content="Brezplačna aplikacija, ki pokaže, katera kolesa avtodoma ali počitniške prikolice dvigniti in na katero stopnico rampe. Uporablja telefon ali senzorsko enoto in deluje brez povezave.">
 <meta property="og:url" content="https://libell.app/sl/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -6009,6 +6053,8 @@ exports[`the static pages in sv > keeps the language page 1`] = `
 <meta property="og:description" content="En gratis app som visar vilka hjul på husbilen eller husvagnen som ska upp, och på vilket steg på klossen. Använder telefonen eller en sensorbox och fungerar utan internet.">
 <meta property="og:url" content="https://libell.app/sv/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
@@ -6270,6 +6316,8 @@ exports[`the static pages in tr > keeps the language page 1`] = `
 <meta property="og:description" content="Motokaravanınızın veya karavanınızın hangi tekerleklerinin takozun hangi basamağına çıkacağını gösteren ücretsiz uygulama. Telefonunuzu veya bir sensör kutusunu kullanır, çevrimdışı çalışır.">
 <meta property="og:url" content="https://libell.app/tr/">
 <meta property="og:image" content="https://libell.app/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {

@@ -6,7 +6,7 @@
  * dictionaries, like the privacy policy. Plain strings, no DOM.
  */
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
-import { jsonForHtml, PREVIEW_IMAGE, siteUrl } from './findability';
+import { jsonForHtml, previewMeta, siteUrl, webApplication } from './findability';
 import { LANGUAGES, translate, type Language, type MessageKey } from './i18n';
 import { privacyPolicyPath } from './privacyPolicy';
 import { escapeHtml, languageList, link, staticHead } from './staticPage';
@@ -64,17 +64,7 @@ export function pageData(lang: Language, base: string): object {
   return {
     '@context': 'https://schema.org',
     '@graph': [
-      {
-        '@type': 'WebApplication',
-        name: 'Libell',
-        url: site,
-        description: text(lang, 'seo.description'),
-        inLanguage: lang,
-        applicationCategory: 'UtilitiesApplication',
-        operatingSystem: 'Any (web browser)',
-        isAccessibleForFree: true,
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
-      },
+      webApplication(site, text(lang, 'seo.description'), lang),
       {
         '@type': 'FAQPage',
         inLanguage: lang,
@@ -97,6 +87,7 @@ function headLines(lang: Language, base: string): string[] {
   const site = siteUrl(base);
   const pageUrl = (other: Language) => `${site}${other}/`;
   const description = text(lang, 'seo.description');
+  const preview = { title: text(lang, 'seo.title'), description, url: pageUrl(lang) };
   return [
     meta('name', 'description', description),
     `<link rel="canonical" href="${pageUrl(lang)}">`,
@@ -104,13 +95,7 @@ function headLines(lang: Language, base: string): string[] {
       (other) => `<link rel="alternate" hreflang="${other}" href="${pageUrl(other)}">`,
     ),
     `<link rel="alternate" hreflang="x-default" href="${pageUrl('en')}">`,
-    meta('property', 'og:type', 'website'),
-    meta('property', 'og:site_name', 'Libell'),
-    meta('property', 'og:title', text(lang, 'seo.title')),
-    meta('property', 'og:description', description),
-    meta('property', 'og:url', pageUrl(lang)),
-    meta('property', 'og:image', site + PREVIEW_IMAGE.file),
-    meta('name', 'twitter:card', 'summary_large_image'),
+    ...previewMeta(site, preview).map(({ attr, key, content }) => meta(attr, key, content)),
     `<script type="application/ld+json">${jsonForHtml(pageData(lang, base))}</script>`,
   ];
 }

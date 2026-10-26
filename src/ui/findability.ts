@@ -22,20 +22,32 @@ export function siteUrl(base: string): string {
   return `${SITE_ORIGIN}${base}`;
 }
 
+/** The app as schema.org describes it, in the language(s) a page speaks:
+ * the app's own head and each language page (#703) say the same. */
+export function webApplication(
+  site: string,
+  description: string,
+  inLanguage: string | readonly string[],
+): Record<string, unknown> {
+  return {
+    '@type': 'WebApplication',
+    name: 'Libell',
+    url: site,
+    description,
+    inLanguage,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (web browser)',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  };
+}
+
 /** schema.org data for the app, read by search engines and AI assistants. */
 export function structuredData(site: string): object {
   return {
     '@context': 'https://schema.org',
-    '@type': 'WebApplication',
-    name: 'Libell',
-    url: site,
-    description: en['seo.description'],
-    applicationCategory: 'UtilitiesApplication',
-    operatingSystem: 'Any (web browser)',
+    ...webApplication(site, en['seo.description'], [...LANGUAGES]),
     browserRequirements: 'Requires a browser with JavaScript; installable as a PWA.',
-    isAccessibleForFree: true,
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
-    inLanguage: [...LANGUAGES],
     image: `${site}icons/icon-512.png`,
     license: 'https://opensource.org/licenses/MIT',
     codeRepository: REPO_URL,
@@ -49,24 +61,40 @@ export function jsonForHtml(value: object): string {
 
 /** The preview a chat app shows for a shared link (#702), drawn by
  * `scripts/generate-icons.mjs` from `art/preview.svg`. */
-export const PREVIEW_IMAGE = { file: 'preview.png', width: 1200, height: 630 };
+const PREVIEW_IMAGE = { file: 'preview.png', width: 1200, height: 630 };
 
-function openGraph(property: string, content: string): HeadTag {
-  return { tag: 'meta', attrs: { property, content } };
+/** One `<meta>` of a link preview: Open Graph by `property`, X by `name`. */
+interface PreviewMeta {
+  attr: 'name' | 'property';
+  key: string;
+  content: string;
+}
+
+/** The link preview of a page (#702): the app's head and each language page. */
+export function previewMeta(
+  site: string,
+  page: { title: string; description: string; url: string },
+): PreviewMeta[] {
+  const og = (key: string, content: string): PreviewMeta => ({ attr: 'property', key, content });
+  return [
+    og('og:type', 'website'),
+    og('og:site_name', 'Libell'),
+    og('og:title', page.title),
+    og('og:description', page.description),
+    og('og:url', page.url),
+    og('og:image', site + PREVIEW_IMAGE.file),
+    og('og:image:width', String(PREVIEW_IMAGE.width)),
+    og('og:image:height', String(PREVIEW_IMAGE.height)),
+    { attr: 'name', key: 'twitter:card', content: 'summary_large_image' },
+  ];
 }
 
 function previewTags(site: string): HeadTag[] {
-  return [
-    openGraph('og:type', 'website'),
-    openGraph('og:site_name', 'Libell'),
-    openGraph('og:title', en['seo.title']),
-    openGraph('og:description', en['seo.description']),
-    openGraph('og:url', site),
-    openGraph('og:image', site + PREVIEW_IMAGE.file),
-    openGraph('og:image:width', String(PREVIEW_IMAGE.width)),
-    openGraph('og:image:height', String(PREVIEW_IMAGE.height)),
-    { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
-  ];
+  const page = { title: en['seo.title'], description: en['seo.description'], url: site };
+  return previewMeta(site, page).map(({ attr, key, content }) => ({
+    tag: 'meta',
+    attrs: { [attr]: key, content },
+  }));
 }
 
 export function headTags(site: string): HeadTag[] {
