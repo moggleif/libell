@@ -501,7 +501,7 @@ export const tr: Messages = {
     'Ekran her tekerleğin takozunuzun hangi basamağına yukarı sürüleceğini söyler, bu yüzden yanınızdaki takozları girin.\n' +
     'Hazır bir takoz ya da özel bir set seçin ve kaç tane olduğunu belirtin. Libell onları en çok işe yarayacakları yere koyar.\n' +
     'Basamaksız bir takoz için “Basamaksız takoz”u seçin ve yüksekliğini girin. Ekran o zaman ne kadar yukarı sürüleceğini söyler.\n' +
-    'Lippert LEVEL9 gibi ayarlanabilir bir takozu, üzerine çıkmadan önce doğru basamağa ayarlayın. Aracın üstündeki satır, ne zaman takozdan inip onu yeniden ayarlamanız gerektiğini söyler.',
+    '{adjustable} gibi ayarlanabilir bir takozu, üzerine çıkmadan önce doğru basamağa ayarlayın. Aracın üstündeki satır, ne zaman takozdan inip onu yeniden ayarlamanız gerektiğini söyler.',
   'help.calibration.h': 'Kalibre et ve sıfırla',
   'help.calibration.t':
     'Doğru ölçüm için iki adım gerekir: telefonu bir kez kalibre edin ve aracı bir kez sıfırlayın.\n' +

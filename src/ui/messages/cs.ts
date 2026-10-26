@@ -511,7 +511,7 @@ export const cs: Messages = {
     'Obrazovka vám řekne, na který stupeň nájezdu má každé kolo najet, proto zadejte nájezdy, které vozíte.\n' +
     'Vyberte hotový nájezd nebo vlastní sadu a kolik jich máte. Libell je umístí tam, kde nejvíc pomohou.\n' +
     'Pro nájezd bez stupňů zvolte Plynulý klín a zadejte jeho výšku. Obrazovka pak ukáže, o kolik najet.\n' +
-    'Nastavitelný nájezd, jako je Lippert LEVEL9, nastavte na správný stupeň dřív, než na něj najedete. Řádek nad vozidlem řekne, kdy sjet a nastavit ho znovu.',
+    'Nastavitelný nájezd, jako je {adjustable}, nastavte na správný stupeň dřív, než na něj najedete. Řádek nad vozidlem řekne, kdy sjet a nastavit ho znovu.',
   'help.calibration.h': 'Kalibrace a nula',
   'help.calibration.t':
     'Dva kroky zajistí správné hodnoty: jednou kalibrujte telefon a jednou vynulujte vozidlo.\n' +

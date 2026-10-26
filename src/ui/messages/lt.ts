@@ -522,7 +522,7 @@ export const lt: Messages = {
     'Ekranas nurodo, ant kurios pakylos pakopos užvažiuoti kiekvienu ratu, todėl įveskite pakylas, kurias vežatės.\n' +
     'Pasirinkite gamyklinę pakylą arba savą rinkinį ir kiek jų turite. Libell padeda jas ten, kur jos naudingiausios.\n' +
     'Pakylai be pakopų pasirinkite „Bepakopis pleištas“ ir įveskite jo aukštį. Tada ekranas nurodys, kiek užvažiuoti.\n' +
-    'Reguliuojamą pakylą, pvz., Lippert LEVEL9, prieš užvažiuodami nustatykite į tinkamą pakopą. Eilutė virš transporto priemonės nurodo, kada nuo jos nuvažiuoti ir ją perstatyti.',
+    'Reguliuojamą pakylą, pvz., {adjustable}, prieš užvažiuodami nustatykite į tinkamą pakopą. Eilutė virš transporto priemonės nurodo, kada nuo jos nuvažiuoti ir ją perstatyti.',
   'help.calibration.h': 'Kalibruoti ir nulinti',
   'help.calibration.t':
     'Du žingsniai užtikrina teisingus rodmenis: vieną kartą sukalibruokite telefoną ir vieną kartą nulinkite transporto priemonę.\n' +

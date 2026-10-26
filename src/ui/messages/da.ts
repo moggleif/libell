@@ -515,7 +515,7 @@ export const da: Messages = {
     'Skærmen fortæller, hvilket trin på din klods hvert hjul skal op på, så indtast de klodser, du har med.\n' +
     'Vælg en klodsmodel eller et eget sæt, og hvor mange du har. Libell placerer dem, hvor de hjælper mest.\n' +
     'Til en klods uden trin vælger du Trinløs kile og indtaster dens højde. Skærmen viser så »Kør op« og hvor langt.\n' +
-    'En justerbar klods som Lippert LEVEL9 stiller du på det rigtige trin, før du kører op. Linjen over køretøjet siger, hvornår du skal køre ned og stille den om.',
+    'En justerbar klods som {adjustable} stiller du på det rigtige trin, før du kører op. Linjen over køretøjet siger, hvornår du skal køre ned og stille den om.',
   'help.calibration.h': 'Kalibrér og nulstil',
   'help.calibration.t':
     'To ting gør målingerne rigtige: kalibrér telefonen én gang, og nulstil køretøjet én gang.\n' +

@@ -5,6 +5,7 @@ import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
+import { RAMP_MODELS } from '../domain/ramps';
 
 setLanguage('en');
 
@@ -292,6 +293,15 @@ describe('createInfoPage — "?" (screen-cleanup follow-up)', () => {
       // The steps read as they do on the box's own page.
       expect(text).toContain(t('box.step.direction.todo'));
       expect(text).toContain(t('box.step.zero.todo'));
+      expect(text).not.toMatch(/\{\w+\}/);
+    });
+
+    it('names every adjustable kloss in the Ramps topic, filled in from the catalog (#712)', () => {
+      const info = createInfoPage(makeOptions());
+      const text = body(topic(info, 'ramps')).textContent!;
+      const adjustable = RAMP_MODELS.filter((model) => model.adjustable);
+      expect(adjustable.length).toBeGreaterThan(0);
+      for (const model of adjustable) expect(text).toContain(model.name);
       expect(text).not.toMatch(/\{\w+\}/);
     });
 

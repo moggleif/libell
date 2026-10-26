@@ -535,7 +535,7 @@ export const fr: Messages = {
     'L’écran indique sur quel palier de votre rampe monter chaque roue : saisissez donc les rampes que vous emportez.\n' +
     'Choisissez une rampe toute faite ou un jeu personnalisé, et combien vous en avez. Libell les place là où elles servent le plus.\n' +
     'Pour une cale sans paliers, choisissez Cale sans paliers et saisissez sa hauteur. L’écran indique alors de combien monter.\n' +
-    'Réglez une rampe ajustable comme la Lippert LEVEL9 sur le bon palier avant de monter dessus. La ligne au-dessus du véhicule indique quand en descendre et la régler à nouveau.',
+    'Réglez une rampe ajustable comme {adjustable} sur le bon palier avant de monter dessus. La ligne au-dessus du véhicule indique quand en descendre et la régler à nouveau.',
   'help.calibration.h': 'Étalonner et mettre à zéro',
   'help.calibration.t':
     'Deux étapes rendent la mesure juste : étalonner le téléphone une fois et mettre le véhicule à zéro une fois.\n' +

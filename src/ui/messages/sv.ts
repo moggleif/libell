@@ -549,7 +549,7 @@ export const sv: Messages = {
     'Skärmen säger vilket steg på klossen hjulet ska upp på, så fyll i de klossar du har med dig.\n' +
     'Välj färdiga klossar eller en egen uppsättning, och hur många du har. Libell lägger dem där de gör mest nytta.\n' +
     'Har du en steglös kil, välj Steglös kil och fyll i hur hög den är. Skärmen säger då hur långt du ska köra upp.\n' +
-    'En ställbar kloss som Lippert LEVEL9 ställer du på rätt steg innan du kör upp. Raden ovanför fordonet säger när du ska köra av och ställa om den.',
+    'En ställbar kloss som {adjustable} ställer du på rätt steg innan du kör upp. Raden ovanför fordonet säger när du ska köra av och ställa om den.',
   'help.calibration.h': 'Kalibrera och nollställ',
   'help.calibration.t':
     'Två steg gör mätningen rätt: kalibrera telefonen en gång och nollställ fordonet en gång.\n' +
