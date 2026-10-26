@@ -7,8 +7,8 @@ import type { LevelSettings } from '../domain/settings';
 import { formatLength } from '../domain/lengths';
 import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
+import { createDialog } from './dialog';
 import { createElement } from './dom';
-import { holdFocus } from './focusHold';
 import { button } from './calibrationControls';
 
 export interface IncomingVehicleSetupOptions {
@@ -22,39 +22,21 @@ export interface IncomingVehicleSetupOptions {
 }
 
 export function showIncomingVehicleSetup(options: IncomingVehicleSetupOptions): void {
-  const overlay = createElement('div', 'incoming-setup');
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'incoming-setup-heading');
-
-  const heading = document.createElement('h2');
-  heading.id = 'incoming-setup-heading';
-  heading.className = 'incoming-setup__heading';
-  heading.tabIndex = -1;
-  heading.textContent = t('setup.incoming.h');
+  const dialog = createDialog({
+    className: 'incoming-setup',
+    cardClassName: 'incoming-setup__card',
+    headingId: 'incoming-setup-heading',
+    heading: { className: 'incoming-setup__heading', text: t('setup.incoming.h') },
+  });
   const intro = paragraph('incoming-setup__intro', t('setup.incoming.intro'));
   const reminder = paragraph('incoming-setup__reminder', t('setup.incoming.reminder'));
-  let hold = { release: () => {} };
-  const close = (): void => {
-    overlay.remove();
-    hold.release();
-  };
-  const closing = (action: () => void) => () => {
-    close();
-    action();
-  };
   const actions = createActions({
-    dismiss: closing(options.onDismiss),
-    replace: closing(options.onApply),
-    addNew: closing(options.onAddAsNew),
+    dismiss: dialog.closeThen(options.onDismiss),
+    replace: dialog.closeThen(options.onApply),
+    addNew: dialog.closeThen(options.onAddAsNew),
   });
-
-  const card = createElement('div', 'incoming-setup__card');
-  card.append(heading, intro, geometryList(options), reminder, actions);
-  overlay.append(card);
-  document.body.append(overlay);
-  hold = holdFocus(overlay);
-  heading.focus();
+  dialog.card.append(dialog.heading, intro, geometryList(options), reminder, actions);
+  dialog.open();
 }
 
 /** What the link would set, in this phone's unit; a caravan's list leaves
