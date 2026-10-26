@@ -139,6 +139,9 @@ the browser test scripts included. Each failure names the file and what to do.
   `.claude/skills/` must exist. When you
   rename or move a file, update the documents that name it in the same change. ADRs are
   dated records and are not checked.
+- **ADR numbers:** every ADR in `docs/adr/` has its own number, and the index in
+  `docs/adr/README.md` lists each one once, in numeric order (#711). Before merging a new
+  ADR, check that no other branch merged the same number first.
 - **Element helper:** in `src/ui/` and `src/app/`, an element whose class is set on the
   line after `document.createElement` is built with `createElement(tag, className)`
   from `src/ui/dom.ts` instead (#521).

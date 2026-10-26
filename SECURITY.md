@@ -60,10 +60,10 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
   workflow writes release texts (`contents: write`), CodeQL uploads its results
   (`security-events: write`), and the Dependabot auto-merge job turns on auto-merge
   for Dependabot's own patch and minor PRs (`contents: write`, `pull-requests: write`,
-  without checking out the PR's code; ADR 0021).
+  without checking out the PR's code; ADR 0023).
 - Dependabot watches npm packages and action pins weekly. All npm dependencies are
   build-time only; none ship to the client. Patch and minor updates merge themselves
-  once CI is green; a major version waits for a person (ADR 0021).
+  once CI is green; a major version waits for a person (ADR 0023).
 
 ## Supported versions
 

@@ -1,4 +1,4 @@
-# 0021 — Dependabot's patch and minor updates merge themselves on green CI
+# 0023 — Dependabot's patch and minor updates merge themselves on green CI
 
 **Status:** Accepted, 2026-10-25.
 
