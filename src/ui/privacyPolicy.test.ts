@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { LANGUAGES, translate } from './i18n';
-import { privacyPages, privacyPolicyPath, renderPrivacyPage } from './privacyPolicy';
+import { LANGUAGES } from './i18n';
+import { translate } from './translations';
+import { privacyPages, renderPrivacyPage } from './privacyPolicy';
+import { privacyPolicyPath } from './privacyPolicyPath';
 import { escapeHtml } from './staticPage';
 
 describe('privacy policy pages (#675)', () => {

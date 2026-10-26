@@ -1,7 +1,7 @@
 import './ui/styles.css';
 import { hasSeenOnboarding, loadLanguage, markMeasurementsSaved } from './data/settingsStore';
 import { isSensorSupported, needsPermissionGesture } from './sensor/orientation';
-import { getLanguage, resolveLanguage, setLanguage } from './ui/i18n';
+import { getLanguage, resolveLanguage, startLanguage } from './ui/i18n';
 import { createInstallOffer, type InstallOffer } from './ui/install';
 import { showIncomingVehicleSetup } from './ui/incomingVehicleSetup';
 import { showToast } from './ui/toast';
@@ -25,11 +25,13 @@ import { browserUsageDeps, countAppStart, countFeature, startUsageCounting } fro
  */
 
 guardAgainstFraming();
-setLanguage(resolveLanguage(loadLanguage()));
-const install = createInstallOffer();
-const topBar = setupTopBar(install);
-const root = document.querySelector<HTMLElement>('#app');
-if (root) bootstrap(root, topBar, install);
+// Only the language in use is fetched, before anything shows text (ADR 0024).
+void startLanguage(resolveLanguage(loadLanguage())).then(() => {
+  const install = createInstallOffer();
+  const topBar = setupTopBar(install);
+  const root = document.querySelector<HTMLElement>('#app');
+  if (root) bootstrap(root, topBar, install);
+});
 
 function bootstrap(root: HTMLElement, topBar: TopBar, install: InstallOffer): void {
   keepScreenAwake();

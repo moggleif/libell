@@ -54,7 +54,9 @@ Inputs, all in `src/ui/messages/`:
 
 ## Adding a language
 
-Besides the dictionary: add it to `MESSAGES` and `LANGUAGE_NAMES` in `src/ui/i18n.ts`,
+Besides the dictionary: add it to `LANGUAGE_NAMES` and its loader to `DICTIONARIES` in
+`src/ui/i18n.ts`, and to `MESSAGES` in `src/ui/translations.ts` (TypeScript refuses a
+language missing from either),
 its words to every term in `glossary.ts` (TypeScript refuses a term without them), its
 word for inches in the spoken guidance strings, the fit test's language list, and R13 in
 `docs/02-REQUIREMENTS.md`.

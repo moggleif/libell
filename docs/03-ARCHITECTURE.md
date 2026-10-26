@@ -392,7 +392,11 @@ responsive and must stay usable in landscape rather than relying on a hard lock.
 
 ## State (`src/main.ts`)
 
-The entry point only creates the `src/app/` modules and connects them, in three steps:
+The entry point first fetches the one dictionary the language in use needs
+(`startLanguage()` in `src/ui/i18n.ts`: the stored choice, else the phone's; English if
+it cannot load), since nothing may show text before it is in (ADR 0024). Each language
+is a file of its own; a language change reloads the app, which fetches the new one. It
+then creates the `src/app/` modules and connects them, in three steps:
 `src/app/core.ts` (the state and the sensors), `src/app/pages.ts` (the pages) and
 `src/app/mainScreen.ts` (the main screen). The level screen
 reads the active sensor, runs `computeLeveling` (or the caravan's) in
@@ -488,7 +492,7 @@ escaping every text goes through, the head with a `default-src 'none'; style-src
 CSP of its own, the list of the same page in the other languages, and the one stylesheet (`STATIC_CSS`), which
 uses only the browser's system colours (`Canvas`, `CanvasText`, `LinkText`) under
 `color-scheme: light dark`. No page has a script it runs. Text is looked up per language
-with `translate()` from `i18n.ts`; brands come from `boxNames()` (`boxNames.ts`), which
+with `translate()` from `translations.ts`, which holds every dictionary for the build; brands come from `boxNames()` (`boxNames.ts`), which
 lists `EXTERNAL_SENSORS` the way the language joins things ("A and B", or "A or B"
 where any one is meant), as the app's own counting block does (#709). The pages fall
 under the precache glob, and `navigateFallbackDenylist` keeps the service worker from
@@ -534,7 +538,7 @@ bar's gear: in Modern a page with one tab per section, in Classic the ☰ drawer
 Help is its own page behind "?", with Help, About, Feedback and Privacy tabs (`src/ui/infoMenu.ts`,
 R12, R38). The Sensorbox is reached from the sensor icon in the top bar's corner (R9);
 no menu entry leads there. Amber warning lamps in the top bar point to missing
-measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language in `LANGUAGES` in `src/ui/messages/`, next to `context.ts` (what each string is for) and `glossary.ts` (the locked terms, #628).
+measurements, a missing calibration or a missing zero. All user-facing strings go through `t()` in `src/ui/i18n.ts`, backed by one dictionary per language in `LANGUAGES` in `src/ui/messages/`, of which the app loads only the one in use (`src/ui/translations.ts` holds them all for the build and the tests), next to `context.ts` (what each string is for) and `glossary.ts` (the locked terms, #628).
 
 Top bar / bottom action bar split (#161): the top bar holds only identity (logo, title,
 share) on the left and the indicators cluster (warning lamps, sensor status) on the

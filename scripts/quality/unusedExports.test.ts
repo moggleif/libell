@@ -103,7 +103,7 @@ describe('the app source', () => {
     const files = [
       ...readSources('src', isCode),
       ...readSources('scripts', isCode),
-      ...readSources('.', (path) => path === 'vite.config.ts'),
+      ...readSources('.', (path) => path === 'vite.config.ts' || path === 'vitest.setup.ts'),
     ];
     expect(findUnusedExports(files, inSrc)).toEqual([]);
   });

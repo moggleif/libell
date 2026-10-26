@@ -2455,3 +2455,21 @@ Findability). (R60 is the privacy policy, #675.)
 - **Given** the app itself
 - **Then** nothing it shows changes apart from the browser tab's title, and its CSP is
   unchanged.
+
+## R62 — The level screen comes up fast, even on the first visit (#708)
+
+A phone on a campsite's mobile network should show the level screen without waiting for
+parts of Libell it is not using (ADR 0024).
+
+- **Given** any visit, the first included
+- **When** the app starts
+- **Then** it fetches the dictionary of one language only: the language chosen in
+  Settings, or else the phone's (English when Libell does not have it), and shows
+  nothing in another language.
+- **Given** the dictionary for that language cannot be loaded
+- **Then** the app starts in English rather than not at all.
+- **Given** the user picks another language in Settings
+- **Then** the app reloads in that language, as before.
+- **Given** the app has been opened once with a connection
+- **Then** every language and every part is on the phone, and it starts and works with
+  no signal at all.

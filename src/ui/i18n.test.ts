@@ -2,7 +2,6 @@ import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import {
   LANGUAGE_NAMES,
   LANGUAGES,
-  MESSAGES,
   getLanguage,
   isLanguage,
   resolveLanguage,
@@ -11,6 +10,7 @@ import {
   type Language,
   type MessageKey,
 } from './i18n';
+import { MESSAGES } from './translations';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
 
 /** Every shipped dictionary, so adding a language (#178) automatically
@@ -371,5 +371,58 @@ describe('i18n public interface (#377)', () => {
     expect(resolveLanguage('sv')).toBe('sv');
     expect(resolveLanguage('xx')).toBe('de');
     expect(resolveLanguage(42)).toBe('de');
+  });
+});
+
+// One dictionary at a time (ADR 0024, #708): the app fetches only the
+// language in use, at start, before anything shows text.
+describe('loading the dictionary in use (#708)', () => {
+  afterEach(() => {
+    setLanguage('en');
+    vi.resetModules();
+  });
+
+  /** A fresh i18n module, with no dictionary loaded yet. */
+  const freshI18n = async () => {
+    vi.resetModules();
+    return import('./i18n');
+  };
+
+  it('speaks a language once its dictionary has loaded', async () => {
+    const i18n = await freshI18n();
+    i18n.setLanguage('sv');
+    expect(i18n.t('menu.title')).toBe('menu.title');
+    await i18n.loadDictionary('en');
+    expect(i18n.t('menu.title')).toBe('Menu');
+    await i18n.loadDictionary('sv');
+    expect(i18n.t('menu.title')).toBe('Meny');
+    expect(i18n.t('onboard.boxPosition.notConnected', { next: 'Nästa' })).toBe(
+      MESSAGES.sv['onboard.boxPosition.notConnected'].replaceAll('{next}', 'Nästa'),
+    );
+  });
+
+  it('starts in the chosen language', async () => {
+    const i18n = await freshI18n();
+    const loaded: Language[] = [];
+    await i18n.startLanguage('de', async (lang) => {
+      loaded.push(lang);
+      await i18n.loadDictionary(lang);
+    });
+    expect(loaded).toEqual(['de']);
+    expect(i18n.getLanguage()).toBe('de');
+    expect(i18n.t('menu.title')).toBe('Menü');
+  });
+
+  it('starts in English when the chosen dictionary cannot load', async () => {
+    const i18n = await freshI18n();
+    const loaded: Language[] = [];
+    await i18n.startLanguage('fr', async (lang) => {
+      loaded.push(lang);
+      if (lang === 'fr') throw new Error('offline and not cached');
+      await i18n.loadDictionary(lang);
+    });
+    expect(loaded).toEqual(['fr', 'en']);
+    expect(i18n.getLanguage()).toBe('en');
+    expect(i18n.t('menu.title')).toBe('Menu');
   });
 });
