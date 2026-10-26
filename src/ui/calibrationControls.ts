@@ -5,7 +5,7 @@
  */
 import type { Calibration } from '../domain/calibration';
 import { pillFor, calibrationStatusText, type CalibrationKind } from './calibrationText';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { t } from './i18n';
 
 export interface CalibrationControls {
@@ -36,13 +36,6 @@ const CONTROL_KEYS = {
     clear: 'calibration.vehicle.clear',
   },
 } as const;
-
-export function button(className: string, text: string): HTMLButtonElement {
-  const element = createElement('button', className);
-  element.type = 'button';
-  element.textContent = text;
-  return element;
-}
 
 export function createControls(kind: CalibrationKind, modern: boolean): CalibrationControls {
   const keys = CONTROL_KEYS[kind];

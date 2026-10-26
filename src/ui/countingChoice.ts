@@ -5,9 +5,8 @@
  */
 import { createCountingExplanation } from './countingSection';
 import { createDialog } from './dialog';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { t } from './i18n';
-import { button } from './intro';
 
 export interface CountingChoiceOptions {
   /** True for "Yes, count anonymously", false for "No thanks"; the screen has closed. */

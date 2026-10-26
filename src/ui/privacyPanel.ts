@@ -5,7 +5,7 @@
  */
 import { maskSecrets, type StoredEntry } from '../data/storedData';
 import { createCountingSection, type CountingChoice } from './countingSection';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { getLanguage, t } from './i18n';
 import { privacyPolicyPath } from './privacyPolicy';
 import { storedRows } from './storedDataText';
@@ -33,15 +33,6 @@ function textElement(
 ): HTMLElement {
   const element = createElement(tag, className);
   element.textContent = content;
-  return element;
-}
-
-function button(className: string, label: string, onClick: () => void): HTMLButtonElement {
-  const element = document.createElement('button');
-  element.type = 'button';
-  element.className = className;
-  element.textContent = label;
-  element.addEventListener('click', onClick);
   return element;
 }
 

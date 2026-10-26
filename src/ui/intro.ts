@@ -5,7 +5,7 @@
  * "Look around first" goes straight to the app.
  */
 import { createDialog } from './dialog';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { placementIllustration } from './helpIllustrations';
 import { t } from './i18n';
 import type { InstallOffer } from './install';
@@ -77,13 +77,4 @@ function installParts(install: InstallOffer): HTMLElement[] {
   install.onChange(sync);
   sync();
   return [installButton, hint];
-}
-
-/** A plain button, shared with the counting choice that comes before it. */
-export function button(className: string, label: string, onClick: () => void): HTMLButtonElement {
-  const element = createElement('button', className);
-  element.type = 'button';
-  element.textContent = label;
-  element.addEventListener('click', onClick);
-  return element;
 }

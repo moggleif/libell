@@ -4,11 +4,11 @@
  * differs; `calibrationSection.ts` wires the same controls into each.
  */
 import type { CalibrationFlip } from './calibrationFlip';
-import { button, type CalibrationControls } from './calibrationControls';
+import type { CalibrationControls } from './calibrationControls';
 import type { CalibrationOptions } from './calibrationSection';
 import { expandedStep, stepTitle, type CalibrationKind, type OpenStep } from './calibrationText';
 import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import type { ExternalCalibration } from './externalCalibration';
 import { t } from './i18n';
 

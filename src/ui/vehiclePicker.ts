@@ -5,9 +5,8 @@
  * vehicle starts the app again on it, so nothing here redraws after a switch;
  * each reload is marked so Settings reopens on Vehicle (#615).
  */
-import { button } from './calibrationControls';
 import { createChoiceRow } from './choiceList';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { t } from './i18n';
 import { createNamePrompt } from './namePrompt';
 import { markReopenSettings } from './reopenSettings';
