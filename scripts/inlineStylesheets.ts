@@ -19,7 +19,8 @@ export interface Inlined {
 export function inlineStylesheets(html: string, base: string, sheets: Stylesheet[]): Inlined {
   const result: Inlined = { html, inlined: [], hashes: [] };
   for (const { fileName, source } of sheets) {
-    const link = new RegExp(`<link rel="stylesheet"[^>]* href="${base}${fileName}"[^>]*>`);
+    const href = escapeRegExp(`${base}${fileName}`);
+    const link = new RegExp(`<link rel="stylesheet"[^>]* href="${href}"[^>]*>`);
     if (!link.test(result.html)) continue;
     // A function, so a `$` in the CSS is never read as a replacement pattern.
     result.html = result.html.replace(link, () => `<style>${source}</style>`);
@@ -27,6 +28,10 @@ export function inlineStylesheets(html: string, base: string, sheets: Stylesheet
     result.hashes.push(`'sha256-${createHash('sha256').update(source).digest('base64')}'`);
   }
   return result;
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export function withStyleHashes(csp: string, hashes: string[]): string {

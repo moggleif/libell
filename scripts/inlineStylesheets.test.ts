@@ -20,6 +20,13 @@ describe('inlineStylesheets (#730)', () => {
     expect(result.hashes).toEqual([sha]);
   });
 
+  it('matches the file name exactly, dots included', () => {
+    const result = inlineStylesheets(HTML, '/x/', [
+      { fileName: 'assets/index-1xcss', source: CSS },
+    ]);
+    expect(result.inlined).toEqual([]);
+  });
+
   it('leaves a stylesheet the page does not link', () => {
     const result = inlineStylesheets(HTML, '/x/', [{ fileName: 'assets/other.css', source: CSS }]);
     expect(result.html).toBe(HTML);

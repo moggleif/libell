@@ -2488,7 +2488,7 @@ parts of Libell it is not using (ADR 0024).
 
 Google's PageSpeed Insights (Lighthouse) is how search engines and visitors judge the
 site, and what it finds is mostly real: text that is hard to read, errors in the
-console, a page that jumps (Fas 0 report in the project files, `pagespeed/fas0.md`).
+console, a page that jumps (the measurements are in #730).
 
 - **Given** any palette
 - **Then** a primary button's label has at least 4.5:1 contrast on its green.
