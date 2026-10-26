@@ -1,5 +1,14 @@
 {
-  "entryMaxKb": 70,
+  "entryMaxKb": 65,
   "chunkMaxKb": 15,
-  "entryExcludes": ["src/ui/messages/", "src/ui/translations.ts"]
+  "entryExcludes": [
+    "src/ui/messages/",
+    "src/ui/translations.ts",
+    "src/ui/infoMenu.ts",
+    "src/ui/about.ts",
+    "src/ui/feedback.ts",
+    "src/ui/privacyPanel.ts",
+    "src/ui/privacyPolicyPath.ts",
+    "src/ui/storedDataText.ts"
+  ]
 }

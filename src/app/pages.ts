@@ -11,7 +11,7 @@ import {
   markOnboardingDone,
   markOnboardingSeen,
 } from '../data/settingsStore';
-import { createInfoPage, type InfoPage } from '../ui/infoMenu';
+import type { InfoPage } from '../ui/infoMenu';
 import type { InstallOffer } from '../ui/install';
 import { showIntro } from '../ui/intro';
 import { showOnboarding } from '../ui/onboarding';
@@ -22,6 +22,7 @@ import { createNavigation, type Navigation } from './navigation';
 import { createOnboardingLauncher, type OnboardingLauncher } from './onboardingLauncher';
 import { mountSensorPages, type SensorPages } from './sensorPages';
 import { createSettingsAdoption } from './settingsAdoption';
+import { lazyPage, whenIdle, type LazyPage } from './lazyPart';
 import { countFeature } from './usage';
 import { mountSettingsSurface, type SettingsSurface } from './settingsSurface';
 
@@ -29,7 +30,7 @@ export interface Pages {
   onboarding: OnboardingLauncher;
   settingsSurface: SettingsSurface;
   sensorPages: SensorPages;
-  infoPage: InfoPage;
+  infoPage: LazyPage<InfoPage>;
   navigation: Navigation;
 }
 
@@ -100,8 +101,23 @@ function deleteAllAndRestart(): void {
   window.location.reload();
 }
 
-/** The "?" page, opened from the help button. */
-function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): InfoPage {
+/** The "?" page, opened from the help button; its module loads once the
+ * phone is idle, or on the first tap (ADR 0024). */
+function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): LazyPage<InfoPage> {
+  const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
+  const infoPage = lazyPage(helpButton, async () => {
+    const { createInfoPage } = await import('../ui/infoMenu');
+    return appendInfoPage(createInfoPage, onboarding, navigation);
+  });
+  whenIdle(() => void infoPage.load());
+  return infoPage;
+}
+
+function appendInfoPage(
+  createInfoPage: typeof import('../ui/infoMenu').createInfoPage,
+  onboarding: OnboardingLauncher,
+  navigation: Navigation,
+): InfoPage {
   const infoPage = createInfoPage({
     openOnboarding: onboarding.open,
     hasDoneOnboarding,
@@ -114,7 +130,5 @@ function mountInfoPage(onboarding: OnboardingLauncher, navigation: Navigation): 
     onFeedbackSent: () => countFeature('feedback'),
   });
   document.body.append(infoPage.element);
-  const helpButton = document.querySelector<HTMLButtonElement>('#help-button');
-  if (helpButton) infoPage.attach(helpButton);
   return infoPage;
 }

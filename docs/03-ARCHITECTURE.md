@@ -462,6 +462,24 @@ the app returns to the foreground, and lets a tap on the top-bar name / version 
 demand (R50). The worker is registered with a deferred script, so it never holds up the
 first render (ADR 0024).
 
+## Loading after the first screen (`src/app/lazyPart.ts`, ADR 0024)
+
+The entry file holds what the level screen needs; the dictionary in use is a file of its
+own (State, above), and the parts below each load as a file of their own. `lazyPart()`
+fetches a part once, however often it is asked for. `whenIdle()` asks for it when the
+phone is idle after the first render (`requestIdleCallback`, at most two seconds; a short
+timeout on Safari, which has none), so a first tap rarely waits. `lazyPage()` puts a page
+behind its button: a tap before the page has loaded loads and opens it, and once loaded
+the page's own `attach()` owns the button. Every part is precached, so a part that cannot
+load means a newer version has replaced it: the app says it is updating and reloads, or,
+offline, says it has no connection and tries again on the next use. The parts so far:
+
+- the "?" page (`src/ui/infoMenu.ts`: help, About, feedback and the Privacy tab), behind
+  the help button (`src/app/pages.ts`).
+
+The bundle guard's `entryExcludes` (`scripts/quality/bundle-budget.json`) lists the
+modules of every part, so a static import that pulls one back into the entry file fails CI.
+
 ## Anonymous counting (`src/app/usage.ts`, ADR 0021)
 
 `main.ts` starts the counter with `browserUsageDeps` and counts the start (`countAppStart`:
