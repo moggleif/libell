@@ -4,8 +4,8 @@
  * as the intro (#691), which it comes before.
  */
 import { createCountingExplanation } from './countingSection';
+import { createDialog } from './dialog';
 import { createElement } from './dom';
-import { holdFocus } from './focusHold';
 import { t } from './i18n';
 import { button } from './intro';
 
@@ -15,35 +15,16 @@ export interface CountingChoiceOptions {
 }
 
 export function showCountingChoice(options: CountingChoiceOptions): void {
-  const overlay = createElement('div', 'intro counting-choice');
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'counting-choice-heading');
-  const card = createElement('div', 'intro__card');
-  overlay.append(card);
-  const heading = buildHeading();
-
-  function choose(on: boolean): () => void {
-    return () => {
-      overlay.remove();
-      hold.release();
-      options.onChoose(on);
-    };
-  }
-
-  card.append(buildBody(heading), buildNav(choose(true), choose(false)));
-  document.body.append(overlay);
-  const hold = holdFocus(overlay);
-  heading.focus();
-}
-
-function buildHeading(): HTMLHeadingElement {
-  const heading = createElement('h2', 'intro__title');
-  heading.id = 'counting-choice-heading';
-  heading.tabIndex = -1;
-  // The question is the heading: the buttons below answer it.
-  heading.textContent = t('counting.ask');
-  return heading;
+  const dialog = createDialog({
+    className: 'intro counting-choice',
+    cardClassName: 'intro__card',
+    headingId: 'counting-choice-heading',
+    // The question is the heading: the buttons below answer it.
+    heading: { className: 'intro__title', text: t('counting.ask') },
+  });
+  const choose = (on: boolean) => dialog.closeThen(() => options.onChoose(on));
+  dialog.card.append(buildBody(dialog.heading), buildNav(choose(true), choose(false)));
+  dialog.open();
 }
 
 function buildBody(heading: HTMLHeadingElement): HTMLElement {

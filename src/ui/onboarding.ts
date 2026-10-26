@@ -16,8 +16,7 @@
  * `onboarding/stepList.ts` decides which steps the chosen path walks; this
  * file draws the current one: progress, heading, body, nav.
  */
-import { holdFocus, type FocusHold } from './focusHold';
-import { createElement } from './dom';
+import { createDialog } from './dialog';
 import { t } from './i18n';
 import { saveVehicleChoice } from './onboarding/settingsSteps';
 import { resolveSteps } from './onboarding/stepList';
@@ -34,22 +33,22 @@ import { createWizardState } from './onboarding/wizardState';
 
 export type { OnboardingOptions, SensorChoice } from './onboarding/types';
 
+/** Each step draws its own heading; this id names the dialog by it. */
+const HEADING_ID = 'onboarding-heading';
+
 export function showOnboarding(options: OnboardingOptions): void {
   const state = createWizardState(options, () => renderStep());
-  const card = createElement('div', 'onboarding__card');
-  const overlay = createElement('div', 'onboarding');
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'onboarding-heading');
-  overlay.append(card);
-  let hold: FocusHold | null = null;
+  const dialog = createDialog({
+    className: 'onboarding',
+    cardClassName: 'onboarding__card',
+    headingId: HEADING_ID,
+  });
   const close = buildCloseButton(() => finish(false));
   let index = 0;
 
   function finish(done: boolean): void {
     if (done) saveVehicleChoice(state);
-    overlay.remove();
-    hold?.release();
+    dialog.close();
     options.onFinished(done, state.sourceChoiceAvailable ? state.sensorChoice : 'phone');
   }
 
@@ -62,9 +61,9 @@ export function showOnboarding(options: OnboardingOptions): void {
     const steps = resolveSteps(state);
     const step = steps[index];
     if (!step) return finish(true);
-    card.replaceChildren();
+    dialog.card.replaceChildren();
     const heading = buildHeading(state, step);
-    heading.id = 'onboarding-heading';
+    heading.id = HEADING_ID;
     const body = buildBody(step, heading);
     const at: StepPosition = {
       index,
@@ -76,12 +75,11 @@ export function showOnboarding(options: OnboardingOptions): void {
         goTo(index + 1);
       },
     };
-    card.append(buildHeader(state, at, close), heading, body, buildNav(state, step, at));
+    dialog.card.append(buildHeader(state, at, close), heading, body, buildNav(state, step, at));
     heading.focus();
   }
 
-  document.body.append(overlay);
-  hold = holdFocus(overlay);
+  dialog.open();
   renderStep();
 }
 

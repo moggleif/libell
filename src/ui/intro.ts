@@ -4,8 +4,8 @@
  * since the guide covers the top bar's install row. Nothing is forced:
  * "Look around first" goes straight to the app.
  */
+import { createDialog } from './dialog';
 import { createElement } from './dom';
-import { holdFocus } from './focusHold';
 import { placementIllustration } from './helpIllustrations';
 import { t } from './i18n';
 import type { InstallOffer } from './install';
@@ -19,37 +19,21 @@ export interface IntroOptions {
 }
 
 export function showIntro(options: IntroOptions): void {
-  const overlay = createElement('div', 'intro');
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-labelledby', 'intro-heading');
-  const card = createElement('div', 'intro__card');
-  overlay.append(card);
-  const heading = buildHeading();
-
-  function leave(then: () => void): () => void {
-    return () => {
-      overlay.remove();
-      hold.release();
-      then();
-    };
-  }
-
-  card.append(
-    buildBody(heading),
-    buildNav(options.install, leave(options.onStart), leave(options.onLookAround)),
+  const dialog = createDialog({
+    className: 'intro',
+    cardClassName: 'intro__card',
+    headingId: 'intro-heading',
+    heading: { className: 'intro__title', text: t('intro.h') },
+  });
+  dialog.card.append(
+    buildBody(dialog.heading),
+    buildNav(
+      options.install,
+      dialog.closeThen(options.onStart),
+      dialog.closeThen(options.onLookAround),
+    ),
   );
-  document.body.append(overlay);
-  const hold = holdFocus(overlay);
-  heading.focus();
-}
-
-function buildHeading(): HTMLHeadingElement {
-  const heading = createElement('h2', 'intro__title');
-  heading.id = 'intro-heading';
-  heading.tabIndex = -1;
-  heading.textContent = t('intro.h');
-  return heading;
+  dialog.open();
 }
 
 function buildBody(heading: HTMLHeadingElement): HTMLElement {
