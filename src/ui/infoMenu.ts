@@ -41,6 +41,7 @@ export interface InfoPageOptions {
 export interface InfoPage {
   element: HTMLElement;
   isOpen(): boolean;
+  open(): void;
   attach(button: HTMLButtonElement): void;
 }
 
@@ -289,6 +290,7 @@ export function createInfoPage(options: InfoPageOptions): InfoPage {
   return {
     element: page.element,
     isOpen: page.isOpen,
+    open: page.open,
     attach: page.attach,
   };
 }

@@ -86,20 +86,30 @@ describe('mountPages', () => {
     expect(screen.navigation).toBe(pages.navigation);
   });
 
-  it('mounts the "?" page behind the help button', () => {
+  it('mounts the "?" page behind the help button once it has loaded', async () => {
     const help = button('help-button');
     const screen = fakeScreen();
     const pages = mountPages(createCore(screen), screen, noInstall);
-    expect(document.body.contains(pages.infoPage.element)).toBe(true);
+    const infoPage = await pages.infoPage.load();
+    expect(document.body.contains(infoPage!.element)).toBe(true);
     expect(pages.infoPage.isOpen()).toBe(false);
     help.click();
     expect(pages.infoPage.isOpen()).toBe(true);
   });
 
-  it('mounts the "?" page even without a help button', () => {
+  it('opens the "?" page on a tap before it has loaded (#708)', async () => {
+    const help = button('help-button');
     const screen = fakeScreen();
     const pages = mountPages(createCore(screen), screen, noInstall);
-    expect(document.body.contains(pages.infoPage.element)).toBe(true);
+    help.click();
+    await vi.waitFor(() => expect(pages.infoPage.isOpen()).toBe(true));
+  });
+
+  it('mounts the "?" page even without a help button', async () => {
+    const screen = fakeScreen();
+    const pages = mountPages(createCore(screen), screen, noInstall);
+    const infoPage = await pages.infoPage.load();
+    expect(document.body.contains(infoPage!.element)).toBe(true);
   });
 
   it('starts with every page closed', () => {
