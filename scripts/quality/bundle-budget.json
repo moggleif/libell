@@ -1,5 +1,5 @@
 {
-  "startMaxKb": 45,
+  "startMaxKb": 43,
   "chunkMaxKb": 15,
   "startExcludes": [
     "src/ui/messages/",
