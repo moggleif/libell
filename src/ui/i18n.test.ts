@@ -122,6 +122,14 @@ describe('i18n dictionaries', () => {
     }
   });
 
+  it('explains the adjustable kloss in the Ramps help, its name filled in (#712)', () => {
+    for (const lang of ALL) {
+      const text = MESSAGES[lang]['help.ramps.t'];
+      expect(text, `${lang}: placeholder`).toContain('{adjustable}');
+      expect(text, `${lang}: no catalog name in the string`).not.toContain('LEVEL9');
+    }
+  });
+
   it('validates a stored language override', () => {
     for (const lang of ALL) {
       expect(resolveLanguage(lang)).toBe(lang);

@@ -528,7 +528,8 @@ export const ro: Messages = {
   'help.ramps.t':
     'Ecranul vă spune pe ce treaptă a rampei urcă fiecare roată, așa că introduceți rampele pe care le aveți.\n' +
     'Alegeți o rampă de serie sau un set propriu și câte aveți. Libell le pune unde ajută cel mai mult.\n' +
-    'Dacă aveți o pană fără trepte, alegeți Pană fără trepte și introduceți înălțimea ei. Ecranul spune apoi cât să urcați.',
+    'Dacă aveți o pană fără trepte, alegeți Pană fără trepte și introduceți înălțimea ei. Ecranul spune apoi cât să urcați.\n' +
+    'Setați o rampă reglabilă, ca {adjustable}, pe treapta potrivită înainte de a urca pe ea. Rândul de deasupra vehiculului vă spune când să coborâți și s-o reglați din nou.',
   'help.calibration.h': 'Calibrare și zero',
   'help.calibration.t':
     'Doi pași fac citirile corecte: calibrați telefonul o dată și aduceți vehiculul la zero o dată.\n' +

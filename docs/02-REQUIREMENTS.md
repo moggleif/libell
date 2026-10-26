@@ -2286,6 +2286,9 @@ the same steps counts too, as it shows that model's name (R21). ADR 0019.
 - **Then** there is no line, and reaching level is announced by R16 as always.
 - **Given** a screen reader
 - **Then** each new sentence on the line is read out once (R53).
+- **Given** the Help page's Ramps topic (R28), in every language (#712)
+- **Then** its last line says that an adjustable kloss such as Lippert LEVEL9 is set to
+  its step before driving up, and that this line says when to drive off and set it again.
 
 ## R58 — Privacy: see everything Libell has stored, and delete it all (#678)
 

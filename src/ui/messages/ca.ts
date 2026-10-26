@@ -517,7 +517,8 @@ export const ca: Messages = {
   'help.ramps.t':
     'La pantalla et diu a quin graó de la rampa ha de pujar cada roda, així que introdueix les rampes que portes.\n' +
     'Tria una rampa comercial o un joc personalitzat, i quantes en tens. Libell les col·loca on ajuden més.\n' +
-    'Per a una rampa sense graons, tria «Falca sense graons» i introdueix-ne l’alçada. Llavors la pantalla diu quant has de pujar.',
+    'Per a una rampa sense graons, tria «Falca sense graons» i introdueix-ne l’alçada. Llavors la pantalla diu quant has de pujar.\n' +
+    'Una rampa ajustable com {adjustable} s’ajusta al graó correcte abans de pujar-hi. La línia sobre el vehicle et diu quan baixar-ne i tornar-la a ajustar.',
   'help.calibration.h': 'Calibra i posa a zero',
   'help.calibration.t':
     'Dos passos fan que les lectures siguin correctes: calibra el mòbil una vegada i posa el vehicle a zero una vegada.\n' +

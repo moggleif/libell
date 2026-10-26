@@ -526,7 +526,8 @@ export const de: Messages = {
   'help.ramps.t':
     'Der Bildschirm sagt, auf welche Stufe deines Keils jedes Rad muss, also trag die Keile ein, die du dabeihast.\n' +
     'Wähle einen fertigen Keil oder einen eigenen Satz und wie viele du hast. Libell legt sie dorthin, wo sie am meisten bringen.\n' +
-    'Für einen Keil ohne Stufen wähle Stufenloser Keil und trag seine Höhe ein. Der Bildschirm sagt dann, wie weit du auffahren sollst.',
+    'Für einen Keil ohne Stufen wähle Stufenloser Keil und trag seine Höhe ein. Der Bildschirm sagt dann, wie weit du auffahren sollst.\n' +
+    'Einen verstellbaren Keil wie {adjustable} stellst du vor dem Auffahren auf die richtige Stufe ein. Die Zeile über dem Fahrzeug sagt, wann du herunterfahren und ihn neu einstellen sollst.',
   'help.calibration.h': 'Kalibrieren und nullen',
   'help.calibration.t':
     'Zwei Schritte machen die Messung richtig: das Handy einmal kalibrieren und das Fahrzeug einmal nullen.\n' +

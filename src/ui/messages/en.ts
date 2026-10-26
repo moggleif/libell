@@ -572,7 +572,8 @@ export const en = {
   'help.ramps.t':
     'The screen tells you which step of your ramp each wheel goes up on, so enter the ramps you carry.\n' +
     'Pick a ready-made ramp or a custom set, and how many you have. Libell puts them where they help most.\n' +
-    'For a ramp with no steps, pick Stepless wedge and enter its height. The screen then says how far to drive up.',
+    'For a ramp with no steps, pick Stepless wedge and enter its height. The screen then says how far to drive up.\n' +
+    'Set an adjustable ramp such as {adjustable} to the right step before you drive up. The line above the vehicle says when to drive off and adjust it.',
   'help.calibration.h': 'Calibrate and zero',
   'help.calibration.t':
     'Two steps make the readings right: calibrate the phone once and zero the vehicle once.\n' +

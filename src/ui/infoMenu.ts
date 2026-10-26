@@ -18,6 +18,7 @@ import {
 } from './helpIllustrations';
 import type { VehicleType } from '../domain/settings';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
+import { RAMP_MODELS } from '../domain/ramps';
 import { createElement } from './dom';
 
 /** `main.ts` maps each to the right Settings tab or the sensor page. */
@@ -80,6 +81,13 @@ function boxNamesByMounting(): Record<string, string> {
   return { upright: names(true), flat: names(false) };
 }
 
+/** The adjustable klossar by name for the Ramps topic; like the boxes, a
+ * catalog name is filled in, never translated (#712). */
+function adjustableRampNames(): Record<string, string> {
+  const names = RAMP_MODELS.filter((model) => model.adjustable).map((model) => model.name);
+  return { adjustable: names.join(', ') };
+}
+
 const TOPICS: Topic[] = [
   {
     id: 'screen',
@@ -102,6 +110,7 @@ const TOPICS: Topic[] = [
     id: 'ramps',
     h: 'settings.tab.ramps',
     text: 'help.ramps.t',
+    textVars: adjustableRampNames,
     go: { label: openTab('settings.tab.ramps'), target: 'ramps' },
   },
   {

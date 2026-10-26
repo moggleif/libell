@@ -511,7 +511,8 @@ export const et: Messages = {
   'help.ramps.t':
     'Ekraan ütleb, millisele kiilu astmele iga ratas sõidab, seega sisesta kiilud, mis sul kaasas on.\n' +
     'Vali valmis kiil või oma komplekt ja mitu sul neid on. Libell paneb need sinna, kus need kõige rohkem aitavad.\n' +
-    'Astmeteta kiilu korral vali „Astmeteta kiil“ ja sisesta selle kõrgus. Ekraan näitab siis „Sõida peale“ ja kui kõrgele.',
+    'Astmeteta kiilu korral vali „Astmeteta kiil“ ja sisesta selle kõrgus. Ekraan näitab siis „Sõida peale“ ja kui kõrgele.\n' +
+    'Reguleeritav kiil, näiteks {adjustable}, sea enne pealesõitu õigele astmele. Sõiduki kohal olev rida ütleb, millal maha sõita ja kiil ümber seada.',
   'help.calibration.h': 'Kalibreeri ja nulli',
   'help.calibration.t':
     'Kaks sammu teevad näidud õigeks: kalibreeri telefon üks kord ja nulli sõiduk üks kord.\n' +

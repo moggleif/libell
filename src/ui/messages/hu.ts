@@ -520,7 +520,8 @@ export const hu: Messages = {
   'help.ramps.t':
     'A képernyő megmondja, melyik kerék a rámpád melyik lépcsőjére menjen fel, ezért add meg a nálad lévő rámpákat.\n' +
     'Válassz gyári rámpát vagy saját készletet, és add meg, hány darabod van. A Libell oda teszi őket, ahol a legtöbbet segítenek.\n' +
-    'Lépcső nélküli rámpához válaszd a Fokozatmentes ék lehetőséget, és add meg a magasságát. A képernyő ekkor megmondja, mennyit hajts fel.',
+    'Lépcső nélküli rámpához válaszd a Fokozatmentes ék lehetőséget, és add meg a magasságát. A képernyő ekkor megmondja, mennyit hajts fel.\n' +
+    'Az állítható rámpát ({adjustable}) felhajtás előtt állítsd a megfelelő lépcsőre. A jármű feletti sor megmondja, mikor hajts le és állítsd át.',
   'help.calibration.h': 'Kalibrálás és nullázás',
   'help.calibration.t':
     'Két lépés teszi pontossá a méréseket: a telefont egyszer kalibrálod, a járművet egyszer nullázod.\n' +
