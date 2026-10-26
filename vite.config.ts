@@ -133,6 +133,9 @@ export default defineConfig({
     staticPages(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registered after the page is parsed, so it never holds up the first
+      // render (ADR 0024).
+      injectRegister: 'script-defer',
       // The glob below already precaches every icon; listing the manifest's
       // icons again would precache each one twice (#542).
       includeManifestIcons: false,

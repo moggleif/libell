@@ -455,7 +455,8 @@ the install-sheet screenshot, generated from the built app afterwards, is not pr
 'autoUpdate'` lets a new worker activate on its own; `src/ui/appUpdate.ts` then reloads
 an already-controlled page once on `controllerchange`, re-checks for a new worker when
 the app returns to the foreground, and lets a tap on the top-bar name / version check on
-demand (R50).
+demand (R50). The worker is registered with a deferred script, so it never holds up the
+first render (ADR 0024).
 
 ## Anonymous counting (`src/app/usage.ts`, ADR 0021)
 
@@ -570,7 +571,9 @@ phone screen — R4/#241, R18/#239 and R40/#243; the unit tests run in happy-dom
 has no layout engine and measures every height as zero, so this is the only place a
 too-tall or too-wide view can fail). `fit` also checks the stylesheet directly for the
 one rule no browser in CI can reproduce — the iOS large-vs-small viewport, see
-`docs/01-CONTRIBUTING.md`. Pushes to `main` deploy `dist/` to GitHub Pages. The deploy
+`docs/01-CONTRIBUTING.md`. After the build, `npm run bundle` checks what the entry file holds, the gzip budget of each
+file and that every file is precached (ADR 0024; see "Quality guards" in
+`docs/01-CONTRIBUTING.md`). Pushes to `main` deploy `dist/` to GitHub Pages. The deploy
 builds with the base path Pages reports, so a build fits the custom domain once it is set
 and the project site before that, and it publishes a `.well-known` folder from the static files too (ADR 0020).
 Dependabot's grouped patch and minor PRs merge themselves once that CI is green

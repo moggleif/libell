@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Bundle guard
+        run: npm run bundle
+
       - name: Smoke test the built app
         run: |
           npx playwright install --with-deps chromium
