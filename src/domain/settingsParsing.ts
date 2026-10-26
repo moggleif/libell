@@ -1,14 +1,11 @@
 /** Reading a stored settings blob back into a valid `LevelSettings`. */
 import { isAppearance } from './appearance';
 import { isLengthUnit, unitToMm, type LengthUnit } from './lengths';
-import { rampHeights } from './ramps';
+import { parseRampFields } from './rampParsing';
 import {
   DEFAULT_SETTINGS,
-  DRAIN_POSITIONS,
   LENGTH_RANGES_MM,
-  MAX_RAMP_COUNT,
   SENSOR_SOURCES,
-  type DrainPosition,
   type LevelSettings,
   type SensorDeviceSettings,
   type SensorSource,
@@ -36,7 +33,7 @@ export function parseSettings(
   const raw = (typeof value === 'object' && value !== null ? value : {}) as StoredSettings;
   return {
     ...parseVehicle(raw),
-    ...parseRamps(raw),
+    ...parseRampFields(raw, parseStepHeights(raw)),
     ...parseLevelingFeel(raw),
     ...parsePreferences(raw, defaultUnit),
     // A corrupt or future-version value falls back to the phone, which
@@ -92,28 +89,6 @@ function parseVehicle(raw: StoredSettings): VehicleFields {
       trackWidth,
       DEFAULT_SETTINGS.trackWidthRearMm,
     ),
-  };
-}
-
-type RampFields = Pick<
-  LevelSettings,
-  'rampStepHeightsMm' | 'rampStepless' | 'rampCount' | 'drainPosition'
->;
-
-function parseRamps(raw: StoredSettings): RampFields {
-  // Anything stored before stepless wedges (#600) is a staircase.
-  const rampStepless = raw.rampStepless === true;
-  const steps = parseStepHeights(raw);
-  return {
-    rampStepHeightsMm: rampHeights(steps, rampStepless),
-    rampStepless,
-    rampCount:
-      typeof raw.rampCount === 'number' && Number.isFinite(raw.rampCount) && raw.rampCount >= 1
-        ? Math.min(MAX_RAMP_COUNT, Math.round(raw.rampCount))
-        : DEFAULT_SETTINGS.rampCount,
-    drainPosition: DRAIN_POSITIONS.includes(raw.drainPosition as DrainPosition)
-      ? (raw.drainPosition as DrainPosition)
-      : DEFAULT_SETTINGS.drainPosition,
   };
 }
 

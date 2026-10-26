@@ -20,16 +20,13 @@
  */
 import {
   DEFAULT_SETTINGS,
-  DRAIN_POSITIONS,
   LENGTH_RANGES_MM,
-  MAX_RAMP_COUNT,
   type AxleConfig,
-  type DrainPosition,
   type LevelSettings,
   type VehicleType,
 } from './settings';
 import { heightsWithin, numberWithin } from './untrustedValues';
-import { rampHeights } from './ramps';
+import { parseRampFields } from './rampParsing';
 
 export type VehicleGeometry = Pick<
   LevelSettings,
@@ -127,8 +124,6 @@ function parseVehicleGeometry(raw: Record<string, unknown>): VehicleGeometry {
   const { wheelbase, trackWidth, rampStep } = LENGTH_RANGES_MM;
   const heights = heightsWithin(raw.rampStepHeightsMm, rampStep);
   const steps = heights.length > 0 ? heights : DEFAULT_SETTINGS.rampStepHeightsMm;
-  // A link from before stepless wedges (#600) carries a staircase.
-  const rampStepless = raw.rampStepless === true;
   return {
     vehicleType: raw.vehicleType === 'caravan' ? 'caravan' : ('motorhome' as VehicleType),
     rearAxle: raw.rearAxle === 'boggie' ? 'boggie' : ('single' as AxleConfig),
@@ -143,14 +138,6 @@ function parseVehicleGeometry(raw: Record<string, unknown>): VehicleGeometry {
       trackWidth,
       DEFAULT_SETTINGS.trackWidthRearMm,
     ),
-    rampStepHeightsMm: rampHeights(steps, rampStepless),
-    rampStepless,
-    rampCount:
-      typeof raw.rampCount === 'number' && Number.isFinite(raw.rampCount) && raw.rampCount >= 1
-        ? Math.min(MAX_RAMP_COUNT, Math.round(raw.rampCount))
-        : DEFAULT_SETTINGS.rampCount,
-    drainPosition: DRAIN_POSITIONS.includes(raw.drainPosition as DrainPosition)
-      ? (raw.drainPosition as DrainPosition)
-      : DEFAULT_SETTINGS.drainPosition,
+    ...parseRampFields(raw, steps),
   };
 }
