@@ -8,7 +8,7 @@
  */
 import { REPO_URL } from '../domain/site';
 import { COUNTER_ORIGIN } from '../domain/usage';
-import { EXTERNAL_SENSORS } from '../sensor/boxes';
+import { boxNames } from './boxNames';
 import { LANGUAGES, translate, type Language, type MessageKey } from './i18n';
 import { escapeHtml, languageList, link, staticHead } from './staticPage';
 
@@ -44,7 +44,7 @@ interface Section {
 function sections(lang: Language): Section[] {
   const text = (key: MessageKey, vars?: Record<string, string>) => translate(lang, key, vars);
   const where = { help: text('bottombar.help'), tab: text('menu.privacy.tab') };
-  const boxes = EXTERNAL_SENSORS.map((box) => box.displayName).join(', ');
+  const boxes = boxNames(lang, 'disjunction');
   return [
     { paragraphs: [text('policy.intro')] },
     {

@@ -209,7 +209,7 @@ exports[`the static pages in ca > keeps the counting explanation in both places 
 [
   "Libell pot comptar l’ús de manera anònima, per saber què cal millorar. Mira les estadístiques",
   "Què es compta",
-  "Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com EasyLevel, Xparkle RVS01), la versió de l’app i l’idioma triat a Libell.",
+  "Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com EasyLevel o Xparkle RVS01), la versió de l’app i l’idioma triat a Libell.",
   "Què no es desa mai",
   "La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. Al mòbil només es desa la teva tria. Pots canviar la teva tria quan vulguis a Ajuda › Privadesa.",
 ]
@@ -219,7 +219,7 @@ exports[`the static pages in ca > keeps the counting explanation in both places 
 [
   "Libell pot comptar l’ús de manera anònima, per saber què cal millorar. Mira les estadístiques",
   "Què es compta",
-  "Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com EasyLevel, Xparkle RVS01), la versió de l’app i l’idioma triat a Libell.",
+  "Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com EasyLevel o Xparkle RVS01), la versió de l’app i l’idioma triat a Libell.",
   "Què no es desa mai",
   "La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. Al mòbil només es desa la teva tria. Si el teu navegador demana als llocs web que no et rastregin, Libell no compta res.",
 ]
@@ -419,7 +419,7 @@ exports[`the static pages in ca > keeps the privacy policy 1`] = `
 <h2>Recompte anònim</h2>
 <p>Per saber què cal millorar, Libell pot comptar l’ús de manera anònima amb GoatCounter. Libell et pregunta un cop si vols que compti, i no es compta res fins que hagis triat. Les estadístiques són públiques.</p>
 <h3>Què es compta</h3>
-<p>Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com EasyLevel, Xparkle RVS01), la versió de l’app i l’idioma triat a Libell.</p>
+<p>Que s’ha obert l’app, quines funcions es fan servir, quin model de sensor mesura (el mòbil o un model com EasyLevel o Xparkle RVS01), la versió de l’app i l’idioma triat a Libell.</p>
 <h3>Què no es desa mai</h3>
 <p>La teva adreça IP, país, dispositiu, pantalla, sistema operatiu o navegador, les mesures del vehicle, la teva configuració, ni res més sobre tu. Al mòbil només es desa la teva tria.</p>
 <p>Com en qualsevol petició a internet, l’adreça IP del mòbil i el nom del navegador arriben a GoatCounter. GoatCounter mai no els desa: els manté a la memòria com a màxim vuit hores per reconèixer la mateixa visita. GoatCounter es gestiona des d’Irlanda i té els servidors a Finlàndia i Alemanya, així que res no surt de la UE.</p>
@@ -472,7 +472,7 @@ exports[`the static pages in cs > keeps the counting explanation in both places 
 [
   "Libell může anonymně počítat používání, abychom věděli, co zlepšit. Zobrazit statistiky",
   "Co se počítá",
-  "Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako EasyLevel, Xparkle RVS01), verze aplikace a jazyk zvolený v Libell.",
+  "Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako EasyLevel nebo Xparkle RVS01), verze aplikace a jazyk zvolený v Libell.",
   "Co se nikdy neukládá",
   "Vaše IP adresa, země, zařízení, obrazovka, operační systém ani prohlížeč, rozměry vozidla, vaše nastavení ani nic jiného o vás. Do telefonu se ukládá jen vaše volba. Svou volbu můžete kdykoli změnit v Nápověda › Soukromí.",
 ]
@@ -482,7 +482,7 @@ exports[`the static pages in cs > keeps the counting explanation in both places 
 [
   "Libell může anonymně počítat používání, abychom věděli, co zlepšit. Zobrazit statistiky",
   "Co se počítá",
-  "Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako EasyLevel, Xparkle RVS01), verze aplikace a jazyk zvolený v Libell.",
+  "Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako EasyLevel nebo Xparkle RVS01), verze aplikace a jazyk zvolený v Libell.",
   "Co se nikdy neukládá",
   "Vaše IP adresa, země, zařízení, obrazovka, operační systém ani prohlížeč, rozměry vozidla, vaše nastavení ani nic jiného o vás. Do telefonu se ukládá jen vaše volba. Pokud váš prohlížeč žádá weby, aby vás nesledovaly, Libell nepočítá nic.",
 ]
@@ -682,7 +682,7 @@ exports[`the static pages in cs > keeps the privacy policy 1`] = `
 <h2>Anonymní počítání</h2>
 <p>Aby bylo jasné, co zlepšit, může Libell anonymně počítat používání pomocí služby GoatCounter. Libell se vás jednou zeptá, zda smí počítat, a dokud nezvolíte, nepočítá se nic. Statistiky jsou veřejné.</p>
 <h3>Co se počítá</h3>
-<p>Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako EasyLevel, Xparkle RVS01), verze aplikace a jazyk zvolený v Libell.</p>
+<p>Že byla aplikace otevřena, které funkce se používají, jaký model senzoru měří (telefon nebo model jako EasyLevel nebo Xparkle RVS01), verze aplikace a jazyk zvolený v Libell.</p>
 <h3>Co se nikdy neukládá</h3>
 <p>Vaše IP adresa, země, zařízení, obrazovka, operační systém ani prohlížeč, rozměry vozidla, vaše nastavení ani nic jiného o vás. Do telefonu se ukládá jen vaše volba.</p>
 <p>Jako u každého požadavku na internetu se k GoatCounteru dostane IP adresa telefonu a název prohlížeče. GoatCounter je nikdy neukládá, drží je v paměti nejvýše osm hodin, aby poznal stejnou návštěvu. GoatCounter je provozován z Irska a jeho servery jsou ve Finsku a Německu, takže nic neopouští EU.</p>
@@ -735,7 +735,7 @@ exports[`the static pages in da > keeps the counting explanation in both places 
 [
   "Libell kan tælle brugen anonymt, så vi ved, hvad der skal forbedres. Se statistikken",
   "Det her tælles",
-  "At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som EasyLevel, Xparkle RVS01), appens version og det sprog, der er valgt i Libell.",
+  "At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som EasyLevel eller Xparkle RVS01), appens version og det sprog, der er valgt i Libell.",
   "Det her gemmes aldrig",
   "Din IP-adresse, dit land, din enhed, skærm, dit styresystem eller din browser, køretøjets mål, dine indstillinger eller noget andet om dig. Kun dit valg gemmes på telefonen. Du kan ændre dit valg når som helst under Hjælp › Privatliv.",
 ]
@@ -745,7 +745,7 @@ exports[`the static pages in da > keeps the counting explanation in both places 
 [
   "Libell kan tælle brugen anonymt, så vi ved, hvad der skal forbedres. Se statistikken",
   "Det her tælles",
-  "At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som EasyLevel, Xparkle RVS01), appens version og det sprog, der er valgt i Libell.",
+  "At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som EasyLevel eller Xparkle RVS01), appens version og det sprog, der er valgt i Libell.",
   "Det her gemmes aldrig",
   "Din IP-adresse, dit land, din enhed, skærm, dit styresystem eller din browser, køretøjets mål, dine indstillinger eller noget andet om dig. Kun dit valg gemmes på telefonen. Hvis din browser beder websteder om ikke at spore dig, tæller Libell ingenting.",
 ]
@@ -945,7 +945,7 @@ exports[`the static pages in da > keeps the privacy policy 1`] = `
 <h2>Anonym optælling</h2>
 <p>For at vide, hvad der skal forbedres, kan Libell tælle brugen anonymt med GoatCounter. Libell spørger dig én gang, om der må tælles, og intet tælles, før du har valgt. Statistikken er offentlig.</p>
 <h3>Det her tælles</h3>
-<p>At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som EasyLevel, Xparkle RVS01), appens version og det sprog, der er valgt i Libell.</p>
+<p>At appen blev åbnet, hvilke funktioner der bruges, hvilken sensormodel der måler (telefonen eller en model som EasyLevel eller Xparkle RVS01), appens version og det sprog, der er valgt i Libell.</p>
 <h3>Det her gemmes aldrig</h3>
 <p>Din IP-adresse, dit land, din enhed, skærm, dit styresystem eller din browser, køretøjets mål, dine indstillinger eller noget andet om dig. Kun dit valg gemmes på telefonen.</p>
 <p>Som ved alle forespørgsler på internettet når telefonens IP-adresse og browserens navn frem til GoatCounter. GoatCounter gemmer dem aldrig, men holder dem i hukommelsen i højst otte timer for at genkende det samme besøg. GoatCounter drives fra Irland og har sine servere i Finland og Tyskland, så intet forlader EU.</p>
@@ -998,7 +998,7 @@ exports[`the static pages in de > keeps the counting explanation in both places 
 [
   "Libell kann die Nutzung anonym zählen, um die App zu verbessern. Statistik ansehen",
   "Was gezählt wird",
-  "Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie EasyLevel, Xparkle RVS01), die App-Version und die in Libell gewählte Sprache.",
+  "Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie EasyLevel oder Xparkle RVS01), die App-Version und die in Libell gewählte Sprache.",
   "Was nie gespeichert wird",
   "IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, Fahrzeugmaße, Einstellungen oder sonst etwas über dich. Auf dem Handy wird nur deine Wahl gespeichert. Deine Wahl kannst du jederzeit unter Hilfe › Datenschutz ändern.",
 ]
@@ -1008,7 +1008,7 @@ exports[`the static pages in de > keeps the counting explanation in both places 
 [
   "Libell kann die Nutzung anonym zählen, um die App zu verbessern. Statistik ansehen",
   "Was gezählt wird",
-  "Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie EasyLevel, Xparkle RVS01), die App-Version und die in Libell gewählte Sprache.",
+  "Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie EasyLevel oder Xparkle RVS01), die App-Version und die in Libell gewählte Sprache.",
   "Was nie gespeichert wird",
   "IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, Fahrzeugmaße, Einstellungen oder sonst etwas über dich. Auf dem Handy wird nur deine Wahl gespeichert. Wenn dein Browser Websites bittet, dich nicht zu verfolgen, zählt Libell gar nichts.",
 ]
@@ -1208,7 +1208,7 @@ exports[`the static pages in de > keeps the privacy policy 1`] = `
 <h2>Anonyme Zählung</h2>
 <p>Um zu wissen, was besser werden muss, kann Libell die Nutzung anonym mit GoatCounter zählen. Libell fragt dich einmal, ob gezählt werden darf, und bis zu deiner Wahl wird nichts gezählt. Die Statistik ist öffentlich.</p>
 <h3>Was gezählt wird</h3>
-<p>Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie EasyLevel, Xparkle RVS01), die App-Version und die in Libell gewählte Sprache.</p>
+<p>Dass die App geöffnet wurde, welche Funktionen genutzt werden, welcher Sensor misst (das Handy oder ein Modell wie EasyLevel oder Xparkle RVS01), die App-Version und die in Libell gewählte Sprache.</p>
 <h3>Was nie gespeichert wird</h3>
 <p>IP-Adresse, Land, Gerät, Bildschirm, Betriebssystem, Browser, Fahrzeugmaße, Einstellungen oder sonst etwas über dich. Auf dem Handy wird nur deine Wahl gespeichert.</p>
 <p>Wie bei jeder Anfrage im Internet erreichen die IP-Adresse des Handys und der Name des Browsers GoatCounter. GoatCounter speichert sie nie, sondern hält sie höchstens acht Stunden im Arbeitsspeicher, um denselben Besuch zu erkennen. GoatCounter wird aus Irland betrieben, die Server stehen in Finnland und Deutschland, also verlässt nichts die EU.</p>
@@ -1261,7 +1261,7 @@ exports[`the static pages in en > keeps the counting explanation in both places 
 [
   "Libell can count use anonymously, so we know what to improve. See the statistics",
   "What is counted",
-  "That the app was opened, which features are used, which sensor measures (the phone or a model such as EasyLevel, Xparkle RVS01), the app version and the language chosen in Libell.",
+  "That the app was opened, which features are used, which sensor measures (the phone or a model such as EasyLevel or Xparkle RVS01), the app version and the language chosen in Libell.",
   "What is never saved",
   "Your IP address, country, device, screen, operating system or browser, your vehicle’s measurements, your settings, or anything else about you. Only your choice is kept on your phone. You can change your choice any time under Help › Privacy.",
 ]
@@ -1271,7 +1271,7 @@ exports[`the static pages in en > keeps the counting explanation in both places 
 [
   "Libell can count use anonymously, so we know what to improve. See the statistics",
   "What is counted",
-  "That the app was opened, which features are used, which sensor measures (the phone or a model such as EasyLevel, Xparkle RVS01), the app version and the language chosen in Libell.",
+  "That the app was opened, which features are used, which sensor measures (the phone or a model such as EasyLevel or Xparkle RVS01), the app version and the language chosen in Libell.",
   "What is never saved",
   "Your IP address, country, device, screen, operating system or browser, your vehicle’s measurements, your settings, or anything else about you. Only your choice is kept on your phone. If your browser asks websites not to track you, Libell counts nothing.",
 ]
@@ -1471,7 +1471,7 @@ exports[`the static pages in en > keeps the privacy policy 1`] = `
 <h2>Anonymous counting</h2>
 <p>To know what to improve, Libell can count its use anonymously with GoatCounter. Libell asks you once whether to count, and nothing is counted until you have chosen. The statistics are public.</p>
 <h3>What is counted</h3>
-<p>That the app was opened, which features are used, which sensor measures (the phone or a model such as EasyLevel, Xparkle RVS01), the app version and the language chosen in Libell.</p>
+<p>That the app was opened, which features are used, which sensor measures (the phone or a model such as EasyLevel or Xparkle RVS01), the app version and the language chosen in Libell.</p>
 <h3>What is never saved</h3>
 <p>Your IP address, country, device, screen, operating system or browser, your vehicle’s measurements, your settings, or anything else about you. Only your choice is kept on your phone.</p>
 <p>As with any request on the internet, your phone’s IP address and the browser’s name reach GoatCounter. GoatCounter never saves them: it keeps them in memory for at most eight hours to recognise the same visit. GoatCounter is run from Ireland and its servers are in Finland and Germany, so nothing leaves the EU.</p>
@@ -1524,7 +1524,7 @@ exports[`the static pages in es > keeps the counting explanation in both places 
 [
   "Libell puede contar el uso de forma anónima, para saber qué mejorar. Ver las estadísticas",
   "Qué se cuenta",
-  "Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como EasyLevel, Xparkle RVS01), la versión de la app y el idioma elegido en Libell.",
+  "Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como EasyLevel o Xparkle RVS01), la versión de la app y el idioma elegido en Libell.",
   "Qué no se guarda nunca",
   "Tu dirección IP, país, dispositivo, pantalla, sistema operativo o navegador, las medidas del vehículo, tus ajustes, ni nada más sobre ti. En el móvil solo se guarda tu elección. Puedes cambiar tu elección cuando quieras en Ayuda › Datos.",
 ]
@@ -1534,7 +1534,7 @@ exports[`the static pages in es > keeps the counting explanation in both places 
 [
   "Libell puede contar el uso de forma anónima, para saber qué mejorar. Ver las estadísticas",
   "Qué se cuenta",
-  "Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como EasyLevel, Xparkle RVS01), la versión de la app y el idioma elegido en Libell.",
+  "Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como EasyLevel o Xparkle RVS01), la versión de la app y el idioma elegido en Libell.",
   "Qué no se guarda nunca",
   "Tu dirección IP, país, dispositivo, pantalla, sistema operativo o navegador, las medidas del vehículo, tus ajustes, ni nada más sobre ti. En el móvil solo se guarda tu elección. Si tu navegador pide a las webs que no te rastreen, Libell no cuenta nada.",
 ]
@@ -1734,7 +1734,7 @@ exports[`the static pages in es > keeps the privacy policy 1`] = `
 <h2>Recuento anónimo</h2>
 <p>Para saber qué mejorar, Libell puede contar su uso de forma anónima con GoatCounter. Libell te pregunta una vez si quieres que cuente, y no se cuenta nada hasta que eliges. Las estadísticas son públicas.</p>
 <h3>Qué se cuenta</h3>
-<p>Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como EasyLevel, Xparkle RVS01), la versión de la app y el idioma elegido en Libell.</p>
+<p>Que se abrió la app, qué funciones se usan, qué modelo de sensor mide (el móvil o un modelo como EasyLevel o Xparkle RVS01), la versión de la app y el idioma elegido en Libell.</p>
 <h3>Qué no se guarda nunca</h3>
 <p>Tu dirección IP, país, dispositivo, pantalla, sistema operativo o navegador, las medidas del vehículo, tus ajustes, ni nada más sobre ti. En el móvil solo se guarda tu elección.</p>
 <p>Como en cualquier petición en internet, la dirección IP del móvil y el nombre del navegador llegan a GoatCounter. GoatCounter nunca los guarda: los mantiene en memoria como máximo ocho horas para reconocer la misma visita. GoatCounter se gestiona desde Irlanda y sus servidores están en Finlandia y Alemania, así que nada sale de la UE.</p>
@@ -1787,7 +1787,7 @@ exports[`the static pages in et > keeps the counting explanation in both places 
 [
   "Libell võib kasutust anonüümselt loendada, et teaksime, mida parandada. Vaata statistikat",
   "Mida loendatakse",
-  "Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu EasyLevel, Xparkle RVS01), rakenduse versioon ja Libellis valitud keel.",
+  "Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu EasyLevel või Xparkle RVS01), rakenduse versioon ja Libellis valitud keel.",
   "Mida kunagi ei salvestata",
   "Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Telefoni salvestatakse ainult sinu valik. Saad oma valikut igal ajal muuta: Abi › Privaatsus.",
 ]
@@ -1797,7 +1797,7 @@ exports[`the static pages in et > keeps the counting explanation in both places 
 [
   "Libell võib kasutust anonüümselt loendada, et teaksime, mida parandada. Vaata statistikat",
   "Mida loendatakse",
-  "Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu EasyLevel, Xparkle RVS01), rakenduse versioon ja Libellis valitud keel.",
+  "Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu EasyLevel või Xparkle RVS01), rakenduse versioon ja Libellis valitud keel.",
   "Mida kunagi ei salvestata",
   "Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Telefoni salvestatakse ainult sinu valik. Kui su brauser palub veebisaitidel sind mitte jälgida, ei loenda Libell midagi.",
 ]
@@ -1997,7 +1997,7 @@ exports[`the static pages in et > keeps the privacy policy 1`] = `
 <h2>Anonüümne loendamine</h2>
 <p>Et teada, mida parandada, võib Libell kasutust GoatCounteriga anonüümselt loendada. Libell küsib sinult ühe korra, kas tohib loendada, ja enne sinu valikut ei loendata midagi. Statistika on avalik.</p>
 <h3>Mida loendatakse</h3>
-<p>Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu EasyLevel, Xparkle RVS01), rakenduse versioon ja Libellis valitud keel.</p>
+<p>Et rakendus avati, milliseid funktsioone kasutatakse, milline andurimudel mõõdab (telefon või mudel nagu EasyLevel või Xparkle RVS01), rakenduse versioon ja Libellis valitud keel.</p>
 <h3>Mida kunagi ei salvestata</h3>
 <p>Sinu IP-aadressi, riiki, seadet, ekraani, operatsioonisüsteemi ega brauserit, sõiduki mõõte, sinu seadeid ega midagi muud sinu kohta. Telefoni salvestatakse ainult sinu valik.</p>
 <p>Nagu iga päringu puhul internetis, jõuavad telefoni IP-aadress ja brauseri nimi GoatCounterini. GoatCounter ei salvesta neid kunagi, vaid hoiab neid mälus kõige rohkem kaheksa tundi, et sama külastust ära tunda. GoatCounterit hallatakse Iirimaalt ja selle serverid asuvad Soomes ja Saksamaal, nii et midagi ei lahku EList.</p>
@@ -2050,7 +2050,7 @@ exports[`the static pages in fi > keeps the counting explanation in both places 
 [
   "Libell voi laskea käyttöä nimettömästi, jotta tiedämme, mitä parantaa. Katso tilastot",
   "Mitä lasketaan",
-  "Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten EasyLevel, Xparkle RVS01), sovelluksen versio ja Libellissä valittu kieli.",
+  "Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten EasyLevel tai Xparkle RVS01), sovelluksen versio ja Libellissä valittu kieli.",
   "Mitä ei koskaan tallenneta",
   "IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Puhelimeen tallennetaan vain valintasi. Voit muuttaa valintaasi milloin tahansa kohdassa Ohje › Tietosuoja.",
 ]
@@ -2060,7 +2060,7 @@ exports[`the static pages in fi > keeps the counting explanation in both places 
 [
   "Libell voi laskea käyttöä nimettömästi, jotta tiedämme, mitä parantaa. Katso tilastot",
   "Mitä lasketaan",
-  "Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten EasyLevel, Xparkle RVS01), sovelluksen versio ja Libellissä valittu kieli.",
+  "Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten EasyLevel tai Xparkle RVS01), sovelluksen versio ja Libellissä valittu kieli.",
   "Mitä ei koskaan tallenneta",
   "IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Puhelimeen tallennetaan vain valintasi. Jos selaimesi pyytää verkkosivustoja olemaan seuraamatta sinua, Libell ei laske mitään.",
 ]
@@ -2260,7 +2260,7 @@ exports[`the static pages in fi > keeps the privacy policy 1`] = `
 <h2>Nimetön laskenta</h2>
 <p>Jotta tiedetään, mitä pitää parantaa, Libell voi laskea käyttöä nimettömästi GoatCounterilla. Libell kysyy sinulta kerran, saako laskea, eikä mitään lasketa ennen kuin olet valinnut. Tilastot ovat julkisia.</p>
 <h3>Mitä lasketaan</h3>
-<p>Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten EasyLevel, Xparkle RVS01), sovelluksen versio ja Libellissä valittu kieli.</p>
+<p>Että sovellus avattiin, mitä toimintoja käytetään, mikä anturimalli mittaa (puhelin tai malli, kuten EasyLevel tai Xparkle RVS01), sovelluksen versio ja Libellissä valittu kieli.</p>
 <h3>Mitä ei koskaan tallenneta</h3>
 <p>IP-osoitettasi, maata, laitetta, näyttöä, käyttöjärjestelmää tai selainta, ajoneuvon mittoja, asetuksiasi eikä mitään muuta sinusta. Puhelimeen tallennetaan vain valintasi.</p>
 <p>Kuten kaikissa verkkopyynnöissä, puhelimen IP-osoite ja selaimen nimi päätyvät GoatCounterille. GoatCounter ei koskaan tallenna niitä, vaan pitää ne muistissa enintään kahdeksan tuntia saman käynnin tunnistamiseksi. GoatCounteria ylläpidetään Irlannista, ja sen palvelimet ovat Suomessa ja Saksassa, joten mikään ei poistu EU:sta.</p>
@@ -2313,7 +2313,7 @@ exports[`the static pages in fr > keeps the counting explanation in both places 
 [
   "Libell peut compter l’utilisation de façon anonyme, pour savoir quoi améliorer. Voir les statistiques",
   "Ce qui est compté",
-  "Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme EasyLevel, Xparkle RVS01), la version de l’app et la langue choisie dans Libell.",
+  "Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme EasyLevel ou Xparkle RVS01), la version de l’app et la langue choisie dans Libell.",
   "Ce qui n’est jamais enregistré",
   "Votre adresse IP, votre pays, appareil, écran, système d’exploitation ou navigateur, les mesures du véhicule, vos réglages, ni rien d’autre sur vous. Seul votre choix est enregistré sur le téléphone. Vous pouvez changer votre choix à tout moment dans Aide › Données.",
 ]
@@ -2323,7 +2323,7 @@ exports[`the static pages in fr > keeps the counting explanation in both places 
 [
   "Libell peut compter l’utilisation de façon anonyme, pour savoir quoi améliorer. Voir les statistiques",
   "Ce qui est compté",
-  "Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme EasyLevel, Xparkle RVS01), la version de l’app et la langue choisie dans Libell.",
+  "Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme EasyLevel ou Xparkle RVS01), la version de l’app et la langue choisie dans Libell.",
   "Ce qui n’est jamais enregistré",
   "Votre adresse IP, votre pays, appareil, écran, système d’exploitation ou navigateur, les mesures du véhicule, vos réglages, ni rien d’autre sur vous. Seul votre choix est enregistré sur le téléphone. Si votre navigateur demande aux sites de ne pas vous suivre, Libell ne compte rien.",
 ]
@@ -2523,7 +2523,7 @@ exports[`the static pages in fr > keeps the privacy policy 1`] = `
 <h2>Comptage anonyme</h2>
 <p>Pour savoir quoi améliorer, Libell peut compter son utilisation de façon anonyme avec GoatCounter. Libell vous demande une fois si vous l’acceptez, et rien n’est compté avant votre choix. Les statistiques sont publiques.</p>
 <h3>Ce qui est compté</h3>
-<p>Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme EasyLevel, Xparkle RVS01), la version de l’app et la langue choisie dans Libell.</p>
+<p>Que l’app a été ouverte, quelles fonctions sont utilisées, quel modèle de capteur mesure (le téléphone ou un modèle comme EasyLevel ou Xparkle RVS01), la version de l’app et la langue choisie dans Libell.</p>
 <h3>Ce qui n’est jamais enregistré</h3>
 <p>Votre adresse IP, votre pays, appareil, écran, système d’exploitation ou navigateur, les mesures du véhicule, vos réglages, ni rien d’autre sur vous. Seul votre choix est enregistré sur le téléphone.</p>
 <p>Comme pour toute requête sur Internet, l’adresse IP du téléphone et le nom du navigateur parviennent à GoatCounter. GoatCounter ne les enregistre jamais : il les garde en mémoire huit heures au plus pour reconnaître une même visite. GoatCounter est exploité depuis l’Irlande et ses serveurs sont en Finlande et en Allemagne : rien ne quitte l’UE.</p>
@@ -2576,7 +2576,7 @@ exports[`the static pages in hr > keeps the counting explanation in both places 
 [
   "Libell može anonimno brojati korištenje kako bismo znali što poboljšati. Pogledajte statistiku",
   "Što se broji",
-  "Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput EasyLevel, Xparkle RVS01), verzija aplikacije i jezik odabran u Libellu.",
+  "Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput EasyLevel ili Xparkle RVS01), verzija aplikacije i jezik odabran u Libellu.",
   "Što se nikada ne sprema",
   "Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Na telefon se sprema samo vaš izbor. Svoj izbor možete promijeniti bilo kada u Pomoć › Podaci.",
 ]
@@ -2586,7 +2586,7 @@ exports[`the static pages in hr > keeps the counting explanation in both places 
 [
   "Libell može anonimno brojati korištenje kako bismo znali što poboljšati. Pogledajte statistiku",
   "Što se broji",
-  "Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput EasyLevel, Xparkle RVS01), verzija aplikacije i jezik odabran u Libellu.",
+  "Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput EasyLevel ili Xparkle RVS01), verzija aplikacije i jezik odabran u Libellu.",
   "Što se nikada ne sprema",
   "Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Na telefon se sprema samo vaš izbor. Ako vaš preglednik traži od web-mjesta da vas ne prate, Libell ne broji ništa.",
 ]
@@ -2786,7 +2786,7 @@ exports[`the static pages in hr > keeps the privacy policy 1`] = `
 <h2>Anonimno brojanje</h2>
 <p>Da bismo znali što poboljšati, Libell može anonimno brojati korištenje uz GoatCounter. Libell vas jednom pita smije li brojati, i ništa se ne broji dok ne odaberete. Statistika je javna.</p>
 <h3>Što se broji</h3>
-<p>Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput EasyLevel, Xparkle RVS01), verzija aplikacije i jezik odabran u Libellu.</p>
+<p>Da je aplikacija otvorena, koje se funkcije koriste, koji model senzora mjeri (telefon ili model poput EasyLevel ili Xparkle RVS01), verzija aplikacije i jezik odabran u Libellu.</p>
 <h3>Što se nikada ne sprema</h3>
 <p>Vaša IP adresa, zemlja, uređaj, zaslon, operacijski sustav ili preglednik, mjere vozila, vaše postavke ni bilo što drugo o vama. Na telefon se sprema samo vaš izbor.</p>
 <p>Kao kod svakog zahtjeva na internetu, IP adresa telefona i naziv preglednika stižu do GoatCountera. GoatCounter ih nikada ne sprema, nego ih drži u memoriji najviše osam sati kako bi prepoznao isti posjet. GoatCounter se vodi iz Irske, a poslužitelji su mu u Finskoj i Njemačkoj, pa ništa ne napušta EU.</p>
@@ -2839,7 +2839,7 @@ exports[`the static pages in hu > keeps the counting explanation in both places 
 [
   "A Libell névtelenül számolhatja a használatot, hogy tudjuk, min kell javítani. Statisztika megtekintése",
   "Mit számolunk",
-  "Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például EasyLevel, Xparkle RVS01), az alkalmazás verzióját és a Libellben választott nyelvet.",
+  "Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például EasyLevel vagy Xparkle RVS01), az alkalmazás verzióját és a Libellben választott nyelvet.",
   "Mit nem mentünk soha",
   "Az IP-címedet, országodat, eszközödet, képernyődet, operációs rendszeredet vagy böngésződet, a jármű méreteit, a beállításaidat, sem semmi mást rólad. A telefonon csak a döntésed marad meg. A döntésedet bármikor megváltoztathatod itt: Súgó › Adatvédelem.",
 ]
@@ -2849,7 +2849,7 @@ exports[`the static pages in hu > keeps the counting explanation in both places 
 [
   "A Libell névtelenül számolhatja a használatot, hogy tudjuk, min kell javítani. Statisztika megtekintése",
   "Mit számolunk",
-  "Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például EasyLevel, Xparkle RVS01), az alkalmazás verzióját és a Libellben választott nyelvet.",
+  "Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például EasyLevel vagy Xparkle RVS01), az alkalmazás verzióját és a Libellben választott nyelvet.",
   "Mit nem mentünk soha",
   "Az IP-címedet, országodat, eszközödet, képernyődet, operációs rendszeredet vagy böngésződet, a jármű méreteit, a beállításaidat, sem semmi mást rólad. A telefonon csak a döntésed marad meg. Ha a böngésződ kéri, hogy ne kövessenek, a Libell semmit sem számol.",
 ]
@@ -3049,7 +3049,7 @@ exports[`the static pages in hu > keeps the privacy policy 1`] = `
 <h2>Névtelen számlálás</h2>
 <p>Hogy kiderüljön, min kell javítani, a Libell névtelenül számolhatja a használatot a GoatCounterrel. A Libell egyszer megkérdezi, hogy számolhat-e, és amíg nem választasz, semmit sem számol. A statisztika nyilvános.</p>
 <h3>Mit számolunk</h3>
-<p>Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például EasyLevel, Xparkle RVS01), az alkalmazás verzióját és a Libellben választott nyelvet.</p>
+<p>Hogy megnyitották az alkalmazást, mely funkciókat használják, melyik szenzormodell mér (a telefon vagy egy modell, például EasyLevel vagy Xparkle RVS01), az alkalmazás verzióját és a Libellben választott nyelvet.</p>
 <h3>Mit nem mentünk soha</h3>
 <p>Az IP-címedet, országodat, eszközödet, képernyődet, operációs rendszeredet vagy böngésződet, a jármű méreteit, a beállításaidat, sem semmi mást rólad. A telefonon csak a döntésed marad meg.</p>
 <p>Mint minden internetes kérésnél, a telefon IP-címe és a böngésző neve eljut a GoatCounterhez. A GoatCounter soha nem menti el őket, legfeljebb nyolc óráig tartja a memóriában, hogy felismerje ugyanazt a látogatást. A GoatCountert Írországból üzemeltetik, a szerverei Finnországban és Németországban vannak, így semmi sem hagyja el az EU-t.</p>
@@ -3102,7 +3102,7 @@ exports[`the static pages in is > keeps the counting explanation in both places 
 [
   "Libell getur talið notkun nafnlaust svo við vitum hvað þarf að bæta. Sjá tölfræðina",
   "Þetta er talið",
-  "Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og EasyLevel, Xparkle RVS01), útgáfa appsins og tungumálið sem er valið í Libell.",
+  "Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og EasyLevel eða Xparkle RVS01), útgáfa appsins og tungumálið sem er valið í Libell.",
   "Þetta er aldrei vistað",
   "IP-talan þín, land, tæki, skjár, stýrikerfi eða vafri, mál ökutækisins, stillingar þínar eða nokkuð annað um þig. Aðeins val þitt er vistað í símanum. Þú getur breytt vali þínu hvenær sem er undir Hjálp › Persónuvernd.",
 ]
@@ -3112,7 +3112,7 @@ exports[`the static pages in is > keeps the counting explanation in both places 
 [
   "Libell getur talið notkun nafnlaust svo við vitum hvað þarf að bæta. Sjá tölfræðina",
   "Þetta er talið",
-  "Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og EasyLevel, Xparkle RVS01), útgáfa appsins og tungumálið sem er valið í Libell.",
+  "Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og EasyLevel eða Xparkle RVS01), útgáfa appsins og tungumálið sem er valið í Libell.",
   "Þetta er aldrei vistað",
   "IP-talan þín, land, tæki, skjár, stýrikerfi eða vafri, mál ökutækisins, stillingar þínar eða nokkuð annað um þig. Aðeins val þitt er vistað í símanum. Ef vafrinn þinn biður vefsvæði um að rekja þig ekki, telur Libell ekkert.",
 ]
@@ -3312,7 +3312,7 @@ exports[`the static pages in is > keeps the privacy policy 1`] = `
 <h2>Nafnlaus talning</h2>
 <p>Til að vita hvað þarf að bæta getur Libell talið notkunina nafnlaust með GoatCounter. Libell spyr þig einu sinni hvort það megi telja, og ekkert er talið fyrr en þú hefur valið. Tölfræðin er opinber.</p>
 <h3>Þetta er talið</h3>
-<p>Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og EasyLevel, Xparkle RVS01), útgáfa appsins og tungumálið sem er valið í Libell.</p>
+<p>Að appið var opnað, hvaða aðgerðir eru notaðar, hvaða skynjaragerð mælir (síminn eða gerð eins og EasyLevel eða Xparkle RVS01), útgáfa appsins og tungumálið sem er valið í Libell.</p>
 <h3>Þetta er aldrei vistað</h3>
 <p>IP-talan þín, land, tæki, skjár, stýrikerfi eða vafri, mál ökutækisins, stillingar þínar eða nokkuð annað um þig. Aðeins val þitt er vistað í símanum.</p>
 <p>Eins og með allar beiðnir á netinu berast IP-tala símans og heiti vafrans til GoatCounter. GoatCounter vistar þau aldrei heldur geymir þau í minni í mesta lagi átta klukkustundir til að þekkja sömu heimsókn. GoatCounter er rekið frá Írlandi og þjónar þess eru í Finnlandi og Þýskalandi, svo ekkert fer út fyrir ESB.</p>
@@ -3365,7 +3365,7 @@ exports[`the static pages in it > keeps the counting explanation in both places 
 [
   "Libell può contare l’uso in modo anonimo, per sapere cosa migliorare. Vedi le statistiche",
   "Cosa viene contato",
-  "Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come EasyLevel, Xparkle RVS01), la versione dell’app e la lingua scelta in Libell.",
+  "Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come EasyLevel o Xparkle RVS01), la versione dell’app e la lingua scelta in Libell.",
   "Cosa non viene mai salvato",
   "Il tuo indirizzo IP, paese, dispositivo, schermo, sistema operativo o browser, le misure del veicolo, le tue impostazioni, né altro su di te. Sul telefono viene salvata solo la tua scelta. Puoi cambiare la tua scelta quando vuoi in Aiuto › Privacy.",
 ]
@@ -3375,7 +3375,7 @@ exports[`the static pages in it > keeps the counting explanation in both places 
 [
   "Libell può contare l’uso in modo anonimo, per sapere cosa migliorare. Vedi le statistiche",
   "Cosa viene contato",
-  "Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come EasyLevel, Xparkle RVS01), la versione dell’app e la lingua scelta in Libell.",
+  "Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come EasyLevel o Xparkle RVS01), la versione dell’app e la lingua scelta in Libell.",
   "Cosa non viene mai salvato",
   "Il tuo indirizzo IP, paese, dispositivo, schermo, sistema operativo o browser, le misure del veicolo, le tue impostazioni, né altro su di te. Sul telefono viene salvata solo la tua scelta. Se il tuo browser chiede ai siti di non tracciarti, Libell non conta nulla.",
 ]
@@ -3575,7 +3575,7 @@ exports[`the static pages in it > keeps the privacy policy 1`] = `
 <h2>Conteggio anonimo</h2>
 <p>Per sapere cosa migliorare, Libell può contare l’uso in modo anonimo con GoatCounter. Libell ti chiede una volta se vuoi il conteggio, e nulla viene contato finché non hai scelto. Le statistiche sono pubbliche.</p>
 <h3>Cosa viene contato</h3>
-<p>Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come EasyLevel, Xparkle RVS01), la versione dell’app e la lingua scelta in Libell.</p>
+<p>Che l’app è stata aperta, quali funzioni si usano, quale modello di sensore misura (il telefono o un modello come EasyLevel o Xparkle RVS01), la versione dell’app e la lingua scelta in Libell.</p>
 <h3>Cosa non viene mai salvato</h3>
 <p>Il tuo indirizzo IP, paese, dispositivo, schermo, sistema operativo o browser, le misure del veicolo, le tue impostazioni, né altro su di te. Sul telefono viene salvata solo la tua scelta.</p>
 <p>Come per ogni richiesta su Internet, l’indirizzo IP del telefono e il nome del browser arrivano a GoatCounter. GoatCounter non li salva mai: li tiene in memoria al massimo otto ore per riconoscere la stessa visita. GoatCounter è gestito dall’Irlanda e i suoi server sono in Finlandia e in Germania, quindi nulla lascia l’UE.</p>
@@ -3628,7 +3628,7 @@ exports[`the static pages in lt > keeps the counting explanation in both places 
 [
   "Libell gali anonimiškai skaičiuoti naudojimą, kad žinotume, ką tobulinti. Peržiūrėti statistiką",
   "Kas skaičiuojama",
-  "Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., EasyLevel, Xparkle RVS01), programėlės versija ir Libell programėlėje pasirinkta kalba.",
+  "Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., EasyLevel ar Xparkle RVS01), programėlės versija ir Libell programėlėje pasirinkta kalba.",
   "Kas niekada nesaugoma",
   "Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Telefone saugomas tik jūsų pasirinkimas. Savo pasirinkimą bet kada galite pakeisti: Pagalba › Privatumas.",
 ]
@@ -3638,7 +3638,7 @@ exports[`the static pages in lt > keeps the counting explanation in both places 
 [
   "Libell gali anonimiškai skaičiuoti naudojimą, kad žinotume, ką tobulinti. Peržiūrėti statistiką",
   "Kas skaičiuojama",
-  "Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., EasyLevel, Xparkle RVS01), programėlės versija ir Libell programėlėje pasirinkta kalba.",
+  "Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., EasyLevel ar Xparkle RVS01), programėlės versija ir Libell programėlėje pasirinkta kalba.",
   "Kas niekada nesaugoma",
   "Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Telefone saugomas tik jūsų pasirinkimas. Jei jūsų naršyklė prašo svetainių jūsų nesekti, Libell nieko neskaičiuoja.",
 ]
@@ -3838,7 +3838,7 @@ exports[`the static pages in lt > keeps the privacy policy 1`] = `
 <h2>Anoniminis skaičiavimas</h2>
 <p>Kad būtų aišku, ką tobulinti, Libell gali anonimiškai skaičiuoti naudojimą su GoatCounter. Libell vieną kartą jūsų paklausia, ar galima skaičiuoti, ir niekas neskaičiuojama, kol nepasirinksite. Statistika yra vieša.</p>
 <h3>Kas skaičiuojama</h3>
-<p>Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., EasyLevel, Xparkle RVS01), programėlės versija ir Libell programėlėje pasirinkta kalba.</p>
+<p>Kad programėlė buvo atidaryta, kokios funkcijos naudojamos, koks jutiklio modelis matuoja (telefonas ar modelis, pvz., EasyLevel ar Xparkle RVS01), programėlės versija ir Libell programėlėje pasirinkta kalba.</p>
 <h3>Kas niekada nesaugoma</h3>
 <p>Jūsų IP adresas, šalis, įrenginys, ekranas, operacinė sistema ar naršyklė, transporto priemonės matmenys, jūsų nustatymai ar bet kas kita apie jus. Telefone saugomas tik jūsų pasirinkimas.</p>
 <p>Kaip ir su bet kuria užklausa internete, telefono IP adresas ir naršyklės pavadinimas pasiekia GoatCounter. GoatCounter jų niekada neišsaugo, o laiko atmintyje ne ilgiau kaip aštuonias valandas, kad atpažintų tą patį apsilankymą. GoatCounter valdomas iš Airijos, o jo serveriai yra Suomijoje ir Vokietijoje, todėl niekas nepalieka ES.</p>
@@ -3891,7 +3891,7 @@ exports[`the static pages in lv > keeps the counting explanation in both places 
 [
   "Libell var anonīmi skaitīt lietošanu, lai mēs zinātu, ko uzlabot. Skatīt statistiku",
   "Kas tiek skaitīts",
-  "Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, EasyLevel, Xparkle RVS01), lietotnes versija un Libell lietotnē izvēlētā valoda.",
+  "Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, EasyLevel vai Xparkle RVS01), lietotnes versija un Libell lietotnē izvēlētā valoda.",
   "Kas nekad netiek saglabāts",
   "Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Tālrunī tiek saglabāta tikai jūsu izvēle. Savu izvēli jebkurā laikā varat mainīt sadaļā Palīdzība › Privātums.",
 ]
@@ -3901,7 +3901,7 @@ exports[`the static pages in lv > keeps the counting explanation in both places 
 [
   "Libell var anonīmi skaitīt lietošanu, lai mēs zinātu, ko uzlabot. Skatīt statistiku",
   "Kas tiek skaitīts",
-  "Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, EasyLevel, Xparkle RVS01), lietotnes versija un Libell lietotnē izvēlētā valoda.",
+  "Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, EasyLevel vai Xparkle RVS01), lietotnes versija un Libell lietotnē izvēlētā valoda.",
   "Kas nekad netiek saglabāts",
   "Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Tālrunī tiek saglabāta tikai jūsu izvēle. Ja jūsu pārlūks lūdz vietnēm jūs neizsekot, Libell neko neskaita.",
 ]
@@ -4101,7 +4101,7 @@ exports[`the static pages in lv > keeps the privacy policy 1`] = `
 <h2>Anonīma skaitīšana</h2>
 <p>Lai zinātu, ko uzlabot, Libell var anonīmi skaitīt lietošanu ar GoatCounter. Libell vienu reizi jums jautā, vai drīkst skaitīt, un nekas netiek skaitīts, līdz esat izdarījis izvēli. Statistika ir publiska.</p>
 <h3>Kas tiek skaitīts</h3>
-<p>Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, EasyLevel, Xparkle RVS01), lietotnes versija un Libell lietotnē izvēlētā valoda.</p>
+<p>Ka lietotne tika atvērta, kuras funkcijas tiek izmantotas, kurš sensora modelis mēra (tālrunis vai modelis, piemēram, EasyLevel vai Xparkle RVS01), lietotnes versija un Libell lietotnē izvēlētā valoda.</p>
 <h3>Kas nekad netiek saglabāts</h3>
 <p>Jūsu IP adrese, valsts, ierīce, ekrāns, operētājsistēma vai pārlūks, transportlīdzekļa izmēri, jūsu iestatījumi vai kas cits par jums. Tālrunī tiek saglabāta tikai jūsu izvēle.</p>
 <p>Kā jebkurā pieprasījumā internetā, tālruņa IP adrese un pārlūka nosaukums nonāk līdz GoatCounter. GoatCounter tos nekad nesaglabā, bet glabā atmiņā ne ilgāk kā astoņas stundas, lai atpazītu to pašu apmeklējumu. GoatCounter tiek pārvaldīts no Īrijas, un tā serveri atrodas Somijā un Vācijā, tāpēc nekas neatstāj ES.</p>
@@ -4154,7 +4154,7 @@ exports[`the static pages in nb > keeps the counting explanation in both places 
 [
   "Libell kan telle bruken anonymt, så vi vet hva som bør bli bedre. Se statistikken",
   "Dette telles",
-  "At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som EasyLevel, Xparkle RVS01), appens versjon og språket som er valgt i Libell.",
+  "At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som EasyLevel eller Xparkle RVS01), appens versjon og språket som er valgt i Libell.",
   "Dette lagres aldri",
   "IP-adressen din, landet, enheten, skjermen, operativsystemet eller nettleseren din, kjøretøyets mål, innstillingene dine eller noe annet om deg. Bare valget ditt lagres på telefonen. Du kan endre valget ditt når som helst under Hjelp › Personvern.",
 ]
@@ -4164,7 +4164,7 @@ exports[`the static pages in nb > keeps the counting explanation in both places 
 [
   "Libell kan telle bruken anonymt, så vi vet hva som bør bli bedre. Se statistikken",
   "Dette telles",
-  "At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som EasyLevel, Xparkle RVS01), appens versjon og språket som er valgt i Libell.",
+  "At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som EasyLevel eller Xparkle RVS01), appens versjon og språket som er valgt i Libell.",
   "Dette lagres aldri",
   "IP-adressen din, landet, enheten, skjermen, operativsystemet eller nettleseren din, kjøretøyets mål, innstillingene dine eller noe annet om deg. Bare valget ditt lagres på telefonen. Hvis nettleseren din ber nettsteder om ikke å spore deg, teller Libell ingenting.",
 ]
@@ -4364,7 +4364,7 @@ exports[`the static pages in nb > keeps the privacy policy 1`] = `
 <h2>Anonym telling</h2>
 <p>For å vite hva som bør bli bedre, kan Libell telle bruken anonymt med GoatCounter. Libell spør deg én gang om det kan telles, og ingenting telles før du har valgt. Statistikken er offentlig.</p>
 <h3>Dette telles</h3>
-<p>At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som EasyLevel, Xparkle RVS01), appens versjon og språket som er valgt i Libell.</p>
+<p>At appen ble åpnet, hvilke funksjoner som brukes, hvilken sensormodell som måler (telefonen eller en modell som EasyLevel eller Xparkle RVS01), appens versjon og språket som er valgt i Libell.</p>
 <h3>Dette lagres aldri</h3>
 <p>IP-adressen din, landet, enheten, skjermen, operativsystemet eller nettleseren din, kjøretøyets mål, innstillingene dine eller noe annet om deg. Bare valget ditt lagres på telefonen.</p>
 <p>Som ved alle forespørsler på internett når telefonens IP-adresse og nettleserens navn GoatCounter. GoatCounter lagrer dem aldri, men holder dem i minnet i høyst åtte timer for å kjenne igjen det samme besøket. GoatCounter drives fra Irland og har serverne sine i Finland og Tyskland, så ingenting forlater EU.</p>
@@ -4417,7 +4417,7 @@ exports[`the static pages in nl > keeps the counting explanation in both places 
 [
   "Libell kan het gebruik anoniem tellen, zodat we weten wat beter moet. Bekijk de statistieken",
   "Wat wordt geteld",
-  "Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals EasyLevel, Xparkle RVS01), de appversie en de taal die in Libell is gekozen.",
+  "Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals EasyLevel of Xparkle RVS01), de appversie en de taal die in Libell is gekozen.",
   "Wat nooit wordt opgeslagen",
   "Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Alleen je keuze wordt op je telefoon opgeslagen. Je kunt je keuze altijd wijzigen via Help › Privacy.",
 ]
@@ -4427,7 +4427,7 @@ exports[`the static pages in nl > keeps the counting explanation in both places 
 [
   "Libell kan het gebruik anoniem tellen, zodat we weten wat beter moet. Bekijk de statistieken",
   "Wat wordt geteld",
-  "Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals EasyLevel, Xparkle RVS01), de appversie en de taal die in Libell is gekozen.",
+  "Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals EasyLevel of Xparkle RVS01), de appversie en de taal die in Libell is gekozen.",
   "Wat nooit wordt opgeslagen",
   "Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Alleen je keuze wordt op je telefoon opgeslagen. Als je browser websites vraagt je niet te volgen, telt Libell niets.",
 ]
@@ -4627,7 +4627,7 @@ exports[`the static pages in nl > keeps the privacy policy 1`] = `
 <h2>Anoniem tellen</h2>
 <p>Om te weten wat beter moet, kan Libell het gebruik anoniem tellen met GoatCounter. Libell vraagt je één keer of dat mag, en er wordt niets geteld voordat je hebt gekozen. De statistieken zijn openbaar.</p>
 <h3>Wat wordt geteld</h3>
-<p>Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals EasyLevel, Xparkle RVS01), de appversie en de taal die in Libell is gekozen.</p>
+<p>Dat de app is geopend, welke functies worden gebruikt, welk sensormodel meet (de telefoon of een model zoals EasyLevel of Xparkle RVS01), de appversie en de taal die in Libell is gekozen.</p>
 <h3>Wat nooit wordt opgeslagen</h3>
 <p>Je IP-adres, land, apparaat, scherm, besturingssysteem of browser, de maten van je voertuig, je instellingen, of iets anders over jou. Alleen je keuze wordt op je telefoon opgeslagen.</p>
 <p>Zoals bij elk verzoek op internet komen het IP-adres van de telefoon en de naam van de browser bij GoatCounter aan. GoatCounter slaat ze nooit op, maar houdt ze hooguit acht uur in het geheugen om hetzelfde bezoek te herkennen. GoatCounter wordt vanuit Ierland beheerd en de servers staan in Finland en Duitsland, dus niets verlaat de EU.</p>
@@ -4680,7 +4680,7 @@ exports[`the static pages in pl > keeps the counting explanation in both places 
 [
   "Libell może anonimowo liczyć użycie, żebyśmy wiedzieli, co poprawić. Zobacz statystyki",
   "Co jest liczone",
-  "Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. EasyLevel, Xparkle RVS01), wersja aplikacji i język wybrany w Libell.",
+  "Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. EasyLevel lub Xparkle RVS01), wersja aplikacji i język wybrany w Libell.",
   "Czego nigdy się nie zapisuje",
   "Twojego adresu IP, kraju, urządzenia, ekranu, systemu operacyjnego ani przeglądarki, wymiarów pojazdu, twoich ustawień ani niczego innego o tobie. W telefonie zapisywany jest tylko twój wybór. Swój wybór możesz zmienić w każdej chwili w Pomoc › Prywatność.",
 ]
@@ -4690,7 +4690,7 @@ exports[`the static pages in pl > keeps the counting explanation in both places 
 [
   "Libell może anonimowo liczyć użycie, żebyśmy wiedzieli, co poprawić. Zobacz statystyki",
   "Co jest liczone",
-  "Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. EasyLevel, Xparkle RVS01), wersja aplikacji i język wybrany w Libell.",
+  "Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. EasyLevel lub Xparkle RVS01), wersja aplikacji i język wybrany w Libell.",
   "Czego nigdy się nie zapisuje",
   "Twojego adresu IP, kraju, urządzenia, ekranu, systemu operacyjnego ani przeglądarki, wymiarów pojazdu, twoich ustawień ani niczego innego o tobie. W telefonie zapisywany jest tylko twój wybór. Jeśli twoja przeglądarka prosi strony, by cię nie śledziły, Libell nic nie liczy.",
 ]
@@ -4890,7 +4890,7 @@ exports[`the static pages in pl > keeps the privacy policy 1`] = `
 <h2>Anonimowe liczenie</h2>
 <p>Aby wiedzieć, co poprawić, Libell może anonimowo liczyć użycie za pomocą GoatCounter. Libell pyta cię raz, czy może liczyć, i nic nie jest liczone, zanim wybierzesz. Statystyki są publiczne.</p>
 <h3>Co jest liczone</h3>
-<p>Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. EasyLevel, Xparkle RVS01), wersja aplikacji i język wybrany w Libell.</p>
+<p>Że aplikacja została otwarta, jakie funkcje są używane, jaki model czujnika mierzy (telefon lub model, np. EasyLevel lub Xparkle RVS01), wersja aplikacji i język wybrany w Libell.</p>
 <h3>Czego nigdy się nie zapisuje</h3>
 <p>Twojego adresu IP, kraju, urządzenia, ekranu, systemu operacyjnego ani przeglądarki, wymiarów pojazdu, twoich ustawień ani niczego innego o tobie. W telefonie zapisywany jest tylko twój wybór.</p>
 <p>Jak przy każdym zapytaniu w internecie, adres IP telefonu i nazwa przeglądarki docierają do GoatCounter. GoatCounter nigdy ich nie zapisuje: trzyma je w pamięci najwyżej osiem godzin, aby rozpoznać tę samą wizytę. GoatCounter jest prowadzony z Irlandii, a jego serwery stoją w Finlandii i Niemczech, więc nic nie opuszcza UE.</p>
@@ -4943,7 +4943,7 @@ exports[`the static pages in pt > keeps the counting explanation in both places 
 [
   "O Libell pode contar o uso anonimamente, para sabermos o que melhorar. Ver as estatísticas",
   "O que é contado",
-  "Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como EasyLevel, Xparkle RVS01), a versão da app e o idioma escolhido no Libell.",
+  "Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como EasyLevel ou Xparkle RVS01), a versão da app e o idioma escolhido no Libell.",
   "O que nunca é guardado",
   "O seu IP, país, dispositivo, ecrã, sistema operativo, navegador, as medidas do veículo, as suas definições ou qualquer outra coisa sobre si. No telemóvel só fica guardada a sua escolha. Pode mudar a sua escolha quando quiser em Ajuda › Privacidade.",
 ]
@@ -4953,7 +4953,7 @@ exports[`the static pages in pt > keeps the counting explanation in both places 
 [
   "O Libell pode contar o uso anonimamente, para sabermos o que melhorar. Ver as estatísticas",
   "O que é contado",
-  "Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como EasyLevel, Xparkle RVS01), a versão da app e o idioma escolhido no Libell.",
+  "Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como EasyLevel ou Xparkle RVS01), a versão da app e o idioma escolhido no Libell.",
   "O que nunca é guardado",
   "O seu IP, país, dispositivo, ecrã, sistema operativo, navegador, as medidas do veículo, as suas definições ou qualquer outra coisa sobre si. No telemóvel só fica guardada a sua escolha. Se o seu navegador pedir aos sites que não o sigam, o Libell não conta nada.",
 ]
@@ -5153,7 +5153,7 @@ exports[`the static pages in pt > keeps the privacy policy 1`] = `
 <h2>Contagem anónima</h2>
 <p>Para saber o que melhorar, o Libell pode contar a utilização de forma anónima com o GoatCounter. O Libell pergunta-lhe uma vez se quer a contagem, e nada é contado antes de escolher. As estatísticas são públicas.</p>
 <h3>O que é contado</h3>
-<p>Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como EasyLevel, Xparkle RVS01), a versão da app e o idioma escolhido no Libell.</p>
+<p>Que a app foi aberta, que funções são usadas, que sensor mede (o telemóvel ou um modelo como EasyLevel ou Xparkle RVS01), a versão da app e o idioma escolhido no Libell.</p>
 <h3>O que nunca é guardado</h3>
 <p>O seu IP, país, dispositivo, ecrã, sistema operativo, navegador, as medidas do veículo, as suas definições ou qualquer outra coisa sobre si. No telemóvel só fica guardada a sua escolha.</p>
 <p>Como em qualquer pedido na internet, o endereço IP do telemóvel e o nome do navegador chegam ao GoatCounter. O GoatCounter nunca os guarda: mantém-nos na memória no máximo oito horas para reconhecer a mesma visita. O GoatCounter é gerido a partir da Irlanda e os servidores ficam na Finlândia e na Alemanha, por isso nada sai da UE.</p>
@@ -5206,7 +5206,7 @@ exports[`the static pages in ro > keeps the counting explanation in both places 
 [
   "Libell poate număra anonim utilizarea, ca să știm ce să îmbunătățim. Vedeți statisticile",
   "Ce se numără",
-  "Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum EasyLevel, Xparkle RVS01), versiunea aplicației și limba aleasă în Libell.",
+  "Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum EasyLevel sau Xparkle RVS01), versiunea aplicației și limba aleasă în Libell.",
   "Ce nu se salvează niciodată",
   "Adresa dvs. IP, țara, dispozitivul, ecranul, sistemul de operare sau browserul, dimensiunile vehiculului, setările dvs. sau orice altceva despre dvs. Pe telefon se salvează doar alegerea dvs. Vă puteți schimba alegerea oricând din Ajutor › Date.",
 ]
@@ -5216,7 +5216,7 @@ exports[`the static pages in ro > keeps the counting explanation in both places 
 [
   "Libell poate număra anonim utilizarea, ca să știm ce să îmbunătățim. Vedeți statisticile",
   "Ce se numără",
-  "Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum EasyLevel, Xparkle RVS01), versiunea aplicației și limba aleasă în Libell.",
+  "Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum EasyLevel sau Xparkle RVS01), versiunea aplicației și limba aleasă în Libell.",
   "Ce nu se salvează niciodată",
   "Adresa dvs. IP, țara, dispozitivul, ecranul, sistemul de operare sau browserul, dimensiunile vehiculului, setările dvs. sau orice altceva despre dvs. Pe telefon se salvează doar alegerea dvs. Dacă browserul dvs. cere site-urilor să nu vă urmărească, Libell nu numără nimic.",
 ]
@@ -5416,7 +5416,7 @@ exports[`the static pages in ro > keeps the privacy policy 1`] = `
 <h2>Numărare anonimă</h2>
 <p>Ca să știm ce trebuie îmbunătățit, Libell poate număra anonim utilizarea cu GoatCounter. Libell vă întreabă o singură dată dacă poate număra și nu se numără nimic până nu alegeți. Statisticile sunt publice.</p>
 <h3>Ce se numără</h3>
-<p>Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum EasyLevel, Xparkle RVS01), versiunea aplicației și limba aleasă în Libell.</p>
+<p>Că aplicația a fost deschisă, ce funcții se folosesc, ce model de senzor măsoară (telefonul sau un model precum EasyLevel sau Xparkle RVS01), versiunea aplicației și limba aleasă în Libell.</p>
 <h3>Ce nu se salvează niciodată</h3>
 <p>Adresa dvs. IP, țara, dispozitivul, ecranul, sistemul de operare sau browserul, dimensiunile vehiculului, setările dvs. sau orice altceva despre dvs. Pe telefon se salvează doar alegerea dvs.</p>
 <p>Ca la orice cerere pe internet, adresa IP a telefonului și numele browserului ajung la GoatCounter. GoatCounter nu le salvează niciodată, ci le ține în memorie cel mult opt ore pentru a recunoaște aceeași vizită. GoatCounter este administrat din Irlanda, iar serverele sunt în Finlanda și Germania, deci nimic nu părăsește UE.</p>
@@ -5469,7 +5469,7 @@ exports[`the static pages in sk > keeps the counting explanation in both places 
 [
   "Libell môže anonymne počítať používanie, aby sme vedeli, čo zlepšiť. Zobraziť štatistiky",
   "Čo sa počíta",
-  "Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako EasyLevel, Xparkle RVS01), verzia aplikácie a jazyk zvolený v Libell.",
+  "Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako EasyLevel alebo Xparkle RVS01), verzia aplikácie a jazyk zvolený v Libell.",
   "Čo sa nikdy neukladá",
   "Vaša IP adresa, krajina, zariadenie, obrazovka, operačný systém ani prehliadač, rozmery vozidla, vaše nastavenia ani nič iné o vás. Do telefónu sa ukladá len vaša voľba. Svoju voľbu môžete kedykoľvek zmeniť v Pomoc › Súkromie.",
 ]
@@ -5479,7 +5479,7 @@ exports[`the static pages in sk > keeps the counting explanation in both places 
 [
   "Libell môže anonymne počítať používanie, aby sme vedeli, čo zlepšiť. Zobraziť štatistiky",
   "Čo sa počíta",
-  "Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako EasyLevel, Xparkle RVS01), verzia aplikácie a jazyk zvolený v Libell.",
+  "Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako EasyLevel alebo Xparkle RVS01), verzia aplikácie a jazyk zvolený v Libell.",
   "Čo sa nikdy neukladá",
   "Vaša IP adresa, krajina, zariadenie, obrazovka, operačný systém ani prehliadač, rozmery vozidla, vaše nastavenia ani nič iné o vás. Do telefónu sa ukladá len vaša voľba. Ak váš prehliadač žiada weby, aby vás nesledovali, Libell nepočíta nič.",
 ]
@@ -5679,7 +5679,7 @@ exports[`the static pages in sk > keeps the privacy policy 1`] = `
 <h2>Anonymné počítanie</h2>
 <p>Aby bolo jasné, čo zlepšiť, môže Libell anonymne počítať používanie pomocou služby GoatCounter. Libell sa vás raz opýta, či smie počítať, a kým nezvolíte, nepočíta sa nič. Štatistiky sú verejné.</p>
 <h3>Čo sa počíta</h3>
-<p>Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako EasyLevel, Xparkle RVS01), verzia aplikácie a jazyk zvolený v Libell.</p>
+<p>Že bola aplikácia otvorená, ktoré funkcie sa používajú, aký model senzora meria (telefón alebo model ako EasyLevel alebo Xparkle RVS01), verzia aplikácie a jazyk zvolený v Libell.</p>
 <h3>Čo sa nikdy neukladá</h3>
 <p>Vaša IP adresa, krajina, zariadenie, obrazovka, operačný systém ani prehliadač, rozmery vozidla, vaše nastavenia ani nič iné o vás. Do telefónu sa ukladá len vaša voľba.</p>
 <p>Ako pri každej požiadavke na internete sa ku GoatCounteru dostane IP adresa telefónu a názov prehliadača. GoatCounter ich nikdy neukladá, drží ich v pamäti najviac osem hodín, aby rozpoznal tú istú návštevu. GoatCounter je prevádzkovaný z Írska a jeho servery sú vo Fínsku a Nemecku, takže nič neopúšťa EÚ.</p>
@@ -5732,7 +5732,7 @@ exports[`the static pages in sl > keeps the counting explanation in both places 
 [
   "Libell lahko anonimno šteje uporabo, da vemo, kaj izboljšati. Oglejte si statistiko",
   "Kaj se šteje",
-  "Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je EasyLevel, Xparkle RVS01), različica aplikacije in jezik, izbran v Libellu.",
+  "Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je EasyLevel ali Xparkle RVS01), različica aplikacije in jezik, izbran v Libellu.",
   "Česa se nikoli ne shrani",
   "Vašega naslova IP, države, naprave, zaslona, operacijskega sistema ali brskalnika, mer vozila, vaših nastavitev ali česar koli drugega o vas. V telefon se shrani samo vaša izbira. Svojo izbiro lahko kadar koli spremenite v Pomoč › Zasebnost.",
 ]
@@ -5742,7 +5742,7 @@ exports[`the static pages in sl > keeps the counting explanation in both places 
 [
   "Libell lahko anonimno šteje uporabo, da vemo, kaj izboljšati. Oglejte si statistiko",
   "Kaj se šteje",
-  "Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je EasyLevel, Xparkle RVS01), različica aplikacije in jezik, izbran v Libellu.",
+  "Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je EasyLevel ali Xparkle RVS01), različica aplikacije in jezik, izbran v Libellu.",
   "Česa se nikoli ne shrani",
   "Vašega naslova IP, države, naprave, zaslona, operacijskega sistema ali brskalnika, mer vozila, vaših nastavitev ali česar koli drugega o vas. V telefon se shrani samo vaša izbira. Če vaš brskalnik prosi spletna mesta, naj vam ne sledijo, Libell ne šteje ničesar.",
 ]
@@ -5942,7 +5942,7 @@ exports[`the static pages in sl > keeps the privacy policy 1`] = `
 <h2>Anonimno štetje</h2>
 <p>Da bi vedeli, kaj izboljšati, lahko Libell anonimno šteje uporabo z GoatCounterjem. Libell vas enkrat vpraša, ali sme šteti, in nič se ne šteje, dokler ne izberete. Statistika je javna.</p>
 <h3>Kaj se šteje</h3>
-<p>Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je EasyLevel, Xparkle RVS01), različica aplikacije in jezik, izbran v Libellu.</p>
+<p>Da je bila aplikacija odprta, katere funkcije se uporabljajo, kateri model senzorja meri (telefon ali model, kot je EasyLevel ali Xparkle RVS01), različica aplikacije in jezik, izbran v Libellu.</p>
 <h3>Česa se nikoli ne shrani</h3>
 <p>Vašega naslova IP, države, naprave, zaslona, operacijskega sistema ali brskalnika, mer vozila, vaših nastavitev ali česar koli drugega o vas. V telefon se shrani samo vaša izbira.</p>
 <p>Kot pri vsaki zahtevi na internetu pridejo naslov IP telefona in ime brskalnika do GoatCounterja. GoatCounter jih nikoli ne shrani, ampak jih hrani v pomnilniku največ osem ur, da prepozna isti obisk. GoatCounter upravljajo z Irske, strežniki pa so na Finskem in v Nemčiji, zato nič ne zapusti EU.</p>
@@ -5995,7 +5995,7 @@ exports[`the static pages in sv > keeps the counting explanation in both places 
 [
   "Libell kan räkna användningen anonymt, så att vi vet vad som behöver bli bättre. Se statistiken",
   "Det här räknas",
-  "Att appen öppnades, vilka funktioner som används, vilken sensor som mäter (telefonen eller en modell som EasyLevel, Xparkle RVS01), appens version och språket som är valt i Libell.",
+  "Att appen öppnades, vilka funktioner som används, vilken sensor som mäter (telefonen eller en modell som EasyLevel eller Xparkle RVS01), appens version och språket som är valt i Libell.",
   "Det här sparas aldrig",
   "Din IP-adress, ditt land, din enhet, skärm, ditt operativsystem eller din webbläsare, fordonets mått, dina inställningar eller något annat om dig. Bara ditt val sparas i telefonen. Du kan ändra ditt val när som helst under Hjälp › Integritet.",
 ]
@@ -6005,7 +6005,7 @@ exports[`the static pages in sv > keeps the counting explanation in both places 
 [
   "Libell kan räkna användningen anonymt, så att vi vet vad som behöver bli bättre. Se statistiken",
   "Det här räknas",
-  "Att appen öppnades, vilka funktioner som används, vilken sensor som mäter (telefonen eller en modell som EasyLevel, Xparkle RVS01), appens version och språket som är valt i Libell.",
+  "Att appen öppnades, vilka funktioner som används, vilken sensor som mäter (telefonen eller en modell som EasyLevel eller Xparkle RVS01), appens version och språket som är valt i Libell.",
   "Det här sparas aldrig",
   "Din IP-adress, ditt land, din enhet, skärm, ditt operativsystem eller din webbläsare, fordonets mått, dina inställningar eller något annat om dig. Bara ditt val sparas i telefonen. Om din webbläsare ber webbplatser att inte spåra dig räknar Libell ingenting.",
 ]
@@ -6205,7 +6205,7 @@ exports[`the static pages in sv > keeps the privacy policy 1`] = `
 <h2>Anonym räkning</h2>
 <p>För att veta vad som behöver bli bättre kan Libell räkna användningen anonymt med GoatCounter. Libell frågar dig en gång om räkningen, och ingenting räknas innan du har valt. Statistiken är öppen för alla.</p>
 <h3>Det här räknas</h3>
-<p>Att appen öppnades, vilka funktioner som används, vilken sensor som mäter (telefonen eller en modell som EasyLevel, Xparkle RVS01), appens version och språket som är valt i Libell.</p>
+<p>Att appen öppnades, vilka funktioner som används, vilken sensor som mäter (telefonen eller en modell som EasyLevel eller Xparkle RVS01), appens version och språket som är valt i Libell.</p>
 <h3>Det här sparas aldrig</h3>
 <p>Din IP-adress, ditt land, din enhet, skärm, ditt operativsystem eller din webbläsare, fordonets mått, dina inställningar eller något annat om dig. Bara ditt val sparas i telefonen.</p>
 <p>Som vid alla anrop på internet når telefonens IP-adress och webbläsarens namn GoatCounter. GoatCounter sparar dem aldrig, utan håller dem i minnet i högst åtta timmar för att känna igen samma besök. GoatCounter drivs från Irland och har sina servrar i Finland och Tyskland, så ingenting lämnar EU.</p>
@@ -6258,7 +6258,7 @@ exports[`the static pages in tr > keeps the counting explanation in both places 
 [
   "Libell, neyi iyileştirmemiz gerektiğini bilmek için kullanımı anonim olarak sayabilir. İstatistikleri görün",
   "Neler sayılır",
-  "Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya EasyLevel, Xparkle RVS01 gibi bir model), uygulama sürümü ve Libell’de seçilen dil.",
+  "Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya EasyLevel veya Xparkle RVS01 gibi bir model), uygulama sürümü ve Libell’de seçilen dil.",
   "Neler asla kaydedilmez",
   "IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Telefona yalnızca seçiminiz kaydedilir. Seçiminizi istediğiniz zaman Yardım › Gizlilik bölümünden değiştirebilirsiniz.",
 ]
@@ -6268,7 +6268,7 @@ exports[`the static pages in tr > keeps the counting explanation in both places 
 [
   "Libell, neyi iyileştirmemiz gerektiğini bilmek için kullanımı anonim olarak sayabilir. İstatistikleri görün",
   "Neler sayılır",
-  "Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya EasyLevel, Xparkle RVS01 gibi bir model), uygulama sürümü ve Libell’de seçilen dil.",
+  "Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya EasyLevel veya Xparkle RVS01 gibi bir model), uygulama sürümü ve Libell’de seçilen dil.",
   "Neler asla kaydedilmez",
   "IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Telefona yalnızca seçiminiz kaydedilir. Tarayıcınız web sitelerinden sizi izlememelerini isterse Libell hiçbir şey saymaz.",
 ]
@@ -6468,7 +6468,7 @@ exports[`the static pages in tr > keeps the privacy policy 1`] = `
 <h2>Anonim sayım</h2>
 <p>Neyin iyileştirileceğini bilmek için Libell kullanımı GoatCounter ile anonim olarak sayabilir. Libell size sayıp sayamayacağını bir kez sorar ve siz seçene kadar hiçbir şey sayılmaz. İstatistikler herkese açıktır.</p>
 <h3>Neler sayılır</h3>
-<p>Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya EasyLevel, Xparkle RVS01 gibi bir model), uygulama sürümü ve Libell’de seçilen dil.</p>
+<p>Uygulamanın açıldığı, hangi özelliklerin kullanıldığı, hangi sensör modelinin ölçtüğü (telefon veya EasyLevel veya Xparkle RVS01 gibi bir model), uygulama sürümü ve Libell’de seçilen dil.</p>
 <h3>Neler asla kaydedilmez</h3>
 <p>IP adresiniz, ülkeniz, cihazınız, ekranınız, işletim sisteminiz veya tarayıcınız, aracınızın ölçüleri, ayarlarınız ya da sizinle ilgili başka herhangi bir şey. Telefona yalnızca seçiminiz kaydedilir.</p>
 <p>İnternetteki her istekte olduğu gibi telefonun IP adresi ve tarayıcının adı GoatCounter’a ulaşır. GoatCounter bunları asla kaydetmez; aynı ziyareti tanımak için en fazla sekiz saat bellekte tutar. GoatCounter İrlanda’dan işletilir ve sunucuları Finlandiya ile Almanya’dadır, yani hiçbir şey AB dışına çıkmaz.</p>

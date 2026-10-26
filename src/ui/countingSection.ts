@@ -5,9 +5,9 @@
  * on/off switch.
  */
 import { COUNTER_ORIGIN } from '../domain/usage';
-import { EXTERNAL_SENSORS } from '../sensor/boxes';
+import { boxNames } from './boxNames';
 import { createElement } from './dom';
-import { t, type MessageKey } from './i18n';
+import { getLanguage, t, type MessageKey } from './i18n';
 import { createCheckboxField, createSectionHeading } from './settingsFields';
 
 /** The stored choice (`countingStore.ts`), injected. */
@@ -24,11 +24,6 @@ function paragraph(
   const p = createElement('p', className);
   p.textContent = t(key, vars);
   return p;
-}
-
-/** Brands never live in a catalogue (#267), so they are filled in here. */
-function boxNames(): Record<string, string> {
-  return { boxes: EXTERNAL_SENSORS.map((box) => box.displayName).join(', ') };
 }
 
 function heading(key: MessageKey): HTMLParagraphElement {
@@ -76,7 +71,7 @@ export function createCountingExplanation(
   return [
     joined(textClass, t('counting.intro'), dashboardLink()),
     heading('counting.sent.h'),
-    paragraph(textClass, 'counting.sent', boxNames()),
+    paragraph(textClass, 'counting.sent', { boxes: boxNames(getLanguage(), 'disjunction') }),
     heading('counting.notSent.h'),
     joined(textClass, t('counting.notSent'), closingSentence(place)),
   ];

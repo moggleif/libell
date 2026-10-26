@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import { COUNTER_ORIGIN } from '../domain/usage';
-import { EXTERNAL_SENSORS } from '../sensor/boxes';
+import { boxNames } from './boxNames';
 import { createCountingExplanation, createCountingSection } from './countingSection';
-import { t } from './i18n';
+import { getLanguage, t } from './i18n';
 
 function choice(on: boolean) {
   const state = { on };
@@ -17,9 +17,7 @@ function textOf(elements: HTMLElement[]): string {
 describe('createCountingSection (#674)', () => {
   it('says what is counted and what is never saved', () => {
     const text = createCountingSection(choice(true)).textContent ?? '';
-    expect(text).toContain(
-      t('counting.sent', { boxes: EXTERNAL_SENSORS.map((box) => box.displayName).join(', ') }),
-    );
+    expect(text).toContain(t('counting.sent', { boxes: boxNames(getLanguage(), 'disjunction') }));
     for (const key of [
       'counting.intro',
       'counting.sent.h',
