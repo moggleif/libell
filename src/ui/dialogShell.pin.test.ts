@@ -5,7 +5,8 @@
 // of it: a modal dialog named by its heading, focus on that heading, the page
 // behind it inert, and on close the overlay gone, the page given back and
 // focus returned to the opener before the caller hears of it. Each overlay's
-// opening DOM is also compared with the stored snapshot, byte for byte.
+// opening DOM (tags, every attribute and its value, text, child order) is
+// also compared with the stored snapshot.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { showCountingChoice } from './countingChoice';
 import { setLanguage, t } from './i18n';
@@ -117,6 +118,21 @@ const DIALOGS: DialogCase[] = [
   },
 ];
 
+/** The element tree as indented lines: tag, attributes sorted by name (the
+ * order they were set in is not something a user or a screen reader sees),
+ * and its own text. */
+function describeDom(element: Element, depth = 0): string {
+  const attributes = [...element.attributes]
+    .map((attribute) => `${attribute.name}=${JSON.stringify(attribute.value)}`)
+    .sort();
+  const ownText = [...element.childNodes]
+    .filter((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim())
+    .map((node) => JSON.stringify(node.textContent));
+  const line = [element.tagName.toLowerCase(), ...attributes, ...ownText].join(' ');
+  const children = [...element.children].map((child) => describeDom(child, depth + 1));
+  return ['  '.repeat(depth) + line, ...children].join('\n');
+}
+
 /** The app behind the overlay, with the button that opened it focused. */
 function pageWithOpener(): { main: HTMLElement; opener: HTMLButtonElement } {
   const main = document.createElement('main');
@@ -181,6 +197,6 @@ describe.each(DIALOGS)('the dialog shell of $name (#710)', (dialog) => {
 
   it('draws the same DOM when it opens', () => {
     dialog.open(() => {});
-    expect(overlay()!.outerHTML).toMatchSnapshot();
+    expect(describeDom(overlay()!)).toMatchSnapshot();
   });
 });
