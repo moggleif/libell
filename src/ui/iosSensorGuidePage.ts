@@ -10,7 +10,7 @@
 import { createStandalonePage, type StandalonePage } from './standalonePage';
 import type { SensorPage } from './sensorPage';
 import { t } from './i18n';
-import { createElement } from './dom';
+import { createElement, externalLink } from './dom';
 
 const BLUEFY_APP_STORE_SEARCH = 'https://apps.apple.com/search?term=bluefy';
 
@@ -29,11 +29,7 @@ export function createIosSensorGuidePage(): SensorPage {
   const step4 = createElement('p', 'menu__text');
   step4.textContent = t('sensorSource.ios.step4');
 
-  const link = createElement('a', 'menu__link');
-  link.href = BLUEFY_APP_STORE_SEARCH;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = t('sensorSource.ios.bluefyLink');
+  const link = externalLink(BLUEFY_APP_STORE_SEARCH, t('sensorSource.ios.bluefyLink'));
 
   const note = createElement('p', 'menu__text');
   note.textContent = t('sensorSource.ios.note');

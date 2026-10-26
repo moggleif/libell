@@ -5,7 +5,7 @@
  */
 import { maskSecrets, type StoredEntry } from '../data/storedData';
 import { createCountingSection, type CountingChoice } from './countingSection';
-import { button, createElement, textElement } from './dom';
+import { button, createElement, externalLink, textElement } from './dom';
 import { getLanguage, t } from './i18n';
 import { privacyPolicyPath } from './privacyPolicy';
 import { storedRows } from './storedDataText';
@@ -30,12 +30,8 @@ export interface PrivacyPanel {
  * in a tab of its own so the app stays where it was. */
 function policyLink(): HTMLParagraphElement {
   const p = createElement('p', 'menu__text');
-  const link = createElement('a', 'menu__link');
-  link.href = privacyPolicyPath(import.meta.env.BASE_URL, getLanguage());
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = t('privacy.policy');
-  p.append(link);
+  const href = privacyPolicyPath(import.meta.env.BASE_URL, getLanguage());
+  p.append(externalLink(href, t('privacy.policy')));
   return p;
 }
 

@@ -2,7 +2,7 @@
 //
 // The small DOM builders every component shares (#710).
 import { describe, expect, it, vi } from 'vitest';
-import { button, paragraph, textElement } from './dom';
+import { button, externalLink, paragraph, textElement } from './dom';
 
 describe('button', () => {
   it('is a plain button, never a form submit, with its class and label', () => {
@@ -53,5 +53,17 @@ describe('paragraph', () => {
     expect(element.tagName).toBe('P');
     expect(element.className).toBe('menu__text');
     expect(element.textContent).toBe('Hello');
+  });
+});
+
+describe('externalLink', () => {
+  it('opens its address in a tab of its own, without handing the app to it', () => {
+    const link = externalLink('https://example.org/', 'Example');
+    expect(link.tagName).toBe('A');
+    expect(link.className).toBe('menu__link');
+    expect(link.getAttribute('href')).toBe('https://example.org/');
+    expect(link.target).toBe('_blank');
+    expect(link.rel).toBe('noopener');
+    expect(link.textContent).toBe('Example');
   });
 });
