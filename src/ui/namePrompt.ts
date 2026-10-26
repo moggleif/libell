@@ -3,8 +3,7 @@
  * hidden until a button such as "New vehicle" or "Save current tilt as new
  * target" opens it, filled with a suggestion, with Save and Cancel.
  */
-import { button } from './calibrationControls';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { t } from './i18n';
 
 export interface NamePromptOptions {

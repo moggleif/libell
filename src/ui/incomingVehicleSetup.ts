@@ -8,8 +8,7 @@ import { formatLength } from '../domain/lengths';
 import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
 import { createDialog } from './dialog';
-import { createElement } from './dom';
-import { button } from './calibrationControls';
+import { button, createElement } from './dom';
 
 export interface IncomingVehicleSetupOptions {
   geometry: VehicleGeometry;
@@ -79,20 +78,14 @@ function paragraph(className: string, text: string): HTMLParagraphElement {
   return element;
 }
 
-function actionButton(className: string, text: string, onClick: () => void): HTMLButtonElement {
-  const element = button(className, text);
-  element.addEventListener('click', onClick);
-  return element;
-}
-
 /** Adding it as a new vehicle is the primary choice: nothing is lost. */
 function createActions(on: { dismiss(): void; replace(): void; addNew(): void }): HTMLElement {
   const actions = createElement('div', 'incoming-setup__actions');
   const secondary = 'menu__action menu__action--secondary';
   actions.append(
-    actionButton(secondary, t('setup.incoming.dismiss'), on.dismiss),
-    actionButton(secondary, t('setup.incoming.apply'), on.replace),
-    actionButton('menu__action', t('setup.incoming.addNew'), on.addNew),
+    button(secondary, t('setup.incoming.dismiss'), on.dismiss),
+    button(secondary, t('setup.incoming.apply'), on.replace),
+    button('menu__action', t('setup.incoming.addNew'), on.addNew),
   );
   return actions;
 }
