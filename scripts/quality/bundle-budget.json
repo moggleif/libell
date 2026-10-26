@@ -1,7 +1,7 @@
 {
-  "entryMaxKb": 65,
+  "startMaxKb": 50,
   "chunkMaxKb": 15,
-  "entryExcludes": [
+  "startExcludes": [
     "src/ui/messages/",
     "src/ui/translations.ts",
     "src/ui/infoMenu.ts",
@@ -9,6 +9,20 @@
     "src/ui/feedback.ts",
     "src/ui/privacyPanel.ts",
     "src/ui/privacyPolicyPath.ts",
-    "src/ui/storedDataText.ts"
+    "src/ui/storedDataText.ts",
+    "src/ui/settingsPage.ts",
+    "src/ui/menu.ts",
+    "src/ui/settingsPanel.ts",
+    "src/ui/settingsGeneralTab.ts",
+    "src/ui/settingsVehicleTab.ts",
+    "src/ui/settingsRampsTab.ts",
+    "src/ui/settingsLevelTab.ts",
+    "src/ui/settingsLayout.ts",
+    "src/ui/calibrationSection.ts",
+    "src/ui/targetsSection.ts",
+    "src/ui/rampsPage.ts",
+    "src/ui/onboarding",
+    "src/ui/intro.ts",
+    "src/ui/helpIllustrations.ts"
   ]
 }

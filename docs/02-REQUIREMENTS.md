@@ -2470,7 +2470,7 @@ parts of Libell it is not using (ADR 0024).
 - **Then** the app starts in English rather than not at all.
 - **Given** the user picks another language in Settings
 - **Then** the app reloads in that language, as before.
-- **Given** the user taps Help before its page has loaded
+- **Given** the user taps Help or Settings, or opens the guide, before it has loaded
 - **Then** it opens as soon as it is in, with no error; usually it is already in, since
   it loads while the phone is idle after the first screen.
 - **Given** a part cannot load because a newer version has replaced it

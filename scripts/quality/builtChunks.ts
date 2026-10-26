@@ -3,11 +3,12 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import type { BuiltChunk } from './bundleGuard.ts';
 
-/** The build's own files `index.html` loads with `<script src>`, as `dist/` paths. */
-export function entryFiles(indexHtml: string): string[] {
-  return [...indexHtml.matchAll(/<script[^>]*\ssrc="[^"]*?(assets\/[^"]+\.js)"/g)].map(
-    ([, path]) => path,
-  );
+/** The build's own scripts `index.html` loads: the entry and what it
+ * preloads, as `dist/` paths. */
+export function startFiles(indexHtml: string): string[] {
+  const tags =
+    /<(?:script[^>]*\ssrc|link rel="modulepreload"[^>]*\shref)="[^"]*?(assets\/[^"]+\.js)"/g;
+  return [...indexHtml.matchAll(tags)].map(([, path]) => path);
 }
 
 /** The `dist/` paths the service worker precaches. */
@@ -24,7 +25,7 @@ export function repoSources(mapJson: string, mapDir: string, root: string): stri
 /** Every JavaScript file the build wrote to `dist/assets/`. */
 export function readBuiltChunks(dist: string, root: string): BuiltChunk[] {
   const assets = join(dist, 'assets');
-  const entries = entryFiles(readFileSync(join(dist, 'index.html'), 'utf8'));
+  const atStart = startFiles(readFileSync(join(dist, 'index.html'), 'utf8'));
   return readdirSync(assets)
     .filter((name) => name.endsWith('.js'))
     .map((name) => {
@@ -32,7 +33,7 @@ export function readBuiltChunks(dist: string, root: string): BuiltChunk[] {
       const fileName = `assets/${name}`;
       return {
         fileName,
-        isEntry: entries.includes(fileName),
+        atStart: atStart.includes(fileName),
         gzipBytes: gzipSync(readFileSync(path)).length,
         sources: repoSources(readFileSync(`${path}.map`, 'utf8'), dirname(path), root),
       };
