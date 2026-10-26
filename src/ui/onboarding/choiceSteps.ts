@@ -2,7 +2,8 @@ import type { VehicleType } from '../../domain/settings';
 import { t, type MessageKey } from '../i18n';
 import { buildChoiceGroup } from './choiceGroup';
 import type { SensorChoice, Step } from './types';
-import { paragraph, textClass, type WizardState } from './wizardState';
+import { textClass, type WizardState } from './wizardState';
+import { paragraph } from '../dom';
 
 const SOURCE_OPTIONS: [SensorChoice, MessageKey][] = [
   ['phone', 'onboard.source.phone'],

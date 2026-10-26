@@ -1,4 +1,3 @@
-import { createElement } from '../dom';
 import type { LevelSettings, VehicleType } from '../../domain/settings';
 import { hasAvailableBox } from '../../sensor/boxes';
 import type { OnboardingOptions, SensorChoice } from './types';
@@ -36,10 +35,4 @@ export function createWizardState(options: OnboardingOptions, render: () => void
 
 export function textClass(state: WizardState): string {
   return state.isModern ? 'onboarding__text--modern' : 'menu__text';
-}
-
-export function paragraph(className: string, text: string): HTMLParagraphElement {
-  const p = createElement('p', className);
-  p.textContent = text;
-  return p;
 }

@@ -2,7 +2,8 @@ import { createElement } from '../dom';
 import { t } from '../i18n';
 import { buildClassicProgress, buildModernProgress } from './progress';
 import type { Step } from './types';
-import { paragraph, type WizardState } from './wizardState';
+import type { WizardState } from './wizardState';
+import { paragraph } from '../dom';
 
 export interface StepPosition {
   index: number;

@@ -8,7 +8,7 @@ import { formatLength } from '../domain/lengths';
 import type { VehicleGeometry } from '../domain/vehicleShare';
 import { t, type MessageKey } from './i18n';
 import { createDialog } from './dialog';
-import { button, createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 
 export interface IncomingVehicleSetupOptions {
   geometry: VehicleGeometry;
@@ -70,12 +70,6 @@ function geometryList({ geometry, displayUnit }: IncomingVehicleSetupOptions): H
   if (!isCaravan) row('settings.rampCount', String(geometry.rampCount));
   row('settings.drain', t(`drain.${geometry.drainPosition}` as MessageKey));
   return list;
-}
-
-function paragraph(className: string, text: string): HTMLParagraphElement {
-  const element = createElement('p', className);
-  element.textContent = text;
-  return element;
 }
 
 /** Adding it as a new vehicle is the primary choice: nothing is lost. */

@@ -6,7 +6,7 @@
  */
 import { COUNTER_ORIGIN } from '../domain/usage';
 import { boxNames } from './boxNames';
-import { createElement } from './dom';
+import { createElement, paragraph } from './dom';
 import { getLanguage, t, type MessageKey } from './i18n';
 import { createCheckboxField, createSectionHeading } from './settingsFields';
 
@@ -14,16 +14,6 @@ import { createCheckboxField, createSectionHeading } from './settingsFields';
 export interface CountingChoice {
   isOn(): boolean;
   setOn(on: boolean): void;
-}
-
-function paragraph(
-  className: string,
-  key: MessageKey,
-  vars: Record<string, string>,
-): HTMLParagraphElement {
-  const p = createElement('p', className);
-  p.textContent = t(key, vars);
-  return p;
 }
 
 function heading(key: MessageKey): HTMLParagraphElement {
@@ -71,7 +61,7 @@ export function createCountingExplanation(
   return [
     joined(textClass, t('counting.intro'), dashboardLink()),
     heading('counting.sent.h'),
-    paragraph(textClass, 'counting.sent', { boxes: boxNames(getLanguage(), 'disjunction') }),
+    paragraph(textClass, t('counting.sent', { boxes: boxNames(getLanguage(), 'disjunction') })),
     heading('counting.notSent.h'),
     joined(textClass, t('counting.notSent'), closingSentence(place)),
   ];

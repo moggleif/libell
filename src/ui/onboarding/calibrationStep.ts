@@ -1,7 +1,8 @@
 import { createCalibrationSection } from '../calibrationSection';
 import { t } from '../i18n';
 import type { Step } from './types';
-import { paragraph, type WizardState } from './wizardState';
+import type { WizardState } from './wizardState';
+import { paragraph } from '../dom';
 
 // The phone's own calibration only: the vehicle zero needs the vehicle
 // parked level, which a first run at home rarely is, so it waits for the

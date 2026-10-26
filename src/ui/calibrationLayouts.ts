@@ -8,7 +8,7 @@ import type { CalibrationControls } from './calibrationControls';
 import type { CalibrationOptions } from './calibrationSection';
 import { expandedStep, stepTitle, type CalibrationKind, type OpenStep } from './calibrationText';
 import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
-import { button, createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import type { ExternalCalibration } from './externalCalibration';
 import { t } from './i18n';
 
@@ -40,12 +40,6 @@ function createMore(...buttons: HTMLButtonElement[]): HTMLDetailsElement {
   return more;
 }
 
-function hint(key: 'calibration.step.phone.hint' | 'calibration.step.vehicle.hint'): HTMLElement {
-  const paragraph = createElement('p', 'menu__text');
-  paragraph.textContent = t(key);
-  return paragraph;
-}
-
 function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
   const step = createChecklistStep<CalibrationKind>('phone', 1);
   const flipLink = button('link-button', t('calibration.step.flipLink'));
@@ -58,7 +52,7 @@ function createPhoneStep(parts: Parts): ChecklistStep<CalibrationKind> {
     if (flipBlock.hidden) flip.reset();
   });
   step.body.append(
-    hint('calibration.step.phone.hint'),
+    paragraph('menu__text', t('calibration.step.phone.hint')),
     phone.capture,
     phone.status,
     phone.undo,
@@ -73,7 +67,7 @@ function createVehicleStep(vehicle: CalibrationControls): ChecklistStep<Calibrat
   const step = createChecklistStep<CalibrationKind>('vehicle', 2);
   vehicle.capture.textContent = t('calibration.step.vehicle.now');
   step.body.append(
-    hint('calibration.step.vehicle.hint'),
+    paragraph('menu__text', t('calibration.step.vehicle.hint')),
     vehicle.capture,
     vehicle.status,
     vehicle.undo,

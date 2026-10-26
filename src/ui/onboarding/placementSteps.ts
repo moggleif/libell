@@ -3,7 +3,8 @@ import { legendIllustration, placementIllustration } from '../helpIllustrations'
 import { SEVERITY_GLYPH } from '../rvDiagram';
 import { t, type MessageKey } from '../i18n';
 import type { Step } from './types';
-import { paragraph, textClass, type WizardState } from './wizardState';
+import { textClass, type WizardState } from './wizardState';
+import { paragraph } from '../dom';
 
 /** The same four severities the diagram uses, 'unserved' included. */
 const LEGEND_ROWS: [string, keyof typeof SEVERITY_GLYPH, MessageKey][] = [

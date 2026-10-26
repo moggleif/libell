@@ -5,7 +5,7 @@
  */
 import { maskSecrets, type StoredEntry } from '../data/storedData';
 import { createCountingSection, type CountingChoice } from './countingSection';
-import { button, createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 import { getLanguage, t } from './i18n';
 import { privacyPolicyPath } from './privacyPolicy';
 import { storedRows } from './storedDataText';
@@ -24,16 +24,6 @@ export interface PrivacyPanel {
   element: HTMLElement;
   /** Reads the storage again and folds the confirmation away. */
   refresh(): void;
-}
-
-function textElement(
-  tag: keyof HTMLElementTagNameMap,
-  className: string,
-  content: string,
-): HTMLElement {
-  const element = createElement(tag, className);
-  element.textContent = content;
-  return element;
 }
 
 /** "Read the privacy policy": the static page in the app's language (#675),

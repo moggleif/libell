@@ -8,7 +8,7 @@ import { createSensorFallbackPrompt } from '../ui/sensorFallbackPrompt';
 import { createTiltReadout } from '../ui/tiltReadout';
 import type { EngineOutput, LevelEngine } from './levelEngine';
 import type { LevelFrameView, PoseProblem } from './levelFrame';
-import { createElement } from '../ui/dom';
+import { createElement, paragraph } from '../ui/dom';
 
 export interface LevelScreenViewDeps {
   createEngine(output: EngineOutput): LevelEngine;
@@ -59,7 +59,7 @@ function createParts(deps: LevelScreenViewDeps) {
     alarm,
     status,
     tilt,
-    waiting: hint(t('main.waiting')),
+    waiting: statusHint(t('main.waiting')),
     fallbackPrompt: createSensorFallbackPrompt(deps.retry, deps.usePhoneSensor),
     levelOverlay: createLevelOverlay(),
     engine: deps.createEngine({
@@ -170,10 +170,10 @@ function createStatusLine(say: (text: string) => void) {
   };
 }
 
-function hint(text: string): HTMLParagraphElement {
-  const element = createElement('p', 'app__hint');
+/** Read out when it changes, as a status line. */
+function statusHint(text: string): HTMLParagraphElement {
+  const element = paragraph('app__hint', text);
   element.setAttribute('role', 'status');
-  element.textContent = text;
   return element;
 }
 
