@@ -45,7 +45,7 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
     settings: settings.get,
     onSettingsSaved: adoption.fromWizard,
     parts: optionDeps,
-    sensorOptionsFor: (descriptor) => wizardBoxOptions(menuOptions, descriptor, optionDeps),
+    sensorOptionsFor: (descriptor) => wizardBoxOptions(descriptor, optionDeps),
     progress: { markSeen: markOnboardingSeen, markDone: markOnboardingDone },
     boxPending: core.boxPending,
     activeSource: () => core.sensor().getSource(),
@@ -59,7 +59,6 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
     onSettingsSaved: adoption.fromSettings,
     openOnboarding: onboarding.open,
     openBoxPage: () => screen.navigation.openActiveSensorPage(),
-    effectiveCalibration: core.effectiveCalibration,
     shareVehicleSetup(current) {
       countFeature('share-created');
       void shareVehicleSetup(pickVehicleGeometry(current));
@@ -67,9 +66,7 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
   });
 
   const settingsSurface = mountSettingsSurface(menuOptions);
-  const sensorPages = mountSensorPages((descriptor) =>
-    boxPageOptions(menuOptions, descriptor, optionDeps),
-  );
+  const sensorPages = mountSensorPages((descriptor) => boxPageOptions(descriptor, optionDeps));
   const navigation = createNavigation({
     settings: settingsSurface.route,
     boxListPage: sensorPages.boxListPage,

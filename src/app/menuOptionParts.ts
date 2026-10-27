@@ -31,6 +31,9 @@ export interface MenuOptionDeps {
   /** Read fresh on every use: the active source changes. */
   activeSensor: () => OrientationSensor;
   readTilt: () => Calibration | string;
+  /** Calibration, zero and target (or the hitch height), combined, for the
+   * active source. */
+  effectiveCalibration: () => Calibration | null;
   phoneCalibration: PhoneCalibration;
   boxZero: BoxZeroing;
   installOffsets: InstallOffsets;

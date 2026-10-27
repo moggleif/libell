@@ -7,6 +7,9 @@ import type { MenuOptionsDeps } from './menuOptions';
 import type { InstallOffer } from '../ui/install';
 import type { OnboardingLauncherDeps } from './onboardingLauncher';
 import type { mountSensorPages } from './sensorPages';
+import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
+import { easyLevelSettings } from '../domain/sensorDeviceSettings';
+import { calibratedTilt } from './tiltReading';
 
 type BoxPageOptionsFor = Parameters<typeof mountSensorPages>[0];
 
@@ -213,5 +216,100 @@ describe('mountPages', () => {
     const pages = mountPages(createCore(screen), screen, noInstall);
     pages.navigation.openCalibration();
     await vi.waitFor(() => expect(pages.settingsSurface.isOpen()).toBe(true));
+  });
+
+  // #734: what a box's own page and the wizard's box step are handed,
+  // pinned before the options stop being built from the menu's bag.
+  describe("a box's options (#734)", () => {
+    function boxOptions() {
+      const screen = fakeScreen();
+      const core = createCore(screen);
+      mountPages(core, screen, noInstall);
+      return {
+        core,
+        page: (descriptor = EASYLEVEL_DESCRIPTOR) => captured.boxPage(descriptor),
+        wizard: (descriptor = EASYLEVEL_DESCRIPTOR) =>
+          captured.wizard.sensorOptionsFor!(descriptor),
+      };
+    }
+
+    for (const descriptor of [EASYLEVEL_DESCRIPTOR, XPARKLE_DESCRIPTOR]) {
+      it(`give ${descriptor.id}'s page and wizard step that box and the active source`, () => {
+        const { core, page, wizard } = boxOptions();
+        for (const options of [page(descriptor), wizard(descriptor)]) {
+          expect(options.sensor).toBe(descriptor);
+          expect(options.getSensorSource()).toBe('phone');
+          expect(options.getSensorState()).toBe(core.sensor().getState());
+          expect(options.getInstallCalibration()).toBeNull();
+          expect(options.getInstallCalibrationCapturedAt()).toBeNull();
+          expect(options.installZeroTrim?.hasZero()).toBe(false);
+          expect(typeof options.connectSensor).toBe('function');
+          expect(typeof options.disconnectSensor).toBe('function');
+          expect(typeof options.calibrateInstall).toBe('function');
+          expect(typeof options.clearInstallCalibration).toBe('function');
+        }
+      });
+
+      it(`give ${descriptor.id}'s page its own live status, none before it exists`, () => {
+        const { page } = boxOptions();
+        const options = page(descriptor);
+        expect(options.getHealth()).toBeNull();
+        expect(options.getDeviceId()).toBeNull();
+        expect(options.getLastSampleAt()).toBeNull();
+        expect(options.getRawAccel()).toBeNull();
+        expect(options.getEasyLevelStatusBytes()).toBeNull();
+        expect(options.getXparkleVersionBytes()).toBeNull();
+      });
+    }
+
+    it('give only the Xparkle a password, and both boxes a mounting guide', () => {
+      const { page, wizard } = boxOptions();
+      for (const options of [page(XPARKLE_DESCRIPTOR), wizard(XPARKLE_DESCRIPTOR)]) {
+        expect(options.password).toBeDefined();
+        expect(options.learnMounting).toBeDefined();
+      }
+      for (const options of [page(), wizard()]) {
+        expect(options.password).toBeUndefined();
+        expect(options.learnMounting).toBeDefined();
+      }
+    });
+
+    it("read the vehicle type, the EasyLevel mounting and the live tilt from the app's state", () => {
+      const { core, page, wizard } = boxOptions();
+      core.settings.adopt({ ...core.settings.get(), vehicleType: 'caravan' });
+      const tilt = calibratedTilt(core.sensor(), core.effectiveCalibration());
+      for (const options of [page(XPARKLE_DESCRIPTOR), wizard(XPARKLE_DESCRIPTOR)]) {
+        expect(options.getVehicleType?.()).toBe('caravan');
+        expect(options.getMounting()).toBe(easyLevelSettings(core.settings.get()).mounting);
+        expect(options.getCalibratedTilt?.()).toEqual(tilt);
+      }
+    });
+
+    it('store a mounting picked on either', () => {
+      const { core, page, wizard } = boxOptions();
+      const current = easyLevelSettings(core.settings.get()).mounting;
+      const other = current === 'standard' ? 'rotated90' : 'standard';
+      page().setMounting(other);
+      expect(easyLevelSettings(core.settings.get()).mounting).toBe(other);
+      wizard().setMounting(current);
+      expect(easyLevelSettings(core.settings.get()).mounting).toBe(current);
+    });
+
+    it("read and store EasyLevel's connect delay from any box's page", () => {
+      const { core, page } = boxOptions();
+      page(XPARKLE_DESCRIPTOR).setEasyLevelConnectDelay(true, 1500);
+      const stored = easyLevelSettings(core.settings.get());
+      expect(stored.connectDelayEnabled).toBe(true);
+      expect(page().getEasyLevelConnectDelay()).toEqual({
+        enabled: true,
+        ms: stored.connectDelayMs,
+      });
+    });
+
+    it("leave the live status off the wizard's box step", () => {
+      const { wizard } = boxOptions();
+      expect(wizard()).not.toHaveProperty('getDeviceId');
+      expect(wizard()).not.toHaveProperty('getLastSampleAt');
+    });
   });
 });
