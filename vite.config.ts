@@ -197,6 +197,12 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // A new worker takes over at once, so the open page reloads into it
+        // (src/ui/appUpdate.ts). The plugin turns these on by itself only with
+        // injectRegister 'auto'; since 'script-defer' (#708) a new worker
+        // waited until every window closed (#749).
+        skipWaiting: true,
+        clientsClaim: true,
         // The app must work with no signal at all on a campsite, so every
         // build asset is precached.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
