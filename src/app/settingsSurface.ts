@@ -6,7 +6,8 @@
  * tap of the gear, or at once when a reload asks to reopen it (ADR 0024).
  */
 import type { SensorSource } from '../domain/settings';
-import type { Menu, MenuOptions, MenuSection } from '../ui/menu';
+import type { Menu, MenuSection } from '../ui/menu';
+import type { SettingsOptions } from '../ui/settingsOptions';
 import { takeReopenSettings } from '../ui/reopenSettings';
 import type { SettingsPage } from '../ui/settingsPage';
 import { lazyPage, whenIdle } from './lazyPart';
@@ -37,7 +38,7 @@ interface Surface {
   redraw(): void;
 }
 
-export function mountSettingsSurface(options: MenuOptions): SettingsSurface {
+export function mountSettingsSurface(options: SettingsOptions): SettingsSurface {
   const button = document.querySelector<HTMLButtonElement>('#settings-button');
   const modern = options.initialSettings.appearance === 'modern';
   const surface = lazyPage(button, async () =>

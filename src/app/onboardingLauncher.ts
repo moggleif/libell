@@ -8,8 +8,14 @@ import type { InstallOffer } from '../ui/install';
 import type { IntroOptions } from '../ui/intro';
 import type { OnboardingOptions } from '../ui/onboarding';
 import type { BoxPending } from './indicatorWiring';
-import type { MenuOptionDeps } from './menuOptionParts';
-import { sharedOptions } from './menuOptions';
+import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
+import {
+  boxConnectionOptions,
+  calibrationOptions,
+  easyLevelMountingOptions,
+  sensorSourceOptions,
+  type MenuOptionDeps,
+} from './menuOptionParts';
 import { countFeature } from './usage';
 
 export interface OnboardingLauncherDeps {
@@ -44,7 +50,7 @@ export function createOnboardingLauncher(deps: OnboardingLauncherDeps): Onboardi
       initialSettings: current,
       appearance: current.appearance,
       onSettingsSaved: (next) => deps.onSettingsSaved(next),
-      ...sharedOptions(deps.parts),
+      ...wizardOptions(deps.parts),
       sensorOptionsFor: deps.sensorOptionsFor,
       onFinished(done, path) {
         open = false;
@@ -71,4 +77,18 @@ export function createOnboardingLauncher(deps: OnboardingLauncherDeps): Onboardi
     });
   }
   return { open: openWizard, openFirstRun, isOpen: () => open };
+}
+
+/**
+ * The calibration and sensor-source groups the wizard's steps read. The
+ * top-level box fields are EasyLevel's: connection and mounting only,
+ * never another box's password or guide.
+ */
+function wizardOptions(parts: MenuOptionDeps) {
+  return {
+    ...calibrationOptions(parts),
+    ...sensorSourceOptions(parts),
+    ...boxConnectionOptions(EASYLEVEL_DESCRIPTOR, parts),
+    ...easyLevelMountingOptions(parts.boxWiring),
+  };
 }

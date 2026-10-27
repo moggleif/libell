@@ -2,6 +2,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createInfoPage, type InfoPageOptions } from './infoMenu';
 import { createMenu, type MenuOptions } from './menu';
+import type { CalibrationOptions } from './calibrationSection';
+import type { TargetsOptions } from './targetsSection';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS } from '../domain/settings';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
@@ -9,13 +11,19 @@ import { RAMP_MODELS } from '../domain/ramps';
 
 setLanguage('en');
 
+/** The groups flattened, so a test overrides any field by its own name. */
+type Fixture = Omit<MenuOptions, 'calibration' | 'targets'> & CalibrationOptions & TargetsOptions;
+
+/** The groups the menu reads, each backed by the one flat fixture. */
+function grouped(fixture: Fixture): MenuOptions {
+  return { ...fixture, calibration: fixture, targets: fixture };
+}
+
 function makeMenuOptions(): MenuOptions {
-  return {
+  return grouped({
     initialSettings: DEFAULT_SETTINGS,
     appearance: DEFAULT_SETTINGS.appearance,
-    openOnboarding: () => {},
     onSettingsSaved: () => {},
-    hasSavedSettings: () => false,
     getCalibration: () => null,
     calibrate: () => null,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
@@ -33,19 +41,8 @@ function makeMenuOptions(): MenuOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
-    getSensorSource: () => 'phone',
-    getSensorState: () => 'idle',
-    connectSensor: () => Promise.resolve('unsupported'),
-    disconnectSensor: () => {},
-    getInstallCalibration: () => null,
-    calibrateInstall: () => null,
-    getInstallCalibrationCapturedAt: () => null,
-    clearInstallCalibration: () => {},
-    getCalibratedTilt: () => null,
-    getActiveTargetName: () => null,
-    getHealth: () => null,
     getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false, soundSpeech: false }),
-  };
+  });
 }
 
 function makeOptions(

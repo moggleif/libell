@@ -4,17 +4,25 @@ import { createMenu, type MenuOptions } from './menu';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import type { TargetPreset } from '../domain/targetPresets';
+import type { CalibrationOptions } from './calibrationSection';
+import type { TargetsOptions } from './targetsSection';
 
 setLanguage('en');
 
-function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
+/** The groups flattened, so a test overrides any field by its own name. */
+type Fixture = Omit<MenuOptions, 'calibration' | 'targets'> & CalibrationOptions & TargetsOptions;
+
+/** The groups the menu reads, each backed by the one flat fixture. */
+function grouped(fixture: Fixture): MenuOptions {
+  return { ...fixture, calibration: fixture, targets: fixture };
+}
+
+function makeOptions(overrides: Partial<Fixture> = {}): MenuOptions {
   const initialSettings = overrides.initialSettings ?? DEFAULT_SETTINGS;
-  return {
+  return grouped({
     initialSettings,
     appearance: initialSettings.appearance,
-    openOnboarding: () => {},
     onSettingsSaved: () => {},
-    hasSavedSettings: () => false,
     getCalibration: () => null,
     calibrate: () => null,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
@@ -32,20 +40,9 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
-    getSensorSource: () => 'phone',
-    getSensorState: () => 'idle',
-    connectSensor: () => Promise.resolve('unsupported'),
-    disconnectSensor: () => {},
-    getInstallCalibration: () => null,
-    calibrateInstall: () => null,
-    getInstallCalibrationCapturedAt: () => null,
-    clearInstallCalibration: () => {},
-    getCalibratedTilt: () => null,
-    getActiveTargetName: () => null,
-    getHealth: () => null,
     getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false, soundSpeech: false }),
     ...overrides,
-  };
+  });
 }
 
 function classicSettings(): LevelSettings {
@@ -198,7 +195,7 @@ describe('menu — Classic ☰ drawer (screen-cleanup follow-up)', () => {
         isPhoneActive: () => phone,
         getBox: () => (phone ? null : { name: 'Xparkle RVS01', offset: null, capturedAt: null }),
         calibrateBox: () => null,
-      } as Partial<MenuOptions>),
+      } as Partial<Fixture>),
     );
     menu.open('calibration');
     const steps = () => menu.element.querySelector<HTMLElement>('.box-setup')!;
