@@ -5,7 +5,7 @@
 import type { MenuSection } from './menu';
 import { t } from './i18n';
 import { setVisible } from './motion';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 
 export type CalibrationLamp = 'calibrate' | 'zero' | null;
 
@@ -64,14 +64,10 @@ export function createIndicators(openMenu: (section: MenuSection) => void): Indi
 }
 
 function lamp(label: string, title: string, onClick: () => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'indicators__lamp';
-  button.title = title;
-  button.textContent = label;
-  nameAfterVisibleText(button, title);
-  button.addEventListener('click', onClick);
-  return button;
+  const element = button('indicators__lamp', label, onClick);
+  element.title = title;
+  nameAfterVisibleText(element, title);
+  return element;
 }
 
 function labelCalibrationLamp(

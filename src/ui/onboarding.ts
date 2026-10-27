@@ -17,6 +17,7 @@
  * file draws the current one: progress, heading, body, nav.
  */
 import { createDialog } from './dialog';
+import { button } from './dom';
 import { t } from './i18n';
 import { saveVehicleChoice } from './onboarding/settingsSteps';
 import { resolveSteps } from './onboarding/stepList';
@@ -85,11 +86,7 @@ export function showOnboarding(options: OnboardingOptions): void {
 
 // Always escapable; reopened from "Show introduction" on the "?" page.
 function buildCloseButton(onClose: () => void): HTMLButtonElement {
-  const close = document.createElement('button');
-  close.type = 'button';
-  close.className = 'onboarding__close';
+  const close = button('onboarding__close', '✕', onClose);
   close.setAttribute('aria-label', t('onboard.close'));
-  close.textContent = '✕';
-  close.addEventListener('click', onClose);
   return close;
 }

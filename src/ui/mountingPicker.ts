@@ -14,7 +14,7 @@ import {
 import type { VehicleType } from '../domain/settings';
 import { t } from './i18n';
 import { svgEl } from './svg';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 
 /** An upright box is seen edge-on from above (a thin bar); a flat one is
  * seen face-on (a squarer block). */
@@ -221,8 +221,7 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 /** A box lying flat with an arrow has its own two-choice picker below;
  * this one only ever asks the upright box. */
 function createUprightPrompt(shape: BoxShape): HTMLParagraphElement {
-  const prompt = createElement('p', 'menu__text');
-  prompt.textContent = t('mounting.prompt.upright');
+  const prompt = paragraph('menu__text', t('mounting.prompt.upright'));
   prompt.hidden = shape !== 'upright';
   return prompt;
 }
@@ -257,8 +256,7 @@ export interface PlacementPickerOptions {
 export function createPlacementPicker(options: PlacementPickerOptions): MountingPicker {
   const element = createElement('div', 'placement-picker');
 
-  const prompt = createElement('p', 'menu__text');
-  prompt.textContent = t('mounting.prompt.arrow');
+  const prompt = paragraph('menu__text', t('mounting.prompt.arrow'));
 
   const row = createElement('div', 'placement-picker__row');
   const parts = new Map<EasyLevelPlacement, { button: HTMLButtonElement; picture: HTMLElement }>();

@@ -6,7 +6,7 @@
  */
 import { t } from './i18n';
 import { setVisible } from './motion';
-import { createElement } from './dom';
+import { createElement, paragraph, textElement } from './dom';
 
 export interface LevelOverlay {
   element: HTMLElement;
@@ -19,11 +19,10 @@ const CELEBRATE_DURATION_MS = 2500;
 export function createLevelOverlay(): LevelOverlay {
   const element = createElement('div', 'level-overlay');
   element.hidden = true;
-  const mark = createElement('div', 'level-overlay__mark');
-  mark.textContent = '✓';
-  const text = createElement('p', 'level-overlay__text');
-  text.textContent = t('main.level');
-  element.append(mark, text);
+  element.append(
+    textElement('div', 'level-overlay__mark', '✓'),
+    paragraph('level-overlay__text', t('main.level')),
+  );
 
   let timer = 0;
 

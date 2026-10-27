@@ -1,4 +1,4 @@
-import { createElement } from '../dom';
+import { createElement, paragraph, textElement } from '../dom';
 
 /** The visible "n / total" text is for sighted low-vision users: the bars
  * alone are unreadable at that size. */
@@ -16,16 +16,13 @@ export function buildModernProgress(current: number, total: number): HTMLElement
     bars.append(bar);
   }
 
-  const text = createElement('span', 'onboarding__bars-text');
+  const text = textElement('span', 'onboarding__bars-text', `${current + 1} / ${total}`);
   text.setAttribute('aria-hidden', 'true');
-  text.textContent = `${current + 1} / ${total}`;
 
   wrap.append(bars, text);
   return wrap;
 }
 
 export function buildClassicProgress(current: number, total: number): HTMLElement {
-  const progress = createElement('p', 'onboarding__progress');
-  progress.textContent = `${current + 1} / ${total}`;
-  return progress;
+  return paragraph('onboarding__progress', `${current + 1} / ${total}`);
 }
