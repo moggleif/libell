@@ -70,4 +70,5 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
 ## Supported versions
 
 Only the latest deployed version (the top bar and the About page show it) is supported — the PWA
-auto-updates on next launch after every deploy.
+updates itself after every deploy: on launch, on return to the foreground, and within ten
+minutes while it stays open.
