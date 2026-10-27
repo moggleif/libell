@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { Calibration } from '../domain/calibration';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
@@ -14,13 +15,18 @@ import {
   type MenuOptionsDeps,
 } from './menuOptions';
 
-function setup(overrides: Partial<MenuOptionsDeps> = {}, easyLevel: unknown = null) {
+function setup(
+  overrides: Partial<MenuOptionsDeps> = {},
+  easyLevel: unknown = null,
+  calibration: Calibration | null = null,
+) {
   let settings: LevelSettings = { ...DEFAULT_SETTINGS, vehicleType: 'motorhome' };
   const gravity = { x: 0, y: 0, z: 9.81 };
   const parts = {
     activeSensor: () =>
       ({ getSource: () => 'phone', getGravity: () => gravity }) as unknown as OrientationSensor,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
+    effectiveCalibration: () => calibration,
     phoneCalibration: {},
     boxZero: {},
     installOffsets: {},
@@ -45,7 +51,6 @@ function setup(overrides: Partial<MenuOptionsDeps> = {}, easyLevel: unknown = nu
     onSettingsSaved: vi.fn(),
     openOnboarding: vi.fn(),
     openBoxPage: vi.fn(),
-    effectiveCalibration: () => null,
     shareVehicleSetup: vi.fn(),
     ...overrides,
   };
@@ -101,7 +106,7 @@ describe('buildMenuOptions', () => {
   });
 
   it('reads the calibrated tilt of the active sensor', () => {
-    const { options } = setup({ effectiveCalibration: () => ({ rollDeg: 1, pitchDeg: 0 }) });
+    const { options } = setup({}, null, { rollDeg: 1, pitchDeg: 0 });
     expect(options.getCalibratedTilt()?.rollDeg).toBeCloseTo(-1);
   });
 
@@ -144,8 +149,8 @@ describe('buildMenuOptions', () => {
 
 describe('box options', () => {
   it("give a box page that box's connection, status and setup", () => {
-    const { options, parts } = setup();
-    const page = boxPageOptions(options, XPARKLE_DESCRIPTOR, parts);
+    const { parts } = setup();
+    const page = boxPageOptions(XPARKLE_DESCRIPTOR, parts);
     expect(page.sensor).toBe(XPARKLE_DESCRIPTOR);
     expect(page).toHaveProperty('getDeviceId');
     expect(page).toHaveProperty('password');
@@ -153,8 +158,8 @@ describe('box options', () => {
   });
 
   it("give the wizard's box step the box without its live status", () => {
-    const { options, parts } = setup();
-    const step = wizardBoxOptions(options, XPARKLE_DESCRIPTOR, parts);
+    const { parts } = setup();
+    const step = wizardBoxOptions(XPARKLE_DESCRIPTOR, parts);
     expect(step.sensor).toBe(XPARKLE_DESCRIPTOR);
     expect(step).toHaveProperty('learnMounting');
     expect(step).not.toHaveProperty('getDeviceId');

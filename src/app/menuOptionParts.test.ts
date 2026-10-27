@@ -98,6 +98,7 @@ function fakeDeps(source: 'phone' | 'easylevel' | 'xparkle' = 'phone') {
   const deps: MenuOptionDeps = {
     activeSensor: () => active,
     readTilt,
+    effectiveCalibration: () => null,
     phoneCalibration,
     boxZero,
     installOffsets,

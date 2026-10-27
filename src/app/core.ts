@@ -92,6 +92,10 @@ export function createCore(screen: Screen): Core {
     getSensor: (source) => boxes.getSensor(source),
     onMountingChanged: () => screen.lamps.refresh(),
   };
+  // Going back to the hitch height measures against it, not a target.
+  const effectiveCalibration = () =>
+    hitch.activeCalibration() ??
+    combineCalibrations(layers.zeroCalibration(), layers.targets.activeOffset());
   return {
     settings,
     demo,
@@ -99,14 +103,12 @@ export function createCore(screen: Screen): Core {
     boxPending,
     boxes,
     sensor,
-    // Going back to the hitch height measures against it, not a target.
-    effectiveCalibration: () =>
-      hitch.activeCalibration() ??
-      combineCalibrations(layers.zeroCalibration(), layers.targets.activeOffset()),
+    effectiveCalibration,
     activeInstallOffset: layers.activeInstallOffset,
     optionDeps: {
       activeSensor: sensor,
       readTilt: layers.readTiltNow,
+      effectiveCalibration,
       phoneCalibration: layers.phoneCalibration,
       boxZero: layers.boxZero,
       installOffsets: layers.installOffsets,

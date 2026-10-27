@@ -4,13 +4,12 @@
  * `menuOptionParts.ts`.
  */
 import { soundPrefsOf, type LevelSettings } from '../domain/settings';
-import type { Calibration } from '../domain/calibration';
 import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
 import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { BoxDescriptor } from '../sensor/boxes';
 import type { XparkleSensor } from '../sensor/xparkleSensor';
-import { healthOf, withEasyLevelConnectDelay } from './boxWiring';
+import { healthOf, withEasyLevelConnectDelay, type SettingsAccess } from './boxWiring';
 import {
   boxConnectionOptions,
   boxSetupOptions,
@@ -49,11 +48,10 @@ export interface MenuOptionsDeps {
   onSettingsSaved(next: LevelSettings): void;
   openOnboarding(): void;
   openBoxPage(): void;
-  effectiveCalibration(): Calibration | null;
   shareVehicleSetup(current: LevelSettings): void;
 }
 
-/** Every field the Settings page, the ☰ menu and the box pages need. */
+/** Every field the Settings page and the ☰ menu need. */
 export function buildMenuOptions(deps: MenuOptionsDeps) {
   const { parts, settings } = deps;
   const settingsAccess = parts.boxWiring.settings;
@@ -68,51 +66,61 @@ export function buildMenuOptions(deps: MenuOptionsDeps) {
     openBoxPage: deps.openBoxPage,
     ...targetOptions(parts.targets),
     ...hitchOptions(parts),
-    getCalibratedTilt: () => calibratedTilt(parts.activeSensor(), deps.effectiveCalibration()),
+    getCalibratedTilt: () => calibratedTilt(parts.activeSensor(), parts.effectiveCalibration()),
     getVehicleType: () => settings().vehicleType,
     getActiveTargetName: () => parts.targets.activeName(),
     getHealth: () => healthOf('easylevel', parts.boxes.getSensor('easylevel')),
     ...debugByteOptions(parts),
-    getEasyLevelConnectDelay: () => ({
-      enabled: easyLevelSettings(settings()).connectDelayEnabled,
-      ms: easyLevelSettings(settings()).connectDelayMs,
-    }),
-    // Debug-only; the transport reads the settings live, so it applies on
-    // the next connect.
-    setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
-      settingsAccess.set(withEasyLevelConnectDelay(settings(), enabled, ms)),
+    ...easyLevelConnectDelayOptions(settingsAccess),
     getSoundPrefs: () => soundPrefsOf(settings()),
     onShareVehicleSetup: (current: LevelSettings) => deps.shareVehicleSetup(current),
     vehicles: parts.vehicles,
   };
 }
 
-export type MenuOptionsBag = ReturnType<typeof buildMenuOptions>;
-
-/** One box's own page: its connection, live status and setup. */
-export function boxPageOptions(
-  menu: MenuOptionsBag,
-  descriptor: BoxDescriptor,
-  parts: MenuOptionDeps,
-) {
+/**
+ * What every box's page and wizard step reads besides its own connection:
+ * the active source, the EasyLevel's mounting, the vehicle the mounting
+ * picker draws and the live reading for the position step.
+ */
+function boxCommonOptions(parts: MenuOptionDeps) {
   return {
-    ...menu,
-    ...boxConnectionOptions(descriptor, parts),
-    ...boxStatusOptions(descriptor, parts),
-    ...boxSetupOptions(descriptor, parts),
+    ...sensorSourceOptions(parts),
+    ...easyLevelMountingOptions(parts.boxWiring),
+    getVehicleType: () => parts.boxWiring.settings.get().vehicleType,
+    getCalibratedTilt: () => calibratedTilt(parts.activeSensor(), parts.effectiveCalibration()),
   };
 }
 
 /** One box in the wizard's box step: connection and setup, no live status. */
-export function wizardBoxOptions(
-  menu: MenuOptionsBag,
-  descriptor: BoxDescriptor,
-  parts: MenuOptionDeps,
-) {
+export function wizardBoxOptions(descriptor: BoxDescriptor, parts: MenuOptionDeps) {
   return {
-    ...menu,
+    ...boxCommonOptions(parts),
     ...boxConnectionOptions(descriptor, parts),
     ...boxSetupOptions(descriptor, parts),
+  };
+}
+
+/** One box's own page: its connection, live status, setup and debug extras. */
+export function boxPageOptions(descriptor: BoxDescriptor, parts: MenuOptionDeps) {
+  return {
+    ...wizardBoxOptions(descriptor, parts),
+    ...boxStatusOptions(descriptor, parts),
+    ...debugByteOptions(parts),
+    ...easyLevelConnectDelayOptions(parts.boxWiring.settings),
+  };
+}
+
+/** Debug-only; the transport reads the settings live, so a change applies
+ * on the next connect. */
+function easyLevelConnectDelayOptions(settings: SettingsAccess) {
+  return {
+    getEasyLevelConnectDelay: () => {
+      const { connectDelayEnabled, connectDelayMs } = easyLevelSettings(settings.get());
+      return { enabled: connectDelayEnabled, ms: connectDelayMs };
+    },
+    setEasyLevelConnectDelay: (enabled: boolean, ms: number) =>
+      settings.set(withEasyLevelConnectDelay(settings.get(), enabled, ms)),
   };
 }
 
