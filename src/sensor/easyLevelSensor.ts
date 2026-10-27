@@ -31,12 +31,8 @@
 import type { GravityVector } from '../domain/leveling';
 import type { EasyLevelMounting } from '../domain/sensorDeviceSettings';
 import type { OrientationSensor, SensorState } from './orientation';
-import {
-  connectWithPicker,
-  createEasyLevelLink,
-  disconnectByUser,
-  reconnectSilently,
-} from './easyLevelLink';
+import { createEasyLevelLink, EASYLEVEL_LINK_STEPS } from './easyLevelLink';
+import { connectWithPicker, disconnectByUser, reconnectSilently } from './boxLinkFlow';
 import type { EasyLevelStatus } from './easyLevelProtocol';
 import {
   createWebBluetoothTransport,
@@ -101,8 +97,8 @@ export function createEasyLevelSensor(
 ): EasyLevelSensor {
   const link = createEasyLevelLink(getMounting, now);
   return {
-    start: () => connectWithPicker(link, transport),
-    reconnect: (deviceId) => reconnectSilently(link, transport, deviceId),
+    start: () => connectWithPicker(link, EASYLEVEL_LINK_STEPS, transport),
+    reconnect: (deviceId) => reconnectSilently(link, EASYLEVEL_LINK_STEPS, transport, deviceId),
     getState: () => link.state,
     getGravity: () => link.gravity,
     getRawGravity: () => link.rawGravity,
@@ -111,6 +107,6 @@ export function createEasyLevelSensor(
     getLastSampleAt: () => link.lastSampleAt,
     getStatusBytes: () => link.statusBytes,
     getStatus: () => link.status,
-    disconnect: () => disconnectByUser(link),
+    disconnect: () => disconnectByUser(link, EASYLEVEL_LINK_STEPS),
   };
 }

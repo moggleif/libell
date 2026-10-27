@@ -816,3 +816,72 @@ describe('what a lost link keeps and what it clears (#477)', () => {
     expect(timers.count()).toBe(0);
   });
 });
+
+describe('the shared connect flow, as main gives it (#733)', () => {
+  const failingPicker = () => Promise.reject(new Error('cancelled'));
+
+  it('reports disconnected when the silent reconnect throws', async () => {
+    const timers = fakeTimers();
+    const sensor = createXparkleSensor(
+      { connect: failingPicker, reconnect: () => Promise.reject(new Error('GATT failed')) },
+      timers,
+    );
+    expect(await sensor.reconnect('xparkle-1')).toBe('disconnected');
+    expect(sensor.getState()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+  });
+
+  it('opens the picker again when started while connected', async () => {
+    const timers = fakeTimers();
+    const { transport } = makeTransport();
+    const connect = vi.spyOn(transport, 'connect');
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+    expect(await sensor.start()).toBe('granted');
+    expect(connect).toHaveBeenCalledTimes(2);
+  });
+
+  it('goes idle on a user disconnect before any connect', () => {
+    const sensor = createXparkleSensor(makeTransport().transport, fakeTimers());
+    sensor.disconnect();
+    expect(sensor.getState()).toBe('idle');
+    expect(sensor.getDeviceId()).toBeNull();
+  });
+
+  it('keeps the device id after a user disconnect', async () => {
+    const timers = fakeTimers();
+    const sensor = createXparkleSensor(makeTransport().transport, timers);
+    await sensor.start();
+    sensor.disconnect();
+    expect(sensor.getDeviceId()).toBe('xparkle-1');
+  });
+
+  it('reports denied when a picker after a user disconnect is cancelled', async () => {
+    const timers = fakeTimers();
+    const { transport } = makeTransport();
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+    sensor.disconnect();
+    transport.connect = failingPicker;
+    expect(await sensor.start()).toBe('denied');
+  });
+
+  it('stays disconnected when a picker after a lost link is cancelled', async () => {
+    const timers = fakeTimers();
+    let onDisconnect: (() => void) | null = null;
+    const box = fakeBox();
+    const transport: XparkleTransport = {
+      connect: (handler) => {
+        onDisconnect = handler;
+        return Promise.resolve(box.connection);
+      },
+      reconnect: () => Promise.resolve(null),
+    };
+    const sensor = createXparkleSensor(transport, timers);
+    await sensor.start();
+    onDisconnect!();
+    transport.connect = failingPicker;
+    expect(await sensor.start()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+  });
+});

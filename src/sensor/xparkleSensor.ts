@@ -38,13 +38,12 @@ import type { AxisMapping } from '../domain/axisMapping';
 import type { Box } from './boxController';
 import type { BoxDescriptor } from './boxes';
 import {
-  connectWithPicker,
   createXparkleLink,
-  disconnectByUser,
-  reconnectSilently,
+  XPARKLE_LINK_STEPS,
   type LinkOptions,
   type XparkleLink,
 } from './xparkleLink';
+import { connectWithPicker, disconnectByUser, reconnectSilently } from './boxLinkFlow';
 import type { XparkleReading } from './xparkleProtocol';
 import type { XparkleOrientation } from './xparkleReplies';
 import {
@@ -111,9 +110,9 @@ export function createXparkleSensor(
   const link = createXparkleLink(withDefaults(options));
   const { readings, replies } = link;
   return {
-    start: () => connectWithPicker(link, transport),
-    reconnect: (deviceId) => reconnectSilently(link, transport, deviceId),
-    disconnect: () => disconnectByUser(link),
+    start: () => connectWithPicker(link, XPARKLE_LINK_STEPS, transport),
+    reconnect: (deviceId) => reconnectSilently(link, XPARKLE_LINK_STEPS, transport, deviceId),
+    disconnect: () => disconnectByUser(link, XPARKLE_LINK_STEPS),
     getState: () => link.state,
     getGravity: readings.getGravity,
     getSource: () => 'xparkle',

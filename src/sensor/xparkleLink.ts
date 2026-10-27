@@ -24,7 +24,8 @@ import {
   XPARKLE_DEFAULT_PASSWORD,
   XPARKLE_PASSWORD_MODE,
 } from './xparkleCommands';
-import type { XparkleConnection, XparkleTransport } from './xparkleTransport';
+import type { XparkleConnection } from './xparkleTransport';
+import type { BoxLinkSteps } from './boxLinkFlow';
 
 /**
  * Live-read poll interval. Matches the official app's leveling screen
@@ -94,43 +95,11 @@ export function createXparkleLink(options: LinkOptions): XparkleLink {
   return link;
 }
 
-/** The OS picker, then the handshake. */
-export async function connectWithPicker(
-  link: XparkleLink,
-  transport: XparkleTransport,
-): Promise<SensorState> {
-  try {
-    return await adopt(link, await transport.connect(() => markDisconnected(link)));
-  } catch {
-    // A cancelled picker and a failed connect are the same to the caller. A
-    // box already lost stays lost, so Retry's cancelled picker keeps the
-    // unavailable prompt and its background retry.
-    if (link.state !== 'disconnected') link.state = 'denied';
-    return link.state;
-  }
-}
-
-export async function reconnectSilently(
-  link: XparkleLink,
-  transport: XparkleTransport,
-  deviceId: string,
-): Promise<SensorState> {
-  try {
-    const live = await transport.reconnect(deviceId, () => markDisconnected(link));
-    if (live) return await adopt(link, live);
-  } catch {
-    // Silent by design, like a box that cannot be found.
-  }
-  link.state = 'disconnected';
-  return link.state;
-}
-
-export function disconnectByUser(link: XparkleLink): void {
-  const live = link.connection;
-  markDisconnected(link);
-  link.state = 'idle';
-  live?.disconnect();
-}
+/** Xparkle's own part of the shared flow in `boxLinkFlow.ts`. */
+export const XPARKLE_LINK_STEPS: BoxLinkSteps<XparkleLink, XparkleConnection> = {
+  adopt,
+  markLost,
+};
 
 async function adopt(link: XparkleLink, live: XparkleConnection): Promise<SensorState> {
   link.connection = live;
@@ -146,7 +115,7 @@ async function adopt(link: XparkleLink, live: XparkleConnection): Promise<Sensor
 
 /** Clears the last reading too, so a stale value is never taken for a live
  * one. */
-function markDisconnected(link: XparkleLink): void {
+function markLost(link: XparkleLink): void {
   link.polling.stop();
   link.replies.dropPartial();
   link.connection = null;
@@ -162,7 +131,7 @@ function markDisconnected(link: XparkleLink): void {
  * lost connection.
  */
 function dropFailedLink(link: XparkleLink, live: XparkleConnection): void {
-  markDisconnected(link);
+  markLost(link);
   live.disconnect();
 }
 

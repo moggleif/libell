@@ -1274,3 +1274,52 @@ describe('what an EasyLevel link keeps and clears (#478)', () => {
     expect(reconnectSpy).not.toHaveBeenCalled();
   });
 });
+
+describe('the shared connect flow, as main gives it (#733)', () => {
+  function withBluetooth(): void {
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { bluetooth: {} },
+      configurable: true,
+    });
+  }
+  const failingPicker = () => Promise.reject(new Error('cancelled'));
+
+  it('goes idle on a user disconnect before any connect', () => {
+    withBluetooth();
+    const sensor = createEasyLevelSensor(fakeTransport().transport);
+    sensor.disconnect();
+    expect(sensor.getState()).toBe('idle');
+    expect(sensor.getDeviceId()).toBeNull();
+  });
+
+  it('reports denied when a picker after a user disconnect is cancelled', async () => {
+    withBluetooth();
+    const { transport } = fakeTransport();
+    const sensor = createEasyLevelSensor(transport);
+    await sensor.start();
+    sensor.disconnect();
+    transport.connect = failingPicker;
+    expect(await sensor.start()).toBe('denied');
+  });
+
+  it('stays disconnected when a picker after a lost link is cancelled', async () => {
+    withBluetooth();
+    const fake = fakeTransport();
+    const sensor = createEasyLevelSensor(fake.transport);
+    await sensor.start();
+    fake.emitDisconnect();
+    fake.transport.connect = failingPicker;
+    expect(await sensor.start()).toBe('disconnected');
+    expect(sensor.getGravity()).toBeNull();
+  });
+
+  it('reports unsupported on a silent reconnect without Web Bluetooth, even after a lost link', async () => {
+    withBluetooth();
+    const fake = fakeTransport();
+    const sensor = createEasyLevelSensor(fake.transport);
+    await sensor.start();
+    fake.emitDisconnect();
+    Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true });
+    expect(await sensor.reconnect('fake-device-id')).toBe('unsupported');
+  });
+});
