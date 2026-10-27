@@ -44,10 +44,12 @@ the incoming shared-setup dialog — against small-phone viewports in every appe
 and fails on anything below the fold, a page that scrolls sideways, content wider than
 its container, a view whose end cannot be scrolled to, a diagram taller than the space
 it was given, a wheel card that has drifted off its wheel, or a guide calibration step
-spaced differently than Classic's rules space it (#572).
+spaced differently than Classic's rules space it (#572). Its checks live one module per
+kind of view in `scripts/fit/`. Every Playwright script starts the preview server and
+Chromium through `scripts/withPreview.mjs` (#732).
 
 Languages are walked per viewport rather than everywhere (`languages` on each entry of
-`VIEWPORTS`): the language dimension catches text that runs longer than its space, and
+`VIEWPORTS` in `scripts/fit/config.mjs`): the language dimension catches text that runs longer than its space, and
 the space is tightest on the iPhone SE, so every language is walked there (the list is
 read from the dictionaries in `src/ui/messages/`). The 320px entry is about width, where
 German is the worst case and English the baseline; the roomiest screen is a structural

@@ -1,6 +1,6 @@
 /**
  * Every visual preset, in the order Settings offers them. The one list:
- * the settings parser and the fit check (`scripts/fit-test.mjs`, #403)
+ * the settings parser and the fit check (`scripts/fit/config.mjs`, #403)
  * both read it, so a new preset cannot be added without being checked.
  *
  * Kept free of imports so that script can load it straight from Node.

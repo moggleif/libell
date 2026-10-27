@@ -350,7 +350,7 @@ export function placeWheelCard(
 ): void {
   const offsetFromCentre = wheelY / viewBox.height - 0.5;
   card.style.top = `calc(50% + (${offsetFromCentre.toFixed(6)} * var(--drawn-height)))`;
-  // Read back by scripts/fit-test.mjs to check the card lands on its wheel
+  // Read back by scripts/fit/levelScreen.mjs to check the card lands on its wheel
   // at any diagram size.
   card.dataset.wheelY = String(wheelY);
   cardLayer.append(card);

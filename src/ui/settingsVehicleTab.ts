@@ -179,7 +179,7 @@ function createShareButton(onClick: () => void): HTMLButtonElement {
   shareButton.type = 'button';
   // The trailing class is a stable hook for the fit test, which has to
   // reach the incoming-setup view the way a real user does — by producing
-  // a real share link from this button (scripts/fit-test.mjs). Matching on
+  // a real share link from this button (scripts/fit/views.mjs). Matching on
   // the label instead would mean duplicating the i18n table in the test.
   // A quiet link, not a button: sharing is a rare errand, not the page's
   // main action.

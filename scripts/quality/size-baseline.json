@@ -1,9 +1,4 @@
 {
-  "functionBaseline": {
-    "scripts/fit-test.mjs > auditView": 70,
-    "scripts/fit-test.mjs > checkLevelScreen": 110
-  },
-  "fileBaseline": {
-    "scripts/fit-test.mjs": 659
-  }
+  "functionBaseline": {},
+  "fileBaseline": {}
 }
