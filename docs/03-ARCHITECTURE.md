@@ -44,7 +44,8 @@ src/
 │   ├── pose.ts, stillness.ts, staleness.ts  # when a reading can be trusted
 │   ├── usage.ts      # the only names anonymous counting may send (ADR 0021)
 │   ├── settings.ts   # LevelSettings and DEFAULT_SETTINGS; settingsParsing.ts reads a
-│   │                 # stored blob back (validation, legacy migrations)
+│   │                 # stored blob back (validation, legacy migrations); rampParsing.ts
+│   │                 # reads the kloss fields for it and for a shared link (#731)
 │   └── sensorDeviceSettings.ts  # typed per-box settings inside sensorDevices
 ├── data/          # settingsStore.ts (settings, first-run flags), calibrationStore.ts
 │                  # (the calibration layers), sensorDeviceStore.ts (each box's
