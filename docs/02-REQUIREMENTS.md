@@ -2021,8 +2021,8 @@ present this source as more proven than it is.
 - **When** ten minutes pass
 - **Then** the app has checked quietly, with no message, and reloads into the new version
   once it is active, without a tap — also mid-levelling or with a Sensorbox connected
-  (Morgan's choice, #746). It checks again every ten minutes, the host's cache lifetime;
-  a hidden app is not checked until it returns to the foreground.
+  (#746). It checks again every ten minutes, the host's cache lifetime; a hidden app is
+  not checked until it returns to the foreground.
 
 ## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
