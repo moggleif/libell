@@ -13,7 +13,7 @@ import {
   rawAccelText,
   temperatureText,
 } from './boxStatusText';
-import { createElement } from './dom';
+import { button, createElement, paragraph, textElement } from './dom';
 import { t } from './i18n';
 import { showToast } from './toast';
 
@@ -89,10 +89,7 @@ function createConnectDelayControls(options: BoxStatusOptions): {
 }
 
 function createCopyButton(options: BoxStatusOptions): HTMLButtonElement {
-  const button = createElement('button', 'menu__action');
-  button.type = 'button';
-  button.textContent = t('sensorStatus.debug.copy');
-  button.addEventListener('click', () => {
+  return button('menu__action', t('sensorStatus.debug.copy'), () => {
     const health = options.getHealth();
     const text = debugSummaryText({
       name: options.sensor.displayName,
@@ -111,7 +108,6 @@ function createCopyButton(options: BoxStatusOptions): HTMLButtonElement {
       () => showToast(t('sensorStatus.debug.copy.failed')),
     );
   });
-  return button;
 }
 
 function refreshDebugRows(
@@ -143,10 +139,8 @@ function refreshDebugRows(
 export function createBoxDebugDisclosure(options: BoxStatusOptions): BoxDebugDisclosure {
   const capabilities = options.sensor.capabilities;
   const element = createElement('details', 'menu__detail sensor-status__debug');
-  const summary = createElement('summary', 'sensor-status__debug-summary');
-  summary.textContent = t('sensorStatus.debug');
-  const intro = textRow();
-  intro.textContent = t('sensorStatus.debug.intro');
+  const summary = textElement('summary', 'sensor-status__debug-summary', t('sensorStatus.debug'));
+  const intro = paragraph('menu__text', t('sensorStatus.debug.intro'));
   const rows: DebugRows = {
     temperature: textRow(),
     deviceId: textRow(),

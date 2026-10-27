@@ -5,7 +5,7 @@
  */
 import type { Calibration } from '../domain/calibration';
 import { isTrimmed, trimSummary, type TrimDirection } from '../domain/zeroTrim';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { t, type MessageKey } from './i18n';
 import { signedDegrees } from './tiltText';
 
@@ -44,16 +44,12 @@ export function zeroTrimText(trim: Calibration): string {
 
 export function createZeroTrimRow(options: ZeroTrimOptions): ZeroTrimRow {
   const element = createElement('div', 'zero-trim');
-  const title = createElement('p', 'menu__text zero-trim__title');
-  title.textContent = t('zeroTrim.title');
-  const hint = createElement('p', 'menu__text');
-  hint.textContent = t('zeroTrim.hint');
+  const title = paragraph('menu__text zero-trim__title', t('zeroTrim.title'));
+  const hint = paragraph('menu__text', t('zeroTrim.hint'));
   const buttons = createElement('div', 'zero-trim__buttons');
   const total = createElement('p', 'menu__text menu__text--status');
   total.setAttribute('aria-live', 'polite');
-  const reset = createElement('button', 'link-button');
-  reset.type = 'button';
-  reset.textContent = t('zeroTrim.reset');
+  const reset = button('link-button', t('zeroTrim.reset'));
   function refresh(): void {
     element.hidden = !options.hasZero();
     const trim = options.getTrim();
@@ -61,14 +57,11 @@ export function createZeroTrimRow(options: ZeroTrimOptions): ZeroTrimRow {
     reset.disabled = !isTrimmed(trim);
   }
   for (const [direction, key] of BUTTONS) {
-    const button = createElement('button', 'menu__action menu__action--secondary');
-    button.type = 'button';
-    button.textContent = t(key);
-    button.addEventListener('click', () => {
+    const nudge = () => {
       options.nudge(direction);
       refresh();
-    });
-    buttons.append(button);
+    };
+    buttons.append(button('menu__action menu__action--secondary', t(key), nudge));
   }
   reset.addEventListener('click', () => {
     options.reset();

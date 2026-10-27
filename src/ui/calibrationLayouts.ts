@@ -8,7 +8,7 @@ import type { CalibrationControls } from './calibrationControls';
 import type { CalibrationOptions } from './calibrationSection';
 import { expandedStep, stepTitle, type CalibrationKind, type OpenStep } from './calibrationText';
 import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
-import { button, createElement, paragraph } from './dom';
+import { button, createElement, paragraph, textElement } from './dom';
 import type { ExternalCalibration } from './externalCalibration';
 import { t } from './i18n';
 
@@ -34,8 +34,7 @@ export interface LayoutResult {
 
 function createMore(...buttons: HTMLButtonElement[]): HTMLDetailsElement {
   const more = createElement('details', 'menu__detail');
-  const summary = createElement('summary', 'sensor-status__debug-summary');
-  summary.textContent = t('settings.more');
+  const summary = textElement('summary', 'sensor-status__debug-summary', t('settings.more'));
   more.append(summary, ...buttons);
   return more;
 }

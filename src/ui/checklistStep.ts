@@ -2,7 +2,7 @@
  * One step of a setup checklist, shared by the box's setup and the
  * calibration checklist in Settings so both look the same.
  */
-import { createElement } from './dom';
+import { createElement, textElement } from './dom';
 
 export interface ChecklistStep<Id extends string> {
   id: Id;
@@ -18,8 +18,7 @@ export function createChecklistStep<Id extends string>(id: Id, number: number): 
   const element = createElement('div', 'box-step');
   const header = createElement('button', 'box-step__header');
   header.type = 'button';
-  const mark = createElement('span', 'box-step__mark');
-  mark.textContent = String(number);
+  const mark = textElement('span', 'box-step__mark', String(number));
   const title = createElement('span', 'box-step__title');
   header.append(mark, title);
   const body = createElement('div', 'box-step__body');

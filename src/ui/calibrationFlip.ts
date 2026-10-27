@@ -5,7 +5,7 @@
  */
 import { type Calibration, flipCalibration, type FlipResult } from '../domain/calibration';
 import type { CalibrationOptions } from './calibrationSection';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { t } from './i18n';
 
 export interface CalibrationFlip {
@@ -23,17 +23,17 @@ export interface FlipHooks {
 }
 
 function createParts(modern: boolean) {
-  const intro = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
-  intro.textContent = t('calibration.flip.intro');
+  const intro = paragraph(
+    modern ? 'calibration-card__body' : 'menu__text',
+    t('calibration.flip.intro'),
+  );
   const status = createElement('p', 'menu__text menu__text--status');
   // Primary like the other calibrate actions: a user only ever does one.
-  const button = createElement('button', 'menu__action');
-  button.type = 'button';
-  const undo = createElement('button', 'menu__action menu__action--secondary');
-  undo.type = 'button';
-  undo.textContent = t('calibration.undo');
+  const flip = createElement('button', 'menu__action');
+  flip.type = 'button';
+  const undo = button('menu__action menu__action--secondary', t('calibration.undo'));
   undo.hidden = true;
-  return { intro, button, status, undo };
+  return { intro, button: flip, status, undo };
 }
 
 interface FlipState {

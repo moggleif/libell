@@ -14,7 +14,7 @@
  * rule is said only after switching to it, by the wrong-pose overlay.
  */
 import { t } from './i18n';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 
 export interface SensorFallbackPrompt {
   element: HTMLElement;
@@ -71,16 +71,10 @@ function createView() {
   const text = createElement('p', 'sensor-fallback__text');
   const hint = createElement('p', 'sensor-fallback__hint');
   const actions = createElement('div', 'sensor-fallback__actions');
-  const retryButton = document.createElement('button');
-  retryButton.type = 'button';
-  retryButton.className = 'menu__action';
-  retryButton.textContent = t('sensorFallback.retry');
+  const retryButton = button('menu__action', t('sensorFallback.retry'));
   // A quiet link, not a second button: switching source is the escape
   // hatch, not the expected next step.
-  const usePhoneButton = document.createElement('button');
-  usePhoneButton.type = 'button';
-  usePhoneButton.className = 'link-button';
-  usePhoneButton.textContent = t('sensorFallback.usePhone');
+  const usePhoneButton = button('link-button', t('sensorFallback.usePhone'));
   actions.append(retryButton, usePhoneButton);
   container.append(text, hint, actions);
   return { container, text, hint, retryButton, usePhoneButton };

@@ -23,7 +23,7 @@ import {
 } from './boxSetupState';
 import { captureMessage, type CaptureMessage } from './calibrationText';
 import { createChecklistStep, expandStep, setStepDone, type ChecklistStep } from './checklistStep';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { t } from './i18n';
 import { createLearnMountingSection } from './learnMountingSection';
 import {
@@ -59,13 +59,6 @@ interface StepPart {
  * instead, for anyone whose box disagrees.
  */
 const AXIS_REFERENCE_FACING: Facing = 'front';
-
-function linkButton(text: string): HTMLButtonElement {
-  const button = createElement('button', 'link-button');
-  button.type = 'button';
-  button.textContent = text;
-  return button;
-}
 
 function delivering(options: SensorSourceOptions): boolean {
   return (
@@ -162,7 +155,7 @@ function createLiftGuide(
       onLearned();
     },
   });
-  const link = linkButton(t('box.step.direction.learn'));
+  const link = button('link-button', t('box.step.direction.learn'));
   guide.element.hidden = true;
   link.addEventListener('click', () => {
     guide.element.hidden = !guide.element.hidden;
@@ -185,7 +178,7 @@ function createDirectionStep(
     ? createEasyLevelPicker(options, keepOpen)
     : createFacingPicker(options, shape, keepOpen);
   const liftGuide = createLiftGuide(options, keepOpen);
-  const forget = linkButton(t('box.forgetDirection'));
+  const forget = button('link-button', t('box.forgetDirection'));
   forget.addEventListener('click', () => {
     options.learnMounting?.setLearnedMounting(null);
     refocus({ kind: 'next' });
@@ -208,20 +201,17 @@ function createDirectionStep(
 
 function createZeroStepParts(options: SensorSourceOptions) {
   const step = createChecklistStep<SetupStep>('zero', 2);
-  const hint = createElement('p', 'menu__text');
-  hint.textContent = t('box.step.zero.hint');
+  const hint = paragraph('menu__text', t('box.step.zero.hint'));
   const zeroButton = createElement('button', 'menu__action');
   zeroButton.type = 'button';
   const status = createElement('p', 'menu__text menu__text--status');
   status.hidden = true;
   // Shown only while the last zero came back with a tilt warning: it was
   // stored, and this puts back the one before (#624).
-  const undo = createElement('button', 'menu__action menu__action--secondary');
-  undo.type = 'button';
-  undo.textContent = t('calibration.undo');
+  const undo = button('menu__action menu__action--secondary', t('calibration.undo'));
   undo.hidden = true;
   const links = createElement('div', 'box-step__links');
-  const clear = linkButton(t('sensorSource.install.clear'));
+  const clear = button('link-button', t('sensorSource.install.clear'));
   links.append(clear);
   // Under the zero it adjusts; hidden while there is none (#596).
   const trim = options.installZeroTrim ? createZeroTrimRow(options.installZeroTrim) : null;

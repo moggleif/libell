@@ -17,7 +17,7 @@ import {
 } from './boxPasswordBlock';
 import { boxConnection, type BoxConnection } from './boxConnection';
 import { connectButtonText, headerText, showsConnectButton, tiltLineText } from './boxStatusText';
-import { createElement } from './dom';
+import { button, createElement, paragraph, textElement } from './dom';
 import { createStandalonePage } from './standalonePage';
 import { t } from './i18n';
 import { showToast } from './toast';
@@ -163,18 +163,16 @@ function createLowBatteryRow(): {
  */
 function createSilentReconnectTip(): HTMLElement {
   const element = createElement('details', 'menu__detail sensor-status__advanced');
-  const summary = createElement('summary', 'sensor-status__debug-summary');
-  summary.textContent = t('sensorStatus.advanced');
-  const intro = createElement('p', 'menu__text');
-  intro.textContent = t('sensorStatus.silentReconnect.intro');
-  const steps = createElement('p', 'menu__text');
-  steps.textContent = t('sensorStatus.silentReconnect.steps', { address: CHROME_FLAGS_ADDRESS });
-  const copyButton = createElement('button', 'menu__action menu__action--secondary');
-  copyButton.type = 'button';
-  copyButton.textContent = t('sensorStatus.silentReconnect.copy', {
-    address: CHROME_FLAGS_ADDRESS,
-  });
-  copyButton.addEventListener('click', () => {
+  const summary = textElement(
+    'summary',
+    'sensor-status__debug-summary',
+    t('sensorStatus.advanced'),
+  );
+  const intro = paragraph('menu__text', t('sensorStatus.silentReconnect.intro'));
+  const address = { address: CHROME_FLAGS_ADDRESS };
+  const steps = paragraph('menu__text', t('sensorStatus.silentReconnect.steps', address));
+  const copyLabel = t('sensorStatus.silentReconnect.copy', address);
+  const copyButton = button('menu__action menu__action--secondary', copyLabel, () => {
     void navigator.clipboard.writeText(CHROME_FLAGS_ADDRESS).then(
       () => showToast(t('sensorStatus.silentReconnect.copied')),
       () => showToast(t('sensorStatus.debug.copy.failed')),
