@@ -28,6 +28,15 @@ await withPreview(4174, async (browser, appUrl) => {
   // floating wheel cards — no on-body SVG marker (#161 follow-up).
   const cards = await page.locator('.wheel-card').count();
   assert(cards === 4, `expected 4 wheel cards, got ${cards}`);
+  // The markers fill in on the first demo frame, a moment after the diagram
+  // appears, so wait for them rather than read them at once (#746).
+  await page
+    .waitForFunction(
+      () => [...document.querySelectorAll('.wheel-card__marker')].some((m) => m.textContent),
+      undefined,
+      { timeout: 10_000 },
+    )
+    .catch(() => {});
   const glyphs = (await page.locator('.wheel-card__marker').allTextContents()).join('');
   assert(glyphs.length > 0, 'wheel card glyphs are empty');
   const lamps = await page.locator('.indicators__lamp:visible').count();
