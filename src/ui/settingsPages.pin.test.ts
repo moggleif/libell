@@ -111,8 +111,9 @@ describe('the "?" page (#735)', () => {
       },
     });
     info.open();
-    // The build's version and time differ from run to run.
-    const dom = describeDom(info.element).replace(/(about__version") ".*"/, '$1 "<version>"');
+    // About's version line depends on the build (a CI build has none);
+    // about.test.ts pins it.
+    const dom = describeDom(info.element).replace(/\n *p class="menu__text about__version".*/, '');
     expect(dom).toMatchSnapshot();
   });
 });

@@ -107,7 +107,6 @@ exports[`the "?" page (#735) > draws the same DOM 1`] = `
       p class="menu__text" "Your settings stay on your phone — no account and no tracking. The only thing Libell sends is anonymous counts of how the app is used, which you can turn off."
       p class="menu__text" "Libell is free and open source (MIT license). "
         a class="menu__link" href="https://github.com/moggleif/libell" rel="noopener" target="_blank" "Source code on GitHub"
-      p class="menu__text about__version" "<version>"
     div class="settings__tabpanel" hidden=""
       p class="menu__text" "Found a problem or have an idea? Fill this in and tap the button — it opens a ready-made report on GitHub where you post it (a free GitHub account is needed, created in a minute)."
       form class="settings__form"
