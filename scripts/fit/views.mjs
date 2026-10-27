@@ -12,37 +12,40 @@ export function open(context, appearance, language, options) {
 }
 
 /** A level view with these settings, opened and checked. */
-async function levelVariant(context, run, view, options) {
-  const page = await open(context, run.appearance, run.language, { query: '?demo=1', ...options });
+async function levelVariant(context, walk, view, options) {
+  const page = await open(context, walk.appearance, walk.language, {
+    query: '?demo=1',
+    ...options,
+  });
   await page.waitForSelector('.rv-diagram svg');
-  await checkLevelScreen(page, run.at(view), { fitsWhole: run.viewport.fitsWhole });
-  await auditView(page, run.at(view));
+  await checkLevelScreen(page, walk.at(view), { fitsWhole: walk.viewport.fitsWhole });
+  await auditView(page, walk.at(view));
   return page;
 }
 
 /** Every level view; returns the plain one, still open. */
-async function checkLevelViews(context, run) {
+async function checkLevelViews(context, walk) {
   // `?demo` replaces the sensor with a fixed tilt and presents the app as
   // configured, which is the only way to reach this view on a machine with
   // no motion sensor.
-  const level = await levelVariant(context, run, 'level', {});
+  const level = await levelVariant(context, walk, 'level', {});
 
   // The caravan's level view (#368): its own drawing, and in Modern its
   // own wheel cards, jockey card included.
-  await (await levelVariant(context, run, 'caravan level', { vehicleType: 'caravan' })).close();
+  await (await levelVariant(context, walk, 'caravan level', { vehicleType: 'caravan' })).close();
 
   // An adjustable kloss (#687): its line above the vehicle takes height
   // from the drawing, in every language's longest sentence.
-  const adjustable = await levelVariant(context, run, 'adjustable kloss level', { ramp: LEVEL9 });
+  const adjustable = await levelVariant(context, walk, 'adjustable kloss level', { ramp: LEVEL9 });
   const line = adjustable.locator('.adjustable-line');
-  if (await line.isHidden()) fail(run.at('adjustable kloss level'), 'no line above the vehicle');
+  if (await line.isHidden()) fail(walk.at('adjustable kloss level'), 'no line above the vehicle');
   await adjustable.close();
 
   // Inches (#627): "1 ⅜ in" is the widest a wheel card's lift gets, so
   // both drawings are walked once more in that unit.
   for (const vehicleType of ['motorhome', 'caravan']) {
     const view = `${vehicleType} level, inches`;
-    await (await levelVariant(context, run, view, { vehicleType, displayUnit: 'in' })).close();
+    await (await levelVariant(context, walk, view, { vehicleType, displayUnit: 'in' })).close();
   }
   return level;
 }
@@ -74,18 +77,18 @@ function measureRampsTab() {
  * picker, so it is checked rather than left to hold by luck — a longer
  * hint or one more setting would otherwise take it back silently.
  */
-async function checkRampsTab(level, run) {
+async function checkRampsTab(level, walk) {
   if (!(await level.evaluate(clickRampsTab))) {
-    fail(run.at('ramps tab'), 'could not reach the Ramps tab to check that it fits');
+    fail(walk.at('ramps tab'), 'could not reach the Ramps tab to check that it fits');
     return;
   }
   await level.waitForTimeout(250);
   const overflow = await level.evaluate(measureRampsTab);
   if (overflow.pickerOpen !== false) {
-    fail(run.at('ramps tab'), 'the ramp picker is not collapsed by default');
+    fail(walk.at('ramps tab'), 'the ramp picker is not collapsed by default');
   } else if (overflow.scrollBy > 0) {
     fail(
-      run.at('ramps tab'),
+      walk.at('ramps tab'),
       `does not fit one screen with the picker collapsed — scrolls by ${Math.round(
         overflow.scrollBy,
       )}px`,
@@ -95,17 +98,17 @@ async function checkRampsTab(level, run) {
 }
 
 /** Settings, then Help and its Privacy tab, from the level view; closes it. */
-async function checkSettingsAndHelp(level, run) {
+async function checkSettingsAndHelp(level, walk) {
   // Settings: a page in Modern, a drawer in Classic.
   await level.locator('#settings-button').click();
-  await auditView(level, run.at('settings'));
+  await auditView(level, walk.at('settings'));
 
   // Held to every phone that is meant to fit whole: with the Save row
   // (#328) and the Advanced block (#329) gone, it fits the SE in every
   // language too. The 320x480 floor only promises reachability. Modern
   // only; Classic splits these settings across drawer sub-pages with no
   // tab bar.
-  if (run.viewport.fitsWhole && run.appearance === 'modern') await checkRampsTab(level, run);
+  if (walk.viewport.fitsWhole && walk.appearance === 'modern') await checkRampsTab(level, walk);
 
   // Reload rather than closing: a page's own ✕ goes through history.back(), which from a
   // freshly-loaded page can leave the app; a test must not depend on the history stack.
@@ -114,22 +117,22 @@ async function checkSettingsAndHelp(level, run) {
 
   // Help / info, the longest scrolling page in the app.
   await level.locator('#help-button').click();
-  await auditView(level, run.at('help'));
+  await auditView(level, walk.at('help'));
   await openPrivacyTab(level);
-  await auditView(level, run.at('privacy'));
+  await auditView(level, walk.at('privacy'));
   await level.close();
 }
 
 /** The external sensor page, via the simulated box. */
-async function checkExternalSensor(context, run) {
-  const sim = await open(context, run.appearance, run.language, {
+async function checkExternalSensor(context, walk) {
+  const sim = await open(context, walk.appearance, walk.language, {
     query: '?demo=1&easylevel-sim',
   });
   await sim.waitForSelector('.rv-diagram svg');
   const sensorButton = sim.locator('#sensor-slot button');
   if ((await sensorButton.count()) > 0) {
     await sensorButton.click();
-    await auditView(sim, run.at('external sensor'));
+    await auditView(sim, walk.at('external sensor'));
   }
   await sim.close();
 }
@@ -172,8 +175,8 @@ async function findShareUrl() {
  * screen around it — if it fits there it fits anywhere, and every language
  * still passes through.
  */
-async function checkIncomingSetup(context, run) {
-  const sharer = await open(context, run.appearance, run.language, { query: '?demo=1' });
+async function checkIncomingSetup(context, walk) {
+  const sharer = await open(context, walk.appearance, walk.language, { query: '?demo=1' });
   await sharer.waitForSelector('.rv-diagram svg');
   // The vehicle-setup link comes from Settings, not the top bar's share
   // button (which shares the app itself).
@@ -183,9 +186,9 @@ async function checkIncomingSetup(context, run) {
   if (shareUrl && shareUrl.includes('#setup=')) {
     await sharer.goto(shareUrl.replace(/^https?:\/\/[^/]+/, `http://localhost:${PORT}`));
     await sharer.waitForTimeout(500);
-    await auditView(sharer, run.at('incoming setup'));
+    await auditView(sharer, walk.at('incoming setup'));
   } else {
-    fail(run.at('incoming setup'), 'could not produce a share link to open the view with');
+    fail(walk.at('incoming setup'), 'could not produce a share link to open the view with');
   }
   await sharer.close();
 }
@@ -193,12 +196,12 @@ async function checkIncomingSetup(context, run) {
 /** Every view for one screen, appearance and language, in `context`. */
 export async function walkViews(context, viewport, appearance, language) {
   const at = (view) => `${viewport.name} / ${appearance} / ${language} / ${view}`;
-  const run = { viewport, appearance, language, at };
+  const walk = { viewport, appearance, language, at };
 
-  const level = await checkLevelViews(context, run);
-  await checkSettingsAndHelp(level, run);
-  await checkExternalSensor(context, run);
-  if (viewport === TIGHTEST) await checkIncomingSetup(context, run);
+  const level = await checkLevelViews(context, walk);
+  await checkSettingsAndHelp(level, walk);
+  await checkExternalSensor(context, walk);
+  if (viewport === TIGHTEST) await checkIncomingSetup(context, walk);
 
   // The first-run guide, the one view that opens on its own when nothing
   // has been stored yet.
