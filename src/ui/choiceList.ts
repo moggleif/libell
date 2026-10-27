@@ -4,7 +4,7 @@
  * again edits its name in place: leaving the field saves it, and an emptied
  * field puts the previous name back.
  */
-import { createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 import { t } from './i18n';
 
 export interface ChoiceRow {
@@ -39,21 +39,15 @@ function createSelectButton({ label, active }: ChoiceRow): HTMLButtonElement {
   select.type = 'button';
   // The ●/○ is hidden from screen readers; this says it instead (#535).
   select.setAttribute('aria-pressed', String(active));
-  const radio = createElement('span', 'choice__row-radio');
+  const radio = textElement('span', 'choice__row-radio', active ? '●' : '○');
   radio.setAttribute('aria-hidden', 'true');
-  radio.textContent = active ? '●' : '○';
-  const text = createElement('span', 'choice__row-label');
-  text.textContent = label;
-  select.append(radio, text);
+  select.append(radio, textElement('span', 'choice__row-label', label));
   return select;
 }
 
 function createDeleteButton(label: string, onDelete: () => void): HTMLButtonElement {
-  const del = createElement('button', 'choice__row-delete');
-  del.type = 'button';
+  const del = button('choice__row-delete', '✕', onDelete);
   del.setAttribute('aria-label', label);
-  del.textContent = '✕';
-  del.addEventListener('click', onDelete);
   return del;
 }
 

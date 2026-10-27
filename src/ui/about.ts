@@ -5,7 +5,7 @@
 
 import { REPO_URL } from '../domain/site';
 import { t } from './i18n';
-import { createElement, externalLink } from './dom';
+import { createElement, externalLink, paragraph } from './dom';
 
 /**
  * @param version null for a CI build without `BUILD_VERSION`; injected so
@@ -14,15 +14,11 @@ import { createElement, externalLink } from './dom';
 export function createAboutSection(version: string | null = __APP_VERSION__): HTMLElement {
   const body = document.createElement('div');
 
-  const what = createElement('p', 'menu__text');
-  what.textContent = t('about.text');
+  const what = paragraph('menu__text', t('about.text'));
   body.append(what);
 
-  const offline = createElement('p', 'menu__text');
-  offline.textContent = t('about.offline');
-
-  const privacy = createElement('p', 'menu__text');
-  privacy.textContent = t('about.privacy');
+  const offline = paragraph('menu__text', t('about.offline'));
+  const privacy = paragraph('menu__text', t('about.privacy'));
 
   const source = createElement('p', 'menu__text');
   source.append(
@@ -34,9 +30,7 @@ export function createAboutSection(version: string | null = __APP_VERSION__): HT
 
   // A build without a version shows none: better none than a wrong one.
   if (version) {
-    const line = createElement('p', 'menu__text about__version');
-    line.textContent = t('about.version', { v: version });
-    body.append(line);
+    body.append(paragraph('menu__text about__version', t('about.version', { v: version })));
   }
 
   return body;

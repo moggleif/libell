@@ -5,7 +5,7 @@
  */
 
 import { t, type MessageKey } from './i18n';
-import { createElement } from './dom';
+import { createElement, paragraph, textElement } from './dom';
 
 const REPO_ISSUES_URL = 'https://github.com/moggleif/libell/issues/new';
 
@@ -21,8 +21,7 @@ const MAX_DESCRIPTION = 2000;
 type Category = (typeof CATEGORIES)[number];
 
 export function createFeedbackSection(onSent: () => void = () => {}): HTMLElement {
-  const intro = createElement('p', 'menu__text');
-  intro.textContent = t('feedback.intro');
+  const intro = paragraph('menu__text', t('feedback.intro'));
   const form = createElement('form', 'settings__form');
 
   let category: Category = CATEGORIES[0] ?? { id: 'other', label: 'feedback.cat.other' };
@@ -52,9 +51,7 @@ export function createFeedbackSection(onSent: () => void = () => {}): HTMLElemen
 
 function createCategoryRow(initial: Category, onPick: (category: Category) => void) {
   const categoryRow = createElement('fieldset', 'feedback__categories');
-  const legend = createElement('legend', 'menu__text');
-  legend.textContent = t('feedback.category');
-  categoryRow.append(legend);
+  categoryRow.append(textElement('legend', 'menu__text', t('feedback.category')));
   for (const cat of CATEGORIES) {
     const label = createElement('label', 'feedback__category');
     const radio = document.createElement('input');

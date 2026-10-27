@@ -7,7 +7,7 @@ import { matchRampModel, rampLabel, RAMP_MODELS, type RampModel } from '../domai
 import { formatLength, unitToMm, type LengthUnit } from '../domain/lengths';
 import { LENGTH_RANGES_MM } from '../domain/settings';
 import { rangeProblem, type SettingsFormState } from './settingsFields';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { t } from './i18n';
 
 /** A typical step height, as the empty Add field's hint. */
@@ -152,12 +152,8 @@ function createStepChip(label: string, fixed: boolean, onRemove: () => void): HT
   const element = createElement('span', 'steps__chip');
   const text = document.createElement('span');
   text.textContent = label;
-  const remove = document.createElement('button');
-  remove.type = 'button';
-  remove.className = 'steps__chip-remove';
-  remove.textContent = '−';
+  const remove = button('steps__chip-remove', '−', onRemove);
   remove.setAttribute('aria-label', t('settings.steps.remove', { value: label }));
-  remove.addEventListener('click', onRemove);
   element.append(text);
   if (!fixed) element.append(remove);
   return element;

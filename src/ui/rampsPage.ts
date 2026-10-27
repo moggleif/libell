@@ -7,7 +7,7 @@ import { RAMP_MODELS, type RampModel } from '../domain/ramps';
 import type { RampChoice, RampPick, StepEditor } from './rampChoice';
 import type { SettingsFormState } from './settingsFields';
 import { t } from './i18n';
-import { createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 
 export interface RampsPageParts {
   choice: RampChoice;
@@ -61,10 +61,13 @@ function createCatalogue(
   onPick: (pick: RampPick) => void,
 ) {
   const element = createElement('details', 'settings__advanced klossar__picker-details');
-  const summary = createElement('summary', 'settings__advanced-summary');
   // Set here rather than in `relabel`: this element only exists on the
   // Ramps page, and a language change reloads the whole app anyway.
-  summary.textContent = t('settings.klossar.changeRamp');
+  const summary = textElement(
+    'summary',
+    'settings__advanced-summary',
+    t('settings.klossar.changeRamp'),
+  );
   const filter = createBrandFilter(() => render(shownModel));
   element.append(summary, filter.row);
 
@@ -127,11 +130,7 @@ function createBrandFilter(changed: () => void) {
   let brandFilter: string | null = null;
   const brandChips = new Map<string | null, HTMLButtonElement>();
   const addBrandChip = (brand: string | null, label: string): void => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'klossar__chip';
-    chip.textContent = label;
-    chip.addEventListener('click', () => {
+    const chip = button('klossar__chip', label, () => {
       brandFilter = brand;
       for (const [b, c] of brandChips) c.setAttribute('aria-pressed', String(b === brandFilter));
       changed();
@@ -151,11 +150,9 @@ function createBrandFilter(changed: () => void) {
 
 /** One catalogue row: a name (and the model's step heights), and a radio. */
 function catalogueRow(name: string, mmLine?: HTMLElement) {
-  const row = document.createElement('button');
+  const row = createElement('button', 'klossar__row');
   row.type = 'button';
-  row.className = 'klossar__row';
-  const nameEl = createElement('span', 'klossar__row-name');
-  nameEl.textContent = name;
+  const nameEl = textElement('span', 'klossar__row-name', name);
   if (mmLine) {
     const info = createElement('span', 'klossar__row-info');
     info.append(nameEl, mmLine);
@@ -184,8 +181,7 @@ function catalogueRow(name: string, mmLine?: HTMLElement) {
 function createSelectionSummary(choice: RampChoice, state: SettingsFormState) {
   const element = createElement('div', 'klossar__selected');
   const head = createElement('div', 'klossar__footer-head');
-  const label = createElement('span', 'klossar__footer-label');
-  label.textContent = t('settings.klossar.selected');
+  const label = textElement('span', 'klossar__footer-label', t('settings.klossar.selected'));
   const modelName = createElement('span', 'klossar__footer-model');
   head.append(label, modelName);
   const heading = createElement('span', 'klossar__footer-heading');
@@ -232,10 +228,8 @@ const cellLabel = (choice: RampChoice, n: number): string =>
 /** A label, if any, over its height: one cell of the selection grid. */
 function stepCell(label: string, value: string): HTMLElement {
   const element = createElement('div', 'klossar__grid-cell');
-  const stepLabel = createElement('span', 'klossar__grid-label');
-  stepLabel.textContent = label;
-  const valueEl = createElement('span', 'klossar__grid-value');
-  valueEl.textContent = value;
+  const stepLabel = textElement('span', 'klossar__grid-label', label);
+  const valueEl = textElement('span', 'klossar__grid-value', value);
   if (label) element.append(stepLabel);
   element.append(valueEl);
   return element;

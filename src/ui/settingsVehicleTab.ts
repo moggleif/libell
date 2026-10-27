@@ -19,7 +19,7 @@ import {
   type SettingsFormState,
 } from './settingsFields';
 import { t } from './i18n';
-import { createElement } from './dom';
+import { button, paragraph } from './dom';
 
 export interface VehicleTab {
   /** The three measurements, in the order they are shown. */
@@ -68,9 +68,7 @@ export function createVehicleTab(
 /** Where to find the numbers — the biggest data-entry hurdle for new
  * users is not typing, it's knowing. */
 function createMeasureHint(): HTMLParagraphElement {
-  const measureHint = createElement('p', 'settings__hint');
-  measureHint.textContent = t('settings.measureHint');
-  return measureHint;
+  return paragraph('settings__hint', t('settings.measureHint'));
 }
 
 function relabel(
@@ -175,16 +173,11 @@ function createMeasurements(state: SettingsFormState): [NumberField, NumberField
  * same vehicle.
  */
 function createShareButton(onClick: () => void): HTMLButtonElement {
-  const shareButton = document.createElement('button');
-  shareButton.type = 'button';
   // The trailing class is a stable hook for the fit test, which has to
   // reach the incoming-setup view the way a real user does — by producing
   // a real share link from this button (scripts/fit/views.mjs). Matching on
   // the label instead would mean duplicating the i18n table in the test.
   // A quiet link, not a button: sharing is a rare errand, not the page's
   // main action.
-  shareButton.className = 'link-button settings__share-vehicle';
-  shareButton.textContent = t('settings.shareVehicle');
-  shareButton.addEventListener('click', onClick);
-  return shareButton;
+  return button('link-button settings__share-vehicle', t('settings.shareVehicle'), onClick);
 }

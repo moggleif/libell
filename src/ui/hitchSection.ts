@@ -4,7 +4,7 @@
  * the jockey wheel lead back to it. Hidden for a motorhome. With nothing
  * saved, only the save button is offered: there is nothing to go back to.
  */
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { t } from './i18n';
 
 export interface HitchOptions {
@@ -23,24 +23,15 @@ export interface HitchSection {
   refresh(): void;
 }
 
-function actionButton(text: string, className = 'menu__action'): HTMLButtonElement {
-  const button = createElement('button', className);
-  button.type = 'button';
-  button.textContent = text;
-  return button;
-}
-
 export function createHitchSection(options: HitchOptions): HitchSection {
   const element = createElement('div', 'hitch');
-  const heading = createElement('p', 'settings__section');
-  heading.textContent = t('hitch.title');
-  const hint = createElement('p', 'menu__text');
-  hint.textContent = t('hitch.hint');
+  const heading = paragraph('settings__section', t('hitch.title'));
+  const hint = paragraph('menu__text', t('hitch.hint'));
   const status = createElement('p', 'menu__text menu__text--status');
   status.setAttribute('aria-live', 'polite');
-  const save = actionButton(t('hitch.save'), 'menu__action menu__action--secondary');
-  const go = actionButton(t('hitch.go'));
-  const done = actionButton(t('hitch.done'));
+  const save = button('menu__action menu__action--secondary', t('hitch.save'));
+  const go = button('menu__action', t('hitch.go'));
+  const done = button('menu__action', t('hitch.done'));
   element.append(heading, hint, status, go, done, save);
 
   function refresh(message?: string): void {
