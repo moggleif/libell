@@ -28,12 +28,9 @@ function settingsForm(
   state: WizardState,
   compact: 'measurements' | 'language' | 'appearance' | 'sound' | 'ramps',
 ): HTMLElement {
-  return createSettingsForm(
-    chosenSettings(state),
-    (saved) => saveSettings(state, saved),
-    undefined,
-    { compact },
-  );
+  return createSettingsForm(chosenSettings(state), (saved) => saveSettings(state, saved), {
+    compact,
+  });
 }
 
 export function measurementsStep(state: WizardState): Step {

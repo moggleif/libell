@@ -46,9 +46,7 @@ export function createSettingsPage(options: SettingsOptions): SettingsPage {
     (settings) => {
       options.onSettingsSaved(settings);
     },
-    options.calibration,
-    { onShareVehicleSetup: options.onShareVehicleSetup, vehicles: options.vehicles },
-    options.targets,
+    { hosts: options, onShareVehicleSetup: options.onShareVehicleSetup },
   );
   page.body.append(settingsForm);
 

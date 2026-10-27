@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { createSettingsForm } from './settingsPanel';
+import { createSettingsForm, type SettingsFormOptions } from './settingsPanel';
+import type { CalibrationOptions } from './calibrationSection';
+import type { Hosts } from './settingsLayout';
+import type { TargetsOptions } from './targetsSection';
 import { takeReopenSettings } from './reopenSettings';
 import { LANGUAGE_NAMES, LANGUAGES, setLanguage, t } from './i18n';
 import {
@@ -13,6 +16,43 @@ import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
 setLanguage('en');
 
+/** The full form's options, with stand-in hosts for whatever a test does
+ * not wire itself. */
+function full(
+  options: Partial<Hosts> & Omit<Extract<SettingsFormOptions, { hosts: Hosts }>, 'hosts'> = {},
+): SettingsFormOptions {
+  const { calibration = calibrationHost(), targets = noTargets(), vehicles, ...rest } = options;
+  return { hosts: { calibration, targets, vehicles }, ...rest };
+}
+
+function calibrationHost(): CalibrationOptions {
+  return {
+    appearance: 'modern',
+    getCalibration: () => null,
+    calibrate: () => null,
+    readTilt: () => 'no sensor',
+    applyCalibration: () => () => {},
+    clearCalibration: () => {},
+    getVehicleCalibration: () => null,
+    calibrateVehicle: () => null,
+    getCalibrationCapturedAt: () => null,
+    getVehicleCalibrationCapturedAt: () => null,
+    checkCalibration: () => '',
+    checkVehicleCalibration: () => '',
+    clearVehicleCalibration: () => {},
+  };
+}
+
+function noTargets(): TargetsOptions {
+  return {
+    getTargetPresets: () => [],
+    getActiveTargetId: () => null,
+    selectTarget: () => {},
+    addTargetPreset: () => null,
+    deleteTargetPreset: () => {},
+  };
+}
+
 function input(form: HTMLFormElement, name: string): HTMLInputElement {
   return form.querySelector<HTMLInputElement>(`input[name="${name}"]`)!;
 }
@@ -24,20 +64,20 @@ const classic: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'classic' };
 
 describe('settings form', () => {
   it('tells the user where to find the measurements', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     const hint = form.querySelector('.settings__hint');
     expect(hint?.textContent).toContain('registration');
   });
 
   it('a caravan is told to measure axle to jockey wheel, not wheelbase (#327)', () => {
-    const form = createSettingsForm({ ...classic, vehicleType: 'caravan' }, vi.fn());
+    const form = createSettingsForm({ ...classic, vehicleType: 'caravan' }, vi.fn(), full());
     const hint = form.querySelector('.settings__hint')!.textContent!;
     expect(hint).toBe(t('settings.measureHint.caravan'));
     expect(hint).not.toContain(t('settings.wheelbase').toLowerCase());
   });
 
   it('switching to caravan swaps the measurement hint live (#327)', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     const vehicleSelect = form.querySelectorAll('select')[0] as HTMLSelectElement;
     vehicleSelect.value = 'caravan';
     vehicleSelect.dispatchEvent(new Event('change'));
@@ -47,13 +87,13 @@ describe('settings form', () => {
   });
 
   it('has no selectCalibrationTab in Classic — there are no tabs to select (#155)', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     expect(form.selectCalibrationTab).toBeUndefined();
   });
 
   it('"Share vehicle setup" (#207) hands the current form values to the host, unsaved edits included', () => {
     const onShareVehicleSetup = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, vi.fn(), undefined, { onShareVehicleSetup });
+    const form = createSettingsForm(classic, vi.fn(), full({ onShareVehicleSetup }));
     input(form, 'wheelbaseMm').value = '4100';
     form.dispatchEvent(new Event('input'));
     const shareButton = [...form.querySelectorAll('button')].find(
@@ -65,7 +105,7 @@ describe('settings form', () => {
   });
 
   it('is a no-op when no onShareVehicleSetup host is wired', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     const shareButton = [...form.querySelectorAll('button')].find(
       (b) => b.textContent === t('settings.shareVehicle'),
     )!;
@@ -77,7 +117,7 @@ describe('settings form', () => {
 
   it('round-trips an edited field through save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, full());
     input(form, 'wheelbaseMm').value = '4100';
     form.dispatchEvent(new Event('input'));
     form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -87,14 +127,14 @@ describe('settings form', () => {
 
   it('the wizard falls back to defaults for an invalid field instead of saving garbage', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave, undefined, { compact: 'measurements' });
+    const form = createSettingsForm(classic, onSave, { compact: 'measurements' });
     input(form, 'wheelbaseMm').value = '-5';
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(onSave.mock.calls[0]![0].wheelbaseMm).toBe(DEFAULT_SETTINGS.wheelbaseMm);
   });
 
   it('choosing "Custom set" sticks instead of snapping back to the matching model (#91)', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     // The default steps match Thule Levelers, so the picker shows it.
     const rampSelect = form.querySelectorAll('select')[2] as HTMLSelectElement;
     expect(rampSelect.value).not.toBe('');
@@ -115,7 +155,7 @@ describe('settings form', () => {
 
   it('round-trips the axle configuration (#81)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, full());
     const axleSelect = form.querySelectorAll('select')[1] as HTMLSelectElement;
     axleSelect.value = 'boggie';
     axleSelect.dispatchEvent(new Event('change'));
@@ -125,7 +165,7 @@ describe('settings form', () => {
 
   it('round-trips the ramp count and drain position (#93)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, full());
     // Select order: vehicle, axle, ramp model, ramp count, drain, unit, theme, appearance.
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     const drainSelect = form.querySelectorAll('select')[4] as HTMLSelectElement;
@@ -141,7 +181,7 @@ describe('settings form', () => {
 
   it('hides the ramp count and drain fields for a caravan', () => {
     const caravan: LevelSettings = { ...classic, vehicleType: 'caravan' };
-    const form = createSettingsForm(caravan, vi.fn());
+    const form = createSettingsForm(caravan, vi.fn(), full());
     const rampCountSelect = form.querySelectorAll('select')[3] as HTMLSelectElement;
     expect((rampCountSelect.closest('label') as HTMLLabelElement).hidden).toBe(true);
   });
@@ -156,7 +196,7 @@ describe('settings form', () => {
   it('changing Appearance saves immediately and reloads, independent of theme (#104 follow-up)', () => {
     const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
     localStorage.removeItem('libell.settings');
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     const selects = form.querySelectorAll('select');
     // Order: vehicle, axle, ramp model, ramp count, drain, unit, language
     // (screen-cleanup follow-up), theme, appearance.
@@ -179,7 +219,7 @@ describe('settings form', () => {
   it('a compact wizard step previews Appearance without saving or reloading', () => {
     const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
     localStorage.removeItem('libell.settings');
-    const form = createSettingsForm(classic, vi.fn(), undefined, { compact: 'appearance' });
+    const form = createSettingsForm(classic, vi.fn(), { compact: 'appearance' });
     const appearanceSelect = form.querySelectorAll('select')[1] as HTMLSelectElement;
     appearanceSelect.value = 'modern';
     appearanceSelect.dispatchEvent(new Event('change'));
@@ -194,7 +234,7 @@ describe('settings form', () => {
     it(`changing ${pick} in Settings marks Settings to reopen after the reload (#345)`, () => {
       const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
       sessionStorage.clear();
-      const form = createSettingsForm(classic, vi.fn());
+      const form = createSettingsForm(classic, vi.fn(), full());
       const select = form.querySelectorAll('select')[pick === 'appearance' ? 7 : 5]!;
       select.value = pick === 'appearance' ? 'modern' : 'sv';
       select.dispatchEvent(new Event('change'));
@@ -208,7 +248,7 @@ describe('settings form', () => {
   it('a wizard step changing language does not reopen Settings after the reload (#345)', () => {
     const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
     sessionStorage.clear();
-    const form = createSettingsForm(classic, vi.fn(), undefined, { compact: 'language' });
+    const form = createSettingsForm(classic, vi.fn(), { compact: 'language' });
     const select = form.querySelector('select')!;
     select.value = 'sv';
     select.dispatchEvent(new Event('change'));
@@ -219,7 +259,7 @@ describe('settings form', () => {
 
   it('offers Glossy as a third appearance preset (chat-directed restyle)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, full());
     const selects = form.querySelectorAll('select');
     const appearanceSelect = selects[7] as HTMLSelectElement;
     const values = Array.from(appearanceSelect.options).map((o) => o.value);
@@ -233,7 +273,7 @@ describe('settings form', () => {
   it('keeps math in mm while displaying cm', () => {
     const cmSettings: LevelSettings = { ...classic, displayUnit: 'cm' };
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(cmSettings, onSave);
+    const form = createSettingsForm(cmSettings, onSave, full());
     // The field shows cm (3800 mm -> 380), but the saved value is mm again.
     expect(input(form, 'wheelbaseMm').value).toBe('380');
     input(form, 'wheelbaseMm').value = '400';
@@ -244,7 +284,7 @@ describe('settings form', () => {
 
   it('shows inches with decimals and stores the nearest whole mm (#627)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm({ ...classic, displayUnit: 'in' }, onSave);
+    const form = createSettingsForm({ ...classic, displayUnit: 'in' }, onSave, full());
     expect(input(form, 'wheelbaseMm').value).toBe('149.61'); // 3800 mm
     input(form, 'wheelbaseMm').value = '60.5';
     form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -256,7 +296,7 @@ describe('settings form', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
     // 1237.5 mm is not a whole mm: an inch round trip must not round it.
     const stored = { ...classic, wheelbaseMm: 1237.5, toleranceMm: 7 };
-    const form = createSettingsForm(stored, onSave);
+    const form = createSettingsForm(stored, onSave, full());
     const unit = [...form.querySelectorAll('select')].find((s) =>
       [...s.options].some((o) => o.value === 'in'),
     )!;
@@ -272,7 +312,7 @@ describe('settings form', () => {
   });
 
   it('Classic mode has no tab elements (#108)', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     expect(form.querySelector('.settings__tabs')).toBeNull();
     expect(form.querySelectorAll('[role="tab"]').length).toBe(0);
     // The original flat structure — a section heading straight in the form.
@@ -290,7 +330,7 @@ describe('settings form — Fine-tuning under General › More (#329)', () => {
 
   for (const appearance of ['classic', 'modern'] as const) {
     it(`${appearance}: Stability and both response delays sit in More, collapsed`, () => {
-      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn());
+      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn(), full());
       expect(more(form).open).toBe(false);
       for (const name of ['stabilityMm', 'dwellRestMs', 'dwellMotionMs']) {
         expect(more(form).querySelector(`input[name="${name}"]`), name).not.toBeNull();
@@ -310,7 +350,7 @@ describe('settings form — Fine-tuning under General › More (#329)', () => {
 
   it('round-trips edited response-delay fields through save, not unit-converted (#183)', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, full());
     input(form, 'dwellRestMs').value = '500';
     input(form, 'dwellMotionMs').value = '120';
     form.dispatchEvent(new Event('change'));
@@ -320,13 +360,13 @@ describe('settings form — Fine-tuning under General › More (#329)', () => {
 
   it('never starts expanded, even when a field inside it holds a non-default value', () => {
     const customized: LevelSettings = { ...classic, stabilityMm: classic.stabilityMm + 2 };
-    const form = createSettingsForm(customized, vi.fn());
+    const form = createSettingsForm(customized, vi.fn(), full());
     expect(more(form).open).toBe(false);
   });
 
   it('a change inside More is saved while it is collapsed', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave);
+    const form = createSettingsForm(classic, onSave, full());
     input(form, 'stabilityMm').value = String(classic.stabilityMm + 1);
     form.dispatchEvent(new Event('change'));
     expect(onSave.mock.lastCall![0].stabilityMm).toBe(classic.stabilityMm + 1);
@@ -347,7 +387,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // #329: type, axle, the three measurements, one hint and a quiet share
   // link — no Advanced section, no unit field.
   it('the Vehicle tab holds only the vehicle, with a quiet share link', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const panel = tabPanel(form, 'vehicle');
     const share = panel.querySelector<HTMLButtonElement>('button.link-button');
     expect(share?.textContent).toBe(t('settings.shareVehicle'));
@@ -358,7 +398,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('renders five tabs in order, Vehicle active by default, and switches on click (#329)', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const tabs = form.querySelectorAll('.settings__tab');
     expect(tabs.length).toBe(5);
     // The order a new owner sets things up in: the vehicle, its ramps,
@@ -390,7 +430,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it("exposes selectCalibrationTab so the menu's Calibration shortcut can jump here (#155)", () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     expect(typeof form.selectCalibrationTab).toBe('function');
     form.selectCalibrationTab?.();
     expect(tabButton(form, 'calibration').getAttribute('aria-selected')).toBe('true');
@@ -400,7 +440,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // #329: the Level tab (id still 'targets', which the main screen's
   // target badge opens) holds Tolerance, Drain side and the saved targets.
   it("renders a Level tab with Tolerance, Drain side and the saved targets, and exposes selectTargetsTab for the menu's shortcut", () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const levelTab = tabButton(form, 'targets');
     expect(levelTab.textContent).toBe(t('settings.tab.level'));
     expect(typeof form.selectTargetsTab).toBe('function');
@@ -419,7 +459,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('hides Drain side on the Level tab for a caravan, keeping Tolerance', () => {
-    const form = createSettingsForm({ ...modern, vehicleType: 'caravan' }, vi.fn());
+    const form = createSettingsForm({ ...modern, vehicleType: 'caravan' }, vi.fn(), full());
     const panel = tabPanel(form, 'targets');
     const drain = [...panel.querySelectorAll<HTMLElement>('.settings__field')].find((f) =>
       f.textContent?.includes(t('settings.drain')),
@@ -429,7 +469,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('renders a General tab with language, theme, appearance, unit and sound', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const generalTab = tabButton(form, 'general');
     expect(generalTab.textContent).toBe('General');
 
@@ -453,7 +493,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('no tab shows a Save, Undo or Reset row (#328)', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     expect(form.querySelector('.settings__actions, .klossar__footer-actions')).toBeNull();
     for (const tab of ['vehicle', 'ramps', 'targets', 'general']) {
       const labels = [...tabPanel(form, tab).querySelectorAll('button')].map((b) => b.textContent);
@@ -472,7 +512,7 @@ describe('settings form — Modern tabs (#108)', () => {
 
     it('picking Svenska saves "sv"', () => {
       const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       const select = languageSelect(form);
       select.value = 'sv';
       select.dispatchEvent(new Event('change'));
@@ -483,7 +523,7 @@ describe('settings form — Modern tabs (#108)', () => {
 
     it('picking English saves "en"', () => {
       const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       const select = languageSelect(form);
       select.value = 'en';
       select.dispatchEvent(new Event('change'));
@@ -494,7 +534,7 @@ describe('settings form — Modern tabs (#108)', () => {
     // #178: the picker is built from `LANGUAGES`, so every shipped language
     // is offered and saves its own code — not just the original sv/en pair.
     it('offers every shipped language plus Automatic', () => {
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       const values = [...languageSelect(form).options].map((option) => option.value);
       expect(values).toEqual(['auto', ...LANGUAGES]);
     });
@@ -505,7 +545,7 @@ describe('settings form — Modern tabs (#108)', () => {
     it.each(LANGUAGES)('keeps Automatic first with the UI in %s', (lang) => {
       setLanguage(lang);
       try {
-        const options = [...languageSelect(createSettingsForm(modern, vi.fn())).options];
+        const options = [...languageSelect(createSettingsForm(modern, vi.fn(), full())).options];
         expect(options[0]!.value).toBe('auto');
         expect(options[0]!.textContent).toBe(t('settings.language.auto'));
         expect(options.slice(1).map((option) => option.textContent)).toEqual(
@@ -518,7 +558,7 @@ describe('settings form — Modern tabs (#108)', () => {
 
     it.each(LANGUAGES)('picking %s saves that language', (lang) => {
       const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       const select = languageSelect(form);
       select.value = lang;
       select.dispatchEvent(new Event('change'));
@@ -530,7 +570,7 @@ describe('settings form — Modern tabs (#108)', () => {
     it('picking Automatic clears any stored override', () => {
       const reload = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
       localStorage.setItem('libell.language', 'sv');
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       const select = languageSelect(form);
       select.value = 'auto';
       select.dispatchEvent(new Event('change'));
@@ -540,13 +580,13 @@ describe('settings form — Modern tabs (#108)', () => {
 
     it('preselects the select to the currently stored language', () => {
       localStorage.setItem('libell.language', 'en');
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       expect(languageSelect(form).value).toBe('en');
     });
   });
 
   it('includes Number of ramps, hidden for a caravan, and no Advanced section (#329)', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const rampsPanel = tabPanel(form, 'ramps');
     expect(rampsPanel.textContent).toContain(t('settings.rampCount'));
     expect(rampsPanel.textContent).not.toContain(t('settings.drain'));
@@ -558,14 +598,14 @@ describe('settings form — Modern tabs (#108)', () => {
     expect(rampsPanel.querySelectorAll('.settings__hint')).toHaveLength(1);
 
     const caravanModern: LevelSettings = { ...modern, vehicleType: 'caravan' };
-    const caravanForm = createSettingsForm(caravanModern, vi.fn());
+    const caravanForm = createSettingsForm(caravanModern, vi.fn(), full());
     const caravanRampsPanel = tabPanel(caravanForm, 'ramps');
     const rampCountField = caravanRampsPanel.querySelector<HTMLLabelElement>('.settings__field');
     expect(rampCountField?.hidden).toBe(true);
   });
 
   it('names the chosen model under the picker, labelled as the selection', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const selected = form.querySelector<HTMLElement>('.klossar__selected')!;
     expect(selected.querySelector('.klossar__footer-label')?.textContent).toBe('Selected');
     expect(selected.querySelector('.klossar__footer-model')?.textContent).toBe('Thule Levelers');
@@ -576,7 +616,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // the card and the footer both spelling out the same step heights. The
   // list is the picker; exactly one place outside it says what is chosen.
   it('says what is chosen in exactly one place outside the picker', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     expect(form.querySelector('.klossar__pinned')).toBeNull();
 
     const outsideThePicker = [
@@ -595,7 +635,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('the brand filter narrows the visible catalog rows', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const rows = [
       ...form.querySelectorAll<HTMLElement>('.klossar__row:not(.klossar__row--custom)'),
     ];
@@ -618,7 +658,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('picking a model updates the fixed footer step preview immediately', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const rows = [
       ...form.querySelectorAll<HTMLElement>('.klossar__row:not(.klossar__row--custom)'),
     ];
@@ -638,7 +678,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // of that setting; only the chip editor above them converted.
   it('shows the catalog preview and footer grid in cm when displayUnit is cm (R14)', () => {
     const cmModern: LevelSettings = { ...modern, displayUnit: 'cm' };
-    const form = createSettingsForm(cmModern, vi.fn());
+    const form = createSettingsForm(cmModern, vi.fn(), full());
 
     const rows = [
       ...form.querySelectorAll<HTMLElement>('.klossar__row:not(.klossar__row--custom)'),
@@ -662,7 +702,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // a filter on the tab and the thing it filters somewhere else. Closed by
   // default, because the tab's common errand is checking what is set.
   it('keeps the filter and the catalogue together in one collapsed disclosure', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const picker = form.querySelector<HTMLDetailsElement>('.klossar__picker-details')!;
     expect(picker.open).toBe(false);
     expect(picker.contains(form.querySelector('.klossar__filter')!)).toBe(true);
@@ -672,7 +712,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('offers "Custom set" as the first entry of the picker itself', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const list = form.querySelector<HTMLElement>('.klossar__list')!;
     const custom = form.querySelector<HTMLElement>('.klossar__row--custom')!;
     expect(list.contains(custom)).toBe(true);
@@ -681,7 +721,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('keeps "Custom set" offered when the brand filter narrows the models', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const custom = form.querySelector<HTMLElement>('.klossar__row--custom')!;
     const froli = [...form.querySelectorAll<HTMLButtonElement>('.klossar__chip')].find(
       (c) => c.textContent === 'Froli',
@@ -695,7 +735,7 @@ describe('settings form — Modern tabs (#108)', () => {
   // #246: the answer comes first and the means of changing it below —
   // what is set, the settings that follow from it, then the picker.
   it('puts the selection first and the picker last', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const panel = form.querySelector<HTMLElement>('.settings__tabpanel--klossar')!;
     const children = [...panel.children];
     const indexOf = (el: Element) => children.findIndex((c) => c === el || c.contains(el));
@@ -711,7 +751,7 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('picking "Egen uppsättning" reveals the chip editor, and the footer says so', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const customRow = form.querySelector<HTMLElement>('.klossar__row--custom')!;
     const editor = form.querySelector<HTMLElement>('.klossar__custom-editor')!;
     expect(editor.hidden).toBe(true);
@@ -721,28 +761,34 @@ describe('settings form — Modern tabs (#108)', () => {
   });
 
   it('shows the calibration tab as a two-step checklist (#330)', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const steps = tabPanel(form, 'calibration').querySelectorAll('.box-step');
     expect(steps).toHaveLength(2);
   });
 
   it('embeds a working calibration section in the Kalibrering tab (#109)', () => {
     const calibrate = vi.fn(() => null);
-    const form = createSettingsForm(modern, vi.fn(), {
-      appearance: modern.appearance,
-      getCalibration: () => null,
-      calibrate,
-      readTilt: () => 'no sensor',
-      applyCalibration: () => () => {},
-      clearCalibration: () => {},
-      getVehicleCalibration: () => null,
-      calibrateVehicle: () => null,
-      getCalibrationCapturedAt: () => null,
-      getVehicleCalibrationCapturedAt: () => null,
-      checkCalibration: () => '',
-      checkVehicleCalibration: () => '',
-      clearVehicleCalibration: () => {},
-    });
+    const form = createSettingsForm(
+      modern,
+      vi.fn(),
+      full({
+        calibration: {
+          appearance: modern.appearance,
+          getCalibration: () => null,
+          calibrate,
+          readTilt: () => 'no sensor',
+          applyCalibration: () => () => {},
+          clearCalibration: () => {},
+          getVehicleCalibration: () => null,
+          calibrateVehicle: () => null,
+          getCalibrationCapturedAt: () => null,
+          getVehicleCalibrationCapturedAt: () => null,
+          checkCalibration: () => '',
+          checkVehicleCalibration: () => '',
+          clearVehicleCalibration: () => {},
+        },
+      }),
+    );
     tabButton(form, 'calibration').click();
     const calibrationPanel = tabPanel(form, 'calibration');
     const calibrateButton = [
@@ -763,7 +809,7 @@ describe('settings form — Classic split pages (screen-cleanup follow-up)', () 
   const classicSplit: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'classic' };
 
   it('no page shows a Save, Undo or Reset row (#328)', () => {
-    const form = createSettingsForm(classicSplit, vi.fn(), undefined, { splitPages: true });
+    const form = createSettingsForm(classicSplit, vi.fn(), full({ splitPages: true }));
     for (const page of ['general', 'vehicle', 'ramps', 'targets'] as const) {
       expect(form.classicPages![page].querySelector('.settings__actions')).toBeNull();
     }
@@ -771,7 +817,7 @@ describe('settings form — Classic split pages (screen-cleanup follow-up)', () 
 
   // Same groups as Modern's tabs (#329), as ☰ pages.
   it('groups the pages like the Modern tabs', () => {
-    const form = createSettingsForm(classicSplit, vi.fn(), undefined, { splitPages: true });
+    const form = createSettingsForm(classicSplit, vi.fn(), full({ splitPages: true }));
     const pages = form.classicPages!;
     // The Level page: Tolerance, Drain side and the targets section.
     expect(pages.targets.querySelector('input[name="toleranceMm"]')).not.toBeNull();
@@ -794,9 +840,11 @@ describe('settings form — Classic split pages (screen-cleanup follow-up)', () 
   // differently — not the wizard's compact select.
   for (const appearance of ['classic', 'glossy'] as const) {
     it(`${appearance}: ☰ → Ramps is the same page as Modern's Ramps tab`, () => {
-      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn(), undefined, {
-        splitPages: true,
-      });
+      const form = createSettingsForm(
+        { ...DEFAULT_SETTINGS, appearance },
+        vi.fn(),
+        full({ splitPages: true }),
+      );
       const page = form.classicPages!.ramps;
       expect(page.querySelector('.klossar__selected')?.textContent).toContain(
         t('settings.klossar.selected'),
@@ -813,7 +861,7 @@ describe('settings form — Classic split pages (screen-cleanup follow-up)', () 
 
   it('a ramp picked on the Classic Ramps page is saved at once', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classicSplit, onSave, undefined, { splitPages: true });
+    const form = createSettingsForm(classicSplit, onSave, full({ splitPages: true }));
     const rows = [...form.classicPages!.ramps.querySelectorAll<HTMLButtonElement>('.klossar__row')];
     const other = rows.find(
       (r) =>
@@ -831,7 +879,7 @@ describe('settings form — Classic split pages (screen-cleanup follow-up)', () 
 describe('settings form — compact mode (#156)', () => {
   it('renders only Wheelbase and Track width front/rear, no tabs, no Advanced', () => {
     for (const settings of [classic, { ...classic, appearance: 'modern' as const }]) {
-      const form = createSettingsForm(settings, vi.fn(), undefined, { compact: 'measurements' });
+      const form = createSettingsForm(settings, vi.fn(), { compact: 'measurements' });
       expect(form.querySelector('input[name="wheelbaseMm"]')).not.toBeNull();
       expect(form.querySelector('input[name="trackWidthFrontMm"]')).not.toBeNull();
       expect(form.querySelector('input[name="trackWidthRearMm"]')).not.toBeNull();
@@ -844,7 +892,7 @@ describe('settings form — compact mode (#156)', () => {
 
   it('still round-trips a compact field through Save', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(classic, onSave, undefined, { compact: 'measurements' });
+    const form = createSettingsForm(classic, onSave, { compact: 'measurements' });
     input(form, 'wheelbaseMm').value = '4100';
     form.dispatchEvent(new Event('input'));
     form.dispatchEvent(new Event('submit', { cancelable: true }));
@@ -856,18 +904,18 @@ describe('settings form — compact mode (#156)', () => {
   // save must not.
   it('marks the measurements saved on Next, but a language step save does not', () => {
     localStorage.clear();
-    const language = createSettingsForm(classic, vi.fn(), undefined, { compact: 'language' });
+    const language = createSettingsForm(classic, vi.fn(), { compact: 'language' });
     language.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(hasStoredMeasurements()).toBe(false);
 
-    const form = createSettingsForm(classic, vi.fn(), undefined, { compact: 'measurements' });
+    const form = createSettingsForm(classic, vi.fn(), { compact: 'measurements' });
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(hasStoredMeasurements()).toBe(true);
   });
 
   it('marks the measurements saved when one is changed on the full page, not for a theme', () => {
     localStorage.clear();
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     const theme = [...form.querySelectorAll('select')].find((select) =>
       [...select.options].some((option) => option.value === 'dark'),
     )!;
@@ -881,7 +929,7 @@ describe('settings form — compact mode (#156)', () => {
   });
 
   it('defaults to the full (non-compact) render when no formOptions are passed', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     expect(form.querySelector('select')).not.toBeNull();
   });
 
@@ -895,7 +943,7 @@ describe('settings form — compact mode (#156)', () => {
   // path. Save/Undo/Reset are unaffected on the full, non-compact form.
   it('renders no Save/Undo/Reset row in any compact mode', () => {
     for (const compact of ['measurements', 'language', 'appearance', 'sound', 'ramps'] as const) {
-      const form = createSettingsForm(classic, vi.fn(), undefined, { compact });
+      const form = createSettingsForm(classic, vi.fn(), { compact });
       expect(form.querySelector('.settings__actions')).toBeNull();
       const buttonTexts = [...form.querySelectorAll('button')].map((b) => b.textContent);
       expect(buttonTexts).not.toContain(t('settings.undo'));
@@ -911,7 +959,7 @@ describe('settings form — resyncSoundFields (#161)', () => {
 
   it('updates the Chime/Continuous-audio-guidance checkboxes from an external change', () => {
     const settings: LevelSettings = { ...classic, soundOnLevel: true, soundGuidance: false };
-    const form = createSettingsForm(settings, vi.fn());
+    const form = createSettingsForm(settings, vi.fn(), full());
     const [chime, guidance] = soundCheckboxes(form);
     expect(chime!.checked).toBe(true);
     expect(guidance!.checked).toBe(false);
@@ -924,7 +972,7 @@ describe('settings form — resyncSoundFields (#161)', () => {
   it('a resync is not a change: nothing is saved until the user edits (#328)', () => {
     const settings: LevelSettings = { ...classic, soundOnLevel: true, soundGuidance: true };
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(settings, onSave);
+    const form = createSettingsForm(settings, onSave, full());
     form.resyncSoundFields?.({ soundOnLevel: false, soundGuidance: false, soundSpeech: false });
     expect(onSave).not.toHaveBeenCalled();
 
@@ -937,10 +985,9 @@ describe('settings form — resyncSoundFields (#161)', () => {
 
   it('exists in Modern and compact too, not just Classic', () => {
     const modern: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
-    expect(typeof createSettingsForm(modern, vi.fn()).resyncSoundFields).toBe('function');
+    expect(typeof createSettingsForm(modern, vi.fn(), full()).resyncSoundFields).toBe('function');
     expect(
-      typeof createSettingsForm(classic, vi.fn(), undefined, { compact: 'measurements' })
-        .resyncSoundFields,
+      typeof createSettingsForm(classic, vi.fn(), { compact: 'measurements' }).resyncSoundFields,
     ).toBe('function');
   });
 });
@@ -962,7 +1009,7 @@ describe('settings form — every change is saved at once (#328)', () => {
 
   it('stores a changed select at once and says so, with Undo', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
+    const form = createSettingsForm(modern, onSave, full());
     const theme = [...form.querySelectorAll<HTMLSelectElement>('select')].find((s) =>
       [...s.options].some((o) => o.value === 'dark'),
     )!;
@@ -977,7 +1024,7 @@ describe('settings form — every change is saved at once (#328)', () => {
 
   it('saves a number when the field is left, never half-typed', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
+    const form = createSettingsForm(modern, onSave, full());
     input(form, 'wheelbaseMm').value = '42';
     input(form, 'wheelbaseMm').dispatchEvent(new Event('input', { bubbles: true }));
     expect(onSave).not.toHaveBeenCalled();
@@ -988,7 +1035,7 @@ describe('settings form — every change is saved at once (#328)', () => {
 
   it('Undo puts the previous value back and stores it', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
+    const form = createSettingsForm(modern, onSave, full());
     input(form, 'wheelbaseMm').value = '4200';
     change(input(form, 'wheelbaseMm'));
     undoButton().click();
@@ -1000,7 +1047,7 @@ describe('settings form — every change is saved at once (#328)', () => {
 
   it('keeps the value in effect when a typed number cannot be used, and says why', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
+    const form = createSettingsForm(modern, onSave, full());
     input(form, 'wheelbaseMm').value = '-5';
     change(input(form, 'wheelbaseMm'));
     expect(onSave).not.toHaveBeenCalled();
@@ -1017,7 +1064,7 @@ describe('settings form — every change is saved at once (#328)', () => {
 
   it('never puts back an older sensor choice made while the page was open', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(modern, onSave);
+    const form = createSettingsForm(modern, onSave, full());
     saveSettings({ ...modern, sensorSource: 'xparkle' });
     input(form, 'wheelbaseMm').value = '4200';
     change(input(form, 'wheelbaseMm'));
@@ -1028,7 +1075,7 @@ describe('settings form — every change is saved at once (#328)', () => {
   it('"Reset all settings" sits under General › More, resets every tab and can be undone', () => {
     const custom: LevelSettings = { ...modern, wheelbaseMm: 4500, theme: 'dark' };
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm(custom, onSave);
+    const form = createSettingsForm(custom, onSave, full());
     const more = form.querySelector<HTMLDetailsElement>(
       '.settings__tabpanel[data-tab="general"] .settings__more',
     )!;
@@ -1070,7 +1117,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
       .map((panel) => panel.dataset.tab!);
 
   it('Modern labels each tab button', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     const labels = [...form.querySelectorAll('.settings__tab')].map((tab) => tab.textContent);
     expect(labels).toEqual([
       t('settings.tab.vehicle'),
@@ -1082,7 +1129,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
   });
 
   it('Modern puts the tab bar first, then one panel per tab', () => {
-    const form = createSettingsForm(modern, vi.fn());
+    const form = createSettingsForm(modern, vi.fn(), full());
     expect(form.firstElementChild?.classList).toContain('settings__tabs');
     expect(form.firstElementChild?.getAttribute('role')).toBe('tablist');
     expect([...form.children].slice(1).map((panel) => (panel as HTMLElement).dataset.tab)).toEqual([
@@ -1096,7 +1143,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
 
   for (const id of ['vehicle', 'ramps', 'calibration', 'targets', 'general'] as const) {
     it(`Modern selectTab('${id}') shows only that tab`, () => {
-      const form = createSettingsForm(modern, vi.fn());
+      const form = createSettingsForm(modern, vi.fn(), full());
       form.selectTab!(id);
       expect(selected(form)).toEqual([id]);
       expect(shown(form)).toEqual([id]);
@@ -1105,13 +1152,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
 
   it('Modern selectTargetsTab and refreshOpenTab redraw the saved targets from the host', () => {
     let presets: (typeof preset)[] = [];
-    const form = createSettingsForm(
-      modern,
-      vi.fn(),
-      undefined,
-      undefined,
-      targetsHost(() => presets),
-    );
+    const form = createSettingsForm(modern, vi.fn(), full({ targets: targetsHost(() => presets) }));
     presets = [preset];
     form.selectTargetsTab!();
     expect(form.textContent).toContain('Ramp spot');
@@ -1122,7 +1163,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
   });
 
   it('Modern has no Classic pages', () => {
-    const form = createSettingsForm(modern, vi.fn(), undefined, { splitPages: true });
+    const form = createSettingsForm(modern, vi.fn(), full({ splitPages: true }));
     expect(form.classicPages).toBeUndefined();
     expect(form.refreshTargetsPage).toBeUndefined();
   });
@@ -1132,9 +1173,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
     const form = createSettingsForm(
       classic,
       vi.fn(),
-      undefined,
-      { splitPages: true },
-      targetsHost(() => presets),
+      full({ targets: targetsHost(() => presets), splitPages: true }),
     );
     expect([...form.children]).toEqual([form.classicPages!.vehicle]);
     expect(form.selectTab).toBeUndefined();
@@ -1146,7 +1185,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
   });
 
   it("the flat Classic page heads each tab's group, in tab order", () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     const headings = [...form.querySelectorAll(':scope > .settings__section')].map(
       (heading) => heading.textContent,
     );
@@ -1163,7 +1202,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
   });
 
   it('the flat Classic page keeps the compact ramp select, not the Ramps page', () => {
-    const form = createSettingsForm(classic, vi.fn());
+    const form = createSettingsForm(classic, vi.fn(), full());
     expect(form.querySelector('.klossar__selected')).toBeNull();
     expect(form.textContent).toContain(t('settings.ramp'));
     expect(form.textContent).not.toContain(t('targets.normal'));
@@ -1171,7 +1210,7 @@ describe('settings form — layouts and what they expose (#420)', () => {
 
   for (const compact of ['measurements', 'language', 'appearance', 'sound', 'ramps'] as const) {
     it(`the ${compact} step exposes no tabs, pages or headings`, () => {
-      const form = createSettingsForm(modern, vi.fn(), undefined, { compact, splitPages: true });
+      const form = createSettingsForm(modern, vi.fn(), { compact });
       expect(form.querySelector('.settings__tabs')).toBeNull();
       expect(form.querySelector(':scope > .settings__section')).toBeNull();
       expect(form.selectTab).toBeUndefined();
@@ -1193,7 +1232,7 @@ describe('the vehicle picker in Settings (#599)', () => {
 
   it('opens the Vehicle tab, above its fields, in Modern', () => {
     const modern = { ...DEFAULT_SETTINGS, appearance: 'modern' as const };
-    const form = createSettingsForm(modern, vi.fn(), undefined, { vehicles });
+    const form = createSettingsForm(modern, vi.fn(), full({ vehicles }));
     const panel = form.querySelector<HTMLElement>(
       '[role=tabpanel][data-tab=vehicle], .settings__tabpanel[data-tab=vehicle]',
     )!;
@@ -1202,15 +1241,12 @@ describe('the vehicle picker in Settings (#599)', () => {
 
   it('opens Classic’s Vehicle page', () => {
     const classicSplit = { ...DEFAULT_SETTINGS, appearance: 'classic' as const };
-    const form = createSettingsForm(classicSplit, vi.fn(), undefined, {
-      splitPages: true,
-      vehicles,
-    });
+    const form = createSettingsForm(classicSplit, vi.fn(), full({ splitPages: true, vehicles }));
     expect(form.classicPages!.vehicle.firstElementChild?.classList.contains('vehicles')).toBe(true);
   });
 
   it('is left out where it is not wired, such as the wizard', () => {
-    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn(), undefined, {
+    const form = createSettingsForm(DEFAULT_SETTINGS, vi.fn(), {
       compact: 'measurements',
     });
     expect(form.querySelector('.vehicles')).toBeNull();
