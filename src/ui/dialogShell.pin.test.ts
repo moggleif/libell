@@ -9,6 +9,7 @@
 // also compared with the stored snapshot.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { showCountingChoice } from './countingChoice';
+import { describeDom } from './domPin.testing';
 import { setLanguage, t } from './i18n';
 import { showIncomingVehicleSetup } from './incomingVehicleSetup';
 import { showIntro } from './intro';
@@ -117,21 +118,6 @@ const DIALOGS: DialogCase[] = [
     closer: (overlay) => overlay.querySelector<HTMLButtonElement>('.onboarding__close')!,
   },
 ];
-
-/** The element tree as indented lines: tag, attributes sorted by name (the
- * order they were set in is not something a user or a screen reader sees),
- * and its own text. */
-function describeDom(element: Element, depth = 0): string {
-  const attributes = [...element.attributes]
-    .map((attribute) => `${attribute.name}=${JSON.stringify(attribute.value)}`)
-    .sort();
-  const ownText = [...element.childNodes]
-    .filter((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim())
-    .map((node) => JSON.stringify(node.textContent));
-  const line = [element.tagName.toLowerCase(), ...attributes, ...ownText].join(' ');
-  const children = [...element.children].map((child) => describeDom(child, depth + 1));
-  return ['  '.repeat(depth) + line, ...children].join('\n');
-}
 
 /** The app behind the overlay, with the button that opened it focused. */
 function pageWithOpener(): { main: HTMLElement; opener: HTMLButtonElement } {
