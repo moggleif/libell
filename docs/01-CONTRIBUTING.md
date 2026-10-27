@@ -21,7 +21,7 @@ npm run test          # Vitest unit tests
 npm run test:coverage # the same, failing if coverage drops below its floor (CI runs this)
 npm run build         # icons + typecheck + production build into dist/
 npm run preview       # serve the production build locally
-npm run smoke         # Playwright: the built app renders (needs `build` first)
+npm run smoke         # Playwright: the built app renders and updates (needs `build` first)
 npm run flows         # Playwright: the app's flows through main.ts's real wiring (needs `build` first)
 npm run fit           # Playwright: it all fits a phone screen (needs `build` first)
 npm run bundle        # bundle guard: what loads at start, gzip budgets, precache (needs `build` first)

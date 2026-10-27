@@ -463,7 +463,8 @@ Workbox precaches every build asset (`js`, `css`, `html`, `svg`, `png`, `woff2`)
 has been opened with a connection it works with no signal at all. Each file is precached
 once: the manifest's icons are already in that glob (`includeManifestIcons: false`), and
 the install-sheet screenshot, generated from the built app afterwards, is not precached. `registerType:
-'autoUpdate'` lets a new worker activate on its own; `src/ui/appUpdate.ts` then reloads
+'autoUpdate'` with `skipWaiting` and `clientsClaim` set explicitly (the plugin sets them
+only for `injectRegister: 'auto'`, #749) lets a new worker take over at once; `src/ui/appUpdate.ts` then reloads
 an already-controlled page once on `controllerchange`, re-checks for a new worker on
 every start and when the app returns to the foreground (and once more half a minute
 later, `RECHECK_AFTER_OPEN_MS`), and every ten minutes while it stays
