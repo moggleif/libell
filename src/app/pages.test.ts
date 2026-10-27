@@ -10,12 +10,18 @@ import type { mountSensorPages } from './sensorPages';
 import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
 import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import { calibratedTilt } from './tiltReading';
+import { saveSettings } from '../data/settingsStore';
+import type { LevelSettings } from '../domain/settings';
+import { createMenu } from '../ui/menu';
+import { createSettingsPage } from '../ui/settingsPage';
+import { t } from '../ui/i18n';
 
 type BoxPageOptionsFor = Parameters<typeof mountSensorPages>[0];
 
 // Pass-through spies: the real modules run, the test only keeps the deps
 // mountPages hands them, to drive a save the way the pages do.
 const captured = vi.hoisted(() => ({
+  surface: null as unknown,
   menu: null as unknown as MenuOptionsDeps,
   wizard: null as unknown as OnboardingLauncherDeps,
   share: vi.fn(),
@@ -28,6 +34,16 @@ vi.mock('./sensorPages', async (original) => {
     mountSensorPages(optionsFor: typeof captured.boxPage) {
       captured.boxPage = optionsFor;
       return real.mountSensorPages(optionsFor);
+    },
+  };
+});
+vi.mock('./settingsSurface', async (original) => {
+  const real = await original<typeof import('./settingsSurface')>();
+  return {
+    ...real,
+    mountSettingsSurface(options: unknown) {
+      captured.surface = options;
+      return real.mountSettingsSurface(options as Parameters<typeof real.mountSettingsSurface>[0]);
     },
   };
 });
@@ -310,6 +326,89 @@ describe('mountPages', () => {
       const { wizard } = boxOptions();
       expect(wizard()).not.toHaveProperty('getDeviceId');
       expect(wizard()).not.toHaveProperty('getLastSampleAt');
+    });
+  });
+
+  // #734: what the Settings page and the ☰ menu are handed, pinned through
+  // the real components before the options are split into groups.
+  describe("the settings surface's options (#734)", () => {
+    function surface(settings: Partial<LevelSettings>) {
+      saveSettings({ ...DEFAULT_SETTINGS, ...settings });
+      const screen = fakeScreen();
+      const core = createCore(screen);
+      mountPages(core, screen, noInstall);
+      type Options = Parameters<typeof createSettingsPage>[0];
+      return { core, options: captured.surface as Options };
+    }
+    const settingsPage = (options: Parameters<typeof createSettingsPage>[0]) => {
+      const page = createSettingsPage(options);
+      document.body.append(page.element);
+      return page;
+    };
+    const tab = (page: { element: HTMLElement }, id: string) =>
+      page.element.querySelector<HTMLElement>(`.settings__tabpanel[data-tab="${id}"]`)!;
+
+    it("give the Settings page the phone's calibration steps while the phone is in use", () => {
+      const page = settingsPage(surface({ appearance: 'modern' }).options);
+      page.openCalibration();
+      expect(tab(page, 'calibration').querySelector<HTMLElement>('.box-setup')!.hidden).toBe(false);
+    });
+
+    it('give the Settings page the saved targets and the hitch height of a caravan', () => {
+      const { core, options } = surface({ appearance: 'modern', vehicleType: 'caravan' });
+      core.optionDeps.targets.add('Ferry');
+      const page = settingsPage(options);
+      page.openTargets();
+      const targets = tab(page, 'targets');
+      expect(targets.textContent).toContain(t('targets.normal'));
+      expect(targets.textContent).toContain('Ferry');
+      expect(targets.querySelector('.hitch')).not.toBeNull();
+    });
+
+    it('give the Settings page the vehicle picker and the share link', () => {
+      const page = settingsPage(surface({ appearance: 'modern' }).options);
+      page.open();
+      const vehicle = tab(page, 'vehicle');
+      expect(vehicle.textContent).toContain(t('vehicles.title'));
+      vehicle.querySelector<HTMLButtonElement>('.settings__share-vehicle')!.click();
+      expect(captured.share).toHaveBeenCalled();
+    });
+
+    it("store a change made on the Settings page in the app's settings", () => {
+      const { core, options } = surface({ appearance: 'modern', rampCount: 2 });
+      const page = settingsPage(options);
+      page.open();
+      const rampCount = tab(page, 'ramps').querySelector<HTMLSelectElement>('.settings__select')!;
+      rampCount.value = '3';
+      rampCount.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(core.settings.get().rampCount).toBe(3);
+    });
+
+    it("resync the Settings page's sound from the app's settings on every open", () => {
+      const { core, options } = surface({ appearance: 'modern', soundOnLevel: true });
+      const page = settingsPage(options);
+      page.open();
+      const firstCheckbox = () =>
+        page.element.querySelector<HTMLInputElement>('.settings__checkbox')!;
+      expect(firstCheckbox().checked).toBe(true);
+      page.element.querySelector<HTMLButtonElement>('.menu-page__back')!.click();
+      core.settings.adopt({ ...core.settings.get(), soundOnLevel: false });
+      page.open();
+      expect(firstCheckbox().checked).toBe(false);
+    });
+
+    it("give the ☰ menu the phone's calibration, the targets and the vehicle picker", () => {
+      const { core, options } = surface({ appearance: 'classic' });
+      core.optionDeps.targets.add('Ferry');
+      const menu = createMenu(options);
+      document.body.append(menu.element);
+      const body = () => menu.element.querySelector<HTMLElement>('.menu-page__body')!;
+      menu.open('calibration');
+      expect(body().querySelector<HTMLElement>('.box-setup')!.hidden).toBe(false);
+      menu.open('targets');
+      expect(body().textContent).toContain('Ferry');
+      menu.open('vehicle');
+      expect(body().textContent).toContain(t('vehicles.title'));
     });
   });
 });
