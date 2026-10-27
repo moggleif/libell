@@ -5,12 +5,7 @@
 import { isCountingOn, setCountingOn } from '../data/countingStore';
 import { deleteAllStoredData, readStoredData } from '../data/storedData';
 import { pickVehicleGeometry } from '../domain/vehicleShare';
-import {
-  hasDoneOnboarding,
-  hasStoredMeasurements,
-  markOnboardingDone,
-  markOnboardingSeen,
-} from '../data/settingsStore';
+import { hasDoneOnboarding, markOnboardingDone, markOnboardingSeen } from '../data/settingsStore';
 import type { InfoPage } from '../ui/infoMenu';
 import type { InstallOffer } from '../ui/install';
 import { shareVehicleSetup } from '../ui/vehicleShare';
@@ -54,10 +49,7 @@ export function mountPages(core: Core, screen: Screen, install: InstallOffer): P
   const menuOptions = buildMenuOptions({
     parts: optionDeps,
     settings: settings.get,
-    demo: core.demo,
-    hasStoredMeasurements,
     onSettingsSaved: adoption.fromSettings,
-    openOnboarding: onboarding.open,
     openBoxPage: () => screen.navigation.openActiveSensorPage(),
     shareVehicleSetup(current) {
       countFeature('share-created');

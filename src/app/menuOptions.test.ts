@@ -6,11 +6,10 @@ import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { OrientationSensor } from '../sensor/orientation';
 import { XPARKLE_DESCRIPTOR } from '../sensor/xparkleSensor';
 import type { LibellBox } from './boxWiring';
-import type { MenuOptionDeps } from './menuOptionParts';
+import { calibrationOptions, targetOptions, type MenuOptionDeps } from './menuOptionParts';
 import {
   boxPageOptions,
   buildMenuOptions,
-  sharedOptions,
   wizardBoxOptions,
   type MenuOptionsDeps,
 } from './menuOptions';
@@ -46,10 +45,7 @@ function setup(
   const deps: MenuOptionsDeps = {
     parts,
     settings: () => settings,
-    demo: false,
-    hasStoredMeasurements: () => false,
     onSettingsSaved: vi.fn(),
-    openOnboarding: vi.fn(),
     openBoxPage: vi.fn(),
     shareVehicleSetup: vi.fn(),
     ...overrides,
@@ -69,13 +65,12 @@ describe('buildMenuOptions', () => {
     const initial = options.initialSettings;
     change({ appearance: 'classic' });
     expect(options.initialSettings).toBe(initial);
-    expect(options.appearance).toBe(DEFAULT_SETTINGS.appearance);
+    expect(options.calibration.appearance).toBe(DEFAULT_SETTINGS.appearance);
   });
 
-  it('reads the vehicle type and sound live', () => {
+  it('reads the sound live', () => {
     const { options, change } = setup();
-    change({ vehicleType: 'caravan', soundOnLevel: false, soundGuidance: true, soundSpeech: true });
-    expect(options.getVehicleType()).toBe('caravan');
+    change({ soundOnLevel: false, soundGuidance: true, soundSpeech: true });
     expect(options.getSoundPrefs()).toEqual({
       soundOnLevel: false,
       soundGuidance: true,
@@ -83,67 +78,25 @@ describe('buildMenuOptions', () => {
     });
   });
 
-  it('counts demo mode as saved settings', () => {
-    expect(setup().options.hasSavedSettings()).toBe(false);
-    expect(setup({ demo: true }).options.hasSavedSettings()).toBe(true);
-    expect(setup({ hasStoredMeasurements: () => true }).options.hasSavedSettings()).toBe(true);
-  });
-
-  it('passes saves, the wizard, the box page and sharing through', () => {
+  it('passes saves, the box page and sharing through', () => {
     const { options, deps, settings } = setup();
     options.onSettingsSaved(settings());
-    options.openOnboarding();
-    options.openBoxPage();
+    options.calibration.openBoxPage();
     options.onShareVehicleSetup(settings());
     expect(deps.onSettingsSaved).toHaveBeenCalledWith(settings());
-    expect(deps.openOnboarding).toHaveBeenCalledTimes(1);
     expect(deps.openBoxPage).toHaveBeenCalledTimes(1);
     expect(deps.shareVehicleSetup).toHaveBeenCalledWith(settings());
   });
 
-  it('names the active target', () => {
-    expect(setup().options.getActiveTargetName()).toBe('Ferry');
-  });
-
-  it('reads the calibrated tilt of the active sensor', () => {
-    const { options } = setup({}, null, { rollDeg: 1, pitchDeg: 0 });
-    expect(options.getCalibratedTilt()?.rollDeg).toBeCloseTo(-1);
-  });
-
-  it("reads and stores EasyLevel's connect delay", () => {
-    const { options, settings } = setup();
-    options.setEasyLevelConnectDelay(true, 1500);
-    expect(easyLevelSettings(settings()).connectDelayEnabled).toBe(true);
-    expect(options.getEasyLevelConnectDelay()).toEqual({
-      enabled: true,
-      ms: easyLevelSettings(settings()).connectDelayMs,
-    });
-  });
-
-  it("shows EasyLevel's raw bytes only while it is an EasyLevel", () => {
-    expect(setup().options.getEasyLevelStatusBytes()).toBeNull();
-    const box = { getSource: () => 'easylevel', getStatusBytes: () => [0x66, 0x08] };
-    expect(setup({}, box).options.getEasyLevelStatusBytes()).toEqual([0x66, 0x08]);
-    const other = { getSource: () => 'phone', getStatusBytes: () => [1] };
-    expect(setup({}, other).options.getEasyLevelStatusBytes()).toBeNull();
-  });
-
-  it("shows the Xparkle's serial number and firmware bytes only while it is an Xparkle (#597)", () => {
-    expect(setup().options.getXparkleVersionBytes()).toBeNull();
-    const box = { getSource: () => 'xparkle', getVersionBytes: () => [0x53, 0x01] };
-    expect(setup({}, box).options.getXparkleVersionBytes()).toEqual([0x53, 0x01]);
-    const other = { getSource: () => 'phone', getVersionBytes: () => [1] };
-    expect(setup({}, other).options.getXparkleVersionBytes()).toBeNull();
-  });
-
-  it('has no EasyLevel health before the box exists', () => {
-    expect(setup().options.getHealth()).toBeNull();
-  });
-
-  it('carries the shared groups with EasyLevel as the top-level box', () => {
+  it('groups the calibration and the targets for the sections that read them', () => {
     const { options, parts } = setup();
-    for (const key of Object.keys(sharedOptions(parts))) expect(options).toHaveProperty(key);
-    expect(options.sensor).toBe(EASYLEVEL_DESCRIPTOR);
+    for (const key of Object.keys(calibrationOptions(parts))) {
+      expect(options.calibration).toHaveProperty(key);
+    }
+    for (const key of Object.keys(targetOptions(parts.targets))) {
+      expect(options.targets).toHaveProperty(key);
+    }
+    expect(options.targets).toHaveProperty('hitch');
   });
 });
 
@@ -163,5 +116,47 @@ describe('box options', () => {
     expect(step.sensor).toBe(XPARKLE_DESCRIPTOR);
     expect(step).toHaveProperty('learnMounting');
     expect(step).not.toHaveProperty('getDeviceId');
+  });
+
+  it('read the vehicle type live', () => {
+    const { parts, change } = setup();
+    change({ vehicleType: 'caravan' });
+    expect(boxPageOptions(XPARKLE_DESCRIPTOR, parts).getVehicleType()).toBe('caravan');
+  });
+
+  it('read the calibrated tilt of the active sensor', () => {
+    const { parts } = setup({}, null, { rollDeg: 1, pitchDeg: 0 });
+    expect(boxPageOptions(XPARKLE_DESCRIPTOR, parts).getCalibratedTilt()?.rollDeg).toBeCloseTo(-1);
+  });
+
+  it("read and store EasyLevel's connect delay", () => {
+    const { parts, settings } = setup();
+    const page = boxPageOptions(EASYLEVEL_DESCRIPTOR, parts);
+    page.setEasyLevelConnectDelay(true, 1500);
+    expect(easyLevelSettings(settings()).connectDelayEnabled).toBe(true);
+    expect(page.getEasyLevelConnectDelay()).toEqual({
+      enabled: true,
+      ms: easyLevelSettings(settings()).connectDelayMs,
+    });
+  });
+
+  it("show EasyLevel's raw bytes only while it is an EasyLevel", () => {
+    const bytes = (easyLevel: unknown) =>
+      boxPageOptions(EASYLEVEL_DESCRIPTOR, setup({}, easyLevel).parts).getEasyLevelStatusBytes();
+    expect(bytes(null)).toBeNull();
+    expect(bytes({ getSource: () => 'easylevel', getStatusBytes: () => [0x66, 0x08] })).toEqual([
+      0x66, 0x08,
+    ]);
+    expect(bytes({ getSource: () => 'phone', getStatusBytes: () => [1] })).toBeNull();
+  });
+
+  it("show the Xparkle's serial number and firmware bytes only while it is an Xparkle (#597)", () => {
+    const bytes = (xparkle: unknown) =>
+      boxPageOptions(XPARKLE_DESCRIPTOR, setup({}, xparkle).parts).getXparkleVersionBytes();
+    expect(bytes(null)).toBeNull();
+    expect(bytes({ getSource: () => 'xparkle', getVersionBytes: () => [0x53, 0x01] })).toEqual([
+      0x53, 0x01,
+    ]);
+    expect(bytes({ getSource: () => 'phone', getVersionBytes: () => [1] })).toBeNull();
   });
 });

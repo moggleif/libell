@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createSettingsPage } from './settingsPage';
 import type { MenuOptions } from './menu';
 import type { CalibrationOptions } from './calibrationSection';
+import type { TargetsOptions } from './targetsSection';
 import { setLanguage, t } from './i18n';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 
@@ -12,13 +13,19 @@ function modernSettings(): LevelSettings {
   return { ...DEFAULT_SETTINGS, appearance: 'modern' };
 }
 
-function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
-  return {
+/** The groups flattened, so a test overrides any field by its own name. */
+type Fixture = Omit<MenuOptions, 'calibration' | 'targets'> & CalibrationOptions & TargetsOptions;
+
+/** The groups the menu reads, each backed by the one flat fixture. */
+function grouped(fixture: Fixture): MenuOptions {
+  return { ...fixture, calibration: fixture, targets: fixture };
+}
+
+function makeOptions(overrides: Partial<Fixture> = {}): MenuOptions {
+  return grouped({
     initialSettings: modernSettings(),
     appearance: 'modern',
-    openOnboarding: () => {},
     onSettingsSaved: () => {},
-    hasSavedSettings: () => false,
     getCalibration: () => null,
     calibrate: () => null,
     readTilt: () => ({ rollDeg: 0, pitchDeg: 0 }),
@@ -36,20 +43,9 @@ function makeOptions(overrides: Partial<MenuOptions> = {}): MenuOptions {
     selectTarget: () => {},
     addTargetPreset: () => null,
     deleteTargetPreset: () => {},
-    getSensorSource: () => 'phone',
-    getSensorState: () => 'idle',
-    connectSensor: () => Promise.resolve('unsupported'),
-    disconnectSensor: () => {},
-    getInstallCalibration: () => null,
-    calibrateInstall: () => null,
-    getInstallCalibrationCapturedAt: () => null,
-    clearInstallCalibration: () => {},
-    getCalibratedTilt: () => null,
-    getActiveTargetName: () => null,
-    getHealth: () => null,
     getSoundPrefs: () => ({ soundOnLevel: false, soundGuidance: false, soundSpeech: false }),
     ...overrides,
-  };
+  });
 }
 
 // Modern only (screen-cleanup follow-up): the gear icon opens this page

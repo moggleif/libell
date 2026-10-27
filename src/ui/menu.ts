@@ -11,11 +11,6 @@
  * standalone. The Level page keeps the section id 'targets', which the
  * main screen's target badge opens.
  */
-import type { Calibration, CaptureResult } from '../domain/calibration';
-import type { LevelSettings, SensorSource, SoundPrefs } from '../domain/settings';
-import type { TargetPreset, TargetSaveResult } from '../domain/targetPresets';
-import type { BoxHealth } from '../sensor/boxes';
-import type { SensorState } from '../sensor/orientation';
 import { createSettingsForm } from './settingsPanel';
 import type { SettingsFormElement } from './settingsLayout';
 import { createCalibrationSection } from './calibrationSection';
@@ -23,81 +18,12 @@ import { createElement } from './dom';
 import { t, type MessageKey } from './i18n';
 import { holdFocus, type FocusHold } from './focusHold';
 import { setVisible } from './motion';
-import type { VehiclePickerOptions } from './vehiclePicker';
+import type { SettingsOptions } from './settingsOptions';
 
 export type MenuSection = 'general' | 'calibration' | 'vehicle' | 'ramps' | 'targets';
 
-export interface MenuOptions {
-  initialSettings: LevelSettings;
-  /** Unused by this menu; the options bag is shared with other consumers. */
-  openOnboarding(): void;
-  onSettingsSaved(settings: LevelSettings): void;
-  /** Decided once from `initialSettings.appearance` at construction time. */
-  appearance: LevelSettings['appearance'];
-  getCalibration(): Calibration | null;
-  /** Capture the current tilt as the phone's zero point — see CalibrationOptions. */
-  calibrate(): CaptureResult;
-  /** Raw (uncalibrated) tilt reading for the flip flow, or an error text. */
-  readTilt(): Calibration | string;
-  /** Returns how to put the previous calibration back (#624). */
-  applyCalibration(calibration: Calibration): () => void;
-  clearCalibration(): void;
-  /** The vehicle zero — see CalibrationOptions. */
-  getVehicleCalibration(): Calibration | null;
-  calibrateVehicle(): CaptureResult;
-  /** When each calibration was captured — null when unknown. */
-  getCalibrationCapturedAt(): number | null;
-  getVehicleCalibrationCapturedAt(): number | null;
-  /** Compare the current reading against a calibration's promise of zero — returns a verdict text. */
-  checkCalibration(): string;
-  checkVehicleCalibration(): string;
-  clearVehicleCalibration(): void;
-  /**
-   * Whether the vehicle settings have ever been saved — mirrors the
-   * topbar warning lamp's condition. Unused in Classic.
-   */
-  hasSavedSettings(): boolean;
-  /** Target presets (ADR 0013) — an intentional non-level target,
-   * distinct from the calibration fields above. */
-  getTargetPresets(): TargetPreset[];
-  getActiveTargetId(): string | null;
-  selectTarget(id: string | null): void;
-  addTargetPreset(name: string): TargetSaveResult;
-  deleteTargetPreset(id: string): void;
-  renameTargetPreset?(id: string, name: string): void;
-  /**
-   * An external sensor source (ADR 0014) — an opt-in alternative to the
-   * phone's own sensor. Unused by this menu; the options bag is shared
-   * with `sensorPage.ts`.
-   */
-  getSensorSource(): SensorSource;
-  getSensorState(): SensorState;
-  connectSensor(): Promise<SensorState>;
-  disconnectSensor(): void;
-  getHealth(): BoxHealth | null;
-  /** The box's installation offset (ADR 0014). Unused by this menu. */
-  getInstallCalibration(): Calibration | null;
-  calibrateInstall(): CaptureResult | Promise<CaptureResult>;
-  getInstallCalibrationCapturedAt(): number | null;
-  clearInstallCalibration(): void;
-  /**
-   * The same effective calibration (sensor bias + vehicle zero + active
-   * target) the leveling math uses, for `boxStatusPage.ts`'s live reading
-   * row. Unused by this menu.
-   */
-  getCalibratedTilt(): Calibration | null;
-  /** The active target preset's name, or null for "Normal". */
-  getActiveTargetName(): string | null;
-  /** The bottom bar's mute toggle can change these outside this form, so
-   * the Settings page resyncs from here every time it (re)opens. */
-  getSoundPrefs(): SoundPrefs;
-  /** Forwarded to the settings form's own `onShareVehicleSetup`. Optional
-   * so option fixtures (tests, `infoMenu.ts`'s reused shape) need not
-   * provide it. */
-  onShareVehicleSetup?(settings: LevelSettings): void;
-  /** Several vehicles (#599); no picker when omitted. */
-  vehicles?: VehiclePickerOptions;
-}
+/** The ☰ menu reads exactly what the Settings page does. */
+export type MenuOptions = SettingsOptions;
 
 export interface Menu {
   /** The drawer + page containers, appended to the document body. */
@@ -120,7 +46,7 @@ export function createMenu(options: MenuOptions): Menu {
   const drawer = createDrawer();
   const page = createPage();
   const settingsForm = createMenuSettingsForm(options);
-  const calibration = createCalibrationSection(options, 'checklist');
+  const calibration = createCalibrationSection(options.calibration, 'checklist');
   const entries = createEntries(drawer, settingsForm, calibration.element, showPage);
   const element = wrap(drawer.backdrop, page.element);
   const view = createMenuView(drawer, page, element);
@@ -247,13 +173,13 @@ function createMenuSettingsForm(options: MenuOptions): SettingsFormElement {
   return createSettingsForm(
     options.initialSettings,
     (settings) => options.onSettingsSaved(settings),
-    options,
+    options.calibration,
     {
       splitPages: true,
       onShareVehicleSetup: options.onShareVehicleSetup,
       vehicles: options.vehicles,
     },
-    options,
+    options.targets,
   );
 }
 

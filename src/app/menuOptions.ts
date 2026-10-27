@@ -1,15 +1,14 @@
 /**
- * The options bags handed to the Settings page, the ☰ menu, the box pages
+ * The options handed to the Settings page and the ☰ menu, the box pages
  * and the wizard's box step, assembled from the shared groups in
  * `menuOptionParts.ts`.
  */
 import { soundPrefsOf, type LevelSettings } from '../domain/settings';
 import { easyLevelSettings } from '../domain/sensorDeviceSettings';
 import type { EasyLevelSensor } from '../sensor/easyLevelSensor';
-import { EASYLEVEL_DESCRIPTOR } from '../sensor/easyLevelSensor';
 import type { BoxDescriptor } from '../sensor/boxes';
 import type { XparkleSensor } from '../sensor/xparkleSensor';
-import { healthOf, withEasyLevelConnectDelay, type SettingsAccess } from './boxWiring';
+import { withEasyLevelConnectDelay, type SettingsAccess } from './boxWiring';
 import {
   boxConnectionOptions,
   boxSetupOptions,
@@ -23,56 +22,29 @@ import {
 } from './menuOptionParts';
 import { calibratedTilt } from './tiltReading';
 
-/**
- * The groups the wizard and the menu both carry. The top-level box
- * fields are EasyLevel's: connection and mounting only, never another
- * box's password or guide.
- */
-export function sharedOptions(parts: MenuOptionDeps) {
-  return {
-    ...calibrationOptions(parts),
-    // The wizard's box step embeds the same sensor-source section the menu's
-    // page does (ADR 0014).
-    ...sensorSourceOptions(parts),
-    ...boxConnectionOptions(EASYLEVEL_DESCRIPTOR, parts),
-    ...easyLevelMountingOptions(parts.boxWiring),
-  };
-}
-
 export interface MenuOptionsDeps {
   parts: MenuOptionDeps;
   settings: () => LevelSettings;
-  /** Demo mode presents as a configured app. */
-  demo: boolean;
-  hasStoredMeasurements: () => boolean;
   onSettingsSaved(next: LevelSettings): void;
-  openOnboarding(): void;
   openBoxPage(): void;
   shareVehicleSetup(current: LevelSettings): void;
 }
 
-/** Every field the Settings page and the ☰ menu need. */
+/** What the Settings page and the ☰ menu read, in the groups their
+ * embedded sections take. */
 export function buildMenuOptions(deps: MenuOptionsDeps) {
   const { parts, settings } = deps;
-  const settingsAccess = parts.boxWiring.settings;
   const initial = settings();
   return {
     initialSettings: initial,
-    appearance: initial.appearance,
-    openOnboarding: deps.openOnboarding,
-    hasSavedSettings: () => deps.demo || deps.hasStoredMeasurements(),
     onSettingsSaved: (next: LevelSettings) => deps.onSettingsSaved(next),
-    ...sharedOptions(parts),
-    openBoxPage: deps.openBoxPage,
-    ...targetOptions(parts.targets),
-    ...hitchOptions(parts),
-    getCalibratedTilt: () => calibratedTilt(parts.activeSensor(), parts.effectiveCalibration()),
-    getVehicleType: () => settings().vehicleType,
-    getActiveTargetName: () => parts.targets.activeName(),
-    getHealth: () => healthOf('easylevel', parts.boxes.getSensor('easylevel')),
-    ...debugByteOptions(parts),
-    ...easyLevelConnectDelayOptions(settingsAccess),
     getSoundPrefs: () => soundPrefsOf(settings()),
+    calibration: {
+      appearance: initial.appearance,
+      ...calibrationOptions(parts),
+      openBoxPage: deps.openBoxPage,
+    },
+    targets: { ...targetOptions(parts.targets), ...hitchOptions(parts) },
     onShareVehicleSetup: (current: LevelSettings) => deps.shareVehicleSetup(current),
     vehicles: parts.vehicles,
   };

@@ -3,7 +3,8 @@
  * (`settingsPanel.ts`) as a standalone page with a ✕ to close. Classic uses
  * the drawer-based `menu.ts` instead.
  */
-import type { MenuOptions, MenuSection } from './menu';
+import type { MenuSection } from './menu';
+import type { SettingsOptions } from './settingsOptions';
 import { createSettingsForm } from './settingsPanel';
 import type { SettingsFormElement } from './settingsLayout';
 import { createStandalonePage } from './standalonePage';
@@ -29,7 +30,7 @@ export interface SettingsPage {
   refreshOpenTab(): void;
 }
 
-export function createSettingsPage(options: MenuOptions): SettingsPage {
+export function createSettingsPage(options: SettingsOptions): SettingsPage {
   const page = createStandalonePage(t('menu.settings'), () => {
     // The bottom bar's mute toggle can change the sound prefs while this
     // page is closed — resync every reopen.
@@ -45,9 +46,9 @@ export function createSettingsPage(options: MenuOptions): SettingsPage {
     (settings) => {
       options.onSettingsSaved(settings);
     },
-    options,
+    options.calibration,
     { onShareVehicleSetup: options.onShareVehicleSetup, vehicles: options.vehicles },
-    options,
+    options.targets,
   );
   page.body.append(settingsForm);
 
