@@ -186,3 +186,23 @@ describe.each(DIALOGS)('the dialog shell of $name (#710)', (dialog) => {
     expect(describeDom(overlay()!)).toMatchSnapshot();
   });
 });
+
+// #735: every step of the wizard, not only its first, before its buttons
+// and texts are built with the DOM helpers.
+describe.each(['classic', 'modern'] as const)('the onboarding wizard in %s (#735)', (look) => {
+  it('draws the same DOM at every step', () => {
+    const settings = { ...DEFAULT_SETTINGS, appearance: look };
+    showOnboarding({ ...onboardingOptions(() => {}), initialSettings: settings, appearance: look });
+    const frames: string[] = [];
+    const next = () =>
+      [...document.querySelectorAll<HTMLButtonElement>('.onboarding button')].find(
+        (button) => button.textContent === t('onboard.next'),
+      );
+    for (let step = next(); step; step = next()) {
+      frames.push(describeDom(document.querySelector('.onboarding')!));
+      step.click();
+    }
+    frames.push(describeDom(document.querySelector('.onboarding')!));
+    expect(frames.join('\n\n')).toMatchSnapshot();
+  });
+});

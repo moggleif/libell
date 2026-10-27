@@ -1,13 +1,12 @@
 /** Small transient confirmations ("Link copied!", "Diagnostics copied!"). */
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 
 /** Fades/slides the toast in and out instead of appearing and
  * vanishing instantly; skipped under `prefers-reduced-motion`. Returns the
  * element so a caller can drop it early when a follow-up replaces it. */
 export function showToast(text: string): HTMLElement {
-  const toast = createElement('p', 'toast');
+  const toast = paragraph('toast', text);
   toast.setAttribute('role', 'status');
-  toast.textContent = text;
   document.body.append(toast);
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -36,15 +35,11 @@ export function showActionToast(text: string, action: string, onAction: () => vo
   toast.setAttribute('role', 'status');
   const label = document.createElement('span');
   label.textContent = text;
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'toast__action';
-  button.textContent = action;
-  button.addEventListener('click', () => {
+  const actionButton = button('toast__action', action, () => {
     toast.remove();
     onAction();
   });
-  toast.append(label, button);
+  toast.append(label, actionButton);
   document.body.append(toast);
 
   const hide = (): void => {

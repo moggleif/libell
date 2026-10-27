@@ -5,7 +5,7 @@
  */
 import type { OrientationSensor, SensorState } from '../sensor/orientation';
 import { t } from '../ui/i18n';
-import { paragraph } from '../ui/dom';
+import { button, paragraph } from '../ui/dom';
 
 export interface SensorStartupDeps {
   root: HTMLElement;
@@ -50,10 +50,8 @@ function showMessage(root: HTMLElement, text: string): void {
 
 /** iOS releases motion data only after a user gesture. */
 function showStartButton(root: HTMLElement, onStart: () => void): void {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'app__start';
-  button.textContent = t('main.start');
-  button.addEventListener('click', onStart);
-  root.replaceChildren(paragraph('app__hint', t('main.hint')), button);
+  root.replaceChildren(
+    paragraph('app__hint', t('main.hint')),
+    button('app__start', t('main.start'), onStart),
+  );
 }

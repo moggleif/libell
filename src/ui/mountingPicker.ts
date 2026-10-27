@@ -14,7 +14,7 @@ import {
 import type { VehicleType } from '../domain/settings';
 import { t } from './i18n';
 import { svgEl } from './svg';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 
 /** An upright box is seen edge-on from above (a thin bar); a flat one is
  * seen face-on (a squarer block). */
@@ -221,8 +221,7 @@ export function createMountingPicker(options: MountingPickerOptions): MountingPi
 /** A box lying flat with an arrow has its own two-choice picker below;
  * this one only ever asks the upright box. */
 function createUprightPrompt(shape: BoxShape): HTMLParagraphElement {
-  const prompt = createElement('p', 'menu__text');
-  prompt.textContent = t('mounting.prompt.upright');
+  const prompt = paragraph('menu__text', t('mounting.prompt.upright'));
   prompt.hidden = shape !== 'upright';
   return prompt;
 }
@@ -257,29 +256,28 @@ export interface PlacementPickerOptions {
 export function createPlacementPicker(options: PlacementPickerOptions): MountingPicker {
   const element = createElement('div', 'placement-picker');
 
-  const prompt = createElement('p', 'menu__text');
-  prompt.textContent = t('mounting.prompt.arrow');
+  const prompt = paragraph('menu__text', t('mounting.prompt.arrow'));
 
   const row = createElement('div', 'placement-picker__row');
   const parts = new Map<EasyLevelPlacement, { button: HTMLButtonElement; picture: HTMLElement }>();
   for (const placement of EASYLEVEL_PLACEMENTS) {
     const choice = createElement('div', 'placement-picker__choice');
     const picture = createElement('div', 'placement-picker__picture');
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `placement-picker__button placement-picker__button--${placement}`;
-    button.textContent = t(`mounting.placement.${placement}`);
     const pick = () => {
       options.setPlacement(placement);
       refresh();
     };
-    button.addEventListener('click', pick);
+    const pickButton = button(
+      `placement-picker__button placement-picker__button--${placement}`,
+      t(`mounting.placement.${placement}`),
+      pick,
+    );
     // The picture is the bigger target; the button stays the one control
     // keyboards and screen readers reach.
     picture.addEventListener('click', pick);
-    choice.append(picture, button);
+    choice.append(picture, pickButton);
     row.append(choice);
-    parts.set(placement, { button, picture });
+    parts.set(placement, { button: pickButton, picture });
   }
   element.append(prompt, row);
 

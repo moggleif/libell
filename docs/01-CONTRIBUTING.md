@@ -150,7 +150,8 @@ the browser test scripts included. Each failure names the file and what to do.
   line after `document.createElement` is built with `createElement(tag, className)`
   from `src/ui/dom.ts` instead (#521). The other small builders live there too, so
   a module does not write its own copy: `button`, `textElement`, `paragraph` and
-  `externalLink` (#710).
+  `externalLink` (#710). A button made `type = 'button'` and given its text within
+  three lines of its `createElement` is built with `button()` instead (#735).
 - **Bundle:** after the build, CI runs `npm run bundle` (ADR 0024). It fails when a
   file loaded at start (the entry and what it preloads) holds a module listed in
   `startExcludes` in `scripts/quality/bundle-budget.json` (those load after the first

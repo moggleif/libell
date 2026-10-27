@@ -1,10 +1,9 @@
-import { createElement } from '../dom';
+import { createElement, paragraph, textElement } from '../dom';
 import { legendIllustration, placementIllustration } from '../helpIllustrations';
 import { SEVERITY_GLYPH } from '../rvDiagram';
 import { t, type MessageKey } from '../i18n';
 import type { Step } from './types';
 import { textClass, type WizardState } from './wizardState';
-import { paragraph } from '../dom';
 
 /** The same four severities the diagram uses, 'unserved' included. */
 const LEGEND_ROWS: [string, keyof typeof SEVERITY_GLYPH, MessageKey][] = [
@@ -19,12 +18,11 @@ function buildModernLegend(): HTMLElement {
   for (const [swatchClass, severity, textKey] of LEGEND_ROWS) {
     const row = createElement('div', 'onboarding__legend-row');
 
-    const swatch = createElement('span', `onboarding__legend-swatch ${swatchClass}`);
+    const swatchClasses = `onboarding__legend-swatch ${swatchClass}`;
+    const swatch = textElement('span', swatchClasses, SEVERITY_GLYPH[severity]);
     swatch.setAttribute('aria-hidden', 'true');
-    swatch.textContent = SEVERITY_GLYPH[severity];
 
-    const text = createElement('span', 'onboarding__legend-text');
-    text.textContent = t(textKey);
+    const text = textElement('span', 'onboarding__legend-text', t(textKey));
 
     row.append(swatch, text);
     container.append(row);

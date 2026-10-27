@@ -8,7 +8,7 @@ import { createSensorFallbackPrompt } from '../ui/sensorFallbackPrompt';
 import { createTiltReadout } from '../ui/tiltReadout';
 import type { EngineOutput, LevelEngine } from './levelEngine';
 import type { LevelFrameView, PoseProblem } from './levelFrame';
-import { createElement, paragraph } from '../ui/dom';
+import { button, createElement, paragraph } from '../ui/dom';
 
 export interface LevelScreenViewDeps {
   createEngine(output: EngineOutput): LevelEngine;
@@ -178,12 +178,7 @@ function statusHint(text: string): HTMLParagraphElement {
 }
 
 function sensorPageButton(onClick: () => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'menu__action';
-  button.textContent = t('pose.openSensorPage');
-  button.addEventListener('click', onClick);
-  return button;
+  return button('menu__action', t('pose.openSensorPage'), onClick);
 }
 
 /** Wrong-pose overlay instead of wrong guidance; for a box, what to do
@@ -192,10 +187,9 @@ function createPoseOverlay(openSensorPage: () => void, say: (text: string) => vo
   const element = createElement('div', 'pose-overlay');
   element.hidden = true;
   const text = createElement('p', 'pose-overlay__text');
-  const hintText = createElement('p', 'pose-overlay__hint');
-  hintText.textContent = t('pose.sensorHint');
-  const button = sensorPageButton(openSensorPage);
-  element.append(text, hintText, button);
+  const hintText = paragraph('pose-overlay__hint', t('pose.sensorHint'));
+  const toSensorPage = sensorPageButton(openSensorPage);
+  element.append(text, hintText, toSensorPage);
   return {
     element,
     show(problem: PoseProblem) {
@@ -204,7 +198,7 @@ function createPoseOverlay(openSensorPage: () => void, say: (text: string) => vo
       if (element.hidden || text.textContent !== message) say(message);
       text.textContent = message;
       hintText.textContent = t(problem.hint);
-      hintText.hidden = button.hidden = !problem.offerSensorPage;
+      hintText.hidden = toSensorPage.hidden = !problem.offerSensorPage;
       element.hidden = false;
     },
   };
@@ -215,15 +209,14 @@ function createPoseOverlay(openSensorPage: () => void, say: (text: string) => vo
 function createStaleOverlay(openSensorPage: () => void, say: (text: string) => void) {
   const element = createElement('div', 'stale-overlay');
   element.hidden = true;
-  const text = createElement('p', 'stale-overlay__text');
-  text.textContent = t('stale.dataUnavailable');
-  const button = sensorPageButton(openSensorPage);
-  element.append(text, button);
+  const text = paragraph('stale-overlay__text', t('stale.dataUnavailable'));
+  const toSensorPage = sensorPageButton(openSensorPage);
+  element.append(text, toSensorPage);
   return {
     element,
     show(offerSensorPage: boolean) {
       if (element.hidden) say(t('stale.dataUnavailable'));
-      button.hidden = !offerSensorPage;
+      toSensorPage.hidden = !offerSensorPage;
       element.hidden = false;
     },
   };

@@ -4,7 +4,7 @@
  * unhitching is how hitch memory usually fails. It never blocks leveling,
  * and goes away once saved or dismissed.
  */
-import { createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 import { t } from './i18n';
 import { showToast } from './toast';
 
@@ -20,24 +20,15 @@ export interface HitchOffer {
   refresh(): void;
 }
 
-function linkButton(text: string, onClick: () => void): HTMLButtonElement {
-  const button = createElement('button', 'link-button');
-  button.type = 'button';
-  button.textContent = text;
-  button.addEventListener('click', onClick);
-  return button;
-}
-
 export function createHitchOffer(options: HitchOfferOptions): HitchOffer {
   const element = createElement('p', 'hitch-offer');
-  const text = createElement('span', 'hitch-offer__text');
-  text.textContent = t('hitch.offer');
+  const text = textElement('span', 'hitch-offer__text', t('hitch.offer'));
   const refresh = () => void (element.hidden = !options.isDue());
-  const save = linkButton(t('hitch.offer.save'), () => {
+  const save = button('link-button', t('hitch.offer.save'), () => {
     showToast(options.save() ?? t('hitch.savedNow'));
     refresh();
   });
-  const dismiss = linkButton(t('hitch.offer.dismiss'), () => {
+  const dismiss = button('link-button', t('hitch.offer.dismiss'), () => {
     options.dismiss();
     refresh();
   });

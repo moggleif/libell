@@ -1,9 +1,8 @@
-import { createElement } from '../dom';
+import { button, createElement, paragraph } from '../dom';
 import { t } from '../i18n';
 import { buildClassicProgress, buildModernProgress } from './progress';
 import type { Step } from './types';
 import type { WizardState } from './wizardState';
-import { paragraph } from '../dom';
 
 export interface StepPosition {
   index: number;
@@ -91,22 +90,13 @@ function buildSecondaryButton(
   const className = state.isModern
     ? `menu__action menu__action--secondary onboarding__${kind}--modern`
     : 'menu__action menu__action--secondary';
-  return navButton(className, label, onClick);
+  return button(className, label, onClick);
 }
 
 function buildNextButton(state: WizardState, at: StepPosition): HTMLButtonElement {
   const className = state.isModern ? 'menu__action onboarding__next--modern' : 'menu__action';
   const label = at.index === at.total - 1 ? t('onboard.done') : t('onboard.next');
-  return navButton(className, label, at.next);
-}
-
-function navButton(className: string, label: string, onClick: () => void): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = className;
-  button.textContent = label;
-  button.addEventListener('click', onClick);
-  return button;
+  return button(className, label, at.next);
 }
 
 // The form's own Save row is not mounted in the wizard, so Next saves it.
