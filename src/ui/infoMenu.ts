@@ -149,20 +149,13 @@ function buildIntroButton(
   openOnboarding: () => void,
   hasDoneOnboarding: () => boolean,
 ): { element: HTMLButtonElement; refresh(): void } {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.textContent = t('menu.intro');
-  button.addEventListener('click', () => {
+  const className = () =>
+    hasDoneOnboarding() ? 'menu__action menu__action--secondary' : 'menu__action';
+  const element = button(className(), t('menu.intro'), () => {
     page.close();
     openOnboarding();
   });
-  function refresh(): void {
-    button.className = hasDoneOnboarding()
-      ? 'menu__action menu__action--secondary'
-      : 'menu__action';
-  }
-  refresh();
-  return { element: button, refresh };
+  return { element, refresh: () => void (element.className = className()) };
 }
 
 /** Both vehicles side by side: this static tab isn't tied to the user's

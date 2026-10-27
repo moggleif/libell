@@ -263,21 +263,21 @@ export function createPlacementPicker(options: PlacementPickerOptions): Mounting
   for (const placement of EASYLEVEL_PLACEMENTS) {
     const choice = createElement('div', 'placement-picker__choice');
     const picture = createElement('div', 'placement-picker__picture');
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `placement-picker__button placement-picker__button--${placement}`;
-    button.textContent = t(`mounting.placement.${placement}`);
     const pick = () => {
       options.setPlacement(placement);
       refresh();
     };
-    button.addEventListener('click', pick);
+    const pickButton = button(
+      `placement-picker__button placement-picker__button--${placement}`,
+      t(`mounting.placement.${placement}`),
+      pick,
+    );
     // The picture is the bigger target; the button stays the one control
     // keyboards and screen readers reach.
     picture.addEventListener('click', pick);
-    choice.append(picture, button);
+    choice.append(picture, pickButton);
     row.append(choice);
-    parts.set(placement, { button, picture });
+    parts.set(placement, { button: pickButton, picture });
   }
   element.append(prompt, row);
 
