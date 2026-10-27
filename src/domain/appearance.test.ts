@@ -21,8 +21,10 @@ describe('APPEARANCES', () => {
   // gradients, bevels and shadows were never checked for overflow. It has
   // to walk this list, not a copy of it.
   it('is the list the fit check walks', () => {
-    const script = readFileSync(resolve(__dirname, '../../scripts/fit-test.mjs'), 'utf8');
-    expect(script).toMatch(/import \{ APPEARANCES \} from '\.\.\/src\/domain\/appearance\.ts';/);
+    const script = readFileSync(resolve(__dirname, '../../scripts/fit/config.mjs'), 'utf8');
+    expect(script).toMatch(
+      /import \{ APPEARANCES \} from '\.\.\/\.\.\/src\/domain\/appearance\.ts';/,
+    );
     expect(script).not.toMatch(/const APPEARANCES\s*=/);
   });
 });

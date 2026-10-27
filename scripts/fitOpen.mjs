@@ -1,11 +1,11 @@
 // Opens the app for the fit test with the preferences under test already
 // stored, the way a returning user's phone would have them.
 
-import { basePath } from './basePath.ts';
+import { previewUrl } from './withPreview.mjs';
 
 // Where the fit test serves the built app (#672 moved it to the root).
 export const PORT = 4175;
-export const BASE = `http://localhost:${PORT}${basePath()}`;
+export const BASE = previewUrl(PORT);
 
 // The real keys settingsStore.ts reads — settings as one JSON object,
 // language and the onboarding flag on their own. Writing anything else

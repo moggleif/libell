@@ -2,44 +2,17 @@
 // screen actually renders in ?demo mode — diagram SVG present, status
 // line non-empty, version footer sane. Run after `npm run build`; CI
 // runs it on every pull request. Exits non-zero on any failed assertion.
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
-import { basePath } from './basePath.ts';
-
-const APP_URL = `http://localhost:4174${basePath()}`;
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+import { withPreview } from './withPreview.mjs';
 
 function assert(condition, message) {
   if (!condition) throw new Error(`smoke test failed: ${message}`);
 }
 
-const preview = spawn('npx', ['vite', 'preview', '--port', '4174', '--strictPort'], {
-  cwd: root,
-  stdio: 'ignore',
-});
-let browser;
-try {
-  for (let attempt = 0; ; attempt += 1) {
-    try {
-      await fetch(APP_URL);
-      break;
-    } catch {
-      if (attempt > 40) throw new Error('vite preview did not start');
-      await new Promise((r) => setTimeout(r, 250));
-    }
-  }
-
-  // CHROMIUM_PATH overrides the browser binary (used in environments with
-  // a pre-installed Chromium instead of playwright-downloaded browsers).
-  browser = await chromium.launch(
-    process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
-  );
+await withPreview(4174, async (browser, appUrl) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'en-GB' });
   const pageErrors = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
-  await page.goto(`${APP_URL}?demo=1`);
+  await page.goto(`${appUrl}?demo=1`);
 
   await page.waitForSelector('.rv-diagram svg', { timeout: 10_000 });
   // The status row is deliberately silent when the wheel cards already say
@@ -62,7 +35,4 @@ try {
   assert(pageErrors.length === 0, `page errors: ${pageErrors.join('; ')}`);
 
   console.log(`smoke test passed — glyphs: ${glyphs}, status row silent`);
-} finally {
-  await browser?.close();
-  preview.kill();
-}
+});

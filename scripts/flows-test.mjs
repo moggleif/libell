@@ -19,15 +19,12 @@
 //
 // Each flow lives in its own file under `scripts/flows/`, with the shared
 // helpers in `scripts/flows/harness.mjs`; this file starts the preview
-// server and the browser and runs them in order.
+// server and the browser (`withPreview.mjs`) and runs them in order.
 //
 // Run after `npm run build`; CI runs it on every pull request. Exits non-zero
 // on any failed assertion.
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
-import { BASE, PORT } from './flows/harness.mjs';
+import { withPreview } from './withPreview.mjs';
+import { PORT } from './flows/harness.mjs';
 import { xparkleFlow, xparklePasswordFlow } from './flows/xparkle.mjs';
 import { easyLevelFlow } from './flows/easyLevel.mjs';
 import {
@@ -55,27 +52,7 @@ import { privacyFlow } from './flows/privacy.mjs';
 import { languageFlow } from './flows/language.mjs';
 import { offlineFlow } from './flows/offline.mjs';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-
-const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
-  cwd: root,
-  stdio: 'ignore',
-});
-let browser;
-try {
-  for (let attempt = 0; ; attempt += 1) {
-    try {
-      await fetch(BASE);
-      break;
-    } catch {
-      if (attempt > 40) throw new Error('vite preview did not start');
-      await new Promise((r) => setTimeout(r, 250));
-    }
-  }
-  // CHROMIUM_PATH overrides the browser binary, as in smoke-test.mjs.
-  browser = await chromium.launch(
-    process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
-  );
+await withPreview(PORT, async (browser) => {
   await xparkleFlow(browser);
   await xparklePasswordFlow(browser);
   await easyLevelFlow(browser);
@@ -105,7 +82,4 @@ try {
   console.log(
     'flows test passed: Xparkle, Xparkle password, EasyLevel, phone calibration, targets, hitch height, Settings with a box, counting choice, first visit, wizard, wizard password, landscape, celebration, lost box, sound, level screen, navigation, settings saves, start-up, vehicles, privacy, language, offline',
   );
-} finally {
-  await browser?.close();
-  preview.kill();
-}
+});
