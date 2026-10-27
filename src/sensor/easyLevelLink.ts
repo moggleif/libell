@@ -13,11 +13,8 @@ import {
   parseEasyLevelStatus,
   type EasyLevelStatus,
 } from './easyLevelProtocol';
-import {
-  isEasyLevelAvailable,
-  type EasyLevelConnection,
-  type EasyLevelTransport,
-} from './easyLevelTransport';
+import { isEasyLevelAvailable, type EasyLevelConnection } from './easyLevelTransport';
+import type { BoxLinkSteps } from './boxLinkFlow';
 
 /**
  * How long `getGravity()` is withheld after connecting while waiting for the
@@ -91,48 +88,12 @@ export function createEasyLevelLink(
   return link;
 }
 
-export async function connectWithPicker(
-  link: EasyLevelLink,
-  transport: EasyLevelTransport,
-): Promise<SensorState> {
-  const refusal = refusalToConnect(link);
-  if (refusal) return refusal;
-  try {
-    return await adopt(link, await transport.connect(() => markLost(link)));
-  } catch {
-    // Cancelled picker, failed connect or missing service: like a denied
-    // phone permission. A box already lost stays lost, so a cancelled Retry
-    // picker does not hide the unavailable prompt or stop its background
-    // retry.
-    if (link.state !== 'disconnected') link.state = 'denied';
-    return link.state;
-  }
-}
-
-export async function reconnectSilently(
-  link: EasyLevelLink,
-  transport: EasyLevelTransport,
-  deviceId: string,
-): Promise<SensorState> {
-  const refusal = refusalToConnect(link);
-  if (refusal) return refusal;
-  try {
-    const next = await transport.reconnect(deviceId, () => markLost(link));
-    if (next) return await adopt(link, next);
-  } catch {
-    // E.g. a subscribe failure after GATT connect: same as no box found.
-  }
-  link.state = 'disconnected';
-  return link.state;
-}
-
-export function disconnectByUser(link: EasyLevelLink): void {
-  link.silenceWatch.stop();
-  link.connection?.disconnect();
-  link.connection = null;
-  link.state = 'idle';
-  clearReadings(link);
-}
+/** EasyLevel's own part of the shared flow in `boxLinkFlow.ts`. */
+export const EASYLEVEL_LINK_STEPS: BoxLinkSteps<EasyLevelLink, EasyLevelConnection> = {
+  refusal: refusalToConnect,
+  adopt,
+  markLost,
+};
 
 /** The state to report instead of connecting, or null to go ahead. */
 function refusalToConnect(link: EasyLevelLink): SensorState | null {

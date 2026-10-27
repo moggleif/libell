@@ -226,6 +226,12 @@ teardown, retry and silent-reconnect code a real BLE box needs, written once. An
 gives it only its scan filter and a `wire(server)` that opens the box's own service and
 characteristics. Both the Xparkle and the EasyLevel transport are built on it, and the two
 simulators share `src/sensor/simulatedLink.ts` (fixed id, drop, outage) the same way.
+Above the transport, `src/sensor/boxLinkFlow.ts` (#733) is the state flow both links
+share: picker connect (a failure is `'denied'`, unless the box was already lost), silent
+reconnect (anything short of a live link is `'disconnected'`) and the user's disconnect
+(`'idle'`). Each link hands it only its own steps: how it adopts a connection, its
+`markLost` for a lost link, and, for EasyLevel, a refusal when already connected or
+without Web Bluetooth.
 
 **A rejected Xparkle password is fixed in Libell (#367).** What Libell can do about it,
 weighed against the protocol (`docs/competitor-notes.md`):
