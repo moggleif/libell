@@ -14,6 +14,9 @@ import { showToast } from './toast';
  */
 export const UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
 
+/** The second look after opening, once the connection has had time to come up (#746). */
+export const RECHECK_AFTER_OPEN_MS = 30 * 1000;
+
 export type UpdateCheckResult = 'updating' | 'latest' | 'offline' | 'unsupported';
 
 /** The slice of `ServiceWorkerRegistration` the check needs. */
@@ -98,16 +101,27 @@ export function installUpdateReload(): void {
   // An installed app resumed from the background does not navigate, so
   // the browser never re-checks the worker on its own.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') void checkForUpdate(browserDeps());
+    if (document.visibilityState === 'visible') checkOnOpen();
   });
 
   // Look on every start rather than trust the browser's own check, and keep
   // looking while the app simply stays open (#746). A hidden app is covered
   // by the check on its return above.
+  checkOnOpen();
+  setInterval(checkWhileVisible, UPDATE_CHECK_INTERVAL_MS);
+}
+
+function checkWhileVisible(): void {
+  if (document.visibilityState === 'visible') void checkForUpdate(browserDeps());
+}
+
+/**
+ * Right after opening, the phone's connection may not be up yet and the
+ * check fails quietly, so it is made once more a little later (#746).
+ */
+function checkOnOpen(): void {
   void checkForUpdate(browserDeps());
-  setInterval(() => {
-    if (document.visibilityState === 'visible') void checkForUpdate(browserDeps());
-  }, UPDATE_CHECK_INTERVAL_MS);
+  setTimeout(checkWhileVisible, RECHECK_AFTER_OPEN_MS);
 }
 
 /** Makes `target` a button that checks for a new version on tap. */

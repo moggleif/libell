@@ -465,7 +465,8 @@ once: the manifest's icons are already in that glob (`includeManifestIcons: fals
 the install-sheet screenshot, generated from the built app afterwards, is not precached. `registerType:
 'autoUpdate'` lets a new worker activate on its own; `src/ui/appUpdate.ts` then reloads
 an already-controlled page once on `controllerchange`, re-checks for a new worker on
-every start, when the app returns to the foreground and every ten minutes while it stays
+every start and when the app returns to the foreground (and once more half a minute
+later, `RECHECK_AFTER_OPEN_MS`), and every ten minutes while it stays
 visible (`UPDATE_CHECK_INTERVAL_MS`, #746), and lets a tap on the top-bar name / version check on
 demand (R50). The worker is registered with a deferred script, so it never holds up the
 first render (ADR 0024). Nor does the stylesheet: the `security-meta-tags` plugin in

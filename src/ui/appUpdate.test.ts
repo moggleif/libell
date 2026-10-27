@@ -5,6 +5,7 @@ import {
   checkForUpdate,
   installUpdateReload,
   type UpdatableRegistration,
+  RECHECK_AFTER_OPEN_MS,
   UPDATE_CHECK_INTERVAL_MS,
 } from './appUpdate';
 import { setLanguage, t } from './i18n';
@@ -151,7 +152,7 @@ describe('installUpdateReload (#512)', () => {
     expect(unhandled).not.toHaveBeenCalled();
   });
 
-  it('checks quietly on start, then every ten minutes while the app stays open (#746)', async () => {
+  it('checks quietly every ten minutes while the app stays open (#746)', async () => {
     vi.useFakeTimers();
     try {
       const update = vi.fn(async () => {});
@@ -163,15 +164,45 @@ describe('installUpdateReload (#512)', () => {
       });
       const toasts = document.querySelectorAll('.toast').length;
       installUpdateReload();
-      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(RECHECK_AFTER_OPEN_MS);
+      update.mockClear();
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS - RECHECK_AFTER_OPEN_MS - 1);
+      expect(update).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
       expect(update).toHaveBeenCalledOnce();
-      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS - 1);
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS);
+      expect(update).toHaveBeenCalledTimes(2);
+      expect(document.querySelectorAll('.toast')).toHaveLength(toasts);
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+  });
+
+  it('checks again half a minute after opening and after each return, for a slow network (#746)', async () => {
+    vi.useFakeTimers();
+    try {
+      const update = vi.fn(async () => {});
+      const getRegistration = vi.fn(async () => ({ update, installing: null, waiting: null }));
+      const container = Object.assign(new EventTarget(), { controller: {}, getRegistration });
+      Object.defineProperty(globalThis, 'navigator', {
+        value: { serviceWorker: container, onLine: true },
+        configurable: true,
+      });
+      // Only this install's listener: earlier tests' listeners stay on the document.
+      const listen = vi.spyOn(document, 'addEventListener');
+      installUpdateReload();
+      const onVisible = listen.mock.calls.find(([type]) => type === 'visibilitychange')![1];
+      listen.mockRestore();
+      await vi.advanceTimersByTimeAsync(RECHECK_AFTER_OPEN_MS - 1);
       expect(update).toHaveBeenCalledOnce();
       await vi.advanceTimersByTimeAsync(1);
       expect(update).toHaveBeenCalledTimes(2);
-      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS);
+      (onVisible as EventListener)(new Event('visibilitychange'));
+      await vi.advanceTimersByTimeAsync(0);
       expect(update).toHaveBeenCalledTimes(3);
-      expect(document.querySelectorAll('.toast')).toHaveLength(toasts);
+      await vi.advanceTimersByTimeAsync(RECHECK_AFTER_OPEN_MS);
+      expect(update).toHaveBeenCalledTimes(4);
     } finally {
       vi.clearAllTimers();
       vi.useRealTimers();

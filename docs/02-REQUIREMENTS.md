@@ -2023,6 +2023,10 @@ present this source as more proven than it is.
   once it is active, without a tap — also mid-levelling or with a Sensorbox connected
   (#746). It checks again every ten minutes, the host's cache lifetime; a hidden app is
   not checked until it returns to the foreground.
+- **Given** a newer version has been deployed and the connection is not up yet when I open
+  the app or bring it back to the foreground
+- **When** half a minute passes
+- **Then** the app checks once more, quietly, and reloads into the new version (#746).
 
 ## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
