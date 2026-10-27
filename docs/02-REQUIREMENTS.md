@@ -2483,3 +2483,32 @@ parts of Libell it is not using (ADR 0024).
 - **Given** the app has been opened once with a connection
 - **Then** every language and every part is on the phone, and it starts and works with
   no signal at all.
+
+## R63 — Full marks in PageSpeed, and nothing moves on the first visit (#730)
+
+Google's PageSpeed Insights (Lighthouse) is how search engines and visitors judge the
+site, and what it finds is mostly real: text that is hard to read, errors in the
+console, a page that jumps (the measurements are in #730).
+
+- **Given** any palette
+- **Then** a primary button's label has at least 4.5:1 contrast on its green.
+  `src/ui/contrast.test.ts` computes it.
+- **Given** the app, a language page or the privacy policy
+- **When** it loads
+- **Then** the browser's console shows no error: the app's CSP leaves out
+  `frame-ancestors`, which a meta tag cannot carry (the framing guard covers it,
+  ADR 0005), and every page names the app's icon, so nothing asks for a missing
+  `/favicon.ico`.
+- **Given** a language page or the privacy policy
+- **Then** a crawler running in the page can read `/robots.txt`, and the privacy policy
+  has a description (its first paragraph, `policy.intro`).
+- **Given** the first paint of the app
+- **Then** it waits for no stylesheet request: the stylesheet is in the page (ADR 0025).
+- **Given** the first visit, with the counting choice or the intro open
+- **When** the browser offers to install Libell
+- **Then** the install row waits until they are closed, so the page under them does not
+  move; once shown, the row stays when an overlay opens over it.
+- **Given** Lighthouse on `/`, `/sv/` and `/privacy/`, mobile and desktop
+- **Then** accessibility, best practices and SEO are 100, and performance is not lower
+  than before. The cache lifetime GitHub Pages sets (ten minutes) is outside what the
+  build can change.

@@ -96,9 +96,14 @@ export function setupInstallRow(
   let dismissed = dismissal.isDismissed();
   function sync(): void {
     const kind = offer.kind();
-    els.row.hidden = kind === null || dismissed;
+    if (kind === null || dismissed) els.row.hidden = true;
+    // An open overlay makes the row inert (focusHold.ts). Appearing then
+    // would push the page down behind it, a layout shift nobody asked for;
+    // it waits for the overlay's close, a tap (#730).
+    else if (!els.row.hasAttribute('inert')) els.row.hidden = false;
     if (kind === null) els.hint.hidden = true;
   }
+  new MutationObserver(sync).observe(els.row, { attributeFilter: ['inert'] });
   els.button.addEventListener('click', () => {
     if (offer.install() === 'hint') els.hint.hidden = !els.hint.hidden;
   });

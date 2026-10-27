@@ -62,6 +62,7 @@ const PAIRS: Array<[string, string, string, number]> = [
   ['a pending calibration pill', '--warning', '--surface-raised', TEXT],
   ['a done calibration pill', '--level', '--surface-raised', TEXT],
   ['a plain calibration pill', '--on-surface-muted', '--surface-raised', TEXT],
+  ['a primary button’s label (#730)', '--surface', '--level', TEXT],
 ];
 
 describe('colour contrast in every palette (#536)', () => {

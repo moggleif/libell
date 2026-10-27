@@ -159,4 +159,28 @@ describe('setupInstallRow', () => {
     fire('beforeinstallprompt', installPrompt());
     expect(els.row.hidden).toBe(true);
   });
+
+  // A row that appears pushes the page down; behind the first-visit overlay
+  // nobody sees it, but the page still moves (#730).
+  it('waits while an overlay holds the page, then shows once it is released', async () => {
+    const { offer: install, fire } = offer();
+    const els = row();
+    els.row.setAttribute('inert', '');
+    setupInstallRow(els, install, dismissal());
+    fire('beforeinstallprompt', installPrompt());
+    expect(els.row.hidden).toBe(true);
+    els.row.removeAttribute('inert');
+    await Promise.resolve();
+    expect(els.row.hidden).toBe(false);
+  });
+
+  it('stays shown when an overlay opens over it', async () => {
+    platform.ios = true;
+    const { offer: install } = offer();
+    const els = row();
+    setupInstallRow(els, install, dismissal());
+    els.row.setAttribute('inert', '');
+    await Promise.resolve();
+    expect(els.row.hidden).toBe(false);
+  });
 });

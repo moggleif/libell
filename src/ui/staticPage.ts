@@ -32,11 +32,14 @@ export function languageList(current: Language, pathOf: (lang: Language) => stri
 }
 
 // No script, no inline style and nothing from elsewhere: a page only loads
-// its own stylesheet (and, for a link preview, its image).
+// its own stylesheet and icon (and, for a link preview, its image).
+// `connect-src 'self'` lets Lighthouse read /robots.txt from inside the page;
+// with no script, nothing else can fetch (#730).
 // (`frame-ancestors` is left out: a meta CSP cannot carry it, and a page with
 // nothing to click is no clickjacking target.)
 export const STATIC_CSP =
-  "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'";
+  "default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; " +
+  "base-uri 'none'; form-action 'none'";
 
 /** Where the stylesheet is written, under the base path. */
 export const STATIC_CSS_FILE = 'page.css';
@@ -51,6 +54,8 @@ export function staticHead(base: string, title: string, extra: readonly string[]
     `<title>${escapeHtml(title)}</title>`,
     ...extra,
     `<link rel="stylesheet" href="${base}${STATIC_CSS_FILE}">`,
+    // Named, or the browser asks for /favicon.ico and logs the 404 (#730).
+    `<link rel="icon" href="${base}icons/icon.svg" type="image/svg+xml">`,
   ].join('\n');
 }
 

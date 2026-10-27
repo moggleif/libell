@@ -230,7 +230,7 @@ exports[`the static pages in ca > keeps the language page 1`] = `
 <html lang="ca">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – anivella l’autocaravana o la caravana amb el mòbil</title>
@@ -339,6 +339,7 @@ exports[`the static pages in ca > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -400,11 +401,13 @@ exports[`the static pages in ca > keeps the privacy policy 1`] = `
 <html lang="ca">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Política de privadesa de Libell</title>
+<meta name="description" content="Libell és un projecte lliure de codi obert. No hi ha comptes, ni anuncis, ni seguiment, i ningú recull informació sobre tu.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -493,7 +496,7 @@ exports[`the static pages in cs > keeps the language page 1`] = `
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – vyrovnejte obytný vůz nebo karavan telefonem</title>
@@ -602,6 +605,7 @@ exports[`the static pages in cs > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -663,11 +667,13 @@ exports[`the static pages in cs > keeps the privacy policy 1`] = `
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zásady ochrany soukromí aplikace Libell</title>
+<meta name="description" content="Libell je svobodný open source projekt. Nemá účty, reklamy ani sledování a nikdo o vás nesbírá žádné údaje.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -756,7 +762,7 @@ exports[`the static pages in da > keeps the language page 1`] = `
 <html lang="da">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – sæt autocamperen eller campingvognen i vater med telefonen</title>
@@ -865,6 +871,7 @@ exports[`the static pages in da > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -926,11 +933,13 @@ exports[`the static pages in da > keeps the privacy policy 1`] = `
 <html lang="da">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privatlivspolitik for Libell</title>
+<meta name="description" content="Libell er et frit open source-projekt. Der er ingen konti, ingen reklamer og ingen sporing, og ingen indsamler oplysninger om dig.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1019,7 +1028,7 @@ exports[`the static pages in de > keeps the language page 1`] = `
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – Wohnmobil oder Wohnwagen mit dem Handy ausrichten</title>
@@ -1128,6 +1137,7 @@ exports[`the static pages in de > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1189,11 +1199,13 @@ exports[`the static pages in de > keeps the privacy policy 1`] = `
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Datenschutzerklärung von Libell</title>
+<meta name="description" content="Libell ist ein freies Open-Source-Projekt. Es gibt keine Konten, keine Werbung und kein Tracking, und niemand sammelt Daten über dich.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1282,7 +1294,7 @@ exports[`the static pages in en > keeps the language page 1`] = `
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – level your motorhome or caravan with your phone</title>
@@ -1391,6 +1403,7 @@ exports[`the static pages in en > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1452,11 +1465,13 @@ exports[`the static pages in en > keeps the privacy policy 1`] = `
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell privacy policy</title>
+<meta name="description" content="Libell is a free open source project. There are no accounts, no ads and no tracking, and nobody collects information about you.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1545,7 +1560,7 @@ exports[`the static pages in es > keeps the language page 1`] = `
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – nivela tu autocaravana o caravana con el móvil</title>
@@ -1654,6 +1669,7 @@ exports[`the static pages in es > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1715,11 +1731,13 @@ exports[`the static pages in es > keeps the privacy policy 1`] = `
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Política de privacidad de Libell</title>
+<meta name="description" content="Libell es un proyecto libre de código abierto. No hay cuentas, ni anuncios, ni rastreo, y nadie recoge información sobre ti.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1808,7 +1826,7 @@ exports[`the static pages in et > keeps the language page 1`] = `
 <html lang="et">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – sea matkaauto või haagissuvila telefoniga loodi</title>
@@ -1917,6 +1935,7 @@ exports[`the static pages in et > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -1978,11 +1997,13 @@ exports[`the static pages in et > keeps the privacy policy 1`] = `
 <html lang="et">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libelli privaatsuspoliitika</title>
+<meta name="description" content="Libell on vaba avatud lähtekoodiga projekt. Kontosid, reklaami ega jälgimist ei ole ja keegi ei kogu sinu kohta andmeid.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2071,7 +2092,7 @@ exports[`the static pages in fi > keeps the language page 1`] = `
 <html lang="fi">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – matkailuauto tai -vaunu vaakatasoon puhelimella</title>
@@ -2180,6 +2201,7 @@ exports[`the static pages in fi > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2241,11 +2263,13 @@ exports[`the static pages in fi > keeps the privacy policy 1`] = `
 <html lang="fi">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libellin tietosuojaseloste</title>
+<meta name="description" content="Libell on vapaa avoimen lähdekoodin projekti. Siinä ei ole tilejä, mainoksia eikä seurantaa, eikä kukaan kerää tietoja sinusta.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2334,7 +2358,7 @@ exports[`the static pages in fr > keeps the language page 1`] = `
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – camping-car ou caravane de niveau avec votre téléphone</title>
@@ -2443,6 +2467,7 @@ exports[`the static pages in fr > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2504,11 +2529,13 @@ exports[`the static pages in fr > keeps the privacy policy 1`] = `
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Politique de confidentialité de Libell</title>
+<meta name="description" content="Libell est un projet open source libre. Il n’y a ni compte, ni publicité, ni pistage, et personne ne collecte d’informations sur vous.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2597,7 +2624,7 @@ exports[`the static pages in hr > keeps the language page 1`] = `
 <html lang="hr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – izravnajte kamper ili kamp-prikolicu telefonom</title>
@@ -2706,6 +2733,7 @@ exports[`the static pages in hr > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2767,11 +2795,13 @@ exports[`the static pages in hr > keeps the privacy policy 1`] = `
 <html lang="hr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pravila o privatnosti aplikacije Libell</title>
+<meta name="description" content="Libell je slobodan projekt otvorenog koda. Nema računa, oglasa ni praćenja, i nitko ne prikuplja podatke o vama.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -2860,7 +2890,7 @@ exports[`the static pages in hu > keeps the language page 1`] = `
 <html lang="hu">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – szintezd be a lakóautód vagy lakókocsid a telefonoddal</title>
@@ -2969,6 +2999,7 @@ exports[`the static pages in hu > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3030,11 +3061,13 @@ exports[`the static pages in hu > keeps the privacy policy 1`] = `
 <html lang="hu">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Libell adatvédelmi tájékoztatója</title>
+<meta name="description" content="A Libell szabad, nyílt forráskódú projekt. Nincs fiók, nincs reklám és nincs követés, és senki sem gyűjt rólad adatokat.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3123,7 +3156,7 @@ exports[`the static pages in is > keeps the language page 1`] = `
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – gerðu húsbílinn eða hjólhýsið lárétt með símanum</title>
@@ -3232,6 +3265,7 @@ exports[`the static pages in is > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3293,11 +3327,13 @@ exports[`the static pages in is > keeps the privacy policy 1`] = `
 <html lang="is">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Persónuverndarstefna Libell</title>
+<meta name="description" content="Libell er frjálst opið hugbúnaðarverkefni. Það eru engir aðgangar, engar auglýsingar og engin rakning, og enginn safnar upplýsingum um þig.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3386,7 +3422,7 @@ exports[`the static pages in it > keeps the language page 1`] = `
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – livella il camper o la caravan con il telefono</title>
@@ -3495,6 +3531,7 @@ exports[`the static pages in it > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3556,11 +3593,13 @@ exports[`the static pages in it > keeps the privacy policy 1`] = `
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Informativa sulla privacy di Libell</title>
+<meta name="description" content="Libell è un progetto open source libero. Non ci sono account, pubblicità né tracciamento, e nessuno raccoglie informazioni su di te.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3649,7 +3688,7 @@ exports[`the static pages in lt > keeps the language page 1`] = `
 <html lang="lt">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – išlyginkite kemperį ar karavaną telefonu</title>
@@ -3758,6 +3797,7 @@ exports[`the static pages in lt > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3819,11 +3859,13 @@ exports[`the static pages in lt > keeps the privacy policy 1`] = `
 <html lang="lt">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell privatumo politika</title>
+<meta name="description" content="Libell yra laisvas atvirojo kodo projektas. Nėra paskyrų, reklamų ar sekimo, ir niekas nerenka informacijos apie jus.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -3912,7 +3954,7 @@ exports[`the static pages in lv > keeps the language page 1`] = `
 <html lang="lv">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – nolīmeņojiet kemperi vai dzīvojamo piekabi ar tālruni</title>
@@ -4021,6 +4063,7 @@ exports[`the static pages in lv > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4082,11 +4125,13 @@ exports[`the static pages in lv > keeps the privacy policy 1`] = `
 <html lang="lv">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell privātuma politika</title>
+<meta name="description" content="Libell ir brīvs atvērtā pirmkoda projekts. Nav kontu, reklāmu vai izsekošanas, un neviens par jums nevāc informāciju.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4175,7 +4220,7 @@ exports[`the static pages in nb > keeps the language page 1`] = `
 <html lang="nb">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – få bobilen eller campingvognen i vater med telefonen</title>
@@ -4284,6 +4329,7 @@ exports[`the static pages in nb > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4345,11 +4391,13 @@ exports[`the static pages in nb > keeps the privacy policy 1`] = `
 <html lang="nb">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personvernerklæring for Libell</title>
+<meta name="description" content="Libell er et fritt åpen kildekode-prosjekt. Det finnes ingen kontoer, ingen reklame og ingen sporing, og ingen samler inn opplysninger om deg.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4438,7 +4486,7 @@ exports[`the static pages in nl > keeps the language page 1`] = `
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – zet je camper of caravan waterpas met je telefoon</title>
@@ -4547,6 +4595,7 @@ exports[`the static pages in nl > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4608,11 +4657,13 @@ exports[`the static pages in nl > keeps the privacy policy 1`] = `
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacybeleid van Libell</title>
+<meta name="description" content="Libell is een vrij opensourceproject. Er zijn geen accounts, geen advertenties en geen tracking, en niemand verzamelt gegevens over jou.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4701,7 +4752,7 @@ exports[`the static pages in pl > keeps the language page 1`] = `
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – wypoziomuj kampera lub przyczepę telefonem</title>
@@ -4810,6 +4861,7 @@ exports[`the static pages in pl > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4871,11 +4923,13 @@ exports[`the static pages in pl > keeps the privacy policy 1`] = `
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Polityka prywatności Libell</title>
+<meta name="description" content="Libell to wolny projekt open source. Nie ma kont, reklam ani śledzenia i nikt nie zbiera informacji o tobie.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -4964,7 +5018,7 @@ exports[`the static pages in pt > keeps the language page 1`] = `
 <html lang="pt">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – nivele a sua autocaravana ou caravana com o telemóvel</title>
@@ -5073,6 +5127,7 @@ exports[`the static pages in pt > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5134,11 +5189,13 @@ exports[`the static pages in pt > keeps the privacy policy 1`] = `
 <html lang="pt">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Política de privacidade do Libell</title>
+<meta name="description" content="O Libell é um projeto livre de código aberto. Não há contas, nem anúncios, nem rastreio, e ninguém recolhe informações sobre si.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5227,7 +5284,7 @@ exports[`the static pages in ro > keeps the language page 1`] = `
 <html lang="ro">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – nivelați autorulota sau rulota cu telefonul</title>
@@ -5336,6 +5393,7 @@ exports[`the static pages in ro > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5397,11 +5455,13 @@ exports[`the static pages in ro > keeps the privacy policy 1`] = `
 <html lang="ro">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Politica de confidențialitate Libell</title>
+<meta name="description" content="Libell este un proiect open source liber. Nu există conturi, reclame sau urmărire, iar nimeni nu colectează informații despre dvs.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5490,7 +5550,7 @@ exports[`the static pages in sk > keeps the language page 1`] = `
 <html lang="sk">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – vyrovnajte obytné auto alebo obytný príves telefónom</title>
@@ -5599,6 +5659,7 @@ exports[`the static pages in sk > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5660,11 +5721,13 @@ exports[`the static pages in sk > keeps the privacy policy 1`] = `
 <html lang="sk">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zásady ochrany súkromia aplikácie Libell</title>
+<meta name="description" content="Libell je slobodný open source projekt. Nemá účty, reklamy ani sledovanie a nikto o vás nezbiera žiadne údaje.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5753,7 +5816,7 @@ exports[`the static pages in sl > keeps the language page 1`] = `
 <html lang="sl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – izravnajte avtodom ali počitniško prikolico s telefonom</title>
@@ -5862,6 +5925,7 @@ exports[`the static pages in sl > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -5923,11 +5987,13 @@ exports[`the static pages in sl > keeps the privacy policy 1`] = `
 <html lang="sl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pravilnik o zasebnosti aplikacije Libell</title>
+<meta name="description" content="Libell je prost odprtokodni projekt. Ni računov, oglasov ali sledenja in nihče ne zbira podatkov o vas.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -6016,7 +6082,7 @@ exports[`the static pages in sv > keeps the language page 1`] = `
 <html lang="sv">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – få husbilen eller husvagnen i våg med telefonen</title>
@@ -6125,6 +6191,7 @@ exports[`the static pages in sv > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -6186,11 +6253,13 @@ exports[`the static pages in sv > keeps the privacy policy 1`] = `
 <html lang="sv">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Integritetspolicy för Libell</title>
+<meta name="description" content="Libell är ett fritt open source-projekt. Det finns inga konton, ingen reklam och ingen spårning, och ingen samlar in uppgifter om dig.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -6279,7 +6348,7 @@ exports[`the static pages in tr > keeps the language page 1`] = `
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell – motokaravanınızı veya karavanınızı telefonla seviyeleyin</title>
@@ -6388,6 +6457,7 @@ exports[`the static pages in tr > keeps the language page 1`] = `
 }
 </script>
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
@@ -6449,11 +6519,13 @@ exports[`the static pages in tr > keeps the privacy policy 1`] = `
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Libell gizlilik politikası</title>
+<meta name="description" content="Libell özgür, açık kaynaklı bir projedir. Hesap, reklam veya izleme yoktur ve kimse sizin hakkınızda bilgi toplamaz.">
 <link rel="stylesheet" href="/page.css">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <main>
