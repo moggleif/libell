@@ -5,6 +5,7 @@ import {
   checkForUpdate,
   installUpdateReload,
   type UpdatableRegistration,
+  UPDATE_CHECK_INTERVAL_MS,
 } from './appUpdate';
 import { setLanguage, t } from './i18n';
 
@@ -148,6 +149,55 @@ describe('installUpdateReload (#512)', () => {
     process.off('unhandledRejection', unhandled);
     expect(getRegistration).toHaveBeenCalled();
     expect(unhandled).not.toHaveBeenCalled();
+  });
+
+  it('checks quietly on start, then every ten minutes while the app stays open (#746)', async () => {
+    vi.useFakeTimers();
+    try {
+      const update = vi.fn(async () => {});
+      const getRegistration = vi.fn(async () => ({ update, installing: null, waiting: null }));
+      const container = Object.assign(new EventTarget(), { controller: {}, getRegistration });
+      Object.defineProperty(globalThis, 'navigator', {
+        value: { serviceWorker: container, onLine: true },
+        configurable: true,
+      });
+      const toasts = document.querySelectorAll('.toast').length;
+      installUpdateReload();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(update).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS - 1);
+      expect(update).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(update).toHaveBeenCalledTimes(2);
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS);
+      expect(update).toHaveBeenCalledTimes(3);
+      expect(document.querySelectorAll('.toast')).toHaveLength(toasts);
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves the timed check to the foreground return while hidden (#746)', async () => {
+    vi.useFakeTimers();
+    const hidden = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    try {
+      const getRegistration = vi.fn(async () => undefined);
+      const container = Object.assign(new EventTarget(), { controller: {}, getRegistration });
+      Object.defineProperty(globalThis, 'navigator', {
+        value: { serviceWorker: container, onLine: true },
+        configurable: true,
+      });
+      installUpdateReload();
+      await vi.advanceTimersByTimeAsync(0);
+      getRegistration.mockClear();
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_INTERVAL_MS);
+      expect(getRegistration).not.toHaveBeenCalled();
+    } finally {
+      hidden.mockRestore();
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
   });
 
   it('reloads on the first change when a worker already controlled the page', () => {

@@ -8,6 +8,12 @@
 import { t } from './i18n';
 import { showToast } from './toast';
 
+/**
+ * How often an open app looks for a new version (#746). It matches the
+ * host's ten-minute cache lifetime, so checking sooner finds nothing newer.
+ */
+export const UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1000;
+
 export type UpdateCheckResult = 'updating' | 'latest' | 'offline' | 'unsupported';
 
 /** The slice of `ServiceWorkerRegistration` the check needs. */
@@ -94,6 +100,14 @@ export function installUpdateReload(): void {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void checkForUpdate(browserDeps());
   });
+
+  // Look on every start rather than trust the browser's own check, and keep
+  // looking while the app simply stays open (#746). A hidden app is covered
+  // by the check on its return above.
+  void checkForUpdate(browserDeps());
+  setInterval(() => {
+    if (document.visibilityState === 'visible') void checkForUpdate(browserDeps());
+  }, UPDATE_CHECK_INTERVAL_MS);
 }
 
 /** Makes `target` a button that checks for a new version on tap. */

@@ -1996,7 +1996,7 @@ present this source as more proven than it is.
   rewriting a user's setup is worse than not supporting it. Libell's learned mounting
   (#293) lives in Libell's own settings instead.
 
-## R50 — Check for a new version from the top bar (#301)
+## R50 — Check for a new version from the top bar (#301, #746)
 
 - **Given** a newer version has been deployed
 - **When** I tap the Libell name / version in the top bar
@@ -2017,6 +2017,12 @@ present this source as more proven than it is.
 - **Then** the "Checking…" message gives way to the message that updates can't be
   checked here, never a check that never ends; on return to the foreground the failed
   lookup passes silently (#542).
+- **Given** a newer version has been deployed and the app stays open and visible
+- **When** ten minutes pass
+- **Then** the app has checked quietly, with no message, and reloads into the new version
+  once it is active, without a tap — also mid-levelling or with a Sensorbox connected
+  (Morgan's choice, #746). It checks again every ten minutes, the host's cache lifetime;
+  a hidden app is not checked until it returns to the foreground.
 
 ## R51 — The box's own page: one header, a two-step setup checklist (#314, #332)
 
