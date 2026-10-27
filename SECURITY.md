@@ -19,7 +19,9 @@ Libell is a fully static, self-contained PWA on GitHub Pages:
   in the install sheet) is generated from the built app after the service worker, so it
   is fetched on demand instead. Production builds carry a
   `default-src 'self'` Content-Security-Policy meta tag and a `no-referrer` referrer
-  policy, so injected external script/style is refused by the browser.
+  policy, so injected external script/style is refused by the browser. The app's own
+  stylesheet is inlined and allowed by its hash alone, never by `'unsafe-inline'`
+  (ADR 0025).
 - **One remote request: anonymous counting (ADR 0021).** The app sends GoatCounter
   (`libell.goatcounter.com`, the only origin added to `connect-src`) a fixed event name:
   app opened, app version, the language chosen in Libell, the sensor model and the

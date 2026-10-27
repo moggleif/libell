@@ -16,6 +16,20 @@ describe('static pages (#675, #703)', () => {
     expect(head).toContain('<link rel="stylesheet" href="/libell/page.css">');
   });
 
+  // The browser asks for /favicon.ico when a page names no icon, and logs
+  // the 404 (#730).
+  it('names the app’s icon, so the browser asks for nothing that is missing', () => {
+    expect(staticHead('/libell/', 'x')).toContain(
+      '<link rel="icon" href="/libell/icons/icon.svg" type="image/svg+xml">',
+    );
+  });
+
+  // Lighthouse reads /robots.txt from inside the page (#730).
+  it('lets the page fetch from its own site and nowhere else', () => {
+    expect(STATIC_CSP).toContain("connect-src 'self';");
+    expect(STATIC_CSP).toContain("default-src 'none'");
+  });
+
   it('links the same page in every other language', () => {
     const list = languageList('sv', (lang) => `/x/${lang}/`);
     for (const lang of LANGUAGES.filter((l) => l !== 'sv')) {

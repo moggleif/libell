@@ -460,7 +460,11 @@ the install-sheet screenshot, generated from the built app afterwards, is not pr
 an already-controlled page once on `controllerchange`, re-checks for a new worker when
 the app returns to the foreground, and lets a tap on the top-bar name / version check on
 demand (R50). The worker is registered with a deferred script, so it never holds up the
-first render (ADR 0024).
+first render (ADR 0024). Nor does the stylesheet: the `security-meta-tags` plugin in
+`vite.config.ts` puts it into `index.html` as a `<style>` block, drops the CSS file and
+adds the block's hash to the CSP's `style-src` (`scripts/inlineStylesheets.ts`, ADR 0025).
+The install row under the top bar waits while an overlay holds the page (the row is
+inert), so it never pushes the page down behind the first-visit screens (R63).
 
 ## Loading after the first screen (`src/app/lazyPart.ts`, ADR 0024)
 
@@ -523,7 +527,8 @@ HTML the build writes: the `static-pages` plugin in `vite.config.ts` loads
 `staticPages.ts` through Vite's `runnerImport` (it is app code, typed and tested with the
 app) and emits what it returns. `src/ui/staticPage.ts` holds what they share: the
 escaping every text goes through, the head with a `default-src 'none'; style-src 'self'`
-CSP of its own, the list of the same page in the other languages, and the one stylesheet (`STATIC_CSS`), which
+CSP of its own (plus `connect-src 'self'`, so Lighthouse can read `robots.txt`; the page
+has no script that could fetch) and the app's icon, the list of the same page in the other languages, and the one stylesheet (`STATIC_CSS`), which
 uses only the browser's system colours (`Canvas`, `CanvasText`, `LinkText`) under
 `color-scheme: light dark`. No page has a script it runs. Text is looked up per language
 with `translate()` from `translations.ts`, which holds every dictionary for the build; brands come from `boxNames()` (`boxNames.ts`), which

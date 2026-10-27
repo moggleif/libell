@@ -127,6 +127,13 @@ describe('the CSP (#674)', () => {
     expect(connect).toBe(`'self' ${COUNTER_ORIGIN}`);
     expect(/script-src ([^;]*);/.exec(config)?.[1]).toBe(`'self'`);
   });
+
+  // A meta CSP cannot carry it, and Chrome logs it as an error; the framing
+  // guard covers clickjacking (ADR 0005, #730).
+  it('leaves out frame-ancestors', () => {
+    const config = readFileSync(join(import.meta.dirname, '../../vite.config.ts'), 'utf8');
+    expect(config).not.toContain("frame-ancestors 'none'");
+  });
 });
 
 interface BrowserState {
