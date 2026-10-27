@@ -7,8 +7,10 @@
 // captions, input names, `selectTab` and `classicPages` — never its
 // internals, so the same tests hold before and after the split.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createSettingsForm } from './settingsPanel';
-import type { SettingsFormElement } from './settingsLayout';
+import { createSettingsForm, type SettingsFormOptions } from './settingsPanel';
+import type { CalibrationOptions } from './calibrationSection';
+import type { CompactStep, Hosts, SettingsFormElement } from './settingsLayout';
+import type { TargetsOptions } from './targetsSection';
 import { setLanguage, t, type MessageKey } from './i18n';
 import { loadSettings } from '../data/settingsStore';
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
@@ -20,6 +22,43 @@ type Tab = 'vehicle' | 'ramps' | 'targets' | 'general';
 type Appearance = 'modern' | 'classic';
 const APPEARANCES: Appearance[] = ['modern', 'classic'];
 
+/** The full form's options, with stand-in hosts for whatever a test does
+ * not wire itself. */
+function full(
+  options: Partial<Hosts> & Omit<Extract<SettingsFormOptions, { hosts: Hosts }>, 'hosts'> = {},
+): SettingsFormOptions {
+  const { calibration = calibrationHost(), targets = targetsHost(), vehicles, ...rest } = options;
+  return { hosts: { calibration, targets, vehicles }, ...rest };
+}
+
+function calibrationHost(): CalibrationOptions {
+  return {
+    appearance: 'modern',
+    getCalibration: () => null,
+    calibrate: () => null,
+    readTilt: () => 'no sensor',
+    applyCalibration: () => () => {},
+    clearCalibration: () => {},
+    getVehicleCalibration: () => null,
+    calibrateVehicle: () => null,
+    getCalibrationCapturedAt: () => null,
+    getVehicleCalibrationCapturedAt: () => null,
+    checkCalibration: () => '',
+    checkVehicleCalibration: () => '',
+    clearVehicleCalibration: () => {},
+  };
+}
+
+function targetsHost(): TargetsOptions {
+  return {
+    getTargetPresets: () => [],
+    getActiveTargetId: () => null,
+    selectTarget: () => {},
+    addTargetPreset: () => null,
+    deleteTargetPreset: () => {},
+  };
+}
+
 interface Built {
   form: SettingsFormElement;
   onSave: ReturnType<typeof vi.fn<(s: LevelSettings) => void>>;
@@ -30,10 +69,7 @@ function build(appearance: Appearance, overrides: Partial<LevelSettings> = {}): 
   const initial: LevelSettings = { ...DEFAULT_SETTINGS, ...overrides, appearance };
   const onSave = vi.fn<(s: LevelSettings) => void>();
   const onShareVehicleSetup = vi.fn<(s: LevelSettings) => void>();
-  const form = createSettingsForm(initial, onSave, undefined, {
-    splitPages: true,
-    onShareVehicleSetup,
-  });
+  const form = createSettingsForm(initial, onSave, full({ splitPages: true, onShareVehicleSetup }));
   document.body.append(form);
   return { form, onSave, initial };
 }
@@ -394,10 +430,11 @@ for (const appearance of APPEARANCES) {
 
     it('"Share to another phone" hands the current values to the host', () => {
       const onShareVehicleSetup = vi.fn<(s: LevelSettings) => void>();
-      const form = createSettingsForm({ ...DEFAULT_SETTINGS, appearance }, vi.fn(), undefined, {
-        splitPages: true,
-        onShareVehicleSetup,
-      });
+      const form = createSettingsForm(
+        { ...DEFAULT_SETTINGS, appearance },
+        vi.fn(),
+        full({ splitPages: true, onShareVehicleSetup }),
+      );
       document.body.append(form);
       const vehicle = show(form, appearance, 'vehicle');
       setValue(numberInput(vehicle, 'wheelbaseMm'), '4100');
@@ -410,7 +447,7 @@ for (const appearance of APPEARANCES) {
 }
 
 describe('settings — the wizard steps (#376)', () => {
-  const STEPS: [NonNullable<Parameters<typeof createSettingsForm>[3]>['compact'], string[]][] = [
+  const STEPS: [CompactStep, string[]][] = [
     ['measurements', ['settings.wheelbase', 'settings.trackFront', 'settings.trackRear']],
     ['language', ['settings.language']],
     ['appearance', ['settings.theme', 'settings.appearance']],
@@ -419,14 +456,14 @@ describe('settings — the wizard steps (#376)', () => {
   ];
   for (const [compact, expected] of STEPS) {
     it(`the ${compact} step shows exactly its own fields`, () => {
-      const form = createSettingsForm({ ...DEFAULT_SETTINGS }, vi.fn(), undefined, { compact });
+      const form = createSettingsForm({ ...DEFAULT_SETTINGS }, vi.fn(), { compact });
       expect(captions(form)).toEqual(expected.map((key) => t(key as MessageKey)));
     });
   }
 
   it('a step stores nothing until Next submits it, and shows no toast', () => {
     const onSave = vi.fn<(s: LevelSettings) => void>();
-    const form = createSettingsForm({ ...DEFAULT_SETTINGS }, onSave, undefined, {
+    const form = createSettingsForm({ ...DEFAULT_SETTINGS }, onSave, {
       compact: 'sound',
     });
     const box = control<HTMLInputElement>(form, 'settings.soundGuidance');
@@ -442,7 +479,7 @@ describe('settings — the wizard steps (#376)', () => {
 describe('a Modern form built without hosts (#481)', () => {
   function buildBare(): SettingsFormElement {
     const initial: LevelSettings = { ...DEFAULT_SETTINGS, appearance: 'modern' };
-    const form = createSettingsForm(initial, vi.fn());
+    const form = createSettingsForm(initial, vi.fn(), full());
     document.body.append(form);
     return form;
   }

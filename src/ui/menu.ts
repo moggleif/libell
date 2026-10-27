@@ -173,13 +173,11 @@ function createMenuSettingsForm(options: MenuOptions): SettingsFormElement {
   return createSettingsForm(
     options.initialSettings,
     (settings) => options.onSettingsSaved(settings),
-    options.calibration,
     {
+      hosts: options,
       splitPages: true,
       onShareVehicleSetup: options.onShareVehicleSetup,
-      vehicles: options.vehicles,
     },
-    options.targets,
   );
 }
 

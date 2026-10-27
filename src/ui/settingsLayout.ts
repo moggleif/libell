@@ -23,8 +23,9 @@ export type TabId = 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'general';
 /** The hosts behind the embedded calibration, targets and vehicle
  * picker sections. */
 export interface Hosts {
-  calibration?: CalibrationOptions;
-  targets?: TargetsOptions;
+  calibration: CalibrationOptions;
+  targets: TargetsOptions;
+  /** Several vehicles (#599): the picker at the top of Vehicle. */
   vehicles?: VehiclePickerOptions;
 }
 
@@ -39,41 +40,6 @@ export interface Tabs {
   ramps: RampsTab;
   level: LevelTab;
   general: GeneralTab;
-}
-
-/**
- * When no calibration host is wired — a standalone harness, or a unit test
- * building a Modern-mode form directly — the tab still renders with an
- * inert stand-in rather than throwing.
- */
-function inertCalibrationOptions(): CalibrationOptions {
-  return {
-    // Only ever used from the Modern calibration tab.
-    appearance: 'modern',
-    getCalibration: () => null,
-    calibrate: () => t('calibration.err.notRunning'),
-    readTilt: () => t('calibration.err.notRunning'),
-    applyCalibration: () => () => {},
-    clearCalibration: () => {},
-    getVehicleCalibration: () => null,
-    calibrateVehicle: () => t('calibration.err.notRunning'),
-    getCalibrationCapturedAt: () => null,
-    getVehicleCalibrationCapturedAt: () => null,
-    checkCalibration: () => t('calibration.status.none'),
-    checkVehicleCalibration: () => t('calibration.vehicle.status.none'),
-    clearVehicleCalibration: () => {},
-  };
-}
-
-/** Same fallback role as `inertCalibrationOptions`, for the targets. */
-function inertTargetsOptions(): TargetsOptions {
-  return {
-    getTargetPresets: () => [],
-    getActiveTargetId: () => null,
-    selectTarget: () => {},
-    addTargetPreset: () => null,
-    deleteTargetPreset: () => {},
-  };
 }
 
 /**
@@ -128,16 +94,15 @@ export function layOut(
   form: SettingsFormElement,
   tabs: Tabs,
   appearance: LevelSettings['appearance'],
-  formOptions: { compact?: CompactStep; splitPages?: boolean } | undefined,
-  hosts: Hosts,
+  options: { compact: CompactStep } | { hosts: Hosts; splitPages?: boolean },
 ): () => void {
-  if (formOptions?.compact) {
-    form.append(...compactStep(tabs, formOptions.compact));
+  if ('compact' in options) {
+    form.append(...compactStep(tabs, options.compact));
     return () => {};
   }
-  if (appearance === 'modern') return layOutModernTabs(form, tabs, hosts);
-  if (formOptions?.splitPages) {
-    layOutClassicPages(form, tabs, hosts);
+  if (appearance === 'modern') return layOutModernTabs(form, tabs, options.hosts);
+  if (options.splitPages) {
+    layOutClassicPages(form, tabs, options.hosts);
     return () => {};
   }
   return layOutFlatPage(form, tabs);
@@ -177,11 +142,8 @@ function compactStep(tabs: Tabs, compact: CompactStep): HTMLElement[] {
 function layOutModernTabs(form: SettingsFormElement, tabs: Tabs, hosts: Hosts): () => void {
   // The calibration and targets tabs are redrawn whenever they are shown,
   // since the form is built once, not on every open.
-  const calibration = createCalibrationSection(
-    hosts.calibration ?? inertCalibrationOptions(),
-    'checklist',
-  );
-  const targets = createTargetsSection(hosts.targets ?? inertTargetsOptions());
+  const calibration = createCalibrationSection(hosts.calibration, 'checklist');
+  const targets = createTargetsSection(hosts.targets);
   let openTab: TabId = 'vehicle';
   const bar = createTabBar(selectTab);
   fillModernTabs(bar, tabs, calibration.element, targets.element, hosts.vehicles);
@@ -289,7 +251,7 @@ function layOutClassicPages(form: SettingsFormElement, tabs: Tabs, hosts: Hosts)
 
   // One real `createTargetsSection` component, not a copy, below
   // Tolerance and Drain side.
-  const targets = createTargetsSection(hosts.targets ?? inertTargetsOptions());
+  const targets = createTargetsSection(hosts.targets);
   form.refreshTargetsPage = targets.refresh;
 
   form.classicPages = {
@@ -304,7 +266,7 @@ function layOutClassicPages(form: SettingsFormElement, tabs: Tabs, hosts: Hosts)
 /**
  * Classic as one flat page, in the same groups as the tabs. No screen in
  * the app shows it — the ☰ menu uses the split pages — so it keeps the
- * compact ramp select and leaves out the saved targets, which need a host.
+ * compact ramp select and leaves out the saved targets.
  */
 function layOutFlatPage(form: SettingsFormElement, tabs: Tabs): () => void {
   const vehicleHeading = createSectionHeading();

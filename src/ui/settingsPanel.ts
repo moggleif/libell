@@ -19,9 +19,6 @@
 import { DEFAULT_SETTINGS, type LevelSettings } from '../domain/settings';
 import { parseSettings } from '../domain/settingsParsing';
 import { loadSettings } from '../data/settingsStore';
-import type { CalibrationOptions } from './calibrationSection';
-import type { TargetsOptions } from './targetsSection';
-import type { VehiclePickerOptions } from './vehiclePicker';
 import { createElement } from './dom';
 import { createAutoSave, type AutoSave, type FormValues } from './settingsAutoSave';
 import {
@@ -30,57 +27,65 @@ import {
   type SettingsFormContext,
   type SettingsFormState,
 } from './settingsFields';
-import { layOut, type CompactStep, type SettingsFormElement, type Tabs } from './settingsLayout';
+import {
+  layOut,
+  type CompactStep,
+  type Hosts,
+  type SettingsFormElement,
+  type Tabs,
+} from './settingsLayout';
 import { createVehicleTab } from './settingsVehicleTab';
 import { createRampsTab } from './settingsRampsTab';
 import { createLevelTab } from './settingsLevelTab';
 import { createGeneralTab, type GeneralTab, type GeneralTabActions } from './settingsGeneralTab';
 
-interface SettingsFormOptions {
-  /**
-   * Reduced onboarding-only renderings, each just its own subset of the
-   * same field elements the full form builds — never a wizard-only
-   * duplicate. Everything not in a step stays reachable from Settings
-   * afterward.
-   *
-   * 'measurements': only Wheelbase and Track width front/rear — the numbers
-   * first-run users have on hand from the registration document.
-   *
-   * 'language' / 'appearance' / 'sound': one step per decision. Language
-   * stands alone because it must resolve before the rest of the guide is
-   * legible; Theme + Appearance are "how it looks", Chime + audio guidance
-   * "what it sounds like".
-   *
-   * 'ramps': the step-height picker and ramp count, as the flat Classic
-   * page's single `<select>` + chip editor, not the Ramps page's
-   * brand-filtered catalogue.
-   */
-  compact?: CompactStep;
+/**
+ * The wizard's reduced onboarding-only renderings, each just its own subset
+ * of the same field elements the full form builds — never a wizard-only
+ * duplicate. Everything not in a step stays reachable from Settings
+ * afterward. Nothing to share yet and no embedded sections, so no hosts.
+ *
+ * 'measurements': only Wheelbase and Track width front/rear — the numbers
+ * first-run users have on hand from the registration document.
+ *
+ * 'language' / 'appearance' / 'sound': one step per decision. Language
+ * stands alone because it must resolve before the rest of the guide is
+ * legible; Theme + Appearance are "how it looks", Chime + audio guidance
+ * "what it sounds like".
+ *
+ * 'ramps': the step-height picker and ramp count, as the flat Classic
+ * page's single `<select>` + chip editor, not the Ramps page's
+ * brand-filtered catalogue.
+ */
+interface CompactFormOptions {
+  compact: CompactStep;
+}
+
+/** The full form, as the Settings page and the ☰ menu show it. */
+interface FullFormOptions {
+  hosts: Hosts;
   /**
    * Render Classic's fields as four navigable bodies, exposed as
    * `classicPages`, instead of one flat page. Ignored for Modern (already
-   * split by tabs) or when `compact` is set. Only the ☰ menu opts in.
+   * split by tabs). Only the ☰ menu opts in.
    */
   splitPages?: boolean;
   /**
    * "Share vehicle setup": called with the form's current settings — the
    * host picks out the shareable geometry (`domain/vehicleShare.ts`).
-   * Omitted for the onboarding `compact` steps, with nothing yet to share.
    */
   onShareVehicleSetup?: (settings: LevelSettings) => void;
-  /** Several vehicles (#599): the picker at the top of Vehicle. Omitted
-   * for the onboarding `compact` steps. */
-  vehicles?: VehiclePickerOptions;
 }
+
+export type SettingsFormOptions = CompactFormOptions | FullFormOptions;
 
 export function createSettingsForm(
   initial: LevelSettings,
   onSave: (settings: LevelSettings) => void,
-  calibrationOptions?: CalibrationOptions,
-  formOptions?: SettingsFormOptions,
-  targetsOptions?: TargetsOptions,
+  options: SettingsFormOptions,
 ): SettingsFormElement {
-  const compact = formOptions?.compact;
+  const compact = 'compact' in options ? options.compact : undefined;
+  const onShare = 'hosts' in options ? options.onShareVehicleSetup : undefined;
   const form: SettingsFormElement = createElement('form', 'settings__form');
 
   const state = stateOf(initial);
@@ -95,7 +100,7 @@ export function createSettingsForm(
     relabelAll: () => values.relabelAll(),
     currentSettings: () => values.current(),
   };
-  const tabs = createTabs(initial, context, formOptions?.onShareVehicleSetup, {
+  const tabs = createTabs(initial, context, onShare, {
     unitChanged: (previous) => {
       values.showInNewUnit(previous);
       autoSave.changed();
@@ -107,12 +112,7 @@ export function createSettingsForm(
   });
 
   // Decided once, at construction — see the file header comment.
-  const hosts = {
-    calibration: calibrationOptions,
-    targets: targetsOptions,
-    vehicles: formOptions?.vehicles,
-  };
-  const relabelLayout = layOut(form, tabs, initial.appearance, formOptions, hosts);
+  const relabelLayout = layOut(form, tabs, initial.appearance, options);
   values = createFormValues(tabs, state, relabelLayout);
   values.showNumbers((field) => initial[field.key]);
   autoSave = createAutoSave(values, initial, compact, onSave);
@@ -127,7 +127,7 @@ function stateOf(settings: LevelSettings): SettingsFormState {
 function createTabs(
   initial: LevelSettings,
   context: SettingsFormContext,
-  onShareVehicleSetup: SettingsFormOptions['onShareVehicleSetup'],
+  onShareVehicleSetup: FullFormOptions['onShareVehicleSetup'],
   generalActions: GeneralTabActions,
 ): Tabs {
   return {
