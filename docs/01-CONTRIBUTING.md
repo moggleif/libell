@@ -103,6 +103,11 @@ motion events. Either:
 On iOS the app cannot read motion until you tap the in-app "Start" button — that is a
 Safari requirement, not a bug.
 
+To check that a deploy reaches an installed app, leave the app open on the old version,
+merge any PR, and bring the app back to the foreground once the deploy has finished: it
+reloads by itself and the top bar shows the new `CR<PR>` (R50, #749). GitHub Pages may
+serve the old files for up to ten minutes after a deploy.
+
 A Sensorbox needs Web Bluetooth: Chrome on Android works, iPhone needs the Bluefy browser
 ([`docs/ios-easylevel-bluefy-guide.md`](ios-easylevel-bluefy-guide.md)). Without a box,
 `?easylevel-sim` and `?xparkle-sim` simulate one in any browser.
