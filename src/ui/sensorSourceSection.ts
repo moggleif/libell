@@ -30,7 +30,7 @@ import type { BoxDescriptor } from '../sensor/boxes';
 import type { SensorState } from '../sensor/orientation';
 import type { BoxPasswordOptions } from './boxPasswordBlock';
 import { createBoxSetupChecklist } from './boxSetupChecklist';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { t } from './i18n';
 import type { LearnMountingOptions } from './learnMountingSection';
 import { createSensorCard } from './sensorCard';
@@ -131,11 +131,8 @@ export interface SensorSourceSection {
  * colour: it stops the box feeding readings. */
 function createDisconnectFooter(onDisconnect: () => void): HTMLElement {
   const footer = createElement('div', 'box-footer__actions');
-  const button = createElement('button', 'menu__action menu__action--secondary box-disconnect');
-  button.type = 'button';
-  button.textContent = t('sensorSource.disconnect');
-  button.addEventListener('click', onDisconnect);
-  footer.append(button);
+  const secondary = 'menu__action menu__action--secondary box-disconnect';
+  footer.append(button(secondary, t('sensorSource.disconnect'), onDisconnect));
   return footer;
 }
 

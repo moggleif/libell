@@ -7,7 +7,7 @@
 import { boxConnection, type BoxConnection } from './boxConnection';
 import { createBoxPasswordBlock } from './boxPasswordBlock';
 import { cardMark, cardStateText, connectErrorText } from './boxSetupState';
-import { createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 import { t } from './i18n';
 import type { SensorSourceOptions } from './sensorSourceSection';
 
@@ -30,9 +30,8 @@ function createNameButton(
   element.append(name);
   if (!onOpenStatus) return { element, refresh: () => {} };
 
-  const chevron = createElement('span', 'sensor-row__chevron');
+  const chevron = textElement('span', 'sensor-row__chevron', '›');
   chevron.setAttribute('aria-hidden', 'true');
-  chevron.textContent = '›';
   element.append(chevron);
   element.addEventListener('click', () => {
     if (options.getSensorSource() === options.sensor.id) onOpenStatus();
@@ -47,9 +46,7 @@ function createNameButton(
 }
 
 function createConnectLink(options: SensorSourceOptions): HTMLButtonElement {
-  const link = createElement('button', 'link-button sensor-card__connect');
-  link.type = 'button';
-  link.textContent = t('box.connect');
+  const link = button('link-button sensor-card__connect', t('box.connect'));
   link.setAttribute('aria-label', t('sensorSource.connect', { name: options.sensor.displayName }));
   return link;
 }

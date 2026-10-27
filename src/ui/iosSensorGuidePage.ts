@@ -9,32 +9,24 @@
  */
 import { createStandalonePage, type StandalonePage } from './standalonePage';
 import type { SensorPage } from './sensorPage';
-import { t } from './i18n';
-import { createElement, externalLink } from './dom';
+import { t, type MessageKey } from './i18n';
+import { externalLink, paragraph } from './dom';
 
 const BLUEFY_APP_STORE_SEARCH = 'https://apps.apple.com/search?term=bluefy';
 
 export function createIosSensorGuidePage(): SensorPage {
   const page: StandalonePage = createStandalonePage(t('menu.sensorSource'));
 
-  const intro = createElement('p', 'menu__text');
-  intro.textContent = t('sensorSource.ios.intro');
-
-  const step1 = createElement('p', 'menu__text');
-  step1.textContent = t('sensorSource.ios.step1');
-  const step2 = createElement('p', 'menu__text');
-  step2.textContent = t('sensorSource.ios.step2');
-  const step3 = createElement('p', 'menu__text');
-  step3.textContent = t('sensorSource.ios.step3');
-  const step4 = createElement('p', 'menu__text');
-  step4.textContent = t('sensorSource.ios.step4');
-
-  const link = externalLink(BLUEFY_APP_STORE_SEARCH, t('sensorSource.ios.bluefyLink'));
-
-  const note = createElement('p', 'menu__text');
-  note.textContent = t('sensorSource.ios.note');
-
-  page.body.append(intro, step1, step2, step3, step4, link, note);
+  const text = (key: MessageKey) => paragraph('menu__text', t(key));
+  page.body.append(
+    text('sensorSource.ios.intro'),
+    text('sensorSource.ios.step1'),
+    text('sensorSource.ios.step2'),
+    text('sensorSource.ios.step3'),
+    text('sensorSource.ios.step4'),
+    externalLink(BLUEFY_APP_STORE_SEARCH, t('sensorSource.ios.bluefyLink')),
+    text('sensorSource.ios.note'),
+  );
 
   return {
     element: page.element,

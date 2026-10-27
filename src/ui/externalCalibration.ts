@@ -6,7 +6,7 @@
 import type { CaptureResult } from '../domain/calibration';
 import { captureMessage, externalStatusText } from './calibrationText';
 import type { CalibrationOptions } from './calibrationSection';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { t } from './i18n';
 
 export interface ExternalCalibration {
@@ -19,29 +19,21 @@ function createParts(options: CalibrationOptions, modern: boolean) {
   const element = createElement('div', modern ? 'calibration-card' : '');
   element.hidden = true;
   const heading = createElement('h3', modern ? 'calibration-card__title' : 'menu__heading');
-  const intro = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
-  intro.textContent = t('calibration.external.intro');
-  const zeroButton = createElement('button', 'menu__action');
-  zeroButton.type = 'button';
-  zeroButton.textContent = t('sensorSource.install.now');
+  const body = modern ? 'calibration-card__body' : 'menu__text';
+  const intro = paragraph(body, t('calibration.external.intro'));
+  const zeroButton = button('menu__action', t('sensorSource.install.now'));
   const status = createElement('p', 'menu__text menu__text--status');
   // Shown only while a steep zero's warning is up (#624).
-  const undo = createElement('button', 'menu__action menu__action--secondary');
-  undo.type = 'button';
-  undo.textContent = t('calibration.undo');
+  const undo = button('menu__action menu__action--secondary', t('calibration.undo'));
   undo.hidden = true;
   // #515: the phone cards are hidden meanwhile; say why and how back.
-  const phoneHidden = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
-  phoneHidden.textContent = t('calibration.external.phoneHidden', {
-    disconnect: t('sensorSource.disconnect'),
-  });
+  const phoneHidden = paragraph(
+    body,
+    t('calibration.external.phoneHidden', { disconnect: t('sensorSource.disconnect') }),
+  );
   element.append(heading, intro, zeroButton, status, undo, phoneHidden);
   if (options.openBoxPage) {
-    const openBox = createElement('button', 'link-button');
-    openBox.type = 'button';
-    openBox.textContent = t('pose.openSensorPage');
-    openBox.addEventListener('click', () => options.openBoxPage?.());
-    element.append(openBox);
+    element.append(button('link-button', t('pose.openSensorPage'), () => options.openBoxPage?.()));
   }
   return { element, heading, zeroButton, status, undo };
 }

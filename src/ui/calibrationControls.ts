@@ -5,7 +5,7 @@
  */
 import type { Calibration } from '../domain/calibration';
 import { pillFor, calibrationStatusText, type CalibrationKind } from './calibrationText';
-import { button, createElement } from './dom';
+import { button, createElement, paragraph, textElement } from './dom';
 import { t } from './i18n';
 
 export interface CalibrationControls {
@@ -39,10 +39,12 @@ const CONTROL_KEYS = {
 
 export function createControls(kind: CalibrationKind, modern: boolean): CalibrationControls {
   const keys = CONTROL_KEYS[kind];
-  const heading = createElement('h3', modern ? 'calibration-card__title' : 'menu__heading');
-  heading.textContent = t(keys.heading);
-  const intro = createElement('p', modern ? 'calibration-card__body' : 'menu__text');
-  intro.textContent = t(keys.intro);
+  const heading = textElement(
+    'h3',
+    modern ? 'calibration-card__title' : 'menu__heading',
+    t(keys.heading),
+  );
+  const intro = paragraph(modern ? 'calibration-card__body' : 'menu__text', t(keys.intro));
   const secondary = 'menu__action menu__action--secondary';
   const undo = button(secondary, t('calibration.undo'));
   undo.hidden = true;

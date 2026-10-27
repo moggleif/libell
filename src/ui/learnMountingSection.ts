@@ -8,7 +8,7 @@
 import { learnAxisMapping, type AxisMapping } from '../domain/axisMapping';
 import type { Calibration } from '../domain/calibration';
 import { t, type MessageKey } from './i18n';
-import { createElement, paragraph, textElement } from './dom';
+import { button, createElement, paragraph, textElement } from './dom';
 
 export interface LearnMountingOptions {
   name: string;
@@ -95,11 +95,7 @@ function createView() {
 }
 
 function makeButton(key: MessageKey, secondary = false): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = secondary ? 'menu__action menu__action--secondary' : 'menu__action';
-  button.textContent = t(key);
-  return button;
+  return button(secondary ? 'menu__action menu__action--secondary' : 'menu__action', t(key));
 }
 
 function show(guide: Guide, next: Step, message?: string): void {
