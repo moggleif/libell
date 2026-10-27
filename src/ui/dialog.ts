@@ -4,7 +4,7 @@
  * with one card. While it is open the rest of the page is inert, and closing
  * it gives focus back to whatever opened it (#537).
  */
-import { createElement } from './dom';
+import { createElement, textElement } from './dom';
 import { holdFocus, type FocusHold } from './focusHold';
 
 export interface DialogHeading {
@@ -71,9 +71,8 @@ export function createDialog(options: DialogOptions): Dialog {
 }
 
 function buildHeading(id: string, { className, text }: DialogHeading): HTMLHeadingElement {
-  const heading = createElement('h2', className);
+  const heading = textElement('h2', className, text);
   heading.id = id;
   heading.tabIndex = -1;
-  heading.textContent = text;
   return heading;
 }

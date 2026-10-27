@@ -12,7 +12,7 @@
 import { holdFocus, type FocusHold } from './focusHold';
 import { setVisible } from './motion';
 import { t } from './i18n';
-import { createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 
 export interface StandalonePage {
   /** The page element, appended to the document body. */
@@ -107,16 +107,12 @@ function createPageElements(initialTitle: string) {
   const element = createElement('div', 'menu-page');
   element.hidden = true;
   const header = createElement('div', 'menu-page__header');
-  const closeButton = document.createElement('button');
-  closeButton.type = 'button';
   // Reuses the ‹ back button's styling (big, tappable); ✕ means "close this
   // page", never a step back into something else.
-  closeButton.className = 'menu-page__back';
+  const closeButton = button('menu-page__back', '✕');
   closeButton.setAttribute('aria-label', t('menu.close'));
-  closeButton.textContent = '✕';
-  const titleEl = createElement('h2', 'menu-page__title');
+  const titleEl = textElement('h2', 'menu-page__title', initialTitle);
   titleEl.tabIndex = -1;
-  titleEl.textContent = initialTitle;
   header.append(closeButton, titleEl);
   const body = createElement('div', 'menu-page__body');
   element.append(header, body);

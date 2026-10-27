@@ -10,7 +10,7 @@
 import type { TargetPreset, TargetSaveResult } from '../domain/targetPresets';
 import { t } from './i18n';
 import { createChoiceRow } from './choiceList';
-import { createElement } from './dom';
+import { button, createElement } from './dom';
 import { createHitchSection, type HitchOptions } from './hitchSection';
 import { createNamePrompt, type NamePrompt } from './namePrompt';
 
@@ -93,7 +93,7 @@ interface AddControls {
 /** Only the add button shows until it is tapped; then the name is asked
  * for (#613). */
 function createAddControls(options: TargetsOptions, refresh: () => void): AddControls {
-  const addButton = secondaryButton(t('targets.add'));
+  const addButton = button('menu__action menu__action--secondary', t('targets.add'));
   const addStatus = createElement('p', 'menu__text menu__text--status');
   const prompt = createNamePrompt({
     label: t('targets.name.label'),
@@ -111,14 +111,6 @@ function createAddControls(options: TargetsOptions, refresh: () => void): AddCon
     prompt.open(nextDefaultName(options));
   });
   return controls;
-}
-
-function secondaryButton(text: string): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'menu__action menu__action--secondary';
-  button.textContent = text;
-  return button;
 }
 
 /** One Save (#621): an error keeps the field open; a warning means the

@@ -14,7 +14,7 @@
 import { createSettingsForm } from './settingsPanel';
 import type { SettingsFormElement } from './settingsLayout';
 import { createCalibrationSection } from './calibrationSection';
-import { createElement } from './dom';
+import { button, createElement, textElement } from './dom';
 import { t, type MessageKey } from './i18n';
 import { holdFocus, type FocusHold } from './focusHold';
 import { setVisible } from './motion';
@@ -118,12 +118,9 @@ function createDrawer(): Drawer {
   panel.setAttribute('aria-label', t('menu.title'));
 
   const header = createElement('div', 'menu__header');
-  const title = createElement('span', 'menu__title');
-  title.textContent = t('menu.title');
-  const close = createElement('button', 'menu__close');
-  close.type = 'button';
+  const title = textElement('span', 'menu__title', t('menu.title'));
+  const close = button('menu__close', '✕');
   close.setAttribute('aria-label', t('menu.close'));
-  close.textContent = '✕';
   header.append(title, close);
   panel.append(header);
   backdrop.append(panel);
@@ -142,9 +139,7 @@ function createPage(): MenuPage {
   const element = createElement('div', 'menu-page');
   element.hidden = true;
   const header = createElement('div', 'menu-page__header');
-  const back = createElement('button', 'menu-page__back');
-  back.type = 'button';
-  back.textContent = '‹';
+  const back = button('menu-page__back', '‹');
   const title = createElement('h2', 'menu-page__title');
   title.tabIndex = -1;
   header.append(back, title);
@@ -206,10 +201,7 @@ function createEntries(
   const entries = new Map<MenuSection, MenuEntry>();
   for (const [section, labelKey] of ENTRY_LABELS) {
     const label = t(labelKey);
-    const item = createElement('button', 'menu__item');
-    item.type = 'button';
-    item.textContent = label;
-    item.addEventListener('click', () => showPage(section));
+    const item = button('menu__item', label, () => showPage(section));
     drawer.panel.append(item);
     const body = section === 'calibration' ? calibrationBody : settingsForm;
     entries.set(section, { label, body, item });

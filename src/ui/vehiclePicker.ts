@@ -6,7 +6,7 @@
  * each reload is marked so Settings reopens on Vehicle (#615).
  */
 import { createChoiceRow } from './choiceList';
-import { button, createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 import { t } from './i18n';
 import { createNamePrompt } from './namePrompt';
 import { markReopenSettings } from './reopenSettings';
@@ -27,17 +27,13 @@ export function vehicleName(name: string): string {
 }
 
 function actionButton(text: string, onClick: () => void): HTMLButtonElement {
-  const element = button('menu__action menu__action--secondary', text);
-  element.addEventListener('click', onClick);
-  return element;
+  return button('menu__action menu__action--secondary', text, onClick);
 }
 
 function createParts() {
-  const heading = createElement('p', 'settings__section');
-  heading.textContent = t('vehicles.title');
+  const heading = paragraph('settings__section', t('vehicles.title'));
   const list = createElement('div', 'choice__list');
-  const hint = createElement('p', 'settings__hint');
-  hint.textContent = t('vehicles.hint');
+  const hint = paragraph('settings__hint', t('vehicles.hint'));
   const status = createElement('p', 'menu__text menu__text--status');
   status.setAttribute('aria-live', 'polite');
   return { heading, list, hint, status };

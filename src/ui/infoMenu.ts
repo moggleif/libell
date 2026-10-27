@@ -19,7 +19,7 @@ import {
 import type { VehicleType } from '../domain/settings';
 import { EXTERNAL_SENSORS } from '../sensor/boxes';
 import { RAMP_MODELS } from '../domain/ramps';
-import { createElement } from './dom';
+import { button, createElement, paragraph } from './dom';
 
 /** `main.ts` maps each to the right Settings tab or the sensor page. */
 export type HelpTarget = 'general' | 'vehicle' | 'ramps' | 'calibration' | 'targets' | 'sensor';
@@ -175,8 +175,7 @@ function buildVehiclePair(heading: string): HTMLElement {
   ];
   for (const [vehicleType, labelKey] of variants) {
     const item = createElement('div', 'illu-pair__item');
-    const caption = createElement('p', 'illu-pair__caption');
-    caption.textContent = t(labelKey);
+    const caption = paragraph('illu-pair__caption', t(labelKey));
     item.append(caption, measuresIllustration(`${heading} – ${t(labelKey)}`, vehicleType));
     row.append(item);
   }
@@ -224,12 +223,9 @@ function buildHelpPanel(
 }
 
 function buildTopicToggle(topic: Topic, body: HTMLElement): HTMLButtonElement {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'help-topic__toggle';
-  button.textContent = t(topic.h);
-  button.setAttribute('aria-controls', body.id);
-  return button;
+  const toggle = button('help-topic__toggle', t(topic.h));
+  toggle.setAttribute('aria-controls', body.id);
+  return toggle;
 }
 
 /** The lead, the picture, the text, the caravan line, the closing line and
@@ -248,20 +244,14 @@ function buildTopicBody(
   if (topic.closing) body.append(textLine(topic.closing));
   if (topic.go && hasTarget(topic.go.target)) {
     const target = topic.go.target;
-    const action = document.createElement('button');
-    action.type = 'button';
-    action.className = 'menu__action menu__action--secondary help-topic__go';
-    action.textContent = topic.go.label();
-    action.addEventListener('click', () => go(target));
-    body.append(action);
+    const secondary = 'menu__action menu__action--secondary help-topic__go';
+    body.append(button(secondary, topic.go.label(), () => go(target)));
   }
   return body;
 }
 
 function textLine(key: MessageKey, vars?: Record<string, string>): HTMLParagraphElement {
-  const line = createElement('p', 'menu__text');
-  line.textContent = t(key, vars);
-  return line;
+  return paragraph('menu__text', t(key, vars));
 }
 
 export function createInfoPage(options: InfoPageOptions): InfoPage {
@@ -344,13 +334,9 @@ function createInfoTabs(page: StandalonePage) {
   }
   function add(id: InfoTab, panel: HTMLElement, refresh?: () => void): void {
     if (refresh) onSelect.set(id, refresh);
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'settings__tab';
+    const btn = button('settings__tab', labels[id], () => select(id));
     btn.setAttribute('role', 'tab');
     btn.dataset.tab = id;
-    btn.textContent = labels[id];
-    btn.addEventListener('click', () => select(id));
     bar.append(btn);
     buttons.set(id, btn);
     panel.classList.add('settings__tabpanel');
